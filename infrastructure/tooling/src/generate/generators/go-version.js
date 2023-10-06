@@ -1,12 +1,12 @@
-const util = require('util');
+import util from 'util';
 const exec = util.promisify(require('child_process').execFile);
-const { readRepoFile, modifyRepoFile } = require('../../utils');
+import { readRepoFile, modifyRepoFile } from '../../utils';
 
 /**
  * Update the Go version to match everywhere, treating that in `.go-version`
  * as authoritative.
  */
-exports.tasks = [{
+export const tasks = [{
   title: 'Go Version',
   provides: ['target-go-version'],
   run: async (requirements, utils) => {

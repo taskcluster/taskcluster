@@ -1,4 +1,4 @@
-const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 
 /**
  * Use body-parser to parse JSON requests and also store the text of the

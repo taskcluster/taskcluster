@@ -1,8 +1,8 @@
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const slugid = require('slugid');
-const yaml = require('js-yaml');
-const { Worker, WorkerPoolError } = require('../data.js');
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import slugid from 'slugid';
+import yaml from 'js-yaml';
+import { Worker, WorkerPoolError } from '../data.js';
 
 /**
  * The parent class for all providers.
@@ -232,7 +232,7 @@ class Provider {
 class ApiError extends Error {
 }
 
-module.exports = {
+export default {
   Provider,
   ApiError,
 };

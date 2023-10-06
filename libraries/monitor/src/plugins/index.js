@@ -1,7 +1,7 @@
-const SentryReporter = require('./sentry');
-const TestReporter = require('./testreporter');
+import SentryReporter from './sentry';
+import TestReporter from './testreporter';
 
-module.exports = {
+export default {
   errorPlugins: {
     SentryReporter,
     TestReporter,

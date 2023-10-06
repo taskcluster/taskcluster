@@ -1,7 +1,7 @@
-const os = require('os');
-const path = require('path');
-const { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } = require('../utils');
-const { TaskGraph } = require('console-taskgraph');
+import os from 'os';
+import path from 'path';
+import { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } from '../utils';
+import { TaskGraph } from 'console-taskgraph';
 
 const resourceTypes = [
   'cronjob',
@@ -161,7 +161,7 @@ const actions = [
   },
 ];
 
-module.exports = async action => {
+export default async action => {
   const target = action ? [`target-${action}`] : undefined;
   const taskgraph = new TaskGraph(actions, { target });
   await taskgraph.run();

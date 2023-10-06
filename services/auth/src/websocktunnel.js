@@ -1,5 +1,5 @@
-const builder = require('./api');
-const jwt = require('jsonwebtoken');
+import builder from './api';
+import jwt from 'jsonwebtoken';
 
 builder.declare({
   method: 'get',

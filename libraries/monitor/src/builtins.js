@@ -1,4 +1,4 @@
-const MonitorManager = require('./monitormanager');
+import MonitorManager from './monitormanager';
 
 MonitorManager.register({
   name: 'periodic',

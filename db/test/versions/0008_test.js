@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
-const hugeBufs = require('./fixtures/huge_bufs.js');
+import _ from 'lodash';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { strict as assert } from 'assert';
+import hugeBufs from './fixtures/huge_bufs.js';
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);

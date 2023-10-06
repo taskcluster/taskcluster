@@ -1,4 +1,4 @@
-const { reportError } = require('../error-reply');
+import { reportError } from '../error-reply';
 
 const ERROR_CODES = {
   MalformedPayload: 400, // Only for JSON.parse() errors

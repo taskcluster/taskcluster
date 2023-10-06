@@ -179,4 +179,4 @@ class ClaimResolver {
 }
 
 // Export ClaimResolver
-module.exports = ClaimResolver;
+export default ClaimResolver;

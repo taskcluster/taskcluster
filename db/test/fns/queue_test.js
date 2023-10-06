@@ -1,11 +1,11 @@
-const assert = require('assert').strict;
-const slugid = require('slugid');
-const { cloneDeep, range } = require('lodash');
-const { fromNow } = require('taskcluster-client');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
+import { strict as assert } from 'assert';
+import slugid from 'slugid';
+import { cloneDeep, range } from 'lodash';
+import { fromNow } from 'taskcluster-client';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });

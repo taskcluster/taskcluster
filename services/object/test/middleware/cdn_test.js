@@ -1,9 +1,9 @@
-const assert = require('assert');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const request = require('superagent');
-const crypto = require('crypto');
-const taskcluster = require('taskcluster-client');
+import assert from 'assert';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import request from 'superagent';
+import crypto from 'crypto';
+import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

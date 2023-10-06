@@ -80,4 +80,4 @@ class Backend {
   }
 }
 
-module.exports = { Backend };
+export default { Backend };

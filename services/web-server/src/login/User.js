@@ -1,7 +1,7 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
 
-module.exports = class User {
+export default class User {
   constructor() {
     this._identity = null;
     this.roles = [];

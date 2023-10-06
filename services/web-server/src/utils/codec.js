@@ -4,7 +4,7 @@
  * fails to encode/decode a few characters that are
  * not legal in a clientId.
  * */
-module.exports = {
+export default {
   encode: (str) => str
     .replace(/!/g, '!21')
     .replace(/[^A-Za-z0-9!@:.+|_-]/g, c => {

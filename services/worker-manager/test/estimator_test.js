@@ -1,6 +1,6 @@
-const assert = require('assert');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withFakeQueue(mock, skipping);

@@ -1,4 +1,4 @@
-const { CdnMiddleware } = require('./cdn');
+import { CdnMiddleware } from './cdn';
 
 const MIDDLEWARE_TYPES = {
   cdn: CdnMiddleware,
@@ -41,7 +41,7 @@ class Middleware {
    */
   async startDownloadRequest(req, res, object, method, params) {
     for (let mw of this.instances) {
-      if (!await mw.startDownloadRequest(req, res, object, method, params)) {
+      if (!(await mw.startDownloadRequest(req, res, object, method, params))) {
         return false;
       }
     }
@@ -54,7 +54,7 @@ class Middleware {
    */
   async downloadRequest(req, res, object) {
     for (let mw of this.instances) {
-      if (!await mw.downloadRequest(req, res, object)) {
+      if (!(await mw.downloadRequest(req, res, object))) {
         return false;
       }
     }
@@ -63,4 +63,4 @@ class Middleware {
   }
 }
 
-module.exports = { Middleware, MIDDLEWARE_TYPES };
+export default { Middleware, MIDDLEWARE_TYPES };

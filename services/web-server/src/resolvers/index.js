@@ -1,5 +1,5 @@
-const merge = require('deepmerge');
-const requireContext = require('../utils/requireContext');
+import merge from 'deepmerge';
+import requireContext from '../utils/requireContext';
 
 // eslint-disable-next-line padding-line-between-statements
 const importer = requireContext('./', true, /\.js/);
@@ -10,7 +10,7 @@ const keys = [
   ]),
 ];
 
-module.exports = keys.reduce(
+export default keys.reduce(
   (resolvers, key) => merge(resolvers, importer(key)),
   {},
 );

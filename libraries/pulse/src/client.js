@@ -1,8 +1,8 @@
-const events = require('events');
-const amqplib = require('amqplib');
-const assert = require('assert');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const URL = require('url');
+import events from 'events';
+import amqplib from 'amqplib';
+import assert from 'assert';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import URL from 'url';
 
 let clientCounter = 0;
 

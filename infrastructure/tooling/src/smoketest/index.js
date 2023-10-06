@@ -1,8 +1,8 @@
-const { checks, scopeExpression } = require('./checks');
-const taskcluster = require('taskcluster-client');
-const libScopes = require('taskcluster-lib-scopes');
-const { TaskGraph } = require('console-taskgraph');
-const chalk = require('chalk');
+import { checks, scopeExpression } from './checks';
+import taskcluster from 'taskcluster-client';
+import libScopes from 'taskcluster-lib-scopes';
+import { TaskGraph } from 'console-taskgraph';
+import chalk from 'chalk';
 
 const main = async (options) => {
   if (!process.env.TASKCLUSTER_ROOT_URL ||
@@ -43,4 +43,4 @@ const main = async (options) => {
   }
 };
 
-module.exports = { main };
+export default { main };

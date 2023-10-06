@@ -1,4 +1,4 @@
-const ScopeSetBuilder = require('./scopesetbuilder');
+import ScopeSetBuilder from './scopesetbuilder';
 
 // Construct character SUBSTITUTE used for representation of <..>
 const PARAM = '\u001a';

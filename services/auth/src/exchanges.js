@@ -1,4 +1,4 @@
-const { Exchanges } = require('taskcluster-lib-pulse');
+import { Exchanges } from 'taskcluster-lib-pulse';
 
 /** Declaration of exchanges offered by the auth */
 const exchanges = new Exchanges({
@@ -19,7 +19,7 @@ const exchanges = new Exchanges({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;
 
 /** Build routing key construct for `exchanges.declare` */
 const buildRoutingKey = (options) => {

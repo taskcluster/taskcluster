@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert');
-const { Logger } = require('./logger');
-const TimeKeeper = require('./timekeeper');
-const { hrtime } = require('process');
+import _ from 'lodash';
+import assert from 'assert';
+import { Logger } from './logger';
+import TimeKeeper from './timekeeper';
+import { hrtime } from 'process';
 
 class Monitor {
   constructor({
@@ -367,4 +367,4 @@ class Monitor {
   }
 }
 
-module.exports = Monitor;
+export default Monitor;

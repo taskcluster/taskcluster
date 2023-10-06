@@ -1,9 +1,9 @@
-const path = require('path');
-const { listServices, readRepoYAML } = require('../../utils');
+import path from 'path';
+import { listServices, readRepoYAML } from '../../utils';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 exports.tasks.push({
   title: `Read procs.yml for all services`,

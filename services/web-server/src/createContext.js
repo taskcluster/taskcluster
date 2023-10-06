@@ -1,6 +1,6 @@
-const loaders = require('./loaders');
+import loaders from './loaders';
 
-module.exports = ({ clients, pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req, connection }) => {
+export default ({ clients, pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req, connection }) => {
   if (req) {
     const currentClients = clients({
       credentials: req.credentials,

@@ -1,7 +1,7 @@
-const taskcluster = require('taskcluster-client');
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
+import taskcluster from 'taskcluster-client';
+import crypto from 'crypto';
+import assert from 'assert';
+import helper from '../helper';
 
 const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
 
@@ -9,7 +9,7 @@ const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-
  * Test the data-inline upload method on the given backend.  This defines a suite
  * of tests.
  */
-exports.testDataInlineUpload = ({
+export const testDataInlineUpload = ({
   mock, skipping,
 
   // optional title suffix

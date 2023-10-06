@@ -1,10 +1,11 @@
-const _ = require('lodash');
-const path = require('path');
-const yaml = require('js-yaml');
-const fs = require('fs');
-const debug = require('debug')('taskcluster-lib-config');
-const assert = require('assert');
-const buildSchema = require('./schema');
+import _ from 'lodash';
+import path from 'path';
+import yaml from 'js-yaml';
+import fs from 'fs';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-config');
+import assert from 'assert';
+import buildSchema from './schema';
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 
@@ -78,4 +79,4 @@ const config = ({
 };
 
 // Export config
-module.exports = config;
+export default config;

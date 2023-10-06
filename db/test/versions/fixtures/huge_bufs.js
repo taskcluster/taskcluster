@@ -1,5 +1,5 @@
 // Data from a real DB.  See 0008_test.js
-exports.encoded = {
+export const encoded = {
   "__bufchunks_val": 2,
   "__buf0_val": [
     "eyJtaW5DYXBhY2l0eSI6MCwibWF4Q2FwYWNpdHkiOjEwMCwibGF1bmNoQ29uZmlncyI6W3siY2FwYWNp",
@@ -1262,7 +1262,7 @@ exports.encoded = {
   ].join(''),
 };
 
-exports.decoded = [
+export const decoded = [
   '{"minCapacity":0,"maxCapacity":100,"launchConfigs":[{"capacityPerInstance":1,"re',
   'gion":"us-east-1","launchConfig":{"ImageId":"ami-01dd72830baa6a0bc","Placement":',
   '{"AvailabilityZone":"us-east-1a"},"SubnetId":"subnet-0c938056fff37f311","Securit',

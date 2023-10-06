@@ -1,13 +1,7 @@
-const path = require('path');
-const {
-  ensureTask,
-  readRepoJSON,
-  dockerRun,
-  dockerPull,
-  REPO_ROOT,
-} = require('../../utils');
+import path from 'path';
+import { ensureTask, readRepoJSON, dockerRun, dockerPull, REPO_ROOT } from '../../utils';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build docker-worker artifacts',
     requires: ['clean-artifacts-dir'],

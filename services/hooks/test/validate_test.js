@@ -1,5 +1,5 @@
-const testing = require('taskcluster-lib-testing');
-const path = require('path');
+import testing from 'taskcluster-lib-testing';
+import path from 'path';
 
 suite(testing.suiteName(), function() {
   testing.schemas({

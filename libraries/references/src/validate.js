@@ -1,6 +1,6 @@
-const regexEscape = require('regex-escape');
-const { URL } = require('url');
-const libUrls = require('taskcluster-lib-urls');
+import regexEscape from 'regex-escape';
+import { URL } from 'url';
+import libUrls from 'taskcluster-lib-urls';
 
 /**
  * Schemas that are not referenced from a service definition, but are otherwise

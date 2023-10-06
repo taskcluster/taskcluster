@@ -1,22 +1,23 @@
-require('../../prelude');
-const Loader = require('taskcluster-lib-loader');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const tcdb = require('taskcluster-db');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { App } = require('taskcluster-lib-app');
-const Config = require('taskcluster-lib-config');
-const builder = require('./api');
-const debug = require('debug')('server');
-const exchanges = require('./exchanges');
-const ScopeResolver = require('./scoperesolver');
-const signaturevalidator = require('./signaturevalidator');
-const taskcluster = require('taskcluster-client');
-const makeSentryManager = require('./sentrymanager');
-const libPulse = require('taskcluster-lib-pulse');
-const { google: googleapis } = require('googleapis');
-const assert = require('assert');
-const { syncStaticClients } = require('./static-clients');
+import '../../prelude';
+import Loader from 'taskcluster-lib-loader';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import tcdb from 'taskcluster-db';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { App } from 'taskcluster-lib-app';
+import Config from 'taskcluster-lib-config';
+import builder from './api';
+import debugFactory from 'debug';
+const debug = debugFactory('server');
+import exchanges from './exchanges';
+import ScopeResolver from './scoperesolver';
+import signaturevalidator from './signaturevalidator';
+import taskcluster from 'taskcluster-client';
+import makeSentryManager from './sentrymanager';
+import libPulse from 'taskcluster-lib-pulse';
+import { google as googleapis } from 'googleapis';
+import assert from 'assert';
+import { syncStaticClients } from './static-clients';
 
 // Create component loader
 const load = Loader({
@@ -235,4 +236,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

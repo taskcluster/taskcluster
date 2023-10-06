@@ -1,9 +1,9 @@
-const testing = require('taskcluster-lib-testing');
-const SchemaSet = require('taskcluster-lib-validate');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const assert = require('assert');
-const path = require('path');
-const { App } = require('taskcluster-lib-app');
+import testing from 'taskcluster-lib-testing';
+import SchemaSet from 'taskcluster-lib-validate';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import assert from 'assert';
+import path from 'path';
+import { App } from 'taskcluster-lib-app';
 
 let runningServer = null;
 

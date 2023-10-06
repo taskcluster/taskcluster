@@ -1,13 +1,23 @@
-const yaml = require('js-yaml');
-const semver = require('semver');
-const glob = require('glob');
-const chalk = require('chalk');
-const appRootDir = require('app-root-dir');
-const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitLog, gitCurrentBranch } = require('../utils');
-const taskcluster = require('taskcluster-client');
-const path = require('path');
-const openEditor = require('open-editor');
-const { Octokit } = require("@octokit/rest");
+import yaml from 'js-yaml';
+import semver from 'semver';
+import glob from 'glob';
+import chalk from 'chalk';
+import appRootDir from 'app-root-dir';
+
+import {
+  REPO_ROOT,
+  readRepoFile,
+  readRepoJSON,
+  writeRepoFile,
+  gitAdd,
+  gitLog,
+  gitCurrentBranch,
+} from '../utils';
+
+import taskcluster from 'taskcluster-client';
+import path from 'path';
+import openEditor from 'open-editor';
+import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
   'major': 1,
@@ -388,10 +398,10 @@ const check = async (options) => {
   console.log(chalk.bold.green('Changelog OK'));
 
   if (options.pr) {
-    if (!await check_pr(options.pr)) {
+    if (!(await check_pr(options.pr))) {
       process.exit(1);
     }
   }
 };
 
-module.exports = { add, show, check, ChangeLog };
+export default { add, show, check, ChangeLog };

@@ -1,11 +1,11 @@
-const { promisify } = require('util');
-const path = require('path');
-const fs = require('fs');
-const glob = require('glob');
-const yaml = require('js-yaml');
-const stringify = require('json-stable-stringify');
+import { promisify } from 'util';
+import path from 'path';
+import fs from 'fs';
+import glob from 'glob';
+import yaml from 'js-yaml';
+import stringify from 'json-stable-stringify';
 const exec = promisify(require('child_process').execFile);
-const pSynchronize = require('p-synchronize');
+import pSynchronize from 'p-synchronize';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);

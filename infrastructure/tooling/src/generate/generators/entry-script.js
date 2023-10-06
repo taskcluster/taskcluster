@@ -1,10 +1,10 @@
-const path = require('path');
-const { listServices, readRepoYAML, writeRepoFile } = require('../../utils');
-const packageJson = require('../../../../../package.json');
+import path from 'path';
+import { listServices, readRepoYAML, writeRepoFile } from '../../utils';
+import packageJson from '../../../../../package.json';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 exports.tasks.push({
   title: 'Build Entrypoint Script',

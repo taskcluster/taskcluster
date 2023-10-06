@@ -1,10 +1,11 @@
-const slugid = require('slugid');
-const assert = require('assert');
-const crypto = require('crypto');
-const QueueService = require('../src/queueservice');
-const debug = require('debug')('test:queueservice');
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
+import slugid from 'slugid';
+import assert from 'assert';
+import crypto from 'crypto';
+import QueueService from '../src/queueservice';
+import debugFactory from 'debug';
+const debug = debugFactory('test:queueservice');
+import testing from 'taskcluster-lib-testing';
+import helper from './helper';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

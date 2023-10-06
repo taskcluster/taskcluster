@@ -1,13 +1,13 @@
-const request = require('superagent');
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
+import request from 'superagent';
+import crypto from 'crypto';
+import assert from 'assert';
+import helper from '../helper';
 
 /**
  * Test the simple download method on the given backend.  This defines a suite
  * of tests.
  */
-exports.testSimpleDownloadMethod = ({
+export const testSimpleDownloadMethod = ({
   mock, skipping,
 
   // optional title suffix

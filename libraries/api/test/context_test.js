@@ -1,13 +1,13 @@
-const SchemaSet = require('taskcluster-lib-validate');
-const { App } = require('taskcluster-lib-app');
-const { APIBuilder } = require('../');
-const assert = require('assert');
-const request = require('superagent');
-const slugid = require('slugid');
-const sinon = require('sinon');
-const path = require('path');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import SchemaSet from 'taskcluster-lib-validate';
+import { App } from 'taskcluster-lib-app';
+import { APIBuilder } from '../';
+import assert from 'assert';
+import request from 'superagent';
+import slugid from 'slugid';
+import sinon from 'sinon';
+import path from 'path';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';

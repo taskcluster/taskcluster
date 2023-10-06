@@ -1,4 +1,4 @@
-const requireContext = require('../utils/requireContext');
+import requireContext from '../utils/requireContext';
 
 // eslint-disable-next-line padding-line-between-statements
 const importer = requireContext('./', true, /\.js/);
@@ -7,7 +7,7 @@ const keys = [
 ];
 const loaders = keys.map(key => importer(key));
 
-module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId) =>
+export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId) =>
   loaders.reduce(
     (loaders, loader) => ({
       ...loaders,

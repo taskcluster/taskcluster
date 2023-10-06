@@ -1,4 +1,4 @@
-const { Exchanges } = require('taskcluster-lib-pulse');
+import { Exchanges } from 'taskcluster-lib-pulse';
 
 const exchanges = new Exchanges({
   title: 'Worker Manager Exchanges',
@@ -14,7 +14,7 @@ const exchanges = new Exchanges({
   ].join(''),
 });
 
-module.exports = exchanges;
+export default exchanges;
 
 let buildCommonRoutingKey = (options) => {
   return [

@@ -1,10 +1,10 @@
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
-const glob = require('glob');
-const { REPO_ROOT } = require('../../utils');
+import path from 'path';
+import fs from 'fs';
+import _ from 'lodash';
+import glob from 'glob';
+import { REPO_ROOT } from '../../utils';
 
-exports.tasks = [];
+export const tasks = [];
 exports.tasks.push({
   title: 'Every DB version has a test script',
   requires: [],

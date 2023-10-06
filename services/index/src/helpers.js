@@ -1,10 +1,10 @@
-let assert = require('assert');
-const _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 
 /** Regular expression for valid namespaces */
-exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
+export const namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -14,9 +14,9 @@ const makeError = (message, code, statusCode) => {
   return err;
 };
 
-exports.make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
+export const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
-exports.taskUtils = {
+export const taskUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
   fromDbRows(rows) {
@@ -73,7 +73,7 @@ exports.taskUtils = {
     assert(db,
       'db must be set');
 
-    let [namespace, name] = exports.splitNamespace(fullNamespace);
+    let [namespace, name] = splitNamespace(fullNamespace);
 
     // Find expiration time and parse as date object
     let expires = new Date(input.expires);
@@ -171,7 +171,7 @@ exports.taskUtils = {
   },
 };
 
-exports.namespaceUtils = {
+export const namespaceUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
   fromDbRows(rows) {
@@ -308,7 +308,7 @@ exports.namespaceUtils = {
  * the rest as the parent namespace.  A value with no `.` is considered
  * to be a name in the root namespace.
  */
-exports.splitNamespace = namespace => {
+export const splitNamespace = namespace => {
   // Get namespace and ensure that we have a least one dot
   namespace = namespace.split('.');
 

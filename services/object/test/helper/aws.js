@@ -33,7 +33,7 @@
 * lifecycle policy that deletes objects after 1 day, to avoid collecting
 * any "cruft" from test runs.
 */
-exports.secret = [
+export const secret = [
   { env: 'AWS_ACCESS_KEY_ID', name: 'accessKeyId' },
   { env: 'AWS_SECRET_ACCESS_KEY', name: 'secretAccessKey' },
   { env: 'AWS_TEST_BUCKET', name: 'testBucket' },

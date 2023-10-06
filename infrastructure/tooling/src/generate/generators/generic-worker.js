@@ -1,10 +1,10 @@
-const path = require('path');
-const util = require('util');
+import path from 'path';
+import util from 'util';
 const rimraf = util.promisify(require('rimraf'));
-const glob = require('glob');
-const { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } = require('../../utils');
+import glob from 'glob';
+import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils';
 
-exports.tasks = [];
+export const tasks = [];
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   ArtifactStorageType: {
     BLOB: 'blob',
     S3: 's3',

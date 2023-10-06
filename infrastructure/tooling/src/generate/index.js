@@ -1,5 +1,5 @@
-const generators = require('./generators');
-const { TaskGraph, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
+import generators from './generators';
+import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
 const main = async (options) => {
   const target = options.target ? [`target-${options.target}`] : undefined;
@@ -12,4 +12,4 @@ const main = async (options) => {
   await taskgraph.run();
 };
 
-module.exports = { main };
+export default { main };

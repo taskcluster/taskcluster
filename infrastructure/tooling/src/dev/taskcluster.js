@@ -1,7 +1,7 @@
-const slugid = require('slugid');
-const _ = require('lodash');
+import slugid from 'slugid';
+import _ from 'lodash';
 
-module.exports = async ({ userConfig, answer, configTmpl }) => {
+export default async ({ userConfig, answer, configTmpl }) => {
 
   function setDefault(path, val) {
     if (!_.has(userConfig, path, val)) {

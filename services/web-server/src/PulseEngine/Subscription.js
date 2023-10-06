@@ -1,4 +1,4 @@
-module.exports = class Subscription {
+export default class Subscription {
   constructor({ subscriptionId, handleMessage, handleError, monitor, subscriptions }) {
     this.subscriptionId = subscriptionId;
     this.handleMessage = handleMessage;

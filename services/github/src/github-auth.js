@@ -1,6 +1,6 @@
-const { Octokit } = require('@octokit/rest');
-const { createAppAuth } = require("@octokit/auth-app");
-const { retry } = require("@octokit/plugin-retry");
+import { Octokit } from '@octokit/rest';
+import { createAppAuth } from '@octokit/auth-app';
+import { retry } from '@octokit/plugin-retry';
 
 const PluggedOctokit = Octokit.plugin(retry);
 

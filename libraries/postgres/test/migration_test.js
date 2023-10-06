@@ -1,6 +1,7 @@
-const helper = require('./helper');
-const debug = require('debug');
-const {
+import helper from './helper';
+import debug from 'debug';
+
+import {
   Schema,
   Database,
   ignorePgErrors,
@@ -9,18 +10,20 @@ const {
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
   UNDEFINED_FUNCTION,
-} = require('..');
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
-const { dollarQuote } = require('../src/util');
-const {
+} from '..';
+
+import path from 'path';
+import testing from 'taskcluster-lib-testing';
+import { strict as assert } from 'assert';
+import { dollarQuote } from '../src/util';
+
+import {
   runMigration,
   runOnlineMigration,
   runDowngrade,
   runOnlineDowngrade,
   runOnlineBatches,
-} = require('../src/migration');
+} from '../src/migration';
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;

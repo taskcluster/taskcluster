@@ -1,12 +1,12 @@
-const assert = require('assert');
-const _ = require('lodash');
-const utils = require('./utils');
-const errors = require('./middleware/errors');
-const ScopeExpressionTemplate = require('./expressions');
-const API = require('./api');
-const { paginateResults } = require('./pagination');
-const { reportError } = require('./error-reply');
-const path = require('path');
+import assert from 'assert';
+import _ from 'lodash';
+import utils from './utils';
+import errors from './middleware/errors';
+import ScopeExpressionTemplate from './expressions';
+import API from './api';
+import { paginateResults } from './pagination';
+import { reportError } from './error-reply';
+import path from 'path';
 
 exports.paginateResults = paginateResults;
 exports.reportError = reportError;

@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const AWS = require('aws-sdk');
+import _ from 'lodash';
+import AWS from 'aws-sdk';
 
 const setupIam = async ({ iam, iamName, iamPolicy }) => {
   try {
@@ -36,7 +36,7 @@ const setupIam = async ({ iam, iamName, iamPolicy }) => {
   return accessKey;
 };
 
-module.exports = async ({ userConfig, answer, configTmpl }) => {
+export default async ({ userConfig, answer, configTmpl }) => {
   const iam = new AWS.IAM();
   const s3 = new AWS.S3();
   const prefix = answer.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix;

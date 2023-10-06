@@ -1,12 +1,21 @@
-const assert = require('assert');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import assert from 'assert';
+import builder from '../src/api';
+import taskcluster from 'taskcluster-client';
+import load from '../src/main';
+
+import {
+  fakeauth,
+  stickyLoader,
+  Secrets,
+  withPulse,
+  withMonitor,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
 
 const helper = module.exports;
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -16,7 +25,7 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secrets: {
   },
   load: exports.load,
@@ -24,11 +33,11 @@ exports.secrets = new Secrets({
 
 helper.rootUrl = 'http://localhost:60020';
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'index');
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-index' });
 };
 
@@ -39,7 +48,7 @@ exports.withPulse = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
@@ -57,14 +66,14 @@ exports.withFakeQueue = (mock, skipping) => {
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Index.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -146,7 +155,7 @@ const stubbedQueue = () => {
   return queue;
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'indexed_tasks',

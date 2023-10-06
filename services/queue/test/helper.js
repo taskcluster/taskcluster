@@ -1,19 +1,28 @@
-const _ = require('lodash');
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const builder = require('../src/api');
-const load = require('../src/main');
-const { tmpdir } = require('os');
-const { mkdtempSync, rmSync } = require('fs');
-const { sep } = require('path');
-const mockAwsS3 = require('mock-aws-s3');
-const nock = require('nock');
-const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import builder from '../src/api';
+import load from '../src/main';
+import { tmpdir } from 'os';
+import { mkdtempSync, rmSync } from 'fs';
+import { sep } from 'path';
+import mockAwsS3 from 'mock-aws-s3';
+import nock from 'nock';
+
+import {
+  fakeauth,
+  stickyLoader,
+  Secrets,
+  withPulse,
+  withMonitor,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
 
 const helper = module.exports;
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -23,7 +32,7 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-queue',
   ],
@@ -47,7 +56,7 @@ helper.rootUrl = 'http://localhost:60401';
 /**
  * Set up to use mock-aws-s3 for S3 operations when mocking.
  */
-exports.withS3 = (mock, skipping) => {
+export const withS3 = (mock, skipping) => {
   let tmpDir;
 
   suiteSetup('setup withS3', async function() {
@@ -59,7 +68,7 @@ exports.withS3 = (mock, skipping) => {
       tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
       mockAwsS3.config.basePath = tmpDir;
 
-      await exports.load('cfg');
+      await load('cfg');
       exports.load.cfg('aws.accessKeyId', undefined);
       exports.load.cfg('aws.secretAccessKey', undefined);
 
@@ -100,7 +109,7 @@ exports.withS3 = (mock, skipping) => {
  * - DeleteObject throws 404 (aws returns 204)
  * - DeleteObjects not supported
  */
-exports.withGCS = (mock, skipping) => {
+export const withGCS = (mock, skipping) => {
   let tmpDir;
 
   suiteSetup('setup withGCS', async function() {
@@ -112,7 +121,7 @@ exports.withGCS = (mock, skipping) => {
       tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
       mockAwsS3.config.basePath = tmpDir;
 
-      await exports.load('cfg');
+      await load('cfg');
       exports.load.cfg('aws.accessKeyId', undefined);
       exports.load.cfg('aws.secretAccessKey', undefined);
 
@@ -163,7 +172,7 @@ exports.withGCS = (mock, skipping) => {
  *
  * Note that this file is *always* mocked, regardless of any secrets.
  */
-exports.withAmazonIPRanges = (mock, skipping) => {
+export const withAmazonIPRanges = (mock, skipping) => {
   let interceptor;
 
   suiteSetup(async function() {
@@ -185,14 +194,14 @@ exports.withAmazonIPRanges = (mock, skipping) => {
   });
 };
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'queue');
 };
 
 /**
  * Set up a fake object service that supports uploads and downlods.
  */
-exports.withObjectService = (mock, skipping) => {
+export const withObjectService = (mock, skipping) => {
   let objects = new Map();
   suiteSetup(async function() {
     const err404 = message => {
@@ -259,14 +268,14 @@ exports.withObjectService = (mock, skipping) => {
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Queue.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -280,7 +289,7 @@ exports.withServer = (mock, skipping) => {
     // input..
     exports.load.cfg('taskcluster.credentials',
       { clientId: 'test-client', accessToken: 'ignored' });
-    await exports.load('workClaimer');
+    await load('workClaimer');
 
     helper.Queue = taskcluster.createClient(builder.reference());
 
@@ -326,7 +335,7 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
 
@@ -336,7 +345,7 @@ exports.withPulse = (mock, skipping) => {
  * helper.startPollingService will start the service.  Note that the
  * caller must stop the service *before* returning.
  */
-exports.withPollingServices = (mock, skipping) => {
+export const withPollingServices = (mock, skipping) => {
   let svc;
 
   suiteSetup(async function() {
@@ -388,13 +397,14 @@ helper.runExpiration = async component => {
 /**
  * Make a random task queue ID
  */
-exports.makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+export const makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
 
 /**
  * Check the date formats of a task status
  */
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-exports.checkDates = ({ status }) => {
+
+export const checkDates = ({ status }) => {
   const chk = (d, n) => {
     if (d !== undefined) {
       assert(DATE_FORMAT.test(d), `Got invalid date ${d} for ${n}`);
@@ -412,7 +422,7 @@ exports.checkDates = ({ status }) => {
   return { status };
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'tasks',

@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const path = require('path');
-const config = require('taskcluster-lib-config');
-const { listServices, readRepoYAML } = require('../../utils');
+import _ from 'lodash';
+import path from 'path';
+import config from 'taskcluster-lib-config';
+import { listServices, readRepoYAML } from '../../utils';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 SERVICES.forEach(name => {
   exports.tasks.push({

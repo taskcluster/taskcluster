@@ -1,7 +1,7 @@
-const path = require('path');
-const { omit } = require('lodash');
-const Method = require('../src/Method');
-const assert = require('assert').strict;
+import path from 'path';
+import { omit } from 'lodash';
+import Method from '../src/Method';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   suite('_check', function() {

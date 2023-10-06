@@ -1,6 +1,7 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
-const debug = require('debug')('workerinfo');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('workerinfo');
 
 class WorkerInfo {
   constructor(options) {
@@ -93,4 +94,4 @@ class WorkerInfo {
   }
 }
 
-module.exports = WorkerInfo;
+export default WorkerInfo;

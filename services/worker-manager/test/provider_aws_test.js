@@ -1,14 +1,14 @@
-const { ApiError } = require('../src/providers/provider');
-const _ = require('lodash');
-const assert = require('assert');
-const helper = require('./helper');
-const { AwsProvider } = require('../src/providers/aws');
-const testing = require('taskcluster-lib-testing');
-const fs = require('fs');
-const path = require('path');
-const taskcluster = require('taskcluster-client');
-const { WorkerPool, Worker } = require('../src/data');
-const { FakeEC2 } = require('./fakes');
+import { ApiError } from '../src/providers/provider';
+import _ from 'lodash';
+import assert from 'assert';
+import helper from './helper';
+import { AwsProvider } from '../src/providers/aws';
+import testing from 'taskcluster-lib-testing';
+import fs from 'fs';
+import path from 'path';
+import taskcluster from 'taskcluster-client';
+import { WorkerPool, Worker } from '../src/data';
+import { FakeEC2 } from './fakes';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

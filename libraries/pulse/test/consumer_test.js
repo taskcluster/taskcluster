@@ -1,11 +1,11 @@
-const { Client, consume, connectionStringCredentials } = require('../src');
-const amqplib = require('amqplib');
-const assume = require('assume');
-const fs = require('fs');
-const debugModule = require('debug');
-const assert = require('assert');
-const helper = require('./helper');
-const { suiteName } = require('taskcluster-lib-testing');
+import { Client, consume, connectionStringCredentials } from '../src';
+import amqplib from 'amqplib';
+import assume from 'assume';
+import fs from 'fs';
+import debugModule from 'debug';
+import assert from 'assert';
+import helper from './helper';
+import { suiteName } from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {

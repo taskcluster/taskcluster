@@ -4,7 +4,7 @@
  * is the full list of parameters.  And `optionalParams` is the list of
  * parameters with a `?` suffix, making them optional.
  */
-exports.cleanRouteAndParams = (route) => {
+export const cleanRouteAndParams = (route) => {
   // Find parameters for entry
   const params = [];
   const optionalParams = [];

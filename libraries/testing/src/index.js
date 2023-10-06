@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   schemas: require('./schemas'),
   fakeauth: require('./fakeauth'),
   stickyLoader: require('./stickyloader'),

@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import { strict as assert } from 'assert';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 

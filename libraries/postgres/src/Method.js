@@ -1,6 +1,6 @@
-const assert = require('assert').strict;
-const path = require('path');
-const { loadSql } = require('./util');
+import { strict as assert } from 'assert';
+import path from 'path';
+import { loadSql } from './util';
 
 class Method {
   /**
@@ -87,4 +87,4 @@ class Method {
   }
 }
 
-module.exports = Method;
+export default Method;

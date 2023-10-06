@@ -1,5 +1,5 @@
-const { GITHUB_BUILD_STATES } = require('../constants');
-const { makeDebug } = require('./utils');
+import { GITHUB_BUILD_STATES } from '../constants';
+import { makeDebug } from './utils';
 
 /**
  * Github events that request a task rerun.
@@ -68,6 +68,6 @@ async function rerunHandler(message) {
   }
 }
 
-module.exports = {
+export default {
   rerunHandler,
 };

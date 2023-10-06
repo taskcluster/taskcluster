@@ -1,10 +1,10 @@
-const scopeUtils = require('taskcluster-lib-scopes');
-const Debug = require('debug');
-const identityFromClientId = require('../utils/identityFromClientId');
+import scopeUtils from 'taskcluster-lib-scopes';
+import Debug from 'debug';
+import identityFromClientId from '../utils/identityFromClientId';
 
 const debug = Debug('scanner');
 
-module.exports = async (auth, strategies) => {
+export default async (auth, strategies) => {
   async function scan(strategy) {
     const clients = [];
     const query = { prefix: `${strategy.identityProviderId}/` };

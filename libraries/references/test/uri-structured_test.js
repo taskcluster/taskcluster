@@ -1,9 +1,9 @@
-const fs = require('fs');
-const assert = require('assert');
-const References = require('..');
-const { readUriStructured, writeUriStructured } = require('../src/uri-structured');
-const mockFs = require('mock-fs');
-const testing = require('taskcluster-lib-testing');
+import fs from 'fs';
+import assert from 'assert';
+import References from '..';
+import { readUriStructured, writeUriStructured } from '../src/uri-structured';
+import mockFs from 'mock-fs';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   teardown(function() {

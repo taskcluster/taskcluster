@@ -1,12 +1,12 @@
-const path = require("path");
-const libUrls = require("taskcluster-lib-urls");
-const got = require("got");
-const { listServices, readRepoYAML } = require("../../utils");
+import path from 'path';
+import libUrls from 'taskcluster-lib-urls';
+import got from 'got';
+import { listServices, readRepoYAML } from '../../utils';
 
 const SERVICES = listServices();
 
-exports.scopeExpression = { AllOf: [] };
-exports.tasks = [];
+export const scopeExpression = { AllOf: [] };
+export const tasks = [];
 
 SERVICES.forEach((name) => {
   exports.tasks.push({

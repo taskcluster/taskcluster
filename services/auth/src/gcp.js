@@ -1,4 +1,4 @@
-const builder = require('./api');
+import builder from './api';
 
 builder.declare({
   method: 'get',

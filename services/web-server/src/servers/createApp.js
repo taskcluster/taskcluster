@@ -1,26 +1,27 @@
-const bodyParser = require('body-parser');
-const path = require('path');
-const bodyParserGraphql = require('body-parser-graphql');
-const session = require('express-session');
-const compression = require('compression');
-const cors = require('cors');
-const express = require('express');
-const playground = require('graphql-playground-middleware-express').default;
-const passport = require('passport');
-const url = require('url');
-const MemoryStore = require('memorystore')(session);
-const credentials = require('./credentials');
-const oauth2AccessToken = require('./oauth2AccessToken');
-const oauth2 = require('./oauth2');
-const PostgresSessionStore = require('../login/PostgresSessionStore');
-const { traceMiddleware } = require('taskcluster-lib-app');
+import bodyParser from 'body-parser';
+import path from 'path';
+import bodyParserGraphql from 'body-parser-graphql';
+import session from 'express-session';
+import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import playground from 'graphql-playground-middleware-express';
+import passport from 'passport';
+import url from 'url';
+import MemoryStoreFactory from 'memorystore';
+const MemoryStore = MemoryStoreFactory(session);
+import credentials from './credentials';
+import oauth2AccessToken from './oauth2AccessToken';
+import oauth2 from './oauth2';
+import PostgresSessionStore from '../login/PostgresSessionStore';
+import { traceMiddleware } from 'taskcluster-lib-app';
 
 const REPO_ROOT = path.join(__dirname, '../../../../');
 
 const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
 const taskclusterVersion = require(taskclusterVersionFile);
 
-module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
+export default async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);

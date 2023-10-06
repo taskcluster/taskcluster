@@ -1,12 +1,12 @@
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
-const builder = require('../../src/api');
+import crypto from 'crypto';
+import assert from 'assert';
+import helper from '../helper';
+import builder from '../../src/api';
 
 /**
  * Test properties general to all backends.
  */
-exports.testBackend = ({
+export const testBackend = ({
   mock, skipping,
 
   // optional title suffix

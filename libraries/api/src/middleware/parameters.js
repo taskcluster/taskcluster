@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const assert = require('assert');
+import _ from 'lodash';
+import assert from 'assert';
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from

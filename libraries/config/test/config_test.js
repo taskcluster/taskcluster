@@ -1,7 +1,7 @@
-const config = require('../');
-const path = require('path');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
+import config from '../';
+import path from 'path';
+import assume from 'assume';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
 

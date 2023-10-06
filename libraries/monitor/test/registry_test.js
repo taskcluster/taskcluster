@@ -1,7 +1,7 @@
-const assert = require('assert');
-const { find } = require('lodash');
-const MonitorManager = require('../src/monitormanager.js');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import { find } from 'lodash';
+import MonitorManager from '../src/monitormanager.js';
+import testing from 'taskcluster-lib-testing';
 
 MonitorManager.register({
   name: 'auditLog',

@@ -1,10 +1,10 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert').strict;
-const helper = require('./helper');
-const { FakeGoogle } = require('./fakes');
-const { GoogleProvider } = require('../src/providers/google');
-const testing = require('taskcluster-lib-testing');
-const { WorkerPool, WorkerPoolError, Worker } = require('../src/data');
+import taskcluster from 'taskcluster-client';
+import { strict as assert } from 'assert';
+import helper from './helper';
+import { FakeGoogle } from './fakes';
+import { GoogleProvider } from '../src/providers/google';
+import testing from 'taskcluster-lib-testing';
+import { WorkerPool, WorkerPoolError, Worker } from '../src/data';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -408,7 +408,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         expires: taskcluster.fromNow('2 weeks'),
         state: Worker.states.RUNNING,
         ...overrides,
-        providerData: { project, zone: 'us-east1-a', ...overrides.providerData || {} },
+        providerData: { project, zone: 'us-east1-a', ...(overrides.providerData || {}) },
       });
     };
 

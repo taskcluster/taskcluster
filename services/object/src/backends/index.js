@@ -1,4 +1,4 @@
-const { AwsBackend } = require('./aws');
+import { AwsBackend } from './aws';
 
 const BACKEND_TYPES = {
   aws: AwsBackend,
@@ -120,4 +120,4 @@ class Backends {
   }
 }
 
-module.exports = { Backends, BACKEND_TYPES };
+export default { Backends, BACKEND_TYPES };

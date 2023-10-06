@@ -1,8 +1,8 @@
-const { range } = require('lodash');
-const _ = require('lodash');
-const { dollarQuote, paginatedIterator } = require('../src/util');
-const assert = require('assert');
-const path = require('path');
+import { range } from 'lodash';
+import _ from 'lodash';
+import { dollarQuote, paginatedIterator } from '../src/util';
+import assert from 'assert';
+import path from 'path';
 
 suite(path.basename(__filename), function() {
   suite('dollarQuote', function() {

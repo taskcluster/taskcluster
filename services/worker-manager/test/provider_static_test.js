@@ -1,9 +1,9 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
-const helper = require('./helper');
-const { StaticProvider } = require('../src/providers/static');
-const testing = require('taskcluster-lib-testing');
-const { WorkerPool, Worker } = require('../src/data');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
+import helper from './helper';
+import { StaticProvider } from '../src/providers/static';
+import testing from 'taskcluster-lib-testing';
+import { WorkerPool, Worker } from '../src/data';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

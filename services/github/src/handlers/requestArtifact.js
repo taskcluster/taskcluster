@@ -1,4 +1,4 @@
-const utils = require('../utils');
+import utils from '../utils';
 
 /**
  * Helper to request artifacts from statusHandler.
@@ -52,6 +52,6 @@ async function requestArtifact(artifactName, { taskId, runId, debug, instGithub,
   return '';
 }
 
-module.exports = {
+export default {
   requestArtifact,
 };

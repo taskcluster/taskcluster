@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const azure = require('fast-azure-storage');
-const builder = require('./api');
-const { APIBuilder } = require('taskcluster-lib-api');
+import _ from 'lodash';
+import azure from 'fast-azure-storage';
+import builder from './api';
+import { APIBuilder } from 'taskcluster-lib-api';
 
 // keyed by account/tableName, the last time createTable was called for the
 // given table.  This is used to avoid lots of redundant calls to createTable

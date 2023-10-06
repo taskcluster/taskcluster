@@ -1,11 +1,12 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const testing = require('taskcluster-lib-testing');
-const debug = require('debug')('third_party_test');
-const request = require('superagent');
-const moment = require('moment');
-const helper = require('./helper');
-const tryCatch = require('../src/utils/tryCatch');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import testing from 'taskcluster-lib-testing';
+import debugFactory from 'debug';
+const debug = debugFactory('third_party_test');
+import request from 'superagent';
+import moment from 'moment';
+import helper from './helper';
+import tryCatch from '../src/utils/tryCatch';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

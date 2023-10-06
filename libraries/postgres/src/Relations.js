@@ -1,5 +1,5 @@
-const { isPlainObject } = require('lodash');
-const assert = require('assert').strict;
+import { isPlainObject } from 'lodash';
+import { strict as assert } from 'assert';
 
 /**
  * Representation for a set of relations in the schema -- things with rows and
@@ -54,4 +54,4 @@ class Relations {
   }
 }
 
-module.exports = Relations;
+export default Relations;

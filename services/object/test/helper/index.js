@@ -1,15 +1,15 @@
-const assert = require('assert').strict;
-const taskcluster = require('taskcluster-client');
-const { fakeauth, stickyLoader, Secrets, withMonitor, resetTables } = require('taskcluster-lib-testing');
-const load = require('../../src/main');
-const builder = require('../../src/api.js');
-const { withDb } = require('taskcluster-lib-testing');
-const { BACKEND_TYPES } = require('../../src/backends');
-const { MIDDLEWARE_TYPES } = require('../../src/middleware');
-const { TestBackend } = require('../../src/backends/test');
-const { TestMiddleware } = require('../../src/middleware/test');
-const aws = require('./aws');
-const google = require('./google');
+import { strict as assert } from 'assert';
+import taskcluster from 'taskcluster-client';
+import { fakeauth, stickyLoader, Secrets, withMonitor, resetTables } from 'taskcluster-lib-testing';
+import load from '../../src/main';
+import builder from '../../src/api.js';
+import { withDb } from 'taskcluster-lib-testing';
+import { BACKEND_TYPES } from '../../src/backends';
+import { MIDDLEWARE_TYPES } from '../../src/middleware';
+import { TestBackend } from '../../src/backends/test';
+import { TestMiddleware } from '../../src/middleware/test';
+import aws from './aws';
+import google from './google';
 
 Object.assign(exports, require('./backend-general'));
 Object.assign(exports, require('./simple-download'));
@@ -17,7 +17,7 @@ Object.assign(exports, require('./geturl-download'));
 Object.assign(exports, require('./data-inline-upload'));
 Object.assign(exports, require('./put-url-upload'));
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -27,7 +27,7 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-object',
   ],
@@ -38,7 +38,7 @@ exports.secrets = new Secrets({
   load: exports.load,
 });
 
-exports.rootUrl = 'http://localhost:60401';
+export const rootUrl = 'http://localhost:60401';
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
@@ -52,7 +52,7 @@ const testclients = {
  *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
  *    or if no args then reset it to the default.
  */
-exports.withBackends = (mock, skipping) => {
+export const withBackends = (mock, skipping) => {
   let _backends;
   const defaultBackends = {
     testBackend: { backendType: 'test' },
@@ -71,7 +71,7 @@ exports.withBackends = (mock, skipping) => {
     // add the 'test' backend type only for testing
     BACKEND_TYPES['test'] = TestBackend;
 
-    await exports.load('cfg');
+    await load('cfg');
     exports.load.cfg('middleware', [
       { middlewareType: 'test' },
     ]);
@@ -79,11 +79,11 @@ exports.withBackends = (mock, skipping) => {
     exports.load.cfg('backendMap', defaultBackendMap);
 
     // load the backends so that we can use its sticky value later
-    _backends = await exports.load('backends');
+    _backends = await load('backends');
 
-    exports.setBackendConfig = async ({ backends, backendMap } = {}) => {
+    export const setBackendConfig = async ({ backends, backendMap } = {}) => {
       const cfg = {
-        ...(await exports.load('cfg')),
+        ...(await load('cfg')),
         backends: backends || defaultBackends,
         backendMap: backendMap || defaultBackendMap,
       };
@@ -93,7 +93,7 @@ exports.withBackends = (mock, skipping) => {
 
   setup('withBackends', async function() {
     // reset to default
-    await exports.setBackendConfig();
+    await setBackendConfig();
   });
 
   suiteTeardown('withBackends', async function() {
@@ -108,7 +108,7 @@ exports.withBackends = (mock, skipping) => {
   });
 };
 
-exports.withMiddleware = (mock, skipping, config) => {
+export const withMiddleware = (mock, skipping, config) => {
   suiteSetup('withMiddleware', async function() {
     if (skipping()) {
       return;
@@ -117,7 +117,7 @@ exports.withMiddleware = (mock, skipping, config) => {
     // add the 'test' middleware type only for testing
     MIDDLEWARE_TYPES['test'] = TestMiddleware;
 
-    await exports.load('cfg');
+    await load('cfg');
     exports.load.cfg('middleware', config || [
       { middlewareType: 'test' },
     ]);
@@ -128,14 +128,14 @@ exports.withMiddleware = (mock, skipping, config) => {
   });
 };
 
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
     exports.load.cfg('server.port', 60401);
     exports.load.cfg('server.env', 'development');
     exports.load.cfg('server.forceSSL', false);
@@ -149,9 +149,9 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.accessToken', null);
     fakeauth.start(testclients, { rootUrl: exports.rootUrl });
 
-    exports.ObjectClient = taskcluster.createClient(builder.reference());
+    export const ObjectClient = taskcluster.createClient(builder.reference());
 
-    exports.apiClient = new exports.ObjectClient({
+    export const apiClient = new exports.ObjectClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
@@ -160,7 +160,7 @@ exports.withServer = (mock, skipping) => {
       rootUrl: exports.rootUrl,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -175,11 +175,11 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'object');
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({
       tableNames: ['objects', 'object_hashes'],
@@ -188,9 +188,10 @@ exports.resetTables = (mock, skipping) => {
 };
 
 let validator;
-exports.assertSatisfiesSchema = async (data, id) => {
+
+export const assertSatisfiesSchema = async (data, id) => {
   if (!validator) {
-    const schemaset = await exports.load('schemaset');
+    const schemaset = await load('schemaset');
     validator = await schemaset.validator('https://tc-testing.example.com');
   }
 
@@ -204,7 +205,8 @@ exports.assertSatisfiesSchema = async (data, id) => {
  * Generate a test object name
  */
 let objectCounter = 0;
-exports.testObjectName = prefix =>
+
+export const testObjectName = prefix =>
   // Use `objectCounter` to ensure every test uses a different name, and
   // use all of the printable, problematic characters from
   // https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html

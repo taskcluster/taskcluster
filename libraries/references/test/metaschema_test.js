@@ -1,7 +1,7 @@
-const { getCommonSchemas } = require('../src/common-schemas');
-const References = require('..');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import { getCommonSchemas } from '../src/common-schemas';
+import References from '..';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   let validate;

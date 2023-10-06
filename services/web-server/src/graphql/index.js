@@ -1,4 +1,4 @@
-const requireContext = require('../utils/requireContext');
+import requireContext from '../utils/requireContext';
 
 const importer = requireContext('./', true, /\.graphql$/);
 const keys = [
@@ -8,6 +8,6 @@ const keys = [
   ]),
 ];
 
-module.exports = [
+export default [
   ...keys.reduce((typeDefs, key) => typeDefs.add(importer(key)), new Set()),
 ].join('\n');

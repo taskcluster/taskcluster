@@ -156,4 +156,4 @@ class DeadlineResolver {
 }
 
 // Export DeadlineResolver
-module.exports = DeadlineResolver;
+export default DeadlineResolver;

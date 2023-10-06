@@ -1,7 +1,5 @@
-#! /usr/bin/env node
-
-const program = require('commander');
-const { version } = require('../../../package.json');
+#! /usr/bin/env nodeimport program from 'commander';
+import { version } from '../../../package.json';
 
 const run = (main, arg) => {
   main(arg).then(

@@ -1,7 +1,7 @@
-const path = require('path');
-const { REPO_ROOT, execCommand } = require('../../utils');
+import path from 'path';
+import { REPO_ROOT, execCommand } from '../../utils';
 
-exports.tasks = [];
+export const tasks = [];
 
 exports.tasks.push({
   title: 'Generate d2g',

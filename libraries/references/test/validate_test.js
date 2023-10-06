@@ -1,11 +1,11 @@
-const assert = require('assert');
-const { getCommonSchemas } = require('../src/common-schemas');
-const libUrls = require('taskcluster-lib-urls');
-const merge = require('lodash/merge');
-const omit = require('lodash/omit');
-const References = require('..');
-const { validate } = require('../src/validate');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import { getCommonSchemas } from '../src/common-schemas';
+import libUrls from 'taskcluster-lib-urls';
+import merge from 'lodash/merge';
+import omit from 'lodash/omit';
+import References from '..';
+import { validate } from '../src/validate';
+import testing from 'taskcluster-lib-testing';
 
 class RefBuilder {
   constructor() {

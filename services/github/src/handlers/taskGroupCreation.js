@@ -1,4 +1,4 @@
-const { makeDebug, taskGroupUI } = require('./utils');
+import { makeDebug, taskGroupUI } from './utils';
 
 /**
  * When the task group was defined, post the initial status to github
@@ -46,6 +46,6 @@ async function taskGroupCreationHandler(message) {
   });
 }
 
-module.exports = {
+export default {
   taskGroupCreationHandler,
 };

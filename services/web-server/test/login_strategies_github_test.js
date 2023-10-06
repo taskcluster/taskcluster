@@ -1,7 +1,7 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
-const Github = require('../src/login/strategies/github');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import helper from './helper';
+import Github from '../src/login/strategies/github';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

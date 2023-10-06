@@ -44,4 +44,4 @@ const expireObjects = async ({ monitor, db, backends }) => {
   }
 };
 
-module.exports = expireObjects;
+export default expireObjects;

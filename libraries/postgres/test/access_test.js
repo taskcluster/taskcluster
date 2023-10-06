@@ -1,6 +1,6 @@
-const Access = require('../src/Access');
-const path = require('path');
-const assert = require('assert').strict;
+import Access from '../src/Access';
+import path from 'path';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   suite('checking', function() {

@@ -1,14 +1,15 @@
-const assert = require('assert');
-const Debug = require('debug');
-const { Pool } = require('pg');
-const { WRITE } = require('taskcluster-lib-postgres');
-const { resetDb } = require('taskcluster-lib-testing');
-const tcdb = require('taskcluster-db');
-const debug = require('debug')('db-helper');
-const { UNDEFINED_TABLE, UNDEFINED_COLUMN } = require('taskcluster-lib-postgres');
-const { runOnlineBatches } = require('taskcluster-lib-postgres/src/migration');
+import assert from 'assert';
+import Debug from 'debug';
+import { Pool } from 'pg';
+import { WRITE } from 'taskcluster-lib-postgres';
+import { resetDb } from 'taskcluster-lib-testing';
+import tcdb from 'taskcluster-db';
+import debugFactory from 'debug';
+const debug = debugFactory('db-helper');
+import { UNDEFINED_TABLE, UNDEFINED_COLUMN } from 'taskcluster-lib-postgres';
+import { runOnlineBatches } from 'taskcluster-lib-postgres/src/migration';
 
-exports.dbUrl = process.env.TEST_DB_URL;
+export const dbUrl = process.env.TEST_DB_URL;
 assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
 
 /**
@@ -25,7 +26,7 @@ assert(exports.dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/d
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
  */
-exports.withDbForVersion = function() {
+export const withDbForVersion = function() {
   let pool;
   let dbs = {};
 
@@ -33,7 +34,8 @@ exports.withDbForVersion = function() {
 
   suiteSetup('setup database', async function() {
     pool = new Pool({ connectionString: exports.dbUrl });
-    exports.withDbClient = async (cb) => {
+
+    export const withDbClient = async (cb) => {
       const client = await pool.connect();
       try {
         try {
@@ -54,7 +56,7 @@ exports.withDbForVersion = function() {
       }
     };
 
-    exports.setupDb = async serviceName => {
+    export const setupDb = async serviceName => {
       if (dbs[serviceName]) {
         return dbs[serviceName];
       }
@@ -77,7 +79,7 @@ exports.withDbForVersion = function() {
       return db;
     };
 
-    exports.upgradeTo = async (toVersion) => {
+    export const upgradeTo = async (toVersion) => {
       await tcdb.upgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
@@ -87,7 +89,7 @@ exports.withDbForVersion = function() {
       });
     };
 
-    exports.downgradeTo = async (toVersion) => {
+    export const downgradeTo = async (toVersion) => {
       await tcdb.downgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
@@ -97,7 +99,7 @@ exports.withDbForVersion = function() {
       });
     };
 
-    exports.toDbVersion = async (toVersion) => {
+    export const toDbVersion = async (toVersion) => {
       await tcdb.upgrade({
         adminDbUrl: exports.dbUrl,
         toVersion,
@@ -142,7 +144,7 @@ exports.withDbForVersion = function() {
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
  */
-exports.withDbForProcs = function({ serviceName }) {
+export const withDbForProcs = function({ serviceName }) {
   let db;
   suiteSetup('setup database', async function() {
     db = await tcdb.setup({
@@ -161,7 +163,7 @@ exports.withDbForProcs = function({ serviceName }) {
       ],
     });
 
-    exports.withDbClient = fn => db._withClient(WRITE, fn);
+    export const withDbClient = fn => db._withClient(WRITE, fn);
 
     // clear the DB and upgrade it to the latest version
     await resetDb({ testDbUrl: exports.dbUrl });
@@ -184,7 +186,7 @@ exports.withDbForProcs = function({ serviceName }) {
    * helper.dbTest("description", async (db) => { .. }) runs the given
    * test function both with a real and fake db.  This is used for testing functions.
    */
-  exports.dbTest = (description, testFn) => {
+  export const dbTest = (description, testFn) => {
     test(description, async function() {
       return testFn(db);
     });
@@ -195,8 +197,8 @@ exports.withDbForProcs = function({ serviceName }) {
  * Assert that the given table exists and is empty (used to test table creation
  * in versions)
  */
-exports.assertTable = async name => {
-  await exports.withDbClient(async client => {
+export const assertTable = async name => {
+  await withDbClient(async client => {
     const res = await client.query(`select * from ${name}`);
     assert.deepEqual(res.rows, []);
   });
@@ -205,8 +207,8 @@ exports.assertTable = async name => {
 /**
  * Assert that the given column exists.
  */
-exports.assertTableColumn = async (table, column) => {
-  await exports.withDbClient(async client => {
+export const assertTableColumn = async (table, column) => {
+  await withDbClient(async client => {
     await client.query(`select ${column} from ${table}`);
   });
 };
@@ -215,8 +217,8 @@ exports.assertTableColumn = async (table, column) => {
  * Assert that the given table does not exist (used to test table deletion in
  * downgrade scripts).
  */
-exports.assertNoTable = async name => {
-  await exports.withDbClient(async client => {
+export const assertNoTable = async name => {
+  await withDbClient(async client => {
     await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
   });
 };
@@ -224,8 +226,8 @@ exports.assertNoTable = async name => {
 /**
  * Assert that the given column does not exist.
  */
-exports.assertNoTableColumn = async (table, column) => {
-  await exports.withDbClient(async client => {
+export const assertNoTableColumn = async (table, column) => {
+  await withDbClient(async client => {
     await assert.rejects(
       () => client.query(`select ${column} from ${table}`),
       err => err.code === UNDEFINED_COLUMN);
@@ -255,8 +257,8 @@ const queryIndexInfo = async (client, table, index, column) =>
 /**
  * Assert that the table contains given index on specific column
  */
-exports.assertIndexOnColumn = async (table, index, column) => {
-  await exports.withDbClient(async client => {
+export const assertIndexOnColumn = async (table, index, column) => {
+  await withDbClient(async client => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, [{ table, index, column }]);
   });
@@ -265,8 +267,8 @@ exports.assertIndexOnColumn = async (table, index, column) => {
 /**
  * Assert that the table doesn't contain given index on a column
  */
-exports.assertNoIndexOnColumn = async (table, index, column) => {
-  await exports.withDbClient(async client => {
+export const assertNoIndexOnColumn = async (table, index, column) => {
+  await withDbClient(async client => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, []);
   });
@@ -294,7 +296,7 @@ exports.assertNoIndexOnColumn = async (table, index, column) => {
  * and finish, too, so there is no need to duplicate its checks in startCheck
  * or finishedCheck.
  */
-exports.dbVersionTest = ({
+export const dbVersionTest = ({
   // the version being tested
   version,
   // true if there's an online migration / downgrade
@@ -350,9 +352,9 @@ exports.dbVersionTest = ({
     await check('start');
     try {
       if (updown === 'up') {
-        await exports.upgradeTo(THIS_VERSION);
+        await upgradeTo(THIS_VERSION);
       } else {
-        await exports.downgradeTo(PREV_VERSION);
+        await downgradeTo(PREV_VERSION);
       }
     } catch (err) {
       if (err.code === 'ABORT!') {
@@ -381,8 +383,8 @@ exports.dbVersionTest = ({
       sawMigrationBatches = false;
       sawDowngradeBatches = false;
       await resetDb({ testDbUrl: exports.dbUrl });
-      await exports.upgradeTo(PREV_VERSION);
-      await exports.withDbClient(createData);
+      await upgradeTo(PREV_VERSION);
+      await withDbClient(createData);
     });
 
     teardown(async function() {
@@ -390,7 +392,7 @@ exports.dbVersionTest = ({
     });
 
     test('successful upgrade, downgrade process', async function() {
-      await exports.withDbClient(async client => {
+      await withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -416,7 +418,7 @@ exports.dbVersionTest = ({
     }
 
     test('upgrade fails mid-online, restarted, downgrade fails mid-online, restarted', async function() {
-      await exports.withDbClient(async client => {
+      await withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
@@ -443,7 +445,7 @@ exports.dbVersionTest = ({
     });
 
     test('restart upgrades and downgrades repeatedly', async function() {
-      await exports.withDbClient(async client => {
+      await withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
@@ -469,7 +471,7 @@ exports.dbVersionTest = ({
     });
 
     test('upgrade fails mid-online, downgrade', async function() {
-      await exports.withDbClient(async client => {
+      await withDbClient(async client => {
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
         });
@@ -492,7 +494,7 @@ exports.dbVersionTest = ({
  * are within an hour of each other, to allow lots of room for time skew
  * between the tests and the DB.
  */
-exports.assertDateApproximately = (got, expected, message) => {
+export const assertDateApproximately = (got, expected, message) => {
   const diff = Math.abs(got - expected);
   assert(diff < 3600, message || `${got} not within 1h of ${expected}`);
 };

@@ -36,7 +36,7 @@ const GITHUB_RELEASE_ACTION = {
   UNPUBLISHED: 'unpublished',
 };
 
-module.exports = {
+export default {
   CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
     'completed': 'success',
     'failed': 'failure',

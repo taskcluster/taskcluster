@@ -1,24 +1,22 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const forge = require('node-forge');
-const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
-const generator = require('generate-password');
-const got = require('got');
-const { rootCertificates } = require('tls');
-const { WorkerPool, Worker } = require('../../data');
-
-const auth = require('@azure/ms-rest-nodeauth');
-const armCompute = require('@azure/arm-compute');
-const armNetwork = require('@azure/arm-network');
-const msRestJS = require('@azure/ms-rest-js');
-const msRestAzure = require('@azure/ms-rest-azure-js');
-
-const { ApiError, Provider } = require('../provider');
-const { CloudAPI } = require('../cloudapi');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import forge from 'node-forge';
+import crypto from 'crypto';
+import path from 'path';
+import fs from 'fs';
+import generator from 'generate-password';
+import got from 'got';
+import { rootCertificates } from 'tls';
+import { WorkerPool, Worker } from '../../data';
+import auth from '@azure/ms-rest-nodeauth';
+import armCompute from '@azure/arm-compute';
+import armNetwork from '@azure/arm-network';
+import msRestJS from '@azure/ms-rest-js';
+import msRestAzure from '@azure/ms-rest-azure-js';
+import { ApiError, Provider } from '../provider';
+import { CloudAPI } from '../cloudapi';
 
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/states-billing
@@ -394,7 +392,7 @@ class AzureProvider extends Provider {
         // #4987: Generic worker instances do not need public IP/NIC
         skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
-          ...cfg.tags || {},
+          ...(cfg.tags || {}),
           'created-by': `taskcluster-wm-${this.providerId}`,
           'managed-by': 'taskcluster',
           'provider-id': this.providerId,
@@ -1425,7 +1423,7 @@ class AzureProvider extends Provider {
   }
 }
 
-module.exports = {
+export default {
   AzureProvider,
   dnToString,
   getCertFingerprint,

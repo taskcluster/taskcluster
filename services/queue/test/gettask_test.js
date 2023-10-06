@@ -1,9 +1,9 @@
-const slugid = require('slugid');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import slugid from 'slugid';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import assume from 'assume';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

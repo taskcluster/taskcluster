@@ -1,7 +1,7 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const slugid = require('slugid');
-const { google } = require('googleapis');
+import { FakeCloud } from './fake';
+import { strict as assert } from 'assert';
+import slugid from 'slugid';
+import { google } from 'googleapis';
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
 const PROJECT = 'testy';

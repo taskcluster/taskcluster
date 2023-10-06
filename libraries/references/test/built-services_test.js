@@ -1,9 +1,9 @@
-const assert = require('assert');
-const { load } = require('../src/built-services');
-const mockFs = require('mock-fs');
-const References = require('..');
-const { getCommonSchemas } = require('../src/common-schemas.js');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import { load } from '../src/built-services';
+import mockFs from 'mock-fs';
+import References from '..';
+import { getCommonSchemas } from '../src/common-schemas.js';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   suiteSetup(function() {

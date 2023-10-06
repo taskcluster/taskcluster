@@ -1,5 +1,5 @@
-const { GITHUB_BUILD_STATES } = require('../constants');
-const { makeDebug, taskGroupUI } = require('./utils');
+import { GITHUB_BUILD_STATES } from '../constants';
+import { makeDebug, taskGroupUI } from './utils';
 
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
@@ -103,6 +103,6 @@ async function deprecatedStatusHandler(message) {
   }
 }
 
-module.exports = {
+export default {
   deprecatedStatusHandler,
 };

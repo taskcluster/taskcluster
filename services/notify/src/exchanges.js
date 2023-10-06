@@ -1,5 +1,5 @@
-const { Exchanges } = require('taskcluster-lib-pulse');
-const assert = require('assert');
+import { Exchanges } from 'taskcluster-lib-pulse';
+import assert from 'assert';
 
 /** Declaration of exchanges offered by the queue */
 const exchanges = new Exchanges({
@@ -15,7 +15,7 @@ const exchanges = new Exchanges({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
 const buildCommonRoutingKey = function(options) {

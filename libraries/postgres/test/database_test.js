@@ -1,5 +1,6 @@
-const helper = require('./helper');
-const {
+import helper from './helper';
+
+import {
   Schema,
   Database,
   READ,
@@ -8,9 +9,10 @@ const {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_FUNCTION,
-} = require('..');
-const path = require('path');
-const assert = require('assert').strict;
+} from '..';
+
+import path from 'path';
+import { strict as assert } from 'assert';
 
 const monitor = helper.monitor;
 

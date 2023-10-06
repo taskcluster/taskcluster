@@ -1,15 +1,15 @@
-const util = require('util');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const Docker = require('dockerode');
-const Observable = require('zen-observable');
-const { PassThrough, Transform } = require('stream');
-const taskcluster = require('taskcluster-client');
-const { REPO_ROOT } = require('./repo');
-const got = require('got');
-const { execCommand } = require('./command');
-const mkdirp = require('mkdirp');
+import util from 'util';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import Docker from 'dockerode';
+import Observable from 'zen-observable';
+import { PassThrough, Transform } from 'stream';
+import taskcluster from 'taskcluster-client';
+import { REPO_ROOT } from './repo';
+import got from 'got';
+import { execCommand } from './command';
+import mkdirp from 'mkdirp';
 const rimraf = util.promisify(require('rimraf'));
 
 /**
@@ -71,7 +71,7 @@ _dockerSetup.memos = {};
  * - asRoot -- run as root
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerRun = async ({ baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils }) => {
+export const dockerRun = async ({ baseDir, logfile, command, env, mounts, workingDir, image, asRoot, utils }) => {
   const { docker, dockerRunOpts } = await _dockerSetup({ baseDir });
 
   const output = new PassThrough().pipe(new DemuxDockerStream());
@@ -90,11 +90,11 @@ exports.dockerRun = async ({ baseDir, logfile, command, env, mounts, workingDir,
     OpenStdin: false,
     StdinOnce: false,
     Tty: false,
-    Env: [...Env, ...env || []],
+    Env: [...Env, ...(env || [])],
     WorkingDir: workingDir,
     Cmd: command,
     HostConfig: {
-      Mounts: [...Mounts, ...mounts || []],
+      Mounts: [...Mounts, ...(mounts || [])],
       // AutoRemove would help clean up stray containers, but means we cannot reliably
       // get the exit status of the container
       AutoRemove: false,
@@ -162,7 +162,7 @@ class DemuxDockerStream extends Transform {
  * - image -- image to run it in
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerPull = async ({ baseDir, image, utils }) => {
+export const dockerPull = async ({ baseDir, image, utils }) => {
   const { docker } = await _dockerSetup({ baseDir });
 
   utils.status({ message: `docker pull ${image}` });
@@ -212,7 +212,7 @@ exports.dockerPull = async ({ baseDir, image, utils }) => {
  *
  * - baseDir -- base directory for operations
  */
-exports.dockerImages = async ({ baseDir }) => {
+export const dockerImages = async ({ baseDir }) => {
   const { docker } = await _dockerSetup({ baseDir });
 
   return docker.listImages();
@@ -223,7 +223,7 @@ exports.dockerImages = async ({ baseDir }) => {
  *
  * - tag -- the tag to check for
  */
-exports.dockerRegistryCheck = async ({ tag }) => {
+export const dockerRegistryCheck = async ({ tag }) => {
   const [repo, imagetag] = tag.split(/:/);
 
   try {
@@ -254,7 +254,7 @@ exports.dockerRegistryCheck = async ({ tag }) => {
  *     (optional; uses existing docker creds if omitted)
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) => {
+export const dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) => {
   let homeDir;
   const env = { ...process.env };
 

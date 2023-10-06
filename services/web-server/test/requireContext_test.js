@@ -1,7 +1,7 @@
-const assert = require('assert');
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
-const requireContext = require('../src/utils/requireContext');
+import assert from 'assert';
+import path from 'path';
+import testing from 'taskcluster-lib-testing';
+import requireContext from '../src/utils/requireContext';
 
 suite(testing.suiteName(), () => {
   test('should be able to require a file', () => {

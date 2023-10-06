@@ -1,10 +1,18 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const yaml = require('js-yaml');
-const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } = require('./constants');
-const { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } = require('./utils');
-const fakePayloads = require('./fake-payloads');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import yaml from 'js-yaml';
+
+import {
+  EVENT_TYPES,
+  CHECK_RUN_ACTIONS,
+  PUBLISHERS,
+  GITHUB_TASKS_FOR,
+  GITHUB_BUILD_STATES,
+} from './constants';
+
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils';
+import fakePayloads from './fake-payloads';
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -186,7 +194,7 @@ let builder = new APIBuilder({
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** Define tasks */
 builder.declare({

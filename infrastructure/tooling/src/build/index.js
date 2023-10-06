@@ -1,16 +1,12 @@
-const path = require('path');
-const os = require('os');
-const util = require('util');
+import path from 'path';
+import os from 'os';
+import util from 'util';
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const taskcluster = require('taskcluster-client');
-const { TaskGraph, Lock, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
-const generateTasks = require('./tasks');
-const {
-  gitIsDirty,
-  gitDescribe,
-  REPO_ROOT,
-} = require('../utils');
+import mkdirp from 'mkdirp';
+import taskcluster from 'taskcluster-client';
+import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import generateTasks from './tasks';
+import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils';
 
 class Base {
   constructor(cmdOptions) {
@@ -247,4 +243,4 @@ const publish = async (options) => {
   await publish.run();
 };
 
-module.exports = { build, publish };
+export default { build, publish };

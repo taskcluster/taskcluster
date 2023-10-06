@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const url = require('url');
-const libUrls = require('taskcluster-lib-urls');
-const typeis = require('type-is');
-const Debug = require('debug');
+import _ from 'lodash';
+import url from 'url';
+import libUrls from 'taskcluster-lib-urls';
+import typeis from 'type-is';
+import Debug from 'debug';
 
 const debug = Debug('api:schema');
 

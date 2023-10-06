@@ -1,8 +1,18 @@
-const taskcluster = require('taskcluster-client');
-const taskcreator = require('../src/taskcreator');
-const { stickyLoader, fakeauth, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
+import taskcluster from 'taskcluster-client';
+import taskcreator from '../src/taskcreator';
+
+import {
+  stickyLoader,
+  fakeauth,
+  Secrets,
+  withPulse,
+  withMonitor,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
+
+import builder from '../src/api';
+import load from '../src/main';
 
 const helper = exports;
 
@@ -49,7 +59,7 @@ helper.withTaskCreator = function(mock, skipping) {
   });
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-hooks' });
 };
 
@@ -110,7 +120,7 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'hooks',

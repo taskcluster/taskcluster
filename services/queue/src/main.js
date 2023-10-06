@@ -1,27 +1,28 @@
-require('../../prelude');
-let debug = require('debug')('app:main');
-let taskcluster = require('taskcluster-client');
-let builder = require('./api');
-let exchanges = require('./exchanges');
-let Bucket = require('./bucket');
-let QueueService = require('./queueservice');
-let EC2RegionResolver = require('./ec2regionresolver');
-let DeadlineResolver = require('./deadlineresolver');
-let ClaimResolver = require('./claimresolver');
-let DependencyTracker = require('./dependencytracker');
-let DependencyResolver = require('./dependencyresolver');
-let WorkClaimer = require('./workclaimer');
-let WorkerInfo = require('./workerinfo');
-let loader = require('taskcluster-lib-loader');
-let config = require('taskcluster-lib-config');
-let { MonitorManager } = require('taskcluster-lib-monitor');
-let SchemaSet = require('taskcluster-lib-validate');
-let libReferences = require('taskcluster-lib-references');
-let { App } = require('taskcluster-lib-app');
-const tcdb = require('taskcluster-db');
-let pulse = require('taskcluster-lib-pulse');
-const QuickLRU = require('quick-lru');
-const { artifactUtils } = require('./utils');
+import '../../prelude';
+import debugFactory from 'debug';
+const debug = debugFactory('app:main');
+import taskcluster from 'taskcluster-client';
+import builder from './api';
+import exchanges from './exchanges';
+import Bucket from './bucket';
+import QueueService from './queueservice';
+import EC2RegionResolver from './ec2regionresolver';
+import DeadlineResolver from './deadlineresolver';
+import ClaimResolver from './claimresolver';
+import DependencyTracker from './dependencytracker';
+import DependencyResolver from './dependencyresolver';
+import WorkClaimer from './workclaimer';
+import WorkerInfo from './workerinfo';
+import loader from 'taskcluster-lib-loader';
+import config from 'taskcluster-lib-config';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import { App } from 'taskcluster-lib-app';
+import tcdb from 'taskcluster-db';
+import pulse from 'taskcluster-lib-pulse';
+import QuickLRU from 'quick-lru';
+import { artifactUtils } from './utils';
 
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;
@@ -33,11 +34,7 @@ const DEFAULT_UPDATE_FREQUENCY = '30 minutes';
 // for supported bulk deletion S3 operations
 const MAX_BULK_DELETE_SIZE = 1000;
 
-// maximum number of records to process at once in claim, deadline, and dependency resolvers
-// this is to limit total amount of concurrent updates to DB
-const NUMBER_OF_RECORDS_TO_PROCESS = 32;
-
-require('./monitor');
+import './monitor';
 
 // Create component loader
 let load = loader({
@@ -413,4 +410,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

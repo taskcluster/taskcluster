@@ -94,4 +94,4 @@ class DependencyResolver {
 }
 
 // Export DependencyResolver
-module.exports = DependencyResolver;
+export default DependencyResolver;

@@ -1,5 +1,5 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
 
 /**
  * We consider a "workerPoolId" to be a string of the shape "<provisionerId>/<workerType>".

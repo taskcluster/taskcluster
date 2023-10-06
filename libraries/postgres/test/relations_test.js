@@ -1,6 +1,6 @@
-const Relations = require('../src/Relations');
-const path = require('path');
-const assert = require('assert').strict;
+import Relations from '../src/Relations';
+import path from 'path';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   suite('checking', function() {

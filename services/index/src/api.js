@@ -1,5 +1,5 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const helpers = require('./helpers');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import helpers from './helpers';
 
 /**
  * API end-point for version v1/
@@ -30,7 +30,7 @@ let builder = new APIBuilder({
   },
 });
 
-module.exports = builder;
+export default builder;
 
 /** Get specific indexed task */
 builder.declare({

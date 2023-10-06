@@ -1,9 +1,9 @@
-const request = require('superagent');
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import request from 'superagent';
+import assert from 'assert';
+import { APIBuilder } from '../';
+import helper from './helper';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   setup(async function() {

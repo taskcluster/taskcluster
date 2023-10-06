@@ -1,4 +1,4 @@
-const {
+import {
   Auth,
   Github,
   Hooks,
@@ -9,9 +9,9 @@ const {
   Secrets,
   Notify,
   WorkerManager,
-} = require('taskcluster-client');
+} from 'taskcluster-client';
 
-module.exports = options => ({
+export default options => ({
   auth: new Auth(options),
   github: new Github(options),
   hooks: new Hooks(options),

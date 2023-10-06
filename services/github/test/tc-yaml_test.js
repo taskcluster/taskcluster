@@ -1,6 +1,6 @@
-const TcYaml = require('../src/tc-yaml');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
+import TcYaml from '../src/tc-yaml';
+import assume from 'assume';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   suite('VersionZero', function() {

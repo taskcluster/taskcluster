@@ -1,6 +1,6 @@
-const { Client } = require('pg');
-const { withMonitor } = require('taskcluster-lib-testing');
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import { Client } from 'pg';
+import { withMonitor } from 'taskcluster-lib-testing';
+import { MonitorManager } from 'taskcluster-lib-monitor';
 const dbUrl = process.env.TEST_DB_URL;
 
 withMonitor(exports, { noLoader: true });

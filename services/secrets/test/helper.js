@@ -1,10 +1,10 @@
-const taskcluster = require('taskcluster-client');
-const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-lib-testing');
-const load = require('../src/main');
-const builder = require('../src/api.js');
-const { withDb } = require('taskcluster-lib-testing');
+import taskcluster from 'taskcluster-client';
+import { fakeauth, stickyLoader, Secrets, withMonitor } from 'taskcluster-lib-testing';
+import load from '../src/main';
+import builder from '../src/api.js';
+import { withDb } from 'taskcluster-lib-testing';
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -14,13 +14,13 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secrets: {
   },
   load: exports.load,
 });
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'secrets');
 };
 
@@ -42,14 +42,14 @@ let testClients = {
  * This also sets up helper.client as an API client generator, using the
  * "captain" clients.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -58,7 +58,7 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', rootUrl);
     fakeauth.start(testClients, { rootUrl });
 
-    exports.client = async clientId => {
+    export const client = async clientId => {
       const SecretsClient = taskcluster.createClient(builder.reference());
 
       return new SecretsClient({
@@ -68,7 +68,7 @@ exports.withServer = (mock, skipping) => {
       });
     };
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {

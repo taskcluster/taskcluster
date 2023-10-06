@@ -1,6 +1,6 @@
-const fs = require('fs');
+import fs from 'fs';
 
-module.exports = {};
+export default {};
 
 fs.readdirSync(`${__dirname}/`).forEach(file => {
   if (file !== 'index.js' && file.match(/\.js$/)) {

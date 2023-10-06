@@ -1,11 +1,11 @@
-const path = require('path');
-const cronstrue = require('cronstrue');
-const table = require('markdown-table');
-const { listServices, modifyRepoFile } = require('../../utils');
+import path from 'path';
+import cronstrue from 'cronstrue';
+import table from 'markdown-table';
+import { listServices, modifyRepoFile } from '../../utils';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 SERVICES.forEach(name => {
   exports.tasks.push({

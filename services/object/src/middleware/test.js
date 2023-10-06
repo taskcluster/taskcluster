@@ -1,4 +1,4 @@
-const { Middleware } = require('./base');
+import { Middleware } from './base';
 
 class TestMiddleware extends Middleware {
   constructor(options) {
@@ -32,4 +32,4 @@ class TestMiddleware extends Middleware {
   }
 }
 
-module.exports = { TestMiddleware };
+export default { TestMiddleware };

@@ -1,9 +1,9 @@
-const { NullProvider } = require('./null');
-const { TestingProvider } = require('./testing');
-const { StaticProvider } = require('./static');
-const { GoogleProvider } = require('./google');
-const { AwsProvider } = require('./aws');
-const { AzureProvider } = require('./azure');
+import { NullProvider } from './null';
+import { TestingProvider } from './testing';
+import { StaticProvider } from './static';
+import { GoogleProvider } from './google';
+import { AwsProvider } from './aws';
+import { AzureProvider } from './azure';
 
 const PROVIDER_TYPES = {
   null: NullProvider,
@@ -124,4 +124,4 @@ class Providers {
   }
 }
 
-module.exports = { Providers, setSetupRetryInterval };
+export default { Providers, setSetupRetryInterval };

@@ -14,6 +14,6 @@ const azureResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
-module.exports = {
+export default {
   azureResources,
 };

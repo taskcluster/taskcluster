@@ -1,11 +1,11 @@
-const path = require('path');
-const { gitLsFiles, readRepoFile, writeRepoFile } = require('../../utils');
+import path from 'path';
+import { gitLsFiles, readRepoFile, writeRepoFile } from '../../utils';
 
 const IGNORE = [
   'infrastructure/docker-images/worker-ci/git/README.md',
 ];
 
-exports.tasks = [{
+export const tasks = [{
   title: 'README TOCs',
   provides: ['target-readme-tocs'],
   requires: [

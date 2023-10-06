@@ -1,13 +1,14 @@
-const debug = require('debug')('test');
-const helper = require('./helper');
-const assert = require('assert');
-const sinon = require('sinon');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { CHECKLOGS_TEXT, CHECKRUN_TEXT } = require('../src/constants');
-const utils = require('../src/utils');
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import helper from './helper';
+import assert from 'assert';
+import sinon from 'sinon';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import { LEVELS } from 'taskcluster-lib-monitor';
+import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants';
+import utils from '../src/utils';
 
 /**
  * This tests the event handlers, faking out all of the services they

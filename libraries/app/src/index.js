@@ -1,14 +1,15 @@
-const express = require('express');
-const _ = require('lodash');
-const debug = require('debug')('base:app');
-const assert = require('assert');
-const http = require('http');
-const sslify = require('express-sslify');
-const hsts = require('hsts');
-const csp = require('content-security-policy');
-const uuid = require('uuid');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('base:app');
+import assert from 'assert';
+import http from 'http';
+import sslify from 'express-sslify';
+import hsts from 'hsts';
+import csp from 'content-security-policy';
+import uuid from 'uuid';
+import path from 'path';
+import fs from 'fs';
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 
@@ -175,4 +176,4 @@ const app = async (options) => {
 };
 
 // Export app creation utility
-module.exports = { App: app, traceMiddleware };
+export default { App: app, traceMiddleware };

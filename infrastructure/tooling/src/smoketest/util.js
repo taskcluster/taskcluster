@@ -3,7 +3,7 @@
  * between tries.  This is useful for testing the auth service, which does
  * not offer immediate use-after-write consistency for clients and roles.
  */
-exports.retryAssertionFailures = async (times, utils, fn) => {
+export const retryAssertionFailures = async (times, utils, fn) => {
   for (let tries = 1; tries <= times; tries++) {
     try {
       await fn();

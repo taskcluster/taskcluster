@@ -1,10 +1,10 @@
-const assert = require('assert');
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
-const { REPO_ROOT } = require('../../utils');
+import assert from 'assert';
+import path from 'path';
+import fs from 'fs';
+import _ from 'lodash';
+import { REPO_ROOT } from '../../utils';
 
-exports.tasks = [];
+export const tasks = [];
 exports.tasks.push({
   title: 'Node versions match',
   requires: [],

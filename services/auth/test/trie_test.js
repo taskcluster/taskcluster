@@ -1,9 +1,9 @@
-const assume = require('assume');
-const _ = require('lodash');
-const ScopeSetBuilder = require('../src/scopesetbuilder');
-const trie = require('../src/trie');
-const trietestcases = require('./trietestcases');
-const testing = require('taskcluster-lib-testing');
+import assume from 'assume';
+import _ from 'lodash';
+import ScopeSetBuilder from '../src/scopesetbuilder';
+import trie from '../src/trie';
+import trietestcases from './trietestcases';
+import testing from 'taskcluster-lib-testing';
 
 // This test suite was designed to test every conceivable combination of
 // inputs to the trie implementation, in an effort to suss out any hidden bugs

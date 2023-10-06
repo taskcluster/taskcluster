@@ -1,7 +1,7 @@
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import sift from '../utils/sift';
+import ConnectionLoader from '../ConnectionLoader';
 
-module.exports = ({ index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const namespaces = new ConnectionLoader(
     async ({ namespace, options, filter }) => {
       const raw = await index.listNamespaces(namespace, options);

@@ -1,7 +1,8 @@
-const API = require('../src/api');
-const assert = require('assert');
-const debug = require('debug')('base:test:nonceManager');
-const testing = require('taskcluster-lib-testing');
+import API from '../src/api';
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('base:test:nonceManager');
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   // Create a new nonceManager for each test

@@ -1,6 +1,6 @@
-const TcYaml = require('./tc-yaml');
+import TcYaml from './tc-yaml';
 
-module.exports = {};
+export default {};
 
 /**
  * Returns a function that merges an existing taskcluster github config with
@@ -11,7 +11,7 @@ module.exports = {};
  *    schema:             url,   Url to the taskcluster config schema
  *  }
  **/
-module.exports.setup = async function({ cfg, schemaset }) {
+export const setup = async function({ cfg, schemaset }) {
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
 
   return function({ config, payload, schema }) {

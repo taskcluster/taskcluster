@@ -1,11 +1,11 @@
-const builtServices = require('./built-services');
-const { makeSerializable, fromSerializable } = require('./serializable');
-const { writeUriStructured, readUriStructured } = require('./uri-structured');
-const { getCommonSchemas } = require('./common-schemas');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const regexEscape = require('regex-escape');
-const { validate } = require('./validate');
+import builtServices from './built-services';
+import { makeSerializable, fromSerializable } from './serializable';
+import { writeUriStructured, readUriStructured } from './uri-structured';
+import { getCommonSchemas } from './common-schemas';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import regexEscape from 'regex-escape';
+import { validate } from './validate';
 
 /**
  * Representation of a set of references. This is considered immutable after

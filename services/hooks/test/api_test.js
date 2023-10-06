@@ -1,10 +1,11 @@
-const _ = require('lodash');
-const assert = require('assert');
-const assume = require('assume');
-const debug = require('debug')('test:api:createhook');
-const taskcluster = require('taskcluster-client');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import assert from 'assert';
+import assume from 'assume';
+import debugFactory from 'debug';
+const debug = debugFactory('test:api:createhook');
+import taskcluster from 'taskcluster-client';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

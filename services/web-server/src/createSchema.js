@@ -1,3 +1,3 @@
-const { makeExecutableSchema } = require('@graphql-tools/schema');
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
-module.exports = options => makeExecutableSchema(options);
+export default options => makeExecutableSchema(options);

@@ -1,5 +1,5 @@
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { hrtime } = require('process');
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { hrtime } from 'process';
 
 MonitorManager.register({
   name: 'apiMethod',

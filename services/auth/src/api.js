@@ -1,12 +1,12 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const scopeUtils = require('taskcluster-lib-scopes');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const slugid = require('slugid');
-const _ = require('lodash');
-const signaturevalidator = require('./signaturevalidator');
-const ScopeResolver = require('./scoperesolver');
-const Hashids = require('hashids/cjs');
-const { modifyRoles } = require('../src/data');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import scopeUtils from 'taskcluster-lib-scopes';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import slugid from 'slugid';
+import _ from 'lodash';
+import signaturevalidator from './signaturevalidator';
+import ScopeResolver from './scoperesolver';
+import Hashids from 'hashids/cjs';
+import { modifyRoles } from '../src/data';
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -149,7 +149,7 @@ const builder = new APIBuilder({
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** List clients */
 builder.declare({
@@ -951,11 +951,12 @@ builder.declare({
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
-require('./aws');
-require('./azure');
-require('./sentry');
-require('./websocktunnel');
-require('./gcp');
+import './aws';
+
+import './azure';
+import './sentry';
+import './websocktunnel';
+import './gcp';
 
 /** Get all client information */
 builder.declare({

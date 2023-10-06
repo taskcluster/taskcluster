@@ -1,13 +1,14 @@
-const _ = require('lodash');
-const util = require('util');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const events = require('events');
-const LRU = require('quick-lru');
-const debug = require('debug')('auth:ScopeResolver');
-const trie = require('./trie');
-const ScopeSetBuilder = require('./scopesetbuilder');
-const { consume } = require('taskcluster-lib-pulse');
+import _ from 'lodash';
+import util from 'util';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import events from 'events';
+import LRU from 'quick-lru';
+import debugFactory from 'debug';
+const debug = debugFactory('auth:ScopeResolver');
+import trie from './trie';
+import ScopeSetBuilder from './scopesetbuilder';
+import { consume } from 'taskcluster-lib-pulse';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
@@ -366,4 +367,4 @@ class ScopeResolver extends events.EventEmitter {
 }
 
 // Export ScopeResolver
-module.exports = ScopeResolver;
+export default ScopeResolver;

@@ -1,4 +1,4 @@
-module.exports = class WebServerError extends Error {
+export default class WebServerError extends Error {
   constructor(name, message) {
     super();
     this.name = name;

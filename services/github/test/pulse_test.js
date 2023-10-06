@@ -1,7 +1,7 @@
-const assert = require('assert');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import helper from './helper';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 // Webhooks payloads can be introspected by going to the app admin page
 // https://github.com/organizations/taskcluster/settings/apps/community-tc-integration/advanced
@@ -56,10 +56,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             version: 1,
             body: require('./data/webhooks/' + params.jsonFile).body,
             tasks_for: params.tasks_for,
-            ...params.branch ? { branch: params.branch } : {},
-            ...params.action ? { action: params.action } : {},
-            ...params.checkRunId ? { checkRunId: params.checkRunId } : {},
-            ...params.checkSuiteId ? { checkSuiteId: params.checkSuiteId } : {},
+            ...(params.branch ? { branch: params.branch } : {}),
+            ...(params.action ? { action: params.action } : {}),
+            ...(params.checkRunId ? { checkRunId: params.checkRunId } : {}),
+            ...(params.checkSuiteId ? { checkSuiteId: params.checkSuiteId } : {}),
           });
           return true;
         }

@@ -1,9 +1,10 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const aws = require('aws-sdk');
-const helper = require('./helper');
-const debug = require('debug')('s3_test');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import slugid from 'slugid';
+import aws from 'aws-sdk';
+import helper from './helper';
+import debugFactory from 'debug';
+const debug = debugFactory('s3_test');
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {

@@ -1,6 +1,6 @@
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
+import { strict as assert } from 'assert';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'notify' });

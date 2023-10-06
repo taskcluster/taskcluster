@@ -1,7 +1,7 @@
-const path = require('path');
-const fs = require('fs');
-const GithubSlugger = require('github-slugger');
-const { writeRepoJSON, REPO_ROOT } = require('../../utils');
+import path from 'path';
+import fs from 'fs';
+import GithubSlugger from 'github-slugger';
+import { writeRepoJSON, REPO_ROOT } from '../../utils';
 
 const DOCS_DIR = path.join(REPO_ROOT, 'ui', 'docs');
 const MD_PARSER = {
@@ -28,7 +28,7 @@ function sort(a, b) {
   return first.localeCompare(second);
 }
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Docs Search',
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-search'],

@@ -1,10 +1,10 @@
-const _ = require('lodash');
-const assume = require('assume');
-const assert = require('assert');
-const helper = require('./helper');
-const taskcluster = require('taskcluster-client');
-const testing = require('taskcluster-lib-testing');
-const { hookUtils } = require('../src/utils');
+import _ from 'lodash';
+import assume from 'assume';
+import assert from 'assert';
+import helper from './helper';
+import taskcluster from 'taskcluster-client';
+import testing from 'taskcluster-lib-testing';
+import { hookUtils } from '../src/utils';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

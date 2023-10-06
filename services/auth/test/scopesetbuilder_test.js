@@ -1,8 +1,8 @@
-const assume = require('assume');
-const _ = require('lodash');
-const { mergeScopeSets, scopeCompare } = require('taskcluster-lib-scopes');
-const ScopeSetBuilder = require('../src/scopesetbuilder');
-const testing = require('taskcluster-lib-testing');
+import assume from 'assume';
+import _ from 'lodash';
+import { mergeScopeSets, scopeCompare } from 'taskcluster-lib-scopes';
+import ScopeSetBuilder from '../src/scopesetbuilder';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), () => {
   test('scopes()', () => {

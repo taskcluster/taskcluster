@@ -1,8 +1,9 @@
-const { Octokit } = require('@octokit/rest');
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const {
+import { Octokit } from '@octokit/rest';
+import fs from 'fs';
+import util from 'util';
+import path from 'path';
+
+import {
   ensureTask,
   npmPublish,
   cargoPublish,
@@ -11,11 +12,11 @@ const {
   readRepoFile,
   dockerPush,
   REPO_ROOT,
-} = require('../../utils');
+} from '../../utils';
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],

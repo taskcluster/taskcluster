@@ -1,6 +1,6 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
-exports.k8sResources = async ({ userConfig, answer, configTmpl }) => {
+export const k8sResources = async ({ userConfig, answer, configTmpl }) => {
   function setDefault(path, val) {
     if (!_.has(userConfig, path, val)) {
       _.set(userConfig, path, val);

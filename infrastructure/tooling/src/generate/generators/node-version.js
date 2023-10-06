@@ -1,10 +1,16 @@
-const { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } = require('../../utils');
+import {
+  readRepoFile,
+  modifyRepoFile,
+  writeRepoFile,
+  modifyRepoJSON,
+  modifyRepoYAML,
+} from '../../utils';
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`
  * as authoritative.
  */
-exports.tasks = [{
+export const tasks = [{
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {

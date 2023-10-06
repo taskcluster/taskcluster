@@ -1,8 +1,8 @@
-const assert = require('assert');
-const jwt = require('jsonwebtoken');
-const jwksClient = require('./jwksClient');
+import assert from 'assert';
+import jwt from 'jsonwebtoken';
+import jwksClient from './jwksClient';
 
-module.exports = async ({ token, domain, audience }) => new Promise((resolve, reject) => {
+export default async ({ token, domain, audience }) => new Promise((resolve, reject) => {
   assert(token, 'No authorization token was found');
   assert(domain, 'A domain is required to verify the jwt');
   assert(audience, `An audience is required to verify the jwt`);

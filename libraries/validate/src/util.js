@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const url = require('url');
+import _ from 'lodash';
+import url from 'url';
 
 /**
  * Render {$const: <key>} into JSON schema and update $ref

@@ -1,11 +1,11 @@
-const assert = require('assert').strict;
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const crypto = require('crypto');
-const { toDataUrl, TestBackend } = require('../src/backends/test');
-const { fromNow } = require('taskcluster-client');
+import { strict as assert } from 'assert';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import request from 'superagent';
+import crypto from 'crypto';
+import { toDataUrl, TestBackend } from '../src/backends/test';
+import { fromNow } from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

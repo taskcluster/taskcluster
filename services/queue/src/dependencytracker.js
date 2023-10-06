@@ -1,5 +1,5 @@
-let assert = require('assert');
-const { Task } = require('./data');
+import assert from 'assert';
+import { Task } from './data';
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -145,7 +145,7 @@ class DependencyTracker {
 
     // If the task isn't blocked (dependencies resolved), or it has no
     // dependencies we ensure that the first run is pending (if not already).
-    if (anySatisfied && !await this.isBlocked(task.taskId) ||
+    if (anySatisfied && !(await this.isBlocked(task.taskId)) ||
         task.dependencies.length === 0) {
 
       task.updateStatusWith(
@@ -184,7 +184,7 @@ class DependencyTracker {
         // Remove the requirement that is blocking
         await this.db.fns.satisfy_task_dependency(dep.dependent_task_id, taskId);
 
-        if (!await this.isBlocked(dep.dependent_task_id)) {
+        if (!(await this.isBlocked(dep.dependent_task_id))) {
           await this.scheduleTask(dep.dependent_task_id);
         }
       }
@@ -283,4 +283,4 @@ class DependencyTracker {
 }
 
 // Export DependencyTracker
-module.exports = DependencyTracker;
+export default DependencyTracker;

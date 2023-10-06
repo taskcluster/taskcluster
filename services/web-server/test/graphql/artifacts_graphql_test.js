@@ -1,10 +1,10 @@
-const assert = require('assert');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const getArtifacts = require('../fixtures/artifacts.graphql');
-const getLatestArtifacts = require('../fixtures/latestArtifacts.graphql');
-const artifactsCreated = require('../fixtures/artifactsCreated.graphql');
+import assert from 'assert';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper';
+import getArtifacts from '../fixtures/artifacts.graphql';
+import getLatestArtifacts from '../fixtures/latestArtifacts.graphql';
+import artifactsCreated from '../fixtures/artifactsCreated.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

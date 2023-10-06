@@ -1,6 +1,6 @@
-const { cleanRouteAndParams } = require('../src/utils');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
+import { cleanRouteAndParams } from '../src/utils';
+import testing from 'taskcluster-lib-testing';
+import { strict as assert } from 'assert';
 
 suite(testing.suiteName(), function() {
   suite('cleanRouteAndParams', function() {

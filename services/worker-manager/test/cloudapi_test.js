@@ -1,8 +1,8 @@
-const sinon = require('sinon');
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
-const { CloudAPI } = require('../src/providers/cloudapi');
+import sinon from 'sinon';
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import helper from './helper';
+import { CloudAPI } from '../src/providers/cloudapi';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

@@ -1,10 +1,10 @@
-const tcpg = require('taskcluster-lib-postgres');
-const testing = require('taskcluster-lib-testing');
-const parseDbURL = require('pg-connection-string').parse;
-const { REPO_ROOT, writeRepoFile, execCommand } = require('../../utils');
+import tcpg from 'taskcluster-lib-postgres';
+import testing from 'taskcluster-lib-testing';
+import { parse as parseDbURL } from 'pg-connection-string';
+import { REPO_ROOT, writeRepoFile, execCommand } from '../../utils';
 
 // Generate a readable JSON version of the schema.
-exports.tasks = [{
+export const tasks = [{
   title: 'DB Schema Dump',
   requires: ['db-schema-serializable'],
   provides: ['db-schema-dump'],

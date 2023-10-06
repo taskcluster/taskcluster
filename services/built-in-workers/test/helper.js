@@ -1,11 +1,11 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { stickyLoader } = require('taskcluster-lib-testing');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import * as _load from '../src/main';
+import { stickyLoader } from 'taskcluster-lib-testing';
 
 const helper = module.exports;
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(_load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -20,7 +20,8 @@ suiteSetup(async function() {
  * The component is available at `helper.queue`.
  */
 helper.rootUrl = 'http://localhost:8080';
-exports.withFakeQueue = () => {
+
+export const withFakeQueue = () => {
   suiteSetup(function() {
     helper.queue = stubbedQueue();
     helper.load.inject('queue', helper.queue);
@@ -33,13 +34,17 @@ exports.withFakeQueue = () => {
  */
 const stubbedQueue = () => {
   const tasks = {};
+
   // responses from claimWork
-  exports.claimableWork = [];
+  export const claimableWork = [];
+
   // {taskId: resolution}
-  exports.taskResolutions = {};
-  exports.assertTaskResolved = (taskId, resolution) => {
+  export const taskResolutions = {};
+
+  export const assertTaskResolved = (taskId, resolution) => {
     return assert.deepEqual(exports.taskResolutions[taskId], resolution);
   };
+
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {

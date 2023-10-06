@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 
 const generators = [];
 
@@ -17,4 +17,4 @@ fs.readdirSync(`${__dirname}/`).forEach(file => {
   }
 });
 
-module.exports = generators;
+export default generators;

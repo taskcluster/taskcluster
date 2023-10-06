@@ -1,8 +1,8 @@
-const util = require('util');
+import util from 'util';
 const exec = util.promisify(require('child_process').exec);
-const _ = require('lodash');
+import _ from 'lodash';
 
-exports.tasks = [];
+export const tasks = [];
 exports.tasks.push({
   title: 'Test scripts do not use `test.only(..)`',
   requires: [],

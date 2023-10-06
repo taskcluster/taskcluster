@@ -1,20 +1,20 @@
-const express = require('express');
-const url = require('url');
-const Debug = require('debug');
-const assert = require('assert');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const taskcluster = require('taskcluster-client');
-const { buildReportErrorMethod } = require('./middleware/errors');
-const { callHandler } = require('./middleware/handle');
-const { validateSchemas } = require('./middleware/schema');
-const { queryValidator } = require('./middleware/queries');
-const { parameterValidator } = require('./middleware/parameters');
-const { remoteAuthentication } = require('./middleware/auth');
-const { parseBody } = require('./middleware/parse');
-const { expressError } = require('./middleware/express-error');
-const { logRequest } = require('./middleware/logging');
-const { perRequestContext } = require('./middleware/per-request-context');
+import express from 'express';
+import url from 'url';
+import Debug from 'debug';
+import assert from 'assert';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import taskcluster from 'taskcluster-client';
+import { buildReportErrorMethod } from './middleware/errors';
+import { callHandler } from './middleware/handle';
+import { validateSchemas } from './middleware/schema';
+import { queryValidator } from './middleware/queries';
+import { parameterValidator } from './middleware/parameters';
+import { remoteAuthentication } from './middleware/auth';
+import { parseBody } from './middleware/parse';
+import { expressError } from './middleware/express-error';
+import { logRequest } from './middleware/logging';
+import { perRequestContext } from './middleware/per-request-context';
 
 const debug = Debug('api');
 

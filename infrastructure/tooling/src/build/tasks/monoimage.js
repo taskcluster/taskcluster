@@ -1,5 +1,6 @@
-const appRootDir = require('app-root-dir');
-const {
+import appRootDir from 'app-root-dir';
+
+import {
   dockerPull,
   dockerImages,
   dockerRegistryCheck,
@@ -8,11 +9,12 @@ const {
   execCommand,
   writeRepoFile,
   REPO_ROOT,
-} = require('../../utils');
-const path = require('path');
-const util = require('util');
+} from '../../utils';
+
+import path from 'path';
+import util from 'util';
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
+import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
@@ -293,4 +295,4 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
   });
 };
 
-module.exports = generateMonoimageTasks;
+export default generateMonoimageTasks;

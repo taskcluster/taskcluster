@@ -1,8 +1,9 @@
-const assert = require('assert');
-const SchemaSet = require('../');
-const debug = require('debug')('test');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import SchemaSet from '../';
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();

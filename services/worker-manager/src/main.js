@@ -1,22 +1,21 @@
-require('../../prelude');
-const loader = require('taskcluster-lib-loader');
-const taskcluster = require('taskcluster-client');
-const { App } = require('taskcluster-lib-app');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const exchanges = require('./exchanges');
-const builder = require('./api');
-const { Estimator } = require('./estimator');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const tcdb = require('taskcluster-db');
-const { Provisioner } = require('./provisioner');
-const { Providers } = require('./providers');
-const { WorkerScanner } = require('./worker-scanner');
-const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-
-require('./monitor');
+import '../../prelude';
+import loader from 'taskcluster-lib-loader';
+import taskcluster from 'taskcluster-client';
+import { App } from 'taskcluster-lib-app';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import config from 'taskcluster-lib-config';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import exchanges from './exchanges';
+import builder from './api';
+import { Estimator } from './estimator';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import tcdb from 'taskcluster-db';
+import { Provisioner } from './provisioner';
+import { Providers } from './providers';
+import { WorkerScanner } from './worker-scanner';
+import { WorkerPool, WorkerPoolError, Worker } from './data';
+import './monitor';
 
 let load = loader({
   cfg: {
@@ -266,4 +265,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

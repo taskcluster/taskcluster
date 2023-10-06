@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const getCallerFile = require('get-caller-file');
+import fs from 'fs';
+import path from 'path';
+import getCallerFile from 'get-caller-file';
 
 require.extensions['.graphql'] = function (module, filename) {
-  module.exports = fs.readFileSync(filename, 'utf8');
+  export default fs.readFileSync(filename, 'utf8');
 };
 
 // Mock webpack's implementation of require.context
 // https://webpack.js.org/guides/dependency-management/#requirecontext
-module.exports = (directory = '.', scanSubDirectories = false, regularExpression = /\.js$/) => {
+export default (directory = '.', scanSubDirectories = false, regularExpression = /\.js$/) => {
   const files = {};
   const callerDirname = path.dirname(getCallerFile());
   const base = path.isAbsolute(directory) ? directory : path.resolve(callerDirname, directory);

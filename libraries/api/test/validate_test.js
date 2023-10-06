@@ -1,11 +1,11 @@
-const request = require('superagent');
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const path = require('path');
-const SchemaSet = require('taskcluster-lib-validate');
-const testing = require('taskcluster-lib-testing');
+import request from 'superagent';
+import assert from 'assert';
+import { APIBuilder } from '../';
+import helper from './helper';
+import libUrls from 'taskcluster-lib-urls';
+import path from 'path';
+import SchemaSet from 'taskcluster-lib-validate';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);

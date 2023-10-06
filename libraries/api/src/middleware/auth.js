@@ -1,10 +1,10 @@
-const hawk = require('hawk');
-const assert = require('assert');
-const scopes = require('taskcluster-lib-scopes');
-const crypto = require('crypto');
-const utils = require('../utils');
-const ScopeExpressionTemplate = require('../expressions');
-const { ErrorReply } = require('../error-reply');
+import hawk from 'hawk';
+import assert from 'assert';
+import scopes from 'taskcluster-lib-scopes';
+import crypto from 'crypto';
+import utils from '../utils';
+import ScopeExpressionTemplate from '../expressions';
+import { ErrorReply } from '../error-reply';
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies

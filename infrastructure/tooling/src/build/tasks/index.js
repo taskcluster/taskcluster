@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 
 /**
  * Each file in this directory is expected to export a task-generation function taking
@@ -15,4 +15,4 @@ const generateTasks = options => {
   });
 };
 
-module.exports = generateTasks;
+export default generateTasks;

@@ -1,10 +1,10 @@
-require('../../prelude');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const libReferences = require('taskcluster-lib-references');
-const taskcluster = require('taskcluster-client');
-const config = require('taskcluster-lib-config');
-const taskqueue = require('./TaskQueue');
+import '../../prelude';
+import loader from 'taskcluster-lib-loader';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import libReferences from 'taskcluster-lib-references';
+import taskcluster from 'taskcluster-client';
+import config from 'taskcluster-lib-config';
+import taskqueue from './TaskQueue';
 
 const load = loader({
   cfg: {
@@ -69,4 +69,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

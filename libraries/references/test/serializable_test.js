@@ -1,9 +1,9 @@
-const assert = require('assert');
-const References = require('..');
-const { makeSerializable } = require('../src/serializable');
-const { getCommonSchemas } = require('../src/common-schemas');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import References from '..';
+import { makeSerializable } from '../src/serializable';
+import { getCommonSchemas } from '../src/common-schemas';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();

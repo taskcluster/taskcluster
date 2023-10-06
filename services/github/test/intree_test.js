@@ -1,10 +1,10 @@
-const fs = require('fs');
-const assert = require('assert');
-const _ = require('lodash');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const yaml = require('js-yaml');
-const testing = require('taskcluster-lib-testing');
+import fs from 'fs';
+import assert from 'assert';
+import _ from 'lodash';
+import helper from './helper';
+import libUrls from 'taskcluster-lib-urls';
+import yaml from 'js-yaml';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   let intree;

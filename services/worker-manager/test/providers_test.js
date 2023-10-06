@@ -1,7 +1,7 @@
-const assert = require('assert');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { setSetupRetryInterval } = require('../src/providers');
+import assert from 'assert';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
+import { setSetupRetryInterval } from '../src/providers';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

@@ -1,6 +1,6 @@
-const assert = require('assert').strict;
-const { dollarQuote, ETA } = require('./util');
-const { UNDEFINED_FUNCTION } = require('./constants');
+import { strict as assert } from 'assert';
+import { dollarQuote, ETA } from './util';
+import { UNDEFINED_FUNCTION } from './constants';
 
 const inTransaction = async (client, callable) => {
   await client.query('begin');
@@ -153,7 +153,7 @@ const runOnlineBatches = async ({ client, showProgress, versionNum, kind }) => {
   });
 
   // if there is no online-migration function, there's nothing to do
-  if (!hooks['runBatch'] && !await fnExists({ client, name: batchFn })) {
+  if (!hooks['runBatch'] && !(await fnExists({ client, name: batchFn }))) {
     return;
   }
 
@@ -238,7 +238,7 @@ const runOnlineDowngrade = async ({ client, showProgress, versionNum }) => {
   });
 };
 
-module.exports = {
+export default {
   runMigration,
   runDowngrade,
   runOnlineMigration,

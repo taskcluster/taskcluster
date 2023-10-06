@@ -1,8 +1,8 @@
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { fromNow } = require('taskcluster-client');
-const helper = require('../helper');
-const slugid = require('slugid');
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import { fromNow } from 'taskcluster-client';
+import helper from '../helper';
+import slugid from 'slugid';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'github' });

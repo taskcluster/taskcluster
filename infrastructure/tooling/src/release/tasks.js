@@ -1,7 +1,8 @@
-const semver = require('semver');
-const path = require('path');
-const { ChangeLog } = require('../changelog');
-const {
+import semver from 'semver';
+import path from 'path';
+import { ChangeLog } from '../changelog';
+
+import {
   ensureTask,
   gitLsFiles,
   gitRemoteRev,
@@ -21,12 +22,13 @@ const {
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
-} = require('../utils');
-const { schema: readSchema } = require('taskcluster-db');
+} from '../utils';
+
+import { schema as readSchema } from 'taskcluster-db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
-module.exports = ({ tasks, cmdOptions, credentials }) => {
+export default ({ tasks, cmdOptions, credentials }) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
     requires: [

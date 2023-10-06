@@ -1,5 +1,5 @@
-const uuid = require('uuid');
-const { ErrorReply } = require('../error-reply');
+import uuid from 'uuid';
+import { ErrorReply } from '../error-reply';
 
 exports.isProduction = process.env.NODE_ENV === 'production';
 

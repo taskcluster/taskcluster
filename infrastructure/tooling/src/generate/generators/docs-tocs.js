@@ -1,7 +1,7 @@
-const { promisify } = require('util');
-const md = require('md-directory');
-const { join } = require('path');
-const { REPO_ROOT, writeRepoJSON } = require('../../utils');
+import { promisify } from 'util';
+import md from 'md-directory';
+import { join } from 'path';
+import { REPO_ROOT, writeRepoJSON } from '../../utils';
 
 const mdParseDir = promisify(md.parseDir);
 
@@ -150,7 +150,7 @@ function makeToc({ files, rootPath }) {
   return nodes;
 }
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Docs TOCs',
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-toc'],

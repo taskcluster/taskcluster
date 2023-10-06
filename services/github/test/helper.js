@@ -1,14 +1,23 @@
-const http = require('http');
-const fs = require('fs');
-const _ = require('lodash');
-const sinon = require('sinon');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const fakeGithubAuth = require('./github-auth');
-const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import http from 'http';
+import fs from 'fs';
+import _ from 'lodash';
+import sinon from 'sinon';
+import builder from '../src/api';
+import taskcluster from 'taskcluster-client';
+import load from '../src/main';
+import fakeGithubAuth from './github-auth';
 
-exports.load = stickyLoader(load);
+import {
+  fakeauth,
+  stickyLoader,
+  Secrets,
+  withPulse,
+  withMonitor,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
+
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -18,7 +27,7 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secrets: {
   },
   load: exports.load,
@@ -26,7 +35,7 @@ exports.secrets = new Secrets({
 
 // Build an http request from a json file with fields describing
 // headers and a body
-exports.jsonHttpRequest = function(jsonFile, options) {
+export const jsonHttpRequest = function(jsonFile, options) {
   let defaultOptions = {
     hostname: 'localhost',
     port: 60415,
@@ -48,11 +57,11 @@ exports.jsonHttpRequest = function(jsonFile, options) {
   });
 };
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'github');
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-github' });
 };
 
@@ -60,7 +69,7 @@ exports.withPulse = (mock, skipping) => {
  * Set the `github` loader component to a fake version.
  * This is reset before each test.  Call this before withServer.
  */
-exports.withFakeGithub = (mock, skipping) => {
+export const withFakeGithub = (mock, skipping) => {
   suiteSetup(function() {
     exports.load.inject('github', fakeGithubAuth());
   });
@@ -70,7 +79,7 @@ exports.withFakeGithub = (mock, skipping) => {
   });
 
   setup(async function() {
-    let fakeGithub = await exports.load('github');
+    let fakeGithub = await load('github');
     fakeGithub.resetStubs();
   });
 };
@@ -78,7 +87,7 @@ exports.withFakeGithub = (mock, skipping) => {
 /**
  * Set the `queueClient` loader component to a fake version.
  */
-exports.withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (mock, skipping) => {
   const fakeQueueClient = () => new taskcluster.Queue({
     rootUrl: 'https://tc.example.com',
     fake: {
@@ -102,19 +111,20 @@ exports.withFakeQueue = (mock, skipping) => {
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.rootUrl = 'http://localhost:60415';
+    export const rootUrl = 'http://localhost:60415';
+
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
     exports.load.cfg('taskcluster.clientId', null);
     exports.load.cfg('taskcluster.accessToken', null);
@@ -123,15 +133,15 @@ exports.withServer = (mock, skipping) => {
       'test-client': ['*'],
     }, { rootUrl: exports.rootUrl });
 
-    exports.GithubClient = taskcluster.createClient(builder.reference());
+    export const GithubClient = taskcluster.createClient(builder.reference());
 
-    exports.apiClient = new exports.GithubClient({
+    export const apiClient = new exports.GithubClient({
       credentials: { clientId: 'test-client', accessToken: 'unused' },
       rootUrl: exports.rootUrl,
       retries: 0,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -146,7 +156,7 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'github_builds',

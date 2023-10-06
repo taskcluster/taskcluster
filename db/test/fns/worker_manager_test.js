@@ -1,9 +1,9 @@
-const _ = require('lodash');
-const slug = require('slugid');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { fromNow } = require('taskcluster-client');
+import _ from 'lodash';
+import slug from 'slugid';
+import { strict as assert } from 'assert';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { fromNow } from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'worker_manager' });

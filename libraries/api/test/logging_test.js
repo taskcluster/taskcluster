@@ -1,12 +1,12 @@
-const request = require('superagent');
-const assert = require('assert');
-const hawk = require('hawk');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import request from 'superagent';
+import assert from 'assert';
+import hawk from 'hawk';
+import { APIBuilder } from '../';
+import helper from './helper';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+import { LEVELS } from 'taskcluster-lib-monitor';
 
 suite(testing.suiteName(), function() {
   // Create test api

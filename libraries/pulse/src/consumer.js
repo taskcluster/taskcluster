@@ -1,7 +1,7 @@
-const debug = require('debug');
-const amqplib = require('amqplib');
-const assert = require('assert');
-const slugid = require('slugid');
+import debug from 'debug';
+import amqplib from 'amqplib';
+import assert from 'assert';
+import slugid from 'slugid';
 
 /**
  * Recognize some "expected", ignorable errors due to normal network failures.

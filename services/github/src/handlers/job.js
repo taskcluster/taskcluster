@@ -1,10 +1,10 @@
-const assert = require('assert');
-const stringify = require('fast-json-stable-stringify');
-const libUrls = require('taskcluster-lib-urls');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { makeDebug } = require('./utils');
-const { POLICIES } = require('./policies');
-const { GITHUB_TASKS_FOR } = require('../constants');
+import assert from 'assert';
+import stringify from 'fast-json-stable-stringify';
+import libUrls from 'taskcluster-lib-urls';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { makeDebug } from './utils';
+import { POLICIES } from './policies';
+import { GITHUB_TASKS_FOR } from '../constants';
 
 /**
  * If a .taskcluster.yml exists, attempt to turn it into a taskcluster
@@ -271,6 +271,6 @@ async function jobHandler(message) {
   debug(`Job handling for ${organization}/${repository}@${sha} completed.`);
 }
 
-module.exports = {
+export default {
   jobHandler,
 };

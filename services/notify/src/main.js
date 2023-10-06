@@ -1,27 +1,26 @@
-require('../../prelude');
-const aws = require('aws-sdk');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const { App } = require('taskcluster-lib-app');
-const loader = require('taskcluster-lib-loader');
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const taskcluster = require('taskcluster-client');
-const _ = require('lodash');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const builder = require('./api');
-const Notifier = require('./notifier');
-const RateLimit = require('./ratelimit');
-const Denier = require('./denier');
-const Handler = require('./handler');
-const exchanges = require('./exchanges');
-const matrix = require('matrix-js-sdk');
-const MatrixBot = require('./matrix');
-const slack = require('@slack/web-api');
-const SlackBot = require('./slack');
-const tcdb = require('taskcluster-db');
-
-require('./monitor');
+import '../../prelude';
+import aws from 'aws-sdk';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { App } from 'taskcluster-lib-app';
+import loader from 'taskcluster-lib-loader';
+import config from 'taskcluster-lib-config';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import taskcluster from 'taskcluster-client';
+import _ from 'lodash';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import builder from './api';
+import Notifier from './notifier';
+import RateLimit from './ratelimit';
+import Denier from './denier';
+import Handler from './handler';
+import exchanges from './exchanges';
+import matrix from 'matrix-js-sdk';
+import MatrixBot from './matrix';
+import slack from '@slack/web-api';
+import SlackBot from './slack';
+import tcdb from 'taskcluster-db';
+import './monitor';
 
 // Create component loader
 const load = loader({
@@ -237,4 +236,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

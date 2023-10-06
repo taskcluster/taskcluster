@@ -1,11 +1,11 @@
-const request = require('superagent');
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const expressError = require('../src/middleware/express-error.js');
-const testing = require('taskcluster-lib-testing');
+import request from 'superagent';
+import assert from 'assert';
+import { APIBuilder } from '../';
+import helper from './helper';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import expressError from '../src/middleware/express-error.js';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   // Create test api

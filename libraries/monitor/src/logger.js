@@ -1,6 +1,6 @@
-const os = require('os');
-const assert = require('assert');
-const stringify = require('fast-json-stable-stringify');
+import os from 'os';
+import assert from 'assert';
+import stringify from 'fast-json-stable-stringify';
 
 const LEVELS = {
   emerg: 0,
@@ -222,4 +222,4 @@ class Logger {
   }
 }
 
-module.exports = { Logger, LEVELS };
+export default { Logger, LEVELS };

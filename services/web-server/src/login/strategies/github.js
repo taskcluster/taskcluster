@@ -1,15 +1,15 @@
-const assert = require('assert');
-const passport = require('passport');
-const { Strategy } = require('passport-github');
-const taskcluster = require('taskcluster-client');
-const User = require('../User');
-const login = require('../../utils/login');
-const WebServerError = require('../../utils/WebServerError');
-const tryCatch = require('../../utils/tryCatch');
-const { encode, decode } = require('../../utils/codec');
-const GithubClient = require('../clients/GithubClient');
+import assert from 'assert';
+import passport from 'passport';
+import { Strategy } from 'passport-github';
+import taskcluster from 'taskcluster-client';
+import User from '../User';
+import login from '../../utils/login';
+import WebServerError from '../../utils/WebServerError';
+import tryCatch from '../../utils/tryCatch';
+import { encode, decode } from '../../utils/codec';
+import GithubClient from '../clients/GithubClient';
 
-module.exports = class Github {
+export default class Github {
   constructor({ name, cfg, monitor, db }) {
     const strategyCfg = cfg.login.strategies[name];
 

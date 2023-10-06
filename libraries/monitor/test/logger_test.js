@@ -1,9 +1,9 @@
-const assert = require('assert');
-const stream = require('stream');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const MonitorManager = require('../src/monitormanager');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import stream from 'stream';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import MonitorManager from '../src/monitormanager';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;

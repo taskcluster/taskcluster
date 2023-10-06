@@ -1,11 +1,13 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const auth = require('@azure/ms-rest-nodeauth');
-const armCompute = require('@azure/arm-compute');
-const armNetwork = require('@azure/arm-network');
+import { FakeCloud } from './fake';
+import { strict as assert } from 'assert';
+import auth from '@azure/ms-rest-nodeauth';
+import armCompute from '@azure/arm-compute';
+import armNetwork from '@azure/arm-network';
+
 //const msRestJS = require('@azure/ms-rest-js');
-const msRestAzure = require('@azure/ms-rest-azure-js');
-const slugid = require('slugid');
+import msRestAzure from '@azure/ms-rest-azure-js';
+
+import slugid from 'slugid';
 
 /**
  * Fake the Azure SDK.

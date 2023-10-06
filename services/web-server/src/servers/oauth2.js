@@ -1,15 +1,15 @@
-const taskcluster = require('taskcluster-client');
-const { scopeIntersection } = require('taskcluster-lib-scopes');
-const oauth2orize = require('oauth2orize');
-const _ = require('lodash');
-const WebServerError = require('../utils/WebServerError');
-const tryCatch = require('../utils/tryCatch');
-const ensureLoggedIn = require('../utils/ensureLoggedIn');
-const expressWrapAsync = require('../utils/expressWrapAsync');
-const unpromisify = require('../utils/unpromisify');
-const hash = require('../utils/hash');
+import taskcluster from 'taskcluster-client';
+import { scopeIntersection } from 'taskcluster-lib-scopes';
+import oauth2orize from 'oauth2orize';
+import _ from 'lodash';
+import WebServerError from '../utils/WebServerError';
+import tryCatch from '../utils/tryCatch';
+import ensureLoggedIn from '../utils/ensureLoggedIn';
+import expressWrapAsync from '../utils/expressWrapAsync';
+import unpromisify from '../utils/unpromisify';
+import hash from '../utils/hash';
 
-module.exports = (cfg, db, strategies, auth, monitor) => {
+export default (cfg, db, strategies, auth, monitor) => {
   // Create OAuth 2.0 server
   const server = oauth2orize.createServer();
 

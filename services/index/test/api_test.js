@@ -1,12 +1,13 @@
-const assert = require('assert');
-const debug = require('debug')('index:test:api_test');
-const helper = require('./helper');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const assume = require('assume');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('index:test:api_test');
+import helper from './helper';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import request from 'superagent';
+import assume from 'assume';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

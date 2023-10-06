@@ -1,10 +1,11 @@
-const slugid = require('slugid');
-const assert = require('assert');
-const Bucket = require('../src/bucket');
-const debug = require('debug')('test:bucket_test');
-const request = require('superagent');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import slugid from 'slugid';
+import assert from 'assert';
+import Bucket from '../src/bucket';
+import debugFactory from 'debug';
+const debug = debugFactory('test:bucket_test');
+import request from 'superagent';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withS3(mock, skipping);

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { SYNTAX_ERROR } = require('./constants');
+import fs from 'fs';
+import path from 'path';
+import { SYNTAX_ERROR } from './constants';
 
 exports.ignorePgErrors = async (promise, ...codes) => {
   try {

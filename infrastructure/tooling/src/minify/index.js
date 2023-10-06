@@ -1,5 +1,5 @@
-const { getTasks } = require('./tasks');
-const { TaskGraph, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
+import { getTasks } from './tasks';
+import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
 const main = async (options) => {
   const taskgraph = new TaskGraph(await getTasks(), {
@@ -10,4 +10,4 @@ const main = async (options) => {
   await taskgraph.run();
 };
 
-module.exports = { main };
+export default { main };

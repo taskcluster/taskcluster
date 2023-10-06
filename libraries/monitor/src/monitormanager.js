@@ -1,14 +1,14 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-const { omit } = require('lodash');
-const stream = require('stream');
-const { LEVELS } = require('./logger');
-const Monitor = require('./monitor');
-const chalk = require('chalk');
-const Debug = require('debug');
-const plugins = require('./plugins');
-const { cleanupDescription } = require('./util');
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import { omit } from 'lodash';
+import stream from 'stream';
+import { LEVELS } from './logger';
+import Monitor from './monitor';
+import chalk from 'chalk';
+import Debug from 'debug';
+import plugins from './plugins';
+import { cleanupDescription } from './util';
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 
@@ -222,4 +222,4 @@ class MonitorManager {
 }
 MonitorManager.types = {};
 
-module.exports = MonitorManager;
+export default MonitorManager;

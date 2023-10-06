@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const builder = require('./api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { artifactUtils } = require('./utils');
-const { Task } = require('./data');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
+import _ from 'lodash';
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import builder from './api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { artifactUtils } from './utils';
+import { Task } from './data';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
 
 // map from storage type to whether it needs a finishArtifact call
 const STORAGE_TYPE_NEEDS_FINISH = {
@@ -1007,4 +1007,4 @@ builder.declare({
 });
 
 // export for testing
-module.exports = { createArtifactCallsCompatible };
+export default { createArtifactCallsCompatible };

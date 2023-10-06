@@ -1,23 +1,33 @@
-const assert = require('assert');
-const path = require('path');
-const aws = require('aws-sdk');
-const taskcluster = require('taskcluster-client');
-const { stickyLoader, Secrets, fakeauth, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
-const RateLimit = require('../src/ratelimit');
-const debug = require('debug')('test');
-const sinon = require('sinon');
+import assert from 'assert';
+import path from 'path';
+import aws from 'aws-sdk';
+import taskcluster from 'taskcluster-client';
+
+import {
+  stickyLoader,
+  Secrets,
+  fakeauth,
+  withPulse,
+  withMonitor,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
+
+import builder from '../src/api';
+import load from '../src/main';
+import RateLimit from '../src/ratelimit';
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import sinon from 'sinon';
 
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
-exports.suiteName = path.basename;
-exports.rootUrl = 'http://localhost:60401';
-
-exports.load = stickyLoader(load);
+export const suiteName = path.basename;
+export const rootUrl = 'http://localhost:60401';
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -27,7 +37,7 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-notify',
   ],
@@ -43,7 +53,7 @@ exports.secrets = new Secrets({
 /**
  * Define a fake denier that will deny anything with 'denied' in the address
  */
-exports.withDenier = (mock, skipping) => {
+export const withDenier = (mock, skipping) => {
   suiteSetup('withDenier', async function() {
     if (skipping()) {
       return;
@@ -79,7 +89,7 @@ class MockSES {
   }
 }
 
-exports.withSES = (mock, skipping) => {
+export const withSES = (mock, skipping) => {
   let ses;
   let sqs;
 
@@ -88,12 +98,13 @@ exports.withSES = (mock, skipping) => {
       return;
     }
 
-    const cfg = await exports.load('cfg');
+    const cfg = await load('cfg');
 
     if (mock) {
       ses = new MockSES();
       exports.load.inject('ses', ses);
-      exports.checkEmails = (check) => {
+
+      export const checkEmails = (check) => {
         assert.equal(ses.emails.length, 1, 'Not exactly one email present!');
         check(ses.emails.pop());
       };
@@ -163,7 +174,7 @@ exports.withSES = (mock, skipping) => {
         }).promise();
       }
 
-      exports.checkEmails = async (check) => {
+      export const checkEmails = async (check) => {
         const resp = await sqs.receiveMessage({
           QueueUrl: emailSQSQueue,
           AttributeNames: ['ApproximateReceiveCount'],
@@ -229,13 +240,13 @@ const stubbedQueue = () => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (mock, skipping) => {
   suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
     }
 
-    exports.queue = stubbedQueue();
+    export const queue = stubbedQueue();
     exports.load.inject('queue', exports.queue);
   });
 };
@@ -248,15 +259,16 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
   }
 });
 
-exports.withFakeMatrix = (mock, skipping) => {
+export const withFakeMatrix = (mock, skipping) => {
   suiteSetup('withFakeMatrix', function() {
     if (skipping()) {
       return;
     }
 
-    exports.matrixClient = {
+    export const matrixClient = {
       sendEvent: fakeMatrixSend(),
     };
+
     exports.load.inject('matrixClient', exports.matrixClient);
   });
 
@@ -265,7 +277,7 @@ exports.withFakeMatrix = (mock, skipping) => {
   });
 };
 
-exports.withFakeSlack = (mock, skipping) => {
+export const withFakeSlack = (mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async function() {
@@ -273,11 +285,12 @@ exports.withFakeSlack = (mock, skipping) => {
       return;
     }
 
-    exports.slackClient = {
+    export const slackClient = {
       chat: {
         postMessage: fakeSlackSend(),
       },
     };
+
     exports.load.inject('slackClient', exports.slackClient);
   });
 
@@ -286,21 +299,21 @@ exports.withFakeSlack = (mock, skipping) => {
   });
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-notify' });
 };
 
 /**
  * Set up an API server.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -312,9 +325,9 @@ exports.withServer = (mock, skipping) => {
 
     exports.load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
 
-    exports.NotifyClient = taskcluster.createClient(builder.reference());
+    export const NotifyClient = taskcluster.createClient(builder.reference());
 
-    exports.apiClient = new exports.NotifyClient({
+    export const apiClient = new exports.NotifyClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
@@ -323,7 +336,7 @@ exports.withServer = (mock, skipping) => {
       rootUrl: exports.rootUrl,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -338,11 +351,11 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'notify');
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'denylisted_notifications',

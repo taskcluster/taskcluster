@@ -1,8 +1,8 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift';
+import ConnectionLoader from '../ConnectionLoader';
 
-module.exports = ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

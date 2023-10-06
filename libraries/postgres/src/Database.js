@@ -1,14 +1,21 @@
-const _ = require('lodash');
-const { Pool } = require('pg');
-const pg = require('pg');
-const crypto = require('crypto');
-const { annotateError } = require('./util');
-const Keyring = require('./Keyring');
-const assert = require('assert').strict;
-const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { parse: parseConnectionString } = require('pg-connection-string');
-const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } = require('./migration');
+import _ from 'lodash';
+import { Pool } from 'pg';
+import pg from 'pg';
+import crypto from 'crypto';
+import { annotateError } from './util';
+import Keyring from './Keyring';
+import { strict as assert } from 'assert';
+import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { parse as parseConnectionString } from 'pg-connection-string';
+
+import {
+  runMigration,
+  runOnlineMigration,
+  runDowngrade,
+  runOnlineDowngrade,
+  dropOnlineFns,
+} from './migration';
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -725,4 +732,4 @@ class Database {
   }
 }
 
-module.exports = Database;
+export default Database;

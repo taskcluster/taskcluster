@@ -1,9 +1,9 @@
-const path = require('path');
-const assert = require('assert');
-const { Client } = require('pg');
-const { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } = require('taskcluster-lib-postgres');
-const tcdb = require('taskcluster-db');
-const { URL } = require('url');
+import path from 'path';
+import assert from 'assert';
+import { Client } from 'pg';
+import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from 'taskcluster-lib-postgres';
+import tcdb from 'taskcluster-db';
+import { URL } from 'url';
 
 const testDbUrl = process.env.TEST_DB_URL;
 

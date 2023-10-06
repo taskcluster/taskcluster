@@ -1,10 +1,10 @@
-const util = require('util');
-const path = require('path');
+import util from 'util';
+import path from 'path';
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const References = require('taskcluster-lib-references');
+import mkdirp from 'mkdirp';
+import References from 'taskcluster-lib-references';
 const exec = util.promisify(require('child_process').execFile);
-const { REPO_ROOT, writeRepoJSON, listServices } = require('../../utils');
+import { REPO_ROOT, writeRepoJSON, listServices } from '../../utils';
 
 /**
  * This file defines a few tasks that call generateReferences for all services,
@@ -16,7 +16,7 @@ const SERVICES = listServices();
 const tempDir = path.join(REPO_ROOT, 'temp');
 const genDir = path.join(tempDir, 'generated');
 
-exports.tasks = [];
+export const tasks = [];
 
 /**
  * Extract the docs/refs information from each service

@@ -1,10 +1,10 @@
-const assert = require('assert');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const deleteWorkerPoolMutation = require('../fixtures/deleteWorkerPool.graphql');
-const workerPoolQuery = require('../fixtures/workerPool.graphql');
-const workerPoolsQuery = require('../fixtures/workerPools.graphql');
+import assert from 'assert';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper';
+import deleteWorkerPoolMutation from '../fixtures/deleteWorkerPool.graphql';
+import workerPoolQuery from '../fixtures/workerPool.graphql';
+import workerPoolsQuery from '../fixtures/workerPools.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

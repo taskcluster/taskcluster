@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   POLICIES: {
     PUBLIC: 'public',
     PUBLIC_RESTRICTED: 'public_restricted',

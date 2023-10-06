@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert');
-const MockDate = require('mockdate');
-const RateLimit = require('../src/ratelimit');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import assert from 'assert';
+import MockDate from 'mockdate';
+import RateLimit from '../src/ratelimit';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   let rateLimit;

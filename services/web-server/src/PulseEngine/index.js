@@ -1,11 +1,11 @@
-const { slugid } = require('taskcluster-client');
-const PulseIterator = require('./PulseIterator');
-const MessageIterator = require('./MessageIterator');
-const EventIterator = require('./EventIterator');
-const Subscription = require('./Subscription');
-const pSynchronize = require('p-synchronize');
+import { slugid } from 'taskcluster-client';
+import PulseIterator from './PulseIterator';
+import MessageIterator from './MessageIterator';
+import EventIterator from './EventIterator';
+import Subscription from './Subscription';
+import pSynchronize from 'p-synchronize';
 
-module.exports = class PulseEngine {
+export default class PulseEngine {
   /* Operation:
    *
    * Each subscription gets one queue (named after the subscriptionId), with a

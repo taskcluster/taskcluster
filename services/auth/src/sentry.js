@@ -1,5 +1,5 @@
-const builder = require('./api');
-const _ = require('lodash');
+import builder from './api';
+import _ from 'lodash';
 
 builder.declare({
   method: 'get',

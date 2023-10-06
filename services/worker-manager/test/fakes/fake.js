@@ -1,9 +1,9 @@
-const sinon = require('sinon');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const fs = require('fs');
-const yaml = require('js-yaml');
-const path = require('path');
+import sinon from 'sinon';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import fs from 'fs';
+import yaml from 'js-yaml';
+import path from 'path';
 
 /**
  * A parent class for fake cloud implementations.

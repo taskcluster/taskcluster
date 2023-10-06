@@ -1,10 +1,10 @@
-const { Worker, isMainThread, parentPort } = require('worker_threads');
-const _ = require('lodash');
-const { REPO_ROOT, gitLsFiles, readRepoFile } = require('../../utils');
-const acorn = require("acorn-loose");
-const walk = require("acorn-walk");
-const builtinModules = require('builtin-modules');
-const stringify = require('fast-json-stable-stringify');
+import { Worker, isMainThread, parentPort } from 'worker_threads';
+import _ from 'lodash';
+import { REPO_ROOT, gitLsFiles, readRepoFile } from '../../utils';
+import acorn from 'acorn-loose';
+import walk from 'acorn-walk';
+import builtinModules from 'builtin-modules';
+import stringify from 'fast-json-stable-stringify';
 
 /*
  * The 'depcheck' tool is async but still blocks for long stretches, perhaps
@@ -12,7 +12,7 @@ const stringify = require('fast-json-stable-stringify');
  */
 
 if (isMainThread) {
-  exports.tasks = [];
+  export const tasks = [];
   exports.tasks.push({
     title: 'Dependencies are used and installed',
     requires: [],

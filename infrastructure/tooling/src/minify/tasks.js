@@ -1,5 +1,5 @@
-const minify = require('yarn-minify');
-const { gitLsFiles } = require('../utils');
+import minify from 'yarn-minify';
+import { gitLsFiles } from '../utils';
 
 // Ignore packages while we slowly whittle away the requirements
 const IGNORE = {
@@ -93,7 +93,7 @@ const IGNORE = {
   ].includes(pkg),
 };
 
-exports.getTasks = async () => {
+export const getTasks = async () => {
   const tasks = [];
 
   for (const file of await gitLsFiles()) {

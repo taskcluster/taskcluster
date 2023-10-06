@@ -1,12 +1,12 @@
-const { ApiError, Provider } = require('./provider');
-const aws = require('aws-sdk');
-const taskcluster = require('taskcluster-client');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const _ = require('lodash');
-const { CloudAPI } = require('./cloudapi');
-const { WorkerPool, Worker } = require('../data');
+import { ApiError, Provider } from './provider';
+import aws from 'aws-sdk';
+import taskcluster from 'taskcluster-client';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import _ from 'lodash';
+import { CloudAPI } from './cloudapi';
+import { WorkerPool, Worker } from '../data';
 
 class AwsProvider extends Provider {
   constructor({
@@ -481,6 +481,6 @@ class AwsProvider extends Provider {
   }
 }
 
-module.exports = {
+export default {
   AwsProvider,
 };

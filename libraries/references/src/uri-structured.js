@@ -1,7 +1,7 @@
-const mkdirp = require('mkdirp');
-const rimraf = require('rimraf');
-const path = require('path');
-const fs = require('fs');
+import mkdirp from 'mkdirp';
+import rimraf from 'rimraf';
+import path from 'path';
+import fs from 'fs';
 
 const writeUriStructured = ({ directory, serializable }) => {
   rimraf.sync(directory);

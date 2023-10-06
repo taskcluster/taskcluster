@@ -1,6 +1,6 @@
-const assert = require('assert');
-const { getCommonSchemas } = require('../src/common-schemas');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import { getCommonSchemas } from '../src/common-schemas';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   test('loads common schemas', function() {

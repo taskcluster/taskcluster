@@ -1,9 +1,9 @@
-const path = require('path');
-const { fork } = require('child_process');
-const mockFs = require('mock-fs');
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const MonitorManager = require('../src/monitormanager');
+import path from 'path';
+import { fork } from 'child_process';
+import mockFs from 'mock-fs';
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import MonitorManager from '../src/monitormanager';
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;

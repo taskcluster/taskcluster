@@ -1,10 +1,10 @@
-const { fromNow } = require('taskcluster-client');
-const { range } = require('lodash');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { CHECK_VIOLATION, UNIQUE_VIOLATION, FOREIGN_KEY_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
+import { fromNow } from 'taskcluster-client';
+import { range } from 'lodash';
+import { strict as assert } from 'assert';
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { CHECK_VIOLATION, UNIQUE_VIOLATION, FOREIGN_KEY_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'object' });

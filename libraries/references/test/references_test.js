@@ -1,10 +1,10 @@
-const assert = require('assert');
-const fs = require('fs');
-const { getCommonSchemas } = require('../src/common-schemas');
-const { makeSerializable } = require('../src/serializable');
-const mockFs = require('mock-fs');
-const References = require('..');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import fs from 'fs';
+import { getCommonSchemas } from '../src/common-schemas';
+import { makeSerializable } from '../src/serializable';
+import mockFs from 'mock-fs';
+import References from '..';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   teardown(function() {

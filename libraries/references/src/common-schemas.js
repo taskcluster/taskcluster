@@ -1,7 +1,7 @@
-const yaml = require('js-yaml');
-const path = require('path');
-const fs = require('fs');
-const assert = require('assert');
+import yaml from 'js-yaml';
+import path from 'path';
+import fs from 'fs';
+import assert from 'assert';
 
 let _commonSchemas;
 

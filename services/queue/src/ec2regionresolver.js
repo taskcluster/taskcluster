@@ -1,9 +1,9 @@
-let { Netmask } = require('netmask');
-let requestIp = require('request-ip');
-let request = require('superagent');
-let assert = require('assert');
-let fs = require('fs');
-let path = require('path');
+import { Netmask } from 'netmask';
+import requestIp from 'request-ip';
+import request from 'superagent';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 
 // Static URL from which ip-ranges from AWS services can be fetched
 const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
@@ -115,4 +115,4 @@ class EC2RegionResolver {
 }
 
 // Export EC2RegionResolver
-module.exports = EC2RegionResolver;
+export default EC2RegionResolver;

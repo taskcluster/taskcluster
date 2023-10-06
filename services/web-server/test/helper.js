@@ -1,19 +1,19 @@
-const load = require('../src/main');
-const taskcluster = require('taskcluster-client');
-const { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
-const sinon = require('sinon');
-const GithubClient = require('../src/login/clients/GithubClient');
-const libUrls = require('taskcluster-lib-urls');
-const request = require('superagent');
-const merge = require('deepmerge');
-const PulseEngine = require('../src/PulseEngine');
-const { WebSocketLink } = require('apollo-link-ws');
-const WebSocket = require('ws');
-const { SubscriptionClient } = require('subscriptions-transport-ws');
-const { ApolloClient } = require('apollo-client');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { HttpLink } = require('apollo-link-http');
-const got = require('got');
+import load from '../src/main';
+import taskcluster from 'taskcluster-client';
+import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from 'taskcluster-lib-testing';
+import sinon from 'sinon';
+import GithubClient from '../src/login/clients/GithubClient';
+import libUrls from 'taskcluster-lib-urls';
+import request from 'superagent';
+import merge from 'deepmerge';
+import PulseEngine from '../src/PulseEngine';
+import { WebSocketLink } from 'apollo-link-ws';
+import WebSocket from 'ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { ApolloClient } from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
+import got from 'got';
 
 exports.load = stickyLoader(load);
 

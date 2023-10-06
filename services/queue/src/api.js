@@ -1,11 +1,11 @@
-const assert = require('assert');
-const _ = require('lodash');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const taskcluster = require('taskcluster-client');
-const taskCreds = require('./task-creds');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { Task, Worker, TaskQueue, Provisioner, TaskGroup } = require('./data');
-const { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } = require('./utils');
+import assert from 'assert';
+import _ from 'lodash';
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import taskcluster from 'taskcluster-client';
+import taskCreds from './task-creds';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data';
+import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils';
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -146,7 +146,7 @@ let builder = new APIBuilder({
 });
 
 // Export builder
-module.exports = builder;
+export default builder;
 
 /** Get task */
 builder.declare({
@@ -798,7 +798,7 @@ builder.declare({
   }
 
   // Ensure group membership is declared, and that schedulerId isn't conflicting
-  if (!await ensureTaskGroup(this, taskId, taskDef, res)) {
+  if (!(await ensureTaskGroup(this, taskId, taskDef, res))) {
     return;
   }
 
@@ -1752,7 +1752,7 @@ builder.declare({
 });
 
 // Load artifacts.js so API end-points declared in that file is loaded
-require('./artifacts');
+import './artifacts';
 
 /** Get all active provisioners */
 builder.declare({

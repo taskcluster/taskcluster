@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const request = require('superagent');
-const util = require('util');
+import crypto from 'crypto';
+import request from 'superagent';
+import util from 'util';
 
 const setTimeoutPromise = util.promisify(setTimeout);
 
@@ -161,7 +161,7 @@ const checkGithubSignature = (secret, payload, signature) => {
   return compareSignatures(signature, expected);
 };
 
-module.exports = {
+export default {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,

@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 /**
  * Split a workerPoolId into its deprecated provisionerId/workerPool components.

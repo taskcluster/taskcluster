@@ -1,9 +1,9 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const { NOOP } = require('../utils/constants');
-const hash = require('../utils/hash');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import { NOOP } from '../utils/constants';
+import hash from '../utils/hash';
 
-module.exports = function ({ session, db, options = {} }) {
+export default function ({ session, db, options = {} }) {
   const { Store } = session;
 
   assert(session, 'An express-session object is required');

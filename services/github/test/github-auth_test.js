@@ -1,8 +1,8 @@
-const helper = require('./helper');
-const assert = require('assert');
-const nock = require('nock');
-const githubAuth = require('../src/github-auth');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper';
+import assert from 'assert';
+import nock from 'nock';
+import githubAuth from '../src/github-auth';
+import testing from 'taskcluster-lib-testing';
 
 const WITH_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\nsomekey\nline2\n-----END RSA PRIVATE KEY-----';
 const WITH_ESCAPED_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\\nsomekey\\nline2\\n-----END RSA PRIVATE KEY-----';

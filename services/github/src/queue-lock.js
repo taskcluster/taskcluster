@@ -1,5 +1,6 @@
-const assert = require('assert');
-const debug = require('debug')('queue-lock');
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('queue-lock');
 
 /**
  * Implements locked queue to allow one routine running at a time
@@ -102,4 +103,4 @@ class QueueLock {
   }
 }
 
-module.exports = QueueLock;
+export default QueueLock;

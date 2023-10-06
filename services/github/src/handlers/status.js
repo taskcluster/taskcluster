@@ -1,11 +1,18 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_BACKING_LOG_ARTIFACT_NAME,
-  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
-  CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE,
-} = require('../constants');
-const QueueLock = require('../queue-lock');
-const { tailLog, markdownLog, markdownAnchor } = require('../utils');
-const { requestArtifact } = require('./requestArtifact');
-const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
+import {
+  CONCLUSIONS,
+  CHECKLOGS_TEXT,
+  CHECKRUN_TEXT,
+  LIVE_BACKING_LOG_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
+  CHECK_RUN_STATES,
+  TASK_STATE_TO_CHECK_RUN_STATE,
+} from '../constants';
+
+import QueueLock from '../queue-lock';
+import { tailLog, markdownLog, markdownAnchor } from '../utils';
+import { requestArtifact } from './requestArtifact';
+import { taskUI, makeDebug, taskLogUI, GithubCheck } from './utils';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -209,6 +216,6 @@ async function statusHandler(message) {
   }
 }
 
-module.exports = {
+export default {
   statusHandler,
 };

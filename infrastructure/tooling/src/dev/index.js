@@ -1,19 +1,26 @@
-const util = require('util');
-const chalk = require('chalk');
-const path = require('path');
-const _ = require('lodash');
-const { readRepoYAML, writeRepoYAML } = require('../utils');
-const inquirer = require('inquirer');
-const commonPrompts = require('./common');
-const { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } = require('./rabbit');
-const { azureResources } = require('./azure');
-const { postgresPrompts, postgresResources, postgresEnsureDb } = require('./postgres');
-const { k8sResources } = require('./k8s');
-const awsResources = require('./aws');
-const taskclusterResources = require('./taskcluster');
-const helm = require('./helm');
-const { makePgUrl } = require('./util');
-const { upgrade, downgrade } = require('taskcluster-db');
+import util from 'util';
+import chalk from 'chalk';
+import path from 'path';
+import _ from 'lodash';
+import { readRepoYAML, writeRepoYAML } from '../utils';
+import inquirer from 'inquirer';
+import commonPrompts from './common';
+
+import {
+  rabbitPrompts,
+  rabbitResources,
+  rabbitAdminPasswordPrompt,
+  rabbitEnsureResources,
+} from './rabbit';
+
+import { azureResources } from './azure';
+import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres';
+import { k8sResources } from './k8s';
+import awsResources from './aws';
+import taskclusterResources from './taskcluster';
+import helm from './helm';
+import { makePgUrl } from './util';
+import { upgrade, downgrade } from 'taskcluster-db';
 
 const USER_CONF_FILE = 'dev-config.yml';
 const readUserConfig = async () => {
@@ -128,7 +135,7 @@ const delete_ = async (options) => {
   await helm('delete');
 };
 
-module.exports = {
+export default {
   init, apply, verify, templates,
   ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade,
 };

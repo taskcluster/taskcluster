@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
-const { MAX_MODIFY_ATTEMPTS } = require('./util');
-const { paginateResults } = require('taskcluster-lib-api');
+import _ from 'lodash';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
+import { MAX_MODIFY_ATTEMPTS } from './util';
+import { paginateResults } from 'taskcluster-lib-api';
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -602,7 +602,7 @@ Worker.states = {
   STOPPED: 'stopped',
 };
 
-module.exports = {
+export default {
   Worker,
   WorkerPool,
   WorkerPoolError,

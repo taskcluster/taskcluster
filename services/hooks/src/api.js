@@ -1,12 +1,12 @@
-const parser = require('cron-parser');
-const taskcluster = require('taskcluster-client');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const nextDate = require('../src/nextdate');
-const _ = require('lodash');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const { hookUtils } = require('./utils');
+import parser from 'cron-parser';
+import taskcluster from 'taskcluster-client';
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import nextDate from '../src/nextdate';
+import _ from 'lodash';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { hookUtils } from './utils';
 
 const builder = new APIBuilder({
   title: 'Hooks Service',
@@ -23,7 +23,7 @@ const builder = new APIBuilder({
   context: ['db', 'taskcreator', 'publisher', 'denylist'],
 });
 
-module.exports = builder;
+export default builder;
 
 /** Get hook groups **/
 builder.declare({

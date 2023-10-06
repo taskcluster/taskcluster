@@ -1,18 +1,17 @@
-const path = require('path');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { withDb, stickyLoader, Secrets, fakeauth, withMonitor } = require('taskcluster-lib-testing');
+import path from 'path';
+import builder from '../src/api';
+import taskcluster from 'taskcluster-client';
+import load from '../src/main';
+import { withDb, stickyLoader, Secrets, fakeauth, withMonitor } from 'taskcluster-lib-testing';
 
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
-exports.suiteName = path.basename;
-exports.rootUrl = 'http://localhost:60415';
-
-exports.load = stickyLoader(load);
+export const suiteName = path.basename;
+export const rootUrl = 'http://localhost:60415';
+export const load = stickyLoader(load);
 
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
@@ -22,19 +21,19 @@ suiteSetup(async function() {
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secrets: {},
   load: exports.load,
 });
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'purge_cache');
 };
 
 /**
  * Set up an API server.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
   let cachePurgeCache = {};
 
@@ -44,7 +43,7 @@ exports.withServer = (mock, skipping) => {
     }
     exports.load.save();
 
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -54,11 +53,11 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.accessToken', null);
     fakeauth.start(testclients, { rootUrl: exports.rootUrl });
 
-    exports.PurgeCacheClient = taskcluster.createClient(builder.reference());
+    export const PurgeCacheClient = taskcluster.createClient(builder.reference());
 
     exports.load.inject('cachePurgeCache', cachePurgeCache);
 
-    exports.apiClient = new exports.PurgeCacheClient({
+    export const apiClient = new exports.PurgeCacheClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
@@ -67,7 +66,7 @@ exports.withServer = (mock, skipping) => {
       rootUrl: exports.rootUrl,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   setup(function() {

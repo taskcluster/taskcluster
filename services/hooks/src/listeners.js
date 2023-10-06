@@ -1,8 +1,8 @@
-const assert = require('assert');
-const pulse = require('taskcluster-lib-pulse');
-const pSynchronize = require('p-synchronize');
-const _ = require('lodash');
-const { queueUtils, hookUtils } = require('./utils');
+import assert from 'assert';
+import pulse from 'taskcluster-lib-pulse';
+import pSynchronize from 'p-synchronize';
+import _ from 'lodash';
+import { queueUtils, hookUtils } from './utils';
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages
@@ -274,4 +274,4 @@ class HookListeners {
   }
 }
 
-module.exports = HookListeners;
+export default HookListeners;

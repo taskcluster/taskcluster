@@ -181,4 +181,4 @@ class WorkClaimer extends events.EventEmitter {
 }
 
 // Export WorkClaimer
-module.exports = WorkClaimer;
+export default WorkClaimer;

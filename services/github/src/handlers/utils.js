@@ -1,6 +1,6 @@
-const path = require('path');
-const libUrls = require('taskcluster-lib-urls');
-const { CHECK_RUN_STATES } = require('../constants');
+import path from 'path';
+import libUrls from 'taskcluster-lib-urls';
+import { CHECK_RUN_STATES } from '../constants';
 
 const taskUI = (rootUrl, taskGroupId, taskId) =>
   libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
@@ -174,7 +174,7 @@ class GithubCheck {
   }
 }
 
-module.exports = {
+export default {
   taskUI,
   taskGroupUI,
   taskLogUI,

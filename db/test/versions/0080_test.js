@@ -1,7 +1,7 @@
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const helper = require('../helper');
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import helper from '../helper';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
 const PREV_VERSION = THIS_VERSION - 1;

@@ -1,13 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  dockerPush,
-  REPO_ROOT,
-} = require('../../utils');
+import fs from 'fs';
+import path from 'path';
+import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [

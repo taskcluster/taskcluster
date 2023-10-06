@@ -1,11 +1,11 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const taskQuery = require('../fixtures/task.graphql');
-const createTaskQuery = require('../fixtures/createTask.graphql');
-const subscribeTasks = require('../fixtures/tasksSubscriptions.graphql');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper';
+import taskQuery from '../fixtures/task.graphql';
+import createTaskQuery from '../fixtures/createTask.graphql';
+import subscribeTasks from '../fixtures/tasksSubscriptions.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

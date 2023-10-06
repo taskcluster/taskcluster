@@ -1,13 +1,14 @@
-const debug = require('debug')('test:create');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { splitTaskQueueId } = require('../src/utils');
+import debugFactory from 'debug';
+const debug = debugFactory('test:create');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import assume from 'assume';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
+import { LEVELS } from 'taskcluster-lib-monitor';
+import { splitTaskQueueId } from '../src/utils';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

@@ -1,12 +1,12 @@
-const helper = require('./helper');
-const ScopeResolver = require('../src/scoperesolver');
-const exchanges = require('../src/exchanges');
-const { scopeCompare } = require('taskcluster-lib-scopes');
-const assert = require('assert');
-const _ = require('lodash');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
-const { hrtime } = require('process');
+import helper from './helper';
+import ScopeResolver from '../src/scoperesolver';
+import exchanges from '../src/exchanges';
+import { scopeCompare } from 'taskcluster-lib-scopes';
+import assert from 'assert';
+import _ from 'lodash';
+import assume from 'assume';
+import testing from 'taskcluster-lib-testing';
+import { hrtime } from 'process';
 
 suite(testing.suiteName(), () => {
   let scopeResolver;

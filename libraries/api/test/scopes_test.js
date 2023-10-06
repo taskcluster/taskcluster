@@ -1,6 +1,6 @@
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import { APIBuilder } from '../';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   // Create test api

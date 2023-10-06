@@ -1,12 +1,9 @@
-const { Client } = require('./client');
-const { consume } = require('./consumer');
-const {
-  pulseCredentials,
-  connectionStringCredentials,
-} = require('./credentials');
-const { Exchanges } = require('./publisher');
+import { Client } from './client';
+import { consume } from './consumer';
+import { pulseCredentials, connectionStringCredentials } from './credentials';
+import { Exchanges } from './publisher';
 
-module.exports = {
+export default {
   Client,
   consume,
   pulseCredentials,

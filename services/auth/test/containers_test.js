@@ -1,7 +1,7 @@
-const assert = require('assert');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { modifyRoles } = require('../src/data');
+import assert from 'assert';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
+import { modifyRoles } from '../src/data';
 
 const sorted = (arr) => {
   arr.sort();

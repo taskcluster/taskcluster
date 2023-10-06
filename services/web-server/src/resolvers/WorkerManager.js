@@ -1,6 +1,6 @@
-const { splitWorkerPoolId } = require('../utils/workerPool');
+import { splitWorkerPoolId } from '../utils/workerPool';
 
-module.exports = {
+export default {
   WorkerManagerWorkerPoolSummary: {
     pendingTasks({ workerPoolId }, args, { loaders }) {
       const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);

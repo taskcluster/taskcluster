@@ -1,6 +1,6 @@
-let assume = require('assume');
-let subject = require('../src');
-let assert = require('assert');
+import assume from 'assume';
+import subject from '../src';
+import assert from 'assert';
 
 suite('component loader', () => {
   test('should load a single component with a static value', async () => {

@@ -1,6 +1,6 @@
-const assert = require('assert');
-const { Backend } = require('./base');
-const { reportError } = require('taskcluster-lib-api');
+import assert from 'assert';
+import { Backend } from './base';
+import { reportError } from 'taskcluster-lib-api';
 
 /**
  * The test backend type is only available when running tests.
@@ -72,4 +72,4 @@ class TestBackend extends Backend {
 
 const toDataUrl = data => 'data:;base64,' + data.toString('base64');
 
-module.exports = { TestBackend, toDataUrl };
+export default { TestBackend, toDataUrl };

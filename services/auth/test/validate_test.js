@@ -1,5 +1,5 @@
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
+import path from 'path';
+import testing from 'taskcluster-lib-testing';
 
 /**
  * Test cases each defined with relative path, schema identifier and success as

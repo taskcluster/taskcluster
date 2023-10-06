@@ -1,4 +1,4 @@
-let assert = require('assert');
+import assert from 'assert';
 
 const artifactUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero

@@ -1,5 +1,5 @@
-const libUrls = require('taskcluster-lib-urls');
-const regexEscape = require('regex-escape');
+import libUrls from 'taskcluster-lib-urls';
+import regexEscape from 'regex-escape';
 
 /**
  * Make a "serializable" data structure from the given references

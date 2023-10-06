@@ -1,14 +1,14 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     'secrets:get:project/taskcluster/smoketest/*',
     'secrets:set:project/taskcluster/smoketest/*',
   ],
 };
 
-exports.tasks = [];
+export const tasks = [];
 
 exports.tasks.push({
   title: 'Create and read secrets (--target secrets)',

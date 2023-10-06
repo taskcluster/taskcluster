@@ -1,4 +1,4 @@
-const { Provider } = require('./provider');
+import { Provider } from './provider';
 
 /**
  * The null provider does absolutely nothing.  It exists only to allow for
@@ -11,6 +11,6 @@ class NullProvider extends Provider {
   }
 }
 
-module.exports = {
+export default {
   NullProvider,
 };

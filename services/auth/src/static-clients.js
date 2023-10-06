@@ -1,8 +1,8 @@
-const assert = require('assert');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const staticScopes = require('./static-scopes.json');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+import assert from 'assert';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import staticScopes from './static-scopes.json';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 
 /**
  * Ensure static clients exist and remove all clients prefixed 'static/', if not
@@ -13,7 +13,7 @@ const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-exports.syncStaticClients = async function(db, clients = []) {
+export const syncStaticClients = async function(db, clients = []) {
   // Validate input for sanity (we hardly need perfect validation here...)
   assert(clients instanceof Array, 'Expected clients to be am array');
   for (const client of clients) {

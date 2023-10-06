@@ -17,4 +17,4 @@ const reportError = (code, message, details = {}) => {
   throw new ErrorReply({ code, message, details });
 };
 
-module.exports = { ErrorReply, reportError };
+export default { ErrorReply, reportError };

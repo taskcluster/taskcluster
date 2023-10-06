@@ -1,14 +1,15 @@
-const debug = require('debug')('taskcluster-lib-validate');
-const _ = require('lodash');
-const fs = require('fs');
-const path = require('path');
-const walk = require('walk');
-const yaml = require('js-yaml');
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const { renderConstants, checkRefs } = require('./util');
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-validate');
+import _ from 'lodash';
+import fs from 'fs';
+import path from 'path';
+import walk from 'walk';
+import yaml from 'js-yaml';
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { renderConstants, checkRefs } from './util';
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';
@@ -147,4 +148,4 @@ class SchemaSet {
   }
 }
 
-module.exports = SchemaSet;
+export default SchemaSet;

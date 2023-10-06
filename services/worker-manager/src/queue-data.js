@@ -1,6 +1,6 @@
-let assert = require('assert');
-let _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from 'taskcluster-lib-api';
 
 class TaskQueue {
   // (private constructor)

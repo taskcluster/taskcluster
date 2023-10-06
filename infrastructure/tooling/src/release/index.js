@@ -1,6 +1,6 @@
-const os = require('os');
-const { TaskGraph, Lock, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
-const generateReleaseTasks = require('./tasks');
+import os from 'os';
+import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import generateReleaseTasks from './tasks';
 
 class Release {
   constructor(cmdOptions) {
@@ -58,4 +58,4 @@ const stagingRelease = async (options) => {
   await release.run(true);
 };
 
-module.exports = { release, stagingRelease, Release };
+export default { release, stagingRelease, Release };

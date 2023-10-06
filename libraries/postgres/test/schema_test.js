@@ -1,6 +1,6 @@
-const { Schema } = require('..');
-const path = require('path');
-const assert = require('assert').strict;
+import { Schema } from '..';
+import path from 'path';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   suite('fromDbDirectory', function() {

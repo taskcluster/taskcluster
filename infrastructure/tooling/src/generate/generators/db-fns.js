@@ -1,7 +1,7 @@
-const { Schema } = require('taskcluster-lib-postgres');
-const { getDbReleases, updateDbFns, readRepoJSON } = require('../../utils');
+import { Schema } from 'taskcluster-lib-postgres';
+import { getDbReleases, updateDbFns, readRepoJSON } from '../../utils';
 
-exports.tasks = [{
+export const tasks = [{
   title: 'README DB Functions',
   requires: ['db-schema-serializable'],
   provides: ['db-fns-readme'],

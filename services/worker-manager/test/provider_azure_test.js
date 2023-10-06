@@ -1,16 +1,16 @@
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const sinon = require('sinon');
-const assert = require('assert');
-const helper = require('./helper');
-const { FakeAzure } = require('./fakes');
-const { AzureProvider, dnToString, getAuthorityAccessInfo, getCertFingerprint } = require('../src/providers/azure');
-const testing = require('taskcluster-lib-testing');
-const forge = require('node-forge');
-const fs = require('fs');
-const path = require('path');
-const { WorkerPool, Worker } = require('../src/data');
-const Debug = require('debug');
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import sinon from 'sinon';
+import assert from 'assert';
+import helper from './helper';
+import { FakeAzure } from './fakes';
+import { AzureProvider, dnToString, getAuthorityAccessInfo, getCertFingerprint } from '../src/providers/azure';
+import testing from 'taskcluster-lib-testing';
+import forge from 'node-forge';
+import fs from 'fs';
+import path from 'path';
+import { WorkerPool, Worker } from '../src/data';
+import Debug from 'debug';
 
 const debug = Debug('provider_azure_test');
 

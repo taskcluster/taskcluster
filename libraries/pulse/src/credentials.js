@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 /**
  * Build Pulse ConnectionString, from options on the form:

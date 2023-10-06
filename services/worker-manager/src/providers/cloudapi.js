@@ -1,4 +1,4 @@
-const { default: PQueue } = require('p-queue');
+import { default as PQueue } from 'p-queue';
 
 /**
  * All cloud providers we interface with have things like api request rate
@@ -93,6 +93,6 @@ class CloudAPI {
   }
 }
 
-module.exports = {
+export default {
   CloudAPI,
 };

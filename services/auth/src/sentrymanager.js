@@ -1,8 +1,9 @@
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const debug = require('debug')('app:sentry');
-const assert = require('assert');
-const SentryClient = require('sentry-api').Client;
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import debugFactory from 'debug';
+const debug = debugFactory('app:sentry');
+import assert from 'assert';
+import { Client as SentryClient } from 'sentry-api';
 
 const pattern = /^ managed \(expires-at:([0-9TZ:.-]+)\)$/;
 const parseKeys = (keys, prefix) => {
@@ -165,4 +166,4 @@ class NullSentryManager {
 }
 
 // Export SentryManager
-module.exports = makeSentryManager;
+export default makeSentryManager;

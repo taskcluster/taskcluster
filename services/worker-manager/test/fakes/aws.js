@@ -1,6 +1,6 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const aws = require('aws-sdk');
+import { FakeCloud } from './fake';
+import { strict as assert } from 'assert';
+import aws from 'aws-sdk';
 
 /**
  * Fake the EC2 AWS SDK.

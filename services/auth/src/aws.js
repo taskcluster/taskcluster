@@ -1,6 +1,6 @@
-const AWS = require('aws-sdk');
-const builder = require('./api');
-const { find } = require('lodash');
+import AWS from 'aws-sdk';
+import builder from './api';
+import { find } from 'lodash';
 
 builder.declare({
   method: 'get',

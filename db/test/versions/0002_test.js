@@ -1,6 +1,6 @@
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { snakeCase } = require('snake-case');
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { snakeCase } from 'snake-case';
 
 // due to some differences in different versions of snake-case, we
 // have some special-cases.  Everything else follows snake-case's

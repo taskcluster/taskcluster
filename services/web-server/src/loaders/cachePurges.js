@@ -1,7 +1,7 @@
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import sift from '../utils/sift';
+import ConnectionLoader from '../ConnectionLoader';
 
-module.exports = ({ purgeCache }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ purgeCache }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const cachePurges = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await purgeCache.allPurgeRequests(options);
 

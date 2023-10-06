@@ -1,8 +1,8 @@
-let assert = require('assert');
-let _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { splitTaskQueueId } = require('./utils');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { splitTaskQueueId } from './utils';
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 

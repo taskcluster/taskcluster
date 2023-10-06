@@ -1,6 +1,6 @@
-const Keyring = require('../src/Keyring');
-const path = require('path');
-const assert = require('assert').strict;
+import Keyring from '../src/Keyring';
+import path from 'path';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   const azureCryptoKey = 'aGVsbG8gZnV0dXJlIHBlcnNvbi4gaSdtIGJzdGFjawo=';

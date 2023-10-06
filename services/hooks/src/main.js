@@ -1,21 +1,21 @@
-require('../../prelude');
-const debug = require('debug')('hooks:bin:server');
-const taskcreator = require('./taskcreator');
-const SchemaSet = require('taskcluster-lib-validate');
-const tcdb = require('taskcluster-db');
-const builder = require('./api');
-const Scheduler = require('./scheduler');
-const config = require('taskcluster-lib-config');
-const loader = require('taskcluster-lib-loader');
-const { App } = require('taskcluster-lib-app');
-const libReferences = require('taskcluster-lib-references');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const taskcluster = require('taskcluster-client');
-const exchanges = require('./exchanges');
-const libPulse = require('taskcluster-lib-pulse');
-const HookListeners = require('./listeners');
-
-require('./monitor');
+import '../../prelude';
+import debugFactory from 'debug';
+const debug = debugFactory('hooks:bin:server');
+import taskcreator from './taskcreator';
+import SchemaSet from 'taskcluster-lib-validate';
+import tcdb from 'taskcluster-db';
+import builder from './api';
+import Scheduler from './scheduler';
+import config from 'taskcluster-lib-config';
+import loader from 'taskcluster-lib-loader';
+import { App } from 'taskcluster-lib-app';
+import libReferences from 'taskcluster-lib-references';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import taskcluster from 'taskcluster-client';
+import exchanges from './exchanges';
+import libPulse from 'taskcluster-lib-pulse';
+import HookListeners from './listeners';
+import './monitor';
 
 // Create component loader
 const load = loader({
@@ -179,4 +179,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

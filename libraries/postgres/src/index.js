@@ -1,7 +1,7 @@
-const util = require('./util');
-const migration = require('./migration');
+import util from './util';
+import migration from './migration';
 
-module.exports = {
+export default {
   Schema: require('./Schema'),
   Database: require('./Database'),
   ...require('./constants'),

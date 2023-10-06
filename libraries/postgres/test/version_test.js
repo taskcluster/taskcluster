@@ -1,6 +1,6 @@
-const Version = require('../src/Version');
-const path = require('path');
-const assert = require('assert').strict;
+import Version from '../src/Version';
+import path from 'path';
+import { strict as assert } from 'assert';
 
 suite(path.basename(__filename), function() {
   suite('Version._checkContent', function() {

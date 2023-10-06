@@ -1,9 +1,9 @@
-const fs = require('fs');
-const glob = require('glob');
-const _ = require('lodash');
-const { REPO_ROOT } = require('../../utils');
+import fs from 'fs';
+import glob from 'glob';
+import _ from 'lodash';
+import { REPO_ROOT } from '../../utils';
 
-exports.tasks = [];
+export const tasks = [];
 exports.tasks.push({
   title: 'Workspace package.json files do not have forbidden fields',
   requires: [],

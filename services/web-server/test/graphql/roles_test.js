@@ -1,14 +1,14 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const createRoleMutation = require('../fixtures/createRole.graphql');
-const roleQuery = require('../fixtures/role.graphql');
-const rolesQuery = require('../fixtures/roles.graphql');
-const deleteRoleMutation = require('../fixtures/deleteRole.graphql');
-const listRoleIdsQuery = require('../fixtures/listRoleIds.graphql');
-const updateRoleMutation = require('../fixtures/updateRole.graphql');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper';
+import createRoleMutation from '../fixtures/createRole.graphql';
+import roleQuery from '../fixtures/role.graphql';
+import rolesQuery from '../fixtures/roles.graphql';
+import deleteRoleMutation from '../fixtures/deleteRole.graphql';
+import listRoleIdsQuery from '../fixtures/listRoleIds.graphql';
+import updateRoleMutation from '../fixtures/updateRole.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

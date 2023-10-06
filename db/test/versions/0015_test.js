@@ -1,7 +1,7 @@
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
-const crypto = require('crypto');
+import helper from '../helper';
+import testing from 'taskcluster-lib-testing';
+import { strict as assert } from 'assert';
+import crypto from 'crypto';
 
 suite(testing.suiteName(), function() {
   const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);

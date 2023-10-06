@@ -1,7 +1,7 @@
-const assert = require('assert');
-const Hashids = require('hashids/cjs');
+import assert from 'assert';
+import Hashids from 'hashids/cjs';
 
-exports.paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
+export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
   assert(query, "req.query must be provided");
   assert(fetch, "fetch function must be provided");
 

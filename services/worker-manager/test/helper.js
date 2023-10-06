@@ -1,33 +1,42 @@
-const taskcluster = require('taskcluster-client');
-const { FakeEC2, FakeAzure, FakeGoogle } = require('./fakes');
-const { Worker } = require('../src/data');
-const { stickyLoader, Secrets, fakeauth, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
+import taskcluster from 'taskcluster-client';
+import { FakeEC2, FakeAzure, FakeGoogle } from './fakes';
+import { Worker } from '../src/data';
 
-exports.rootUrl = 'http://localhost:60409';
+import {
+  stickyLoader,
+  Secrets,
+  fakeauth,
+  withMonitor,
+  withPulse,
+  withDb,
+  resetTables,
+} from 'taskcluster-lib-testing';
 
-exports.load = stickyLoader(load);
+import builder from '../src/api';
+import load from '../src/main';
+
+export const rootUrl = 'http://localhost:60409';
+export const load = stickyLoader(load);
 exports.load.inject('profile', 'test');
 exports.load.inject('process', 'test');
 
 withMonitor(exports);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secrets: {},
   load: exports.load,
 });
 
-exports.withDb = (mock, skipping) => {
+export const withDb = (mock, skipping) => {
   withDb(mock, skipping, exports, 'worker_manager');
 };
 
-exports.withPulse = (mock, skipping) => {
+export const withPulse = (mock, skipping) => {
   withPulse({ helper: exports, skipping, namespace: 'taskcluster-worker-manager' });
 };
 
-exports.withProviders = (mock, skipping) => {
+export const withProviders = (mock, skipping) => {
   const fakeEC2 = new FakeEC2();
   fakeEC2.forSuite();
 
@@ -38,15 +47,16 @@ exports.withProviders = (mock, skipping) => {
   fakeGoogle.forSuite();
 };
 
-exports.withProvisioner = (mock, skipping) => {
+export const withProvisioner = (mock, skipping) => {
   let provisioner;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    exports.initiateProvisioner = async () => {
-      provisioner = await exports.load('provisioner');
+
+    export const initiateProvisioner = async () => {
+      provisioner = await load('provisioner');
 
       // remove it right away, so it will be re-created next time
       exports.load.remove('provisioner');
@@ -54,7 +64,8 @@ exports.withProvisioner = (mock, skipping) => {
       await provisioner.initiate();
       return provisioner;
     };
-    exports.terminateProvisioner = async () => {
+
+    export const terminateProvisioner = async () => {
       if (provisioner) {
         await provisioner.terminate();
         provisioner = null;
@@ -69,20 +80,22 @@ exports.withProvisioner = (mock, skipping) => {
   });
 };
 
-exports.withWorkerScanner = (mock, skipping) => {
+export const withWorkerScanner = (mock, skipping) => {
   let scanner;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    exports.initiateWorkerScanner = async () => {
-      scanner = await exports.load('workerScanner');
+
+    export const initiateWorkerScanner = async () => {
+      scanner = await load('workerScanner');
       // remove it right away, as it is started on load
       exports.load.remove('workerScanner');
       return scanner;
     };
-    exports.terminateWorkerScanner = async () => {
+
+    export const terminateWorkerScanner = async () => {
       if (scanner) {
         await scanner.terminate();
         scanner = null;
@@ -104,13 +117,13 @@ exports.withWorkerScanner = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
 
-    exports.queue = stubbedQueue();
+    export const queue = stubbedQueue();
     exports.load.inject('queue', exports.queue);
   });
 };
@@ -124,13 +137,13 @@ exports.withFakeQueue = (mock, skipping) => {
  *
  * We consider any emailing to be test-failing at the moment
  */
-exports.withFakeNotify = (mock, skipping) => {
+export const withFakeNotify = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
 
-    exports.notify = stubbedNotify();
+    export const notify = stubbedNotify();
     exports.load.inject('notify', exports.notify);
 
     setup(async function() {
@@ -139,7 +152,7 @@ exports.withFakeNotify = (mock, skipping) => {
   });
 };
 
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -147,7 +160,7 @@ exports.withServer = (mock, skipping) => {
       return;
     }
 
-    await exports.load('cfg');
+    await load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
 
@@ -156,9 +169,9 @@ exports.withServer = (mock, skipping) => {
     }, { rootUrl: exports.rootUrl });
 
     // Create client for working with API
-    exports.WorkerManager = taskcluster.createClient(builder.reference());
+    export const WorkerManager = taskcluster.createClient(builder.reference());
 
-    exports.workerManager = new exports.WorkerManager({
+    export const workerManager = new exports.WorkerManager({
       // Ensure that we use global agent, to avoid problems with keepAlive
       // preventing tests from exiting
       agent: require('http').globalAgent,
@@ -170,7 +183,7 @@ exports.withServer = (mock, skipping) => {
       },
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -243,7 +256,7 @@ const stubbedNotify = () => {
 /**
  * Get all workers
  */
-exports.getWorkers = async () =>
+export const getWorkers = async () =>
   Promise.all((await exports.db.fns.get_workers_without_provider_data(null, null, null, null, null, null)).map(
     async r => {
       const w = Worker.fromDb(r);
@@ -254,7 +267,7 @@ exports.getWorkers = async () =>
       });
     }));
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'workers',

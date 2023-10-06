@@ -1,9 +1,9 @@
-const DataLoader = require('dataloader');
-const WebServerError = require('../utils/WebServerError');
-const regenerateSession = require('../utils/regenerateSession');
-const generateCredentials = require('../utils/generateCredentials');
+import DataLoader from 'dataloader';
+import WebServerError from '../utils/WebServerError';
+import regenerateSession from '../utils/regenerateSession';
+import generateCredentials from '../utils/generateCredentials';
 
-module.exports = (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async () => {

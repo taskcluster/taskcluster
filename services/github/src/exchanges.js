@@ -1,7 +1,7 @@
-const { Exchanges } = require('taskcluster-lib-pulse');
-const _ = require('lodash');
-const assert = require('assert');
-const { PUBLISHERS } = require('./constants');
+import { Exchanges } from 'taskcluster-lib-pulse';
+import _ from 'lodash';
+import assert from 'assert';
+import { PUBLISHERS } from './constants';
 
 /** Build common routing key construct for `exchanges.declare` */
 const commonRoutingKey = function(options) {
@@ -161,4 +161,4 @@ exchanges.declare({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;

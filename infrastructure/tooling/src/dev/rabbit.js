@@ -1,5 +1,5 @@
-const slugid = require('slugid');
-const request = require('superagent');
+import slugid from 'slugid';
+import request from 'superagent';
 
 const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
   let services = [];
@@ -155,7 +155,7 @@ const rabbitEnsureResources = async ({ userConfig, answer }) => {
   }
 };
 
-module.exports = {
+export default {
   rabbitPrompts,
   rabbitResources,
   rabbitAdminPasswordPrompt,

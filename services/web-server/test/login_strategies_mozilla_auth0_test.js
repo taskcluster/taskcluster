@@ -1,6 +1,6 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const Strategy = require('../src/login/strategies/mozilla-auth0');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import Strategy from '../src/login/strategies/mozilla-auth0';
 
 suite(testing.suiteName(), () => {
   let strategy = new Strategy({

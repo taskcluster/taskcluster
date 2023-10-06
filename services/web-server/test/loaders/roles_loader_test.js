@@ -1,10 +1,10 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const createRoleMutation = require('../fixtures/createRole.graphql');
-const loader = require('../../src/loaders/roles');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper';
+import createRoleMutation from '../fixtures/createRole.graphql';
+import loader from '../../src/loaders/roles';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

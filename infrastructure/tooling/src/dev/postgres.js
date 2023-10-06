@@ -1,8 +1,8 @@
-const slugid = require('slugid');
-const crypto = require('crypto');
-const { Client } = require('pg');
-const { makePgUrl } = require('./util');
-const URL = require('url');
+import slugid from 'slugid';
+import crypto from 'crypto';
+import { Client } from 'pg';
+import { makePgUrl } from './util';
+import URL from 'url';
 
 const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
@@ -176,7 +176,7 @@ const postgresEnsureDb = async ({ userConfig }) => {
   }
 };
 
-module.exports = {
+export default {
   postgresPrompts,
   postgresResources,
   postgresEnsureDb,

@@ -1,6 +1,6 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const helpers = require('../src/helpers');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import helpers from '../src/helpers';
 
 suite(testing.suiteName(), function() {
   suite('splitNamespace', function() {

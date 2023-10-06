@@ -1,7 +1,8 @@
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-pulse.publisher');
+import { MonitorManager } from 'taskcluster-lib-monitor';
 
 MonitorManager.register({
   name: 'pulsePublisherBlocked',

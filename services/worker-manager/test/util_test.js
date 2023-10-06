@@ -1,6 +1,6 @@
-const assert = require('assert');
-const util = require('../src/util');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import util from '../src/util';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function () {
   suite('workerPoolId', function () {

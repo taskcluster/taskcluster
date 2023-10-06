@@ -1,6 +1,6 @@
-const Artifact = require('./Artifact');
+import Artifact from './Artifact';
 
-module.exports = class TaskRun {
+export default class TaskRun {
   constructor(taskId, data, artifacts) {
     this.taskId = taskId;
     Object.assign(this, data);

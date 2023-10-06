@@ -1,5 +1,5 @@
-const path = require('path');
-const { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } = require('../../utils');
+import path from 'path';
+import { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } from '../../utils';
 
 const SERVICES = listServices();
 
@@ -134,7 +134,7 @@ const nodemonCmd = (service) => {
   ].join(' ');
 };
 
-exports.tasks = [];
+export const tasks = [];
 
 const healthcheck = (test) => ({
   test,

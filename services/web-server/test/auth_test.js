@@ -1,8 +1,8 @@
-const assert = require('assert');
-const request = require('superagent');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const credentialsQuery = require('./fixtures/credentials.graphql');
+import assert from 'assert';
+import request from 'superagent';
+import helper from './helper';
+import testing from 'taskcluster-lib-testing';
+import credentialsQuery from './fixtures/credentials.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

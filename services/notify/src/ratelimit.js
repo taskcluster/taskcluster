@@ -1,4 +1,4 @@
-const { pickBy } = require('lodash');
+import { pickBy } from 'lodash';
 
 /**
  * Rate limit things, such as destination addresses.
@@ -83,4 +83,4 @@ class RateLimit {
   }
 }
 
-module.exports = RateLimit;
+export default RateLimit;

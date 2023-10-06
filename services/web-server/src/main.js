@@ -1,31 +1,31 @@
-require('../../prelude');
-const debug = require('debug')('app:main');
-const assert = require('assert');
-const depthLimit = require('graphql-depth-limit');
-const { createComplexityLimitRule } = require('graphql-validation-complexity');
-const loader = require('taskcluster-lib-loader');
-const config = require('taskcluster-lib-config');
-const libReferences = require('taskcluster-lib-references');
-const { createServer } = require('http');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const { ApolloServer } = require('apollo-server-express');
-const { ApolloServerPluginDrainHttpServer } = require('apollo-server-core');
-const taskcluster = require('taskcluster-client');
-const tcdb = require('taskcluster-db');
-const { Auth } = require('taskcluster-client');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const createApp = require('./servers/createApp');
-const formatError = require('./servers/formatError');
-const clients = require('./clients');
-const createContext = require('./createContext');
-const createSchema = require('./createSchema');
-const createSubscriptionServer = require('./servers/createSubscriptionServer');
-const resolvers = require('./resolvers');
-const typeDefs = require('./graphql');
-const PulseEngine = require('./PulseEngine');
-const scanner = require('./login/scanner');
-
-require('./monitor');
+import '../../prelude';
+import debugFactory from 'debug';
+const debug = debugFactory('app:main');
+import assert from 'assert';
+import depthLimit from 'graphql-depth-limit';
+import { createComplexityLimitRule } from 'graphql-validation-complexity';
+import loader from 'taskcluster-lib-loader';
+import config from 'taskcluster-lib-config';
+import libReferences from 'taskcluster-lib-references';
+import { createServer } from 'http';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import taskcluster from 'taskcluster-client';
+import tcdb from 'taskcluster-db';
+import { Auth } from 'taskcluster-client';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import createApp from './servers/createApp';
+import formatError from './servers/formatError';
+import clients from './clients';
+import createContext from './createContext';
+import createSchema from './createSchema';
+import createSubscriptionServer from './servers/createSubscriptionServer';
+import resolvers from './resolvers';
+import typeDefs from './graphql';
+import PulseEngine from './PulseEngine';
+import scanner from './login/scanner';
+import './monitor';
 
 const load = loader(
   {
@@ -287,4 +287,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2] || 'devServer');
 }
 
-module.exports = load;
+export default load;

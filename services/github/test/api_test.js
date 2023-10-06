@@ -1,8 +1,8 @@
-const helper = require('./helper');
-const assert = require('assert');
-const _ = require('lodash');
-const got = require('got');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper';
+import assert from 'assert';
+import _ from 'lodash';
+import got from 'got';
+import testing from 'taskcluster-lib-testing';
 
 /**
  * Tests of endpoints in the api _other than_

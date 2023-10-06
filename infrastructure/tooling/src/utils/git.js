@@ -1,7 +1,7 @@
-const util = require('util');
+import util from 'util';
 const exec = util.promisify(require('child_process').execFile);
-const fs = require('fs');
-const assert = require('assert');
+import fs from 'fs';
+import assert from 'assert';
 
 /**
  * Perform a git clone
@@ -16,7 +16,7 @@ const assert = require('assert');
  *   changed: ..,      // true if the repo was cloned or the revision changed
  * }
  */
-exports.gitClone = async ({ dir, url, sha, utils }) => {
+export const gitClone = async ({ dir, url, sha, utils }) => {
   const [repo, ref = 'main'] = url.split('#');
   const opts = { cwd: dir };
 
@@ -59,7 +59,7 @@ exports.gitClone = async ({ dir, url, sha, utils }) => {
  *   revision: .., // the sha of the remote ref
  * }
  */
-exports.gitRemoteRev = async ({ dir, remote, ref, utils }) => {
+export const gitRemoteRev = async ({ dir, remote, ref, utils }) => {
   const opts = { cwd: dir };
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -76,7 +76,7 @@ exports.gitRemoteRev = async ({ dir, remote, ref, utils }) => {
 /**
  * Call `git status --porcelain` in repoDir and return true if anything appears.
  */
-exports.gitIsDirty = async ({ dir }) => {
+export const gitIsDirty = async ({ dir }) => {
   const opts = { cwd: dir };
   const status = (await exec('git', ['status', '--porcelain'], opts))
     .stdout.split(/\n/)
@@ -97,7 +97,7 @@ exports.gitIsDirty = async ({ dir }) => {
  *   revision: ..,       // sha
  * }
  */
-exports.gitDescribe = async ({ dir }) => {
+export const gitDescribe = async ({ dir }) => {
   const opts = { cwd: dir };
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -119,7 +119,7 @@ exports.gitDescribe = async ({ dir }) => {
  *   ref: ..., // abbreviated ref
  * }
  */
-exports.gitCurrentBranch = async ({ dir, utils }) => {
+export const gitCurrentBranch = async ({ dir, utils }) => {
   const opts = { cwd: dir };
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -135,7 +135,7 @@ exports.gitCurrentBranch = async ({ dir, utils }) => {
  * - dir -- directory to commit in
  * - files -- files to stage
  */
-exports.gitAdd = async ({ dir, files }) => {
+export const gitAdd = async ({ dir, files }) => {
   const opts = { cwd: dir };
   await exec('git', ['add', ...files], opts);
 };
@@ -148,7 +148,7 @@ exports.gitAdd = async ({ dir, files }) => {
  * - files -- files to include in the commit (anything staged will get committed too..)
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.gitCommit = async ({ dir, message, files, utils }) => {
+export const gitCommit = async ({ dir, message, files, utils }) => {
   const opts = { cwd: dir };
   await exec('git', ['commit', '-m', message, ...files], opts);
 };
@@ -160,7 +160,7 @@ exports.gitCommit = async ({ dir, message, files, utils }) => {
  * - rev -- revision to tag
  * - tag -- tag to apply
  */
-exports.gitTag = async ({ dir, rev, tag, utils }) => {
+export const gitTag = async ({ dir, rev, tag, utils }) => {
   const opts = { cwd: dir };
   await exec('git', ['tag', tag, rev], opts);
 };
@@ -173,7 +173,7 @@ exports.gitTag = async ({ dir, rev, tag, utils }) => {
  * - refs -- refs to push
  * - force -- if true, -f
  */
-exports.gitPush = async ({ dir, remote, refs, force, utils }) => {
+export const gitPush = async ({ dir, remote, refs, force, utils }) => {
   const opts = { cwd: dir };
   await exec('git', ['push', ...(force ? ['-f'] : []), remote, ...refs], opts);
 };
@@ -184,7 +184,7 @@ exports.gitPush = async ({ dir, remote, refs, force, utils }) => {
  * - dir -- directory to run in
  * - args -- arguments to `git log`
  */
-exports.gitLog = async ({ dir, args }) => {
+export const gitLog = async ({ dir, args }) => {
   const opts = { cwd: dir };
   const res = await exec('git', ['log', ...args], opts);
   return res.stdout

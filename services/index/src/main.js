@@ -1,16 +1,17 @@
-require('../../prelude');
-const debug = require('debug')('index:bin:server');
-const taskcluster = require('taskcluster-client');
-const tcdb = require('taskcluster-db');
-const Handlers = require('./handlers');
-const builder = require('./api');
-const Config = require('taskcluster-lib-config');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const SchemaSet = require('taskcluster-lib-validate');
-const { App } = require('taskcluster-lib-app');
-const libReferences = require('taskcluster-lib-references');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
+import '../../prelude';
+import debugFactory from 'debug';
+const debug = debugFactory('index:bin:server');
+import taskcluster from 'taskcluster-client';
+import tcdb from 'taskcluster-db';
+import Handlers from './handlers';
+import builder from './api';
+import Config from 'taskcluster-lib-config';
+import loader from 'taskcluster-lib-loader';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import SchemaSet from 'taskcluster-lib-validate';
+import { App } from 'taskcluster-lib-app';
+import libReferences from 'taskcluster-lib-references';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 
 // Create component loader
 let load = loader({
@@ -153,4 +154,4 @@ if (!module.parent) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

@@ -1,12 +1,12 @@
-const _ = require('lodash');
-const uuid = require('uuid');
+import _ from 'lodash';
+import uuid from 'uuid';
 
 /**
  * Update roles, given a modifier function.  The modification is
  * serialized with any other modifications using optimistic concurrency.  The
  * modifier may be called multiple times.
  */
-exports.modifyRoles = async (db, modifier) => {
+export const modifyRoles = async (db, modifier) => {
   let tries = 5;
 
   while (tries--) {

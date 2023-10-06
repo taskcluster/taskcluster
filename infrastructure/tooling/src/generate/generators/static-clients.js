@@ -1,10 +1,10 @@
-const _ = require('lodash');
-const { listServices, writeRepoJSON } = require('../../utils');
-const { scopeCompare, normalizeScopeSet } = require('taskcluster-lib-scopes');
+import _ from 'lodash';
+import { listServices, writeRepoJSON } from '../../utils';
+import { scopeCompare, normalizeScopeSet } from 'taskcluster-lib-scopes';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 exports.tasks.push({
   title: 'Assemble static clients',

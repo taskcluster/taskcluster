@@ -1,9 +1,9 @@
-const assert = require('assert');
-const PulseIterator = require('../src/PulseEngine/PulseIterator');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import PulseIterator from '../src/PulseEngine/PulseIterator';
+import testing from 'taskcluster-lib-testing';
 
 // load for side-effects
-require('./helper');
+import './helper';
 
 class FakePulseEngine {
   subscribe(subscriptions, handleMessage, handleError) {

@@ -67,6 +67,6 @@ class Estimator {
   }
 }
 
-module.exports = {
+export default {
   Estimator,
 };
