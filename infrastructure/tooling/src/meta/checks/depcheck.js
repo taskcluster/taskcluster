@@ -1,8 +1,7 @@
 import { URL } from 'url';
-import fs from 'fs';
 import { Worker, isMainThread, parentPort } from 'worker_threads';
 import _ from 'lodash';
-import { REPO_ROOT, gitLsFiles, readRepoFile } from '../../utils/index.js';
+import { gitLsFiles, readRepoFile } from '../../utils/index.js';
 import * as acorn from 'acorn-loose';
 import * as walk from 'acorn-walk';
 import builtinModules from 'builtin-modules';
@@ -43,14 +42,48 @@ if (isMainThread) {
     parentPort.postMessage({ message });
   };
 
+  const checkImport = (file, section, packageName, deps, used) => {
+    // Local imports are less tricky to get right and if broken will fail in tests so we don't
+    // bother doing extra work to assert they exist here
+    if (packageName.startsWith('.')) {
+      return;
+    }
+
+    // In non-namespaced packages the first bit before the slash is a package. the rest is a path
+    // within the package
+    if (!packageName.startsWith('@')) {
+      packageName = packageName.split('/')[0];
+    }
+
+    if (builtinModules.includes(packageName)) {
+      return;
+    }
+
+    used.add(packageName);
+    if (!deps.includes(packageName)) {
+      throw new Error(`Dependency '${packageName}' in ${file} is missing! It must be included in package.json ${section}!`);
+    }
+  };
+
   const handleFile = async (file, deps, used, section) => {
     walk.simple(acorn.parse(await readRepoFile(file)), {
+      ImportExpression(node) {
+        if (node.source.type !== 'Literal') {
+          return;
+        }
+        let packageName = node.source.value;
+        return checkImport(file, section, packageName, deps, used);
+      },
+      ImportDeclaration(node) {
+        if (node.source.type !== 'Literal') {
+          return;
+        }
+        let packageName = node.source.value;
+        return checkImport(file, section, packageName, deps, used);
+      },
       CallExpression(node) {
         if (!node.callee || node.callee.name !== 'require') {
           return;
-        }
-        if (node.callee.name === 'import') {
-          throw new Error('We do not support import in taskcluster services currently.');
         }
 
         // If this is not just a string, this is a dynamic import and we throw our hands up
@@ -59,29 +92,8 @@ if (isMainThread) {
         }
 
         let packageName = node.arguments[0].value;
-
-        // Local imports are less tricky to get right and if broken will fail in tests so we don't
-        // bother doing extra work to assert they exist here
-        if (packageName.startsWith('.')) {
-          return;
-        }
-
-        // In non-namespaced packages the first bit before the slash is a package. the rest is a path
-        // within the package
-        if (!packageName.startsWith('@')) {
-          packageName = packageName.split('/')[0];
-        }
-
-        if (builtinModules.includes(packageName)) {
-          return;
-        }
-
-        used.add(packageName);
-        if (!deps.includes(packageName)) {
-          throw new Error(`Dependency '${packageName}' in ${file} is missing! It must be included in package.json ${section}!`);
-        }
+        return checkImport(file, section, packageName, deps, used);
       },
-
     });
   };
 
