@@ -233,3 +233,7 @@ const useOnlyTaskQueueId = (obj) => {
   delete obj.workerType;
 };
 exports.useOnlyTaskQueueId = useOnlyTaskQueueId;
+
+/** Sleep for `delay` ms, returns a promise */
+const sleep = (delay) => new Promise((accept) => setTimeout(accept, delay));
+exports.sleep = sleep;

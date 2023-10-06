@@ -174,7 +174,7 @@ class DependencyTracker {
 
         if (resolution !== 'completed') {
           // If the resolution wasn't 'completed', we can only remove mark this
-          // dependency as satisified if the 'require' relation is
+          // dependency as satisfied if the 'require' relation is
           // 'all-resolved'.
           if (dep.requires !== 'all-resolved') {
             return;
@@ -265,7 +265,7 @@ class DependencyTracker {
     // Construct status structure
     let status = task.status();
 
-    // Put message in appropriate azure queue, and publish message to pulse,
+    // Put message into pending queue, and publish message to pulse,
     // if the initial run is pending
     if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([

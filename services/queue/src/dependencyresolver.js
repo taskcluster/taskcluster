@@ -1,5 +1,6 @@
 import assert from 'assert';
 import Iterate from 'taskcluster-lib-iterate';
+import { sleep } from './utils';
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -14,6 +15,7 @@ class DependencyResolver {
    *   dependencyTracker:   // DependencyTracker instance
    *   queueService:        // QueueService instance
    *   pollingDelay:        // Number of ms to sleep between polling
+   *   count:               // Number of records to fetch at a time
    *   monitor:             // base.monitor instance
    * }
    */
@@ -23,6 +25,8 @@ class DependencyResolver {
     assert(options.queueService, 'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
 
@@ -62,7 +66,7 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-    let messages = await this.queueService.pollResolvedQueue();
+    let messages = await this.queueService.pollResolvedQueue(this.count);
     let failed = 0;
     await Promise.all(messages.map(async (m) => {
       // Don't let a single task error break the loop, it'll be retried later
@@ -76,23 +80,16 @@ class DependencyResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
+    // If there were no messages, back off for a bit.
     if (messages.length === 0) {
-      await this.sleep(2000);
+      await sleep(1000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: messages.length,
       failed,
       resolver: 'dependency',
     });
-  }
-
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise((accept) => { setTimeout(accept, delay); });
   }
 }
 

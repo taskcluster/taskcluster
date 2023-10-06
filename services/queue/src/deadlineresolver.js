@@ -5,10 +5,11 @@ import _ from 'lodash';
 import QueueService from './queueservice';
 import Iterate from 'taskcluster-lib-iterate';
 import { Task } from './data';
+import { sleep } from './utils';
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
- * from the azure queue. The azure queue messages takes the form:
+ * from the deadline queue. The deadline queue messages takes the form:
  * `{taskId, deadline}`, and they become visible after `deadline` has been
  * exceeded. The messages advice that if a task with the given `deadline` and
  * `taskId` exists, then it be resolved by deadline, if not already resolved.
@@ -31,8 +32,9 @@ class DeadlineResolver {
    *   dependencyTracker: // instance of DependencyTracker
    *   publisher:         // publisher from base.Exchanges
    *   pollingDelay:      // Number of ms to sleep between polling
+   *   count:             // Number of messages to fetch in each poll
    *   parallelism:       // Number of polling loops to run in parallel
-   *                      // Each handles up to 32 messages in parallel
+   *                      // Each handles up to `count` messages in parallel
    *   monitor:           // base.monitor instance
    * }
    */
@@ -47,6 +49,8 @@ class DeadlineResolver {
       'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -55,6 +59,7 @@ class DeadlineResolver {
     this.publisher = options.publisher;
     this.pollingDelay = options.pollingDelay;
     this.parallelism = options.parallelism;
+    this.count = options.count;
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
@@ -90,7 +95,7 @@ class DeadlineResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollDeadlineQueue();
+    let messages = await this.queueService.pollDeadlineQueue(this.count);
     let failed = 0;
 
     await Promise.all(messages.map(async (message) => {
@@ -104,23 +109,16 @@ class DeadlineResolver {
       }
     }));
 
-    // If there were no messages, back of for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
+    // If there were no messages, back off for a bit.
     if (messages.length === 0) {
-      await this.sleep(2000);
+      await sleep(2000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: messages.length,
       failed,
       resolver: 'deadline',
     });
-  }
-
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise((accept) => { setTimeout(accept, delay); });
   }
 
   /** Handle advisory message about deadline expiration */

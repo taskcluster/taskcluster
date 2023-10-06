@@ -2,10 +2,11 @@ import assert from 'assert';
 import QueueService from './queueservice';
 import Iterate from 'taskcluster-lib-iterate';
 import { Task } from './data';
+import { sleep } from './utils';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
- * messages from the azure queue. The azure queue messages takes the form:
+ * messages from the claim queue. The queue messages takes the form:
  * `{taskId, runId, takenUntil}`, and they become visible after `takenUntil`
  * has been exceeded. The messages advice that if a task with the given
  * `takenUntil` and `taskId` exists, then `runId` maybe need to be resolved by
@@ -42,6 +43,8 @@ class ClaimResolver {
       'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
+    assert(typeof options.count === 'number',
+      'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -50,6 +53,7 @@ class ClaimResolver {
     this.publisher = options.publisher;
     this.pollingDelay = options.pollingDelay;
     this.parallelism = options.parallelism;
+    this.count = options.count;
     this.monitor = options.monitor;
 
     this.iterator = new Iterate({
@@ -99,23 +103,16 @@ class ClaimResolver {
       }
     }));
 
-    // If there were no messages, back of for a bit.  This avoids pounding
-    // Azure repeatedly for empty queues, at the cost of some slight delay
-    // to finding new messages in those queues.
+    // If there were no messages, back off for a bit.
     if (messages.length === 0) {
-      await this.sleep(2000);
+      await sleep(2000);
     }
 
-    this.monitor.log.azureQueuePoll({
-      messages: messages.length,
+    this.monitor.log.queuePoll({
+      count: messages.length,
       failed,
       resolver: 'claim',
     });
-  }
-
-  /** Sleep for `delay` ms, returns a promise */
-  sleep(delay) {
-    return new Promise(accept => setTimeout(accept, delay));
   }
 
   /** Handle advisory message about claim expiration */
