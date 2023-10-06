@@ -13,7 +13,8 @@ import {
 
 import path from 'path';
 import util from 'util';
-const rimraf = util.promisify(require('rimraf'));
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');

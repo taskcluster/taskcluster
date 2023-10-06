@@ -1,5 +1,6 @@
-import fs from 'fs';
 import url from 'url';
+import { enumFiles } from '../../utils/index.js';
+import path from 'path';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 /**
@@ -8,13 +9,12 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
  * argument.
  */
 
-const generateTasks = options => {
-  fs.readdirSync(`${__dirname}/`).forEach(file => {
-    if (file !== 'index.js' && file.match(/\.js$/)) {
-      const gen = require(`./${file}`);
-      gen(options);
-    }
-  });
-};
+export const generateTasks = async (options) => {
+  const files = enumFiles(__dirname);
 
-export default generateTasks;
+  await Promise.all(files.map(async (file) => {
+    const { default: gen } = await import(path.join(__dirname, file));
+    gen(options);
+  }));
+
+};
