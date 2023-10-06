@@ -328,7 +328,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	if e != nil {
 		panic(e)
 	}
-	e = artifact.ProcessResponse(resp, task, serviceFactory, config)
+	e = artifact.ProcessResponse(resp, task, serviceFactory, config, taskContext.TaskDir, taskContext.pd)
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
 		return ResourceUnavailable(e)

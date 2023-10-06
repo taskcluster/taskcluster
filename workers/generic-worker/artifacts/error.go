@@ -6,6 +6,7 @@ import (
 	"github.com/taskcluster/taskcluster/v55/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v55/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/process"
 )
 
 type ErrorArtifact struct {
@@ -15,7 +16,7 @@ type ErrorArtifact struct {
 	Reason  string
 }
 
-func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
+func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) error {
 	logger.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
