@@ -12,7 +12,7 @@ import {
   gitAdd,
   gitLog,
   gitCurrentBranch,
-} from '../utils';
+} from '../utils/index.js';
 
 import taskcluster from 'taskcluster-client';
 import path from 'path';
@@ -62,7 +62,7 @@ const strcmp = (a, b) => {
  *   skipUpdates: if true, don't load dependabot updates
  * }
  */
-class ChangeLog {
+export class ChangeLog {
   constructor(options = {}) {
     this.loaded = false;
     this.snippets = [];
@@ -296,7 +296,7 @@ const check_pr = async (pr) => {
   return true;
 };
 
-const add = async (options) => {
+export const add = async (options) => {
   let level, bad;
   if (options.major) {
     level = 'major';
@@ -383,7 +383,7 @@ const add = async (options) => {
   }
 };
 
-const show = async (options) => {
+export const show = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
@@ -392,7 +392,7 @@ const show = async (options) => {
   console.log(await cl.format());
 };
 
-const check = async (options) => {
+export const check = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
@@ -403,5 +403,3 @@ const check = async (options) => {
     }
   }
 };
-
-export default { add, show, check, ChangeLog };
