@@ -4,8 +4,7 @@ import fs from 'fs';
 import _ from 'lodash';
 import { REPO_ROOT } from '../../utils/index.js';
 
-export const tasks = [];
-tasks.push({
+export const tasks = [{
   title: 'Node versions match',
   requires: [],
   provides: [],
@@ -18,4 +17,4 @@ tasks.push({
     // Node version for UI matches the rest of the repo
     assert.equal(packageJson.engines.node, uiPackageJson.engines.node);
   },
-});
+}];

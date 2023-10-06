@@ -1,18 +1,22 @@
+import { URL } from 'url';
+import fs from 'fs';
 import { Worker, isMainThread, parentPort } from 'worker_threads';
 import _ from 'lodash';
 import { REPO_ROOT, gitLsFiles, readRepoFile } from '../../utils/index.js';
-import acorn from 'acorn-loose';
-import walk from 'acorn-walk';
+import * as acorn from 'acorn-loose';
+import * as walk from 'acorn-walk';
 import builtinModules from 'builtin-modules';
 import stringify from 'fast-json-stable-stringify';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 /*
  * The 'depcheck' tool is async but still blocks for long stretches, perhaps
  * doing computation.  So, we defer that to a worker thread.
  */
+export const tasks = [];
 
 if (isMainThread) {
-  export const tasks = [];
   tasks.push({
     title: 'Dependencies are used and installed',
     requires: [],
@@ -87,7 +91,7 @@ if (isMainThread) {
 
     // All of our dependencies live at the top level and all dependencies
     // are available in dev so we concat
-    const rootPkg = require(`${REPO_ROOT}/package.json`);
+    const rootPkg = JSON.parse(await readRepoFile('package.json'));
     const deps = Object.keys(rootPkg.dependencies);
     const devDeps = Object.keys(rootPkg.devDependencies).concat(deps);
     const specials = rootPkg.metatests.specialImports;

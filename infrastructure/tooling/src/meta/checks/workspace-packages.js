@@ -3,8 +3,7 @@ import glob from 'glob';
 import _ from 'lodash';
 import { REPO_ROOT } from '../../utils/index.js';
 
-export const tasks = [];
-tasks.push({
+export const tasks = [{
   title: 'Workspace package.json files do not have forbidden fields',
   requires: [],
   provides: [],
@@ -30,4 +29,4 @@ tasks.push({
       }
     }
   },
-});
+}];

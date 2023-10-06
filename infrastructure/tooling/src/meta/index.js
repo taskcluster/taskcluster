@@ -1,9 +1,9 @@
-import { checks } from './checks/index.js';
+import { loadChecks } from './checks/index.js';
 import { TaskGraph } from 'console-taskgraph';
 
-const main = async (options) => {
+export const main = async (options) => {
+  const checks = await loadChecks();
+  console.log(checks);
   const taskgraph = new TaskGraph(checks, {});
   await taskgraph.run();
 };
-
-export default { main };

@@ -3,8 +3,7 @@ import _ from 'lodash';
 import glob from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
 
-export const tasks = [];
-tasks.push({
+export const tasks = [{
   title: 'Docs headings match expectations',
   requires: [],
   provides: [],
@@ -58,4 +57,4 @@ tasks.push({
       throw new Error(errors);
     }
   },
-});
+}];

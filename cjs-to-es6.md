@@ -15,3 +15,9 @@ Steps:
 - `jest` might fail, `NODE_OPTIONS=--experimental-vm-modules npx jest` might be needed
 
 CommonJS vs ECMAScript modules cheatsheet: <https://tsmx.net/commonjs-vs-esm-ecmascript-cheat-sheet/>
+
+```js
+import { URL } from 'url';
+const __filename = new URL('', import.meta.url).pathname;
+const __dirname = new URL('.', import.meta.url).pathname;
+```

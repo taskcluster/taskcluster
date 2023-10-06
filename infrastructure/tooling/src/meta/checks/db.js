@@ -4,8 +4,7 @@ import _ from 'lodash';
 import glob from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
 
-export const tasks = [];
-tasks.push({
+export const tasks = [{
   title: 'Every DB version has a test script',
   requires: [],
   provides: [],
@@ -18,4 +17,4 @@ tasks.push({
       }
     }
   },
-});
+}];
