@@ -1,8 +1,8 @@
 import os from 'os';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
-import generateReleaseTasks from './tasks/index.js';
+import generateReleaseTasks from './tasks.js';
 
-class Release {
+export class Release {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
   }
@@ -48,14 +48,12 @@ class Release {
   }
 }
 
-const release = async (options) => {
+export const release = async (options) => {
   const release = new Release(options);
   await release.run(false);
 };
 
-const stagingRelease = async (options) => {
+export const stagingRelease = async (options) => {
   const release = new Release(options);
   await release.run(true);
 };
-
-export default { release, stagingRelease, Release };

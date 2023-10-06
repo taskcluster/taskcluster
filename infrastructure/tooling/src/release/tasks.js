@@ -1,6 +1,6 @@
 import semver from 'semver';
 import path from 'path';
-import { ChangeLog } from '../changelog';
+import { ChangeLog } from '../changelog/index.js';
 
 import {
   ensureTask,
@@ -22,7 +22,7 @@ import {
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
-} from '../utils';
+} from '../utils/index.js';
 
 import { schema as readSchema } from 'taskcluster-db';
 
