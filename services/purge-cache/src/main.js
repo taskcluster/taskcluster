@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('purge-cache');
 import config from 'taskcluster-lib-config';

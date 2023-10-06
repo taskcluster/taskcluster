@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import builder from './api';
 import exchanges from './exchanges';
 import Handlers from './handlers';

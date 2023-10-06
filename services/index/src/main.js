@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('index:bin:server');
 import taskcluster from 'taskcluster-client';

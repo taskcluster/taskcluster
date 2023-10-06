@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import Loader from 'taskcluster-lib-loader';
 import SchemaSet from 'taskcluster-lib-validate';
 import libReferences from 'taskcluster-lib-references';

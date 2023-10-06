@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import aws from 'aws-sdk';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { App } from 'taskcluster-lib-app';

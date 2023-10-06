@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import loader from 'taskcluster-lib-loader';
 import taskcluster from 'taskcluster-client';
 import { App } from 'taskcluster-lib-app';

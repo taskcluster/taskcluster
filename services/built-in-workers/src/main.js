@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import loader from 'taskcluster-lib-loader';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import libReferences from 'taskcluster-lib-references';

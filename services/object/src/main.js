@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import tcdb from 'taskcluster-db';
 import builder from '../src/api';
 import loader from 'taskcluster-lib-loader';

@@ -1,4 +1,4 @@
-import '../../prelude';
+import '../../prelude.js';
 import Debug from 'debug';
 import tcdb from 'taskcluster-db';
 import builder from '../src/api';

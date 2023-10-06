@@ -2,6 +2,7 @@
   "name": "taskcluster-built-in-workers",
   "version": "56.0.3",
   "private": true,
+  "exports": "./src/main.js",
   "type": "module",
   "scripts": {
     "coverage": "c8 yarn test",
