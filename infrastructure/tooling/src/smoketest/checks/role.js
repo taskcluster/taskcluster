@@ -1,6 +1,6 @@
 import taskcluster from 'taskcluster-client';
 import assert from 'assert';
-import { retryAssertionFailures } from '../util';
+import { retryAssertionFailures } from '../util.js';
 
 export const scopeExpression = {
   AllOf: [

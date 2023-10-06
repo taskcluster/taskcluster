@@ -1,6 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 
+export const enumFiles = (dirname) => {
+  const files = [];
+  fs.readdirSync(`${dirname}/`).forEach((file) => {
+    if (file !== 'index.js' && file.match(/\.js$/)) {
+      files.push(file);
+    }
+  });
+  return files;
+};
+
 /**
  * Each file in this directory is expected to export `tasks` containing a list of
  * console-taskgraph tasks.
@@ -9,14 +19,8 @@ import path from 'path';
  * some foo.
  */
 export const loadTasks = async (dirname) => {
-  const files = [];
   const result = [];
-
-  fs.readdirSync(`${dirname}/`).forEach((file) => {
-    if (file !== 'index.js' && file.match(/\.js$/)) {
-      files.push(file);
-    }
-  });
+  const files = enumFiles(dirname);
 
   await Promise.all(files.map(async (file) => {
     const { tasks } = await import(path.join(dirname, file));

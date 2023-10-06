@@ -1,10 +1,13 @@
-import { checks, scopeExpression } from './checks/index.js';
+import url from 'url';
+import { loadChecks } from './checks/index.js';
 import taskcluster from 'taskcluster-client';
 import libScopes from 'taskcluster-lib-scopes';
 import { TaskGraph } from 'console-taskgraph';
 import chalk from 'chalk';
 
-const main = async (options) => {
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+export const main = async (options) => {
   if (!process.env.TASKCLUSTER_ROOT_URL ||
     !process.env.TASKCLUSTER_CLIENT_ID ||
     !process.env.TASKCLUSTER_ACCESS_TOKEN
@@ -17,6 +20,8 @@ const main = async (options) => {
     ].join('\n'));
     process.exit(1);
   }
+
+  const { checks, scopeExpression } = await loadChecks(`${__dirname}/checks`);
 
   const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
   const res = await auth.currentScopes();
@@ -42,5 +47,3 @@ const main = async (options) => {
     console.log(chalk`{bold ${process.env.TASKCLUSTER_ROOT_URL} is running Taskcluster version:} {yellow ${results['deployment-version']}}`);
   }
 };
-
-export default { main };
