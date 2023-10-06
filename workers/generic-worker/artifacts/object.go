@@ -8,6 +8,7 @@ import (
 	"github.com/taskcluster/taskcluster/v55/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v55/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/process"
 )
 
 type ObjectArtifact struct {
@@ -31,7 +32,7 @@ func (a *ObjectArtifact) ResponseObject() interface{} {
 	return new(tcqueue.ObjectArtifactResponse)
 }
 
-func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
+func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) (err error) {
 	response := resp.(*tcqueue.ObjectArtifactResponse)
 	logger.Infof("Uploading artifact %v from file %v with content type %q and expiry %v", a.Name, a.Path, a.ContentType, a.Expires)
 	creds := tcclient.Credentials{
