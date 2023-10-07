@@ -21,3 +21,33 @@ import { URL } from 'url';
 const __filename = new URL('', import.meta.url).pathname;
 const __dirname = new URL('.', import.meta.url).pathname;
 ```
+
+## tricks
+
+`exports.name` -> `export const name`
+
+`import x from './x'` -> `import x from './x.js'`
+
+Packages that don't export names directly:
+`import { find } from 'lodash'` -> `import pkg from 'lodash'; const { find } = pkg;`
+(or switch to es-supported modules)
+
+
+## `module.parent` workarounds
+
+no longer works with esm
+
+```js
+if (!module.parent) {
+  load.crashOnError(process.argv[2]);
+}
+```
+
+right way to do is:
+
+```js
+import { fileURLToPath } from "url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  load.crashOnError(process.argv[2]);
+}
+```
