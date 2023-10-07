@@ -26,6 +26,7 @@ import typeDefs from './graphql';
 import PulseEngine from './PulseEngine';
 import scanner from './login/scanner';
 import './monitor';
+import { fileURLToPath } from 'url';
 
 const load = loader(
   {
@@ -283,8 +284,9 @@ const load = loader(
   },
 );
 
-if (!module.parent) {
-  load.crashOnError(process.argv[2] || 'devServer');
+// If this file is executed launch component from first argument
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  load.crashOnError(process.argv[2]);
 }
 
 export default load;

@@ -159,4 +159,10 @@ if (!module.parent) {
   // method to crash the program if different components get loaded
   load.crashOnError(process.argv[2]);
 }
+
+// ES6
+import { fileURLToPath } from "url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  load.crashOnError(process.argv[2]);
+}
 ```

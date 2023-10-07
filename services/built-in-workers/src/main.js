@@ -5,6 +5,7 @@ import libReferences from 'taskcluster-lib-references';
 import taskcluster from 'taskcluster-client';
 import config from 'taskcluster-lib-config';
 import taskqueue from './TaskQueue';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -65,7 +66,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+// If this file is executed launch component from first argument
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 

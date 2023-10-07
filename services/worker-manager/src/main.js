@@ -16,6 +16,7 @@ import { Providers } from './providers';
 import { WorkerScanner } from './worker-scanner';
 import { WorkerPool, WorkerPoolError, Worker } from './data';
 import './monitor';
+import { fileURLToPath } from 'url';
 
 let load = loader({
   cfg: {
@@ -261,7 +262,7 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 

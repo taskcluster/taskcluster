@@ -16,6 +16,7 @@ import tcdb from 'taskcluster-db';
 import githubAuth from './github-auth';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import './monitor';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -218,7 +219,7 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 

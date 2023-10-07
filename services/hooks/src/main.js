@@ -16,6 +16,7 @@ import exchanges from './exchanges.js';
 import libPulse from 'taskcluster-lib-pulse';
 import HookListeners from './listeners';
 import './monitor';
+import { fileURLToPath } from 'url';
 
 // Create component loader
 const load = loader({
@@ -175,7 +176,7 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 

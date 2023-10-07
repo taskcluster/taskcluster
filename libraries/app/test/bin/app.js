@@ -1,4 +1,5 @@
-import base from '../../';
+import base from '../../index.js';
+import { fileURLToPath } from 'url';
 import debugFactory from 'debug';
 const debug = debugFactory('base:test:bin:app.js');
 
@@ -38,7 +39,8 @@ const launch = function() {
 };
 
 // If is executed run launch
-if (!module.parent) {
+// If this file is executed launch component from first argument
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   launch().then(function() {
     debug('Launched app.js successfully');
   }).catch(function(err) {
