@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import assert from 'assert';
-import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import * as helper from './helper.js';
+import * as testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp', 'azure'], function(mock, skipping) {
   helper.withCfg(mock, skipping);

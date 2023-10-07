@@ -20,7 +20,7 @@ import path from 'path';
 export const load = stickyLoader(mainLoad);
 
 // this will be extended by `withXXX()` functions to expose new functionality for tests
-export const helpers = { load };
+export const fns = { load };
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -37,7 +37,7 @@ export const rootUrl = `http://localhost:60552`;
 export const containerName = `auth-test-${v4()}`;
 export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
-withMonitor(helpers);
+withMonitor(fns);
 
 // set up the testing secrets
 export const secrets = new Secrets({
@@ -64,6 +64,8 @@ export const secrets = new Secrets({
 
 export let cfg = null;
 
+export const loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
+
 export const withCfg = (mock, skipping) => {
   if (skipping()) {
     return;
@@ -79,7 +81,7 @@ export const withCfg = (mock, skipping) => {
 
     load.save();
 
-    const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, '../src/static-scopes.json'), 'utf8'));
+    const staticScopes = await loadJson('../src/static-scopes.json');
 
     // override app.staticClients based on the static scopes
     load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
@@ -107,7 +109,7 @@ export const withCfg = (mock, skipping) => {
 };
 
 export const withDb = (mock, skipping) => {
-  libTesting.withDb(mock, skipping, helpers, 'auth');
+  libTesting.withDb(mock, skipping, fns, 'auth');
 };
 
 /**
@@ -165,7 +167,7 @@ export const withSentry = (mock, skipping) => {
 };
 
 export const withPulse = (mock, skipping) => {
-  libTesting.withPulse({ helper: helpers, skipping, namespace: 'taskcluster-auth' });
+  libTesting.withPulse({ helper: fns, skipping, namespace: 'taskcluster-auth' });
 };
 
 const testServiceBuilder = new APIBuilder({

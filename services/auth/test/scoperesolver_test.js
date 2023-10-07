@@ -1,11 +1,11 @@
-import helper from './helper.js';
+import * as helper from './helper.js';
 import ScopeResolver from '../src/scoperesolver.js';
 import exchanges from '../src/exchanges.js';
 import { scopeCompare } from 'taskcluster-lib-scopes';
 import assert from 'assert';
 import _ from 'lodash';
 import assume from 'assume';
-import testing from 'taskcluster-lib-testing';
+import * as testing from 'taskcluster-lib-testing';
 import { hrtime } from 'process';
 
 suite(testing.suiteName(), () => {
@@ -357,7 +357,7 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  suite('performance', function() {
+  suite('performance', async function() {
     const shouldMeasure = process.env.MEASURE_PERFORMANCE;
     let time;
     if (shouldMeasure) {
@@ -485,7 +485,7 @@ suite(testing.suiteName(), () => {
 
     // Test with a snapshot of real roles, captured with
     //   `curl https://auth.taskcluster.net/v1/roles > test/roles.json`
-    const realRoles = require('./roles');
+    const realRoles = await helper.loadJson('./roles.json');
     const testRealRoles = (scopes, expected) => {
       testResolver(`real roles with scopes ${scopes.join(', ')}`, {
         roles: realRoles,
@@ -522,7 +522,7 @@ suite(testing.suiteName(), () => {
     testRealRoles(['assume:moz-tree:level:3']);
 
     // curl https://auth.taskcluster.net/v1/clients | jq -r '.clients' > test/clients.json
-    const realClients = require('./clients');
+    const realClients = await helper.loadJson('./clients.json');
     test('resolve all clients', () => {
       const resolver = time('setup', () => scopeResolver.buildResolver(realRoles));
       time('resolve', () => {

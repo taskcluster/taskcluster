@@ -2,6 +2,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('taskcluster-lib-validate');
 import _ from 'lodash';
 import fs from 'fs';
+import { readFile } from 'fs/promises';
 import url from 'url';
 import path from 'path';
 import walk from 'walk';
@@ -117,7 +118,13 @@ class SchemaSet {
     });
 
     addFormats(ajv);
-    // ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+    // json-schema-draft-07.json is added to metadata by ajv by default
+    // since some schemas depend on draft-06, we must add it manually
+    // and to avoid referencing node_modules to load file in ESM world, we copy it here
+    // json-schema-draft-06.json was copied directly from 'ajv/lib/refs/json-schema-draft-06.json'
+    ajv.addMetaSchema(JSON.parse(
+      await readFile(path.join(__dirname, 'json-schema-draft-06.json'), 'utf8'),
+    ));
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
     });

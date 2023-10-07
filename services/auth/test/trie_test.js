@@ -1,9 +1,9 @@
 import assume from 'assume';
 import _ from 'lodash';
 import ScopeSetBuilder from '../src/scopesetbuilder.js';
-import trie from '../src/trie.js';
+import * as trie from '../src/trie.js';
 import trietestcases from './trietestcases.js';
-import testing from 'taskcluster-lib-testing';
+import * as testing from 'taskcluster-lib-testing';
 
 // This test suite was designed to test every conceivable combination of
 // inputs to the trie implementation, in an effort to suss out any hidden bugs
@@ -317,7 +317,7 @@ suite(testing.suiteName(), () => {
 
   /** Function for building a trie that only supports direct matches */
   const buildDirectMatchOnlyTrie = (rules) => {
-    const Node = trie._Node;
+    const Node = trie.Node;
     const t = new Node();
     for (const { pattern, matched, paramed } of trie.dependencyOrdering(rules)) {
       if (pattern.endsWith('*')) {

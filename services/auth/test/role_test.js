@@ -1,10 +1,10 @@
 import assert from 'assert';
-import helper from './helper.js';
+import * as helper from './helper.js';
 import { modifyRoles } from '../src/data.js';
 import slugid from 'slugid';
 import _ from 'lodash';
 import assume from 'assume';
-import testing from 'taskcluster-lib-testing';
+import * as testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) {
