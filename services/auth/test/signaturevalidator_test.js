@@ -4,7 +4,7 @@ import assert from 'assert';
 import slugid from 'slugid';
 import crypto from 'crypto';
 import taskcluster from 'taskcluster-client';
-import sigvalidator from '../src/signaturevalidator.js';
+import createSignatureValidator from '../src/signaturevalidator.js';
 import utils from 'taskcluster-lib-scopes';
 import testing from 'taskcluster-lib-testing';
 import helper from './helper.js';
@@ -45,7 +45,7 @@ suite(testing.suiteName(), function() {
   };
 
   suiteSetup(async function() {
-    validator = sigvalidator.createSignatureValidator({
+    validator = createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
           throw new Error('no such clientId');

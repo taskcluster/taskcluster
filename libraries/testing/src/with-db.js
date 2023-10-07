@@ -6,6 +6,7 @@ import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from 'taskc
 import * as tcdb from 'taskcluster-db';
 import { URL } from 'url';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 const testDbUrl = process.env.TEST_DB_URL;
 
 // useful for tests

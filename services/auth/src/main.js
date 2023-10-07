@@ -11,7 +11,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('server');
 import exchanges from './exchanges.js';
 import ScopeResolver from './scoperesolver.js';
-import signaturevalidator from './signaturevalidator.js';
+import createSignatureValidator from './signaturevalidator.js';
 import taskcluster from 'taskcluster-client';
 import makeSentryManager from './sentrymanager.js';
 import * as libPulse from 'taskcluster-lib-pulse';
@@ -122,7 +122,7 @@ const load = Loader({
         pulseClient,
       });
 
-      let signatureValidator = signaturevalidator.createSignatureValidator({
+      let signatureValidator = createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
         monitor: monitor.childMonitor('signature-validator'),

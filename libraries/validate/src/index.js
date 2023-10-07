@@ -107,7 +107,7 @@ class SchemaSet {
   }
 
   async validator(rootUrl) {
-    const ajv = new Ajv({
+    const ajv = new Ajv.default({
       useDefaults: true,
       validateFormats: true,
       verbose: true,
@@ -117,7 +117,7 @@ class SchemaSet {
     });
 
     addFormats(ajv);
-    ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+    // ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
     });

@@ -3,7 +3,7 @@ import scopeUtils from 'taskcluster-lib-scopes';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import slugid from 'slugid';
 import _ from 'lodash';
-import signaturevalidator from './signaturevalidator.js';
+import createSignatureValidator from './signaturevalidator.js';
 import ScopeResolver from './scoperesolver.js';
 import Hashids from 'hashids';
 import { modifyRoles } from '../src/data.js';
@@ -1019,7 +1019,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');
@@ -1076,7 +1076,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');

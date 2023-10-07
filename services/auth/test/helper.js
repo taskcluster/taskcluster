@@ -2,34 +2,42 @@ import assert from 'assert';
 import debugFactory from 'debug';
 const debug = debugFactory('test-helper');
 import _ from 'lodash';
-import builder from '../src/api';
+import builder from '../src/api.js';
 import taskcluster from 'taskcluster-client';
-import load from '../src/main';
+import { default as mainLoad } from '../src/main.js';
 import slugid from 'slugid';
-import uuid from 'uuid';
+import fs from 'fs/promises';
+import { v4 } from 'uuid';
 import { APIBuilder } from 'taskcluster-lib-api';
 import SchemaSet from 'taskcluster-lib-validate';
-import staticScopes from '../src/static-scopes.json';
 import makeSentryManager from './../src/sentrymanager.js';
 import { syncStaticClients } from '../src/static-clients.js';
-import { stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } from 'taskcluster-lib-testing';
+import { stickyLoader, Secrets, withMonitor } from 'taskcluster-lib-testing';
+import * as libTesting from 'taskcluster-lib-testing';
+import { URL } from 'url';
+import path from 'path';
 
-export const load = stickyLoader(load);
+export const load = stickyLoader(mainLoad);
+
+// this will be extended by `withXXX()` functions to expose new functionality for tests
+export const helpers = { load };
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suiteSetup(async function() {
   process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
     'invalid@mozilla.com',
   ]);
 
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
 export const rootUrl = `http://localhost:60552`;
-export const containerName = `auth-test-${uuid.v4()}`;
+export const containerName = `auth-test-${v4()}`;
 export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
-withMonitor(exports);
+withMonitor(helpers);
 
 // set up the testing secrets
 export const secrets = new Secrets({
@@ -51,8 +59,10 @@ export const secrets = new Secrets({
       { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
     ],
   },
-  load: exports.load,
+  load: load,
 });
+
+export let cfg = null;
 
 export const withCfg = (mock, skipping) => {
   if (skipping()) {
@@ -63,23 +73,27 @@ export const withCfg = (mock, skipping) => {
       return;
     }
 
-    export const cfg = await load('cfg');
+    // moved on top
+    // export const cfg = await stickyLoad('cfg');
+    cfg = await load('cfg');
 
-    exports.load.save();
+    load.save();
+
+    const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, '../src/static-scopes.json'), 'utf8'));
 
     // override app.staticClients based on the static scopes
-    exports.load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
+    load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
       clientId,
-      accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
+      accessToken: clientId === 'static/taskcluster/root' ? rootAccessToken : 'must-be-at-least-22-characters',
       description: 'testing',
     })));
 
     // override cfg.azureAccounts based on the azure secret, or mock it
     if (mock) {
-      exports.load.cfg('azureAccounts', undefined);
+      load.cfg('azureAccounts', undefined);
     } else {
-      const sec = exports.secrets.get('azure');
-      exports.load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
+      const sec = secrets.get('azure');
+      load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
     }
   });
 
@@ -88,12 +102,12 @@ export const withCfg = (mock, skipping) => {
       return;
     }
 
-    exports.load.restore();
+    load.restore();
   });
 };
 
 export const withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'auth');
+  libTesting.withDb(mock, skipping, helpers, 'auth');
 };
 
 /**
@@ -143,7 +157,7 @@ export const withSentry = (mock, skipping) => {
       },
     };
 
-    exports.load.inject('sentryManager', makeSentryManager({
+    load.inject('sentryManager', makeSentryManager({
       ...cfg.app.sentry,
       sentryClient,
     }));
@@ -151,7 +165,7 @@ export const withSentry = (mock, skipping) => {
 };
 
 export const withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-auth' });
+  libTesting.withPulse({ helper: helpers, skipping, namespace: 'taskcluster-auth' });
 };
 
 const testServiceBuilder = new APIBuilder({
@@ -175,6 +189,13 @@ testServiceBuilder.declare({
   });
 });
 
+export let AuthClient = null;
+export let TestClient = null;
+export let setupScopes = () => {};
+export let apiClient = null;
+export let testClient = null;
+export let gcpAccount = null;
+
 /**
  * Set up API servers.  Call this after withDb, so the server
  * uses the same entities classes.
@@ -194,18 +215,18 @@ export const withServers = (mock, skipping) => {
     debug('starting servers');
     await load('cfg');
 
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+    load.cfg('taskcluster.rootUrl', rootUrl);
 
     // First set up the auth service
-    export const AuthClient = taskcluster.createClient(builder.reference());
+    AuthClient = taskcluster.createClient(builder.reference());
 
-    export const setupScopes = (...scopes) => {
-      export const apiClient = new exports.AuthClient({
+    setupScopes = (...scopes) => {
+      apiClient = new AuthClient({
         credentials: {
           clientId: 'static/taskcluster/root',
-          accessToken: exports.rootAccessToken,
+          accessToken: rootAccessToken,
         },
-        rootUrl: exports.rootUrl,
+        rootUrl: rootUrl,
         retries: 0,
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
@@ -214,28 +235,28 @@ export const withServers = (mock, skipping) => {
     setupScopes();
 
     // Now set up the test service
-    export const TestClient = taskcluster.createClient(testServiceBuilder.reference());
+    TestClient = taskcluster.createClient(testServiceBuilder.reference());
 
-    export const testClient = new exports.TestClient({
+    testClient = new TestClient({
       credentials: {
         clientId: 'static/taskcluster/root',
-        accessToken: exports.rootAccessToken,
+        accessToken: rootAccessToken,
       },
       retries: 0,
-      rootUrl: exports.rootUrl,
+      rootUrl: rootUrl,
     });
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
       monitor: (await load('monitor')),
-      rootUrl: exports.rootUrl,
+      rootUrl: rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,
       }),
     });
 
     // include this test API in the APIs served, alongside the normal auth service
-    exports.load.inject('apis', [
+    load.inject('apis', [
       await load('api'),
       testServiceApi,
     ]);
@@ -342,14 +363,14 @@ export const withGcp = (mock, skipping) => {
         'invalid@mozilla.com',
       ];
 
-      exports.load.inject('gcp', {
+      load.inject('gcp', {
         auth,
         googleapis: fakeGoogleApis,
         credentials,
         allowedServiceAccounts,
       });
 
-      export const gcpAccount = {
+      gcpAccount = {
         email: 'test_client@example.com',
         project_id: credentials.project_id,
       };
@@ -360,7 +381,7 @@ export const withGcp = (mock, skipping) => {
       // [<service account email>, invalid@mozilla.com].
       const { credentials, allowedServiceAccounts } = await load('gcp');
 
-      export const gcpAccount = {
+      gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
@@ -370,7 +391,7 @@ export const withGcp = (mock, skipping) => {
 
 export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await libTesting.resetTables({ tableNames: [
       'roles',
       'clients',
     ] });

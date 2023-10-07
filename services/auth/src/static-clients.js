@@ -2,7 +2,10 @@ import assert from 'assert';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import fs from 'fs/promises';
+import path from 'path';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 /**
  * Ensure static clients exist and remove all clients prefixed 'static/', if not
@@ -14,7 +17,7 @@ import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
  * client is static and can't be modified at runtime.
  */
 export const syncStaticClients = async function(db, clients = []) {
-  const staticScopes = JSON.parse(await fs.readFile('./static-scopes.json', 'utf8'));
+  const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, 'static-scopes.json'), 'utf8'));
 
   // Validate input for sanity (we hardly need perfect validation here...)
   assert(clients instanceof Array, 'Expected clients to be am array');

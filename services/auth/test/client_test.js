@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
-import helper from './helper.js';
+import * as helper from './helper.js';
 import _ from 'lodash';
 import assume from 'assume';
-import testing from 'taskcluster-lib-testing';
+import * as testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
@@ -20,7 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   };
 
   teardown(async function() {
-    helper.onPulsePublish(); // don't fail to publish this time!
+    helper.fns.onPulsePublish(); // don't fail to publish this time!
     helper.setupScopes();
     await helper.apiClient.deleteRole('anonymous');
   });
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
   test('auth.deleteClient (non-existent)', async () => {
     await helper.apiClient.deleteClient(CLIENT_ID);
-    helper.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
   });
 
   test('auth.deleteClient (invalid root credentials)', async () => {
@@ -96,7 +96,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2).has.not.own('accessToken');
     assume(client2.expandedScopes).to.deeply.equal([]);
 
-    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
 
     // should not crash on a second creation with the same params
     await helper.apiClient.createClient(CLIENT_ID, {
@@ -148,11 +148,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2.scopes).not.contains('assume:client-id:' + CLIENT_ID);
     assume(client2.expandedScopes).not.contains('assume:client-id:' + CLIENT_ID);
 
-    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
   });
 
   test('create client but pulse publish fails', async () => {
-    helper.onPulsePublish(() => {
+    helper.fns.onPulsePublish(() => {
       throw new Error('uhoh');
     });
     const apiClient = helper.apiClient.use({ retries: 0 });
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       1);
     monitor.manager.reset();
 
-    helper.onPulsePublish(); // don't fail to publish this time
+    helper.fns.onPulsePublish(); // don't fail to publish this time
 
     // this should be an idempotent create operation
     const res = await apiClient.createClient(CLIENT_ID, payload);
@@ -199,7 +199,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       expires, description, scopes,
     });
 
-    helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
     return client;
   };
 
@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(new Date(client.lastRotated).getTime())
       .equals(new Date(client.lastModified).getTime());
     assume(client.accessToken).is.a('string');
-    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(new Date(client2.lastRotated)).deeply.equals(new Date(client.lastRotated));
@@ -276,7 +276,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client.scopes).contains('myapi:*');
     assume(client.expandedScopes).contains('scope1');
     assume(client.expandedScopes).contains('myapi:*');
-    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('auth.updateClient (pulse send fails)', async () => {
     await createTestClient();
 
-    helper.onPulsePublish(() => {
+    helper.fns.onPulsePublish(() => {
       throw new Error('uhoh');
     });
 
@@ -332,7 +332,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client.expandedScopes).contains('scope2');
     assume(client.expandedScopes).contains('scope3');
     assume(client.expandedScopes).not.contains('myapi:*');
-    helper.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-updated', m => m.payload.clientId === CLIENT_ID);
 
     let client2 = await helper.apiClient.client(CLIENT_ID);
     assume(new Date(client2.lastModified)).deeply.equals(new Date(client.lastModified));
@@ -383,7 +383,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     await helper.apiClient.deleteClient(CLIENT_ID);
     await helper.apiClient.deleteClient(CLIENT_ID);
 
-    helper.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
+    helper.fns.assertPulseMessage('client-deleted', m => m.payload.clientId === CLIENT_ID);
 
     await helper.apiClient.client(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
@@ -394,7 +394,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   test('auth.deleteClient (pulse publish fails)', async () => {
     await createTestClient();
-    helper.onPulsePublish(() => {
+    helper.fns.onPulsePublish(() => {
       throw new Error('uhoh');
     });
 
@@ -446,8 +446,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       scopes: ['assume:myrole:a', 'myapi:b:a'],
     });
 
-    helper.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:a');
-    helper.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:b');
+    helper.fns.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:a');
+    helper.fns.assertPulseMessage('role-created', m => m.payload.roleId === 'myrole:b');
 
     assumeScopesetsEqual(await helper.apiClient.expandScopes({ scopes: [
       'assume:myrole:b',
