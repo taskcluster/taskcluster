@@ -4,7 +4,7 @@ const debug = debugFactory('index:bin:server');
 import taskcluster from 'taskcluster-client';
 import tcdb from 'taskcluster-db';
 import Handlers from './handlers';
-import builder from './api';
+import builder from './api.js';
 import Config from 'taskcluster-lib-config';
 import loader from 'taskcluster-lib-loader';
 import { MonitorManager } from 'taskcluster-lib-monitor';

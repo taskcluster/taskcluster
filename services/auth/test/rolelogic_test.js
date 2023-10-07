@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.js';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';

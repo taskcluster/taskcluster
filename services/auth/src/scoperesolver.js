@@ -6,8 +6,8 @@ import events from 'events';
 import LRU from 'quick-lru';
 import debugFactory from 'debug';
 const debug = debugFactory('auth:ScopeResolver');
-import trie from './trie';
-import ScopeSetBuilder from './scopesetbuilder';
+import * as trie from './trie.js';
+import ScopeSetBuilder from './scopesetbuilder.js';
 import { consume } from 'taskcluster-lib-pulse';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;

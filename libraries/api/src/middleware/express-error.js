@@ -1,7 +1,7 @@
-import uuid from 'uuid';
-import { ErrorReply } from '../error-reply';
+import { v4 } from 'uuid';
+import { ErrorReply } from '../error-reply.js';
 
-exports.isProduction = process.env.NODE_ENV === 'production';
+export const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
@@ -12,7 +12,7 @@ exports.isProduction = process.env.NODE_ENV === 'production';
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const expressError = ({ errorCodes, entry }) => {
+export const expressError = ({ errorCodes, entry }) => {
   const { name: method, cleanPayload } = entry;
   return (err, req, res, next) => {
 
@@ -23,7 +23,7 @@ const expressError = ({ errorCodes, entry }) => {
     }
 
     if (!(err instanceof ErrorReply)) {
-      const incidentId = uuid.v4();
+      const incidentId = v4();
 
       err.incidentId = incidentId;
       err.method = method;
@@ -99,5 +99,3 @@ const expressError = ({ errorCodes, entry }) => {
     return res.status(errorCodes[code]).json({ code, message, requestInfo });
   };
 };
-
-exports.expressError = expressError;

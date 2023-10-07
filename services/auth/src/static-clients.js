@@ -1,7 +1,7 @@
 import assert from 'assert';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
-import staticScopes from './static-scopes.json';
+import fs from 'fs/promises';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 
 /**
@@ -14,6 +14,8 @@ import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
  * client is static and can't be modified at runtime.
  */
 export const syncStaticClients = async function(db, clients = []) {
+  const staticScopes = JSON.parse(await fs.readFile('./static-scopes.json', 'utf8'));
+
   // Validate input for sanity (we hardly need perfect validation here...)
   assert(clients instanceof Array, 'Expected clients to be am array');
   for (const client of clients) {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import uuid from 'uuid';
+import { v4 } from 'uuid';
 
 /**
  * Update roles, given a modifier function.  The modification is
@@ -12,7 +12,7 @@ export const modifyRoles = async (db, modifier) => {
   while (tries--) {
     try {
       const roles = await db.fns.get_roles();
-      const etag = roles.length > 0 ? roles[0].etag : uuid.v4();
+      const etag = roles.length > 0 ? roles[0].etag : v4();
       roles.forEach(r => { delete r.etag; });
       await modifier({ roles });
       await db.fns.modify_roles(JSON.stringify(roles), etag);

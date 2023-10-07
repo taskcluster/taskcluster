@@ -1,4 +1,5 @@
-import { setServiceDiscoveryScheme } from 'taskcluster-client';
+import pkg from 'taskcluster-client';
+const { setServiceDiscoveryScheme } = pkg;
 
 /**
  * This code is executed early in the module-loading phase of every service.

@@ -9,7 +9,7 @@ import { App } from 'taskcluster-lib-app';
 import libReferences from 'taskcluster-lib-references';
 import taskcluster from 'taskcluster-client';
 import tcdb from 'taskcluster-db';
-import builder from './api';
+import builder from './api.js';
 
 const load = loader({
   cfg: {

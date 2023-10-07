@@ -5,16 +5,16 @@ import assert from 'assert';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import taskcluster from 'taskcluster-client';
-import { buildReportErrorMethod } from './middleware/errors';
-import { callHandler } from './middleware/handle';
-import { validateSchemas } from './middleware/schema';
-import { queryValidator } from './middleware/queries';
-import { parameterValidator } from './middleware/parameters';
-import { remoteAuthentication } from './middleware/auth';
-import { parseBody } from './middleware/parse';
-import { expressError } from './middleware/express-error';
-import { logRequest } from './middleware/logging';
-import { perRequestContext } from './middleware/per-request-context';
+import { buildReportErrorMethod } from './middleware/errors.js';
+import { callHandler } from './middleware/handle.js';
+import { validateSchemas } from './middleware/schema.js';
+import { queryValidator } from './middleware/queries.js';
+import { parameterValidator } from './middleware/parameters.js';
+import { remoteAuthentication } from './middleware/auth.js';
+import { parseBody } from './middleware/parse.js';
+import { expressError } from './middleware/express-error.js';
+import { logRequest } from './middleware/logging.js';
+import { perRequestContext } from './middleware/per-request-context.js';
 
 const debug = Debug('api');
 
@@ -22,7 +22,7 @@ const debug = Debug('api');
  * A service represents an instance of an API at a specific rootUrl, ready to
  * provide an Express router, references, etc.  It is constructed by APIBuilder.build().
  */
-class API {
+export default class API {
   constructor(options) {
     assert(!options.authBaseUrl, 'authBaseUrl option is no longer allowed');
     assert(!options.baseUrl, 'baseUrl option is no longer allowed');
@@ -122,8 +122,6 @@ class API {
   }
 }
 
-module.exports = API;
-
 /**
  * Set up cache headers
  */
@@ -179,7 +177,7 @@ const corsHeaders = allowedCORSOrigin => {
  *
  * Ideally, nonces should probably be stored in something like memcache.
  */
-const nonceManager = (options) => {
+export const nonceManager = (options) => {
   options = _.defaults({}, options || {}, {
     size: 250,
   });
@@ -237,6 +235,3 @@ const createRemoteSignatureValidator = (options) => {
     return perRequestAuth.authenticateHawk(data);
   };
 };
-
-// for tests
-module.exports.nonceManager = nonceManager;

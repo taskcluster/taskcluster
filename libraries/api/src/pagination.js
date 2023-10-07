@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Hashids from 'hashids/cjs';
+import Hashids from 'hashids';
 
 export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
   assert(query, "req.query must be provided");
@@ -43,7 +43,7 @@ export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1
   }
 };
 
-exports.paginateResults.query = {
+paginateResults.query = {
   continuationToken: /./,
   limit: /^[0-9]+$/,
 };

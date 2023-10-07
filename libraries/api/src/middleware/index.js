@@ -1,15 +1,10 @@
-import fs from 'fs';
-
-export default {};
-
-fs.readdirSync(`${__dirname}/`).forEach(file => {
-  if (file !== 'index.js' && file.match(/\.js$/)) {
-    const exports = require(`./${file}`);
-    Object.keys(exports).forEach(key => {
-      if (module.exports[key]) {
-        throw new Error(`Cannot export same middleware twice: "${key}"`);
-      }
-    });
-    Object.assign(module.exports, exports);
-  }
-});
+export * from './auth.js';
+export * from './errors.js';
+export * from './express-error.js';
+export * from './handle.js';
+export * from './logging.js';
+export * from './parameters.js';
+export * from './parse.js';
+export * from './per-request-context.js';
+export * from './queries.js';
+export * from './schema.js';

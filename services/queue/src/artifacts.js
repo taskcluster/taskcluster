@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import builder from './api';
+import builder from './api.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { artifactUtils } from './utils';
 import { Task } from './data';

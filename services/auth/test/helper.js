@@ -10,8 +10,8 @@ import uuid from 'uuid';
 import { APIBuilder } from 'taskcluster-lib-api';
 import SchemaSet from 'taskcluster-lib-validate';
 import staticScopes from '../src/static-scopes.json';
-import makeSentryManager from './../src/sentrymanager';
-import { syncStaticClients } from '../src/static-clients';
+import makeSentryManager from './../src/sentrymanager.js';
+import { syncStaticClients } from '../src/static-clients.js';
 import { stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } from 'taskcluster-lib-testing';
 
 export const load = stickyLoader(load);

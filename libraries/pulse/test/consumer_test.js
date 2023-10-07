@@ -1,10 +1,10 @@
-import { Client, consume, connectionStringCredentials } from '../src';
+import { Client, consume, connectionStringCredentials } from '../src/index.js';
 import amqplib from 'amqplib';
 import assume from 'assume';
 import fs from 'fs';
 import debugModule from 'debug';
 import assert from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import { suiteName } from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {

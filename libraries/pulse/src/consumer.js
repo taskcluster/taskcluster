@@ -28,7 +28,7 @@ const isExpectedError = err => {
  * that are deleted on disconnection.  This may lead to loss of messages,
  * and the caller must handle this via the onConnected handler.
  */
-class PulseConsumer {
+export class PulseConsumer {
   constructor({ client, bindings, queueName, ephemeral, prefetch, onConnected, handleMessage, ...queueOptions }) {
     assert(handleMessage, 'Must provide a message handler function');
 
@@ -321,7 +321,7 @@ class PulseConsumer {
   }
 }
 
-const consume = async (options, handleMessage, onConnected) => {
+export const consume = async (options, handleMessage, onConnected) => {
   if (handleMessage) {
     options.handleMessage = handleMessage;
   }
@@ -336,5 +336,3 @@ const consume = async (options, handleMessage, onConnected) => {
   await pq._start();
   return pq;
 };
-
-exports.consume = consume;

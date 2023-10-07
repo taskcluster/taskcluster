@@ -1,6 +1,6 @@
-import helper from './helper';
-import ScopeResolver from '../src/scoperesolver';
-import exchanges from '../src/exchanges';
+import helper from './helper.js';
+import ScopeResolver from '../src/scoperesolver.js';
+import exchanges from '../src/exchanges.js';
 import { scopeCompare } from 'taskcluster-lib-scopes';
 import assert from 'assert';
 import _ from 'lodash';

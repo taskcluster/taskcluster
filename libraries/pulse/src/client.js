@@ -59,7 +59,7 @@ MonitorManager.register({
  *
  * The pulse namespace for this user is available as `client.namespace`.
  */
-class Client extends events.EventEmitter {
+export class Client extends events.EventEmitter {
   constructor({ namespace, recycleInterval, retirementDelay, minReconnectionInterval, monitor, credentials,
     username, password, hostname, vhost, connectionString }) {
     super();
@@ -269,7 +269,6 @@ class Client extends events.EventEmitter {
   }
 }
 
-exports.Client = Client;
 
 let nextConnectionId = 1;
 
@@ -308,7 +307,7 @@ let nextConnectionId = 1;
  *  `retiring`.
  *
  */
-class Connection extends events.EventEmitter {
+export class Connection extends events.EventEmitter {
   constructor(monitor, retirementDelay) {
     super();
 
@@ -412,5 +411,3 @@ class Connection extends events.EventEmitter {
     }, this.retirementDelay);
   }
 }
-
-exports.Connection = Connection;

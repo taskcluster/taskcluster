@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import _ from 'lodash';
 import assume from 'assume';
 import testing from 'taskcluster-lib-testing';

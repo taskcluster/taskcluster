@@ -1,5 +1,5 @@
 import assert from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
 import request from 'superagent';

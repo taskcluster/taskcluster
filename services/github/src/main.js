@@ -1,6 +1,6 @@
 import '../../prelude.js';
-import builder from './api';
-import exchanges from './exchanges';
+import builder from './api.js';
+import exchanges from './exchanges.js';
 import Handlers from './handlers';
 import Intree from './intree';
 import Ajv from 'ajv';

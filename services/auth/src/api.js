@@ -3,10 +3,15 @@ import scopeUtils from 'taskcluster-lib-scopes';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import slugid from 'slugid';
 import _ from 'lodash';
-import signaturevalidator from './signaturevalidator';
-import ScopeResolver from './scoperesolver';
-import Hashids from 'hashids/cjs';
-import { modifyRoles } from '../src/data';
+import signaturevalidator from './signaturevalidator.js';
+import ScopeResolver from './scoperesolver.js';
+import Hashids from 'hashids';
+import { modifyRoles } from '../src/data.js';
+import { awsBuilder } from './aws.js';
+import { gcpBuilder } from './gcp.js';
+import { azureBuilder } from './azure.js';
+import { sentryBuilder } from './sentry.js';
+import { websocktunnelBuilder } from './websocktunnel.js';
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -951,12 +956,11 @@ builder.declare({
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
-import './aws';
-
-import './azure';
-import './sentry';
-import './websocktunnel';
-import './gcp';
+awsBuilder(builder);
+gcpBuilder(builder);
+azureBuilder(builder);
+sentryBuilder(builder);
+websocktunnelBuilder(builder);
 
 /** Get all client information */
 builder.declare({

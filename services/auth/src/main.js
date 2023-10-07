@@ -2,22 +2,22 @@ import '../../prelude.js';
 import Loader from 'taskcluster-lib-loader';
 import SchemaSet from 'taskcluster-lib-validate';
 import libReferences from 'taskcluster-lib-references';
-import tcdb from 'taskcluster-db';
+import * as tcdb from 'taskcluster-db';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import { App } from 'taskcluster-lib-app';
 import Config from 'taskcluster-lib-config';
-import builder from './api';
+import builder from './api.js';
 import debugFactory from 'debug';
 const debug = debugFactory('server');
-import exchanges from './exchanges';
-import ScopeResolver from './scoperesolver';
-import signaturevalidator from './signaturevalidator';
+import exchanges from './exchanges.js';
+import ScopeResolver from './scoperesolver.js';
+import signaturevalidator from './signaturevalidator.js';
 import taskcluster from 'taskcluster-client';
-import makeSentryManager from './sentrymanager';
-import libPulse from 'taskcluster-lib-pulse';
+import makeSentryManager from './sentrymanager.js';
+import * as libPulse from 'taskcluster-lib-pulse';
 import { google as googleapis } from 'googleapis';
 import assert from 'assert';
-import { syncStaticClients } from './static-clients';
+import { syncStaticClients } from './static-clients.js';
 
 // Create component loader
 const load = Loader({

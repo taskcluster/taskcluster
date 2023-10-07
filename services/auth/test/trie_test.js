@@ -1,8 +1,8 @@
 import assume from 'assume';
 import _ from 'lodash';
-import ScopeSetBuilder from '../src/scopesetbuilder';
-import trie from '../src/trie';
-import trietestcases from './trietestcases';
+import ScopeSetBuilder from '../src/scopesetbuilder.js';
+import trie from '../src/trie.js';
+import trietestcases from './trietestcases.js';
 import testing from 'taskcluster-lib-testing';
 
 // This test suite was designed to test every conceivable combination of

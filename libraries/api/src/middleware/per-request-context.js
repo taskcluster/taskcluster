@@ -2,7 +2,7 @@
  * If a bit of context supports per-request configuration, we
  * make sure to set that up here
  */
-const perRequestContext = ({ entry, context }) => {
+export const perRequestContext = ({ entry, context }) => {
   return (req, res, next) => {
     const cache = {};
     req.tcContext = new Proxy(context, {
@@ -35,5 +35,3 @@ const perRequestContext = ({ entry, context }) => {
     next();
   };
 };
-
-exports.perRequestContext = perRequestContext;

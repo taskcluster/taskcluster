@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { App } from '../';
+import { App } from '../index.js';
 import request from 'superagent';
 import express from 'express';
 import isUUID from 'is-uuid';

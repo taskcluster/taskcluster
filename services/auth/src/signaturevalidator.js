@@ -384,4 +384,4 @@ const createSignatureValidator = function(options) {
   };
 };
 
-exports.createSignatureValidator = createSignatureValidator;
+export default createSignatureValidator;

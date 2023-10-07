@@ -1,6 +1,6 @@
 import assert from 'assert';
-import helper from './helper';
-import { modifyRoles } from '../src/data';
+import helper from './helper.js';
+import { modifyRoles } from '../src/data.js';
 import slugid from 'slugid';
 import _ from 'lodash';
 import assume from 'assume';

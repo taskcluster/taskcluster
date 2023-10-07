@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.js';
 import taskcluster from 'taskcluster-client';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';

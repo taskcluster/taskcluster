@@ -20,7 +20,7 @@ MonitorManager.register({
   },
 });
 
-class Exchanges {
+export class Exchanges {
   constructor(options) {
     assert(options.serviceName, 'serviceName is required');
     assert(options.projectName, 'projectName is required');
@@ -71,9 +71,7 @@ class Exchanges {
   }
 }
 
-exports.Exchanges = Exchanges;
-
-class Entry {
+export class Entry {
   constructor({ exchanges, ...options }) {
     assert(options.exchange, 'exchange is required');
     assert(options.name, 'name is required');
@@ -172,7 +170,7 @@ class Entry {
   }
 }
 
-class PulsePublisher {
+export class PulsePublisher {
   constructor({ rootUrl, schemaset, client, exchanges, sendDeadline }) {
     this.rootUrl = rootUrl;
     this.schemaset = schemaset;

@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
  * response at req.text.
  */
 
-const parseBody = ({ inputLimit }) => {
+export const parseBody = ({ inputLimit }) => {
   const wrapped = bodyParser.text({
     limit: inputLimit,
     type: 'application/json',
@@ -42,5 +42,3 @@ const parseBody = ({ inputLimit }) => {
     });
   };
 };
-
-exports.parseBody = parseBody;

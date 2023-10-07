@@ -6,7 +6,7 @@ import assert from 'assert';
  * This invokes the handler with `context` as `this` and then catches
  * exceptions and failures of returned promises handler.
  */
-const callHandler = ({ entry, context, monitor }) => {
+export const callHandler = ({ entry, context, monitor }) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {
@@ -28,5 +28,3 @@ const callHandler = ({ entry, context, monitor }) => {
     });
   };
 };
-
-exports.callHandler = callHandler;
