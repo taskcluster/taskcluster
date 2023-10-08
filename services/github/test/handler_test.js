@@ -1,14 +1,14 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test');
-import helper from './helper';
+import helper from './helper.js';
 import assert from 'assert';
 import sinon from 'sinon';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 import { LEVELS } from 'taskcluster-lib-monitor';
-import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants';
-import utils from '../src/utils';
+import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants.js';
+import utils from '../src/utils.js';
 
 /**
  * This tests the event handlers, faking out all of the services they

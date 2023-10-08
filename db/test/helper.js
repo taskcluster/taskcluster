@@ -4,7 +4,7 @@ import pg from 'pg';
 const { Pool } = pg;
 import { WRITE } from 'taskcluster-lib-postgres';
 import { resetDb } from 'taskcluster-lib-testing';
-import * as tcdb from 'taskcluster-db';
+import tcdb from 'taskcluster-db';
 import debugFactory from 'debug';
 const debug = debugFactory('db-helper');
 import { UNDEFINED_TABLE, UNDEFINED_COLUMN, runOnlineBatches } from 'taskcluster-lib-postgres';

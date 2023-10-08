@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.js';
 import assert from 'assert';
 import _ from 'lodash';
 import got from 'got';

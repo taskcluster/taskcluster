@@ -1,8 +1,8 @@
 import '../../prelude.js';
 import builder from './api.js';
 import exchanges from './exchanges.js';
-import Handlers from './handlers';
-import Intree from './intree';
+import Handlers from './handlers/index.js';
+import Intree from './intree.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import taskcluster from 'taskcluster-client';
@@ -13,9 +13,9 @@ import { MonitorManager } from 'taskcluster-lib-monitor';
 import libReferences from 'taskcluster-lib-references';
 import { App } from 'taskcluster-lib-app';
 import tcdb from 'taskcluster-db';
-import githubAuth from './github-auth';
+import githubAuth from './github-auth.js';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import './monitor';
+import './monitor.js';
 import { fileURLToPath } from 'url';
 
 const load = loader({

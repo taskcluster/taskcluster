@@ -12,7 +12,7 @@ const tokenCache = new Map();
  * As we run multiple handlers for the same repository, we can save a lot of resources by using cached token
  * On average it takes 0.5-1s to get one.
  */
-const getCachedInstallationToken = async (gh, inst_id) => {
+export const getCachedInstallationToken = async (gh, inst_id) => {
   let tokenData = tokenCache.get(inst_id);
   const timeMargin = 10 * 60 * 1000; // 10min before expiry
   if (tokenData) {
@@ -29,7 +29,7 @@ const getCachedInstallationToken = async (gh, inst_id) => {
   return tokenData;
 };
 
-const getPrivatePEM = cfg => {
+export const getPrivatePEM = cfg => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
   const privatePEM = cfg.github.credentials.privatePEM;
   if (!keyRe.test(privatePEM)) {
@@ -43,7 +43,7 @@ const getPrivatePEM = cfg => {
   return privatePEM.replace(/\\n/g, '\n');
 };
 
-module.exports = async ({ cfg, monitor }) => {
+export default async ({ cfg, monitor }) => {
   const privatePEM = getPrivatePEM(cfg);
 
   const OctokitOptions = {
@@ -91,6 +91,3 @@ module.exports = async ({ cfg, monitor }) => {
   // Also, the authentication happens not just once in the beginning, but for each request.
   return { getAppGithub, getInstallationGithub };
 };
-
-module.exports.getPrivatePEM = getPrivatePEM; // for testing
-module.exports.getCachedInstallationToken = getCachedInstallationToken;

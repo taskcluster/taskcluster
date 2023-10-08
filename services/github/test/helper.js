@@ -5,7 +5,7 @@ import sinon from 'sinon';
 import builder from '../src/api';
 import taskcluster from 'taskcluster-client';
 import load from '../src/main';
-import fakeGithubAuth from './github-auth';
+import fakeGithubAuth from './github-auth.js';
 
 import {
   fakeauth,

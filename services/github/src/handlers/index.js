@@ -5,13 +5,13 @@ import taskcluster from 'taskcluster-client';
 import yaml from 'js-yaml';
 import assert from 'assert';
 import { consume } from 'taskcluster-lib-pulse';
-import { deprecatedStatusHandler } from './deprecatedStatus';
-import { taskGroupCreationHandler } from './taskGroupCreation';
-import { statusHandler } from './status';
-import { jobHandler } from './job';
-import { rerunHandler } from './rerun';
-import { POLICIES } from './policies';
-import { GITHUB_BUILD_STATES } from '../constants';
+import { deprecatedStatusHandler } from './deprecatedStatus.js';
+import { taskGroupCreationHandler } from './taskGroupCreation.js';
+import { statusHandler } from './status.js';
+import { jobHandler } from './job.js';
+import { rerunHandler } from './rerun.js';
+import { POLICIES } from './policies.js';
+import { GITHUB_BUILD_STATES } from '../constants.js';
 
 /**
  * Create handlers

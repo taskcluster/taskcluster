@@ -1,7 +1,7 @@
 import { Exchanges } from 'taskcluster-lib-pulse';
 import _ from 'lodash';
 import assert from 'assert';
-import { PUBLISHERS } from './constants';
+import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */
 const commonRoutingKey = function(options) {

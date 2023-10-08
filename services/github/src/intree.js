@@ -1,4 +1,4 @@
-import TcYaml from './tc-yaml';
+import TcYaml from './tc-yaml.js';
 
 export default {};
 

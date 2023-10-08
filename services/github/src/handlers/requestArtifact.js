@@ -1,9 +1,9 @@
-import utils from '../utils';
+import utils from '../utils.js';
 
 /**
  * Helper to request artifacts from statusHandler.
  */
-async function requestArtifact(artifactName, { taskId, runId, debug, instGithub, build, scopes }) {
+export async function requestArtifact(artifactName, { taskId, runId, debug, instGithub, build, scopes }) {
   try {
     const limitedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
@@ -52,6 +52,4 @@ async function requestArtifact(artifactName, { taskId, runId, debug, instGithub,
   return '';
 }
 
-export default {
-  requestArtifact,
-};
+export default requestArtifact;

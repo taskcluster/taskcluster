@@ -2,15 +2,15 @@ import assert from 'assert';
 import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { makeDebug } from './utils';
-import { POLICIES } from './policies';
-import { GITHUB_TASKS_FOR } from '../constants';
+import { makeDebug } from './utils.js';
+import { POLICIES } from './policies.js';
+import { GITHUB_TASKS_FOR } from '../constants.js';
 
 /**
  * If a .taskcluster.yml exists, attempt to turn it into a taskcluster
  * graph config, and post the initial status on github.
  **/
-async function jobHandler(message) {
+export async function jobHandler(message) {
   const { eventId, installationId } = message.payload;
   let debug = makeDebug(this.monitor, { eventId, installationId });
 
@@ -271,6 +271,4 @@ async function jobHandler(message) {
   debug(`Job handling for ${organization}/${repository}@${sha} completed.`);
 }
 
-export default {
-  jobHandler,
-};
+export default jobHandler;

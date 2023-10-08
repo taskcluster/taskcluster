@@ -1,5 +1,5 @@
 import assert from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 

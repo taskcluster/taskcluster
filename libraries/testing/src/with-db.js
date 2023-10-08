@@ -3,7 +3,7 @@ import assert from 'assert';
 import pg from 'pg';
 const { Client } = pg;
 import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from 'taskcluster-lib-postgres';
-import * as tcdb from 'taskcluster-db';
+import tcdb from 'taskcluster-db';
 import { URL } from 'url';
 
 const __dirname = new URL('.', import.meta.url).pathname;

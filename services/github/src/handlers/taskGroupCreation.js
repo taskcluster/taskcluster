@@ -1,4 +1,4 @@
-import { makeDebug, taskGroupUI } from './utils';
+import { makeDebug, taskGroupUI } from './utils.js';
 
 /**
  * When the task group was defined, post the initial status to github
@@ -9,7 +9,7 @@ import { makeDebug, taskGroupUI } from './utils';
  *   this repo/schemas/task-group-creation-requested.yml
  * @returns {Promise<void>}
  */
-async function taskGroupCreationHandler(message) {
+export async function taskGroupCreationHandler(message) {
   const {
     taskGroupId,
   } = message.payload;
@@ -46,6 +46,4 @@ async function taskGroupCreationHandler(message) {
   });
 }
 
-export default {
-  taskGroupCreationHandler,
-};
+export default taskGroupCreationHandler;

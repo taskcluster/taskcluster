@@ -1,12 +1,12 @@
-import { GITHUB_BUILD_STATES } from '../constants';
-import { makeDebug, taskGroupUI } from './utils';
+import { GITHUB_BUILD_STATES } from '../constants.js';
+import { makeDebug, taskGroupUI } from './utils.js';
 
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
  * Taskcluster States: https://docs.taskcluster.net/docs/reference/platform/queue/exchanges
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
-async function deprecatedStatusHandler(message) {
+export async function deprecatedStatusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
 
   let debug = makeDebug(this.monitor, { taskGroupId });
@@ -103,6 +103,4 @@ async function deprecatedStatusHandler(message) {
   }
 }
 
-export default {
-  deprecatedStatusHandler,
-};
+export default deprecatedStatusHandler;

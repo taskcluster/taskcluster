@@ -1,7 +1,7 @@
 import assert from 'assert';
 import _ from 'lodash';
 import { Octokit as github } from '@octokit/rest';
-import fakeGithubAuth from './github-auth';
+import fakeGithubAuth from './github-auth.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

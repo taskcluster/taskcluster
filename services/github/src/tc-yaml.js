@@ -4,7 +4,7 @@ import slugid from 'slugid';
 import jsone from 'json-e';
 import tc from 'taskcluster-client';
 import TopoSort from 'topo-sort';
-import { GITHUB_TASKS_FOR } from './constants';
+import { GITHUB_TASKS_FOR } from './constants.js';
 
 // Assert that only scope-valid characters are in branches
 const branchTest = branch => {

@@ -2,7 +2,7 @@ import '../../prelude.js';
 import Loader from 'taskcluster-lib-loader';
 import SchemaSet from 'taskcluster-lib-validate';
 import libReferences from 'taskcluster-lib-references';
-import * as tcdb from 'taskcluster-db';
+import tcdb from 'taskcluster-db';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import { App } from 'taskcluster-lib-app';
 import Config from 'taskcluster-lib-config';

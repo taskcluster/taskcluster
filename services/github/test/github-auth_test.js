@@ -1,7 +1,7 @@
-import helper from './helper';
+import helper from './helper.js';
 import assert from 'assert';
 import nock from 'nock';
-import githubAuth from '../src/github-auth';
+import githubAuth from '../src/github-auth.js';
 import testing from 'taskcluster-lib-testing';
 
 const WITH_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\nsomekey\nline2\n-----END RSA PRIVATE KEY-----';

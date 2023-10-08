@@ -7,12 +7,12 @@ import {
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
   CHECK_RUN_STATES,
   TASK_STATE_TO_CHECK_RUN_STATE,
-} from '../constants';
+} from '../constants.js';
 
-import QueueLock from '../queue-lock';
-import { tailLog, markdownLog, markdownAnchor } from '../utils';
-import { requestArtifact } from './requestArtifact';
-import { taskUI, makeDebug, taskLogUI, GithubCheck } from './utils';
+import QueueLock from '../queue-lock.js';
+import { tailLog, markdownLog, markdownAnchor } from '../utils.js';
+import { requestArtifact } from './requestArtifact.js';
+import { taskUI, makeDebug, taskLogUI, GithubCheck } from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -41,7 +41,7 @@ const qLock = new QueueLock({
  *  taskException: https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/events#taskException
  * @returns {Promise<void>}
  **/
-async function statusHandler(message) {
+export async function statusHandler(message) {
   const { taskGroupId, state, runs, taskId } = message.payload.status;
   let { runId } = message.payload;
   runId = typeof runId === 'undefined' ? 0 : runId;
@@ -216,6 +216,4 @@ async function statusHandler(message) {
   }
 }
 
-export default {
-  statusHandler,
-};
+export default statusHandler;

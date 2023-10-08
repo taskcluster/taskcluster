@@ -9,10 +9,10 @@ import {
   PUBLISHERS,
   GITHUB_TASKS_FOR,
   GITHUB_BUILD_STATES,
-} from './constants';
+} from './constants.js';
 
-import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils';
-import fakePayloads from './fake-payloads';
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils.js';
+import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -863,7 +863,7 @@ builder.declare({
   };
 
   const branch = fakeEventData?.branch || 'main';
-  const fakePayload = fakePayloads.getEventPayload(
+  const fakePayload = getEventPayload(
     fakeEventType, fakeEventAction, organization, repository, branch, fakeEventData,
   );
 
