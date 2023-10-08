@@ -46,4 +46,4 @@ class TaskQueue {
   }
 }
 
-exports.TaskQueue = TaskQueue;
+export default TaskQueue;

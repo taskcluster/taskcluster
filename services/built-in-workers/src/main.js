@@ -4,7 +4,7 @@ import { MonitorManager } from 'taskcluster-lib-monitor';
 import libReferences from 'taskcluster-lib-references';
 import taskcluster from 'taskcluster-client';
 import config from 'taskcluster-lib-config';
-import taskqueue from './TaskQueue';
+import TaskQueue from './TaskQueue.js';
 import { fileURLToPath } from 'url';
 
 const load = loader({
@@ -43,12 +43,12 @@ const load = loader({
 
   succeedTaskQueue: {
     requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
+    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
   },
 
   failTaskQueue: {
     requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
+    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
   },
 
   server: {
@@ -65,7 +65,6 @@ const load = loader({
   process: process.argv[2],
 });
 
-// If this file is executed launch component from first argument
 // If this file is executed launch component from first argument
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
