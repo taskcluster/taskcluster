@@ -2,7 +2,7 @@ import { strict as assert } from 'assert';
 import * as helper from './helper.js';
 import _ from 'lodash';
 import assume from 'assume';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {

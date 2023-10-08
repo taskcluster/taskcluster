@@ -4,7 +4,7 @@ import aws from 'aws-sdk';
 import * as helper from './helper.js';
 import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {

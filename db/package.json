@@ -8,5 +8,5 @@
     "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src/*.js src/**/*.js test/*_test.js test/**/*.js"
   },
-  "main": "./src/index.js"
+  "exports": "./src/index.js"
 }

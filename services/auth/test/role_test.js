@@ -4,7 +4,7 @@ import { modifyRoles } from '../src/data.js';
 import slugid from 'slugid';
 import _ from 'lodash';
 import assume from 'assume';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) {

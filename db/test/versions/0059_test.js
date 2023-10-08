@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import helper from '../helper';
+import helper from '../helper.js';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
 import { UNDEFINED_COLUMN } from 'taskcluster-lib-postgres';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
 
 suite(testing.suiteName(), function() {
 

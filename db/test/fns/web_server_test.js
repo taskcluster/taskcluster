@@ -1,8 +1,9 @@
 import slug from 'slugid';
-import { fromNow } from 'taskcluster-client';
+import tc from 'taskcluster-client';
+const { fromNow } = tc;
 import crypto from 'crypto';
 import { strict as assert } from 'assert';
-import helper from '../helper';
+import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as helper from './helper.js';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 import { modifyRoles } from '../src/data.js';
 
 const sorted = (arr) => {

@@ -1,9 +1,9 @@
 import { strict as assert } from 'assert';
-import helper from '../helper';
+import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'auth' });

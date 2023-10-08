@@ -5,7 +5,7 @@ import { scopeCompare } from 'taskcluster-lib-scopes';
 import assert from 'assert';
 import _ from 'lodash';
 import assume from 'assume';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 import { hrtime } from 'process';
 
 helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock, skipping) {

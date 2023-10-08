@@ -2,7 +2,7 @@ import * as helper from './helper.js';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);

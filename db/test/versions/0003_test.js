@@ -1,4 +1,4 @@
-import helper from '../helper';
+import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

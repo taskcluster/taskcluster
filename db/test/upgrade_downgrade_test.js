@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import testing from 'taskcluster-lib-testing';
-import tcdb from 'taskcluster-db';
-import helper from './helper';
+import * as tcdb from 'taskcluster-db';
+import helper from './helper.js';
 
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();

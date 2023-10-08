@@ -1,7 +1,8 @@
-import { fromNow } from 'taskcluster-client';
-import { range } from 'lodash';
+import tc from 'taskcluster-client';
+const { fromNow } = tc;
+import _ from 'lodash';
 import { strict as assert } from 'assert';
-import helper from '../helper';
+import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
 import { CHECK_VIOLATION, UNIQUE_VIOLATION, FOREIGN_KEY_VIOLATION } from 'taskcluster-lib-postgres';
 import taskcluster from 'taskcluster-client';
@@ -192,7 +193,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('get_expired_objects pagination', async function(db) {
-    await insertData(range(100).flatMap(i => ([{
+    await insertData(_.range(100).flatMap(i => ([{
       name: `object-${i}-not-expired`,
       backend_id: 'be-not-expired',
       project_id: 'prj-not-expired',
@@ -206,7 +207,7 @@ suite(testing.suiteName(), function() {
       expires: fromNow('-1 day'),
     }])));
 
-    const expectedNames = range(100).map(
+    const expectedNames = _.range(100).map(
       i => `object-${i.toString().padStart(3, '0')}`);
 
     const gotNames = [];

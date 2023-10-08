@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import taskcluster from 'taskcluster-client';
 import createSignatureValidator from '../src/signaturevalidator.js';
 import utils from 'taskcluster-lib-scopes';
-import * as testing from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 import * as helper from './helper.js';
 
 suite(testing.suiteName(), function() {

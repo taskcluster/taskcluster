@@ -1,8 +1,10 @@
 import { strict as assert } from 'assert';
 import slugid from 'slugid';
-import { cloneDeep, range } from 'lodash';
-import { fromNow } from 'taskcluster-client';
-import helper from '../helper';
+import _ from 'lodash';
+const { cloneDeep, range } = _;
+import tc from 'taskcluster-client';
+const { fromNow } = tc;
+import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import taskcluster from 'taskcluster-client';
