@@ -19,9 +19,6 @@ import path from 'path';
 
 export const load = stickyLoader(mainLoad);
 
-// this will be extended by `withXXX()` functions to expose new functionality for tests
-export const fns = { load };
-
 const __dirname = new URL('.', import.meta.url).pathname;
 
 suiteSetup(async function() {
@@ -37,7 +34,7 @@ export const rootUrl = `http://localhost:60552`;
 export const containerName = `auth-test-${v4()}`;
 export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
-withMonitor(fns);
+withMonitor({ load });
 
 // set up the testing secrets
 export const secrets = new Secrets({
@@ -59,14 +56,14 @@ export const secrets = new Secrets({
       { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
     ],
   },
-  load: load,
+  load,
 });
-
-export let cfg = null;
 
 export const loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
 
 export const withCfg = (mock, skipping) => {
+  const cfgFakes = { load };
+
   if (skipping()) {
     return;
   }
@@ -75,9 +72,7 @@ export const withCfg = (mock, skipping) => {
       return;
     }
 
-    // moved on top
-    // export const cfg = await stickyLoad('cfg');
-    cfg = await load('cfg');
+    cfgFakes.cfg = await load('cfg');
 
     load.save();
 
@@ -106,10 +101,14 @@ export const withCfg = (mock, skipping) => {
 
     load.restore();
   });
+
+  return cfgFakes;
 };
 
 export const withDb = (mock, skipping) => {
-  libTesting.withDb(mock, skipping, fns, 'auth');
+  const dbFakes = { load };
+  libTesting.withDb(mock, skipping, dbFakes, 'auth');
+  return dbFakes;
 };
 
 /**
@@ -167,7 +166,9 @@ export const withSentry = (mock, skipping) => {
 };
 
 export const withPulse = (mock, skipping) => {
-  libTesting.withPulse({ helper: fns, skipping, namespace: 'taskcluster-auth' });
+  const pulseFakes = { load };
+  libTesting.withPulse({ helper: pulseFakes, skipping, namespace: 'taskcluster-auth' });
+  return pulseFakes;
 };
 
 const testServiceBuilder = new APIBuilder({
@@ -191,13 +192,6 @@ testServiceBuilder.declare({
   });
 });
 
-export let AuthClient = null;
-export let TestClient = null;
-export let setupScopes = () => {};
-export let apiClient = null;
-export let testClient = null;
-export let gcpAccount = null;
-
 /**
  * Set up API servers.  Call this after withDb, so the server
  * uses the same entities classes.
@@ -208,6 +202,8 @@ export let gcpAccount = null;
  * This also sets up helper.apiClient as a client of the service API.
  */
 export const withServers = (mock, skipping) => {
+  const serversFakes = { load };
+
   let webServer;
 
   suiteSetup(async function() {
@@ -220,10 +216,10 @@ export const withServers = (mock, skipping) => {
     load.cfg('taskcluster.rootUrl', rootUrl);
 
     // First set up the auth service
-    AuthClient = taskcluster.createClient(builder.reference());
+    serversFakes.AuthClient = taskcluster.createClient(builder.reference());
 
-    setupScopes = (...scopes) => {
-      apiClient = new AuthClient({
+    serversFakes.setupScopes = (...scopes) => {
+      serversFakes.apiClient = new serversFakes.AuthClient({
         credentials: {
           clientId: 'static/taskcluster/root',
           accessToken: rootAccessToken,
@@ -234,12 +230,12 @@ export const withServers = (mock, skipping) => {
       });
     };
 
-    setupScopes();
+    serversFakes.setupScopes();
 
     // Now set up the test service
-    TestClient = taskcluster.createClient(testServiceBuilder.reference());
+    serversFakes.TestClient = taskcluster.createClient(testServiceBuilder.reference());
 
-    testClient = new TestClient({
+    serversFakes.testClient = new serversFakes.TestClient({
       credentials: {
         clientId: 'static/taskcluster/root',
         accessToken: rootAccessToken,
@@ -266,7 +262,7 @@ export const withServers = (mock, skipping) => {
   });
 
   setup(() => {
-    setupScopes();
+    serversFakes.setupScopes();
   });
 
   suiteTeardown(async function() {
@@ -279,6 +275,8 @@ export const withServers = (mock, skipping) => {
       webServer = null;
     }
   });
+
+  return serversFakes;
 };
 
 /**
@@ -286,6 +284,7 @@ export const withServers = (mock, skipping) => {
  * using real credentials.
  */
 export const withGcp = (mock, skipping) => {
+  const gcpFakes = { load };
   let policy = {};
 
   const fakeGoogleApis = {
@@ -372,7 +371,7 @@ export const withGcp = (mock, skipping) => {
         allowedServiceAccounts,
       });
 
-      gcpAccount = {
+      gcpFakes.gcpAccount = {
         email: 'test_client@example.com',
         project_id: credentials.project_id,
       };
@@ -383,12 +382,14 @@ export const withGcp = (mock, skipping) => {
       // [<service account email>, invalid@mozilla.com].
       const { credentials, allowedServiceAccounts } = await load('gcp');
 
-      gcpAccount = {
+      gcpFakes.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
     }
   });
+
+  return gcpFakes;
 };
 
 export const resetTables = (mock, skipping) => {

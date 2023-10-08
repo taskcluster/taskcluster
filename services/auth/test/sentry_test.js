@@ -12,10 +12,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.withDb(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
+    const servers = helper.withServers(mock, skipping);
 
     test('sentryDSN api method', async () => {
-      await helper.apiClient.sentryDSN('playground');
+      await servers.apiClient.sentryDSN('playground');
     });
 
     test('purgeExpiredKeys', async () => {
@@ -44,12 +44,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.withCfg(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse('mock', skipping);
-    helper.withServers(mock, skipping);
+    const servers = helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     test('sentryDSN api method', async () => {
       await assert.rejects(
-        () => helper.apiClient.sentryDSN('playground'),
+        () => servers.apiClient.sentryDSN('playground'),
         err => err.statusCode === 404);
     });
 

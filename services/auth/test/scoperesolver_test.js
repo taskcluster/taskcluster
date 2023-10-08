@@ -8,68 +8,70 @@ import assume from 'assume';
 import * as testing from 'taskcluster-lib-testing';
 import { hrtime } from 'process';
 
-suite(testing.suiteName(), () => {
+helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock, skipping) {
   let scopeResolver;
 
-  setup(async function() {
+  helper.withDb(mock, skipping);
+  const pulse = helper.withPulse(mock, skipping);
+  let reloads = [];
+
+  setup('mock scoperesolver reloading', async function () {
+    reloads = [];
+
     let monitor = await helper.load('monitor');
     scopeResolver = new ScopeResolver({ monitor, disableCache: true });
+
+    scopeResolver.reload = () => reloads.push('all');
+    scopeResolver.reloadClient = (clientId) => reloads.push(clientId);
+    scopeResolver.reloadRoles = () => reloads.push('roles');
+
+    const pulseClient = await helper.load('pulseClient');
+    await scopeResolver.setup({
+      rootUrl: helper.rootUrl,
+      Client: helper.Client,
+      Roles: helper.Roles,
+      pulseClient,
+      exchangeReference: exchanges.reference(),
+    });
+    assume(reloads).to.deeply.equal(['all']);
+    reloads = [];
   });
 
-  helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function(mock, skipping) {
-    helper.withDb(mock, skipping);
-    helper.withPulse(mock, skipping);
-    let reloads = [];
-
-    setup('mock scoperesolver reloading', async function() {
-      reloads = [];
-
-      scopeResolver.reload = () => reloads.push('all');
-      scopeResolver.reloadClient = (clientId) => reloads.push(clientId);
-      scopeResolver.reloadRoles = () => reloads.push('roles');
-
-      const pulseClient = await helper.load('pulseClient');
-      await scopeResolver.setup({
-        rootUrl: helper.rootUrl,
-        Client: helper.Client,
-        Roles: helper.Roles,
-        pulseClient,
-        exchangeReference: exchanges.reference(),
-      });
-      assume(reloads).to.deeply.equal(['all']);
-      reloads = [];
-    });
-
-    teardown(async function() {
-      await scopeResolver.stop();
-    });
-
-    test('client messages reload specific clients', async function() {
-      await helper.fakePulseMessage({
-        exchange: 'exchange/taskcluster-auth/v1/client-created',
-        routingKey: '-',
-        routes: [],
-        payload: { clientId: 'clid' },
-      });
-      assume(reloads).to.deeply.equal(['clid']);
-    });
-
-    test('reconnection reloads everything', async function() {
-      await scopeResolver._clientPq.connected();
-      assume(reloads).to.deeply.equal(['all']);
-    });
-
-    test('role messages reload all roles', async function() {
-      assume(reloads).to.deeply.equal([]);
-      await helper.fakePulseMessage({
-        exchange: 'exchange/taskcluster-auth/v1/role-created',
-        routingKey: '-',
-        routes: [],
-        payload: {},
-      });
-      assume(reloads).to.deeply.equal(['roles']);
-    });
+  teardown(async function () {
+    await scopeResolver.stop();
   });
+
+  test('client messages reload specific clients', async function () {
+    await pulse.fakePulseMessage({
+      exchange: 'exchange/taskcluster-auth/v1/client-created',
+      routingKey: '-',
+      routes: [],
+      payload: { clientId: 'clid' },
+    });
+    assume(reloads).to.deeply.equal(['clid']);
+  });
+
+  test('reconnection reloads everything', async function () {
+    await scopeResolver._clientPq.connected();
+    assume(reloads).to.deeply.equal(['all']);
+  });
+
+  test('role messages reload all roles', async function () {
+    assume(reloads).to.deeply.equal([]);
+    await pulse.fakePulseMessage({
+      exchange: 'exchange/taskcluster-auth/v1/role-created',
+      routingKey: '-',
+      routes: [],
+      payload: {},
+    });
+    assume(reloads).to.deeply.equal(['roles']);
+  });
+});
+
+suite(testing.suiteName(), () => {
+  // monitor is not needed for the following tests
+  const fakeMonitor = {};
+  const scopeResolver = new ScopeResolver({ monitor: fakeMonitor, disableCache: true });
 
   suite('buildResolver', function() {
     const testResolver = (title, { roles, scopes, expected }) => {
@@ -523,6 +525,7 @@ suite(testing.suiteName(), () => {
 
     // curl https://auth.taskcluster.net/v1/clients | jq -r '.clients' > test/clients.json
     const realClients = await helper.loadJson('./clients.json');
+
     test('resolve all clients', () => {
       const resolver = time('setup', () => scopeResolver.buildResolver(realRoles));
       time('resolve', () => {

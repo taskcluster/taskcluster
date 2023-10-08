@@ -17,12 +17,12 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
+    const servers = helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     let testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
+        let auth = new servers.AuthClient(config);
         await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);
@@ -104,12 +104,12 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
+    const servers = helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     let testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
+        let auth = new servers.AuthClient(config);
         await auth.testAuthenticateGet().then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);

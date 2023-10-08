@@ -8,16 +8,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  const servers = helper.withServers(mock, skipping);
 
   suite('charlene creates permanent credentials for a test runner', function() {
     suiteSetup(async function() {
       if (skipping()) {
         this.skip();
       } else {
-        await helper.apiClient.deleteRole('client-id:test-users/test');
-        await helper.apiClient.deleteClient('test-users');
-        await helper.apiClient.deleteClient('test-users/charlene/travis-tests');
+        await servers.apiClient.deleteRole('client-id:test-users/test');
+        await servers.apiClient.deleteClient('test-users');
+        await servers.apiClient.deleteClient('test-users/charlene/travis-tests');
       }
     });
 
@@ -28,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       travisTests;
 
     test('add a client for the identity provider', async () => {
-      let idp = await helper.apiClient.createClient('test-users', {
+      let idp = await servers.apiClient.createClient('test-users', {
         description: 'Test users identity provider',
         expires: taskcluster.fromNow('2 hours'),
         scopes: [
@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
 
       identityProviderToken = idp.accessToken;
-      identityProvider = new helper.AuthClient({
+      identityProvider = new servers.AuthClient({
         rootUrl: helper.rootUrl,
         credentials: {
           clientId: 'test-users',
@@ -53,14 +53,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     test('add role3', async () => {
-      await helper.apiClient.createRole('test-role:role3', {
+      await servers.apiClient.createRole('test-role:role3', {
         description: 'role 3',
         scopes: ['scope3a', 'scope3b'],
       });
     });
 
     test('create temporary credentials for charlene\'s browser login', async () => {
-      charlene = new helper.AuthClient({
+      charlene = new servers.AuthClient({
         rootUrl: helper.rootUrl,
         credentials: taskcluster.createTemporaryCredentials({
           start: new Date(),
@@ -91,7 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         ],
       });
 
-      travisTests = new helper.AuthClient({
+      travisTests = new servers.AuthClient({
         rootUrl: helper.rootUrl,
         credentials: {
           clientId: 'test-users/charlene/travis-tests',
@@ -130,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     test('root grants role3', async () => {
-      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
+      await servers.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -151,7 +151,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     test('root grants role3 again', async () => {
-      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
+      await servers.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -172,7 +172,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
     test('A disabled travis-tests client can\'t do things anymore', async function() {
       // give the user a scope we can use as a probe
-      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
+      await servers.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [

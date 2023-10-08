@@ -7,13 +7,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  const servers = helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
 
   test('websocktunnelToken', async () => {
     const wstAudience = 'websocktunnel-usw2';
     const wstClient = 'my-group-my-id';
-    const resp = await helper.apiClient.websocktunnelToken(wstAudience, wstClient);
+    const resp = await servers.apiClient.websocktunnelToken(wstAudience, wstClient);
 
     assert.equal(resp.wstClient, wstClient);
     assert.equal(resp.wstAudience, wstAudience);
