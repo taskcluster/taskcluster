@@ -6,6 +6,15 @@ import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
 import testing from 'taskcluster-lib-testing';
 
+import webhookPullRequestJson from './data/webhooks/webhook.pull_request.open.json' assert { type: 'json' };
+import webhookPushJson from './data/webhooks/webhook.push.json' assert { type: 'json' };
+import webhookPushOffbranchJson from './data/webhooks/webhook.push.offbranch.json' assert { type: 'json' };
+import webhookPushUnicodeJson from './data/webhooks/webhook.push.unicode.json' assert { type: 'json' };
+import webhookReleaseJson from './data/webhooks/webhook.release.json' assert { type: 'json' };
+import webhookTagPushJson from './data/webhooks/webhook.tag_push.json' assert { type: 'json' };
+
+
+
 suite(testing.suiteName(), function() {
   let intree;
 
@@ -312,7 +321,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
-        body: require('./data/webhooks/webhook.push.json').body,
+        body: webhookPushJson.body,
         tasks_for: 'github-push',
         branch: 'master',
       }),
@@ -334,7 +343,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
-        body: require('./data/webhooks/webhook.push.json').body,
+        body: webhookPushJson.body,
         tasks_for: 'github-push',
         branch: 'master',
       }),
@@ -347,7 +356,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
-        body: require('./data/webhooks/webhook.push.json').body,
+        body: webhookPushJson.body,
         tasks_for: 'github-push',
         branch: 'master',
       }),
@@ -368,7 +377,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
-        body: require('./data/webhooks/webhook.push.json').body,
+        body: webhookPushJson.body,
         tasks_for: 'github-push',
         branch: 'master',
       }),
@@ -388,7 +397,7 @@ suite(testing.suiteName(), function() {
     configPath + 'taskcluster.push_pull_release.v1.yml',
     {
       payload: buildMessage({
-        body: require('./data/webhooks/webhook.pull_request.open.json').body,
+        body: webhookPullRequestJson.body,
         tasks_for: 'github-pull-request',
         branch: 'owlishDeveloper-patch-2',
       }),
@@ -409,7 +418,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
-        body: require('./data/webhooks/webhook.push.json').body,
+        body: webhookPushJson.body,
         tasks_for: 'github-push',
         branch: 'master',
       }),
@@ -430,7 +439,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' },
-        body: require('./data/webhooks/webhook.push.offbranch.json').body,
+        body: webhookPushOffbranchJson.body,
         tasks_for: 'github-push',
         branch: 'foobar',
       }),
@@ -445,7 +454,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
-        body: require('./data/webhooks/webhook.release.json').body,
+        body: webhookReleaseJson.body,
         tasks_for: 'github-release',
         branch: 'master',
       }),
@@ -466,7 +475,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
-        body: require('./data/webhooks/webhook.release.json').body,
+        body: webhookReleaseJson.body,
         tasks_for: 'github-release',
         branch: 'master',
       }),
@@ -487,7 +496,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.base.repo.branch': '🌱', 'event.type': 'push' },
-        body: require('./data/webhooks/webhook.push.unicode.json').body,
+        body: webhookPushUnicodeJson.body,
         tasks_for: 'github-push',
         branch: '🌱',
       }),
@@ -502,7 +511,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },
-        body: require('./data/webhooks/webhook.tag_push.json').body,
+        body: webhookTagPushJson.body,
         tasks_for: 'github-push',
       }),
     },
@@ -522,7 +531,7 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },
-        body: require('./data/webhooks/webhook.tag_push.json').body,
+        body: webhookTagPushJson.body,
         tasks_for: 'github-push',
       }),
     },

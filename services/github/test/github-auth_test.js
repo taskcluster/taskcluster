@@ -1,7 +1,7 @@
 import helper from './helper.js';
 import assert from 'assert';
 import nock from 'nock';
-import githubAuth from '../src/github-auth.js';
+import githubAuth, { getCachedInstallationToken, getPrivatePEM } from '../src/github-auth.js';
 import testing from 'taskcluster-lib-testing';
 
 const WITH_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\nsomekey\nline2\n-----END RSA PRIVATE KEY-----';
@@ -62,17 +62,17 @@ suite(testing.suiteName(), function() {
   suite('getPrivatePEM', function() {
     test('with actual newlines', function() {
       const cfg = { github: { credentials: { privatePEM: WITH_NEWLINES } } };
-      assert.equal(githubAuth.getPrivatePEM(cfg), WITH_NEWLINES);
+      assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
     test('with escaped newlines', function() {
       const cfg = { github: { credentials: { privatePEM: WITH_ESCAPED_NEWLINES } } };
-      assert.equal(githubAuth.getPrivatePEM(cfg), WITH_NEWLINES);
+      assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
     test('with invalid value', function() {
       const cfg = { github: { credentials: { privatePEM: 'somekey' } } };
-      assert.throws(() => githubAuth.getPrivatePEM(cfg), err => {
+      assert.throws(() => getPrivatePEM(cfg), err => {
         assert(/must match/.test(err.toString()));
         assert(!/somekey/.test(err.toString()));
         return true;
@@ -101,9 +101,9 @@ suite(testing.suiteName(), function() {
         .reply(200, { expires_at: new Date('3000-01-01T00:00:00Z'), token: 'abc' });
 
       const ghApp = await getGh();
-      const token1 = await githubAuth.getCachedInstallationToken(ghApp, 500);
+      const token1 = await getCachedInstallationToken(ghApp, 500);
       // calling this second time ensures that nock() will not be activated, since it only expects one call
-      const token2 = await githubAuth.getCachedInstallationToken(ghApp, 500);
+      const token2 = await getCachedInstallationToken(ghApp, 500);
 
       assert.equal('abc', token1.token);
       assert.equal('abc', token2.token);
@@ -117,8 +117,8 @@ suite(testing.suiteName(), function() {
         .reply(200, { expires_at: new Date('1000-01-01T00:00:00Z'), token: 'abc' });
 
       const ghApp = await getGh();
-      const token1 = await githubAuth.getCachedInstallationToken(ghApp, 505);
-      const token2 = await githubAuth.getCachedInstallationToken(ghApp, 505);
+      const token1 = await getCachedInstallationToken(ghApp, 505);
+      const token2 = await getCachedInstallationToken(ghApp, 505);
 
       assert.equal('abc', token1.token);
       assert.equal('abc', token2.token);

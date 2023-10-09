@@ -9,7 +9,7 @@ import {
   ansi2txt,
   generateXHubSignature,
   checkGithubSignature,
-} from '../src/utils';
+} from '../src/utils.js';
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {

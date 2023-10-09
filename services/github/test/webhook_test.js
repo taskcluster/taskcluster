@@ -7,7 +7,7 @@ import { LEVELS } from 'taskcluster-lib-monitor';
 const TC_DEV_INSTALLATION_ID = 28513985;
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  helper.withDb(mock, skipping);
+  const dbHelper = helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -73,7 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {
-    const result = await helper.db.fns.get_github_integration('imbstack');
+    const result = await dbHelper.db.fns.get_github_integration('imbstack');
     assert.equal(result.length, 1);
     assert.equal(result[0].owner, 'imbstack');
     assert.equal(result[0].installation_id, 11725878);

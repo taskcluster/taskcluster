@@ -2,6 +2,10 @@ import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
+import path from 'path';
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const assetsPath = path.join(__dirname, '/../assets/');
 
 import {
   EVENT_TYPES,
@@ -559,7 +563,7 @@ builder.declare({
 
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
-    root: __dirname + '/../assets/',
+    root: assetsPath,
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",

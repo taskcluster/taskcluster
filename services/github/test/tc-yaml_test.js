@@ -1,4 +1,4 @@
-import TcYaml from '../src/tc-yaml';
+import TcYaml from '../src/tc-yaml.js';
 import assume from 'assume';
 import testing from 'taskcluster-lib-testing';
 

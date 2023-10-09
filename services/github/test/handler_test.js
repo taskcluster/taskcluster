@@ -10,14 +10,19 @@ import { LEVELS } from 'taskcluster-lib-monitor';
 import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
 
+import validYamlJson from './data/yml/valid-yaml.json' assert { type: 'json' };
+import validYamlV1Json from './data/yml/valid-yaml-v1.json' assert { type: 'json' };
+import invalidTaskJson from './data/yml/invalid-task.json' assert { type: 'json' };
+import invalidYamlJson from './data/yml/invalid-yaml.json' assert { type: 'json' };
+
 /**
  * This tests the event handlers, faking out all of the services they
  * interact with.
  */
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
-  helper.withDb(mock, skipping);
+  const dbHelper = helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
-  helper.withPulse(mock, skipping);
+  const pulseHelper = helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
@@ -35,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
-    await helper.db.fns.create_github_build_pr(
+    await dbHelper.db.fns.create_github_build_pr(
       'TaskclusterRobot',
       'hooks-testing',
       COMMIT_SHA,
@@ -52,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   async function addCheckRun({ taskGroupId, taskId, checkSuiteId = '11111', checkRunId = '22222' }) {
     debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
-    await helper.db.fns.create_github_check(
+    await dbHelper.db.fns.create_github_check(
       taskGroupId,
       taskId,
       checkSuiteId,
@@ -88,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
     };
 
-    await helper.fakePulseMessage(message);
+    await pulseHelper.fakePulseMessage(message);
     await handlerComplete;
   }
 
@@ -351,9 +356,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
       assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
-      const [buildA] = await helper.db.fns.get_github_build_pr('aa');
+      const [buildA] = await dbHelper.db.fns.get_github_build_pr('aa');
       assert.equal(buildA.state, 'cancelled');
-      const [buildC] = await helper.db.fns.get_github_build_pr('cc');
+      const [buildC] = await dbHelper.db.fns.get_github_build_pr('cc');
       assert.equal(buildC.state, 'cancelled');
     });
 
@@ -540,7 +545,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         message.payload.details['event.pullNumber'] = pullNumber;
       }
 
-      await helper.fakePulseMessage(message);
+      await pulseHelper.fakePulseMessage(message);
       await handlerComplete;
     }
 
@@ -578,14 +583,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -602,13 +607,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -616,7 +621,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -628,13 +633,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -643,7 +648,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public' };
 
       github.inst(5828).setTaskclusterYml({
@@ -666,7 +671,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'));
 
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -674,7 +679,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
 
       github.inst(5828).setTaskclusterYml({
@@ -697,7 +702,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request-untrusted'));
 
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -709,14 +714,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -728,7 +733,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
@@ -740,7 +745,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -752,7 +757,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-task.json'),
+        content: invalidTaskJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -770,7 +775,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-yaml.json'),
+        content: invalidYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -788,7 +793,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       handlers.createTasks.rejects({ body: { error: 'oh noes' } });
       await simulateJobMessage({ user: 'goodBuddy' });
@@ -803,7 +808,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     suite('Cancel running task groups', function () {
       test('should not cancel task groups on the default branch', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -820,7 +825,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
         let args = handlers.createTasks.firstCall.args[0];
         let taskGroupId = args.tasks[0].task.taskGroupId;
-        let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
         assert.equal(build.organization, 'TaskclusterRobot');
         assert.equal(build.repository, 'hooks-testing');
         assert.equal(build.sha, 'development');
@@ -829,7 +834,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.notCalled);
       });
       test('should respect .taskcluster.yml autoCancelPreviousChecks config', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         tcYaml['autoCancelPreviousChecks'] = false;
         github.inst(5828).setTaskclusterYml({
           owner: 'TaskclusterRobot',
@@ -862,7 +867,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert.equal(cancelCallArgs.newBuild.pull_number, null);
       });
       test('should cancel by default', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -879,7 +884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
       });
       test('should cancel task groups for same pull request number', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         tcYaml['autoCancelPreviousChecks'] = true;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
@@ -937,7 +942,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             ref: COMMIT_SHA,
-            content: require('./data/yml/valid-yaml.json'),
+            content: validYamlJson,
           });
           github.inst(5828).setTaskclusterYml({
             owner: 'TaskclusterRobot',
@@ -975,7 +980,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -993,7 +998,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -1012,7 +1017,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'push' });
 
@@ -1025,7 +1030,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
         // note that this ends up compiling to zero tasks for a release
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setCommit({
         owner: 'TaskclusterRobot',
@@ -1048,7 +1053,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -1085,7 +1090,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     async function assertStatusUpdate(state) {
@@ -1101,7 +1106,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     }
 
     async function assertBuildState(state) {
-      let [build] = await helper.db.fns.get_github_build_pr(TASKGROUPID);
+      let [build] = await dbHelper.db.fns.get_github_build_pr(TASKGROUPID);
       assert.equal(build.state, state);
     }
 
@@ -1214,7 +1219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
       sinon.restore();
     });
 
@@ -1552,7 +1557,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
       sinon.restore();
     });
 
@@ -1645,7 +1650,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1686,7 +1691,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1740,7 +1745,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(TASKGROUPID);
+      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1800,7 +1805,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await helper.db.fns.delete_github_build(taskGroupId);
+      await dbHelper.db.fns.delete_github_build(taskGroupId);
       reruns = [];
       usedScopes = [];
     });
@@ -1834,7 +1839,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
-      await helper.fakePulseMessage(message);
+      await pulseHelper.fakePulseMessage(message);
       await handlerComplete;
 
       assert.equal(reruns.length, 1);
@@ -1879,7 +1884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
-      await helper.fakePulseMessage(message);
+      await pulseHelper.fakePulseMessage(message);
       try {
         await handlerComplete;
       } catch (e) {

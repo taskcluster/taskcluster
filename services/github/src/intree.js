@@ -1,7 +1,5 @@
 import TcYaml from './tc-yaml.js';
 
-export default {};
-
 /**
  * Returns a function that merges an existing taskcluster github config with
  * a pull request message's payload to generate a full task graph config.
@@ -39,3 +37,5 @@ export const setup = async function({ cfg, schemaset }) {
     return tcyaml.compileTasks(config, cfg, payload, new Date().toJSON());
   };
 };
+
+export default { setup };
