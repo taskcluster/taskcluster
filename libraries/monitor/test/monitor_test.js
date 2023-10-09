@@ -1,5 +1,4 @@
 import path from 'path';
-import url from 'url';
 import aws from 'aws-sdk';
 import { fork } from 'child_process';
 import mockFs from 'mock-fs';
@@ -7,7 +6,7 @@ import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
 import MonitorManager from '../src/monitormanager.js';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;

@@ -1,7 +1,6 @@
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
-import url from 'url';
 import glob from 'glob';
 import yaml from 'js-yaml';
 import stringify from 'json-stable-stringify';
@@ -13,7 +12,7 @@ const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 export const REPO_ROOT = path.join(__dirname, '../../../../');
 

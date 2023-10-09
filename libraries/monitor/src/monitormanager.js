@@ -1,6 +1,5 @@
 import assert from 'assert';
 import fs from 'fs';
-import url from 'url';
 import path from 'path';
 import _ from 'lodash';
 import stream from 'stream';
@@ -11,7 +10,7 @@ import Debug from 'debug';
 import plugins from './plugins/index.js';
 import { cleanupDescription } from './util.js';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 const LEVELS_REVERSE_COLOR = [

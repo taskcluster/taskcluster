@@ -1,8 +1,7 @@
 import errorStackParser from 'error-stack-parser';
 import path from 'path';
-import url from 'url';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 const ROOT_DIR = path.resolve(__dirname, '../../..');
 

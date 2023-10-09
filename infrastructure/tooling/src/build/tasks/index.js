@@ -1,8 +1,7 @@
-import url from 'url';
 import { enumFiles } from '../../utils/index.js';
 import path from 'path';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 /**
  * Each file in this directory is expected to export a task-generation function taking
  * {tasks, cmdOptions, credentials, baseDir, logsDir} and appending tasks to its tasks

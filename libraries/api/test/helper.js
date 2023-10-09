@@ -3,10 +3,9 @@ import SchemaSet from 'taskcluster-lib-validate';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import assert from 'assert';
 import path from 'path';
-import url from 'url';
 import { App } from 'taskcluster-lib-app';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 let runningServer = null;
 
 export const rootUrl = 'http://localhost:23525';

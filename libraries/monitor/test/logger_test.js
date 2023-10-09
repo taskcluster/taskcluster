@@ -6,9 +6,8 @@ import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
 import fs from 'fs';
 import path from 'path';
-import url from 'url';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;

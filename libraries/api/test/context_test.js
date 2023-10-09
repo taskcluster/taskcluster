@@ -6,11 +6,10 @@ import request from 'superagent';
 import slugid from 'slugid';
 import sinon from 'sinon';
 import path from 'path';
-import url from 'url';
 import { monitor } from './helper.js';
 import testing from 'taskcluster-lib-testing';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';

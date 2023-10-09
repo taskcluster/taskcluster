@@ -1,6 +1,5 @@
-import url from 'url';
 import { loadTasks } from '../../utils/load-tasks.js';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 export const loadGenerators = async () => loadTasks(__dirname);

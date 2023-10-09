@@ -1,11 +1,10 @@
-import url from 'url';
 import { loadChecks } from './checks/index.js';
 import taskcluster from 'taskcluster-client';
 import libScopes from 'taskcluster-lib-scopes';
 import { TaskGraph } from 'console-taskgraph';
 import chalk from 'chalk';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 export const main = async (options) => {
   if (!process.env.TASKCLUSTER_ROOT_URL ||

@@ -8,11 +8,10 @@ import { APIBuilder } from '../src/index.js';
 import { monitor } from './helper.js';
 import testing from 'taskcluster-lib-testing';
 import path from 'path';
-import url from 'url';
 import debugFactory from 'debug';
 const debug = debugFactory('auth_test');
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   // Reference for test api server

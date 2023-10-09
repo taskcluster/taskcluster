@@ -3,7 +3,6 @@ const debug = debugFactory('taskcluster-lib-validate');
 import _ from 'lodash';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
-import url from 'url';
 import path from 'path';
 import walk from 'walk';
 import yaml from 'js-yaml';
@@ -13,7 +12,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { renderConstants, checkRefs } from './util.js';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';

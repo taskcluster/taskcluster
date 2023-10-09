@@ -4,11 +4,10 @@ import { APIBuilder } from '../src/index.js';
 import helper, { monitor, monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import path from 'path';
-import url from 'url';
 import SchemaSet from 'taskcluster-lib-validate';
 import testing from 'taskcluster-lib-testing';
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);

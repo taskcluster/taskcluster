@@ -1,4 +1,3 @@
-import { URL } from 'url';
 import { Worker, isMainThread, parentPort } from 'worker_threads';
 import _ from 'lodash';
 import { gitLsFiles, readRepoFile } from '../../utils/index.js';

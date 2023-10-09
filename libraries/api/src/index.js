@@ -6,7 +6,6 @@ import ScopeExpressionTemplate from './expressions.js';
 import API from './api.js';
 import path from 'path';
 import fs from 'fs/promises';
-import url from 'url';
 import * as middleware from './middleware/index.js';
 
 export * from './pagination.js';
@@ -17,7 +16,7 @@ export * from './error-reply.js';
 let taskclusterVersion = null;
 const loadVersion = async () => {
   if (!taskclusterVersion) {
-    const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+    const __dirname = new URL('.', import.meta.url).pathname;
     const REPO_ROOT = path.join(__dirname, '../../../');
     const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
 

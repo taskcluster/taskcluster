@@ -9,14 +9,13 @@ import hsts from 'hsts';
 import csp from 'content-security-policy';
 import { v4 } from 'uuid';
 import path from 'path';
-import url from 'url';
 import fs from 'fs/promises';
 
 // TODO: libraries/api/src/api.js defines same methods __version__, __heartbeat__
 let taskclusterVersion = null;
 const loadVersion = async () => {
   if (!taskclusterVersion) {
-    const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+    const __dirname = new URL('.', import.meta.url).pathname;
     const REPO_ROOT = path.join(__dirname, '../../../');
     const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
 
