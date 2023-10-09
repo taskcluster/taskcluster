@@ -1,7 +1,7 @@
 import { Secrets, withMonitor } from 'taskcluster-lib-testing';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 
-withMonitor(exports, { noLoader: true });
+withMonitor({ }, { noLoader: true });
 
 export const monitor = MonitorManager.setup({
   serviceName: 'lib-pulse',
@@ -18,3 +18,5 @@ export const secrets = new Secrets({
     ],
   },
 });
+
+export default { monitor, secrets };
