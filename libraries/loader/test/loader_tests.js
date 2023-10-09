@@ -1,5 +1,5 @@
 import assume from 'assume';
-import subject from '../src';
+import subject from '../src/index.js';
 import assert from 'assert';
 
 suite('component loader', () => {
