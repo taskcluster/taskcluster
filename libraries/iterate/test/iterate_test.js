@@ -1,4 +1,4 @@
-import subject from '../';
+import subject from '../src/index.js';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('iterate-test');

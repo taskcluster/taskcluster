@@ -1,4 +1,4 @@
-import subject from '../src/watchdog';
+import subject from '../src/watchdog.js';
 import assume from 'assume';
 import testing from 'taskcluster-lib-testing';
 

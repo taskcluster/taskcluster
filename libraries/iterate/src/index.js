@@ -1,4 +1,4 @@
-import WatchDog from './watchdog';
+import WatchDog from './watchdog.js';
 import debugFactory from 'debug';
 const debug = debugFactory('iterate');
 import events from 'events';
