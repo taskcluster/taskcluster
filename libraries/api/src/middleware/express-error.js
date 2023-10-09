@@ -1,7 +1,9 @@
 import { v4 } from 'uuid';
 import { ErrorReply } from '../error-reply.js';
 
-export const isProduction = process.env.NODE_ENV === 'production';
+export let isProduction = process.env.NODE_ENV === 'production';
+// needed for testing
+export const setIsProduction = value => isProduction = value;
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from

@@ -4,12 +4,15 @@ import hawk from 'hawk';
 import assert from 'assert';
 import SchemaSet from 'taskcluster-lib-validate';
 import { App } from 'taskcluster-lib-app';
-import { APIBuilder } from '../';
-import helper from './helper';
+import { APIBuilder } from '../src/index.js';
+import { monitor } from './helper.js';
 import testing from 'taskcluster-lib-testing';
 import path from 'path';
+import url from 'url';
 import debugFactory from 'debug';
 const debug = debugFactory('auth_test');
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 suite(testing.suiteName(), function() {
   // Reference for test api server
@@ -47,7 +50,7 @@ suite(testing.suiteName(), function() {
     // Create API
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset: new SchemaSet({
         serviceName: 'test',
         folder: path.join(__dirname, 'schemas'),

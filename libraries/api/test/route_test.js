@@ -1,8 +1,8 @@
 import request from 'superagent';
 import assert from 'assert';
-import { APIBuilder } from '../';
+import { APIBuilder } from '../src/index.js';
 import slugid from 'slugid';
-import helper from './helper';
+import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 

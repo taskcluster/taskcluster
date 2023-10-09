@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { strict as assert } from 'assert';
-import { paginateResults } from '../';
+import { paginateResults } from '../src/pagination.js';
 import testing from 'taskcluster-lib-testing';
-import Hashids from 'hashids/cjs';
+import Hashids from 'hashids';
 
 suite(testing.suiteName(), function() {
   suite('offset/limit', function() {

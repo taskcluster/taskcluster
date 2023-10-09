@@ -1,10 +1,10 @@
 import request from 'superagent';
 import assert from 'assert';
-import { APIBuilder } from '../';
-import helper from './helper';
+import { APIBuilder } from '../src/index.js';
+import helper from './helper.js';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
-import expressError from '../src/middleware/express-error.js';
+import { setIsProduction } from '../src/middleware/express-error.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
@@ -24,8 +24,8 @@ suite(testing.suiteName(), function() {
   teardown(helper.teardownServer);
 
   // we want to test the production behavior..
-  suiteSetup(function() { expressError.isProduction = true; });
-  suiteTeardown(function() { expressError.isProduction = false; });
+  suiteSetup(function() { setIsProduction(true); });
+  suiteTeardown(function() { setIsProduction(false); });
 
   builder.declare({
     method: 'get',

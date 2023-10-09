@@ -1,13 +1,16 @@
 import SchemaSet from 'taskcluster-lib-validate';
 import { App } from 'taskcluster-lib-app';
-import { APIBuilder } from '../';
+import { APIBuilder } from '../src/index.js';
 import assert from 'assert';
 import request from 'superagent';
 import slugid from 'slugid';
 import sinon from 'sinon';
 import path from 'path';
-import helper from './helper';
+import url from 'url';
+import { monitor } from './helper.js';
 import testing from 'taskcluster-lib-testing';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';
@@ -49,7 +52,7 @@ suite(testing.suiteName(), function() {
     });
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         myProp: value,
@@ -94,7 +97,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor,
+        monitor,
         schemaset,
         context: {
           prop1: 'value1',
@@ -125,7 +128,7 @@ suite(testing.suiteName(), function() {
     });
     await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         prop1: 'value1',
@@ -151,7 +154,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor,
+        monitor,
         schemaset,
         context: {
           prop3: 'value3',
@@ -195,7 +198,7 @@ suite(testing.suiteName(), function() {
     let fooFake = undefined;
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         foo: {

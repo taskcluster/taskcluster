@@ -1,4 +1,4 @@
-import API from '../src/api';
+import { nonceManager as nonceManagerWrapper } from '../src/api.js';
 import assert from 'assert';
 import debugFactory from 'debug';
 const debug = debugFactory('base:test:nonceManager');
@@ -8,7 +8,7 @@ suite(testing.suiteName(), function() {
   // Create a new nonceManager for each test
   let nonceManager = null;
   setup(function() {
-    nonceManager = API.nonceManager({ size: 5 });
+    nonceManager = nonceManagerWrapper({ size: 5 });
   });
 
   test('accept one', function() {

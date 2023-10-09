@@ -239,4 +239,4 @@ export default class ScopeExpressionTemplate {
   static validate(template) {
     return validRootTemplate(template);
   }
-};
+}
