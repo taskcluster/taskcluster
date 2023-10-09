@@ -5,6 +5,8 @@ import assert from 'assert';
 
 let _commonSchemas;
 
+const __dirname = new URL('.', import.meta.url).pathname;
+
 /**
  * Read the common schemas from this library's schemas/ directory.  Note
  * that this differs slightly from services' schemas/ directories, in that

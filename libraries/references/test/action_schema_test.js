@@ -1,6 +1,6 @@
-import { getCommonSchemas } from '../src/common-schemas';
+import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
-import References from '..';
+import References from '../src/index.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

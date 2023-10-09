@@ -1,7 +1,7 @@
 import assert from 'assert';
-import { load } from '../src/built-services';
+import load from '../src/built-services.js';
 import mockFs from 'mock-fs';
-import References from '..';
+import References from '../src/index.js';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import testing from 'taskcluster-lib-testing';
 

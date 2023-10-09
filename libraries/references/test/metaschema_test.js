@@ -1,5 +1,5 @@
-import { getCommonSchemas } from '../src/common-schemas';
-import References from '..';
+import { getCommonSchemas } from '../src/common-schemas.js';
+import References from '../src/index.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 

@@ -1,4 +1,4 @@
-import builtServices from './built-services.js';
+import load from './built-services.js';
 import { makeSerializable, fromSerializable } from './serializable.js';
 import { writeUriStructured, readUriStructured } from './uri-structured.js';
 import { getCommonSchemas } from './common-schemas.js';
@@ -6,6 +6,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import regexEscape from 'regex-escape';
 import { validate } from './validate.js';
+import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json' assert { type: 'json' };
 
 /**
  * Representation of a set of references. This is considered immutable after
@@ -41,7 +42,7 @@ export class References {
    * meta-schemas.
    */
   static fromBuiltServices({ directory }) {
-    let { references, schemas } = builtServices.load({ directory });
+    let { references, schemas } = load({ directory });
     schemas = schemas.concat(getCommonSchemas());
     return new References({
       rootUrl: undefined,
@@ -175,7 +176,7 @@ export class References {
       });
 
       addFormats(ajv);
-      ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+      ajv.addMetaSchema(jsonSchemaDraft06);
 
       // allow the `metadata` keyword in schemas
       ajv.addKeyword('metadata');

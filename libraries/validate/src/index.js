@@ -10,6 +10,8 @@ import assert from 'assert';
 import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
+import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json' assert { type: 'json' };
+
 import { renderConstants, checkRefs } from './util.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -117,13 +119,7 @@ class SchemaSet {
     });
 
     addFormats(ajv);
-    // json-schema-draft-07.json is added to metadata by ajv by default
-    // since some schemas depend on draft-06, we must add it manually
-    // and to avoid referencing node_modules to load file in ESM world, we copy it here
-    // json-schema-draft-06.json was copied directly from 'ajv/lib/refs/json-schema-draft-06.json'
-    ajv.addMetaSchema(JSON.parse(
-      await readFile(path.join(__dirname, 'json-schema-draft-06.json'), 'utf8'),
-    ));
+    ajv.addMetaSchema(jsonSchemaDraft06);
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
     });

@@ -1,9 +1,9 @@
 import assert from 'assert';
 import fs from 'fs';
-import { getCommonSchemas } from '../src/common-schemas';
-import { makeSerializable } from '../src/serializable';
+import { getCommonSchemas } from '../src/common-schemas.js';
+import { makeSerializable } from '../src/serializable.js';
 import mockFs from 'mock-fs';
-import References from '..';
+import References from '../src/index.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

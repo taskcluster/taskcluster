@@ -1,5 +1,5 @@
 import assert from 'assert';
-import SchemaSet from '../';
+import SchemaSet from '../src/index.js';
 import debugFactory from 'debug';
 const debug = debugFactory('test');
 import libUrls from 'taskcluster-lib-urls';

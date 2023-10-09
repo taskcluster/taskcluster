@@ -1,7 +1,7 @@
 import fs from 'fs';
 import assert from 'assert';
-import References from '..';
-import { readUriStructured, writeUriStructured } from '../src/uri-structured';
+import References from '../src/index.js';
+import { readUriStructured, writeUriStructured } from '../src/uri-structured.js';
 import mockFs from 'mock-fs';
 import testing from 'taskcluster-lib-testing';
 

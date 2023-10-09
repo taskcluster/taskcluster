@@ -1,11 +1,12 @@
 import assert from 'assert';
-import { getCommonSchemas } from '../src/common-schemas';
+import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
-import merge from 'lodash/merge';
-import omit from 'lodash/omit';
-import References from '..';
-import { validate } from '../src/validate';
+import _ from 'lodash';
+import References from '../src/index.js';
+import { validate } from '../src/validate.js';
 import testing from 'taskcluster-lib-testing';
+
+const { omit, merge } = _;
 
 class RefBuilder {
   constructor() {

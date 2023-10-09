@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { getCommonSchemas } from '../src/common-schemas';
+import { getCommonSchemas } from '../src/common-schemas.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

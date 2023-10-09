@@ -1,7 +1,7 @@
 import assert from 'assert';
-import References from '..';
-import { makeSerializable } from '../src/serializable';
-import { getCommonSchemas } from '../src/common-schemas';
+import References from '../src/index.js';
+import { makeSerializable } from '../src/serializable.js';
+import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 
