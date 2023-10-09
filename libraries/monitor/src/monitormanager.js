@@ -2,8 +2,7 @@ import assert from 'assert';
 import fs from 'fs';
 import url from 'url';
 import path from 'path';
-import lodash from 'lodash';
-const { omit } = lodash;
+import _ from 'lodash';
 import stream from 'stream';
 import { LEVELS } from './logger.js';
 import Monitor from './monitor.js';
@@ -189,7 +188,7 @@ class MonitorManager {
       types: Object.entries(types).map(([name, type]) => {
         return {
           name,
-          ...omit(type, ['serviceName']),
+          ..._.omit(type, ['serviceName']),
         };
       }).sort((a, b) => a.name.localeCompare(b.name)),
     };
@@ -223,6 +222,7 @@ class MonitorManager {
     }
   }
 }
+
 MonitorManager.types = {};
 
 export default MonitorManager;

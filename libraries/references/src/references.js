@@ -166,7 +166,7 @@ export class References {
 
     // validation requires an Ajv instance, so set that up without validating
     if (!this._ajv) {
-      const ajv = new Ajv({
+      const ajv = new Ajv.default({
         validateFormats: true,
         verbose: true,
         allErrors: true,

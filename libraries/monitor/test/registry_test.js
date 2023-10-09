@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { find } from 'lodash';
+import _ from 'lodash';
 import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
 
@@ -43,7 +43,7 @@ suite(testing.suiteName(), function() {
   test('can publish types', function() {
     const serviceName = 'taskcluster-testing-service';
     assert.equal(MonitorManager.reference(serviceName).serviceName, serviceName);
-    const ref = find(MonitorManager.reference(serviceName).types, { name: 'auditLog' });
+    const ref = _.find(MonitorManager.reference(serviceName).types, { name: 'auditLog' });
     assert.deepEqual(ref.type, 'audit');
     assert.deepEqual(ref.name, 'auditLog');
     assert.deepEqual(ref.title, 'whatever');

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { cleanupDescription } from '../src/util';
+import { cleanupDescription } from '../src/util.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

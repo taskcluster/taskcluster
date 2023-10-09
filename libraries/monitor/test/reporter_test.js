@@ -1,7 +1,7 @@
 import nock from 'nock';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
-import MonitorManager from '../src/monitormanager';
+import MonitorManager from '../src/monitormanager.js';
 
 suite(testing.suiteName(), function() {
 

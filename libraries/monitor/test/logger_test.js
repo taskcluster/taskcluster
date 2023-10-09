@@ -2,8 +2,13 @@ import assert from 'assert';
 import stream from 'stream';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import MonitorManager from '../src/monitormanager';
+import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;
@@ -38,11 +43,11 @@ suite(testing.suiteName(), function() {
   });
 
   test('logger conforms to schema', function() {
-    const schema = require('./mozlog_schema.json');
+    const schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, './mozlog_schema.json'), 'utf8'));
     monitor.info('something', { test: 123 });
     const event = monitorManager.messages[0];
 
-    const ajv = new Ajv();
+    const ajv = new Ajv.default();
     addFormats(ajv);
     assert(ajv.validate(schema, event), ajv.errorsText());
   });

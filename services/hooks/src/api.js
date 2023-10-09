@@ -2,11 +2,11 @@ import parser from 'cron-parser';
 import taskcluster from 'taskcluster-client';
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import nextDate from '../src/nextdate';
+import nextDate from '../src/nextdate.js';
 import _ from 'lodash';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { hookUtils } from './utils';
+import { hookUtils } from './utils.js';
 
 const builder = new APIBuilder({
   title: 'Hooks Service',
@@ -201,7 +201,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -315,7 +315,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -576,7 +576,7 @@ builder.declare({
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   const context = { firedBy, payload };

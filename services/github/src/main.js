@@ -52,7 +52,7 @@ const load = loader({
   ajv: {
     requires: [],
     setup: () => {
-      const ajv = new Ajv();
+      const ajv = new Ajv.default();
       addFormats(ajv);
       return ajv;
     },
