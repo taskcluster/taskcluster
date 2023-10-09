@@ -1,6 +1,8 @@
-import Version from '../src/Version';
+import Version from '../src/Version.js';
 import path from 'path';
 import { strict as assert } from 'assert';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('Version._checkContent', function() {

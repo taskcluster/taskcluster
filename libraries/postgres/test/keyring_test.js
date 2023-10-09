@@ -1,6 +1,8 @@
-import Keyring from '../src/Keyring';
+import Keyring from '../src/Keyring.js';
 import path from 'path';
 import { strict as assert } from 'assert';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   const azureCryptoKey = 'aGVsbG8gZnV0dXJlIHBlcnNvbi4gaSdtIGJzdGFjawo=';

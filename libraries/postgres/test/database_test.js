@@ -9,12 +9,15 @@ import {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_FUNCTION,
-} from '../index.js';
+} from '../src/index.js';
 
 import path from 'path';
 import { strict as assert } from 'assert';
+import fs from 'fs';
 
 const monitor = helper.monitor;
+const __dirnname = new URL('.', import.meta.url).pathname;
+const __filename = new URL('', import.meta.url).pathname;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -571,7 +574,8 @@ helper.dbSuite(path.basename(__filename), function() {
       //  const entity = Entity.types.EncryptedText('val');
       //  const encrypted = {v: 0, kid: 'azure'};
       //  entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
-      const encrypted = require('./big-encrypted-value.json');
+      const encrypted = JSON.parse(fs.readFileSync(
+        path.resolve(__dirnname, './big-encrypted-value.json')), 'utf8');
 
       // let's make sure this still tests what we mean it to even if lib-entity impl changes
       assert(encrypted.__bufchunks_val > 1);

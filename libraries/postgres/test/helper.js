@@ -1,11 +1,11 @@
-import { Client } from 'pg';
+import pg from 'pg';
 import { withMonitor } from 'taskcluster-lib-testing';
 import { MonitorManager } from 'taskcluster-lib-monitor';
-const dbUrl = process.env.TEST_DB_URL;
+const testDbUrl = process.env.TEST_DB_URL;
 
-withMonitor(exports, { noLoader: true });
+withMonitor({ }, { noLoader: true });
 
-exports.monitor = MonitorManager.setup({
+const monitor = MonitorManager.setup({
   serviceName: 'tc-lib-postgres',
   fake: true,
   debug: true,
@@ -16,20 +16,34 @@ exports.monitor = MonitorManager.setup({
  * dbSuite(..) is a replacement for suite(..) that sets this.dbUrl when
  * a dbUrl exists, or skips when none is available.
  */
-if (dbUrl) {
-  exports.dbSuite = (...args) => {
+const helper = {
+  dbSuite: undefined,
+  dbUrl: undefined,
+  monitor,
+};
+const helperProxy = new Proxy(helper, {
+  get(target, propKey) {
+    if (propKey in target) {
+      return target[propKey];
+    }
+    throw new Error(`helper.${propKey} is not defined`);
+  },
+});
+
+if (testDbUrl) {
+  helper.dbSuite = (...args) => {
     suite(...args.slice(0, -1), function() {
       suiteSetup('setup database', function() {
-        exports.dbUrl = dbUrl;
+        helper.dbUrl = testDbUrl;
       });
       setup('clear database', async function() {
-        await clearDb(dbUrl);
+        await clearDb(testDbUrl);
       });
       args[args.length - 1].call(this);
     });
   };
 } else {
-  exports.dbSuite = (...args) => {
+  helper.dbSuite = (...args) => {
     suite(...args.slice(0, -1), function() {
       if (process.env.NO_TEST_SKIP) {
         throw new Error(`TEST_DB_URL not set and NO_TEST_SKIP is set`);
@@ -40,7 +54,7 @@ if (dbUrl) {
 }
 
 const clearDb = async dbUrl => {
-  const client = new Client({ connectionString: dbUrl });
+  const client = new pg.Client({ connectionString: dbUrl });
   await client.connect();
   try {
     await client.query(`drop schema if exists public cascade`);
@@ -49,3 +63,5 @@ const clearDb = async dbUrl => {
     await client.end();
   }
 };
+
+export default helperProxy;

@@ -1,6 +1,8 @@
-import Access from '../src/Access';
+import Access from '../src/Access.js';
 import path from 'path';
 import { strict as assert } from 'assert';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('checking', function() {

@@ -10,12 +10,12 @@ import {
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
   UNDEFINED_FUNCTION,
-} from '../index.js';
+} from '../src/index.js';
 
 import path from 'path';
 import testing from 'taskcluster-lib-testing';
 import { strict as assert } from 'assert';
-import { dollarQuote } from '../src/util';
+import { dollarQuote } from '../src/util.js';
 
 import {
   runMigration,
@@ -23,7 +23,9 @@ import {
   runDowngrade,
   runOnlineDowngrade,
   runOnlineBatches,
-} from '../src/migration';
+} from '../src/migration.js';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;

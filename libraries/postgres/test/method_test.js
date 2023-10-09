@@ -1,7 +1,11 @@
 import path from 'path';
-import { omit } from 'lodash';
-import Method from '../src/Method';
+import _ from 'lodash';
+import Method from '../src/Method.js';
 import { strict as assert } from 'assert';
+
+const { omit } = _;
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('_check', function() {
