@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import assert from 'assert';
-import { stickyLoader, suiteName } from '../';
+import { stickyLoader, suiteName } from '../src/index.js';
 
 suite(suiteName(), function() {
   let loads, sticky;

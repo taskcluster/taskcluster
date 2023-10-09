@@ -1,4 +1,4 @@
-import { Secrets, stickyLoader, suiteName } from '../';
+import { Secrets, stickyLoader, suiteName } from '../src/index.js';
 import _ from 'lodash';
 import assert from 'assert';
 import nock from 'nock';

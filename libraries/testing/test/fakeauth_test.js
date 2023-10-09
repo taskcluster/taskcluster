@@ -9,8 +9,11 @@ import { App } from 'taskcluster-lib-app';
 import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import path from 'path';
+import url from 'url';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 let monitor;
 suiteSetup(function() {

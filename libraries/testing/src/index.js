@@ -42,7 +42,5 @@ export default {
   runWithFakeTime,
   sleep,
 
-  start,
-  stop,
-  withAnonymousScopes,
+  fakeauth: { start, stop, withAnonymousScopes },
 };
