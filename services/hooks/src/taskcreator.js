@@ -6,7 +6,7 @@ import _ from 'lodash';
 import jsone from 'json-e';
 import libUrls from 'taskcluster-lib-urls';
 
-class TaskCreator {
+export class TaskCreator {
   /** Create a TaskCreator instance.
    *
    * options:
@@ -177,9 +177,7 @@ class TaskCreator {
   }
 }
 
-exports.TaskCreator = TaskCreator;
-
-class MockTaskCreator extends TaskCreator {
+export class MockTaskCreator extends TaskCreator {
   constructor() {
     super({ credentials: {}, rootUrl: libUrls.testRootUrl() });
     this.shouldFail = false;
@@ -222,4 +220,4 @@ class MockTaskCreator extends TaskCreator {
   }
 }
 
-exports.MockTaskCreator = MockTaskCreator;
+export default { TaskCreator, MockTaskCreator };

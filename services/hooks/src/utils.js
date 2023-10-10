@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const queueUtils = {
+export const queueUtils = {
   // Create a single instance from a DB row
   fromDb(row) {
     return {
@@ -12,14 +12,12 @@ const queueUtils = {
   },
 };
 
-exports.queueUtils = queueUtils;
-
-const hookUtils = {
+export const hookUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.hookUtils.fromDb(rows[0]);
+      return hookUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -50,4 +48,4 @@ const hookUtils = {
   },
 };
 
-exports.hookUtils = hookUtils;
+export default { hookUtils, queueUtils };

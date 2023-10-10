@@ -1,6 +1,6 @@
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
-import helpers from '../src/helpers';
+import helpers from '../src/helpers.js';
 
 suite(testing.suiteName(), function() {
   suite('splitNamespace', function() {

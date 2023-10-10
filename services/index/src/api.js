@@ -1,5 +1,5 @@
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import helpers from './helpers';
+import helpers from './helpers.js';
 
 /**
  * API end-point for version v1/

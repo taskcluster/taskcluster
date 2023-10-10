@@ -21,7 +21,7 @@ export const taskUtils = {
   // or one elements.
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.taskUtils.fromDb(rows[0]);
+      return taskUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -79,11 +79,11 @@ export const taskUtils = {
     let expires = new Date(input.expires);
 
     // Attempt to load indexed task
-    let task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+    let task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
 
     if (!task) {
       // Create namespace hierarchy
-      await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+      await namespaceUtils.ensureNamespace(db, namespace, expires);
 
       // Create indexed task
       try {
@@ -106,7 +106,7 @@ export const taskUtils = {
       } catch (err) {
         // Load indexed task if it was constructed while we waited
         if (err && err.code === UNIQUE_VIOLATION) {
-          task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+          task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
         } else {
           throw err;
         }
@@ -124,9 +124,9 @@ export const taskUtils = {
         expires,
       );
 
-      await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+      await namespaceUtils.ensureNamespace(db, namespace, expires);
 
-      return exports.taskUtils.fromDbRows(updatedTask);
+      return taskUtils.fromDbRows(updatedTask);
     } else {
       return task;
     }
@@ -161,7 +161,7 @@ export const taskUtils = {
         ),
       });
 
-      const entries = rows.map(exports.taskUtils.fromDb);
+      const entries = rows.map(taskUtils.fromDb);
 
       return { rows: entries, continuationToken: continuationToken };
     };
@@ -176,7 +176,7 @@ export const namespaceUtils = {
   // or one elements.
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.namespaceUtils.fromDb(rows[0]);
+      return namespaceUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -232,7 +232,7 @@ export const namespaceUtils = {
         ),
       });
 
-      const entries = rows.map(exports.namespaceUtils.fromDb);
+      const entries = rows.map(namespaceUtils.fromDb);
 
       return { rows: entries, continuationToken: continuationToken };
     };
@@ -264,23 +264,23 @@ export const namespaceUtils = {
     let parent = namespace.join('.');
 
     // Load namespace, to check if it exists and if we should update expires
-    const folder = exports.taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));
+    const folder = taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));
 
     if (folder) {
       // Modify the namespace
       if (folder.expires < expires) {
         // Update all parents first though
-        await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+        await namespaceUtils.ensureNamespace(db, namespace, expires);
         // Update expires
         const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
 
-        return exports.taskUtils.fromDbRows(updatedNamespace);
+        return taskUtils.fromDbRows(updatedNamespace);
       }
 
       return folder;
     } else {
       // Create parent namespaces
-      await exports.namespaceUtils.ensureNamespace(
+      await namespaceUtils.ensureNamespace(
         db,
         namespace,
         expires,
@@ -297,7 +297,7 @@ export const namespaceUtils = {
 
         const namespace = await db.fns.get_index_namespace(parent, name);
 
-        return exports.namespaceUtils.fromDbRows(namespace);
+        return namespaceUtils.fromDbRows(namespace);
       }
     }
   },
@@ -318,3 +318,5 @@ export const splitNamespace = namespace => {
 
   return [namespace, name];
 };
+
+export default { taskUtils, namespaceUtils, splitNamespace };

@@ -1,45 +1,44 @@
 import assert from 'assert';
-import builder from '../src/api';
+import builder from '../src/api.js';
 import taskcluster from 'taskcluster-client';
-import load from '../src/main';
+import loadMain from '../src/main.js';
 
-import {
-  fakeauth,
-  stickyLoader,
-  Secrets,
-  withPulse,
-  withMonitor,
-  withDb,
-  resetTables,
-} from 'taskcluster-lib-testing';
+import testing from 'taskcluster-lib-testing';
 
-const helper = module.exports;
+export const load = testing.stickyLoader(loadMain);
 
-export const load = stickyLoader(load);
+const helper = { load };
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-export const secrets = new Secrets({
+export const secrets = new testing.Secrets({
   secrets: {
   },
-  load: exports.load,
+  load: load,
 });
+helper.secrets = secrets;
 
 helper.rootUrl = 'http://localhost:60020';
 
 export const withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'index');
+  const dbHelper = { load };
+  testing.withDb(mock, skipping, dbHelper, 'index');
+  return dbHelper;
 };
+helper.withDb = withDb;
 
 export const withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-index' });
+  const pulseHelper = { load };
+  testing.withPulse({ helper: pulseHelper, skipping, namespace: 'taskcluster-index' });
+  return pulseHelper;
 };
+helper.withPulse = withPulse;
 
 /**
  * Set up a fake tc-queue object that supports only the `task` method,
@@ -55,9 +54,10 @@ export const withFakeQueue = (mock, skipping) => {
     }
 
     helper.queue = stubbedQueue();
-    helper.load.inject('queue', helper.queue);
+    load.inject('queue', helper.queue);
   });
 };
+helper.withFakeQueue = withFakeQueue;
 
 /**
  * Set up an API server.  Call this after withDb, so the server
@@ -78,8 +78,8 @@ export const withServer = (mock, skipping) => {
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    testing.fakeauth.start({
       'test-client': ['*'],
     }, { rootUrl: helper.rootUrl });
 
@@ -104,7 +104,7 @@ export const withServer = (mock, skipping) => {
       helper.index = new helper.Index(options);
     };
 
-    webServer = await helper.load('server');
+    webServer = await load('server');
   });
 
   setup(async function() {
@@ -123,9 +123,10 @@ export const withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };
+helper.withServer = withServer;
 
 /**
  * make a queue object with the `task` method stubbed out, and with
@@ -157,9 +158,12 @@ const stubbedQueue = () => {
 
 export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'indexed_tasks',
       'index_namespaces',
     ] });
   });
 };
+helper.resetTables = resetTables;
+
+export default helper;

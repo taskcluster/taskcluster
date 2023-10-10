@@ -3,7 +3,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('index:bin:server');
 import taskcluster from 'taskcluster-client';
 import tcdb from 'taskcluster-db';
-import Handlers from './handlers';
+import Handlers from './handlers.js';
 import builder from './api.js';
 import Config from 'taskcluster-lib-config';
 import loader from 'taskcluster-lib-loader';
@@ -12,9 +12,10 @@ import SchemaSet from 'taskcluster-lib-validate';
 import { App } from 'taskcluster-lib-app';
 import libReferences from 'taskcluster-lib-references';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { fileURLToPath } from 'url';
 
 // Create component loader
-let load = loader({
+export const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({ profile }) => Config({
@@ -150,7 +151,7 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 

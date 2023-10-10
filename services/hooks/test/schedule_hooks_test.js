@@ -1,6 +1,6 @@
 import assert from 'assert';
-import Scheduler from '../src/scheduler';
-import helper from './helper';
+import Scheduler from '../src/scheduler.js';
+import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 

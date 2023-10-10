@@ -1,11 +1,11 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:bin:server');
-import taskcreator from './taskcreator';
+import taskcreator from './taskcreator.js';
 import SchemaSet from 'taskcluster-lib-validate';
 import tcdb from 'taskcluster-db';
 import builder from './api.js';
-import Scheduler from './scheduler';
+import Scheduler from './scheduler.js';
 import config from 'taskcluster-lib-config';
 import loader from 'taskcluster-lib-loader';
 import { App } from 'taskcluster-lib-app';
@@ -14,8 +14,8 @@ import { MonitorManager } from 'taskcluster-lib-monitor';
 import taskcluster from 'taskcluster-client';
 import exchanges from './exchanges.js';
 import libPulse from 'taskcluster-lib-pulse';
-import HookListeners from './listeners';
-import './monitor';
+import HookListeners from './listeners.js';
+import './monitor.js';
 import { fileURLToPath } from 'url';
 
 // Create component loader
