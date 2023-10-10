@@ -126,7 +126,6 @@
    * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
-   * [`queue_task_deadline_resolved`](#queue_task_deadline_resolved)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
@@ -1356,7 +1355,6 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
-* [`queue_task_deadline_resolved`](#queue_task_deadline_resolved)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
@@ -2282,20 +2280,6 @@ Track task deadline upon task creation. This would stay until task
 deadline to see if it was ever scheduled or resolved.
 
 
-### queue_task_deadline_resolved
-
-* *Mode*: write
-* *Arguments*:
-  * `task_id_in text`
-* *Returns*: `void`
-* *Last defined on version*: 91
-
-Once the task gets resolved it is no longer relevant for the deadline queue.
-Since resolved task triggered dependency resolver, its dependencies were already
-updated by DependencyTracker.
-We can safely delete given run from the deadline queue.
-
-
 ### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
@@ -2510,6 +2494,7 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 ### deprecated methods
 
 * `azure_queue_put(queue_name text, message_text text, visible timestamp, expires timestamp)` (compatibility guaranteed until v57.0.0)
+* `queue_task_deadline_resolved(task_id_in text)` (compatibility guaranteed until v57.0.0)
 
 ## secrets
 

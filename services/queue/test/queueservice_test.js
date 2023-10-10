@@ -115,19 +115,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
 
-    // when task is resolved, existing claim and deadline messages should be removed
-    const futureDate = new Date(new Date().getTime() + 1 * 1000);
+    // when task is resolved, existing claim message should be removed
+    const futureDate = new Date(new Date().getTime() + 24 * 60 * 1000);
     await queueService.putClaimMessage(taskId, 0, futureDate, 'tq/id', 'wg', 'wi');
     await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, futureDate);
+
+    // messages are fetched directly because queueservice. pollXX() methods return by visibility
+    await helper.withDbClient(async client => {
+      const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
+      const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      assert(deadlineMessages.length === 1, 'Expected one deadline message');
+      assert(claimMessages.length === 1, 'Expected one claim message');
+    });
 
     // Put message
     await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
 
-    // claim and deadline messages should be gone
-    const deadlineMessages = await queueService.pollDeadlineQueue();
-    const claimMessages = await queueService.pollClaimQueue();
-    assert(deadlineMessages.length === 0, 'Expected no deadline messages');
-    assert(claimMessages.length === 0, 'Expected no claim messages');
+    await helper.withDbClient(async client => {
+      const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
+      const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      assert(deadlineMessages.length === 1, 'Expected one deadline message');
+      assert(claimMessages.length === 0, 'Expected zero claim message');
+    });
 
     // Poll for message
     return testing.poll(async () => {
