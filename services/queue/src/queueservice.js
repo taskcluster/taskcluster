@@ -130,8 +130,10 @@ class QueueService {
    * Enqueue message ensure the dependency resolver handles the resolution.
    * This is being called whenever task is resolved as completed or failed.
    *
-   * At this moment we can also drop record from the claim and deadline queues,
+   * At this moment we can also drop record from the claim queue,
    * since the task was resolved.
+   * But we should leave the message in deadline queue, since task could get new run
+   * which might not be resolved before deadline.
    */
   async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution, runId = 0) {
     assert(taskId, 'taskId must be given');
@@ -151,8 +153,6 @@ class QueueService {
       // we no longer need existing claimed queue message
       // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
-      // same with deadline
-      this.db.fns.queue_task_deadline_resolved(taskId),
     ]);
   }
 
