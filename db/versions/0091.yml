@@ -49,7 +49,7 @@ methods:
           SELECT count(*) into result FROM queue_task_deadlines WHERE expires > now();
         ELSE
           SELECT count(*) into result FROM queue_pending_tasks
-            WHERE queue_name_old = queue_name
+            WHERE queue_name_compat = queue_name
               AND expires > now();
         END IF;
 
@@ -140,7 +140,7 @@ methods:
           VALUES (
             convert_from(decode(azure_queue_put_extra.message_text, 'base64'), 'utf-8')::jsonb->>'taskId',
             CAST(convert_from(decode(azure_queue_put_extra.message_text, 'base64'), 'utf-8')::jsonb->>'runId' AS INTEGER),
-            azure_queue_put_extra.task_queue_id,
+            COALESCE(azure_queue_put_extra.task_queue_id, ''), -- this might also be null
             '', -- worker_group was not present in old format
             '', -- worker_id was not present in old format
             now(),  -- claimed
