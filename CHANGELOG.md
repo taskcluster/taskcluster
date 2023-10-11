@@ -3,6 +3,37 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v56.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Queue service internals refactored. `azure_queue_messages` table and `azqueue` library are no longer used.
+Claim, resolved, deadline and pending queues now use separate tables. Existing messages are preserved during migration.
+Database migration `0091` expects that previous `0090` migration was applied and there are no pending tasks that didn't migrate to the new format yet.
+Make sure that `v55.3.x` was deployed first and data was fully migrated before deploying this version.
+
+▶ [patch] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Resolved tasks do not drop deadline messages, which was removed during queue refactoring.
+Messages will stay until task deadline even if task is being resolved.
+
+▶ [patch]
+Upgrades to go1.21.2
+
+### USERS
+
+▶ [patch]
+UI: Task Definitions and Payloads now display in YAML by default for readability.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump postcss from 8.4.21 to 8.4.31 (ec421c290)
+
+</details>
+
 ## v55.3.4
 
 ### GENERAL

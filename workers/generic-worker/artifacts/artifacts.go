@@ -1,10 +1,10 @@
 package artifacts
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v55/clients/client-go"
-	"github.com/taskcluster/taskcluster/v55/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v56/clients/client-go"
+	"github.com/taskcluster/taskcluster/v56/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v56/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v56/workers/generic-worker/process"
 )
 
 type (

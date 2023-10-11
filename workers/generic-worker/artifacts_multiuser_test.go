@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v55/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v56/clients/client-go"
 	"golang.org/x/crypto/ed25519"
 )
 

@@ -2,7 +2,7 @@
 
 package main
 
-import "github.com/taskcluster/taskcluster/v55/workers/generic-worker/gwconfig"
+import "github.com/taskcluster/taskcluster/v56/workers/generic-worker/gwconfig"
 
 func setConfigRunTasksAsCurrentUser(*gwconfig.Config) {
 }

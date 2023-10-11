@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v55/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v56/workers/generic-worker/host"
 )
 
 func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {

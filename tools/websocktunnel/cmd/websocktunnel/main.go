@@ -12,8 +12,8 @@ import (
 	mozlog "github.com/mozilla-services/go-mozlogrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
-	"github.com/taskcluster/taskcluster/v55/internal"
-	"github.com/taskcluster/taskcluster/v55/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v56/internal"
+	"github.com/taskcluster/taskcluster/v56/tools/websocktunnel/wsproxy"
 )
 
 const usage = `Websocketunnel Server

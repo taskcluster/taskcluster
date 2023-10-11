@@ -1,5 +1,5 @@
 name: taskcluster
-appVersion: '55.3.4'
+appVersion: '56.0.0'
 description:  Framework that supports Mozilla's continuous integration and release processes.
 version: 0.1.0
 keywords:
