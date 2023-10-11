@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v56.0.1
+
+### GENERAL
+
+▶ [patch] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Patches 91-migration script to account for non-unique pending tasks. This was a blocking exception during migration time.
+
 ## v56.0.0
 
 ### GENERAL
