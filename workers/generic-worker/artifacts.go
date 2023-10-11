@@ -248,7 +248,7 @@ func createDataArtifact(
 	}
 }
 
-func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
+func (task *TaskRun) uploadLog(name, path string, featureArtifact bool) *CommandExecutionError {
 	return task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
@@ -260,10 +260,11 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 			"text/plain; charset=utf-8",
 			"gzip",
 		),
+		featureArtifact,
 	)
 }
 
-func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
+func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact, featureArtifact bool) *CommandExecutionError {
 	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
@@ -328,7 +329,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	if e != nil {
 		panic(e)
 	}
-	e = artifact.ProcessResponse(resp, task, serviceFactory, config, taskContext.TaskDir, taskContext.pd)
+	e = artifact.ProcessResponse(resp, task, serviceFactory, config, taskContext.TaskDir, taskContext.pd, featureArtifact)
 	if e != nil {
 		task.Errorf("Error uploading artifact: %v", e)
 		return ResourceUnavailable(e)

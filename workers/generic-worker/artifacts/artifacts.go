@@ -39,7 +39,7 @@ type (
 		//
 		// ProcessResponse can be an empty method if no post
 		// tcqueue.CreateArtifact steps are required.
-		ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) error
+		ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData, featureArtifact bool) error
 
 		// FinishArtifact calls queue.FinishArtifact if necessary for the artifact type
 		FinishArtifact(response interface{}, queue tc.Queue, taskID, runID, name string) error

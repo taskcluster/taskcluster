@@ -939,7 +939,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		}
 		task.closeLog(logHandle)
 		if task.Payload.Features.BackingLog {
-			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
+			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath), true))
 		}
 		if config.CleanUpTaskDirs {
 			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
@@ -1039,7 +1039,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
 				continue
 			}
-			err.add(task.uploadArtifact(artifact))
+			err.add(task.uploadArtifact(artifact, false))
 			// Note - the above error only covers not being able to upload an
 			// artifact, but doesn't cover case that an artifact could not be
 			// found, and so an error artifact was uploaded. So we do that

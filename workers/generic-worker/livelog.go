@@ -136,6 +136,7 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 				ContentType: "text/plain; charset=utf-8",
 				Artifact:    l.task.Payload.Logs.Backing,
 			},
+			true,
 		))
 	}
 
@@ -186,6 +187,7 @@ func (l *LiveLogTask) uploadLiveLogArtifact() error {
 			ContentType: "text/plain; charset=utf-8",
 			URL:         exposeURL.String(),
 		},
+		true,
 	)
 	if uploadErr != nil {
 		return uploadErr

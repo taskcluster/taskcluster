@@ -135,7 +135,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if copyErr != nil {
 		panic(copyErr)
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath), true))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
 		// make sure SHA256 is calculated
@@ -188,7 +188,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(taskContext.TaskDir, unsignedCertPath), true))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
@@ -206,6 +206,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 			"application/octet-stream",
 			"gzip",
 		),
+		true,
 	))
 }
 

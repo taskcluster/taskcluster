@@ -104,5 +104,6 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 			"application/json",
 			"gzip",
 		),
+		true,
 	)
 }

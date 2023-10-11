@@ -58,6 +58,26 @@ func (s3Artifact *S3Artifact) copyToTempFile(directory string, pd *process.Platf
 	return
 }
 
+func (s3Artifact *S3Artifact) copyToTempFileAsTaskUser(directory string, pd *process.PlatformData) error {
+	baseName := filepath.Base(s3Artifact.Path)
+	tempFile, err := os.CreateTemp("", "stage1-"+baseName)
+	if err != nil {
+		return err
+	}
+	s3Artifact.TempCopyPath = tempFile.Name()
+	// we want to close and delete the temp file now
+	// so that the filepath is available to copy into
+	err = tempFile.Close()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(s3Artifact.TempCopyPath)
+	if err != nil {
+		return err
+	}
+	return copyAsTaskUser(s3Artifact.TempCopyPath, s3Artifact.Path, directory, pd)
+}
+
 func (s3Artifact *S3Artifact) writeTransferContentToFile() (err error) {
 	if s3Artifact.ContentEncoding != "gzip" {
 		return
@@ -101,12 +121,16 @@ func (s3Artifact *S3Artifact) writeTransferContentToFile() (err error) {
 	return
 }
 
-func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) (err error) {
+func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData, featureArtifact bool) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
 
-	err = s3Artifact.copyToTempFile(directory, pd)
+	if featureArtifact {
+		err = s3Artifact.copyToTempFile(directory, pd)
+	} else {
+		err = s3Artifact.copyToTempFileAsTaskUser(directory, pd)
+	}
 	if err != nil {
 		return
 	}

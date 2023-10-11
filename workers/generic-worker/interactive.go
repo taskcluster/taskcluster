@@ -176,6 +176,7 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 			ContentType: "text/html; charset=utf-8",
 			URL:         url,
 		},
+		true,
 	)
 
 	if uploadErr != nil {
