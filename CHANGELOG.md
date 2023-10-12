@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v56.0.2
+
+### GENERAL
+
+▶ [patch] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Fixes claimed task resolver db query that returned too many records. Bug introduced in migration 91
+
+▶ [patch] [#2940](https://github.com/taskcluster/taskcluster/issues/2940)
+Patches existing migration to prevent data loss because of incorrect field values.
+
+▶ [patch]
+Upgrades to go1.21.3 and node v18.18.1
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump golang.org/x/net from 0.15.0 to 0.17.0 (a2da524f6)
+
+</details>
+
 ## v56.0.1
 
 ### GENERAL
