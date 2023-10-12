@@ -1,8 +1,8 @@
 import assert from 'assert';
-import QueueService from './queueservice';
+import QueueService from './queueservice.js';
 import Iterate from 'taskcluster-lib-iterate';
-import { Task } from './data';
-import { sleep } from './utils';
+import { Task } from './data.js';
+import { sleep } from './utils.js';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory

@@ -1,11 +1,11 @@
 import slugid from 'slugid';
 import assert from 'assert';
 import crypto from 'crypto';
-import QueueService from '../src/queueservice';
+import QueueService from '../src/queueservice.js';
 import debugFactory from 'debug';
 const debug = debugFactory('test:queueservice');
 import testing from 'taskcluster-lib-testing';
-import helper from './helper';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

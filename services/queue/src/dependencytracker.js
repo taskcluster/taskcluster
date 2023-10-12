@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { Task } from './data';
+import { Task } from './data.js';
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent

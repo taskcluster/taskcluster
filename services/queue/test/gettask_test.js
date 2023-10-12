@@ -2,7 +2,7 @@ import slugid from 'slugid';
 import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import assume from 'assume';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {

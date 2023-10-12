@@ -1,18 +1,18 @@
-import '../../prelude';
+import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import taskcluster from 'taskcluster-client';
 import builder from './api.js';
 import exchanges from './exchanges.js';
-import Bucket from './bucket';
-import QueueService from './queueservice';
-import EC2RegionResolver from './ec2regionresolver';
-import DeadlineResolver from './deadlineresolver';
-import ClaimResolver from './claimresolver';
-import DependencyTracker from './dependencytracker';
-import DependencyResolver from './dependencyresolver';
-import WorkClaimer from './workclaimer';
-import WorkerInfo from './workerinfo';
+import Bucket from './bucket.js';
+import QueueService from './queueservice.js';
+import EC2RegionResolver from './ec2regionresolver.js';
+import DeadlineResolver from './deadlineresolver.js';
+import ClaimResolver from './claimresolver.js';
+import DependencyTracker from './dependencytracker.js';
+import DependencyResolver from './dependencyresolver.js';
+import WorkClaimer from './workclaimer.js';
+import WorkerInfo from './workerinfo.js';
 import loader from 'taskcluster-lib-loader';
 import config from 'taskcluster-lib-config';
 import { MonitorManager } from 'taskcluster-lib-monitor';
@@ -22,7 +22,7 @@ import { App } from 'taskcluster-lib-app';
 import tcdb from 'taskcluster-db';
 import pulse from 'taskcluster-lib-pulse';
 import QuickLRU from 'quick-lru';
-import { artifactUtils } from './utils';
+import { artifactUtils } from './utils.js';
 import { fileURLToPath } from 'url';
 
 // default claim timeout to 20 minutes (in seconds)
@@ -39,7 +39,7 @@ const MAX_BULK_DELETE_SIZE = 1000;
 // this is to limit total amount of concurrent updates to DB
 const NUMBER_OF_RECORDS_TO_PROCESS = 32;
 
-import './monitor';
+import './monitor.js';
 
 // Create component loader
 let load = loader({
@@ -397,12 +397,6 @@ let load = loader({
         debug('Expired %s worker-info', count);
       });
     },
-  },
-
-  // Create the load-test process (run as one-off job)
-  'load-test': {
-    requires: ['cfg'],
-    setup: ({ cfg }) => require('./load-test')(cfg),
   },
 
 }, {

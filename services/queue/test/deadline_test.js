@@ -4,7 +4,7 @@ import assert from 'assert';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
 import assume from 'assume';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 import { LEVELS } from 'taskcluster-lib-monitor';
 

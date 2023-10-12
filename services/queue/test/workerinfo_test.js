@@ -1,10 +1,10 @@
 import assert from 'assert';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
-import { Worker, TaskQueue } from '../src/data';
-import { splitTaskQueueId } from '../src/utils';
+import { Worker, TaskQueue } from '../src/data.js';
+import { splitTaskQueueId } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

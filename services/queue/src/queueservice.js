@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import debugFactory from 'debug';
-const debug = debugFactory('app:queue');
+import makeDebug from 'debug';
+const debug = makeDebug('app:queue');
 import assert from 'assert';
 import base32 from 'thirty-two';
 import crypto from 'crypto';
 import slugid from 'slugid';
-import { splitTaskQueueId } from './utils';
+import { splitTaskQueueId } from './utils.js';
 import taskcluster from 'taskcluster-client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
@@ -45,7 +45,7 @@ const MESSAGE_FREEZE_TIMEOUT = '5 minutes';
 /**
  * Utility class for managing task lifecycle queues.
  */
-class QueueService {
+export class QueueService {
   /**
    * options:
    * {
@@ -131,8 +131,10 @@ class QueueService {
    * Enqueue message ensure the dependency resolver handles the resolution.
    * This is being called whenever task is resolved as completed or failed.
    *
-   * At this moment we can also drop record from the claim and deadline queues,
+   * At this moment we can also drop record from the claim queue,
    * since the task was resolved.
+   * But we should leave the message in deadline queue, since task could get new run
+   * which might not be resolved before deadline.
    */
   async putResolvedMessage(taskId, taskGroupId, schedulerId, resolution, runId = 0) {
     assert(taskId, 'taskId must be given');
@@ -152,8 +154,6 @@ class QueueService {
       // we no longer need existing claimed queue message
       // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
-      // same with deadline
-      this.db.fns.queue_task_deadline_resolved(taskId),
     ]);
   }
 

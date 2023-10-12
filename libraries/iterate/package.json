@@ -3,7 +3,7 @@
   "private": true,
   "version": "56.0.3",
   "description": "A library to share iteration logic",
-  "exports": "src/index.js",
+  "exports": "./src/index.js",
   "type": "module",
   "scripts": {
     "coverage": "c8 yarn test",

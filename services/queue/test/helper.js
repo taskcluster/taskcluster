@@ -2,37 +2,30 @@ import _ from 'lodash';
 import assert from 'assert';
 import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
-import builder from '../src/api';
-import load from '../src/main';
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
 import { tmpdir } from 'os';
 import { mkdtempSync, rmSync } from 'fs';
 import { sep } from 'path';
 import mockAwsS3 from 'mock-aws-s3';
 import nock from 'nock';
+import testing from 'taskcluster-lib-testing';
+import { globalAgent } from 'http';
 
-import {
-  fakeauth,
-  stickyLoader,
-  Secrets,
-  withPulse,
-  withMonitor,
-  withDb,
-  resetTables,
-} from 'taskcluster-lib-testing';
+export const load = testing.stickyLoader(loadMain);
+const __dirname = new URL('.', import.meta.url).pathname;
 
-const helper = module.exports;
-
-export const load = stickyLoader(load);
+const helper = { load };
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-export const secrets = new Secrets({
+export const secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-queue',
   ],
@@ -48,9 +41,9 @@ export const secrets = new Secrets({
         mock: 'us-central-7' },
     ],
   },
-  load: exports.load,
+  load,
 });
-
+helper.secrets = secrets;
 helper.rootUrl = 'http://localhost:60401';
 
 /**
@@ -69,8 +62,8 @@ export const withS3 = (mock, skipping) => {
       mockAwsS3.config.basePath = tmpDir;
 
       await load('cfg');
-      exports.load.cfg('aws.accessKeyId', undefined);
-      exports.load.cfg('aws.secretAccessKey', undefined);
+      load.cfg('aws.accessKeyId', undefined);
+      load.cfg('aws.secretAccessKey', undefined);
 
       const mock = new mockAwsS3.S3({
         params: {
@@ -91,7 +84,7 @@ export const withS3 = (mock, skipping) => {
         CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
       });
 
-      exports.load.cfg('aws.mock', mock);
+      load.cfg('aws.mock', mock);
     }
   });
 
@@ -101,6 +94,7 @@ export const withS3 = (mock, skipping) => {
     }
   });
 };
+helper.withS3 = withS3;
 
 /**
  * Set up to use mock-aws-s3 for S3-like operations on GCS
@@ -122,8 +116,8 @@ export const withGCS = (mock, skipping) => {
       mockAwsS3.config.basePath = tmpDir;
 
       await load('cfg');
-      exports.load.cfg('aws.accessKeyId', undefined);
-      exports.load.cfg('aws.secretAccessKey', undefined);
+      load.cfg('aws.accessKeyId', undefined);
+      load.cfg('aws.secretAccessKey', undefined);
 
       const mock = new mockAwsS3.S3({
         params: {
@@ -155,7 +149,7 @@ export const withGCS = (mock, skipping) => {
         return await mock._origDeleteObject.apply(mock, args).promise();
       });
 
-      exports.load.cfg('aws.mock', mock);
+      load.cfg('aws.mock', mock);
     }
   });
 
@@ -165,6 +159,7 @@ export const withGCS = (mock, skipping) => {
     }
   });
 };
+helper.withGCS = withGCS;
 
 /**
  * Mock the https://ip-ranges.amazonaws.com/ip-ranges.json endpoint
@@ -193,10 +188,12 @@ export const withAmazonIPRanges = (mock, skipping) => {
     }
   });
 };
+helper.withAmazonIPRanges = withAmazonIPRanges;
 
 export const withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'queue');
+  testing.withDb(mock, skipping, helper, 'queue');
 };
+helper.withDb = withDb;
 
 /**
  * Set up a fake object service that supports uploads and downlods.
@@ -253,13 +250,14 @@ export const withObjectService = (mock, skipping) => {
         },
       },
     });
-    exports.load.inject('objectService', helper.objectService);
+    load.inject('objectService', helper.objectService);
   });
 
   setup(function() {
     objects = new Map();
   });
 };
+helper.withObjectService = withObjectService;
 
 /**
  * Set up an API server.  Call this after withDb, so the server
@@ -280,14 +278,14 @@ export const withServer = (mock, skipping) => {
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    testing.fakeauth.start({
       'test-client': ['*'],
     }, { rootUrl: helper.rootUrl });
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..
-    exports.load.cfg('taskcluster.credentials',
+    load.cfg('taskcluster.credentials',
       { clientId: 'test-client', accessToken: 'ignored' });
     await load('workClaimer');
 
@@ -297,7 +295,7 @@ export const withServer = (mock, skipping) => {
       const options = {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent: require('http').globalAgent,
+        agent: globalAgent,
         rootUrl: helper.rootUrl,
         retries: 0,
       };
@@ -331,13 +329,15 @@ export const withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };
+helper.withServer = withServer;
 
 export const withPulse = (mock, skipping) => {
-  withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
+helper.withPulse = withPulse;
 
 /**
  * Set up a polling service (dependency-resolver, etc.)
@@ -380,6 +380,7 @@ export const withPollingServices = (mock, skipping) => {
     helper.startPollingService = null;
   });
 };
+helper.withPollingServices = withPollingServices;
 
 /**
  * Run various expiration loader components
@@ -398,6 +399,7 @@ helper.runExpiration = async component => {
  * Make a random task queue ID
  */
 export const makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+helper.makeTaskQueueId = makeTaskQueueId;
 
 /**
  * Check the date formats of a task status
@@ -421,10 +423,11 @@ export const checkDates = ({ status }) => {
   }
   return { status };
 };
+helper.checkDates = checkDates;
 
 export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'tasks',
       'task_groups',
       'task_dependencies',
@@ -433,3 +436,7 @@ export const resetTables = (mock, skipping) => {
     ] });
   });
 };
+helper.resetTables = resetTables;
+
+// by exporting a proxy we can keep tests using same helper and import
+export default helper;

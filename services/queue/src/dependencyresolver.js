@@ -1,6 +1,6 @@
 import assert from 'assert';
 import Iterate from 'taskcluster-lib-iterate';
-import { sleep } from './utils';
+import { sleep } from './utils.js';
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class

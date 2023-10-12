@@ -8,7 +8,7 @@ import taskcluster from 'taskcluster-client';
 import { Netmask } from 'netmask';
 import { createArtifactCallsCompatible } from '../src/artifacts.js';
 import assume from 'assume';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {

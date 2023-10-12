@@ -2,11 +2,11 @@ import assert from 'assert';
 import _ from 'lodash';
 import { paginateResults } from 'taskcluster-lib-api';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { splitTaskQueueId } from './utils';
+import { splitTaskQueueId } from './utils.js';
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 
-class Task {
+export class Task {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -207,10 +207,7 @@ class Task {
   }
 }
 
-// Export Task
-exports.Task = Task;
-
-class Provisioner {
+export class Provisioner {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -321,10 +318,7 @@ class Provisioner {
   }
 }
 
-// Export Provisioner
-exports.Provisioner = Provisioner;
-
-class TaskQueue {
+export class TaskQueue {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -428,10 +422,7 @@ class TaskQueue {
   }
 }
 
-// Export TaskQueue
-exports.TaskQueue = TaskQueue;
-
-class Worker {
+export class Worker {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -537,10 +528,7 @@ class Worker {
   }
 }
 
-// Export Worker
-exports.Worker = Worker;
-
-class TaskGroup {
+export class TaskGroup {
   constructor(props) {
     Object.assign(this, props);
   }
@@ -578,4 +566,4 @@ class TaskGroup {
   }
 }
 
-exports.TaskGroup = TaskGroup;
+export default { Task, Provisioner, TaskQueue, Worker, TaskGroup };

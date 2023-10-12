@@ -5,6 +5,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 // Static URL from which ip-ranges from AWS services can be fetched
 const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
 // cached set of IP ranges for use until and unless the URL can be loaded

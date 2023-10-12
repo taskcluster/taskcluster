@@ -2,10 +2,11 @@ import assert from 'assert';
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import taskcluster from 'taskcluster-client';
-import taskCreds from './task-creds';
+import taskCreds from './task-creds.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data';
-import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils';
+import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
+import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils.js';
+import { loadArtifactsRoutes } from './artifacts.js';
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -1752,7 +1753,7 @@ builder.declare({
 });
 
 // Load artifacts.js so API end-points declared in that file is loaded
-import './artifacts';
+loadArtifactsRoutes(builder);
 
 /** Get all active provisioners */
 builder.declare({
