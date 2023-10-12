@@ -4,7 +4,7 @@ const debug = debugFactory('purge-cache');
 import { APIBuilder } from 'taskcluster-lib-api';
 import taskcluster from 'taskcluster-client';
 import { paginateResults } from 'taskcluster-lib-api';
-import { splitWorkerPoolId } from './util';
+import { splitWorkerPoolId } from './util.js';
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;

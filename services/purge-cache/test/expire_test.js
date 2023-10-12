@@ -1,13 +1,13 @@
-import helper from './helper';
+import helper from './helper.js';
 import taskcluster from 'taskcluster-client';
 import assume from 'assume';
 import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  helper.withDb(mock, skipping);
+  const dbHelper = helper.withDb(mock, skipping);
 
   test('expire nothing', async function() {
-    const count = (await helper.db.fns.expire_cache_purges(new Date()))[0].expire_cache_purges;
+    const count = (await dbHelper.db.fns.expire_cache_purges(new Date()))[0].expire_cache_purges;
     assume(count).to.equal(0);
   });
 
@@ -20,13 +20,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       taskcluster.fromNow('0 hours'),
     ];
 
-    await helper.db.fns.purge_cache_wpid(wpid, 'a', times[0], times[1]);
-    await helper.db.fns.purge_cache_wpid(wpid, 'b', times[0], times[3]);
+    await dbHelper.db.fns.purge_cache_wpid(wpid, 'a', times[0], times[1]);
+    await dbHelper.db.fns.purge_cache_wpid(wpid, 'b', times[0], times[3]);
 
-    const count = (await helper.db.fns.expire_cache_purges(times[2]))[0].expire_cache_purges;
+    const count = (await dbHelper.db.fns.expire_cache_purges(times[2]))[0].expire_cache_purges;
     assume(count).to.equal(1);
 
-    const caches = await helper.db.fns.all_purge_requests_wpid(5, 0);
+    const caches = await dbHelper.db.fns.all_purge_requests_wpid(5, 0);
     assume(
       caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'a'),
     ).to.equal(undefined);
