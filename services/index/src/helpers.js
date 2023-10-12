@@ -319,4 +319,4 @@ export const splitNamespace = namespace => {
   return [namespace, name];
 };
 
-export default { taskUtils, namespaceUtils, splitNamespace };
+export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat };
