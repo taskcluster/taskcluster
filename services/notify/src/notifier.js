@@ -8,6 +8,8 @@ import { marked } from 'marked';
 import Email from 'email-templates';
 import nodemailer from 'nodemailer';
 
+const __dirname = new URL('.', import.meta.url).pathname;
+
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
  * listener and the API implementation.

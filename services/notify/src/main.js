@@ -10,17 +10,17 @@ import taskcluster from 'taskcluster-client';
 import _ from 'lodash';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import builder from './api.js';
-import Notifier from './notifier';
-import RateLimit from './ratelimit';
-import Denier from './denier';
-import Handler from './handler';
+import Notifier from './notifier.js';
+import RateLimit from './ratelimit.js';
+import Denier from './denier.js';
+import Handler from './handler.js';
 import exchanges from './exchanges.js';
 import matrix from 'matrix-js-sdk';
-import MatrixBot from './matrix';
+import MatrixBot from './matrix.js';
 import slack from '@slack/web-api';
-import SlackBot from './slack';
+import SlackBot from './slack.js';
 import tcdb from 'taskcluster-db';
-import './monitor';
+import './monitor.js';
 import { fileURLToPath } from 'url';
 
 // Create component loader

@@ -2,20 +2,10 @@ import assert from 'assert';
 import path from 'path';
 import aws from 'aws-sdk';
 import taskcluster from 'taskcluster-client';
-
-import {
-  stickyLoader,
-  Secrets,
-  fakeauth,
-  withPulse,
-  withMonitor,
-  withDb,
-  resetTables,
-} from 'taskcluster-lib-testing';
-
-import builder from '../src/api';
-import load from '../src/main';
-import RateLimit from '../src/ratelimit';
+import testing from 'taskcluster-lib-testing';
+import builder from '../src/api.js';
+import mainLoad from '../src/main.js';
+import RateLimit from '../src/ratelimit.js';
 import debugFactory from 'debug';
 const debug = debugFactory('test');
 import sinon from 'sinon';
@@ -27,17 +17,17 @@ const testclients = {
 
 export const suiteName = path.basename;
 export const rootUrl = 'http://localhost:60401';
-export const load = stickyLoader(load);
+export const load = testing.stickyLoader(mainLoad);
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor({ load });
 
 // set up the testing secrets
-export const secrets = new Secrets({
+export const secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-notify',
   ],
@@ -47,7 +37,7 @@ export const secrets = new Secrets({
       { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey' },
     ],
   },
-  load: exports.load,
+  load: load,
 });
 
 /**
@@ -59,7 +49,7 @@ export const withDenier = (mock, skipping) => {
       return;
     }
 
-    exports.load.inject('denier', {
+    load.inject('denier', {
       isDenied: async (notificationType, notificationAddress) =>
         /denied/.test(notificationAddress),
     });
@@ -92,6 +82,7 @@ class MockSES {
 export const withSES = (mock, skipping) => {
   let ses;
   let sqs;
+  const helper = {};
 
   suiteSetup('withSES', async function() {
     if (skipping()) {
@@ -102,9 +93,9 @@ export const withSES = (mock, skipping) => {
 
     if (mock) {
       ses = new MockSES();
-      exports.load.inject('ses', ses);
+      load.inject('ses', ses);
 
-      export const checkEmails = (check) => {
+      helper.checkEmails = (check) => {
         assert.equal(ses.emails.length, 1, 'Not exactly one email present!');
         check(ses.emails.pop());
       };
@@ -174,7 +165,7 @@ export const withSES = (mock, skipping) => {
         }).promise();
       }
 
-      export const checkEmails = async (check) => {
+      helper.checkEmails = async (check) => {
         const resp = await sqs.receiveMessage({
           QueueUrl: emailSQSQueue,
           AttributeNames: ['ApproximateReceiveCount'],
@@ -203,6 +194,8 @@ export const withSES = (mock, skipping) => {
       ses.reset();
     }
   });
+
+  return helper;
 };
 
 /**
@@ -212,7 +205,7 @@ export const withSES = (mock, skipping) => {
 const stubbedQueue = () => {
   const tasks = {};
   const queue = new taskcluster.Queue({
-    rootUrl: exports.rootUrl,
+    rootUrl: rootUrl,
     credentials: {
       clientId: 'index-server',
       accessToken: 'none',
@@ -241,14 +234,16 @@ const stubbedQueue = () => {
  * The component is available at `helper.queue`.
  */
 export const withFakeQueue = (mock, skipping) => {
+  const helper = {};
   suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
     }
 
-    export const queue = stubbedQueue();
-    exports.load.inject('queue', exports.queue);
+    helper.queue = stubbedQueue();
+    load.inject('queue', helper.queue);
   });
+  return helper;
 };
 
 const fakeMatrixSend = () => sinon.fake(roomId => {
@@ -260,24 +255,27 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
 });
 
 export const withFakeMatrix = (mock, skipping) => {
+  const helper = {};
   suiteSetup('withFakeMatrix', function() {
     if (skipping()) {
       return;
     }
 
-    export const matrixClient = {
+    helper.matrixClient = {
       sendEvent: fakeMatrixSend(),
     };
 
-    exports.load.inject('matrixClient', exports.matrixClient);
+    load.inject('matrixClient', helper.matrixClient);
   });
 
   setup(function() {
-    exports.matrixClient.sendEvent = fakeMatrixSend();
+    helper.matrixClient.sendEvent = fakeMatrixSend();
   });
+  return helper;
 };
 
 export const withFakeSlack = (mock, skipping) => {
+  const helper = {};
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async function() {
@@ -285,28 +283,32 @@ export const withFakeSlack = (mock, skipping) => {
       return;
     }
 
-    export const slackClient = {
+    helper.slackClient = {
       chat: {
         postMessage: fakeSlackSend(),
       },
     };
 
-    exports.load.inject('slackClient', exports.slackClient);
+    load.inject('slackClient', helper.slackClient);
   });
 
   setup(function() {
-    exports.slackClient.chat.postMessage = fakeSlackSend();
+    helper.slackClient.chat.postMessage = fakeSlackSend();
   });
+  return helper;
 };
 
 export const withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-notify' });
+  const helper = { load };
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-notify' });
+  return helper;
 };
 
 /**
  * Set up an API server.
  */
 export const withServer = (mock, skipping) => {
+  const helper = {};
   let webServer;
 
   suiteSetup('withServer', async function() {
@@ -318,22 +320,22 @@ export const withServer = (mock, skipping) => {
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.load.cfg('taskcluster.clientId', null);
-    exports.load.cfg('taskcluster.accessToken', null);
-    fakeauth.start(testclients, { rootUrl: exports.rootUrl });
+    load.cfg('taskcluster.rootUrl', rootUrl);
+    load.cfg('taskcluster.clientId', null);
+    load.cfg('taskcluster.accessToken', null);
+    testing.fakeauth.start(testclients, { rootUrl: rootUrl });
 
-    exports.load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
+    load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
 
-    export const NotifyClient = taskcluster.createClient(builder.reference());
+    helper.NotifyClient = taskcluster.createClient(builder.reference());
 
-    export const apiClient = new exports.NotifyClient({
+    helper.apiClient = new helper.NotifyClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
       },
       retries: 0,
-      rootUrl: exports.rootUrl,
+      rootUrl,
     });
 
     webServer = await load('server');
@@ -347,18 +349,37 @@ export const withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
+  return helper;
 };
 
 export const withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'notify');
+  const helper = { load };
+  testing.withDb(mock, skipping, helper, 'notify');
+  return helper;
 };
 
 export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'denylisted_notifications',
     ] });
   });
+};
+
+export default {
+  rootUrl,
+  suiteName,
+  load,
+  secrets,
+  withDb,
+  resetTables,
+  withServer,
+  withPulse,
+  withFakeMatrix,
+  withFakeQueue,
+  withFakeSlack,
+  withSES,
+  withDenier,
 };

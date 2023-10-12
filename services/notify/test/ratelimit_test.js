@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import assert from 'assert';
 import MockDate from 'mockdate';
-import RateLimit from '../src/ratelimit';
+import RateLimit from '../src/ratelimit.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {

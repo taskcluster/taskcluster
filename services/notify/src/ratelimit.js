@@ -1,4 +1,4 @@
-import { pickBy } from 'lodash';
+import _ from 'lodash';
 
 /**
  * Rate limit things, such as destination addresses.
@@ -63,7 +63,7 @@ class RateLimit {
    * keys with no events in the window.
    */
   purgeAllOldTimes() {
-    this.times = pickBy(this.times, (times, key) => {
+    this.times = _.pickBy(this.times, (times, key) => {
       this.purgeOldTimes(times);
       return times.length > 0;
     });
