@@ -6974,6 +6974,39 @@
         }
       },
       "version": 92
+    },
+    {
+      "description": "Fix queue methods visibility issue, that was introduced in 91",
+      "methods": {
+        "queue_claimed_task_get": {
+          "args": "visible_in timestamptz, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_claimed_tasks q\n      set pop_receipt = public.gen_random_uuid(),\n        visible = visible_in\n      where\n        (q.task_id, q.run_id, q.visible) in (\n          select q2.task_id, q2.run_id, q2.visible\n          from queue_claimed_tasks q2\n          where q2.visible <= now()\n          order by q2.taken_until\n          for update skip locked\n          limit count\n      )\n      returning q.task_id, q.run_id, q.taken_until, q.pop_receipt\n    )\n    select u.task_id, u.run_id, u.taken_until, u.pop_receipt\n    from updated as u\n    order by u.taken_until;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` tasks from the claimed queue.\n",
+          "mode": "write",
+          "returns": "table (task_id text, run_id integer, taken_until timestamptz, pop_receipt uuid)",
+          "serviceName": "queue"
+        },
+        "queue_pending_tasks_get": {
+          "args": "task_queue_id_in text, visible_in timestamptz, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_pending_tasks q\n      set pop_receipt = public.gen_random_uuid(),\n        visible = visible_in\n      where\n        (q.task_id, q.run_id, q.visible) in (\n          select q2.task_id, q2.run_id, q2.visible\n          from queue_pending_tasks q2\n          where q2.task_queue_id = task_queue_id_in\n            and q2.visible <= now()\n            and q2.expires > now()\n          order by q2.priority desc, q2.inserted asc\n          for update skip locked\n          limit count\n      )\n      returning q.priority, q.inserted, q.task_id, q.run_id, q.hint_id, q.pop_receipt\n    )\n    select u.task_id, u.run_id, u.hint_id, u.pop_receipt\n    from updated as u\n    order by u.priority desc, u.inserted asc;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` tasks for the pending tasks from the given taskQueueId.\nTasks are locked and will temporarily become invisible for the `visible` period.\n",
+          "mode": "write",
+          "returns": "table (task_id text, run_id integer, hint_id text, pop_receipt uuid)",
+          "serviceName": "queue"
+        },
+        "queue_task_deadline_get": {
+          "args": "visible_in timestamptz, count integer",
+          "body": "begin\n  return query\n    with updated as (\n      update queue_task_deadlines q\n      set pop_receipt = public.gen_random_uuid(),\n        visible = visible_in\n      where\n        (q.task_id, q.visible) in (\n          select q2.task_id, q2.visible\n          from queue_task_deadlines q2\n          where q2.visible <= now()\n          order by q2.deadline\n          for update skip locked\n          limit count\n      )\n      returning q.task_id, q.task_group_id, q.scheduler_id, q.deadline, q.pop_receipt\n    )\n    select u.task_id, u.task_group_id, u.scheduler_id, u.deadline, u.pop_receipt\n    from updated as u\n    order by u.deadline;\nend",
+          "deprecated": false,
+          "description": "Get up to `count` tasks from the deadline queue.\n",
+          "mode": "write",
+          "returns": "table (task_id text, task_group_id text, scheduler_id text, deadline timestamptz, pop_receipt uuid)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 93
     }
   ]
 }

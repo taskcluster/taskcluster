@@ -2073,7 +2073,7 @@ Delete single claimed task from the queue.
   * `run_id integer`
   * `taken_until timestamptz`
   * `pop_receipt uuid`
-* *Last defined on version*: 91
+* *Last defined on version*: 93
 
 Get up to `count` tasks from the claimed queue.
 
@@ -2153,7 +2153,7 @@ Delete all expired tasks from pending queue.
   * `run_id integer`
   * `hint_id text`
   * `pop_receipt uuid`
-* *Last defined on version*: 91
+* *Last defined on version*: 93
 
 Get up to `count` tasks for the pending tasks from the given taskQueueId.
 Tasks are locked and will temporarily become invisible for the `visible` period.
@@ -2259,7 +2259,7 @@ Delete single deadline task.
   * `scheduler_id text`
   * `deadline timestamptz`
   * `pop_receipt uuid`
-* *Last defined on version*: 91
+* *Last defined on version*: 93
 
 Get up to `count` tasks from the deadline queue.
 
