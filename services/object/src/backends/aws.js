@@ -1,4 +1,4 @@
-import { Backend } from './base';
+import { Backend } from './base.js';
 import assert from 'assert';
 import aws from 'aws-sdk';
 import { reportError } from 'taskcluster-lib-api';
@@ -8,7 +8,7 @@ import { parse as parseContentType } from 'content-type';
 
 const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
-class AwsBackend extends Backend {
+export class AwsBackend extends Backend {
   constructor(options) {
     super(options);
 
@@ -247,7 +247,7 @@ class AwsBackend extends Backend {
   }
 }
 
-const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
+export const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
   let options = credentials;
   if (endpoint) {
     options.endpoint = new aws.Endpoint(endpoint);

@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
-import helper from './helper';
+import helper from './helper/index.js';
 import testing from 'taskcluster-lib-testing';
-import { Backends } from '../src/backends';
-import { TestBackend } from '../src/backends/test';
+import { Backends } from '../src/backends/index.js';
+import { TestBackend } from '../src/backends/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

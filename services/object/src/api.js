@@ -6,7 +6,7 @@ import taskcluster from 'taskcluster-client';
  * Known download methods, in order of preference (preferring earlier
  * methods)
  */
-const DOWNLOAD_METHODS = [
+export const DOWNLOAD_METHODS = [
   'getUrl',
   'simple',
 ];
@@ -36,6 +36,8 @@ let builder = new APIBuilder({
   },
   context: ['cfg', 'db', 'backends', 'middleware'],
 });
+
+export default builder;
 
 builder.declare({
   method: 'put',
@@ -413,8 +415,3 @@ builder.declare({
   // TODO: add implementation
   res.reply({});
 });
-
-module.exports = builder;
-
-// used in tests
-module.exports.DOWNLOAD_METHODS = DOWNLOAD_METHODS;

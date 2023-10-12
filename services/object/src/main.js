@@ -1,15 +1,15 @@
 import '../../prelude.js';
 import tcdb from 'taskcluster-db';
-import builder from '../src/api';
+import builder from '../src/api.js';
 import loader from 'taskcluster-lib-loader';
 import SchemaSet from 'taskcluster-lib-validate';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import { App } from 'taskcluster-lib-app';
 import libReferences from 'taskcluster-lib-references';
 import config from 'taskcluster-lib-config';
-import { Backends } from './backends';
-import { Middleware } from './middleware';
-import expireObjects from './expire';
+import { Backends } from './backends/index.js';
+import { Middleware } from './middleware/index.js';
+import expireObjects from './expire.js';
 import { fileURLToPath } from 'url';
 
 let load = loader({

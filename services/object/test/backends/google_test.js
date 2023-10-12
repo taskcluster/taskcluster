@@ -1,9 +1,9 @@
-import helper from '../helper';
+import helper from '../helper/index.js';
 import assert from 'assert';
 import aws from 'aws-sdk';
 import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
-import { AwsBackend } from '../../src/backends/aws';
+import { AwsBackend } from '../../src/backends/aws.js';
 import { promisify } from 'util';
 import zlib from 'zlib';
 
@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     return;
   }
 
-  helper.withDb(mock, skipping);
+  const dbHelper = helper.withDb(mock, skipping);
   helper.withBackends(mock, skipping);
 
   let secret, s3;
@@ -71,8 +71,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
-    await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
-    const [object] = await helper.db.fns.get_object_with_upload(name);
+    await dbHelper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
+    const [object] = await dbHelper.db.fns.get_object_with_upload(name);
 
     // ignore 'gzipped' and always upload gzipped data -- GCS supports
     // "transcoding" gzip to identity on downloda.
@@ -85,10 +85,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     }).promise();
 
     if (hashes) {
-      await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
+      await dbHelper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
     }
 
-    await helper.db.fns.object_upload_complete(name, uploadId);
+    await dbHelper.db.fns.object_upload_complete(name, uploadId);
 
     return object;
   };
@@ -113,7 +113,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     test('any tags are rejected', async function() {
       const backend = new AwsBackend({
         backendId: 'broken',
-        db: helper.db,
+        db: dbHelper.db,
         monitor: {},
         rootUrl: 'https://example.com',
         config: {
@@ -241,11 +241,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     test('succeeds for an object that no longer exists', async function() {
       const name = 'some/object';
       const uploadId = taskcluster.slugid();
-      await helper.db.fns.create_object_for_upload(
+      await dbHelper.db.fns.create_object_for_upload(
         name, 'test-proj', 'google', uploadId,
         taskcluster.fromNow('1 hour'), {}, taskcluster.fromNow('1 hour'));
-      await helper.db.fns.object_upload_complete(name, uploadId);
-      const [object] = await helper.db.fns.get_object_with_upload(name);
+      await dbHelper.db.fns.object_upload_complete(name, uploadId);
+      const [object] = await dbHelper.db.fns.get_object_with_upload(name);
 
       const backends = await helper.load('backends');
       const backend = backends.get('googlePrivate');

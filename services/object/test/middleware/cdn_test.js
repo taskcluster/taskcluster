@@ -1,5 +1,5 @@
 import assert from 'assert';
-import helper from '../helper';
+import helper from '../helper/index.js';
 import testing from 'taskcluster-lib-testing';
 import request from 'superagent';
 import crypto from 'crypto';
@@ -12,7 +12,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withMiddleware(mock, skipping, [
     { 'middlewareType': 'cdn', regexp: "^public/.*", baseUrl: "https://cdn.example.com/" },
   ]);
-  helper.withServer(mock, skipping);
+  const serverHelper = helper.withServer(mock, skipping);
 
   const makeObject = async name => {
     const data = crypto.randomBytes(128);
@@ -24,18 +24,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       },
     };
 
-    await helper.apiClient.createUpload(name, {
+    await serverHelper.apiClient.createUpload(name, {
       projectId: 'x',
       expires: taskcluster.fromNow('1 year'),
       uploadId,
       proposedUploadMethods,
     });
-    await helper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
+    await serverHelper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
   };
 
   test('intercepts matching simple downloads', async function() {
     await makeObject('public/foo/bar');
-    const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'public/foo/bar');
+    const downloadUrl = serverHelper.apiClient.externalBuildSignedUrl(serverHelper.apiClient.download, 'public/foo/bar');
     const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
     assert.equal(res.statusCode, 303);
     assert.equal(res.headers.location, "https://cdn.example.com/public/foo/bar");
@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('ignores non-matching simple downloads', async function() {
     await makeObject('private/foo/bar');
-    const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'private/foo/bar');
+    const downloadUrl = serverHelper.apiClient.externalBuildSignedUrl(serverHelper.apiClient.download, 'private/foo/bar');
     const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
     assert.equal(res.statusCode, 303);
     assert(!res.headers.location.startsWith("https://cdn"));

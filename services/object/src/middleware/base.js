@@ -1,4 +1,4 @@
-class Middleware {
+export class Middleware {
   constructor({ monitor, rootUrl, config }) {
     this.monitor = monitor;
     this.rootUrl = rootUrl;

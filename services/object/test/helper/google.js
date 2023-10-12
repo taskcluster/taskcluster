@@ -17,7 +17,7 @@
  *  * In the Google Cloud Storage Settings view, "Interoperability" tab, create HMAC credentials for the service account
  *    and put those in the secret with GOOGLE_ACCESS_KEY_ID and GOOGLE_SECRET_ACCESS_KEY.
  */
-export const secret = [
+export const google = [
   { env: 'GOOGLE_ACCESS_KEY_ID', name: 'accessKeyId' },
   { env: 'GOOGLE_SECRET_ACCESS_KEY', name: 'secretAccessKey' },
   { env: 'GOOGLE_TEST_BUCKET', name: 'testBucket' },

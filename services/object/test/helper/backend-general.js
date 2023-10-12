@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import assert from 'assert';
-import helper from '../helper';
-import builder from '../../src/api';
+import { load, testObjectName } from '../helper/index.js';
+import builder from '../../src/api.js';
 
 /**
  * Test properties general to all backends.
@@ -35,13 +35,13 @@ export const testBackend = ({
 
     let backend;
     setup(async function() {
-      const backends = await helper.load('backends');
+      const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
     test('supports only defined downlad methods', async function() {
       const data = crypto.randomBytes(256);
-      const name = helper.testObjectName(prefix);
+      const name = testObjectName(prefix);
       const object = await makeObject({ name, data, hashes: { }, gzipped: false });
 
       const methods = await backend.availableDownloadMethods(object);

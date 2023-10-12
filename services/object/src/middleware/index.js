@@ -1,6 +1,6 @@
-import { CdnMiddleware } from './cdn';
+import { CdnMiddleware } from './cdn.js';
 
-const MIDDLEWARE_TYPES = {
+export const MIDDLEWARE_TYPES = {
   cdn: CdnMiddleware,
 };
 
@@ -8,7 +8,7 @@ const MIDDLEWARE_TYPES = {
  * A container for all defined backends in a running instance of this service,
  * supporting getting backends either by name or for a newly uploaded object.
  */
-class Middleware {
+export class Middleware {
   async setup({ cfg, monitor }) {
     this.monitor = monitor;
 

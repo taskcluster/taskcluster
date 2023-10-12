@@ -1,11 +1,11 @@
 import assert from 'assert';
-import { Backend } from './base';
+import { Backend } from './base.js';
 import { reportError } from 'taskcluster-lib-api';
 
 /**
  * The test backend type is only available when running tests.
  */
-class TestBackend extends Backend {
+export class TestBackend extends Backend {
   constructor(options) {
     super(options);
     this.data = new Map();
@@ -70,6 +70,6 @@ class TestBackend extends Backend {
   }
 }
 
-const toDataUrl = data => 'data:;base64,' + data.toString('base64');
+export const toDataUrl = data => 'data:;base64,' + data.toString('base64');
 
 export default { TestBackend, toDataUrl };

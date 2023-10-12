@@ -1,7 +1,7 @@
 import request from 'superagent';
 import crypto from 'crypto';
 import assert from 'assert';
-import helper from '../helper';
+import { load, testObjectName } from '../helper/index.js';
 
 /**
  * Test the getUrl download method on the given backend.  This defines a suite
@@ -44,14 +44,14 @@ export const testGetUrlDownloadMethod = ({
 
     let backend;
     setup(async function() {
-      const backends = await helper.load('backends');
+      const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
     [true, false].forEach(gzipped => {
       test(`supports getUrl downloads (Content-Encoding: ${gzipped ? "gzip" : "identity"})`, async function() {
         const data = crypto.randomBytes(256);
-        const name = helper.testObjectName(prefix);
+        const name = testObjectName(prefix);
         const object = await makeObject({ name, data, hashes: { sha256, sha512 }, gzipped });
 
         // check it's supported..
