@@ -1,7 +1,7 @@
 import '../../prelude.js';
 import Debug from 'debug';
 import tcdb from 'taskcluster-db';
-import builder from '../src/api';
+import builder from '../src/api.js';
 import loader from 'taskcluster-lib-loader';
 import SchemaSet from 'taskcluster-lib-validate';
 import { MonitorManager } from 'taskcluster-lib-monitor';
