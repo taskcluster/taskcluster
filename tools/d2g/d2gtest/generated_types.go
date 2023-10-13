@@ -7,8 +7,8 @@ import (
 )
 
 type (
-	// Static d2g input/output test cases. Contains pairs of Docker Worker payload
-	// (inputs) and Generic Worker expected payload (outputs).
+	// Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
+	// (inputs) and Generic Worker expected task def/payload (outputs).
 	D2GTestCases struct {
 
 		// A suite of tests for a particular d2g feature or set of features
@@ -26,10 +26,20 @@ type (
 		Description string `json:"description"`
 
 		// Additional properties allowed
-		DockerWorkerTaskPayload json.RawMessage `json:"dockerWorkerTaskPayload"`
+		DockerWorkerTaskDefinition json.RawMessage `json:"dockerWorkerTaskDefinition,omitempty"`
 
 		// Additional properties allowed
-		GenericWorkerTaskPayload json.RawMessage `json:"genericWorkerTaskPayload"`
+		DockerWorkerTaskPayload json.RawMessage `json:"dockerWorkerTaskPayload,omitempty"`
+
+		// Additional properties allowed
+		GenericWorkerTaskDefinition json.RawMessage `json:"genericWorkerTaskDefinition,omitempty"`
+
+		// Additional properties allowed
+		GenericWorkerTaskPayload json.RawMessage `json:"genericWorkerTaskPayload,omitempty"`
+
+		// Set to true if the test input are task definitions in
+		// dockerWorkerTaskDefinition and genericWorkerTaskDefinition.
+		IsTaskDef bool `json:"isTaskDef,omitempty"`
 
 		// Name for the test case
 		Name string `json:"name"`
@@ -66,7 +76,7 @@ func JSONSchema() string {
   "$id": "schemas/test_suites.json#",
   "$schema": "http://json-schema.org/draft-06/schema#",
   "additionalProperties": false,
-  "description": "Static d2g input/output test cases. Contains pairs of Docker Worker payload\n(inputs) and Generic Worker expected payload (outputs).",
+  "description": "Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload\n(inputs) and Generic Worker expected task def/payload (outputs).",
   "properties": {
     "testSuite": {
       "additionalProperties": false,
@@ -93,11 +103,22 @@ func JSONSchema() string {
                 "title": "Test Case Description",
                 "type": "string"
               },
+              "dockerWorkerTaskDefinition": {
+                "type": "object"
+              },
               "dockerWorkerTaskPayload": {
+                "type": "object"
+              },
+              "genericWorkerTaskDefinition": {
                 "type": "object"
               },
               "genericWorkerTaskPayload": {
                 "type": "object"
+              },
+              "isTaskDef": {
+                "description": "Set to true if the test input are task definitions in\ndockerWorkerTaskDefinition and genericWorkerTaskDefinition.",
+                "title": "Is Task Definition",
+                "type": "boolean"
               },
               "name": {
                 "description": "Name for the test case",
@@ -107,9 +128,7 @@ func JSONSchema() string {
             },
             "required": [
               "name",
-              "description",
-              "dockerWorkerTaskPayload",
-              "genericWorkerTaskPayload"
+              "description"
             ],
             "title": "Test case",
             "type": "object"

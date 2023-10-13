@@ -116,25 +116,26 @@ To generate a nice slugid:
 taskcluster slugid generate -n
 ```
 
-### Translating Docker Worker Payloads to Generic Worker Payloads
+### Translating Docker Worker Task Definition/Payload to Generic Worker Task Definition/Payload
 
-The `taskcluster d2g` subcommand can be used to translate a Docker Worker payload to a Generic Worker payload.
+The `taskcluster d2g` subcommand can be used to translate a Docker Worker task definition or payload to a Generic Worker task definition or payload.
 Both the input and output are JSON. You can either pass the input as a file or pipe it in to the command.
+You must use the `(-t, --task-def)` flag to specify that your input is a task definition, otherwise it will be treated as a task payload and you'll get an error message like: `Error: input validation failed: validation failed:`.
 
 ```shell
-taskcluster d2g -f /path/to/input.json
+taskcluster d2g -f /path/to/input/payload.json
 ```
 
 _OR_
 
 ```shell
-taskcluster d2g --file /path/to/input.json
+taskcluster d2g --task-def --file /path/to/input/task-definition.json
 ```
 
 _OR_
 
 ```shell
-cat /path/to/input.json | taskcluster d2g
+cat /path/to/input/task-definition.json | taskcluster d2g -t
 ```
 
 _OR_

@@ -2,8 +2,8 @@
 "$id": 'schemas/test_suites.json#'
 title: d2g test cases
 description: |-
-  Static d2g input/output test cases. Contains pairs of Docker Worker payload
-  (inputs) and Generic Worker expected payload (outputs).
+  Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
+  (inputs) and Generic Worker expected task def/payload (outputs).
 type: object
 required:
 - testSuite
@@ -48,8 +48,6 @@ properties:
           required:
             - name
             - description
-            - dockerWorkerTaskPayload
-            - genericWorkerTaskPayload
           additionalProperties: false
           properties:
             name:
@@ -62,6 +60,12 @@ properties:
               description: |-
                 Detailed information about what the test case tests
               type: string
+            isTaskDef:
+              title: Is Task Definition
+              description: |-
+                Set to true if the test input are task definitions in
+                dockerWorkerTaskDefinition and genericWorkerTaskDefinition.
+              type: boolean
             dockerWorkerTaskPayload:
               # validation of this object is handled in test harness, rather
               # than using $ref, since gojsonschema can't interpret yaml
@@ -69,6 +73,18 @@ properties:
               # the repo
               type: object
             genericWorkerTaskPayload:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            dockerWorkerTaskDefinition:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            genericWorkerTaskDefinition:
               # validation of this object is handled in test harness, rather
               # than using $ref, since gojsonschema can't interpret yaml
               # schemas and we prefer not to keep both json and yml versions in
