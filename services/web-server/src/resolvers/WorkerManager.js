@@ -1,4 +1,4 @@
-import { splitWorkerPoolId } from '../utils/workerPool';
+import { splitWorkerPoolId } from '../utils/workerPool.js';
 
 export default {
   WorkerManagerWorkerPoolSummary: {

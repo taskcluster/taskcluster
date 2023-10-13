@@ -1,5 +1,5 @@
-import sift from '../utils/sift';
-import ConnectionLoader from '../ConnectionLoader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ notify }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const listDenylistAddresses = new ConnectionLoader(async ({ filter, options }) => {

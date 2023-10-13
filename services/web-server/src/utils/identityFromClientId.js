@@ -1,4 +1,4 @@
-import { CLIENT_ID_PATTERN } from '../utils/constants';
+import { CLIENT_ID_PATTERN } from '../utils/constants.js';
 
 /**
  * Returns the user's identity given a clientId

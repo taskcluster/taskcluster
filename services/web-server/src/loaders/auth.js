@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
-import WebServerError from '../utils/WebServerError';
-import regenerateSession from '../utils/regenerateSession';
-import generateCredentials from '../utils/generateCredentials';
+import WebServerError from '../utils/WebServerError.js';
+import regenerateSession from '../utils/regenerateSession.js';
+import generateCredentials from '../utils/generateCredentials.js';
 
 export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const getCredentials = new DataLoader(queries => {

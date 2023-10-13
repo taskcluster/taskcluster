@@ -1,5 +1,5 @@
 import assert from 'assert';
-import unpromisify from '../src/utils/unpromisify';
+import unpromisify from '../src/utils/unpromisify.js';
 import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), () => {

@@ -2,12 +2,12 @@ import assert from 'assert';
 import passport from 'passport';
 import { Strategy } from 'passport-github';
 import taskcluster from 'taskcluster-client';
-import User from '../User';
-import login from '../../utils/login';
-import WebServerError from '../../utils/WebServerError';
-import tryCatch from '../../utils/tryCatch';
-import { encode, decode } from '../../utils/codec';
-import GithubClient from '../clients/GithubClient';
+import User from '../User.js';
+import login from '../../utils/login.js';
+import WebServerError from '../../utils/WebServerError.js';
+import tryCatch from '../../utils/tryCatch.js';
+import { encode, decode } from '../../utils/codec.js';
+import GithubClient from '../clients/GithubClient.js';
 
 export default class Github {
   constructor({ name, cfg, monitor, db }) {

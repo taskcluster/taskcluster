@@ -1,6 +1,6 @@
 import assert from 'assert';
 import jwt from 'jsonwebtoken';
-import jwksClient from './jwksClient';
+import jwksClient from './jwksClient.js';
 
 export default async ({ token, domain, audience }) => new Promise((resolve, reject) => {
   assert(token, 'No authorization token was found');

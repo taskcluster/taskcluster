@@ -1,4 +1,4 @@
-import loaders from './loaders';
+import loaders from './loaders/index.js';
 
 export default ({ clients, pulseEngine, rootUrl, strategies, cfg, monitor }) => ({ req, connection }) => {
   if (req) {

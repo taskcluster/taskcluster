@@ -1,7 +1,7 @@
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
-import helper from './helper';
-import Github from '../src/login/strategies/github';
+import helper from './helper.js';
+import Github from '../src/login/strategies/github.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

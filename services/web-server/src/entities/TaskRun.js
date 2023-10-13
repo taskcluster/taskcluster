@@ -1,4 +1,4 @@
-import Artifact from './Artifact';
+import Artifact from './Artifact.js';
 
 export default class TaskRun {
   constructor(taskId, data, artifacts) {

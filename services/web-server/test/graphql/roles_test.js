@@ -2,13 +2,7 @@ import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import gql from 'graphql-tag';
 import testing from 'taskcluster-lib-testing';
-import helper from '../helper';
-import createRoleMutation from '../fixtures/createRole.graphql';
-import roleQuery from '../fixtures/role.graphql';
-import rolesQuery from '../fixtures/roles.graphql';
-import deleteRoleMutation from '../fixtures/deleteRole.graphql';
-import listRoleIdsQuery from '../fixtures/listRoleIds.graphql';
-import updateRoleMutation from '../fixtures/updateRole.graphql';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -24,6 +18,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
+      const roleQuery = await helper.loadFixture('role.graphql');
 
       // 1. create role
       await client.mutate({
@@ -53,6 +50,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         description: "Test Scope",
       };
 
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
+      const rolesQuery = await helper.loadFixture('roles.graphql');
+
       // 1. create roles
       await client.mutate({
         mutation: gql`${createRoleMutation}`,
@@ -78,6 +78,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         scopes: ["scope1"],
         description: "Test Scope 1",
       };
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
+      const listRoleIdsQuery = await helper.loadFixture('listRoleIds.graphql');
 
       // 1. create roles
       await client.mutate({
@@ -104,6 +106,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
 
       // 1. create role
       const response = await client.mutate({
@@ -124,6 +127,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
+      const roleQuery = await helper.loadFixture('role.graphql');
+      const updateRoleMutation = await helper.loadFixture('updateRole.graphql');
 
       // 1. create role
       await client.mutate({
@@ -164,6 +170,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
+      const deleteRoleMutation = await helper.loadFixture('deleteRole.graphql');
 
       // 1. create role
       await client.mutate({

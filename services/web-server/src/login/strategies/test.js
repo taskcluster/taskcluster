@@ -1,6 +1,6 @@
-import User from '../User';
+import User from '../User.js';
 import taskcluster from 'taskcluster-client';
-import { encode, decode } from '../../utils/codec';
+import { encode, decode } from '../../utils/codec.js';
 
 export default class Test {
   constructor() {

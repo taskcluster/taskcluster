@@ -1,9 +1,9 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift';
+import sift from '../utils/sift.js';
 import got from 'got';
-import ConnectionLoader from '../ConnectionLoader';
-import Task from '../entities/Task';
-import maybeSignedUrl from '../utils/maybeSignedUrl';
+import ConnectionLoader from '../ConnectionLoader.js';
+import Task from '../entities/Task.js';
+import maybeSignedUrl from '../utils/maybeSignedUrl.js';
 
 export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const task = new DataLoader(taskIds =>

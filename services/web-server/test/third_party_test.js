@@ -5,8 +5,8 @@ import debugFactory from 'debug';
 const debug = debugFactory('third_party_test');
 import request from 'superagent';
 import moment from 'moment';
-import helper from './helper';
-import tryCatch from '../src/utils/tryCatch';
+import helper from './helper.js';
+import tryCatch from '../src/utils/tryCatch.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

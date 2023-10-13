@@ -1,6 +1,6 @@
 import scopeUtils from 'taskcluster-lib-scopes';
 import Debug from 'debug';
-import identityFromClientId from '../utils/identityFromClientId';
+import identityFromClientId from '../utils/identityFromClientId.js';
 
 const debug = Debug('scanner');
 

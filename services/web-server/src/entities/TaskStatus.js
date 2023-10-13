@@ -1,4 +1,4 @@
-import TaskRun from './TaskRun';
+import TaskRun from './TaskRun.js';
 
 export default class TaskStatus {
   constructor(taskId, data) {

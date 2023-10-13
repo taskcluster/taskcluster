@@ -1,4 +1,4 @@
-import TaskStatus from './TaskStatus';
+import TaskStatus from './TaskStatus.js';
 
 export default class Task {
   constructor(taskId, status, data) {

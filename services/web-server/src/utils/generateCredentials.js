@@ -1,5 +1,5 @@
 import assert from 'assert';
-import WebServerError from './WebServerError';
+import WebServerError from './WebServerError.js';
 
 export default async ({ cfg, strategy, identity, monitor }) => {
   [cfg, strategy, identity, monitor].map(assert.ok);

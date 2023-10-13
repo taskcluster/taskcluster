@@ -1,4 +1,4 @@
-import TaskStatus from '../entities/TaskStatus';
+import TaskStatus from '../entities/TaskStatus.js';
 
 export default {
   TaskPriority: {

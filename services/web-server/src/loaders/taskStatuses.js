@@ -1,5 +1,5 @@
 import DataLoader from 'dataloader';
-import TaskStatus from '../entities/TaskStatus';
+import TaskStatus from '../entities/TaskStatus.js';
 
 export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const status = new DataLoader(taskIds =>

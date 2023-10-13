@@ -2,13 +2,13 @@ import assert from 'assert';
 import request from 'superagent';
 import passport from 'passport';
 import Auth0Strategy from 'passport-auth0';
-import User from '../User';
-import PersonAPI from '../clients/PersonAPI';
-import WebServerError from '../../utils/WebServerError';
-import { encode, decode } from '../../utils/codec';
-import tryCatch from '../../utils/tryCatch';
-import login from '../../utils/login';
-import verifyJwtAuth0 from '../../utils/verifyJwtAuth0';
+import User from '../User.js';
+import PersonAPI from '../clients/PersonAPI.js';
+import WebServerError from '../../utils/WebServerError.js';
+import { encode, decode } from '../../utils/codec.js';
+import tryCatch from '../../utils/tryCatch.js';
+import login from '../../utils/login.js';
+import verifyJwtAuth0 from '../../utils/verifyJwtAuth0/index.js';
 
 export default class MozillaAuth0 {
   constructor({ name, cfg, monitor }) {

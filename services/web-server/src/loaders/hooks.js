@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift';
-import ConnectionLoader from '../ConnectionLoader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const hookGroups = new DataLoader(queries =>

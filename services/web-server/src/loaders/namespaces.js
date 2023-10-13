@@ -1,5 +1,5 @@
-import sift from '../utils/sift';
-import ConnectionLoader from '../ConnectionLoader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const namespaces = new ConnectionLoader(

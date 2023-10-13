@@ -4,15 +4,14 @@
  * fails to encode/decode a few characters that are
  * not legal in a clientId.
  * */
-export default {
-  encode: (str) => str
-    .replace(/!/g, '!21')
-    .replace(/[^A-Za-z0-9!@:.+|_-]/g, c => {
-      const h = c.charCodeAt().toString(16).toUpperCase();
+export const encode = (str) => str
+  .replace(/!/g, '!21')
+  .replace(/[^A-Za-z0-9!@:.+|_-]/g, c => {
+    const h = c.charCodeAt().toString(16).toUpperCase();
 
-      return h.length === 2 ? `!${h}` : `!0${h}`;
-    }),
-  // 1. Replace ! with %
-  // 2. Decode with decodeUriComponent (which converts %21 to !)
-  decode: str => decodeURIComponent(str.replace(/!/g, '%')),
-};
+    return h.length === 2 ? `!${h}` : `!0${h}`;
+  });
+
+// 1. Replace ! with %
+// 2. Decode with decodeUriComponent (which converts %21 to !)
+export const decode = str => decodeURIComponent(str.replace(/!/g, '%'));

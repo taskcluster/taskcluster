@@ -10,16 +10,13 @@ import passport from 'passport';
 import url from 'url';
 import MemoryStoreFactory from 'memorystore';
 const MemoryStore = MemoryStoreFactory(session);
-import credentials from './credentials';
-import oauth2AccessToken from './oauth2AccessToken';
-import oauth2 from './oauth2';
-import PostgresSessionStore from '../login/PostgresSessionStore';
+import credentials from './credentials.js';
+import oauth2AccessToken from './oauth2AccessToken.js';
+import oauth2 from './oauth2.js';
+import PostgresSessionStore from '../login/PostgresSessionStore.js';
 import { traceMiddleware } from 'taskcluster-lib-app';
 
-const REPO_ROOT = path.join(__dirname, '../../../../');
-
-const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-const taskclusterVersion = require(taskclusterVersionFile);
+const __dirname = new URL('.', import.meta.url).pathname;
 
 export default async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();
@@ -151,7 +148,10 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
     res.json({});
   });
-  app.get('/api/web-server/v1/__version__', (_req, res) => {
+  app.get('/api/web-server/v1/__version__', async (_req, res) => {
+    const REPO_ROOT = path.join(__dirname, '../../../../');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+    const taskclusterVersion = await import(taskclusterVersionFile);
     res.json(taskclusterVersion);
   });
   // TODO: add implementation

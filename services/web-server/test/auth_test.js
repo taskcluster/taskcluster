@@ -1,8 +1,7 @@
 import assert from 'assert';
 import request from 'superagent';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
-import credentialsQuery from './fixtures/credentials.graphql';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -10,6 +9,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   test('Unauthorized', async function() {
+    const credentialsQuery = await helper.loadFixture('credentials.graphql');
     const res = await request
       .post(`http://localhost:${helper.serverPort}/graphql`)
       .send({ query: credentialsQuery });

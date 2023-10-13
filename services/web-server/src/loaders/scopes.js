@@ -1,5 +1,5 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift';
+import sift from '../utils/sift.js';
 
 export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const currentScopes = new DataLoader(queries =>

@@ -2,10 +2,7 @@ import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import gql from 'graphql-tag';
 import testing from 'taskcluster-lib-testing';
-import helper from '../helper';
-import taskQuery from '../fixtures/task.graphql';
-import createTaskQuery from '../fixtures/createTask.graphql';
-import subscribeTasks from '../fixtures/tasksSubscriptions.graphql';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -18,6 +15,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('query works', async function() {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
+      const taskQuery = await helper.loadFixture('task.graphql');
 
       // 1. create task
       await client.mutate({
@@ -42,6 +41,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('mutation works', async function() {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
+
       const response = await client.mutate({
         mutation: gql`${createTaskQuery}`,
         variables: {
@@ -79,6 +80,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       helper.setNextAsyncIterator(asyncIterator);
+
+      const subscribeTasks = await helper.loadFixture('tasksSubscriptions.graphql');
 
       let tasksSubscriptionsResult;
       let taskSubscription = client.subscribe({

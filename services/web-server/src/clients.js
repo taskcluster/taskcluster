@@ -1,4 +1,5 @@
-import {
+import tc from 'taskcluster-client';
+const {
   Auth,
   Github,
   Hooks,
@@ -9,7 +10,7 @@ import {
   Secrets,
   Notify,
   WorkerManager,
-} from 'taskcluster-client';
+} = tc;
 
 export default options => ({
   auth: new Auth(options),

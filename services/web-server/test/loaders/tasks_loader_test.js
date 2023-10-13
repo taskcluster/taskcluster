@@ -2,9 +2,8 @@ import assert from 'assert';
 import taskcluster from 'taskcluster-client';
 import gql from 'graphql-tag';
 import testing from 'taskcluster-lib-testing';
-import helper from '../helper';
-import createTaskQuery from '../fixtures/createTask.graphql';
-import loader from '../../src/loaders/tasks';
+import helper from '../helper.js';
+import loader from '../../src/loaders/tasks.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -17,6 +16,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('load multiple tasks while gracefully handling errors', async function() {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
 
       // 1. create task
       await client.mutate({

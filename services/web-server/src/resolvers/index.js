@@ -1,16 +1,47 @@
-import merge from 'deepmerge';
-import requireContext from '../utils/requireContext';
+import deepmerge from 'deepmerge';
 
-// eslint-disable-next-line padding-line-between-statements
-const importer = requireContext('./', true, /\.js/);
-const keys = [
-  ...new Set([
-    'Root.js',
-    ...importer.keys().filter(key => key !== 'index.js'),
-  ]),
-];
+import Root from './Root.js';
+import Artifacts from './Artifacts.js';
+import Auth from './Auth.js';
+import CachePurges from './CachePurges.js';
+import Clients from './Clients.js';
+import Github from './Github.js';
+import Hooks from './Hooks.js';
+import Namespaces from './Namespaces.js';
+import Notify from './Notify.js';
+import Provisioners from './Provisioners.js';
+import PulseMessages from './PulseMessages.js';
+import Roles from './Roles.js';
+import Scopes from './Scopes.js';
+import Secrets from './Secrets.js';
+import TaskRuns from './TaskRuns.js';
+import TaskStatuses from './TaskStatuses.js';
+import Tasks from './Tasks.js';
+import WorkerManager from './WorkerManager.js';
+import WorkerTypes from './WorkerTypes.js';
+import Workers from './Workers.js';
 
-export default keys.reduce(
-  (resolvers, key) => merge(resolvers, importer(key)),
-  {},
-);
+const resolvers = deepmerge.all([
+  Root,
+  Artifacts,
+  Auth,
+  CachePurges,
+  Clients,
+  Github,
+  Hooks,
+  Namespaces,
+  Notify,
+  Provisioners,
+  PulseMessages,
+  Roles,
+  Scopes,
+  Secrets,
+  TaskRuns,
+  TaskStatuses,
+  Tasks,
+  WorkerManager,
+  WorkerTypes,
+  Workers,
+]);
+
+export default resolvers;

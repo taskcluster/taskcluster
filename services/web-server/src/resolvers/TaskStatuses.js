@@ -1,4 +1,4 @@
-import sift from '../utils/sift';
+import sift from '../utils/sift.js';
 
 export default {
   TaskState: {

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
-import Strategy from '../src/login/strategies/mozilla-auth0';
+import Strategy from '../src/login/strategies/mozilla-auth0.js';
 
 suite(testing.suiteName(), () => {
   let strategy = new Strategy({

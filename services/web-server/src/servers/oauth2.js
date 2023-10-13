@@ -2,12 +2,12 @@ import taskcluster from 'taskcluster-client';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import oauth2orize from 'oauth2orize';
 import _ from 'lodash';
-import WebServerError from '../utils/WebServerError';
-import tryCatch from '../utils/tryCatch';
-import ensureLoggedIn from '../utils/ensureLoggedIn';
-import expressWrapAsync from '../utils/expressWrapAsync';
-import unpromisify from '../utils/unpromisify';
-import hash from '../utils/hash';
+import WebServerError from '../utils/WebServerError.js';
+import tryCatch from '../utils/tryCatch.js';
+import ensureLoggedIn from '../utils/ensureLoggedIn.js';
+import expressWrapAsync from '../utils/expressWrapAsync.js';
+import unpromisify from '../utils/unpromisify.js';
+import hash from '../utils/hash.js';
 
 export default (cfg, db, strategies, auth, monitor) => {
   // Create OAuth 2.0 server

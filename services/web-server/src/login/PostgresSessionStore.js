@@ -1,7 +1,7 @@
 import assert from 'assert';
 import taskcluster from 'taskcluster-client';
-import { NOOP } from '../utils/constants';
-import hash from '../utils/hash';
+import { NOOP } from '../utils/constants.js';
+import hash from '../utils/hash.js';
 
 export default function ({ session, db, options = {} }) {
   const { Store } = session;

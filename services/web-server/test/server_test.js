@@ -1,5 +1,5 @@
 import assert from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import request from 'superagent';
 import testing from 'taskcluster-lib-testing';
 

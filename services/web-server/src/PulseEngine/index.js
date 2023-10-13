@@ -1,8 +1,8 @@
-import { slugid } from 'taskcluster-client';
-import PulseIterator from './PulseIterator';
-import MessageIterator from './MessageIterator';
-import EventIterator from './EventIterator';
-import Subscription from './Subscription';
+import taskcluster from 'taskcluster-client';
+import PulseIterator from './PulseIterator.js';
+import MessageIterator from './MessageIterator.js';
+import EventIterator from './EventIterator.js';
+import Subscription from './Subscription.js';
 import pSynchronize from 'p-synchronize';
 
 export default class PulseEngine {
@@ -49,7 +49,7 @@ export default class PulseEngine {
   }
 
   subscribe(subscriptions, handleMessage, handleError) {
-    const subscriptionId = slugid();
+    const subscriptionId = taskcluster.slugid();
 
     this.subscriptions.set(
       subscriptionId,

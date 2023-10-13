@@ -1,7 +1,7 @@
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
-import credentials from './credentials';
-import formatError from './formatError';
+import credentials from './credentials.js';
+import formatError from './formatError.js';
 
 export default ({ server, schema, context, path }) =>
   SubscriptionServer.create(

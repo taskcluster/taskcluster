@@ -1,9 +1,9 @@
 import assert from 'assert';
-import PulseIterator from '../src/PulseEngine/PulseIterator';
+import PulseIterator from '../src/PulseEngine/PulseIterator.js';
 import testing from 'taskcluster-lib-testing';
 
 // load for side-effects
-import './helper';
+import './helper.js';
 
 class FakePulseEngine {
   subscribe(subscriptions, handleMessage, handleError) {

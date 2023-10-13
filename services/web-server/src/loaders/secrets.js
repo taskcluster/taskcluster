@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift';
-import ConnectionLoader from '../ConnectionLoader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ secrets }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const secretsList = new ConnectionLoader(async ({ filter, options }) => {

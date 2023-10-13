@@ -1,14 +1,14 @@
-import { Auth } from 'taskcluster-client';
+import taskcluster from 'taskcluster-client';
 import assert from 'assert';
-import scan from '../src/login/scanner';
+import scan from '../src/login/scanner.js';
 import testing from 'taskcluster-lib-testing';
 import libUrls from 'taskcluster-lib-urls';
-import User from '../src/login/User';
+import User from '../src/login/User.js';
 
 suite(testing.suiteName(), () => {
   // set up some fakes
   let clients = {};
-  const auth = new Auth({
+  const auth = new taskcluster.Auth({
     rootUrl: libUrls.testRootUrl(),
     fake: {
       listClients: ({ prefix, continuationToken }) => {
