@@ -108,32 +108,10 @@ func (tc *TestCase) TestCase() func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tc.Validate(t)
-		dwPayload := dockerworker.DockerWorkerPayload{}
-		defaults.SetDefaults(&dwPayload)
-		err := json.Unmarshal(tc.DockerWorkerTaskPayload, &dwPayload)
-		if err != nil {
-			t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
-		}
-		actualGWPayload, err := d2g.Convert(&dwPayload)
-		if err != nil {
-			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
-		}
-		formattedActualGWPayload, err := json.MarshalIndent(*actualGWPayload, "", "  ")
-		if err != nil {
-			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", *actualGWPayload, err)
-		}
-		gwPayload := genericworker.GenericWorkerPayload{}
-		defaults.SetDefaults(&gwPayload)
-		err = json.Unmarshal(tc.GenericWorkerTaskPayload, &gwPayload)
-		if err != nil {
-			t.Fatalf("Cannot unmarshal test suite Generic Worker payload %v: %v", string(tc.GenericWorkerTaskPayload), err)
-		}
-		formattedExpectedGWPayload, err := json.MarshalIndent(gwPayload, "", "  ")
-		if err != nil {
-			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", gwPayload, err)
-		}
-		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
-			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
+		if tc.IsTaskDef {
+			tc.TestTaskDef(t)
+		} else {
+			tc.TestTaskPayload(t)
 		}
 	}
 }
@@ -197,6 +175,88 @@ func validateTestSuite(t *testing.T, schema string, path string) {
 
 func (tc *TestCase) Validate(t *testing.T) {
 	t.Helper()
-	validateAgainstSchema(t, tc.DockerWorkerTaskPayload, dockerworker.JSONSchema())
-	validateAgainstSchema(t, tc.GenericWorkerTaskPayload, genericworker.JSONSchema())
+	var dwRaw json.RawMessage
+	var gwRaw json.RawMessage
+
+	if tc.IsTaskDef {
+		var parsedDwTaskDef map[string]interface{}
+		err := json.Unmarshal(tc.DockerWorkerTaskDefinition, &parsedDwTaskDef)
+		if err != nil {
+			t.Fatalf("cannot parse Docker Worker task definition: %v", err)
+		}
+
+		dwRaw, err = json.Marshal(parsedDwTaskDef["payload"])
+		if err != nil {
+			t.Fatalf("Cannot marshal test suite Docker Worker payload %#v: %v", parsedDwTaskDef["payload"], err)
+		}
+
+		var parsedGwTaskDef map[string]interface{}
+		err = json.Unmarshal(tc.GenericWorkerTaskDefinition, &parsedGwTaskDef)
+		if err != nil {
+			t.Fatalf("cannot parse Generic Worker task definition: %v", err)
+		}
+
+		gwRaw, err = json.Marshal(parsedGwTaskDef["payload"])
+		if err != nil {
+			t.Fatalf("Cannot marshal test suite Generic Worker payload %#v: %v", parsedGwTaskDef["payload"], err)
+		}
+	} else {
+		dwRaw = tc.DockerWorkerTaskPayload
+		gwRaw = tc.GenericWorkerTaskPayload
+	}
+	validateAgainstSchema(t, dwRaw, dockerworker.JSONSchema())
+	validateAgainstSchema(t, gwRaw, genericworker.JSONSchema())
+}
+
+func (tc *TestCase) TestTaskDef(t *testing.T) {
+	t.Helper()
+	gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition)
+	if err != nil {
+		t.Fatalf("cannot convert task definition: %v", err)
+	}
+
+	formattedActualGWTaskDef, err := json.MarshalIndent(gwTaskDef, "", "  ")
+	if err != nil {
+		t.Fatalf("Cannot convert resulting Generic Worker task definition %#v to JSON: %s", gwTaskDef, err)
+	}
+
+	formattedExpectedGWTaskDef, err := json.MarshalIndent(tc.GenericWorkerTaskDefinition, "", "  ")
+	if err != nil {
+		t.Fatalf("Cannot convert expected Generic Worker task definition %#v to JSON: %s", tc.GenericWorkerTaskDefinition, err)
+	}
+
+	if string(formattedExpectedGWTaskDef) != string(formattedActualGWTaskDef) {
+		t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef))
+	}
+}
+
+func (tc *TestCase) TestTaskPayload(t *testing.T) {
+	t.Helper()
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	err := json.Unmarshal(tc.DockerWorkerTaskPayload, &dwPayload)
+	if err != nil {
+		t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
+	}
+	actualGWPayload, err := d2g.Convert(&dwPayload)
+	if err != nil {
+		t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
+	}
+	formattedActualGWPayload, err := json.MarshalIndent(*actualGWPayload, "", "  ")
+	if err != nil {
+		t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", *actualGWPayload, err)
+	}
+	gwPayload := genericworker.GenericWorkerPayload{}
+	defaults.SetDefaults(&gwPayload)
+	err = json.Unmarshal(tc.GenericWorkerTaskPayload, &gwPayload)
+	if err != nil {
+		t.Fatalf("Cannot unmarshal test suite Generic Worker payload %v: %v", string(tc.GenericWorkerTaskPayload), err)
+	}
+	formattedExpectedGWPayload, err := json.MarshalIndent(gwPayload, "", "  ")
+	if err != nil {
+		t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", gwPayload, err)
+	}
+	if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
+		t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
+	}
 }
