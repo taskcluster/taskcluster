@@ -1,5 +1,5 @@
 import assert from 'assert';
-import * as helper from './helper.js';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 import { modifyRoles } from '../src/data.js';
 
@@ -9,18 +9,18 @@ const sorted = (arr) => {
 };
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
-  const dbHelper = helper.withDb(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
 
   test('get when blob is empty', async function() {
-    assert.deepEqual(await dbHelper.db.fns.get_roles(), []);
+    assert.deepEqual(await helper.db.fns.get_roles(), []);
   });
 
   test('first modification of an empty blob', async function() {
-    await modifyRoles(dbHelper.db, ({ roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',
         scopes: ['a', 'b'],
@@ -30,12 +30,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
     });
 
-    assert.deepEqual(sorted((await dbHelper.db.fns.get_roles()).map(r => r.role_id)),
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
       sorted(['my-role']));
   });
 
   test('add a second role', async function() {
-    await modifyRoles(dbHelper.db, ({ roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',
         scopes: ['a', 'b'],
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         last_modified: new Date('2017-01-01'),
       });
     });
-    await modifyRoles(dbHelper.db, ({ roles }) => {
+    await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'second-role',
         scopes: ['x', 'y'],
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         last_modified: new Date('2017-01-02'),
       });
     });
-    assert.deepEqual(sorted((await dbHelper.db.fns.get_roles()).map(r => r.role_id)),
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
       sorted(['my-role', 'second-role']));
   });
 });

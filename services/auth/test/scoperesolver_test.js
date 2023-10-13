@@ -1,4 +1,4 @@
-import * as helper from './helper.js';
+import helper from './helper.js';
 import ScopeResolver from '../src/scoperesolver.js';
 import exchanges from '../src/exchanges.js';
 import { scopeCompare } from 'taskcluster-lib-scopes';
@@ -12,7 +12,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock
   let scopeResolver;
 
   helper.withDb(mock, skipping);
-  const pulse = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   let reloads = [];
 
   setup('mock scoperesolver reloading', async function () {
@@ -42,7 +42,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock
   });
 
   test('client messages reload specific clients', async function () {
-    await pulse.fakePulseMessage({
+    await helper.fakePulseMessage({
       exchange: 'exchange/taskcluster-auth/v1/client-created',
       routingKey: '-',
       routes: [],
@@ -58,7 +58,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock
 
   test('role messages reload all roles', async function () {
     assume(reloads).to.deeply.equal([]);
-    await pulse.fakePulseMessage({
+    await helper.fakePulseMessage({
       exchange: 'exchange/taskcluster-auth/v1/role-created',
       routingKey: '-',
       routes: [],

@@ -10,7 +10,7 @@ import taskcluster from 'taskcluster-client';
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeQueue(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -68,7 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         status: { taskId },
       },
     };
-    await pulseHelper.fakePulseMessage(message);
+    await helper.fakePulseMessage(message);
 
     // poll until all of these succeed, as it's not well-defined in what
     // order they will start succeeding
@@ -138,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         status: { taskId },
       },
     };
-    await pulseHelper.fakePulseMessage(message);
+    await helper.fakePulseMessage(message);
 
     debug('### Find task in index');
     let result = await testing.poll(function() {

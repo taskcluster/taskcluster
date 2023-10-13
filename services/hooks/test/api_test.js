@@ -10,9 +10,9 @@ import testing from 'taskcluster-lib-testing';
 import taskDefinition from './test_definition.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  const dbHelper = helper.withDb(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withTaskCreator(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -81,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   }, hookWithHookIds);
 
   const appendLastFire = async ({ hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error }) => {
-    await dbHelper.db.fns.create_last_fire(
+    await helper.db.fns.create_last_fire(
       hookGroupId,
       hookId,
       firedBy,
@@ -117,12 +117,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      pulseHelper.assertPulseMessage('hook-created', ({ payload }) =>
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
     });
 
     test('returns 500 when pulse publish fails', async () => {
-      pulseHelper.onPulsePublish(() => {
+      helper.onPulsePublish(() => {
         throw new Error('uhoh');
       });
 
@@ -144,7 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar/slash');
       assume(r1).deep.equals(r2);
-      pulseHelper.assertPulseMessage('hook-created', ({ payload }) =>
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar/slash' }, payload));
     });
 
@@ -276,13 +276,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
-      pulseHelper.assertPulseMessage('hook-updated', ({ payload }) =>
+      helper.assertPulseMessage('hook-updated', ({ payload }) =>
         _.isEqual({ hookId: 'bar', hookGroupId: 'foo' }, payload));
     });
 
     test('fails if pulse publisher fails', async function() {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      pulseHelper.onPulsePublish(() => {
+      helper.onPulsePublish(() => {
         throw new Error('uhoh');
       });
 
@@ -334,7 +334,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.hook('foo', 'bar').then(
         () => { throw new Error('The resource in Hook Table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
-      pulseHelper.assertPulseMessage('hook-deleted', ({ payload }) =>
+      helper.assertPulseMessage('hook-deleted', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
@@ -343,7 +343,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('fails if pulse publisher fails', async function() {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      pulseHelper.onPulsePublish(() => {
+      helper.onPulsePublish(() => {
         throw new Error('uhoh');
       });
 
@@ -821,7 +821,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
     const createTask = async (taskId, state) => {
-      await dbHelper.withAdminDbClient(async (client) => {
+      await helper.withAdminDbClient(async (client) => {
         await client.query(
           'select create_task_projid($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
           [
@@ -886,7 +886,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
-      pulseHelper.assertPulseMessage('hook-created', ({ payload }) =>
+      helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
     });
 
@@ -895,7 +895,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       let reconciledConsumers = false;
       listener.reconcileConsumers = async () => reconciledConsumers = true;
-      await pulseHelper.fakePulseMessage({
+      await helper.fakePulseMessage({
         payload: {
           hookId: 'bar',
           hookGroupId: 'foo',

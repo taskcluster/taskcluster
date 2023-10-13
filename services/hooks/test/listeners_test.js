@@ -7,9 +7,9 @@ import testing from 'taskcluster-lib-testing';
 import { queueUtils } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  const dbHelper = helper.withDb(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withTaskCreator(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
 
   const hookGroupId = 't';
@@ -17,15 +17,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const makeHookEntities = async (...hooks) => {
     for (let { hookId, bindings } of hooks) {
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
         {}, /* metadata */
         {}, /* task */
         JSON.stringify(bindings), /* bindings */
         JSON.stringify([]), /* schedule */
-        dbHelper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_trigger_token */
-        dbHelper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_trigger_token */
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
         taskcluster.fromNow('1 day'), /* next_scheduled_date */
         {}, /* trigger_schema */
       );
@@ -35,13 +35,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const deleteHookEntity = async (hookId) => {
     // const hook = await helper.Hook.load({hookGroupId, hookId});
     // await hook.remove();
-    await dbHelper.db.fns.delete_hook(hookGroupId, hookId);
+    await helper.db.fns.delete_hook(hookGroupId, hookId);
   };
 
   const makeQueueEntities = async (...queues) => {
     for (let { hookId, bindings } of queues) {
       const queueName = `${hookGroupId}/${hookId}`;
-      await dbHelper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
+      await helper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
     }
   };
 
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       (acc, { hookId, bindings }) => Object.assign(acc, { [`${hookGroupId}/${hookId}`]: bindings }), {});
     const got = {};
 
-    const rows = await dbHelper.db.fns.get_hooks_queues(null, null);
+    const rows = await helper.db.fns.get_hooks_queues(null, null);
     const q = rows.map(queueUtils.fromDb);
 
     for (let queue of q) {
@@ -346,7 +346,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await makeHookEntities({ hookId, bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }] });
       await hookListeners.reconcileConsumers();
 
-      await pulseHelper.fakePulseMessage({
+      await helper.fakePulseMessage({
         exchange: 'e',
         routingKey: 'rkp',
         routes: [],
@@ -367,7 +367,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await deleteHookEntity(hookId);
 
-      await pulseHelper.fakePulseMessage({
+      await helper.fakePulseMessage({
         exchange: 'e',
         routingKey: 'rkp',
         routes: [],

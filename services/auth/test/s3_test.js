@@ -1,7 +1,7 @@
 import assert from 'assert';
 import slugid from 'slugid';
 import aws from 'aws-sdk';
-import * as helper from './helper.js';
+import helper from './helper.js';
 import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
 import testing from 'taskcluster-lib-testing';
@@ -14,7 +14,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  const servers = helper.withServers(mock, skipping);
+  helper.withServers(mock, skipping);
 
   let bucket;
   setup(function() {
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let id = slugid.v4();
     let text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await servers.apiClient.awsS3Credentials(
+    let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       'folder1/folder2/',
@@ -66,7 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let id = slugid.v4();
     let text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await servers.apiClient.awsS3Credentials(
+    let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       '',
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('awsS3Credentials w. folder1/ access denied for folder2/', async () => {
     let id = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await servers.apiClient.awsS3Credentials(
+    let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       'folder1/',
@@ -128,7 +128,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let id = slugid.v4();
     let text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await servers.apiClient.awsS3Credentials(
+    let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       'folder1/',
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     }).promise();
 
     debug('### auth.awsS3Credentials read-only');
-    result = await servers.apiClient.awsS3Credentials(
+    result = await helper.apiClient.awsS3Credentials(
       'read-only',
       bucket,
       'folder1/',
@@ -172,7 +172,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     let id = slugid.v4();
     let text = slugid.v4();
     debug('### auth.awsS3Credentials w. format=iam-role-compat');
-    let result = await servers.apiClient.awsS3Credentials(
+    let result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       '', {
@@ -194,7 +194,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   test('awsS3Credentials with unknown bucket', async () => {
     await assert.rejects(
-      () => servers.apiClient.awsS3Credentials('read-write', 'nosuchbucket', ''),
+      () => helper.apiClient.awsS3Credentials('read-write', 'nosuchbucket', ''),
       err => err.statusCode === 404);
   });
 });

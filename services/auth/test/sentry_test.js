@@ -1,4 +1,4 @@
-import * as helper from './helper.js';
+import helper from './helper.js';
 import taskcluster from 'taskcluster-client';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
@@ -12,10 +12,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.withDb(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse(mock, skipping);
-    const servers = helper.withServers(mock, skipping);
+    helper.withServers(mock, skipping);
 
     test('sentryDSN api method', async () => {
-      await servers.apiClient.sentryDSN('playground');
+      await helper.apiClient.sentryDSN('playground');
     });
 
     test('purgeExpiredKeys', async () => {
@@ -44,12 +44,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     helper.withCfg(mock, skipping);
     helper.withSentry(mock, skipping);
     helper.withPulse('mock', skipping);
-    const servers = helper.withServers(mock, skipping);
+    helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     test('sentryDSN api method', async () => {
       await assert.rejects(
-        () => servers.apiClient.sentryDSN('playground'),
+        () => helper.apiClient.sentryDSN('playground'),
         err => err.statusCode === 404);
     });
 

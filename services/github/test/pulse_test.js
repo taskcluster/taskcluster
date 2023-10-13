@@ -16,7 +16,7 @@ const loadWebhookJson = async filename => {
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const webhook = await loadWebhookJson(params.jsonFile);
 
-      pulseHelper.assertPulseMessage(params.listenFor, m => {
+      helper.assertPulseMessage(params.listenFor, m => {
         if (m.routingKey === params.routingKey && m.payload.eventId === params.eventId) {
           // use assert.deepEqual so we get a decent diff of this large object on error
           assert.deepEqual(m.payload, {

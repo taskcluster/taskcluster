@@ -9,34 +9,34 @@ const testclients = {
   'test-server': ['*'],
 };
 
-export const suiteName = path.basename;
-export const rootUrl = 'http://localhost:60415';
-export const load = testing.stickyLoader(loadMain);
+const suiteName = path.basename;
+const rootUrl = 'http://localhost:60415';
+const load = testing.stickyLoader(loadMain);
+
+const helper = { load, rootUrl, suiteName };
+export default helper;
 
 suiteSetup(async function() {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
 
-testing.withMonitor({ load });
+testing.withMonitor(helper);
 
 // set up the testing secrets
-export const secrets = new testing.Secrets({
+helper.secrets = new testing.Secrets({
   secrets: {},
   load: load,
 });
 
-export const withDb = (mock, skipping) => {
-  const helper = { load };
+helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'purge_cache');
-  return helper;
 };
 
 /**
  * Set up an API server.
  */
-export const withServer = (mock, skipping) => {
-  let helper = {};
+helper.withServer = (mock, skipping) => {
   let webServer;
   let cachePurgeCache = {};
 
@@ -87,7 +87,4 @@ export const withServer = (mock, skipping) => {
     testing.fakeauth.stop();
     load.restore();
   });
-  return helper;
 };
-
-export default { rootUrl, load, secrets, withDb, withServer };

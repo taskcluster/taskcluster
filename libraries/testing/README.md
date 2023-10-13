@@ -315,12 +315,13 @@ The function is typically used like this:
 
 ```javascript
 // helper.js
-export const secrets = new Secrets({
+const helper = { load };
+helper.secrets = new Secrets({
   // ...
 });
 
-export const withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'my-service');
+helper.withDb = (mock, skipping) => {
+  withDb(mock, skipping, helper, 'my-service');
 };
 ```
 
@@ -367,6 +368,7 @@ It is typically set up in `test/helper.js` like this:
 
 ```js
 import testing from 'taskcluster-lib-testing';
+const helper = { load };
 export const withPulse = (mock, skipping) => {
   testing.withPulse({helper, skipping, namespace: 'taskcluster-someservice'});
 };

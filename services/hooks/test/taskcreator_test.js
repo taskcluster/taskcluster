@@ -12,7 +12,7 @@ import { hookUtils } from '../src/utils.js';
 
 suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
-    const dbHelper = helper.withDb(mock, skipping);
+    helper.withDb(mock, skipping);
     helper.resetTables(mock, skipping);
 
     this.slow(500);
@@ -77,15 +77,15 @@ suite(testing.suiteName(), function() {
       hook.task.then.scopes = scopes;
 
       return hookUtils.fromDbRows(
-        await dbHelper.db.fns.create_hook(
+        await helper.db.fns.create_hook(
           hook.hookGroupId,
           hook.hookId,
           hook.metadata,
           hook.task,
           JSON.stringify(hook.bindings),
           JSON.stringify(hook.schedule),
-          dbHelper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-          dbHelper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
+          helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
+          helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
           hook.nextScheduledDate,
           hook.triggerSchema,
         ),
@@ -167,15 +167,15 @@ suite(testing.suiteName(), function() {
     test('firing a hook where the json-e renders to nothing does nothing', async function() {
       const hook = _.cloneDeep(defaultHook);
       hook.task = { $if: 'false', then: hook.task };
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         hook.hookGroupId,
         hook.hookId,
         hook.metadata,
         hook.task,
         JSON.stringify(hook.bindings),
         JSON.stringify(hook.schedule),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
         hook.triggerSchema,
       );
@@ -188,15 +188,15 @@ suite(testing.suiteName(), function() {
     test('firing a hook where the json-e fails to render fails', async function() {
       const hook = _.cloneDeep(defaultHook);
       hook.task = { $if: 'uhoh, this is invalid' };
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         hook.hookGroupId,
         hook.hookId,
         hook.metadata,
         hook.task,
         JSON.stringify(hook.bindings),
         JSON.stringify(hook.schedule),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
         hook.triggerSchema,
       );
@@ -209,7 +209,7 @@ suite(testing.suiteName(), function() {
           throw err;
         }
 
-        const [lf] = await dbHelper.db.fns.get_last_fire(
+        const [lf] = await helper.db.fns.get_last_fire(
           hook.hookGroupId,
           hook.hookId,
           taskId,
@@ -230,15 +230,15 @@ suite(testing.suiteName(), function() {
       hook.task.then.created = { $fromNow: '0 seconds' };
       hook.task.then.deadline = { $fromNow: '1 minute' };
       hook.task.then.expires = { $fromNow: '2 minutes' };
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         hook.hookGroupId,
         hook.hookId,
         hook.metadata,
         hook.task,
         JSON.stringify(hook.bindings),
         JSON.stringify(hook.schedule),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
         hook.triggerSchema,
       );
@@ -253,15 +253,15 @@ suite(testing.suiteName(), function() {
     test('firing a real task that sets its own taskGroupId works', async function() {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.taskGroupId = taskcluster.slugid();
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         hook.hookGroupId,
         hook.hookId,
         hook.metadata,
         hook.task,
         JSON.stringify(hook.bindings),
         JSON.stringify(hook.schedule),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
-        dbHelper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
         hook.triggerSchema,
       );
@@ -273,15 +273,15 @@ suite(testing.suiteName(), function() {
     });
 
     test('firing a task with options.created always generates the same task', async function() {
-      await dbHelper.db.fns.create_hook(
+      await helper.db.fns.create_hook(
         defaultHook.hookGroupId,
         defaultHook.hookId,
         defaultHook.metadata,
         defaultHook.task,
         JSON.stringify(defaultHook.bindings),
         JSON.stringify(defaultHook.schedule),
-        dbHelper.db.encrypt({ value: Buffer.from(defaultHook.triggerToken, 'utf8') }),
-        dbHelper.db.encrypt({ value: Buffer.from(defaultHook.nextTaskId, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(defaultHook.triggerToken, 'utf8') }),
+        helper.db.encrypt({ value: Buffer.from(defaultHook.nextTaskId, 'utf8') }),
         defaultHook.nextScheduledDate,
         defaultHook.triggerSchema,
       );
@@ -341,7 +341,7 @@ suite(testing.suiteName(), function() {
       },
       );
 
-      const [res] = await dbHelper.db.fns.get_last_fire(
+      const [res] = await helper.db.fns.get_last_fire(
         hook.hookGroupId,
         hook.hookId,
         hook.nextTaskId,
@@ -378,13 +378,13 @@ suite(testing.suiteName(), function() {
         },
         )]).catch(() => {});
 
-      const [res] = await dbHelper.db.fns.get_last_fire(
+      const [res] = await helper.db.fns.get_last_fire(
         hook.hookGroupId,
         hook.hookId,
         hook.nextTaskId,
       );
 
-      const [res2] = await dbHelper.db.fns.get_last_fire(
+      const [res2] = await helper.db.fns.get_last_fire(
         hook2.hookGroupId,
         hook2.hookId,
         hook2.nextTaskId,

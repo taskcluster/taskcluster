@@ -21,14 +21,6 @@ const helper = {
   dbUrl: undefined,
   monitor,
 };
-const helperProxy = new Proxy(helper, {
-  get(target, propKey) {
-    if (propKey in target) {
-      return target[propKey];
-    }
-    throw new Error(`helper.${propKey} is not defined`);
-  },
-});
 
 if (testDbUrl) {
   helper.dbSuite = (...args) => {
@@ -64,4 +56,4 @@ const clearDb = async dbUrl => {
   }
 };
 
-export default helperProxy;
+export default helper;

@@ -14,16 +14,8 @@ assert(dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/developme
 
 // helper will be dynamically populated by withDbForVersion and withDbForProcs methods
 const helper = { dbUrl, resetDb };
-const helperProxy = new Proxy(helper, {
-  get(target, propKey) {
-    if (propKey in target) {
-      return target[propKey];
-    }
-    throw new Error(`helper.${propKey} is not defined`);
-  },
-});
-// by exporting a proxy we can keep tests using same helper and import
-export default helperProxy;
+
+export default helper;
 
 /**
  * Set up to test a DB version.
@@ -211,7 +203,7 @@ helper.withDbForProcs = function({ serviceName }) {
  * in versions)
  */
 helper.assertTable = async name => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     const res = await client.query(`select * from ${name}`);
     assert.deepEqual(res.rows, []);
   });
@@ -221,7 +213,7 @@ helper.assertTable = async name => {
  * Assert that the given column exists.
  */
 helper.assertTableColumn = async (table, column) => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     await client.query(`select ${column} from ${table}`);
   });
 };
@@ -231,7 +223,7 @@ helper.assertTableColumn = async (table, column) => {
  * downgrade scripts).
  */
 helper.assertNoTable = async name => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
   });
 };
@@ -240,7 +232,7 @@ helper.assertNoTable = async name => {
  * Assert that the given column does not exist.
  */
 helper.assertNoTableColumn = async (table, column) => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     await assert.rejects(
       () => client.query(`select ${column} from ${table}`),
       err => err.code === UNDEFINED_COLUMN);
@@ -271,7 +263,7 @@ const queryIndexInfo = async (client, table, index, column) =>
  * Assert that the table contains given index on specific column
  */
 helper.assertIndexOnColumn = async (table, index, column) => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, [{ table, index, column }]);
   });
@@ -281,7 +273,7 @@ helper.assertIndexOnColumn = async (table, index, column) => {
  * Assert that the table doesn't contain given index on a column
  */
 helper.assertNoIndexOnColumn = async (table, index, column) => {
-  await helperProxy.withDbClient(async client => {
+  await helper.withDbClient(async client => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, []);
   });
@@ -365,9 +357,9 @@ helper.dbVersionTest = ({
     await check('start');
     try {
       if (updown === 'up') {
-        await helperProxy.upgradeTo(THIS_VERSION);
+        await helper.upgradeTo(THIS_VERSION);
       } else {
-        await helperProxy.downgradeTo(PREV_VERSION);
+        await helper.downgradeTo(PREV_VERSION);
       }
     } catch (err) {
       if (err.code === 'ABORT!') {
@@ -396,8 +388,8 @@ helper.dbVersionTest = ({
       sawMigrationBatches = false;
       sawDowngradeBatches = false;
       await resetDb({ testDbUrl: dbUrl });
-      await helperProxy.upgradeTo(PREV_VERSION);
-      await helperProxy.withDbClient(createData);
+      await helper.upgradeTo(PREV_VERSION);
+      await helper.withDbClient(createData);
     });
 
     teardown(async function() {
@@ -405,7 +397,7 @@ helper.dbVersionTest = ({
     });
 
     test('successful upgrade, downgrade process', async function() {
-      await helperProxy.withDbClient(async client => {
+      await helper.withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -431,7 +423,7 @@ helper.dbVersionTest = ({
     }
 
     test('upgrade fails mid-online, restarted, downgrade fails mid-online, restarted', async function() {
-      await helperProxy.withDbClient(async client => {
+      await helper.withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
@@ -458,7 +450,7 @@ helper.dbVersionTest = ({
     });
 
     test('restart upgrades and downgrades repeatedly', async function() {
-      await helperProxy.withDbClient(async client => {
+      await helper.withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
@@ -484,7 +476,7 @@ helper.dbVersionTest = ({
     });
 
     test('upgrade fails mid-online, downgrade', async function() {
-      await helperProxy.withDbClient(async client => {
+      await helper.withDbClient(async client => {
         await withCheckpoints('up', {
           midOnline: async () => { throw abort; },
         });

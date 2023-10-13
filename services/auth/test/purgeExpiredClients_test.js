@@ -1,4 +1,4 @@
-import * as helper from './helper.js';
+import helper from './helper.js';
 import assume from 'assume';
 import taskcluster from 'taskcluster-client';
 import testing from 'taskcluster-lib-testing';
@@ -7,17 +7,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
-  const servers = helper.withServers(mock, skipping);
+  helper.withServers(mock, skipping);
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 
   setup(async () => {
-    await servers.apiClient.deleteClient(CLIENT_ID);
+    await helper.apiClient.deleteClient(CLIENT_ID);
     await helper.load.remove('purge-expired-clients');
   });
 
   const testClient = async ({ expires, deleteOnExpiration }) => {
-    await servers.apiClient.createClient(CLIENT_ID, {
+    await helper.apiClient.createClient(CLIENT_ID, {
       expires: taskcluster.fromNow(expires),
       description: 'test',
       deleteOnExpiration,
@@ -25,13 +25,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   };
 
   const assertClientPresent = async () => {
-    let client = await servers.apiClient.client(CLIENT_ID);
+    let client = await helper.apiClient.client(CLIENT_ID);
     assume(client.clientId).to.equal(CLIENT_ID);
   };
 
   const assertClientAbsent = async () => {
     try {
-      await servers.apiClient.client(CLIENT_ID);
+      await helper.apiClient.client(CLIENT_ID);
     } catch (err) {
       assume(err.statusCode).to.equal(404);
       return;

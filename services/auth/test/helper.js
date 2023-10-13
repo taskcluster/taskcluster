@@ -34,10 +34,13 @@ export const rootUrl = `http://localhost:60552`;
 export const containerName = `auth-test-${v4()}`;
 export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
+const helper = { load, rootUrl, containerName, rootAccessToken };
+export default helper;
+
 withMonitor({ load });
 
 // set up the testing secrets
-export const secrets = new Secrets({
+helper.secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-auth',
     'project/taskcluster/testing/azure',
@@ -59,11 +62,9 @@ export const secrets = new Secrets({
   load,
 });
 
-export const loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
+helper.loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
 
-export const withCfg = (mock, skipping) => {
-  const cfgFakes = { load };
-
+helper.withCfg = (mock, skipping) => {
   if (skipping()) {
     return;
   }
@@ -72,16 +73,16 @@ export const withCfg = (mock, skipping) => {
       return;
     }
 
-    cfgFakes.cfg = await load('cfg');
+    helper.cfg = await load('cfg');
 
     load.save();
 
-    const staticScopes = await loadJson('../src/static-scopes.json');
+    const staticScopes = await helper.loadJson('../src/static-scopes.json');
 
     // override app.staticClients based on the static scopes
     load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
       clientId,
-      accessToken: clientId === 'static/taskcluster/root' ? rootAccessToken : 'must-be-at-least-22-characters',
+      accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
       description: 'testing',
     })));
 
@@ -89,7 +90,7 @@ export const withCfg = (mock, skipping) => {
     if (mock) {
       load.cfg('azureAccounts', undefined);
     } else {
-      const sec = secrets.get('azure');
+      const sec = helper.secrets.get('azure');
       load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
     }
   });
@@ -101,20 +102,16 @@ export const withCfg = (mock, skipping) => {
 
     load.restore();
   });
-
-  return cfgFakes;
 };
 
-export const withDb = (mock, skipping) => {
-  const dbFakes = { load };
-  libTesting.withDb(mock, skipping, dbFakes, 'auth');
-  return dbFakes;
+helper.withDb = (mock, skipping) => {
+  libTesting.withDb(mock, skipping, helper, 'auth');
 };
 
 /**
  * Setup a fake sentry
  */
-export const withSentry = (mock, skipping) => {
+helper.withSentry = (mock, skipping) => {
   const sentryOrgs = {};
   suiteSetup(async function() {
     if (skipping()) {
@@ -165,10 +162,8 @@ export const withSentry = (mock, skipping) => {
   });
 };
 
-export const withPulse = (mock, skipping) => {
-  const pulseFakes = { load };
-  libTesting.withPulse({ helper: pulseFakes, skipping, namespace: 'taskcluster-auth' });
-  return pulseFakes;
+helper.withPulse = (mock, skipping) => {
+  libTesting.withPulse({ helper, skipping, namespace: 'taskcluster-auth' });
 };
 
 const testServiceBuilder = new APIBuilder({
@@ -201,9 +196,7 @@ testServiceBuilder.declare({
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-export const withServers = (mock, skipping) => {
-  const serversFakes = { load };
-
+helper.withServers = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -216,10 +209,10 @@ export const withServers = (mock, skipping) => {
     load.cfg('taskcluster.rootUrl', rootUrl);
 
     // First set up the auth service
-    serversFakes.AuthClient = taskcluster.createClient(builder.reference());
+    helper.AuthClient = taskcluster.createClient(builder.reference());
 
-    serversFakes.setupScopes = (...scopes) => {
-      serversFakes.apiClient = new serversFakes.AuthClient({
+    helper.setupScopes = (...scopes) => {
+      helper.apiClient = new helper.AuthClient({
         credentials: {
           clientId: 'static/taskcluster/root',
           accessToken: rootAccessToken,
@@ -230,12 +223,12 @@ export const withServers = (mock, skipping) => {
       });
     };
 
-    serversFakes.setupScopes();
+    helper.setupScopes();
 
     // Now set up the test service
-    serversFakes.TestClient = taskcluster.createClient(testServiceBuilder.reference());
+    helper.TestClient = taskcluster.createClient(testServiceBuilder.reference());
 
-    serversFakes.testClient = new serversFakes.TestClient({
+    helper.testClient = new helper.TestClient({
       credentials: {
         clientId: 'static/taskcluster/root',
         accessToken: rootAccessToken,
@@ -262,7 +255,7 @@ export const withServers = (mock, skipping) => {
   });
 
   setup(() => {
-    serversFakes.setupScopes();
+    helper.setupScopes();
   });
 
   suiteTeardown(async function() {
@@ -275,16 +268,13 @@ export const withServers = (mock, skipping) => {
       webServer = null;
     }
   });
-
-  return serversFakes;
 };
 
 /**
  * Set up the `google` component with a fake if mocking, otherwise
  * using real credentials.
  */
-export const withGcp = (mock, skipping) => {
-  const gcpFakes = { load };
+helper.withGcp = (mock, skipping) => {
   let policy = {};
 
   const fakeGoogleApis = {
@@ -371,7 +361,7 @@ export const withGcp = (mock, skipping) => {
         allowedServiceAccounts,
       });
 
-      gcpFakes.gcpAccount = {
+      helper.gcpAccount = {
         email: 'test_client@example.com',
         project_id: credentials.project_id,
       };
@@ -382,17 +372,15 @@ export const withGcp = (mock, skipping) => {
       // [<service account email>, invalid@mozilla.com].
       const { credentials, allowedServiceAccounts } = await load('gcp');
 
-      gcpFakes.gcpAccount = {
+      helper.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
     }
   });
-
-  return gcpFakes;
 };
 
-export const resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await libTesting.resetTables({ tableNames: [
       'roles',

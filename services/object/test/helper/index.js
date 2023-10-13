@@ -18,15 +18,24 @@ import { testPutUrlUpload } from './put-url-upload.js';
 
 export const load = testing.stickyLoader(loadMain);
 
+const helper = {
+  load,
+  testBackend,
+  testSimpleDownloadMethod,
+  testGetUrlDownloadMethod,
+  testDataInlineUpload,
+  testPutUrlUpload,
+};
+
 suiteSetup(async function() {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
 
-testing.withMonitor({ load });
+testing.withMonitor(helper);
 
 // set up the testing secrets
-export const secrets = new testing.Secrets({
+helper.secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-object',
   ],
@@ -37,7 +46,8 @@ export const secrets = new testing.Secrets({
   load,
 });
 
-export const rootUrl = 'http://localhost:60401';
+const rootUrl = 'http://localhost:60401';
+helper.rootUrl = rootUrl;
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
@@ -51,8 +61,7 @@ const testclients = {
  *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
  *    or if no args then reset it to the default.
  */
-export const withBackends = (mock, skipping) => {
-  const helper = {};
+helper.withBackends = (mock, skipping) => {
   let _backends;
   const defaultBackends = {
     testBackend: { backendType: 'test' },
@@ -106,10 +115,9 @@ export const withBackends = (mock, skipping) => {
     delete helper.setBackendConfig;
     _backends = null;
   });
-  return helper;
 };
 
-export const withMiddleware = (mock, skipping, config) => {
+helper.withMiddleware = (mock, skipping, config) => {
   suiteSetup('withMiddleware', async function() {
     if (skipping()) {
       return;
@@ -129,8 +137,7 @@ export const withMiddleware = (mock, skipping, config) => {
   });
 };
 
-export const withServer = (mock, skipping) => {
-  const helper = { load };
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
@@ -175,17 +182,13 @@ export const withServer = (mock, skipping) => {
     }
     testing.fakeauth.stop();
   });
-
-  return helper;
 };
 
-export const withDb = (mock, skipping) => {
-  const helper = { load };
+helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'object');
-  return helper;
 };
 
-export const resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({
       tableNames: ['objects', 'object_hashes'],
@@ -195,7 +198,7 @@ export const resetTables = (mock, skipping) => {
 
 let validator;
 
-export const assertSatisfiesSchema = async (data, id) => {
+helper.assertSatisfiesSchema = async (data, id) => {
   if (!validator) {
     const schemaset = await load('schemaset');
     validator = await schemaset.validator('https://tc-testing.example.com');
@@ -218,21 +221,6 @@ export const testObjectName = prefix =>
   // https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
   `${prefix}${objectCounter++}/test/&/$/@/=/;/:/+/,/?/\\/{}/^/%/[]/<>/#/~/|/\`/`;
 
-export default {
-  load,
-  rootUrl,
-  testObjectName,
-  assertSatisfiesSchema,
-  withBackends,
-  withMiddleware,
-  withServer,
-  withDb,
-  resetTables,
-  secrets,
+helper.testObjectName = testObjectName;
 
-  testBackend,
-  testSimpleDownloadMethod,
-  testGetUrlDownloadMethod,
-  testDataInlineUpload,
-  testPutUrlUpload,
-};
+export default helper;

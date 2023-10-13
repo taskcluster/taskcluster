@@ -20,9 +20,9 @@ import invalidYamlJson from './data/yml/invalid-yaml.json' assert { type: 'json'
  * interact with.
  */
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
-  const dbHelper = helper.withDb(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
-    await dbHelper.db.fns.create_github_build_pr(
+    await helper.db.fns.create_github_build_pr(
       'TaskclusterRobot',
       'hooks-testing',
       COMMIT_SHA,
@@ -57,7 +57,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   async function addCheckRun({ taskGroupId, taskId, checkSuiteId = '11111', checkRunId = '22222' }) {
     debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
-    await dbHelper.db.fns.create_github_check(
+    await helper.db.fns.create_github_check(
       taskGroupId,
       taskId,
       checkSuiteId,
@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
     };
 
-    await pulseHelper.fakePulseMessage(message);
+    await helper.fakePulseMessage(message);
     await handlerComplete;
   }
 
@@ -356,9 +356,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
       assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
-      const [buildA] = await dbHelper.db.fns.get_github_build_pr('aa');
+      const [buildA] = await helper.db.fns.get_github_build_pr('aa');
       assert.equal(buildA.state, 'cancelled');
-      const [buildC] = await dbHelper.db.fns.get_github_build_pr('cc');
+      const [buildC] = await helper.db.fns.get_github_build_pr('cc');
       assert.equal(buildC.state, 'cancelled');
     });
 
@@ -545,7 +545,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         message.payload.details['event.pullNumber'] = pullNumber;
       }
 
-      await pulseHelper.fakePulseMessage(message);
+      await helper.fakePulseMessage(message);
       await handlerComplete;
     }
 
@@ -590,7 +590,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -621,7 +621,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -671,7 +671,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'));
 
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -702,7 +702,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request-untrusted'));
 
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -721,7 +721,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -745,7 +745,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -825,7 +825,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
         let args = handlers.createTasks.firstCall.args[0];
         let taskGroupId = args.tasks[0].task.taskGroupId;
-        let [build] = await dbHelper.db.fns.get_github_build_pr(taskGroupId);
+        let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.equal(build.organization, 'TaskclusterRobot');
         assert.equal(build.repository, 'hooks-testing');
         assert.equal(build.sha, 'development');
@@ -1090,7 +1090,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     async function assertStatusUpdate(state) {
@@ -1106,7 +1106,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     }
 
     async function assertBuildState(state) {
-      let [build] = await dbHelper.db.fns.get_github_build_pr(TASKGROUPID);
+      let [build] = await helper.db.fns.get_github_build_pr(TASKGROUPID);
       assert.equal(build.state, state);
     }
 
@@ -1219,7 +1219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
       sinon.restore();
     });
 
@@ -1557,7 +1557,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
       sinon.restore();
     });
 
@@ -1650,7 +1650,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1691,7 +1691,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1745,7 +1745,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(TASKGROUPID);
+      await helper.db.fns.delete_github_build(TASKGROUPID);
     });
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
@@ -1805,7 +1805,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     teardown(async function () {
-      await dbHelper.db.fns.delete_github_build(taskGroupId);
+      await helper.db.fns.delete_github_build(taskGroupId);
       reruns = [];
       usedScopes = [];
     });
@@ -1839,7 +1839,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
-      await pulseHelper.fakePulseMessage(message);
+      await helper.fakePulseMessage(message);
       await handlerComplete;
 
       assert.equal(reruns.length, 1);
@@ -1884,7 +1884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         handlers.handlerComplete = resolve;
         handlers.handlerRejected = reject;
       });
-      await pulseHelper.fakePulseMessage(message);
+      await helper.fakePulseMessage(message);
       try {
         await handlerComplete;
       } catch (e) {

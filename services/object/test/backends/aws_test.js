@@ -16,8 +16,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     return;
   }
 
-  const dbHelper = helper.withDb(mock, skipping);
-  const backendHelper = helper.withBackends(mock, skipping);
+  helper.withDb(mock, skipping);
+  helper.withBackends(mock, skipping);
 
   let secret, s3;
 
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
     // signatures if they are present, even if the signature is not required.
-    await backendHelper.setBackendConfig({
+    await helper.setBackendConfig({
       backends: {
         awsPrivate: {
           backendType: 'aws',
@@ -71,8 +71,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
-    await dbHelper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
-    const [object] = await dbHelper.db.fns.get_object_with_upload(name);
+    await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
+    const [object] = await helper.db.fns.get_object_with_upload(name);
 
     if (gzipped) {
       const compressedData = await gzip(data);
@@ -91,10 +91,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }
 
     if (hashes) {
-      await dbHelper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
+      await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
     }
 
-    await dbHelper.db.fns.object_upload_complete(name, uploadId);
+    await helper.db.fns.object_upload_complete(name, uploadId);
 
     return object;
   };
@@ -145,7 +145,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     test('invalid tags are rejected', async function() {
       const backend = new AwsBackend({
         backendId: 'broken',
-        db: dbHelper.db,
+        db: helper.db,
         monitor: {},
         rootUrl: 'https://example.com',
         config: {
@@ -253,11 +253,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     test('succeeds for an object that no longer exists', async function() {
       const name = 'some/object';
       const uploadId = taskcluster.slugid();
-      await dbHelper.db.fns.create_object_for_upload(
+      await helper.db.fns.create_object_for_upload(
         name, 'test-proj', 'aws', uploadId,
         taskcluster.fromNow('1 hour'), {}, taskcluster.fromNow('1 hour'));
-      await dbHelper.db.fns.object_upload_complete(name, uploadId);
-      const [object] = await dbHelper.db.fns.get_object_with_upload(name);
+      await helper.db.fns.object_upload_complete(name, uploadId);
+      const [object] = await helper.db.fns.get_object_with_upload(name);
 
       const backends = await helper.load('backends');
       const backend = backends.get('awsPrivate');

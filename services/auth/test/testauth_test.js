@@ -1,5 +1,5 @@
 import assert from 'assert';
-import * as helper from './helper.js';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 
 const credentials = {
@@ -17,12 +17,12 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    const servers = helper.withServers(mock, skipping);
+    helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     let testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
-        let auth = new servers.AuthClient(config);
+        let auth = new helper.AuthClient(config);
         await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);
@@ -104,12 +104,12 @@ suite(testing.suiteName(), function() {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
-    const servers = helper.withServers(mock, skipping);
+    helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
     let testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
-        let auth = new servers.AuthClient(config);
+        let auth = new helper.AuthClient(config);
         await auth.testAuthenticateGet().then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);

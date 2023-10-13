@@ -10,6 +10,7 @@ import loadMain from '../src/main.js';
 const load = testing.stickyLoader(loadMain);
 
 const helper = { load };
+export default helper;
 
 helper.rootUrl = 'http://localhost:60401';
 
@@ -25,9 +26,7 @@ helper.secrets = new testing.Secrets({
 });
 
 helper.withDb = (mock, skipping) => {
-  const dbHelper = { load };
-  testing.withDb(mock, skipping, dbHelper, 'hooks');
-  return dbHelper;
+  testing.withDb(mock, skipping, helper, 'hooks');
 };
 
 /**
@@ -56,9 +55,7 @@ helper.withTaskCreator = function(mock, skipping) {
 };
 
 helper.withPulse = (mock, skipping) => {
-  const pulseHelper = { load };
-  testing.withPulse({ helper: pulseHelper, skipping, namespace: 'taskcluster-hooks' });
-  return pulseHelper;
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-hooks' });
 };
 
 /**
@@ -127,5 +124,3 @@ helper.resetTables = (mock, skipping) => {
     ] });
   });
 };
-
-export default helper;

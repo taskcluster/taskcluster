@@ -6,11 +6,11 @@ import testing from 'taskcluster-lib-testing';
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withDenier(mock, skipping);
-  const queueHelper = helper.withFakeQueue(mock, skipping);
-  const matrixHelper = helper.withFakeMatrix(mock, skipping);
-  const slackHelper = helper.withFakeSlack(mock, skipping);
-  const sesHelper = helper.withSES(mock, skipping);
-  const pulseHelper = helper.withPulse(mock, skipping);
+  helper.withFakeQueue(mock, skipping);
+  helper.withFakeMatrix(mock, skipping);
+  helper.withFakeSlack(mock, skipping);
+  helper.withSES(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
   const created = new Date();
@@ -81,12 +81,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
     test(`does not publish for ${reasonResolved}`, async () => {
       const route = 'test-notify.pulse.notify-test.on-transition';
-      queueHelper.queue.addTask(baseStatus.taskId, makeTask([route]));
+      helper.queue.addTask(baseStatus.taskId, makeTask([route]));
       const status = _.cloneDeep(baseStatus);
       status.state = 'exception';
       status.runs[0].state = 'exception';
       status.runs[0].reasonResolved = reasonResolved;
-      await pulseHelper.fakePulseMessage({
+      await helper.fakePulseMessage({
         payload: { status },
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
         routingKey: 'doesnt-matter',
@@ -96,14 +96,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       // wait long enough for the promises to resolve..
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      pulseHelper.assertNoPulseMessage('notification');
+      helper.assertNoPulseMessage('notification');
     });
   });
 
   test('pulse', async () => {
     const route = 'test-notify.pulse.notify-test.on-transition';
-    queueHelper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -111,13 +111,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    pulseHelper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
+    helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
   test('pulse denylisted', async () => {
     const route = 'test-notify.pulse.notify-test-denied.on-transition';
-    queueHelper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -125,13 +125,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    pulseHelper.assertNoPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
+    helper.assertNoPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
   test('email', async () => {
     const route = 'test-notify.email.success@simulator.amazonses.com.on-transition';
-    queueHelper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -139,7 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    await sesHelper.checkEmails(email => {
+    await helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
   });
@@ -148,8 +148,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
-    queueHelper.queue.addTask(baseStatus.taskId, task);
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -157,12 +157,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    assert.equal(matrixHelper.matrixClient.sendEvent.callCount, 1);
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
     assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
@@ -171,8 +171,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' } };
-    queueHelper.queue.addTask(baseStatus.taskId, task);
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -180,12 +180,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    assert.equal(matrixHelper.matrixClient.sendEvent.callCount, 1);
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.notice');
     assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
@@ -193,8 +193,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix (rejected)', async () => {
     const route = 'test-notify.matrix-room.!rejected:mozilla.org.on-transition';
     const task = makeTask([route]);
-    queueHelper.queue.addTask(baseStatus.taskId, task);
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -202,8 +202,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    assert.equal(matrixHelper.matrixClient.sendEvent.callCount, 1);
-    assert.equal(matrixHelper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
+    assert.equal(helper.matrixClient.sendEvent.callCount, 1);
+    assert.equal(helper.matrixClient.sendEvent.args[0][0], '!rejected:mozilla.org');
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden'));
   });
 
@@ -211,8 +211,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const route = 'test-notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
     task.extra = { notify: { slackText: 'hey hey ${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
-    queueHelper.queue.addTask(baseStatus.taskId, task);
-    await pulseHelper.fakePulseMessage({
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
       payload: {
         status: baseStatus,
       },
@@ -220,8 +220,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    assert.equal(slackHelper.slackClient.chat.postMessage.callCount, 1);
-    assert.deepStrictEqual(slackHelper.slackClient.chat.postMessage.args[0][0], {
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
       channel: 'C123456',
       text: `hey hey ${baseStatus.taskId}`,
       blocks: [{}],

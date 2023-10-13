@@ -9,6 +9,7 @@ import testing from 'taskcluster-lib-testing';
 export const load = testing.stickyLoader(loadMain);
 
 const helper = { load };
+export default helper;
 
 suiteSetup(async function() {
   load.inject('profile', 'test');
@@ -28,16 +29,12 @@ helper.secrets = secrets;
 helper.rootUrl = 'http://localhost:60020';
 
 export const withDb = (mock, skipping) => {
-  const dbHelper = { load };
-  testing.withDb(mock, skipping, dbHelper, 'index');
-  return dbHelper;
+  testing.withDb(mock, skipping, helper, 'index');
 };
 helper.withDb = withDb;
 
 export const withPulse = (mock, skipping) => {
-  const pulseHelper = { load };
-  testing.withPulse({ helper: pulseHelper, skipping, namespace: 'taskcluster-index' });
-  return pulseHelper;
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-index' });
 };
 helper.withPulse = withPulse;
 
@@ -166,5 +163,3 @@ export const resetTables = (mock, skipping) => {
   });
 };
 helper.resetTables = resetTables;
-
-export default helper;

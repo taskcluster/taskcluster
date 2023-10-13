@@ -1,4 +1,4 @@
-import * as helper from './helper.js';
+import helper from './helper.js';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import mocha from 'mocha';
@@ -8,7 +8,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
-  const servers = helper.withServers(mock, skipping);
+  helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
 
   /**
@@ -39,22 +39,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
       // Ensure all roles and clients from the test are deleted
       for (let c of t.clients) {
-        await servers.apiClient.deleteClient(c.clientId);
+        await helper.apiClient.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
-        await servers.apiClient.deleteRole(r.roleId);
+        await helper.apiClient.deleteRole(r.roleId);
       }
 
       // Create all roles and clients
       for (let c of t.clients) {
-        await servers.apiClient.createClient(c.clientId, {
+        await helper.apiClient.createClient(c.clientId, {
           description: 'client for test case: ' + title,
           expires: taskcluster.fromNowJSON('2 hours'),
           scopes: c.scopes,
         });
       }
       for (let r of t.roles) {
-        await servers.apiClient.createRole(r.roleId, {
+        await helper.apiClient.createRole(r.roleId, {
           description: 'role for test case: ' + title,
           scopes: r.scopes,
         });
@@ -63,7 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       // Run tests for all clients
       let err = '';
       await Promise.all(t.clients.map(async (c) => {
-        let client = await servers.apiClient.client(c.clientId);
+        let client = await helper.apiClient.client(c.clientId);
         let missing = _.difference(c.includes, client.expandedScopes);
         let forbidden = _.intersection(c.exludes, client.expandedScopes);
         if (missing.length !== 0 || forbidden.length !== 0) {
@@ -83,10 +83,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
       // delete all roles and clients from the tests
       for (let c of t.clients) {
-        await servers.apiClient.deleteClient(c.clientId);
+        await helper.apiClient.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
-        await servers.apiClient.deleteRole(r.roleId);
+        await helper.apiClient.deleteRole(r.roleId);
       }
 
       if (err !== '') {

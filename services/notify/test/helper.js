@@ -15,19 +15,22 @@ const testclients = {
   'test-server': ['*'],
 };
 
-export const suiteName = path.basename;
-export const rootUrl = 'http://localhost:60401';
-export const load = testing.stickyLoader(mainLoad);
+const suiteName = path.basename;
+const rootUrl = 'http://localhost:60401';
+const load = testing.stickyLoader(mainLoad);
+
+const helper = { load, rootUrl, suiteName };
+export default helper;
 
 suiteSetup(async function() {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
 
-testing.withMonitor({ load });
+testing.withMonitor(helper);
 
 // set up the testing secrets
-export const secrets = new testing.Secrets({
+helper.secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-notify',
   ],
@@ -43,7 +46,7 @@ export const secrets = new testing.Secrets({
 /**
  * Define a fake denier that will deny anything with 'denied' in the address
  */
-export const withDenier = (mock, skipping) => {
+helper.withDenier = (mock, skipping) => {
   suiteSetup('withDenier', async function() {
     if (skipping()) {
       return;
@@ -79,10 +82,9 @@ class MockSES {
   }
 }
 
-export const withSES = (mock, skipping) => {
+helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
-  const helper = {};
 
   suiteSetup('withSES', async function() {
     if (skipping()) {
@@ -90,6 +92,7 @@ export const withSES = (mock, skipping) => {
     }
 
     const cfg = await load('cfg');
+    console.log(cfg);
 
     if (mock) {
       ses = new MockSES();
@@ -194,8 +197,6 @@ export const withSES = (mock, skipping) => {
       ses.reset();
     }
   });
-
-  return helper;
 };
 
 /**
@@ -233,8 +234,7 @@ const stubbedQueue = () => {
  *
  * The component is available at `helper.queue`.
  */
-export const withFakeQueue = (mock, skipping) => {
-  const helper = {};
+helper.withFakeQueue = (mock, skipping) => {
   suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
@@ -243,7 +243,6 @@ export const withFakeQueue = (mock, skipping) => {
     helper.queue = stubbedQueue();
     load.inject('queue', helper.queue);
   });
-  return helper;
 };
 
 const fakeMatrixSend = () => sinon.fake(roomId => {
@@ -254,8 +253,7 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
   }
 });
 
-export const withFakeMatrix = (mock, skipping) => {
-  const helper = {};
+helper.withFakeMatrix = (mock, skipping) => {
   suiteSetup('withFakeMatrix', function() {
     if (skipping()) {
       return;
@@ -271,11 +269,9 @@ export const withFakeMatrix = (mock, skipping) => {
   setup(function() {
     helper.matrixClient.sendEvent = fakeMatrixSend();
   });
-  return helper;
 };
 
-export const withFakeSlack = (mock, skipping) => {
-  const helper = {};
+helper.withFakeSlack = (mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async function() {
@@ -295,20 +291,16 @@ export const withFakeSlack = (mock, skipping) => {
   setup(function() {
     helper.slackClient.chat.postMessage = fakeSlackSend();
   });
-  return helper;
 };
 
-export const withPulse = (mock, skipping) => {
-  const helper = { load };
+helper.withPulse = (mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-notify' });
-  return helper;
 };
 
 /**
  * Set up an API server.
  */
-export const withServer = (mock, skipping) => {
-  const helper = {};
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
@@ -351,35 +343,16 @@ export const withServer = (mock, skipping) => {
     }
     testing.fakeauth.stop();
   });
-  return helper;
 };
 
-export const withDb = (mock, skipping) => {
-  const helper = { load };
+helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'notify');
-  return helper;
 };
 
-export const resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'denylisted_notifications',
     ] });
   });
-};
-
-export default {
-  rootUrl,
-  suiteName,
-  load,
-  secrets,
-  withDb,
-  resetTables,
-  withServer,
-  withPulse,
-  withFakeMatrix,
-  withFakeQueue,
-  withFakeSlack,
-  withSES,
-  withDenier,
 };

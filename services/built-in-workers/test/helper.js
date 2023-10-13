@@ -3,7 +3,9 @@ import taskcluster from 'taskcluster-client';
 import { default as _load } from '../src/main.js';
 import { stickyLoader } from 'taskcluster-lib-testing';
 
-export const load = stickyLoader(_load);
+const load = stickyLoader(_load);
+const helper = { load };
+export default helper;
 
 suiteSetup(async function() {
   load.inject('profile', 'test');
@@ -17,15 +19,13 @@ suiteSetup(async function() {
  *
  * The component is available at `helper.queue`.
  */
-export const rootUrl = 'http://localhost:8080';
+helper.rootUrl = 'http://localhost:8080';
 
-export const withFakeQueue = () => {
-  const fakeQueue = {};
+helper.withFakeQueue = () => {
   suiteSetup(function() {
-    const queue = stubbedQueue(fakeQueue);
+    const queue = stubbedQueue(helper);
     load.inject('queue', queue);
   });
-  return fakeQueue;
 };
 
 /**
@@ -46,7 +46,7 @@ const stubbedQueue = (fakeQueue) => {
   };
 
   const queue = new taskcluster.Queue({
-    rootUrl: rootUrl,
+    rootUrl: helper.rootUrl,
     credentials: {
       clientId: 'built-in-workers',
       accessToken: 'none',

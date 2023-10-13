@@ -10,7 +10,7 @@ import testing from 'taskcluster-lib-testing';
  * in webhook_test.js
  */
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  const dbHelper = helper.withDb(mock, skipping);
+  helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return;
     }
 
-    await dbHelper.db.fns.create_github_build_pr(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'def456',
       '7650871208002a13ba35cf232c0e30d2c3d64783',
@@ -34,7 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       '26370a80-ed65-11e6-8f4c-80082678482d',
       null,
     );
-    await dbHelper.db.fns.create_github_build_pr(
+    await helper.db.fns.create_github_build_pr(
       'ghi789',
       'jkl101112',
       '8650871208002a13ba35cf232c0e30d2c3d64783',
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       '26370a80-ed65-11e6-8f4c-80082678482d',
       1,
     );
-    await dbHelper.db.fns.create_github_build_pr(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'xyz',
       'x650871208002a13ba35cf232c0e30d2c3d64783',
@@ -60,7 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       '26370a80-ed65-11e6-8f4c-80082678482d',
       null,
     );
-    await dbHelper.db.fns.create_github_build_pr(
+    await helper.db.fns.create_github_build_pr(
       'abc123',
       'xyz',
       'y650871208002a13ba35cf232c0e30d2c3d64783',
@@ -74,12 +74,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       2,
     );
 
-    await dbHelper.db.fns.upsert_github_integration(
+    await helper.db.fns.upsert_github_integration(
       'abc123',
       9090,
     );
 
-    await dbHelper.db.fns.upsert_github_integration(
+    await helper.db.fns.upsert_github_integration(
       'qwerty',
       9091,
     );
@@ -346,8 +346,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suite('cancel builds', function() {
     setup(async function() {
       // reset build states
-      const builds = await dbHelper.db.fns.get_github_builds_pr(null, null, null, null, null, null);
-      await Promise.all(builds.map(build => dbHelper.db.fns.set_github_build_state(build.task_group_id, 'pending')));
+      const builds = await helper.db.fns.get_github_builds_pr(null, null, null, null, null, null);
+      await Promise.all(builds.map(build => helper.db.fns.set_github_build_state(build.task_group_id, 'pending')));
     });
     test('nothing to cancel', async function () {
       await assert.rejects(async () => {
