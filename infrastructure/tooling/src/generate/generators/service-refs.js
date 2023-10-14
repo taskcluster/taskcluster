@@ -34,7 +34,7 @@ SERVICES.forEach(name => {
       await mkdirp(genDir);
       await rimraf(svcDir);
 
-      const { stdout } = await exec('node', [`services/${name}/src/main`, 'generateReferences'], {
+      const { stdout } = await exec('node', [`services/${name}/src/main.js`, 'generateReferences'], {
         cwd: REPO_ROOT,
         env: Object.assign({}, process.env, { NODE_ENV: 'production' }),
         maxBuffer: 10 * 1024 ** 2, // 10MB should be enough for anyone

@@ -13,8 +13,7 @@ export const tasks = [{
   locks: [],
   run: async (requirements, utils) => {
     const procs = {};
-
-    const packageJson = JSON.parse(readRepoFile('package.json'));
+    const packageJson = JSON.parse(await readRepoFile('package.json'));
 
     for (const name of SERVICES) {
       const processes = await readRepoYAML(path.join('services', name, 'procs.yml'));
