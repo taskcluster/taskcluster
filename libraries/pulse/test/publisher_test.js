@@ -8,6 +8,8 @@ import libUrls from 'taskcluster-lib-urls';
 import helper from './helper.js';
 import { suiteName, poll } from 'taskcluster-lib-testing';
 
+const __dirname = new URL('.', import.meta.url).pathname;
+
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
     return; // Only test with real creds

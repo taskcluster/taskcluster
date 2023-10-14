@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import assert from 'assert';
 import { load, testObjectName } from '../helper/index.js';
-import builder from '../../src/api.js';
+import { DOWNLOAD_METHODS } from '../../src/api.js';
 
 /**
  * Test properties general to all backends.
@@ -45,7 +45,7 @@ export const testBackend = ({
       const object = await makeObject({ name, data, hashes: { }, gzipped: false });
 
       const methods = await backend.availableDownloadMethods(object);
-      const unknown = methods.filter(m => !builder.DOWNLOAD_METHODS.includes(m));
+      const unknown = methods.filter(m => !DOWNLOAD_METHODS.includes(m));
       if (unknown.length > 0) {
         assert.fail(`backend.availableDownloadMethods returned unknown method(s) ${unknown.join(', ')}`);
       }
