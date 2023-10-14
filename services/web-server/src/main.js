@@ -37,7 +37,6 @@ const loginStrategies = {
   test: testStrategy,
 };
 
-
 const load = loader(
   {
     cfg: {

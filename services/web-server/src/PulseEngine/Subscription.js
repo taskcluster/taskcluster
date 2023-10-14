@@ -157,4 +157,4 @@ export default class Subscription {
   get garbage() {
     return this.unsubscribed && !this.listening;
   }
-};
+}

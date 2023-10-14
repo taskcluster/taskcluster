@@ -9,11 +9,11 @@ import taskcluster from 'taskcluster-client';
 import { LEVELS } from 'taskcluster-lib-monitor';
 import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
+import fs from 'fs';
+import path from 'path';
 
-import validYamlJson from './data/yml/valid-yaml.json' assert { type: 'json' };
-import validYamlV1Json from './data/yml/valid-yaml-v1.json' assert { type: 'json' };
-import invalidTaskJson from './data/yml/invalid-task.json' assert { type: 'json' };
-import invalidYamlJson from './data/yml/invalid-yaml.json' assert { type: 'json' };
+const dataDir = new URL('./data/yml/', import.meta.url).pathname;
+const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -24,6 +24,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
+
+  const validYamlJson = loadJson('valid-yaml.json');
+  const validYamlV1Json = loadJson('valid-yaml-v1.json');
+  const invalidTaskJson = loadJson('invalid-task.json');
+  const invalidYamlJson = loadJson('invalid-yaml.json');
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';

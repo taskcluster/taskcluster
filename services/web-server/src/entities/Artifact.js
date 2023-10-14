@@ -6,4 +6,4 @@ export default class Artifact {
       this.runId = runId;
     }
   }
-};
+}

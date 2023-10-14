@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import assert from 'assert';
 import _ from 'lodash';
 import helper from './helper.js';
@@ -6,17 +7,18 @@ import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
 import testing from 'taskcluster-lib-testing';
 
-import webhookPullRequestJson from './data/webhooks/webhook.pull_request.open.json' assert { type: 'json' };
-import webhookPushJson from './data/webhooks/webhook.push.json' assert { type: 'json' };
-import webhookPushOffbranchJson from './data/webhooks/webhook.push.offbranch.json' assert { type: 'json' };
-import webhookPushUnicodeJson from './data/webhooks/webhook.push.unicode.json' assert { type: 'json' };
-import webhookReleaseJson from './data/webhooks/webhook.release.json' assert { type: 'json' };
-import webhookTagPushJson from './data/webhooks/webhook.tag_push.json' assert { type: 'json' };
-
-
+const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
+const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
 
 suite(testing.suiteName(), function() {
   let intree;
+
+  const webhookPullRequestJson = loadWebhook('webhook.pull_request.open.json');
+  const webhookPushJson = loadWebhook('webhook.push.json');
+  const webhookPushOffbranchJson = loadWebhook('webhook.push.offbranch.json');
+  const webhookPushUnicodeJson = loadWebhook('webhook.push.unicode.json');
+  const webhookReleaseJson = loadWebhook('webhook.release.json');
+  const webhookTagPushJson = loadWebhook('webhook.tag_push.json');
 
   suiteSetup(async function() {
     helper.load.save();

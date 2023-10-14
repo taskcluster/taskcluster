@@ -29,4 +29,4 @@ export default class EventIterator {
   [$$asyncIterator]() {
     return this;
   }
-};
+}

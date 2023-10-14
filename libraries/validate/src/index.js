@@ -2,7 +2,6 @@ import debugFactory from 'debug';
 const debug = debugFactory('taskcluster-lib-validate');
 import _ from 'lodash';
 import fs from 'fs';
-import { readFile } from 'fs/promises';
 import path from 'path';
 import walk from 'walk';
 import yaml from 'js-yaml';
@@ -10,14 +9,15 @@ import assert from 'assert';
 import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json' assert { type: 'json' };
-
 import { renderConstants, checkRefs } from './util.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';
+
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(
+  path.join(REPO_ROOT, '/node_modules/ajv/lib/refs/json-schema-draft-06.json'), 'utf-8'));
 
 class SchemaSet {
   constructor(options) {

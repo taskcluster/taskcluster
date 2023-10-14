@@ -13,4 +13,4 @@ export default class Artifacts {
       artifact => new Artifact(taskId, artifact, runId),
     );
   }
-};
+}

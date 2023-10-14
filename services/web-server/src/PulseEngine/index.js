@@ -128,4 +128,4 @@ export default class PulseEngine {
   eventIterator(eventName, subscriptions) {
     return new EventIterator(new PulseIterator(this, subscriptions), eventName);
   }
-};
+}

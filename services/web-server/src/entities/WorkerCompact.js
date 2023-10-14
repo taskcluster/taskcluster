@@ -4,4 +4,4 @@ export default class WorkerCompact {
     this.provisionerId = provisionerId;
     this.workerType = workerType;
   }
-};
+}

@@ -29,4 +29,4 @@ export default class MessageIterator {
   [$$asyncIterator]() {
     return this;
   }
-};
+}

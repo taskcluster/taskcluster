@@ -225,4 +225,4 @@ export default class MozillaAuth0 {
       loginMiddleware,
     );
   }
-};
+}

@@ -5,4 +5,4 @@ export default class WebServerError extends Error {
     this.message = message;
     this.stack = (new Error()).stack;
   }
-};
+}

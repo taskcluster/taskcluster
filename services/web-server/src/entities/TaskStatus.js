@@ -9,4 +9,4 @@ export default class TaskStatus {
       this.runs = this.runs.map(run => new TaskRun(taskId, run));
     }
   }
-};
+}

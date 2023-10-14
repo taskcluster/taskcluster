@@ -171,4 +171,4 @@ export default class Github {
       loginMiddleware,
     );
   }
-};
+}

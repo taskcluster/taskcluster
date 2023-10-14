@@ -113,4 +113,4 @@ export default function ({ session, db, options = {} }) {
       }
     }
   };
-};
+}

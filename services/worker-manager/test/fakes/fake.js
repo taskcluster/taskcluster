@@ -4,7 +4,10 @@ import addFormats from 'ajv-formats';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
-import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json' assert { type: 'json' };
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const schemaPath = new URL('../../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
 /**
  * A parent class for fake cloud implementations.
@@ -61,7 +64,6 @@ export class FakeCloud {
 
       addFormats(ajv);
       ajv.addMetaSchema(jsonSchemaDraft06);
-      const __dirname = new URL('.', import.meta.url).pathname;
       const dir = path.join(__dirname, 'schemas');
       fs.readdirSync(dir).forEach(file => {
         if (!file.endsWith('.yml')) {

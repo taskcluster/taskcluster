@@ -53,4 +53,4 @@ export default class GithubClient {
 
     return body;
   }
-};
+}

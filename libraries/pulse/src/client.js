@@ -269,7 +269,6 @@ export class Client extends events.EventEmitter {
   }
 }
 
-
 let nextConnectionId = 1;
 
 /**
