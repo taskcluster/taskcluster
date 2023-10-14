@@ -957,10 +957,10 @@ builder.declare({
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
 awsBuilder(builder);
-gcpBuilder(builder);
 azureBuilder(builder);
 sentryBuilder(builder);
 websocktunnelBuilder(builder);
+gcpBuilder(builder);
 
 /** Get all client information */
 builder.declare({
