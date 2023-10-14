@@ -1,7 +1,7 @@
 import assert from 'assert';
-import helper from './helper';
+import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
-import { WorkerPool, WorkerPoolError, Worker } from '../src/data';
+import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

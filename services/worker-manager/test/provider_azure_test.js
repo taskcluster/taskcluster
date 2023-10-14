@@ -2,17 +2,18 @@ import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import sinon from 'sinon';
 import assert from 'assert';
-import helper from './helper';
-import { FakeAzure } from './fakes';
-import { AzureProvider, dnToString, getAuthorityAccessInfo, getCertFingerprint } from '../src/providers/azure';
+import helper from './helper.js';
+import { FakeAzure } from './fakes/index.js';
+import { AzureProvider, dnToString, getAuthorityAccessInfo, getCertFingerprint } from '../src/providers/azure/index.js';
 import testing from 'taskcluster-lib-testing';
 import forge from 'node-forge';
 import fs from 'fs';
 import path from 'path';
-import { WorkerPool, Worker } from '../src/data';
+import { WorkerPool, Worker } from '../src/data.js';
 import Debug from 'debug';
 
 const debug = Debug('provider_azure_test');
+const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

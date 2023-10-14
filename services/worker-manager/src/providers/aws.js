@@ -1,14 +1,16 @@
-import { ApiError, Provider } from './provider';
+import { ApiError, Provider } from './provider.js';
 import aws from 'aws-sdk';
 import taskcluster from 'taskcluster-client';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
-import { CloudAPI } from './cloudapi';
-import { WorkerPool, Worker } from '../data';
+import { CloudAPI } from './cloudapi.js';
+import { WorkerPool, Worker } from '../data.js';
 
-class AwsProvider extends Provider {
+const __dirname = new URL('.', import.meta.url).pathname;
+
+export class AwsProvider extends Provider {
   constructor({
     providerId,
     monitor,
@@ -480,7 +482,3 @@ class AwsProvider extends Provider {
       providerData.region === parsedDocument.region;
   }
 }
-
-export default {
-  AwsProvider,
-};

@@ -9,7 +9,7 @@ import { Worker, WorkerPoolError } from '../data.js';
  *
  * See ../../providers.md for information on writing providers.
  */
-class Provider {
+export class Provider {
   constructor({
     providerId,
     notify,
@@ -229,13 +229,8 @@ class Provider {
  * An error which, if thrown from API-related Provider methods, will be returned to
  * the user as a 400 Bad Request error containing `err.message`.
  */
-class ApiError extends Error {
+export class ApiError extends Error {
 }
-
-export default {
-  Provider,
-  ApiError,
-};
 
 // Utility function for reportError
 const getExtraInfo = ({ extra, workerPoolId, description, errorId }) => {

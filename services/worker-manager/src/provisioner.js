@@ -1,13 +1,13 @@
 import process from 'process';
 import Iterate from 'taskcluster-lib-iterate';
 import { paginatedIterator } from 'taskcluster-lib-postgres';
-import { WorkerPool, Worker } from './data';
-import { ApiError } from './providers/provider';
+import { WorkerPool, Worker } from './data.js';
+import { ApiError } from './providers/provider.js';
 
 /**
  * Run all provisioning logic
  */
-class Provisioner {
+export class Provisioner {
   constructor({ providers, iterateConf, Worker, WorkerPool,
     monitor, notify, db, reference,
     rootUrl, ownName }) {
@@ -212,7 +212,3 @@ class Provisioner {
 
   }
 }
-
-export default {
-  Provisioner,
-};

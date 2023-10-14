@@ -9,28 +9,27 @@ import taskcluster from 'taskcluster-client';
  *
  * These two functions serve to split and join workerPoolIds.
  */
-const splitWorkerPoolId = workerPoolId => {
+export const splitWorkerPoolId = workerPoolId => {
   const split = workerPoolId.split('/');
   assert.equal(split.length, 2, `invalid workerPoolId ${workerPoolId}`);
   return { provisionerId: split[0], workerType: split[1] };
 };
-exports.splitWorkerPoolId = splitWorkerPoolId;
 
-const joinWorkerPoolId = (provisionerId, workerType) => {
+export const joinWorkerPoolId = (provisionerId, workerType) => {
   assert(typeof provisionerId === 'string', 'provisionerId omitted');
   assert(typeof workerType === 'string', 'workerType omitted');
   assert(provisionerId.indexOf('/') === -1, 'provisionerId cannot contain `/`');
   return `${provisionerId}/${workerType}`;
 };
-exports.joinWorkerPoolId = joinWorkerPoolId;
-exports.MAX_MODIFY_ATTEMPTS = 5;
+
+export const MAX_MODIFY_ATTEMPTS = 5;
 
 // We use these fields from inside the worker rather than
 // what was passed in the endpoint arguments because that is the thing we have verified
 // to be passing in the token. This helps avoid slipups later
 // like if we had a scope based on workerGroup alone which we do
 // not verify here
-const createCredentials = (worker, expires, cfg) => {
+export const createCredentials = (worker, expires, cfg) => {
   return taskcluster.createTemporaryCredentials({
     clientId: `worker/${worker.providerId}/${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     scopes: [
@@ -49,11 +48,10 @@ const createCredentials = (worker, expires, cfg) => {
     credentials: cfg.taskcluster.credentials,
   });
 };
-exports.createCredentials = createCredentials;
 
 const PAYLOAD_SENSITIVE_KEYS = ['workerIdentityProof'];
 // remove sensitive keys from the request payload that would be safe for logging
-const sanitizeRegisterWorkerPayload = (obj = {}) => {
+export const sanitizeRegisterWorkerPayload = (obj = {}) => {
   return Object.keys(obj).reduce((res, key) => {
     if (PAYLOAD_SENSITIVE_KEYS.includes(key)) {
       res[key] = '*';
@@ -63,4 +61,3 @@ const sanitizeRegisterWorkerPayload = (obj = {}) => {
     return res;
   }, {});
 };
-exports.sanitizeRegisterWorkerPayload = sanitizeRegisterWorkerPayload;

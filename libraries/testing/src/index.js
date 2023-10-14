@@ -15,7 +15,7 @@ export * from './fakeauth.js';
 
 // and default exports
 // import testing from 'taskcluster-lib-testing'; testing.withDb();
-import { start, stop, withAnonymousScopes } from './fakeauth.js';
+import * as fakeauth from './fakeauth.js';
 import { resetDb, resetTables, withDb } from './with-db.js';
 import { runWithFakeTime, sleep } from './time.js';
 import schemas from './schemas.js';
@@ -42,5 +42,5 @@ export default {
   runWithFakeTime,
   sleep,
 
-  fakeauth: { start, stop, withAnonymousScopes },
+  fakeauth,
 };

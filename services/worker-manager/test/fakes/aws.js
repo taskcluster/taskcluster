@@ -1,11 +1,11 @@
-import { FakeCloud } from './fake';
+import { FakeCloud } from './fake.js';
 import { strict as assert } from 'assert';
 import aws from 'aws-sdk';
 
 /**
  * Fake the EC2 AWS SDK.
  */
-class FakeEC2 extends FakeCloud {
+export class FakeEC2 extends FakeCloud {
   constructor() {
     super();
   }
@@ -51,7 +51,7 @@ const ec2Method = (context, method) => {
  *  - terminatedInstances: instance IDs for which terminateInstances has been called
  *  - instanceStatuses: values returned from describeInstanceStatus, in the form {instanceId: state}
  */
-class FakeEC2Region {
+export class FakeEC2Region {
   constructor(region, fake) {
     this.region = region;
     this.fake = fake;
@@ -140,5 +140,3 @@ class FakeEC2Region {
     });
   }
 }
-
-exports.FakeEC2 = FakeEC2;

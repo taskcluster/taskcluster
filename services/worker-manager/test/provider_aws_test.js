@@ -1,14 +1,16 @@
-import { ApiError } from '../src/providers/provider';
+import { ApiError } from '../src/providers/provider.js';
 import _ from 'lodash';
 import assert from 'assert';
-import helper from './helper';
-import { AwsProvider } from '../src/providers/aws';
+import helper from './helper.js';
+import { AwsProvider } from '../src/providers/aws.js';
 import testing from 'taskcluster-lib-testing';
 import fs from 'fs';
 import path from 'path';
 import taskcluster from 'taskcluster-client';
-import { WorkerPool, Worker } from '../src/data';
-import { FakeEC2 } from './fakes';
+import { WorkerPool, Worker } from '../src/data.js';
+import { FakeEC2 } from './fakes/index.js';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

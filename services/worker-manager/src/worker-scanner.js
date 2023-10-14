@@ -1,13 +1,13 @@
 import Iterate from 'taskcluster-lib-iterate';
 import taskcluster from 'taskcluster-client';
 import { paginatedIterator } from 'taskcluster-lib-postgres';
-import { Worker } from './data';
+import { Worker } from './data.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
  * to accurately inform provisioning logic.
  */
-class WorkerScanner {
+export class WorkerScanner {
   constructor({
     ownName,
     WorkerPool,
@@ -89,7 +89,3 @@ class WorkerScanner {
     await this.providers.forAll(p => p.scanCleanup());
   }
 }
-
-export default {
-  WorkerScanner,
-};

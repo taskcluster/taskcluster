@@ -1,5 +1,3 @@
-export default {
-  ...require('./aws'),
-  ...require('./azure'),
-  ...require('./google'),
-};
+export * from './aws.js';
+export * from './azure.js';
+export * from './google.js';

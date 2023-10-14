@@ -1,4 +1,5 @@
-import { default as PQueue } from 'p-queue';
+import pqueue from 'p-queue';
+const PQueue = pqueue.default;
 
 /**
  * All cloud providers we interface with have things like api request rate
@@ -28,7 +29,7 @@ import { default as PQueue } from 'p-queue';
  * you called enqueue in the first place. This should be used for errors that are
  * expected or should not pause the entire provider.
  */
-class CloudAPI {
+export class CloudAPI {
 
   constructor({
     types,
@@ -92,7 +93,3 @@ class CloudAPI {
     }
   }
 }
-
-export default {
-  CloudAPI,
-};

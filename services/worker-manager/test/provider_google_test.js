@@ -1,10 +1,10 @@
 import taskcluster from 'taskcluster-client';
 import { strict as assert } from 'assert';
-import helper from './helper';
-import { FakeGoogle } from './fakes';
-import { GoogleProvider } from '../src/providers/google';
+import helper from './helper.js';
+import { FakeGoogle } from './fakes/index.js';
+import { GoogleProvider } from '../src/providers/google.js';
 import testing from 'taskcluster-lib-testing';
-import { WorkerPool, WorkerPoolError, Worker } from '../src/data';
+import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

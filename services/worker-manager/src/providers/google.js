@@ -2,13 +2,13 @@ import assert from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 import { google } from 'googleapis';
-import { ApiError, Provider } from './provider';
-import { CloudAPI } from './cloudapi';
-import { WorkerPool, Worker } from '../data';
+import { ApiError, Provider } from './provider.js';
+import { CloudAPI } from './cloudapi.js';
+import { WorkerPool, Worker } from '../data.js';
 
-class GoogleProvider extends Provider {
+export class GoogleProvider extends Provider {
 
   constructor({
     providerConfig,
@@ -523,7 +523,3 @@ class GoogleProvider extends Provider {
     return false;
   }
 }
-
-export default {
-  GoogleProvider,
-};

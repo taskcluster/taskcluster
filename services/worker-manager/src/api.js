@@ -1,10 +1,10 @@
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import slug from 'slugid';
 import assert from 'assert';
-import { ApiError, Provider } from './providers/provider';
+import { ApiError, Provider } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { WorkerPool, WorkerPoolError, Worker } from './data';
-import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util';
+import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',

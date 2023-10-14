@@ -1,8 +1,8 @@
 import taskcluster from 'taskcluster-client';
-import { Provider, ApiError } from './provider';
-import { Worker } from '../data';
+import { Provider, ApiError } from './provider.js';
+import { Worker } from '../data.js';
 
-class TestingProvider extends Provider {
+export class TestingProvider extends Provider {
   constructor(conf) {
     super(conf);
     this.configSchema = 'config-testing';
@@ -99,7 +99,3 @@ class TestingProvider extends Provider {
     });
   }
 }
-
-export default {
-  TestingProvider,
-};

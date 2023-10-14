@@ -8,14 +8,14 @@ import SchemaSet from 'taskcluster-lib-validate';
 import libReferences from 'taskcluster-lib-references';
 import exchanges from './exchanges.js';
 import builder from './api.js';
-import { Estimator } from './estimator';
+import { Estimator } from './estimator.js';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import tcdb from 'taskcluster-db';
-import { Provisioner } from './provisioner';
-import { Providers } from './providers';
-import { WorkerScanner } from './worker-scanner';
-import { WorkerPool, WorkerPoolError, Worker } from './data';
-import './monitor';
+import { Provisioner } from './provisioner.js';
+import { Providers } from './providers/index.js';
+import { WorkerScanner } from './worker-scanner.js';
+import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import './monitor.js';
 import { fileURLToPath } from 'url';
 
 let load = loader({
