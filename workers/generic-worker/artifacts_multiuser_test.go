@@ -327,4 +327,5 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			t.Fatalf("Protected artifact %v seems to have overridden content from X.txt in task %v", artifactName, taskID)
 		}
 	}
+	t.Fatal("woooo")
 }
