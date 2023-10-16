@@ -2,19 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-let got = require('got');
-let debug = require('debug')('taskcluster-client');
-let _ = require('lodash');
-let assert = require('assert');
-let hawk = require('hawk');
-let url = require('url');
-let crypto = require('crypto');
-let slugid = require('slugid');
-let http = require('http');
-let https = require('https');
-let querystring = require('querystring');
-let tcUrl = require('taskcluster-lib-urls');
-let retry = require('./retry');
+import got from 'got';
+
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-client');
+import _ from 'lodash';
+import assert from 'assert';
+import hawk from 'hawk';
+import url from 'url';
+import crypto from 'crypto';
+import slugid from 'slugid';
+import http from 'http';
+import https from 'https';
+import querystring from 'querystring';
+import tcUrl from 'taskcluster-lib-urls';
+import retry from './retry.js';
 
 /** Default options for our http/https global agents */
 let AGENT_OPTIONS = {
@@ -36,7 +38,7 @@ let DEFAULT_AGENTS = {
 // Exports agents, consumers can provide their own default agents and tests
 // can call taskcluster.agents.http.destroy() when running locally, otherwise
 // tests won't terminate (if they are configured with keepAlive)
-exports.agents = DEFAULT_AGENTS;
+export const agents = DEFAULT_AGENTS;
 
 // By default, all requests to a service go the the rootUrl and
 // are load-balanced to services from there. However, if running
@@ -48,7 +50,8 @@ exports.agents = DEFAULT_AGENTS;
 // request to `my-svc` and it will route correctly
 const SERVICE_DISCOVERY_SCHEMES = ['default', 'k8s-dns'];
 let DEFAULT_SERVICE_DISCOVERY_SCHEME = 'default';
-exports.setServiceDiscoveryScheme = scheme => {
+
+export const setServiceDiscoveryScheme = scheme => {
   assert(SERVICE_DISCOVERY_SCHEMES.includes(scheme), `Invalid Taskcluster client service discovery scheme: ${scheme}`);
   DEFAULT_SERVICE_DISCOVERY_SCHEME = scheme;
 };
@@ -91,7 +94,7 @@ let _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-const makeRequest = exports.makeRequest = async function(client, method, url, payload, query) {
+export async function makeRequest(client, method, url, payload, query) {
   // Add query to url if present
   if (query) {
     query = querystring.stringify(query);
@@ -156,7 +159,7 @@ const makeRequest = exports.makeRequest = async function(client, method, url, pa
   }
 
   return res;
-};
+}
 
 /**
  * Create a client class from a JSON reference, and an optional `name`, which is
@@ -184,7 +187,7 @@ const makeRequest = exports.makeRequest = async function(client, method, url, pa
  *
  * `rootUrl` and `baseUrl` are mutually exclusive.
  */
-exports.createClient = function(reference, name) {
+export const createClient = function(reference, name) {
   if (!name || typeof name !== 'string') {
     name = 'Unknown';
   }
@@ -654,11 +657,13 @@ exports.createClient = function(reference, name) {
 };
 
 // Load data from apis.js
-let apis = require('./apis');
+import apis from './apis.js';
+
+export const clients = {};
 
 // Instantiate clients
 _.forIn(apis, function(api, name) {
-  exports[name] = exports.createClient(api.reference, name);
+  clients[name] = createClient(api.reference, name);
 });
 
 /**
@@ -666,11 +671,11 @@ _.forIn(apis, function(api, name) {
  *
  * Example: `Client.config({credentials: {...}});`
  */
-exports.config = function(options) {
+export const config = function(options) {
   _defaultOptions = _.defaults({}, options, _defaultOptions);
 };
 
-exports.fromEnvVars = function() {
+export const fromEnvVars = function() {
   let results = {};
   for (let { env, path } of [
     { env: 'TASKCLUSTER_ROOT_URL', path: 'rootUrl' },
@@ -706,7 +711,7 @@ exports.fromEnvVars = function() {
  *
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
-exports.createTemporaryCredentials = function(options) {
+export const createTemporaryCredentials = function(options) {
   assert(options, 'options are required');
 
   let now = new Date();
@@ -809,7 +814,7 @@ exports.createTemporaryCredentials = function(options) {
  *    scopes: [...],        // associated scopes (if available)
  * }
  */
-exports.credentialInformation = function(rootUrl, credentials) {
+export const credentialInformation = function(rootUrl, credentials) {
   let result = {};
   let issuer = credentials.clientId;
 
@@ -840,7 +845,7 @@ exports.credentialInformation = function(rootUrl, credentials) {
     result.type = 'permanent';
   }
 
-  let anonClient = new exports.Auth({ rootUrl });
+  let anonClient = new clients.Auth({ rootUrl });
   let clientLookup = anonClient.client(issuer).then(function(client) {
     let expires = new Date(client.expires);
     if (!result.expiry || result.expiry > expires) {
@@ -851,7 +856,7 @@ exports.credentialInformation = function(rootUrl, credentials) {
     }
   });
 
-  let credClient = new exports.Auth({ rootUrl, credentials });
+  let credClient = new clients.Auth({ rootUrl, credentials });
   let scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });
@@ -867,4 +872,15 @@ exports.credentialInformation = function(rootUrl, credentials) {
 
     return result;
   });
+};
+
+export default {
+  createClient,
+  setServiceDiscoveryScheme,
+  makeRequest,
+  config,
+  fromEnvVars,
+  createTemporaryCredentials,
+  credentialInformation,
+  ...clients,
 };

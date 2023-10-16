@@ -1,11 +1,11 @@
-const taskcluster = require('../');
-const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
-const { APIBuilder } = require('taskcluster-lib-api');
-const testing = require('taskcluster-lib-testing');
-const { App } = require('taskcluster-lib-app');
-const { monitorManager, monitor } = require('./monitor');
-const retry = require('../src/retry');
+import taskcluster from '../src/index.js';
+import assert from 'assert';
+import SchemaSet from 'taskcluster-lib-validate';
+import { APIBuilder } from 'taskcluster-lib-api';
+import testing from 'taskcluster-lib-testing';
+import { App } from 'taskcluster-lib-app';
+import { monitorManager, monitor } from './monitor.js';
+import retry from '../src/retry.js';
 
 const rootUrl = `http://localhost:60526`;
 

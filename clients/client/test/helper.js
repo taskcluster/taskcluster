@@ -1,6 +1,6 @@
 // Restore TASKCLUSTER_* env vars after this test suite runs, to the values they
 // had when it began.
-exports.withRestoredEnvVars = () => {
+export const withRestoredEnvVars = () => {
   const vars = ['TASKCLUSTER_CLIENT_ID', 'TASKCLUSTER_ROOT_URL', 'TASKCLUSTER_ACCESS_TOKEN'];
 
   let values;
@@ -23,3 +23,5 @@ exports.withRestoredEnvVars = () => {
     }
   });
 };
+
+export default { withRestoredEnvVars };

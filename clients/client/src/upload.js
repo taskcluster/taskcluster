@@ -1,7 +1,7 @@
-const got = require('got');
-const { slugid } = require('./utils');
-const retry = require('./retry');
-const { HashStream } = require('./hashstream');
+import got from 'got';
+import { slugid } from './utils.js';
+import retry from './retry.js';
+import { HashStream } from './hashstream.js';
 
 const DATA_INLINE_MAX_SIZE = 8192;
 
@@ -33,7 +33,7 @@ const readFullStream = stream => {
   });
 };
 
-const upload = async ({
+export const upload = async ({
   projectId,
   name,
   contentType,
@@ -98,4 +98,4 @@ const upload = async ({
   await object.finishUpload(name, { projectId, uploadId, hashes });
 };
 
-module.exports = { upload };
+export default { upload };

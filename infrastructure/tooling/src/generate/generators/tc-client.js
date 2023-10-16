@@ -9,6 +9,6 @@ export const tasks = [{
     const apis = requirements['apis'];
 
     await writeRepoFile('clients/client/src/apis.js',
-      '/* eslint-disable */\nmodule.exports = ' + stringify(apis, { space: 2 }) + ';\n');
+      '/* eslint-disable */\nexport default ' + stringify(apis, { space: 2 }) + ';\n');
   },
 }];

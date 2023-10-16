@@ -1,10 +1,10 @@
-const taskcluster = require('../');
-const nock = require('nock');
-const crypto = require('crypto');
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { WritableStreamBuffer, ReadableStreamBuffer } = require('stream-buffers');
-const helper = require('./helper');
+import taskcluster from '../src/index.js';
+import nock from 'nock';
+import crypto from 'crypto';
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import { WritableStreamBuffer, ReadableStreamBuffer } from 'stream-buffers';
+import helper from './helper.js';
 
 suite(testing.suiteName(), function() {
   helper.withRestoredEnvVars();

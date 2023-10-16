@@ -1,8 +1,10 @@
-const got = require('got');
-const util = require('util');
-const pipeline = util.promisify(require('stream').pipeline);
-const retry = require('./retry');
-const { HashStream, ACCEPTABLE_HASHES } = require('./hashstream');
+import got from 'got';
+import util from 'util';
+import stream from 'stream';
+const pipeline = util.promisify(stream.pipeline);
+import retry from './retry.js';
+import { HashStream, ACCEPTABLE_HASHES } from './hashstream.js';
+import taskcluster from './index.js';
 
 // apply default retry config
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({
@@ -98,7 +100,8 @@ const verifyHashes = (observedHashes, expectedHashes) => {
   }
 };
 
-const download = async ({ name, object, streamFactory, retries, delayFactor, randomizationFactor, maxDelay }) => {
+export const download = async ({ name, object, streamFactory, retries, delayFactor,
+  randomizationFactor, maxDelay }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
   const acceptDownloadMethods = {
@@ -114,7 +117,7 @@ const download = async ({ name, object, streamFactory, retries, delayFactor, ran
   }
 };
 
-const downloadArtifact = async ({
+export const downloadArtifact = async ({
   taskId, runId, name, queue, streamFactory, retries, delayFactor, randomizationFactor, maxDelay,
 }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
@@ -128,9 +131,6 @@ const downloadArtifact = async ({
     }
 
     case "object": {
-      // `taskcluster.Object` is created at runtime, so we cannot require this
-      // at the top level.
-      const taskcluster = require('./index');
       const object = new taskcluster.Object({
         rootUrl: queue._options._trueRootUrl,
         credentials: artifact.credentials,
@@ -149,4 +149,4 @@ const downloadArtifact = async ({
   }
 };
 
-module.exports = { download, downloadArtifact };
+export default { download, downloadArtifact };
