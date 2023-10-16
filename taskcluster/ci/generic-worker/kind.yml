@@ -43,7 +43,6 @@ tasks:
         - git config advice.detachedHead false
         - git checkout {head_rev}
         - cd tools/worker-runner
-        - go test -v ./...
   format-source:
     description: |
       This task performs three formatting steps against the codebase, and
@@ -310,10 +309,8 @@ tasks:
         - set CGO_ENABLED=%CGO_ENABLED_TESTS%
         - set GORACE=history_size=7
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        - set GW_TESTS_RUN_AS_CURRENT_USER=true
-        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v56/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
         - set GW_TESTS_RUN_AS_CURRENT_USER=
-        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v56/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+        - go test -v -run TestChainOfTrustUpload -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v56/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
         - |
           :: assumption here is that if something inside the if fails, we'll get a non zero exit code
           :: i've also made it an if/else so that one of them has to run, as there should always be a

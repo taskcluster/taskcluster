@@ -154,6 +154,7 @@ func copyTestdataFileTo(src, dest string) []string {
 	return []string{
 		run([]string{"if", "not", "exist", filepath.Dir(destFile), "mkdir", filepath.Dir(destFile)}, ""),
 		run([]string{"copy", sourceFile, destFile}, ""),
+		run([]string{"type", sourceFile}, destFile),
 	}
 }
 
