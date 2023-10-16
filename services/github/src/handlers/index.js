@@ -258,9 +258,8 @@ class Handlers {
   }
 
   /**
-   * Cancel any running builds that are not the current build.
-   * If new build is for the 'push' event, then we want to only cancel builds for the same sha and event type.
-   * Same SHA might appear in multiple builds, push event, tag event, etc.
+   * Cancel any running builds that are not the current build for a given pull request.
+   * This will not cancel builds for the same SHA because they can belong to different branches.
    * If this is a pull request event, we only want to cancel builds of the same type:
    *  [pull_request.opened, pull_request.synchronize] are treated as the same type
    *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
@@ -271,8 +270,13 @@ class Handlers {
     debug(`canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
 
     // avoid performing cancellation for non-push and non-pull-request events
-    if (!eventType || !['push', 'pull_request'].includes(eventType.split('.')[0])) {
+    if (!eventType || !['pull_request'].includes(eventType.split('.')[0])) {
       debug(`event type ${eventType} is not supported. skipping cancelPreviousTaskGroups`);
+      return;
+    }
+
+    if (!pullNumber) {
+      debug(`pullNumber is not defined. Skipping cancelPreviousTaskGroups`);
       return;
     }
 
@@ -284,7 +288,7 @@ class Handlers {
 
     try {
       let includedEventTypes = [eventType];
-      if (pullNumber && ['pull_request.opened', 'pull_request.synchronize'].includes(eventType)) {
+      if (['pull_request.opened', 'pull_request.synchronize'].includes(eventType)) {
         includedEventTypes = ['pull_request.opened', 'pull_request.synchronize'];
       }
 
@@ -293,8 +297,8 @@ class Handlers {
         null,
         organization,
         repository,
-        pullNumber ? null : sha, // we only want to filter either by sha or pull number, not both
-        pullNumber ? pullNumber : null,
+        null, // no cancelling by sha here
+        pullNumber,
       );
       const taskGroupIds = builds?.filter(
         build => build.task_group_id !== newTaskGroupId && includedEventTypes.includes(build.event_type),

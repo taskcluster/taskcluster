@@ -369,8 +369,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         },
       });
 
-      assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
-      assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
+      // tasks should not cancelled for push events
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
     });
 
     test('respects same event types for pull_request', async function () {
@@ -395,30 +396,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       assert.deepEqual(sealedTaskGroups, ['aa']);
       assert.deepEqual(cancelledTaskGroups, ['aa']);
-    });
-
-    test('respects same event types for push', async function () {
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 3, eventType: 'pull_request.opened' });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 3, eventType: 'pull_request.synchronize' });
-      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
-      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
-      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
-      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
-
-      await handlers.realCancelPreviousTaskGroups({
-        instGithub: sinon.stub(),
-        debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          task_group_id: 'gg',
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          event_type: 'push',
-        },
-      });
-
-      assert.deepEqual(sealedTaskGroups, ['ff']);
-      assert.deepEqual(cancelledTaskGroups, ['ff']);
     });
 
     test('cancels nothing on release event', async function () {
