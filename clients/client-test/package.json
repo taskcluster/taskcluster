@@ -1,0 +1,35 @@
+{
+  "name": "taskcluster-client-test",
+  "version": "56.0.2",
+  "description": "Node client test",
+  "license": "MPL-2.0",
+  "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client-test",
+  "scripts": {
+    "test": "mocha test/*_test.js"
+  },
+  "devDependencies": {
+    "taskcluster-db": "link:db",
+    "taskcluster-client": "link:../client",
+    "taskcluster-lib-api": "link:../libraries/api",
+    "taskcluster-lib-app": "link:../libraries/app",
+    "taskcluster-lib-config": "link:../libraries/config",
+    "taskcluster-lib-iterate": "link:../libraries/iterate",
+    "taskcluster-lib-loader": "link:../libraries/loader",
+    "taskcluster-lib-monitor": "link:../libraries/monitor",
+    "taskcluster-lib-postgres": "link:../libraries/postgres",
+    "taskcluster-lib-pulse": "link:../libraries/pulse",
+    "taskcluster-lib-references": "link:../libraries/references",
+    "taskcluster-lib-validate": "link:../libraries/validate",
+    "taskcluster-lib-testing": "link:../libraries/testing",
+    "taskcluster-lib-scopes": "^11.0.0",
+    "taskcluster-lib-urls": "^13.0.0",
+    "http-proxy": "^1.18.0",
+    "mocha": "^10.2.0",
+    "nock": "^13.0.0",
+    "stream-buffers": "^3.0.2"
+  },
+  "engines": {
+    "node": "18.18.1"
+  },
+  "type": "module"
+}

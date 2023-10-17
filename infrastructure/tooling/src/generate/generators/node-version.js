@@ -63,6 +63,7 @@ export const tasks = [{
       'ui/package.json',
       'workers/docker-worker/package.json',
       'clients/client/package.json',
+      'clients/client-test/package.json',
     ].forEach(file => {
       utils.status({ message: file });
       modifyRepoJSON(file,
