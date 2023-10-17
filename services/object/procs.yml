@@ -5,7 +5,7 @@ expire:
   type: cron
   schedule: '0 1 * * *'
   deadline: 86400
-  command: node services/object/src/main expire
+  command: node services/object/src/main.js expire
 write-docs:
   type: build
   command: node services/object/src/main.js writeDocs

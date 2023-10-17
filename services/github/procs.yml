@@ -1,14 +1,14 @@
 web:
   type: web
-  command: node services/github/src/main server
+  command: node services/github/src/main.js server
 worker:
   type: background
-  command: node services/github/src/main worker
+  command: node services/github/src/main.js worker
 sync:
   type: cron
   schedule: '0 2 * * *'
   deadline: 86400
-  command: node services/github/src/main syncInstallations
+  command: node services/github/src/main.js syncInstallations
 write-docs:
   type: build
-  command: node services/github/src/main writeDocs
+  command: node services/github/src/main.js writeDocs

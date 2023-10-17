@@ -43,7 +43,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/auth:/app/services/auth
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js server"
   auth-cron-purgeExpiredClients:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -60,7 +60,7 @@ services:
       - auth
       - auth-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main purge-expired-clients"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js purge-expired-clients"
   built-in-workers-server:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -86,7 +86,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/github:/app/services/github
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main.js server"
   github-background-worker:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -103,7 +103,7 @@ services:
       - github
       - github-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main worker"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main.js worker"
   github-cron-sync:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -120,7 +120,7 @@ services:
       - github
       - github-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main syncInstallations"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/github services/github/src/main.js syncInstallations"
   hooks-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -197,7 +197,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/index:/app/services/index
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main.js server"
   index-background-handlers:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -214,7 +214,7 @@ services:
       - index
       - index-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main handlers"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main.js handlers"
   index-cron-expire:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -231,7 +231,7 @@ services:
       - index
       - index-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main expire"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/index services/index/src/main.js expire"
   notify-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -244,7 +244,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/notify:/app/services/notify
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main.js server"
   notify-background-handler:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -261,7 +261,7 @@ services:
       - notify
       - notify-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main handler"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/notify services/notify/src/main.js handler"
   object-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -291,7 +291,7 @@ services:
       - object
       - object-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/object services/object/src/main expire"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/object services/object/src/main.js expire"
   purge-cache-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -334,7 +334,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/queue:/app/services/queue
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js server"
   queue-background-claimResolver:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -351,7 +351,7 @@ services:
       - queue
       - queue-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main claim-resolver"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js claim-resolver"
   queue-background-deadlineResolver:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -368,7 +368,7 @@ services:
       - queue
       - queue-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main deadline-resolver"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js deadline-resolver"
   queue-background-dependencyResolver:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -385,7 +385,7 @@ services:
       - queue
       - queue-background
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main dependency-resolver"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js dependency-resolver"
   queue-cron-expireArtifacts:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -402,7 +402,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-artifacts"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-artifacts"
   queue-cron-expireTask:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -419,7 +419,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-tasks"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-tasks"
   queue-cron-expireTaskGroups:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -436,7 +436,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-task-groups"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-task-groups"
   queue-cron-expireTaskDependency:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -453,7 +453,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-task-dependency"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-task-dependency"
   queue-cron-expireQueueMessages:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -470,7 +470,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-queue-messages"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-queue-messages"
   queue-cron-expireWorkerInfo:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -487,7 +487,7 @@ services:
       - queue
       - queue-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main expire-worker-info"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-worker-info"
   secrets-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:

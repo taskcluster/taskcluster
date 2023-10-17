@@ -1,48 +1,48 @@
 web:
   type: web
-  command: node services/queue/src/main server
+  command: node services/queue/src/main.js server
 write-docs:
   type: build
-  command: node services/queue/src/main writeDocs
+  command: node services/queue/src/main.js writeDocs
 claimResolver:
   type: background
   subType: 'iterate'
-  command: node services/queue/src/main claim-resolver
+  command: node services/queue/src/main.js claim-resolver
 deadlineResolver:
   type: background
   subType: 'iterate'
-  command: node services/queue/src/main deadline-resolver
+  command: node services/queue/src/main.js deadline-resolver
 dependencyResolver:
   type: background
   subType: 'iterate'
-  command: node services/queue/src/main dependency-resolver
+  command: node services/queue/src/main.js dependency-resolver
 expireArtifacts:
   type: cron
   schedule: '10 1 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-artifacts
+  command: node services/queue/src/main.js expire-artifacts
 expireTask:
   type: cron
   schedule: '10 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-tasks
+  command: node services/queue/src/main.js expire-tasks
 expireTaskGroups:
   type: cron
   schedule: '15 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-task-groups
+  command: node services/queue/src/main.js expire-task-groups
 expireTaskDependency:
   type: cron
   schedule: '20 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-task-dependency
+  command: node services/queue/src/main.js expire-task-dependency
 expireQueueMessages:
   type: cron
   schedule: '23 * * * *'
   deadline: 3600
-  command: node services/queue/src/main expire-queue-messages
+  command: node services/queue/src/main.js expire-queue-messages
 expireWorkerInfo:
   type: cron
   schedule: '5 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-worker-info
+  command: node services/queue/src/main.js expire-worker-info
