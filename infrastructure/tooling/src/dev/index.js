@@ -2,7 +2,7 @@ import util from 'util';
 import chalk from 'chalk';
 import path from 'path';
 import _ from 'lodash';
-import { readRepoYAML, writeRepoYAML } from '../utils';
+import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
 import inquirer from 'inquirer';
 import commonPrompts from './common.js';
 
@@ -13,7 +13,7 @@ import {
   rabbitEnsureResources,
 } from './rabbit.js';
 
-import { azureResources } from './azure';
+import { azureResources } from './azure.js';
 import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
 import { k8sResources } from './k8s.js';
 import awsResources from './aws.js';
@@ -23,7 +23,7 @@ import { makePgUrl } from './util.js';
 import { upgrade, downgrade } from 'taskcluster-db';
 
 const USER_CONF_FILE = 'dev-config.yml';
-const readUserConfig = async () => {
+export const readUserConfig = async () => {
   let userConfig = {};
   try {
     userConfig = await readRepoYAML(USER_CONF_FILE);
@@ -36,7 +36,7 @@ const readUserConfig = async () => {
   return userConfig;
 };
 
-const init = async (options) => {
+export const init = async (options) => {
   let configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
   let userConfig = await readUserConfig();
 
@@ -58,7 +58,7 @@ const init = async (options) => {
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
-const dbParams = (meta) => {
+export const dbParams = (meta) => {
   return {
     adminDbUrl: makePgUrl({
       hostname: meta.dbPublicIp,
@@ -70,7 +70,7 @@ const dbParams = (meta) => {
   };
 };
 
-const dbUpgrade = async (options) => {
+export const dbUpgrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
@@ -85,7 +85,7 @@ const dbUpgrade = async (options) => {
   await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-const dbDowngrade = async (options) => {
+export const dbDowngrade = async (options) => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
@@ -103,25 +103,25 @@ const dbDowngrade = async (options) => {
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-const apply = async (options) => {
+export const apply = async (options) => {
   await helm('apply');
 };
 
-const verify = async (options) => {
+export const verify = async (options) => {
   await helm('verify');
 };
 
-const templates = async (options) => {
+export const templates = async (options) => {
   const templates = await helm('dump-templates');
   return templates;
 };
 
-const ensureDb = async (options) => {
+export const ensureDb = async (options) => {
   const userConfig = await readUserConfig();
   await postgresEnsureDb({ userConfig });
 };
 
-const ensureRabbit = async (options) => {
+export const ensureRabbit = async (options) => {
   const userConfig = await readUserConfig();
   const prompts = [];
 
@@ -131,7 +131,7 @@ const ensureRabbit = async (options) => {
   await rabbitEnsureResources({ userConfig, answer });
 };
 
-const delete_ = async (options) => {
+export const delete_ = async (options) => {
   await helm('delete');
 };
 

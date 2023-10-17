@@ -1,10 +1,10 @@
 import slugid from 'slugid';
 import crypto from 'crypto';
-import { Client } from 'pg';
+import pg from 'pg';
 import { makePgUrl } from './util.js';
 import URL from 'url';
 
-const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
+export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
     when: () => !userConfig.meta?.dbPublicIp,
     type: 'input',
@@ -56,7 +56,7 @@ const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   });
 };
 
-const postgresResources = async ({ userConfig, answer, configTmpl }) => {
+export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   let servicesNeedingUrls = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     // only examine services in configTmpl..
@@ -112,7 +112,7 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } =
     Object.assign({}, userConfig.meta || {}, answer.meta || {});
 
-  const client = new Client({
+  const client = new pg.Client({
     host: dbPublicIp,
     user: dbAdminUsername,
     password: dbAdminPassword,
@@ -147,10 +147,10 @@ const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
-const postgresEnsureDb = async ({ userConfig }) => {
+export const postgresEnsureDb = async ({ userConfig }) => {
   const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp } = userConfig.meta;
 
-  const client = new Client({
+  const client = new pg.Client({
     host: dbPublicIp,
     user: dbAdminUsername,
     password: dbAdminPassword,

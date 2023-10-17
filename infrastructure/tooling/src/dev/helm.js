@@ -1,6 +1,6 @@
 import os from 'os';
 import path from 'path';
-import { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } from '../utils';
+import { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } from '../utils/index.js';
 import { TaskGraph } from 'console-taskgraph';
 
 const resourceTypes = [
