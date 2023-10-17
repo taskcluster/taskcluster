@@ -267,7 +267,7 @@ func TestPurgeCachesNegativeExitCode(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 
 	logtext := LogText(t)
-	substring := "onExitStatus.purgeCaches.0: Must be greater than or equal to 1"
+	substring := "onExitStatus.purgeCaches.0: Must be greater than or equal to 0"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)

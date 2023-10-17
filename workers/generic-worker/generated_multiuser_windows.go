@@ -139,7 +139,7 @@ type (
 		// Since: generic-worker 49.0.0
 		//
 		// Array items:
-		// Mininum:    1
+		// Mininum:    0
 		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
 
 		// Exit codes for any command in the task payload to cause this task to
@@ -920,7 +920,7 @@ func JSONSchema() string {
         "purgeCaches": {
           "description": "If the task exits with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
           "items": {
-            "minimum": 1,
+            "minimum": 0,
             "title": "Exit statuses",
             "type": "integer"
           },
