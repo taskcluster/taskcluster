@@ -1,7 +1,7 @@
-import taskcluster from '../src/index.js';
-import parseTime from '../src/parsetime.js';
-import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+const taskcluster = require('../');
+const parseTime = require('../src/parsetime');
+const assert = require('assert');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
   test('parseTime 1 year', function() {

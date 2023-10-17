@@ -1,7 +1,7 @@
-import taskcluster from '../src/index.js';
-import assert from 'assert';
-import nock from 'nock';
-import testing from 'taskcluster-lib-testing';
+const taskcluster = require('../');
+const assert = require('assert');
+const nock = require('nock');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
   teardown(function() {

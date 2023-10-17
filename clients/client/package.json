@@ -29,6 +29,5 @@
   "files": [
     "src"
   ],
-  "exports": "./src/index.js",
-  "type": "module"
+  "main": "./src/index.js"
 }

@@ -1,13 +1,12 @@
-import taskcluster from '../src/index.js';
-import assert from 'assert';
-import nock from 'nock';
-import testing from 'taskcluster-lib-testing';
-import net from 'net';
-import helper from './helper.js';
-import cleanClient from '../src/client.js';
+const taskcluster = require('../');
+const assert = require('assert');
+const path = require('path');
+const nock = require('nock');
+const net = require('net');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
@@ -236,6 +235,9 @@ suite(testing.suiteName(), function() {
       rootUrl: 'https://whatever.net',
       makeClient: () => {
         process.env.TASKCLUSTER_ROOT_URL = 'https://whatever.net';
+        const clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
+        delete require.cache[clientPath];
+        const cleanClient = require(clientPath);
         const Fake = cleanClient.createClient(referenceNameStyle);
         const fake = new Fake(Object.assign({},
           taskcluster.fromEnvVars(), {

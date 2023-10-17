@@ -1,10 +1,12 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+// this doesn't belong here
 
-export const monitor = MonitorManager.setup({
-  serviceName: 'client',
-  fake: true,
-  debug: true,
-  verify: true,
-});
+// const { MonitorManager } = require('taskcluster-lib-monitor');
 
-export const monitorManager = monitor.manager;
+// exports.monitor = MonitorManager.setup({
+//   serviceName: 'client',
+//   fake: true,
+//   debug: true,
+//   verify: true,
+// });
+
+// exports.monitorManager = exports.monitor.manager;

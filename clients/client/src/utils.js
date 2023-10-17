@@ -1,5 +1,5 @@
-import parseTime from './parsetime.js';
-import { nice } from 'slugid';
+let parseTime = require('./parsetime');
+let slugid = require('slugid');
 
 /**
  * Create a Date object offset = '1d 2h 3min' into the future
@@ -10,7 +10,7 @@ import { nice } from 'slugid';
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNow = function(offset, reference) {
+let fromNow = function(offset, reference) {
   if (reference === undefined) {
     reference = new Date();
   }
@@ -32,6 +32,9 @@ export const fromNow = function(offset, reference) {
   return retval;
 };
 
+// Export fromNow
+exports.fromNow = fromNow;
+
 /**
  * Create an ISO 8601 time stamp offset = '1d 2h 3min' into the future
  *
@@ -45,11 +48,14 @@ export const fromNow = function(offset, reference) {
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNowJSON = function(offset, reference) {
+let fromNowJSON = function(offset, reference) {
   return fromNow(offset, reference).toJSON();
 };
 
+// Export fromNowJSON
+exports.fromNowJSON = fromNowJSON;
+
 // Export function to generate _nice_ slugids
-export function slugid () {
-  return nice();
-}
+exports.slugid = function() {
+  return slugid.nice();
+};

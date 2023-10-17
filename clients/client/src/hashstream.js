@@ -1,14 +1,14 @@
-import { Transform } from 'stream';
-import { createHash } from 'crypto';
+const { Transform } = require('stream');
+const { createHash } = require('crypto');
 
 // The subset of hashes supported by HashStream which are "accepted" as per the
 // object service's schemas.
-export const ACCEPTABLE_HASHES = new Set(["sha256", "sha512"]);
+const ACCEPTABLE_HASHES = new Set(["sha256", "sha512"]);
 
 /**
  * A stream that hashes the bytes passing through it
  */
-export class HashStream extends Transform {
+class HashStream extends Transform {
   constructor() {
     super();
     this.sha256 = createHash('sha256');
@@ -36,4 +36,4 @@ export class HashStream extends Transform {
   }
 }
 
-export default { HashStream, ACCEPTABLE_HASHES };
+module.exports = { HashStream, ACCEPTABLE_HASHES };
