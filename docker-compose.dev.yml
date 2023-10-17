@@ -304,7 +304,7 @@ services:
       - ./libraries:/app/libraries
       - ./services/purge-cache:/app/services/purge-cache
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main server"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main.js server"
   purge-cache-cron-expireCachePurges:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
@@ -321,7 +321,7 @@ services:
       - purge-cache
       - purge-cache-cron
     command: ''
-    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main expire-cache-purges"
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/purge-cache services/purge-cache/src/main.js expire-cache-purges"
   queue-web:
     image: taskcluster/taskcluster:v56.0.3-devel
     environment:
