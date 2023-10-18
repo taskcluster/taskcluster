@@ -1,7 +1,7 @@
 const taskcluster = require('../');
 const parseTime = require('../src/parsetime');
 const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
   test('parseTime 1 year', function() {

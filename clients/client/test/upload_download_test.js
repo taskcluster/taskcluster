@@ -2,12 +2,11 @@ const taskcluster = require('../');
 const nock = require('nock');
 const crypto = require('crypto');
 const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
 const { WritableStreamBuffer, ReadableStreamBuffer } = require('stream-buffers');
-const helper = require('./helper');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   /**
    * These tests require credentials with the scopes shown in authorizedScopes, below.

@@ -2,11 +2,10 @@ const taskcluster = require('../');
 const assert = require('assert');
 const request = require('superagent');
 const _ = require('lodash');
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
