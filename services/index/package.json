@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-index",
-  "version": "56.0.2",
+  "version": "56.0.3",
   "private": true,
   "main": "./src/main.js",
   "scripts": {

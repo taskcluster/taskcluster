@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "56.0.2",
+  "version": "56.0.3",
   "private": true,
   "engine-strict": true,
   "engines": {

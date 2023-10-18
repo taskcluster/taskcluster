@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v56.0.3
+
+### USERS
+
+▶ [patch] [#6616](https://github.com/taskcluster/taskcluster/issues/6616)
+Github service no longer cancels builds for the same SHA for `push` events.
+Only `pull_request` events would cancel running builds for the same pull request if they exist.
+
+This is to avoid canceling same commit pushed to different branches.
+
+▶ [patch]
+Allow specifying `0` as a value for `onExitStatus.purgeCaches`.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump @babel/traverse in /clients/client-web (c19726417)
+* build(deps): bump urllib3 from 2.0.6 to 2.0.7 in /taskcluster (54593c4ae)
+
+</details>
+
 ## v56.0.2
 
 ### GENERAL
