@@ -1,8 +1,8 @@
-const tcdb = require('taskcluster-db');
-const { writeRepoJSON } = require('../../utils');
+import tcdb from 'taskcluster-db';
+import { writeRepoJSON } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
-exports.tasks = [{
+export const tasks = [{
   title: 'DB Schema',
   requires: [],
   provides: ['db-schema-serializable'],

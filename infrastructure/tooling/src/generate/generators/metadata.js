@@ -1,14 +1,14 @@
-const _ = require('lodash');
-const path = require('path');
-const config = require('taskcluster-lib-config');
-const { listServices, readRepoYAML } = require('../../utils');
+import _ from 'lodash';
+import path from 'path';
+import config from 'taskcluster-lib-config';
+import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
-exports.tasks = [];
+export const tasks = [];
 
 SERVICES.forEach(name => {
-  exports.tasks.push({
+  tasks.push({
     title: `Fetch service metadata for ${name}`,
     requires: [],
     provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`],

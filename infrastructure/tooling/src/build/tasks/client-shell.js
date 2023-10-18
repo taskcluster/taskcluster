@@ -1,11 +1,7 @@
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  REPO_ROOT,
-} = require('../../utils');
+import path from 'path';
+import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],

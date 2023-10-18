@@ -1,9 +1,8 @@
-const { checks } = require('./checks');
-const { TaskGraph } = require('console-taskgraph');
+import { loadChecks } from './checks/index.js';
+import { TaskGraph } from 'console-taskgraph';
 
-const main = async (options) => {
+export const main = async (options) => {
+  const checks = await loadChecks();
   const taskgraph = new TaskGraph(checks, {});
   await taskgraph.run();
 };
-
-module.exports = { main };

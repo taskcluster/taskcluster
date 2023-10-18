@@ -1,13 +1,12 @@
-module.exports = {
-  ...require('./repo'),
-  ...require('./tasks'),
-  ...require('./git'),
-  ...require('./docker'),
-  ...require('./command'),
-  ...require('./config'),
-  ...require('./crates'),
-  ...require('./npm'),
-  ...require('./pypi'),
-  ...require('./dockerflow'),
-  ...require('./db'),
-};
+export * from './repo.js';
+export * from './tasks.js';
+export * from './git.js';
+export * from './docker.js';
+export * from './command.js';
+export * from './config.js';
+export * from './crates.js';
+export * from './npm.js';
+export * from './pypi.js';
+export * from './dockerflow.js';
+export * from './db.js';
+export * from './load-tasks.js';

@@ -1,8 +1,9 @@
-const util = require('util');
-const path = require('path');
-const { writeRepoFile, REPO_ROOT } = require('../../utils');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
+import util from 'util';
+import path from 'path';
+import { writeRepoFile, REPO_ROOT } from '../../utils/index.js';
+import mkdirp from 'mkdirp';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 const HEADER = `\
 # coding=utf-8
@@ -205,7 +206,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   await writePyFile(filename, lines.join('\n'));
 };
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Generate Taskcluster-Client-Py',
   requires: ['apis'],
   provides: ['target-taskcluster-client-py'],

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const child_process = require('child_process');
-const { Transform } = require('stream');
+import fs from 'fs';
+import child_process from 'child_process';
+import { Transform } from 'stream';
 
 /**
  * Run a command and display its output.
@@ -12,7 +12,7 @@ const { Transform } = require('stream');
  * - keepAllOutput -- if true, keep and return the stdout
  * - env -- optional environment variables for the command
  */
-exports.execCommand = async ({
+export const execCommand = async ({
   dir,
   command,
   utils,

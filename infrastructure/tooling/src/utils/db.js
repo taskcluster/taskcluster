@@ -1,11 +1,11 @@
-const path = require('path');
-const assert = require('assert');
-const { readRepoFile, writeRepoFile, modifyRepoFile } = require('./repo');
+import path from 'path';
+import assert from 'assert';
+import { readRepoFile, writeRepoFile, modifyRepoFile } from './repo.js';
 
 /**
  * Get an array giving the DB version for each Taskcluster version
  */
-exports.getDbReleases = async () => {
+export const getDbReleases = async () => {
   const releases = [];
 
   for (let line of (await readRepoFile(path.join('db', 'releases.txt'))).split('\n')) {
@@ -36,7 +36,7 @@ const tcversion = (releases, dbversion) => {
  * Update db/versions/README.md.  This occurs in both `yarn generate` and `yarn release`,
  * so it is included as a utility function here.
  */
-exports.updateVersionsReadme = async (schema, releases) => {
+export const updateVersionsReadme = async (schema, releases) => {
   // get the *first* TC version containing this DB version
 
   const table = [];
@@ -105,7 +105,7 @@ assert.equal(deprecatedFunctionSupport(54, 'v51.0.1'), false);
 /**
  * Update db/fns.md.  This also occurs in both `yarn generate` and `yarn release`
  */
-exports.updateDbFns = async (schema, releases, currentTcVersion) => {
+export const updateDbFns = async (schema, releases, currentTcVersion) => {
   const methods = schema.allMethods();
   methods.sort((a, b) => a.name.localeCompare(b.name));
   const serviceNames = [...new Set([...methods].map(({ serviceName }) => serviceName).sort())];

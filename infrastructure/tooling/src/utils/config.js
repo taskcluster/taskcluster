@@ -1,7 +1,7 @@
 /**
  * Convert lib-config !env types into json-schema
  */
-exports.configToSchema = type => {
+export const configToSchema = type => {
   switch (type) {
     case '!env': {
       return {
@@ -48,7 +48,7 @@ exports.configToSchema = type => {
 /**
  * Convert lib-config !env types into example values
  */
-exports.configToExample = type => {
+export const configToExample = type => {
   switch (type) {
     case '!env': return '...';
     case '!env:string': return '...';

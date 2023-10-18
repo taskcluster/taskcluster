@@ -1,7 +1,7 @@
-const path = require('path');
-const { REPO_ROOT, execCommand } = require('../../utils');
+import path from 'path';
+import { REPO_ROOT, execCommand } from '../../utils/index.js';
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Generate Taskcluster-Client-Shell',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-taskcluster-client-shell'],

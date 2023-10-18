@@ -1,7 +1,7 @@
-const taskcluster = require('taskcluster-client');
-const { retryAssertionFailures } = require('../util');
+import taskcluster from 'taskcluster-client';
+import { retryAssertionFailures } from '../util.js';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     "auth:create-client:project/taskcluster/smoketest/*",
     "auth:reset-access-token:project/taskcluster/smoketest/*",
@@ -9,9 +9,9 @@ exports.scopeExpression = {
   ],
 };
 
-exports.tasks = [];
+export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: 'Create client and use it (--target client)',
   requires: ['ping-auth'],
   provides: [

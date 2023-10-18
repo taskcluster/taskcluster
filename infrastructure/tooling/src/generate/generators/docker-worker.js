@@ -1,8 +1,6 @@
-const { readRepoYAML } = require('../../utils');
+import { readRepoYAML } from '../../utils/index.js';
 
-exports.tasks = [];
-
-exports.tasks.push({
+export const tasks = [{
   title: `Generate Docker-Worker Schema`,
   requires: [],
   provides: [
@@ -21,4 +19,4 @@ exports.tasks.push({
       'docker-worker-schemas': schemas,
     };
   },
-});
+}];

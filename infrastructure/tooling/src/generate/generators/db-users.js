@@ -1,8 +1,8 @@
-const path = require('path');
-const { Schema } = require('taskcluster-lib-postgres');
-const { readRepoFile, writeRepoFile } = require('../../utils');
+import path from 'path';
+import { Schema } from 'taskcluster-lib-postgres';
+import { readRepoFile, writeRepoFile } from '../../utils/index.js';
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Users in DB Deployment Docs',
   requires: ['db-schema-serializable'],
   provides: [],

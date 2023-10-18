@@ -1,7 +1,7 @@
-const stringify = require('json-stable-stringify');
-const { writeRepoFile } = require('../../utils');
+import stringify from 'json-stable-stringify';
+import { writeRepoFile } from '../../utils/index.js';
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Generate Taskcluster-Client',
   requires: ['apis'],
   provides: ['target-taskcluster-client'],

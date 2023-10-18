@@ -1,8 +1,8 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
-const { retryAssertionFailures } = require('../util');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
+import { retryAssertionFailures } from '../util.js';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     "auth:create-role:project:taskcluster:smoketest:*",
     "auth:delete-role:project:taskcluster:smoketest:*",
@@ -11,8 +11,8 @@ exports.scopeExpression = {
   ],
 };
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [];
+tasks.push({
   title: 'Create role and expand smoketest (--target roles)',
   requires: [
     'ping-auth',

@@ -1,11 +1,12 @@
-const util = require('util');
-const fs = require('fs');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const taskcluster = require('taskcluster-client');
-const { execCommand } = require('./command');
-const { REPO_ROOT } = require('./repo');
+import util from 'util';
+import fs from 'fs';
+import path from 'path';
+import mkdirp from 'mkdirp';
+import taskcluster from 'taskcluster-client';
+import { execCommand } from './command.js';
+import { REPO_ROOT } from './repo.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 /**
  * Perform an `npm publish`
@@ -15,7 +16,7 @@ const { REPO_ROOT } = require('./repo');
  * - logfile -- name of the file to write the log to
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.npmPublish = async ({ dir, apiToken, logfile, utils }) => {
+export const npmPublish = async ({ dir, apiToken, logfile, utils }) => {
   // override HOME so this doesn't use the user's npm token
   const homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
   const npmrc = path.join(dir, '.npmrc');

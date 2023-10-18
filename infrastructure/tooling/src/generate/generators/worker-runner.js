@@ -1,13 +1,14 @@
-const util = require('util');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const { REPO_ROOT, modifyRepoFile, execCommand } = require('../../utils');
+import util from 'util';
+import path from 'path';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
+import { REPO_ROOT, modifyRepoFile, execCommand } from '../../utils/index.js';
 
-exports.tasks = [];
+export const tasks = [];
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
-exports.tasks.push({
+tasks.push({
   title: 'Update worker-runner README file',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-worker-runner'],
