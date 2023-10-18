@@ -1,6 +1,6 @@
-const regexEscape = require('regex-escape');
-const { URL } = require('url');
-const libUrls = require('taskcluster-lib-urls');
+import regexEscape from 'regex-escape';
+import { URL } from 'url';
+import libUrls from 'taskcluster-lib-urls';
 
 /**
  * Schemas that are not referenced from a service definition, but are otherwise
@@ -73,7 +73,7 @@ const forAllRefs = (content, cb) => {
   }
 };
 
-exports.validate = (references) => {
+export const validate = (references) => {
   const problems = [];
 
   // first check for some basic structural issues that will cause Ajv to
@@ -331,11 +331,9 @@ exports.validate = (references) => {
  * An error indicating validation failed.  This has a ;-separated
  * message, or the problems themselves are in the array err.problems.
  */
-class ValidationProblems extends Error {
+export class ValidationProblems extends Error {
   constructor(problems) {
     super(problems.join('; '));
     this.problems = problems;
   }
 }
-
-exports.ValidationProblems = ValidationProblems;

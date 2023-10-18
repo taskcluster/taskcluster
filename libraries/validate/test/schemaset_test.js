@@ -1,8 +1,8 @@
-const assert = require('assert');
-const SchemaSet = require('../');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import SchemaSet from '../src/index.js';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();

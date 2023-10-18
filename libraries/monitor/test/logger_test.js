@@ -1,9 +1,13 @@
-const assert = require('assert');
-const stream = require('stream');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const MonitorManager = require('../src/monitormanager');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import stream from 'stream';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import MonitorManager from '../src/monitormanager.js';
+import testing from 'taskcluster-lib-testing';
+import fs from 'fs';
+import path from 'path';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;
@@ -38,11 +42,11 @@ suite(testing.suiteName(), function() {
   });
 
   test('logger conforms to schema', function() {
-    const schema = require('./mozlog_schema.json');
+    const schema = JSON.parse(fs.readFileSync(path.resolve(__dirname, './mozlog_schema.json'), 'utf8'));
     monitor.info('something', { test: 123 });
     const event = monitorManager.messages[0];
 
-    const ajv = new Ajv();
+    const ajv = new Ajv.default();
     addFormats(ajv);
     assert(ajv.validate(schema, event), ajv.errorsText());
   });

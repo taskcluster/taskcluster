@@ -1,4 +1,4 @@
-const { hrtime } = require('process');
+import { hrtime } from 'process';
 
 /**
  * A TimeKeeper is used for measuring arbitrary times.  This is nice when the
@@ -36,4 +36,4 @@ class TimeKeeper {
   }
 }
 
-module.exports = TimeKeeper;
+export default TimeKeeper;

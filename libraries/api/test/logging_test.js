@@ -1,12 +1,12 @@
-const request = require('superagent');
-const assert = require('assert');
-const hawk = require('hawk');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import request from 'superagent';
+import assert from 'assert';
+import hawk from 'hawk';
+import { APIBuilder } from '../src/index.js';
+import helper, { monitorManager } from './helper.js';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+import { LEVELS } from 'taskcluster-lib-monitor';
 
 suite(testing.suiteName(), function() {
   // Create test api
@@ -109,12 +109,12 @@ suite(testing.suiteName(), function() {
     // We poll because the logging happens _after_ the response is sent
     // so there's nothing to await
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      assert(helper.monitorManager.messages[0].Fields.duration > 0); // it exists..
-      delete helper.monitorManager.messages[0].Fields.duration;
-      assert(new Date(helper.monitorManager.messages[0].Fields.expires) > new Date());
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      assert(monitorManager.messages[0].Fields.duration > 0); // it exists..
+      delete monitorManager.messages[0].Fields.duration;
+      assert(new Date(monitorManager.messages[0].Fields.expires) > new Date());
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -147,10 +147,10 @@ suite(testing.suiteName(), function() {
     // We poll because the logging happens _after_ the response is sent
     // so there's nothing to await
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -180,10 +180,10 @@ suite(testing.suiteName(), function() {
     await request.get(url).set('Authorization', header);
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -221,10 +221,10 @@ suite(testing.suiteName(), function() {
     await request.get(url).set('Authorization', header);
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -262,10 +262,10 @@ suite(testing.suiteName(), function() {
     }
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -292,10 +292,10 @@ suite(testing.suiteName(), function() {
     await request.get(url);
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -334,10 +334,10 @@ suite(testing.suiteName(), function() {
     }
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {
@@ -373,10 +373,10 @@ suite(testing.suiteName(), function() {
     }
 
     await testing.poll(async () => {
-      assert.equal(helper.monitorManager.messages.length, 1);
-      delete helper.monitorManager.messages[0].Fields.duration;
-      delete helper.monitorManager.messages[0].Fields.expires;
-      assert.deepEqual(helper.monitorManager.messages[0], {
+      assert.equal(monitorManager.messages.length, 1);
+      delete monitorManager.messages[0].Fields.duration;
+      delete monitorManager.messages[0].Fields.expires;
+      assert.deepEqual(monitorManager.messages[0], {
         Type: 'monitor.apiMethod',
         Severity: LEVELS.notice,
         Fields: {

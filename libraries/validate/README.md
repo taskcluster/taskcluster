@@ -14,7 +14,7 @@ Schemas are typically stored under `services/<serviceName>/schemas/`, with a dir
 Schema files in the repository are `.yml` files, but will be published as `.json` files.
 
 ```javascript
-const SchemaSet = require('taskcluster-lib-validate');
+import SchemaSet from 'taskcluster-lib-validate';
 
 const doc = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
 

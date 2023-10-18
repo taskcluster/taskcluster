@@ -1,15 +1,16 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-const { omit } = require('lodash');
-const stream = require('stream');
-const { LEVELS } = require('./logger');
-const Monitor = require('./monitor');
-const chalk = require('chalk');
-const Debug = require('debug');
-const plugins = require('./plugins');
-const { cleanupDescription } = require('./util');
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import _ from 'lodash';
+import stream from 'stream';
+import { LEVELS } from './logger.js';
+import Monitor from './monitor.js';
+import chalk from 'chalk';
+import Debug from 'debug';
+import plugins from './plugins/index.js';
+import { cleanupDescription } from './util.js';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 const LEVELS_REVERSE_COLOR = [
@@ -186,7 +187,7 @@ class MonitorManager {
       types: Object.entries(types).map(([name, type]) => {
         return {
           name,
-          ...omit(type, ['serviceName']),
+          ..._.omit(type, ['serviceName']),
         };
       }).sort((a, b) => a.name.localeCompare(b.name)),
     };
@@ -220,6 +221,7 @@ class MonitorManager {
     }
   }
 }
+
 MonitorManager.types = {};
 
-module.exports = MonitorManager;
+export default MonitorManager;

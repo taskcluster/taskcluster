@@ -1,5 +1,7 @@
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
+import path from 'path';
+import testing from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   testing.schemas({

@@ -1,7 +1,7 @@
-const { pulseCredentials } = require('../src');
-const assert = require('assert');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
+import { pulseCredentials } from '../src/index.js';
+import assert from 'assert';
+import assume from 'assume';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   test('missing arguments are an error', async function() {

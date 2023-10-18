@@ -1,17 +1,19 @@
-const request = require('superagent');
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const path = require('path');
-const SchemaSet = require('taskcluster-lib-validate');
-const testing = require('taskcluster-lib-testing');
+import request from 'superagent';
+import assert from 'assert';
+import { APIBuilder } from '../src/index.js';
+import helper, { monitor, monitorManager } from './helper.js';
+import libUrls from 'taskcluster-lib-urls';
+import path from 'path';
+import SchemaSet from 'taskcluster-lib-validate';
+import testing from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   setup(async () => {
-    helper.setupServer({ builder });
+    await helper.setupServer({ builder });
   });
   teardown(() => {
     helper.teardownServer();
@@ -210,8 +212,8 @@ suite(testing.suiteName(), function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value should be/));
-        assert.equal(helper.monitorManager.messages.length, 2);
-        assert(helper.monitorManager.messages[0].Fields.message.match(/data.value should be <= 10/));
+        assert.equal(monitorManager.messages.length, 2);
+        assert(monitorManager.messages[0].Fields.message.match(/data.value should be <= 10/));
       });
   });
 
@@ -293,8 +295,8 @@ suite(testing.suiteName(), function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data should be object/));
-        assert.equal(helper.monitorManager.messages.length, 2);
-        assert(helper.monitorManager.messages[0].Fields.message.match(/data should be object/));
+        assert.equal(monitorManager.messages.length, 2);
+        assert(monitorManager.messages[0].Fields.message.match(/data should be object/));
       });
   });
 
@@ -322,7 +324,7 @@ suite(testing.suiteName(), function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const api = await builder.build({ rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor });
+    const api = await builder.build({ rootUrl: libUrls.testRootUrl(), schemaset, monitor });
     try {
       api.router();
     } catch (err) {
@@ -337,12 +339,12 @@ suite(testing.suiteName(), function() {
   test('calling send twice with reportError triggers an Error', async () => {
     const url = u('/test-double-error-send');
     await assert.doesNotReject(() => request.get(url));
-    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
+    assert.equal(monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
   });
 
   test('calling send twice with json object triggers an Error', async () => {
     const url = u('/test-double-json-send');
     await assert.rejects(() => request.get(url), /Bad Request/);
-    assert.equal(helper.monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
+    assert.equal(monitorManager.messages[0].Fields.message, 'API method implementation called res.send twice');
   });
 });

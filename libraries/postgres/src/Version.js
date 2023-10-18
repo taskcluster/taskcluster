@@ -1,7 +1,7 @@
-const path = require('path');
-const assert = require('assert').strict;
-const Method = require('./Method');
-const { loadSql } = require('./util');
+import path from 'path';
+import { strict as assert } from 'assert';
+import Method from './Method.js';
+import { loadSql } from './util.js';
 
 const objMap = (obj, fn) => Object.fromEntries(Object.entries(obj).map(fn));
 const ALLOWED_KEYS = ['version', 'migrationScript', 'downgradeScript', 'methods', 'description'];
@@ -81,4 +81,4 @@ class Version {
   }
 }
 
-module.exports = Version;
+export default Version;

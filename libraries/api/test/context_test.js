@@ -1,13 +1,15 @@
-const SchemaSet = require('taskcluster-lib-validate');
-const { App } = require('taskcluster-lib-app');
-const { APIBuilder } = require('../');
-const assert = require('assert');
-const request = require('superagent');
-const slugid = require('slugid');
-const sinon = require('sinon');
-const path = require('path');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import SchemaSet from 'taskcluster-lib-validate';
+import { App } from 'taskcluster-lib-app';
+import { APIBuilder } from '../src/index.js';
+import assert from 'assert';
+import request from 'superagent';
+import slugid from 'slugid';
+import sinon from 'sinon';
+import path from 'path';
+import { monitor } from './helper.js';
+import testing from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   const rootUrl = 'http://localhost:4321';
@@ -49,7 +51,7 @@ suite(testing.suiteName(), function() {
     });
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         myProp: value,
@@ -94,7 +96,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor,
+        monitor,
         schemaset,
         context: {
           prop1: 'value1',
@@ -125,7 +127,7 @@ suite(testing.suiteName(), function() {
     });
     await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         prop1: 'value1',
@@ -151,7 +153,7 @@ suite(testing.suiteName(), function() {
     try {
       await builder.build({
         rootUrl,
-        monitor: helper.monitor,
+        monitor,
         schemaset,
         context: {
           prop3: 'value3',
@@ -195,7 +197,7 @@ suite(testing.suiteName(), function() {
     let fooFake = undefined;
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset,
       context: {
         foo: {

@@ -1,9 +1,9 @@
-const assert = require('assert');
-const { QlobberTrue } = require('qlobber');
-const EventEmitter = require('events');
-const debug = require('debug');
+import assert from 'assert';
+import { QlobberTrue } from 'qlobber';
+import EventEmitter from 'events';
+import debug from 'debug';
 
-module.exports = ({ helper, skipping, namespace }) => {
+export default ({ helper, skipping, namespace }) => {
   let client;
   const debugPulseAssertion = debug('withPulse');
 

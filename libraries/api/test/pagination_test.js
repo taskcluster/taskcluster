@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert').strict;
-const { paginateResults } = require('../');
-const testing = require('taskcluster-lib-testing');
-const Hashids = require('hashids/cjs');
+import _ from 'lodash';
+import { strict as assert } from 'assert';
+import { paginateResults } from '../src/pagination.js';
+import testing from 'taskcluster-lib-testing';
+import Hashids from 'hashids';
 
 suite(testing.suiteName(), function() {
   suite('offset/limit', function() {

@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const assert = require('assert');
+import _ from 'lodash';
+import assert from 'assert';
 
 const stickyLoader = load => {
   let overwrites = {};
@@ -56,4 +56,4 @@ const stickyLoader = load => {
   return sticky;
 };
 
-module.exports = stickyLoader;
+export default stickyLoader;

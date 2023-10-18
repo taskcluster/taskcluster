@@ -1,14 +1,15 @@
-let url = require('url');
-let assert = require('assert');
-let debug = require('debug')('taskcluster-lib-testing:FakeAuth');
-let nock = require('nock');
-let hawk = require('hawk');
-let libUrls = require('taskcluster-lib-urls');
-let taskcluster = require('taskcluster-client');
+import url from 'url';
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-testing:FakeAuth');
+import nock from 'nock';
+import hawk from 'hawk';
+import libUrls from 'taskcluster-lib-urls';
+import taskcluster from 'taskcluster-client';
 
 let anonymousScopes = [];
 
-exports.start = function(clients, { rootUrl } = {}) {
+export const start = function(clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
   return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
@@ -79,7 +80,7 @@ exports.start = function(clients, { rootUrl } = {}) {
     });
 };
 
-exports.stop = function() {
+export const stop = function() {
   // this is a bit more aggressive than we want to be, since it clears
   // all nock interceptors, not just the one we installed.  See
   // https://github.com/pgte/nock/issues/438
@@ -87,7 +88,7 @@ exports.stop = function() {
 };
 
 // run the enclosed function with `anonymousScopes` set to a new value
-exports.withAnonymousScopes = async (scopes, fn) => {
+export const withAnonymousScopes = async (scopes, fn) => {
   const saved = anonymousScopes;
   try {
     anonymousScopes = scopes;

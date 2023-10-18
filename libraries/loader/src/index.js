@@ -1,6 +1,7 @@
-const assert = require('assert');
-const TopoSort = require('topo-sort');
-const debug = require('debug')('taskcluster-lib-loader');
+import assert from 'assert';
+import TopoSort from 'topo-sort';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-loader');
 
 /**
  * Validate component definition
@@ -130,4 +131,4 @@ function loader(componentDirectory, virtualComponents = {}) {
   return load;
 }
 
-module.exports = loader;
+export default loader;

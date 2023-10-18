@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
 /**
  * Validate query-string against query.
@@ -6,7 +6,7 @@ const _ = require('lodash');
  * Query-string options not specified in options will not be allowed. But it's
  * optional if a request carries any query-string parameters at all.
  */
-const queryValidator = ({ entry }) => {
+export const queryValidator = ({ entry }) => {
   const { query } = entry;
 
   return (req, res, next) => {
@@ -45,5 +45,3 @@ const queryValidator = ({ entry }) => {
     return next();
   };
 };
-
-exports.queryValidator = queryValidator;

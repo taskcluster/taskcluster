@@ -1,12 +1,15 @@
-const builtServices = require('./built-services');
-const { makeSerializable, fromSerializable } = require('./serializable');
-const { writeUriStructured, readUriStructured } = require('./uri-structured');
-const { getCommonSchemas } = require('./common-schemas');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const regexEscape = require('regex-escape');
-const { validate } = require('./validate');
+import load from './built-services.js';
+import { makeSerializable, fromSerializable } from './serializable.js';
+import { writeUriStructured, readUriStructured } from './uri-structured.js';
+import { getCommonSchemas } from './common-schemas.js';
+import Ajv from 'ajv';
+import fs from 'fs';
+import addFormats from 'ajv-formats';
+import regexEscape from 'regex-escape';
+import { validate } from './validate.js';
 
+const schemaPath = new URL('../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 /**
  * Representation of a set of references. This is considered immutable after
  * construction.
@@ -20,7 +23,7 @@ const { validate } = require('./validate');
  * much validity outside of the validate() function.  The stored filenames are
  * used only for error messages from validation, etc.
  */
-class References {
+export class References {
   constructor({ rootUrl, schemas, references }) {
     this.rootUrl = rootUrl;
     this.schemas = schemas;
@@ -41,7 +44,7 @@ class References {
    * meta-schemas.
    */
   static fromBuiltServices({ directory }) {
-    let { references, schemas } = builtServices.load({ directory });
+    let { references, schemas } = load({ directory });
     schemas = schemas.concat(getCommonSchemas());
     return new References({
       rootUrl: undefined,
@@ -166,7 +169,7 @@ class References {
 
     // validation requires an Ajv instance, so set that up without validating
     if (!this._ajv) {
-      const ajv = new Ajv({
+      const ajv = new Ajv.default({
         validateFormats: true,
         verbose: true,
         allErrors: true,
@@ -175,7 +178,7 @@ class References {
       });
 
       addFormats(ajv);
-      ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+      ajv.addMetaSchema(jsonSchemaDraft06);
 
       // allow the `metadata` keyword in schemas
       ajv.addKeyword('metadata');
@@ -280,5 +283,3 @@ class References {
     };
   }
 }
-
-exports.References = References;

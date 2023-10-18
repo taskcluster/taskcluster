@@ -8,7 +8,7 @@ checking, and generation of client libraries.
 ## Quick example
 
 ```js
-let {APIBuilder} = require('taskcluster-lib-api');
+import { APIBuilder } from 'taskcluster-lib-api';
 
 // First declare API Builder
 let builder = new APIBuilder({
@@ -71,7 +71,7 @@ App({
 To declare an API, create a new `APIBuilder` object:
 
 ```js
-const APIBuilder = require('taskcluster-lib-api');
+import { APIBuilder } from 'taskcluster-lib-api';
 let builder = new APIBuilder({
   // ..options..
 });
@@ -467,8 +467,8 @@ For most Taskcluster services, the startup process uses
 and the relevant loader components are defined like this:
 
 ```js
-const builder = require('./api');
-const {App} = require('taskcluster-lib-app');
+import builder from './api.js';
+import { App } from 'taskcluster-lib-app';
 
 let load = loader({
   // ...
@@ -501,7 +501,7 @@ The `paginateResults` function supports paginating results in API methods.
 Use it like this:
 
 ```
-const {paginateResults} = require('taskcluster-lib-api');
+import { paginateResults } from 'taskcluster-lib-api';
 
 ...
 

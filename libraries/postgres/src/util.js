@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { SYNTAX_ERROR } = require('./constants');
+import fs from 'fs';
+import path from 'path';
+import { SYNTAX_ERROR } from './constants.js';
 
-exports.ignorePgErrors = async (promise, ...codes) => {
+export const ignorePgErrors = async (promise, ...codes) => {
   try {
     await promise;
   } catch (err) {
@@ -12,7 +12,7 @@ exports.ignorePgErrors = async (promise, ...codes) => {
   }
 };
 
-exports.dollarQuote = str => {
+export const dollarQuote = str => {
   let i = '';
   while (true) {
     const quote = `$${i}$`;
@@ -23,7 +23,7 @@ exports.dollarQuote = str => {
   }
 };
 
-exports.loadSql = (value, dir) => {
+export const loadSql = (value, dir) => {
   // sql values are optional
   if (!value) {
     return value;
@@ -47,7 +47,7 @@ exports.loadSql = (value, dir) => {
  * for the common case of a syntax error, a nice caret highlighting the error
  * location.
  */
-exports.annotateError = (query, err) => {
+export const annotateError = (query, err) => {
   if (err.code === SYNTAX_ERROR && err.position) {
     const msgLines = err.message.split('\n');
 
@@ -81,7 +81,7 @@ exports.annotateError = (query, err) => {
  * Call the given fetch method with a given size and offset to fetch data, and
  * return an async iterator that will yield each row in turn.
  */
-exports.paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
+export const paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
   return {
     [Symbol.asyncIterator]() {
       let done = false;
@@ -139,7 +139,7 @@ exports.paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
 /**
  * Calculate ETA and rate for an ongoing process.
  */
-class ETA {
+export class ETA {
   constructor({
     // end is the final value, for ETA; if not given, ETA is not available
     end,
@@ -189,5 +189,3 @@ class ETA {
     return new Date(Date.now() + remainingTime);
   }
 }
-
-exports.ETA = ETA;

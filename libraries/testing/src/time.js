@@ -1,14 +1,14 @@
-const zurvan = require('zurvan');
-const timers = require('timers');
+import zurvan from 'zurvan';
+import timers from 'timers';
 
 /** Return promise that is resolved in `delay` ms */
-exports.sleep = function(delay) {
+export const sleep = function(delay) {
   return new Promise(function(accept) {
     setTimeout(accept, delay);
   });
 };
 
-exports.runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOptions } = {}) => {
+export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOptions } = {}) => {
   if (!mock) {
     // if not mocking, we can't use fake time as it will cause all sorts
     // of timeouts to occur immediately

@@ -1,6 +1,6 @@
-const Debug = require('debug');
+import Debug from 'debug';
 const debug = Debug('taskcluster-lib-testing:poll');
-const { sleep } = require('./time');
+import { sleep } from './time.js';
 
 /**
  * Poll a function that returns a promise until the promise is resolved without
@@ -38,4 +38,4 @@ const poll = async (doPoll, iterations, delay) => {
   }
 };
 
-module.exports = poll;
+export default poll;

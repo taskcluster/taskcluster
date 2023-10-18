@@ -3,7 +3,8 @@
   "private": true,
   "version": "56.0.3",
   "description": "a component loader for taskcluster",
-  "main": "src/index.js",
+  "exports": "./src/index.js",
+  "type": "module",
   "directories": {
     "test": "test"
   },

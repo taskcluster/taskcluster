@@ -1,16 +1,16 @@
-const { Secrets, withMonitor } = require('taskcluster-lib-testing');
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import { Secrets, withMonitor } from 'taskcluster-lib-testing';
+import { MonitorManager } from 'taskcluster-lib-monitor';
 
-withMonitor(exports, { noLoader: true });
+withMonitor({ }, { noLoader: true });
 
-exports.monitor = MonitorManager.setup({
+export const monitor = MonitorManager.setup({
   serviceName: 'lib-pulse',
   fake: true,
   debug: true,
   validate: true,
 });
 
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secretName: [],
   secrets: {
     pulse: [
@@ -18,3 +18,5 @@ exports.secrets = new Secrets({
     ],
   },
 });
+
+export default { monitor, secrets };
