@@ -8036,7 +8036,7 @@
             "purgeCaches": {
               "description": "If the task exits with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
               "items": {
-                "minimum": 1,
+                "minimum": 0,
                 "title": "Exit statuses",
                 "type": "integer"
               },
@@ -8489,7 +8489,7 @@
             "purgeCaches": {
               "description": "If the task exits with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
               "items": {
-                "minimum": 1,
+                "minimum": 0,
                 "title": "Exit statuses",
                 "type": "integer"
               },
@@ -8991,7 +8991,7 @@
                 "purgeCaches": {
                   "description": "If the task exits with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
                   "items": {
-                    "minimum": 1,
+                    "minimum": 0,
                     "title": "Exit statuses",
                     "type": "integer"
                   },

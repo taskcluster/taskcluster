@@ -336,7 +336,7 @@ properties:
         items:
           title: Exit statuses
           type: integer
-          minimum: 1
+          minimum: 0
   logs:
     title: Logs
     description: |-
