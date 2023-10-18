@@ -1,7 +1,7 @@
-const Debug = require('debug');
-const sinon = require('sinon');
-const _ = require('lodash');
-const assert = require('assert');
+import Debug from 'debug';
+import sinon from 'sinon';
+import _ from 'lodash';
+import assert from 'assert';
 
 class FakeGithub {
   constructor(installation_id) {
@@ -325,4 +325,4 @@ class FakeGithubAuth {
   }
 }
 
-module.exports = () => new FakeGithubAuth();
+export default () => new FakeGithubAuth();

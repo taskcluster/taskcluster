@@ -1,11 +1,11 @@
-let assert = require('assert');
+import assert from 'assert';
 
-const artifactUtils = {
+export const artifactUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.artifactUtils.fromDb(rows[0]);
+      return artifactUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -60,7 +60,7 @@ const artifactUtils = {
         break;
       }
 
-      const entries = rows.map(exports.artifactUtils.fromDb);
+      const entries = rows.map(artifactUtils.fromDb);
 
       const s3public = [];
       const s3private = [];
@@ -185,46 +185,41 @@ const artifactUtils = {
   },
 };
 
-exports.artifactUtils = artifactUtils;
-
 /**
  * Split a taskQueueId into its deprecated provisionerId/workerType components.
  */
-const splitTaskQueueId = taskQueueId => {
+export const splitTaskQueueId = taskQueueId => {
   const split = taskQueueId.split('/');
   assert.equal(split.length, 2, `invalid taskQueueId ${taskQueueId}`);
   return { provisionerId: split[0], workerType: split[1] };
 };
-exports.splitTaskQueueId = splitTaskQueueId;
 
 /**
  * Join a provisionerId and workerType to make a taskQueueId
  */
-const joinTaskQueueId = (provisionerId, workerType) => {
+export const joinTaskQueueId = (provisionerId, workerType) => {
   assert(typeof provisionerId === 'string', 'provisionerId omitted');
   assert(typeof workerType === 'string', 'workerType omitted');
   assert(provisionerId.indexOf('/') === -1, 'provisionerId cannot contain `/`');
   return `${provisionerId}/${workerType}`;
 };
-exports.joinTaskQueueId = joinTaskQueueId;
 
 /**
  * Add the provisionerId, workerType fields to an object that has a
  * taskQueueId field to maintain public interface compatibility
  */
-const addSplitFields = (obj) => {
+export const addSplitFields = (obj) => {
   assert(Object.prototype.hasOwnProperty.call(obj, 'taskQueueId'), 'object is missing property `taskQueueId`');
   const { provisionerId, workerType } = splitTaskQueueId(obj.taskQueueId);
   obj.provisionerId = provisionerId;
   obj.workerType = workerType;
 };
-exports.addSplitFields = addSplitFields;
 
 /**
  * Replace provisionerId and workerType fields in an object with the
  * equivalent taskQueueId.
  */
-const useOnlyTaskQueueId = (obj) => {
+export const useOnlyTaskQueueId = (obj) => {
   assert(Object.prototype.hasOwnProperty.call(obj, 'provisionerId'), 'object is missing property `provisionerId`');
   assert(Object.prototype.hasOwnProperty.call(obj, 'workerType'), 'object is missing property `workerType`');
   const taskQueueId = joinTaskQueueId(obj.provisionerId, obj.workerType);
@@ -232,8 +227,8 @@ const useOnlyTaskQueueId = (obj) => {
   delete obj.provisionerId;
   delete obj.workerType;
 };
-exports.useOnlyTaskQueueId = useOnlyTaskQueueId;
 
 /** Sleep for `delay` ms, returns a promise */
-const sleep = (delay) => new Promise((accept) => setTimeout(accept, delay));
-exports.sleep = sleep;
+export const sleep = (delay) => new Promise((accept) => setTimeout(accept, delay));
+
+export default { artifactUtils, splitTaskQueueId, joinTaskQueueId, addSplitFields, useOnlyTaskQueueId, sleep };

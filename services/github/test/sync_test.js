@@ -1,6 +1,6 @@
-const helper = require('./helper');
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
 
 /**
  * Tests of installation syncing

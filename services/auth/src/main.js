@@ -1,22 +1,24 @@
-require('../../prelude');
-const Loader = require('taskcluster-lib-loader');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const tcdb = require('taskcluster-db');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { App } = require('taskcluster-lib-app');
-const Config = require('taskcluster-lib-config');
-const builder = require('./api');
-const debug = require('debug')('server');
-const exchanges = require('./exchanges');
-const ScopeResolver = require('./scoperesolver');
-const signaturevalidator = require('./signaturevalidator');
-const taskcluster = require('taskcluster-client');
-const makeSentryManager = require('./sentrymanager');
-const libPulse = require('taskcluster-lib-pulse');
-const { google: googleapis } = require('googleapis');
-const assert = require('assert');
-const { syncStaticClients } = require('./static-clients');
+import '../../prelude.js';
+import Loader from 'taskcluster-lib-loader';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import tcdb from 'taskcluster-db';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { App } from 'taskcluster-lib-app';
+import Config from 'taskcluster-lib-config';
+import builder from './api.js';
+import debugFactory from 'debug';
+const debug = debugFactory('server');
+import exchanges from './exchanges.js';
+import ScopeResolver from './scoperesolver.js';
+import createSignatureValidator from './signaturevalidator.js';
+import taskcluster from 'taskcluster-client';
+import makeSentryManager from './sentrymanager.js';
+import * as libPulse from 'taskcluster-lib-pulse';
+import { google as googleapis } from 'googleapis';
+import assert from 'assert';
+import { fileURLToPath } from 'url';
+import { syncStaticClients } from './static-clients.js';
 
 // Create component loader
 const load = Loader({
@@ -120,7 +122,7 @@ const load = Loader({
         pulseClient,
       });
 
-      let signatureValidator = signaturevalidator.createSignatureValidator({
+      let signatureValidator = createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
         monitor: monitor.childMonitor('signature-validator'),
@@ -231,8 +233,8 @@ const load = Loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

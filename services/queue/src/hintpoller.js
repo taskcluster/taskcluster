@@ -1,5 +1,5 @@
-let assert = require('assert');
-let _ = require('lodash');
+import assert from 'assert';
+import _ from 'lodash';
 
 /**
  * HintPoller polls for hints for pending tasks.
@@ -123,4 +123,4 @@ class HintPoller {
   }
 }
 
-module.exports = HintPoller;
+export default HintPoller;

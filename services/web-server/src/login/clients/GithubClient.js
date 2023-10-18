@@ -1,11 +1,11 @@
-const assert = require('assert');
-const request = require('superagent');
-const Debug = require('debug');
+import assert from 'assert';
+import request from 'superagent';
+import Debug from 'debug';
 
 const debug = Debug('GithubClient');
 const baseUrl = 'https://api.github.com';
 
-module.exports = class GithubClient {
+export default class GithubClient {
   constructor({ accessToken }) {
     assert(accessToken, 'An OAuth access token is required to access Github endpoints');
 
@@ -53,4 +53,4 @@ module.exports = class GithubClient {
 
     return body;
   }
-};
+}

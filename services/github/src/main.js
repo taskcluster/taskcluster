@@ -1,22 +1,22 @@
-require('../../prelude');
-const builder = require('./api');
-const exchanges = require('./exchanges');
-const Handlers = require('./handlers');
-const Intree = require('./intree');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const taskcluster = require('taskcluster-client');
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const libReferences = require('taskcluster-lib-references');
-const { App } = require('taskcluster-lib-app');
-const tcdb = require('taskcluster-db');
-const githubAuth = require('./github-auth');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-
-require('./monitor');
+import '../../prelude.js';
+import builder from './api.js';
+import exchanges from './exchanges.js';
+import Handlers from './handlers/index.js';
+import Intree from './intree.js';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import taskcluster from 'taskcluster-client';
+import config from 'taskcluster-lib-config';
+import SchemaSet from 'taskcluster-lib-validate';
+import loader from 'taskcluster-lib-loader';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import libReferences from 'taskcluster-lib-references';
+import { App } from 'taskcluster-lib-app';
+import tcdb from 'taskcluster-db';
+import githubAuth from './github-auth.js';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import './monitor.js';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -52,7 +52,7 @@ const load = loader({
   ajv: {
     requires: [],
     setup: () => {
-      const ajv = new Ajv();
+      const ajv = new Ajv.default();
       addFormats(ajv);
       return ajv;
     },
@@ -219,8 +219,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

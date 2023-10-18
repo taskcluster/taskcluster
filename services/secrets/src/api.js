@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
+import _ from 'lodash';
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 
 const secretToJson = (db, item) => ({
   secret: _.cloneDeep(JSON.parse(db.decrypt({ value: item.encrypted_secret }).toString('utf8'))),
@@ -26,7 +26,7 @@ let builder = new APIBuilder({
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 let cleanPayload = payload => {
   payload.secret = '(OMITTED)';

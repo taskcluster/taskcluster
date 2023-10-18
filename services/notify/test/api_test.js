@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const assert = require('assert').strict;
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import { strict as assert } from 'assert';
+import helper from './helper.js';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

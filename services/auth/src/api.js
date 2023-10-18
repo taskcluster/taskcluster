@@ -1,12 +1,17 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const scopeUtils = require('taskcluster-lib-scopes');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const slugid = require('slugid');
-const _ = require('lodash');
-const signaturevalidator = require('./signaturevalidator');
-const ScopeResolver = require('./scoperesolver');
-const Hashids = require('hashids/cjs');
-const { modifyRoles } = require('../src/data');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import scopeUtils from 'taskcluster-lib-scopes';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import slugid from 'slugid';
+import _ from 'lodash';
+import createSignatureValidator from './signaturevalidator.js';
+import ScopeResolver from './scoperesolver.js';
+import Hashids from 'hashids';
+import { modifyRoles } from '../src/data.js';
+import { awsBuilder } from './aws.js';
+import { gcpBuilder } from './gcp.js';
+import { azureBuilder } from './azure.js';
+import { sentryBuilder } from './sentry.js';
+import { websocktunnelBuilder } from './websocktunnel.js';
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -149,7 +154,7 @@ const builder = new APIBuilder({
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** List clients */
 builder.declare({
@@ -951,11 +956,11 @@ builder.declare({
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
-require('./aws');
-require('./azure');
-require('./sentry');
-require('./websocktunnel');
-require('./gcp');
+awsBuilder(builder);
+azureBuilder(builder);
+sentryBuilder(builder);
+websocktunnelBuilder(builder);
+gcpBuilder(builder);
 
 /** Get all client information */
 builder.declare({
@@ -1014,7 +1019,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');
@@ -1071,7 +1076,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');

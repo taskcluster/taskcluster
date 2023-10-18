@@ -1,12 +1,12 @@
-const { APIBuilder } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
+import { APIBuilder } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
 
 /**
  * Known download methods, in order of preference (preferring earlier
  * methods)
  */
-const DOWNLOAD_METHODS = [
+export const DOWNLOAD_METHODS = [
   'getUrl',
   'simple',
 ];
@@ -36,6 +36,8 @@ let builder = new APIBuilder({
   },
   context: ['cfg', 'db', 'backends', 'middleware'],
 });
+
+export default builder;
 
 builder.declare({
   method: 'put',
@@ -295,7 +297,7 @@ builder.declare({
   const params = acceptDownloadMethods[method];
 
   // apply middleware
-  if (!await this.middleware.startDownloadRequest(req, res, object, method, params)) {
+  if (!(await this.middleware.startDownloadRequest(req, res, object, method, params))) {
     return;
   }
 
@@ -386,7 +388,7 @@ builder.declare({
   }
 
   // apply middleware
-  if (!await this.middleware.downloadRequest(req, res, object)) {
+  if (!(await this.middleware.downloadRequest(req, res, object))) {
     return;
   }
 
@@ -413,8 +415,3 @@ builder.declare({
   // TODO: add implementation
   res.reply({});
 });
-
-module.exports = builder;
-
-// used in tests
-module.exports.DOWNLOAD_METHODS = DOWNLOAD_METHODS;

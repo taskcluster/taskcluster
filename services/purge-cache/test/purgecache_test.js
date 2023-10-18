@@ -1,9 +1,9 @@
-const helper = require('./helper');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
-const sinon = require('sinon');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
+import helper from './helper.js';
+import assume from 'assume';
+import testing from 'taskcluster-lib-testing';
+import sinon from 'sinon';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

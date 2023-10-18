@@ -1,8 +1,8 @@
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
+import taskcluster from 'taskcluster-client';
+import request from 'superagent';
+import crypto from 'crypto';
+import assert from 'assert';
+import helper from '../helper/index.js';
 
 const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
 
@@ -10,7 +10,7 @@ const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-
  * Test the put-url upload method on the given backend.  This defines a suite
  * of tests.
  */
-exports.testPutUrlUpload = ({
+export const testPutUrlUpload = ({
   mock, skipping,
 
   // optional title suffix

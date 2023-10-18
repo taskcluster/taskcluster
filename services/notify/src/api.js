@@ -1,4 +1,4 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 
 const builder = new APIBuilder({
   title: 'Notification Service',
@@ -18,7 +18,7 @@ const builder = new APIBuilder({
   },
 });
 
-module.exports = builder;
+export default builder;
 
 builder.declare({
   method: 'post',

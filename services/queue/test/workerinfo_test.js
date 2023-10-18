@@ -1,11 +1,10 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-
-const { Worker, TaskQueue } = require('../src/data');
-const { splitTaskQueueId } = require('../src/utils');
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import helper from './helper.js';
+import testing from 'taskcluster-lib-testing';
+import { Worker, TaskQueue } from '../src/data.js';
+import { splitTaskQueueId } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

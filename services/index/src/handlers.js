@@ -1,9 +1,10 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const debug = require('debug')('index:handlers');
-const _ = require('lodash');
-const helpers = require('./helpers');
-const { consume } = require('taskcluster-lib-pulse');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import debugFactory from 'debug';
+const debug = debugFactory('index:handlers');
+import _ from 'lodash';
+import helpers from './helpers.js';
+import { consume } from 'taskcluster-lib-pulse';
 
 /**
  * Create handlers
@@ -149,4 +150,4 @@ Handlers.prototype.messageHandler = function(message) {
 };
 
 // Export Handlers
-module.exports = Handlers;
+export default Handlers;

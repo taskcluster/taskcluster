@@ -1,10 +1,11 @@
-const assert = require('assert');
-const events = require('events');
-const debug = require('debug')('hooks:scheduler');
-const taskcluster = require('taskcluster-client');
-const nextDate = require('./nextdate');
-const taskcreator = require('./taskcreator');
-const { hookUtils } = require('./utils');
+import assert from 'assert';
+import events from 'events';
+import debugFactory from 'debug';
+const debug = debugFactory('hooks:scheduler');
+import taskcluster from 'taskcluster-client';
+import nextDate from './nextdate.js';
+import taskcreator from './taskcreator.js';
+import { hookUtils } from './utils.js';
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -195,4 +196,4 @@ class Scheduler extends events.EventEmitter {
 }
 
 // Export Scheduler
-module.exports = Scheduler;
+export default Scheduler;

@@ -1,12 +1,12 @@
-const parser = require('cron-parser');
-const taskcluster = require('taskcluster-client');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const nextDate = require('../src/nextdate');
-const _ = require('lodash');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const { hookUtils } = require('./utils');
+import parser from 'cron-parser';
+import taskcluster from 'taskcluster-client';
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import nextDate from '../src/nextdate.js';
+import _ from 'lodash';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { hookUtils } from './utils.js';
 
 const builder = new APIBuilder({
   title: 'Hooks Service',
@@ -23,7 +23,7 @@ const builder = new APIBuilder({
   context: ['db', 'taskcreator', 'publisher', 'denylist'],
 });
 
-module.exports = builder;
+export default builder;
 
 /** Get hook groups **/
 builder.declare({
@@ -201,7 +201,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -315,7 +315,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -576,7 +576,7 @@ builder.declare({
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   const context = { firedBy, payload };

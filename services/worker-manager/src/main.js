@@ -1,22 +1,22 @@
-require('../../prelude');
-const loader = require('taskcluster-lib-loader');
-const taskcluster = require('taskcluster-client');
-const { App } = require('taskcluster-lib-app');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const exchanges = require('./exchanges');
-const builder = require('./api');
-const { Estimator } = require('./estimator');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const tcdb = require('taskcluster-db');
-const { Provisioner } = require('./provisioner');
-const { Providers } = require('./providers');
-const { WorkerScanner } = require('./worker-scanner');
-const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-
-require('./monitor');
+import '../../prelude.js';
+import loader from 'taskcluster-lib-loader';
+import taskcluster from 'taskcluster-client';
+import { App } from 'taskcluster-lib-app';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import config from 'taskcluster-lib-config';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import exchanges from './exchanges.js';
+import builder from './api.js';
+import { Estimator } from './estimator.js';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import tcdb from 'taskcluster-db';
+import { Provisioner } from './provisioner.js';
+import { Providers } from './providers/index.js';
+import { WorkerScanner } from './worker-scanner.js';
+import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import './monitor.js';
+import { fileURLToPath } from 'url';
 
 let load = loader({
   cfg: {
@@ -262,8 +262,8 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

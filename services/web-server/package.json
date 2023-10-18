@@ -2,7 +2,8 @@
   "name": "taskcluster-web-server",
   "version": "56.0.3",
   "private": true,
-  "main": "./src/main.js",
+  "exports": "./src/main.js",
+  "type": "module",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {

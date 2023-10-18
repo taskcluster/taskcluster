@@ -1,27 +1,29 @@
-const taskcluster = require('taskcluster-client');
-const { fakeauth, stickyLoader, Secrets, withMonitor } = require('taskcluster-lib-testing');
-const load = require('../src/main');
-const builder = require('../src/api.js');
-const { withDb } = require('taskcluster-lib-testing');
+import taskcluster from 'taskcluster-client';
+import testing from 'taskcluster-lib-testing';
+import loadMain from '../src/main.js';
+import builder from '../src/api.js';
+import { withDb } from 'taskcluster-lib-testing';
 
-exports.load = stickyLoader(load);
+export const load = testing.stickyLoader(loadMain);
+const helper = { load };
+export default helper;
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new testing.Secrets({
   secrets: {
   },
-  load: exports.load,
+  load,
 });
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'secrets');
+helper.withDb = (mock, skipping) => {
+  withDb(mock, skipping, helper, 'secrets');
 };
 
 // Some clients for the tests, with differents scopes.  These are turned
@@ -42,23 +44,23 @@ let testClients = {
  * This also sets up helper.client as an API client generator, using the
  * "captain" clients.
  */
-exports.withServer = (mock, skipping) => {
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     const rootUrl = 'http://localhost:60415';
-    exports.load.cfg('taskcluster.rootUrl', rootUrl);
-    fakeauth.start(testClients, { rootUrl });
+    load.cfg('taskcluster.rootUrl', rootUrl);
+    testing.fakeauth.start(testClients, { rootUrl });
 
-    exports.client = async clientId => {
+    helper.client = async clientId => {
       const SecretsClient = taskcluster.createClient(builder.reference());
 
       return new SecretsClient({
@@ -68,7 +70,7 @@ exports.withServer = (mock, skipping) => {
       });
     };
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -79,6 +81,6 @@ exports.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };

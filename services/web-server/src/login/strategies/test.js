@@ -1,8 +1,8 @@
-const User = require('../User');
-const taskcluster = require('taskcluster-client');
-const { encode, decode } = require('../../utils/codec');
+import User from '../User.js';
+import taskcluster from 'taskcluster-client';
+import { encode, decode } from '../../utils/codec.js';
 
-module.exports = class Test {
+export default class Test {
   constructor() {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('do not use test strategy in production');
@@ -18,7 +18,7 @@ module.exports = class Test {
   async getUser({ userId }) {
     const user = new User();
     user.identity = `${this.identityProviderId}/${encode(userId)}`;
-    user.addRole([...this.userRoles.get(userId) || []]);
+    user.addRole([...(this.userRoles.get(userId) || [])]);
     return user;
   }
 
@@ -47,4 +47,4 @@ module.exports = class Test {
       });
     });
   }
-};
+}

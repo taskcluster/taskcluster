@@ -1,10 +1,10 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const session = require('express-session');
-const { promisify } = require('util');
-const helper = require('./helper');
-const PostgresSessionStore = require('../src/login/PostgresSessionStore');
-const hash = require('../src/utils/hash');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import session from 'express-session';
+import { promisify } from 'util';
+import helper from './helper.js';
+import PostgresSessionStore from '../src/login/PostgresSessionStore.js';
+import hash from '../src/utils/hash.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

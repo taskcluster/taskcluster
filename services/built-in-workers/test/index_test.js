@@ -1,6 +1,6 @@
-const helper = require('./helper');
-const slugid = require('slugid');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import slugid from 'slugid';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   helper.withFakeQueue();

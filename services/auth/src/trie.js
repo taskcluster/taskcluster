@@ -1,4 +1,4 @@
-const ScopeSetBuilder = require('./scopesetbuilder');
+import ScopeSetBuilder from './scopesetbuilder.js';
 
 // Construct character SUBSTITUTE used for representation of <..>
 const PARAM = '\u001a';
@@ -15,7 +15,7 @@ const withParam = (scopes, param) => {
 };
 
 /** Node in a trie */
-class Node {
+export class Node {
   constructor(end = [], enter = [], paramed = [], kleeneOnly = []) {
     this.end = end; // scopes given if input ends at this node
     this.enter = enter; // scopes given if input traverses through this node
@@ -98,11 +98,8 @@ class Node {
   }
 }
 
-// Export Node (for tests only)
-exports._Node = Node;
-
 /**
- * Travese the given path calling visit(node, prefix) for each intermediate node
+ * Traverse the given path calling visit(node, prefix) for each intermediate node
  * along the path, before returning the node at path or null, if not reachable.
  *
  * Notice that '*' at end of path will not be interpreted as kleene.
@@ -141,7 +138,7 @@ const withoutKleene = (scope) => scope.endsWith('*') ? scope.slice(0, -1) : scop
  * Notice that the result does not include the input itself, merging this in is
  * the responsibility of the caller, if this is used to expand scopes.
  */
-const execute = (node, input, builder = new ScopeSetBuilder()) => {
+export const execute = (node, input, builder = new ScopeSetBuilder()) => {
   builder.add(node.enter);
   builder.add(withParam(node.paramed, input));
   node = traverse(node, withoutKleene(input), (node, path) => {
@@ -160,9 +157,6 @@ const execute = (node, input, builder = new ScopeSetBuilder()) => {
   }
   return builder;
 };
-
-// Export execute
-exports.execute = execute;
 
 /**
  * Transform rules from {pattern, scopes} to {pattern, scopes, matched, paramed},
@@ -237,7 +231,7 @@ const transformRules = (rules) => rules.map(({ pattern, scopes }) => {
  * `err.code = 'InvalidScopeError'` and an `err.scope` property.
  * This is the only effect of this method that useful outside this file.
  */
-const dependencyOrdering = (rules = []) => {
+export const dependencyOrdering = (rules = []) => {
   rules = transformRules(rules);
   // For each rule we must have an efficient way to find other rules that it
   // depends on. To do this we build a trie (because tries are fast), where
@@ -309,9 +303,6 @@ const dependencyOrdering = (rules = []) => {
   return ordering;
 };
 
-// Export dependencyOrdering
-exports.dependencyOrdering = dependencyOrdering;
-
 /**
  * Construct a trie where the given prefix have been pre-consumed.
  *
@@ -329,7 +320,7 @@ exports.dependencyOrdering = dependencyOrdering;
  * referenced in the result of this method. Hence, modifying the resulting trie
  * will invalidate the input trie, and vice versa.
  */
-const withPrefix = (trie, prefix = '') => {
+export const withPrefix = (trie, prefix = '') => {
   const enter = new ScopeSetBuilder({ optionallyClone: true });
   const paramed = new ScopeSetBuilder({ optionallyClone: true });
 
@@ -367,9 +358,6 @@ const withPrefix = (trie, prefix = '') => {
   return result;
 };
 
-// Export withPrefix
-exports.withPrefix = withPrefix;
-
 /**
  * Construct a trie where the given suffix have been pre-consumed.
  *
@@ -382,7 +370,7 @@ exports.withPrefix = withPrefix;
  * interprets '*' at the end of input as kleene. Hence, the above equivalence
  * does NOT hold if input = '...*' and suffix != ''.
  */
-const withSuffix = (trie, suffix = '') => {
+export const withSuffix = (trie, suffix = '') => {
   const end = new ScopeSetBuilder({ optionallyClone: true });
 
   // Any scopes attained by reaching the trie is also attained when suffix is added
@@ -442,13 +430,10 @@ const withSuffix = (trie, suffix = '') => {
   return result;
 };
 
-// Export withSuffix
-exports.withSuffix = withSuffix;
-
 /**
  * Build a trie from rules, s.t. execute(trie, scope) returns scope-set with all implied scopes.
  */
-const build = (rules = []) => {
+export const build = (rules = []) => {
   const trie = new Node();
 
   // Build trie, inserting one rule at the time in order of dependency
@@ -511,11 +496,8 @@ const build = (rules = []) => {
   return trie;
 };
 
-// Export build
-exports.build = build;
-
 /** Optimize trie by ensure that kleene is pre-computed */
-const optimize = (trie) => {
+export const optimize = (trie) => {
   // NOTE: this is also a good place to add further post-processing optimization if any come to mind
   //       (granted it's usually better to do them on-the-fly, and consider construction time)
 
@@ -523,6 +505,3 @@ const optimize = (trie) => {
   trie.kleene;
   return trie;
 };
-
-// Export optimize
-exports.optimize = optimize;

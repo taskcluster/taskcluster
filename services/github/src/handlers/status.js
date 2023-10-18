@@ -1,11 +1,18 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_BACKING_LOG_ARTIFACT_NAME,
-  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
-  CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE,
-} = require('../constants');
-const QueueLock = require('../queue-lock');
-const { tailLog, markdownLog, markdownAnchor } = require('../utils');
-const { requestArtifact } = require('./requestArtifact');
-const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
+import {
+  CONCLUSIONS,
+  CHECKLOGS_TEXT,
+  CHECKRUN_TEXT,
+  LIVE_BACKING_LOG_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
+  CHECK_RUN_STATES,
+  TASK_STATE_TO_CHECK_RUN_STATE,
+} from '../constants.js';
+
+import QueueLock from '../queue-lock.js';
+import { tailLog, markdownLog, markdownAnchor } from '../utils.js';
+import { requestArtifact } from './requestArtifact.js';
+import { taskUI, makeDebug, taskLogUI, GithubCheck } from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -34,7 +41,7 @@ const qLock = new QueueLock({
  *  taskException: https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/events#taskException
  * @returns {Promise<void>}
  **/
-async function statusHandler(message) {
+export async function statusHandler(message) {
   const { taskGroupId, state, runs, taskId } = message.payload.status;
   let { runId } = message.payload;
   runId = typeof runId === 'undefined' ? 0 : runId;
@@ -209,6 +216,4 @@ async function statusHandler(message) {
   }
 }
 
-module.exports = {
-  statusHandler,
-};
+export default statusHandler;

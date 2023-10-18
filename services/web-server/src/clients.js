@@ -1,3 +1,4 @@
+import tc from 'taskcluster-client';
 const {
   Auth,
   Github,
@@ -9,9 +10,9 @@ const {
   Secrets,
   Notify,
   WorkerManager,
-} = require('taskcluster-client');
+} = tc;
 
-module.exports = options => ({
+export default options => ({
   auth: new Auth(options),
   github: new Github(options),
   hooks: new Hooks(options),

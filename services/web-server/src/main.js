@@ -1,31 +1,41 @@
-require('../../prelude');
-const debug = require('debug')('app:main');
-const assert = require('assert');
-const depthLimit = require('graphql-depth-limit');
-const { createComplexityLimitRule } = require('graphql-validation-complexity');
-const loader = require('taskcluster-lib-loader');
-const config = require('taskcluster-lib-config');
-const libReferences = require('taskcluster-lib-references');
-const { createServer } = require('http');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const { ApolloServer } = require('apollo-server-express');
-const { ApolloServerPluginDrainHttpServer } = require('apollo-server-core');
-const taskcluster = require('taskcluster-client');
-const tcdb = require('taskcluster-db');
-const { Auth } = require('taskcluster-client');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const createApp = require('./servers/createApp');
-const formatError = require('./servers/formatError');
-const clients = require('./clients');
-const createContext = require('./createContext');
-const createSchema = require('./createSchema');
-const createSubscriptionServer = require('./servers/createSubscriptionServer');
-const resolvers = require('./resolvers');
-const typeDefs = require('./graphql');
-const PulseEngine = require('./PulseEngine');
-const scanner = require('./login/scanner');
+import '../../prelude.js';
+import debugFactory from 'debug';
+const debug = debugFactory('app:main');
+import assert from 'assert';
+import depthLimit from 'graphql-depth-limit';
+import { createComplexityLimitRule } from 'graphql-validation-complexity';
+import loader from 'taskcluster-lib-loader';
+import config from 'taskcluster-lib-config';
+import libReferences from 'taskcluster-lib-references';
+import { createServer } from 'http';
+import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import taskcluster from 'taskcluster-client';
+import tcdb from 'taskcluster-db';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import createApp from './servers/createApp.js';
+import formatError from './servers/formatError.js';
+import clients from './clients.js';
+import createContext from './createContext.js';
+import createSchema from './createSchema.js';
+import createSubscriptionServer from './servers/createSubscriptionServer.js';
+import resolvers from './resolvers/index.js';
+import typeDefs from './graphql/index.js';
+import PulseEngine from './PulseEngine/index.js';
+import scanner from './login/scanner.js';
+import './monitor.js';
+import { fileURLToPath } from 'url';
 
-require('./monitor');
+import githubStrategy from './login/strategies/github.js';
+import mozillaAuth0Strategy from './login/strategies/mozilla-auth0.js';
+import testStrategy from './login/strategies/test.js';
+
+const loginStrategies = {
+  github: githubStrategy,
+  'mozilla-auth0': mozillaAuth0Strategy,
+  test: testStrategy,
+};
 
 const load = loader(
   {
@@ -161,7 +171,7 @@ const load = loader(
         const strategies = {};
 
         Object.keys(cfg.login.strategies || {}).forEach((name) => {
-          const Strategy = require('./login/strategies/' + name);
+          const Strategy = loginStrategies[name];
           const options = { name, cfg, monitor, db };
 
           strategies[name] = new Strategy(options);
@@ -174,7 +184,7 @@ const load = loader(
     scanner: {
       requires: ['cfg', 'strategies', 'monitor'],
       setup: async ({ cfg, strategies, monitor }, ownName) => {
-        const auth = new Auth({
+        const auth = new taskcluster.Auth({
           credentials: cfg.taskcluster.credentials,
           rootUrl: cfg.taskcluster.rootUrl,
         });
@@ -283,8 +293,9 @@ const load = loader(
   },
 );
 
-if (!module.parent) {
-  load.crashOnError(process.argv[2] || 'devServer');
+// If this file is executed launch component from first argument
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

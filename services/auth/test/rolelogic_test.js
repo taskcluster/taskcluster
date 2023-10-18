@@ -1,8 +1,8 @@
-const helper = require('./helper');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const mocha = require('mocha');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import mocha from 'mocha';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);

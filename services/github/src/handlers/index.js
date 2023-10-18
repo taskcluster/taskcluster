@@ -1,18 +1,17 @@
-const _ = require('lodash');
-const stringify = require('fast-json-stable-stringify');
-const crypto = require('crypto');
-const taskcluster = require('taskcluster-client');
-const yaml = require('js-yaml');
-const assert = require('assert');
-const { consume } = require('taskcluster-lib-pulse');
-
-const { deprecatedStatusHandler } = require('./deprecatedStatus');
-const { taskGroupCreationHandler } = require('./taskGroupCreation');
-const { statusHandler } = require('./status');
-const { jobHandler } = require('./job');
-const { rerunHandler } = require('./rerun');
-const { POLICIES } = require('./policies');
-const { GITHUB_BUILD_STATES } = require('../constants');
+import _ from 'lodash';
+import stringify from 'fast-json-stable-stringify';
+import crypto from 'crypto';
+import taskcluster from 'taskcluster-client';
+import yaml from 'js-yaml';
+import assert from 'assert';
+import { consume } from 'taskcluster-lib-pulse';
+import { deprecatedStatusHandler } from './deprecatedStatus.js';
+import { taskGroupCreationHandler } from './taskGroupCreation.js';
+import { statusHandler } from './status.js';
+import { jobHandler } from './job.js';
+import { rerunHandler } from './rerun.js';
+import { POLICIES } from './policies.js';
+import { GITHUB_BUILD_STATES } from '../constants.js';
 
 /**
  * Create handlers
@@ -496,4 +495,4 @@ class Handlers {
   }
 }
 
-module.exports = Handlers;
+export default Handlers;

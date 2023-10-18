@@ -1,10 +1,10 @@
-const assert = require('assert');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { WorkerPool, Worker } = require('../src/data');
-const { ApiError } = require('../src/providers/provider');
+import assert from 'assert';
+import helper from './helper.js';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import { LEVELS } from 'taskcluster-lib-monitor';
+import { WorkerPool, Worker } from '../src/data.js';
+import { ApiError } from '../src/providers/provider.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

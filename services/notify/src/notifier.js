@@ -1,11 +1,14 @@
-const debug = require('debug')('notify');
-const _ = require('lodash');
-const path = require('path');
-const crypto = require('crypto');
-const sanitizeHtml = require('sanitize-html');
-const { marked } = require('marked');
-const Email = require('email-templates');
-const nodemailer = require('nodemailer');
+import debugFactory from 'debug';
+const debug = debugFactory('notify');
+import _ from 'lodash';
+import path from 'path';
+import crypto from 'crypto';
+import sanitizeHtml from 'sanitize-html';
+import { marked } from 'marked';
+import Email from 'email-templates';
+import nodemailer from 'nodemailer';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -156,4 +159,4 @@ class Notifier {
 }
 
 // Export notifier
-module.exports = Notifier;
+export default Notifier;

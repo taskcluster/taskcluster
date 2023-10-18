@@ -1,29 +1,31 @@
-const _ = require('lodash');
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const builder = require('../src/api');
-const load = require('../src/main');
-const { tmpdir } = require('os');
-const { mkdtempSync, rmSync } = require('fs');
-const { sep } = require('path');
-const mockAwsS3 = require('mock-aws-s3');
-const nock = require('nock');
-const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
+import { tmpdir } from 'os';
+import { mkdtempSync, rmSync } from 'fs';
+import { sep } from 'path';
+import mockAwsS3 from 'mock-aws-s3';
+import nock from 'nock';
+import testing from 'taskcluster-lib-testing';
+import { globalAgent } from 'http';
 
-const helper = module.exports;
+export const load = testing.stickyLoader(loadMain);
+const __dirname = new URL('.', import.meta.url).pathname;
 
-exports.load = stickyLoader(load);
+const helper = { load };
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-queue',
   ],
@@ -39,15 +41,15 @@ exports.secrets = new Secrets({
         mock: 'us-central-7' },
     ],
   },
-  load: exports.load,
+  load,
 });
-
+helper.secrets = secrets;
 helper.rootUrl = 'http://localhost:60401';
 
 /**
  * Set up to use mock-aws-s3 for S3 operations when mocking.
  */
-exports.withS3 = (mock, skipping) => {
+export const withS3 = (mock, skipping) => {
   let tmpDir;
 
   suiteSetup('setup withS3', async function() {
@@ -59,9 +61,9 @@ exports.withS3 = (mock, skipping) => {
       tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
       mockAwsS3.config.basePath = tmpDir;
 
-      await exports.load('cfg');
-      exports.load.cfg('aws.accessKeyId', undefined);
-      exports.load.cfg('aws.secretAccessKey', undefined);
+      await load('cfg');
+      load.cfg('aws.accessKeyId', undefined);
+      load.cfg('aws.secretAccessKey', undefined);
 
       const mock = new mockAwsS3.S3({
         params: {
@@ -82,7 +84,7 @@ exports.withS3 = (mock, skipping) => {
         CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
       });
 
-      exports.load.cfg('aws.mock', mock);
+      load.cfg('aws.mock', mock);
     }
   });
 
@@ -92,6 +94,7 @@ exports.withS3 = (mock, skipping) => {
     }
   });
 };
+helper.withS3 = withS3;
 
 /**
  * Set up to use mock-aws-s3 for S3-like operations on GCS
@@ -100,7 +103,7 @@ exports.withS3 = (mock, skipping) => {
  * - DeleteObject throws 404 (aws returns 204)
  * - DeleteObjects not supported
  */
-exports.withGCS = (mock, skipping) => {
+export const withGCS = (mock, skipping) => {
   let tmpDir;
 
   suiteSetup('setup withGCS', async function() {
@@ -112,9 +115,9 @@ exports.withGCS = (mock, skipping) => {
       tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
       mockAwsS3.config.basePath = tmpDir;
 
-      await exports.load('cfg');
-      exports.load.cfg('aws.accessKeyId', undefined);
-      exports.load.cfg('aws.secretAccessKey', undefined);
+      await load('cfg');
+      load.cfg('aws.accessKeyId', undefined);
+      load.cfg('aws.secretAccessKey', undefined);
 
       const mock = new mockAwsS3.S3({
         params: {
@@ -146,7 +149,7 @@ exports.withGCS = (mock, skipping) => {
         return await mock._origDeleteObject.apply(mock, args).promise();
       });
 
-      exports.load.cfg('aws.mock', mock);
+      load.cfg('aws.mock', mock);
     }
   });
 
@@ -156,6 +159,7 @@ exports.withGCS = (mock, skipping) => {
     }
   });
 };
+helper.withGCS = withGCS;
 
 /**
  * Mock the https://ip-ranges.amazonaws.com/ip-ranges.json endpoint
@@ -163,7 +167,7 @@ exports.withGCS = (mock, skipping) => {
  *
  * Note that this file is *always* mocked, regardless of any secrets.
  */
-exports.withAmazonIPRanges = (mock, skipping) => {
+export const withAmazonIPRanges = (mock, skipping) => {
   let interceptor;
 
   suiteSetup(async function() {
@@ -184,15 +188,17 @@ exports.withAmazonIPRanges = (mock, skipping) => {
     }
   });
 };
+helper.withAmazonIPRanges = withAmazonIPRanges;
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'queue');
+export const withDb = (mock, skipping) => {
+  testing.withDb(mock, skipping, helper, 'queue');
 };
+helper.withDb = withDb;
 
 /**
  * Set up a fake object service that supports uploads and downlods.
  */
-exports.withObjectService = (mock, skipping) => {
+export const withObjectService = (mock, skipping) => {
   let objects = new Map();
   suiteSetup(async function() {
     const err404 = message => {
@@ -244,13 +250,14 @@ exports.withObjectService = (mock, skipping) => {
         },
       },
     });
-    exports.load.inject('objectService', helper.objectService);
+    load.inject('objectService', helper.objectService);
   });
 
   setup(function() {
     objects = new Map();
   });
 };
+helper.withObjectService = withObjectService;
 
 /**
  * Set up an API server.  Call this after withDb, so the server
@@ -259,28 +266,28 @@ exports.withObjectService = (mock, skipping) => {
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Queue.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    testing.fakeauth.start({
       'test-client': ['*'],
     }, { rootUrl: helper.rootUrl });
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..
-    exports.load.cfg('taskcluster.credentials',
+    load.cfg('taskcluster.credentials',
       { clientId: 'test-client', accessToken: 'ignored' });
-    await exports.load('workClaimer');
+    await load('workClaimer');
 
     helper.Queue = taskcluster.createClient(builder.reference());
 
@@ -288,7 +295,7 @@ exports.withServer = (mock, skipping) => {
       const options = {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent: require('http').globalAgent,
+        agent: globalAgent,
         rootUrl: helper.rootUrl,
         retries: 0,
       };
@@ -322,13 +329,15 @@ exports.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };
+helper.withServer = withServer;
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
+export const withPulse = (mock, skipping) => {
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
+helper.withPulse = withPulse;
 
 /**
  * Set up a polling service (dependency-resolver, etc.)
@@ -336,7 +345,7 @@ exports.withPulse = (mock, skipping) => {
  * helper.startPollingService will start the service.  Note that the
  * caller must stop the service *before* returning.
  */
-exports.withPollingServices = (mock, skipping) => {
+export const withPollingServices = (mock, skipping) => {
   let svc;
 
   suiteSetup(async function() {
@@ -371,6 +380,7 @@ exports.withPollingServices = (mock, skipping) => {
     helper.startPollingService = null;
   });
 };
+helper.withPollingServices = withPollingServices;
 
 /**
  * Run various expiration loader components
@@ -388,13 +398,15 @@ helper.runExpiration = async component => {
 /**
  * Make a random task queue ID
  */
-exports.makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+export const makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+helper.makeTaskQueueId = makeTaskQueueId;
 
 /**
  * Check the date formats of a task status
  */
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-exports.checkDates = ({ status }) => {
+
+export const checkDates = ({ status }) => {
   const chk = (d, n) => {
     if (d !== undefined) {
       assert(DATE_FORMAT.test(d), `Got invalid date ${d} for ${n}`);
@@ -411,10 +423,11 @@ exports.checkDates = ({ status }) => {
   }
   return { status };
 };
+helper.checkDates = checkDates;
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'tasks',
       'task_groups',
       'task_dependencies',
@@ -423,3 +436,7 @@ exports.resetTables = (mock, skipping) => {
     ] });
   });
 };
+helper.resetTables = resetTables;
+
+// by exporting a proxy we can keep tests using same helper and import
+export default helper;

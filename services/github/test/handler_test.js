@@ -1,13 +1,19 @@
-const debug = require('debug')('test');
-const helper = require('./helper');
-const assert = require('assert');
-const sinon = require('sinon');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { CHECKLOGS_TEXT, CHECKRUN_TEXT } = require('../src/constants');
-const utils = require('../src/utils');
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import helper from './helper.js';
+import assert from 'assert';
+import sinon from 'sinon';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import { LEVELS } from 'taskcluster-lib-monitor';
+import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants.js';
+import utils from '../src/utils.js';
+import fs from 'fs';
+import path from 'path';
+
+const dataDir = new URL('./data/yml/', import.meta.url).pathname;
+const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -18,6 +24,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
+
+  const validYamlJson = loadJson('valid-yaml.json');
+  const validYamlV1Json = loadJson('valid-yaml-v1.json');
+  const invalidTaskJson = loadJson('invalid-task.json');
+  const invalidYamlJson = loadJson('invalid-yaml.json');
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
@@ -577,7 +588,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -601,13 +612,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -627,13 +638,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -642,7 +653,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public' };
 
       github.inst(5828).setTaskclusterYml({
@@ -673,7 +684,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
 
       github.inst(5828).setTaskclusterYml({
@@ -708,7 +719,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
@@ -727,7 +738,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
@@ -751,7 +762,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-task.json'),
+        content: invalidTaskJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -769,7 +780,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-yaml.json'),
+        content: invalidYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -787,7 +798,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       handlers.createTasks.rejects({ body: { error: 'oh noes' } });
       await simulateJobMessage({ user: 'goodBuddy' });
@@ -802,7 +813,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     suite('Cancel running task groups', function () {
       test('should not cancel task groups on the default branch', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -828,7 +839,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.notCalled);
       });
       test('should respect .taskcluster.yml autoCancelPreviousChecks config', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         tcYaml['autoCancelPreviousChecks'] = false;
         github.inst(5828).setTaskclusterYml({
           owner: 'TaskclusterRobot',
@@ -861,7 +872,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert.equal(cancelCallArgs.newBuild.pull_number, null);
       });
       test('should cancel by default', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -878,7 +889,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
       });
       test('should cancel task groups for same pull request number', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         tcYaml['autoCancelPreviousChecks'] = true;
         github.inst(5828).setRepoCollaborator({
           owner: 'TaskclusterRobot',
@@ -936,7 +947,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             ref: COMMIT_SHA,
-            content: require('./data/yml/valid-yaml.json'),
+            content: validYamlJson,
           });
           github.inst(5828).setTaskclusterYml({
             owner: 'TaskclusterRobot',
@@ -974,7 +985,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -992,7 +1003,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -1011,7 +1022,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'push' });
 
@@ -1024,7 +1035,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
         // note that this ends up compiling to zero tasks for a release
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setCommit({
         owner: 'TaskclusterRobot',
@@ -1047,7 +1058,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',

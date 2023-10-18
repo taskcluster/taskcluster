@@ -1,8 +1,8 @@
-const assert = require('assert');
-const _ = require('lodash');
-const { Octokit: github } = require('@octokit/rest');
-const fakeGithubAuth = require('./github-auth');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import _ from 'lodash';
+import { Octokit as github } from '@octokit/rest';
+import fakeGithubAuth from './github-auth.js';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
 

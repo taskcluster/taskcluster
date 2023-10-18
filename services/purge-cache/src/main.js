@@ -1,14 +1,16 @@
-require('../../prelude');
-const debug = require('debug')('purge-cache');
-const config = require('taskcluster-lib-config');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const SchemaSet = require('taskcluster-lib-validate');
-const { App } = require('taskcluster-lib-app');
-const libReferences = require('taskcluster-lib-references');
-const taskcluster = require('taskcluster-client');
-const tcdb = require('taskcluster-db');
-const builder = require('./api');
+import '../../prelude.js';
+import debugFactory from 'debug';
+const debug = debugFactory('purge-cache');
+import config from 'taskcluster-lib-config';
+import loader from 'taskcluster-lib-loader';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import SchemaSet from 'taskcluster-lib-validate';
+import { App } from 'taskcluster-lib-app';
+import libReferences from 'taskcluster-lib-references';
+import taskcluster from 'taskcluster-client';
+import tcdb from 'taskcluster-db';
+import builder from './api.js';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -98,8 +100,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

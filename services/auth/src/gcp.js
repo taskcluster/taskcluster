@@ -1,6 +1,4 @@
-const builder = require('./api');
-
-builder.declare({
+export const gcpBuilder = builder => builder.declare({
   method: 'get',
   route: '/gcp/credentials/:projectId/:serviceAccount',
   name: 'gcpCredentials',

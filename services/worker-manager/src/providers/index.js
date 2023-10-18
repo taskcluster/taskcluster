@@ -1,9 +1,9 @@
-const { NullProvider } = require('./null');
-const { TestingProvider } = require('./testing');
-const { StaticProvider } = require('./static');
-const { GoogleProvider } = require('./google');
-const { AwsProvider } = require('./aws');
-const { AzureProvider } = require('./azure');
+import { NullProvider } from './null.js';
+import { TestingProvider } from './testing.js';
+import { StaticProvider } from './static.js';
+import { GoogleProvider } from './google.js';
+import { AwsProvider } from './aws.js';
+import { AzureProvider } from './azure/index.js';
 
 const PROVIDER_TYPES = {
   null: NullProvider,
@@ -18,7 +18,7 @@ const PROVIDER_TYPES = {
 let SETUP_RETRY_INTERVAL = 60 * 1000;
 
 // for tests..
-const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
+export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
 
 /**
  * Load all of the providers in the configuration, including loading
@@ -26,7 +26,7 @@ const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
  * which providers have successfully been set up, and handles failed setup
  * properly by never returning a failed provider.
  */
-class Providers {
+export class Providers {
   async setup({ cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator }) {
     this.monitor = monitor;
     this._providers = {};
@@ -123,5 +123,3 @@ class Providers {
     return p;
   }
 }
-
-module.exports = { Providers, setSetupRetryInterval };

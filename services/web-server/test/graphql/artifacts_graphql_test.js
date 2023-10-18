@@ -1,10 +1,7 @@
-const assert = require('assert');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const getArtifacts = require('../fixtures/artifacts.graphql');
-const getLatestArtifacts = require('../fixtures/latestArtifacts.graphql');
-const artifactsCreated = require('../fixtures/artifactsCreated.graphql');
+import assert from 'assert';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -17,6 +14,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const client = helper.getHttpClient();
       const taskId = "artifact-id";
       const runId = 123456;
+      const getArtifacts = await helper.loadFixture('artifacts.graphql');
 
       const response = await client.query({
         query: gql`${getArtifacts}`,
@@ -34,6 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('latest artifacts query works', async function() {
       const client = helper.getHttpClient();
       const taskId = "artifact-id";
+      const getLatestArtifacts = await helper.loadFixture('latestArtifacts.graphql');
 
       const response = await client.query({
         query: gql`${getLatestArtifacts}`,
@@ -54,6 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('subscribe works', async function(){
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
+      const artifactsCreated = await helper.loadFixture('artifactsCreated.graphql');
 
       const payload = {
         artifactsCreated: {

@@ -740,7 +740,7 @@ const mapping = {
   'github-release': release,
 };
 
-module.exports.getEventPayload = function getEventPayload(type, action, organization, repository, branch, overrides = {}) {
+export const getEventPayload = function getEventPayload(type, action, organization, repository, branch, overrides = {}) {
   const event = JSON.parse(
     mapping[type]
       .replaceAll('$ORGANIZATION', organization)

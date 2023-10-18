@@ -1,10 +1,11 @@
-const assert = require('assert');
-const helper = require('./helper');
-const nock = require('nock');
-const testing = require('taskcluster-lib-testing');
-const EC2RegionResolver = require('../src/ec2regionresolver');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import assert from 'assert';
+import helper from './helper.js';
+import nock from 'nock';
+import testing from 'taskcluster-lib-testing';
+import EC2RegionResolver from '../src/ec2regionresolver.js';
+import { LEVELS } from 'taskcluster-lib-monitor';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 suite(testing.suiteName(), function() {
   helper.withAmazonIPRanges(false, () => false);
 

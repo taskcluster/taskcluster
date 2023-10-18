@@ -1,8 +1,8 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
-module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const WorkerManagerWorkerPoolSummaries = new ConnectionLoader(
     async ({ workerPoolId, filter, options }) => {
       const raw = await workerManager.listWorkerPools(options);

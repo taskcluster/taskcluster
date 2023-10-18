@@ -1,15 +1,15 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { stickyLoader } = require('taskcluster-lib-testing');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import { default as _load } from '../src/main.js';
+import { stickyLoader } from 'taskcluster-lib-testing';
 
-const helper = module.exports;
-
-exports.load = stickyLoader(load);
+const load = stickyLoader(_load);
+const helper = { load };
+export default helper;
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
 /**
@@ -20,10 +20,11 @@ suiteSetup(async function() {
  * The component is available at `helper.queue`.
  */
 helper.rootUrl = 'http://localhost:8080';
-exports.withFakeQueue = () => {
+
+helper.withFakeQueue = () => {
   suiteSetup(function() {
-    helper.queue = stubbedQueue();
-    helper.load.inject('queue', helper.queue);
+    const queue = stubbedQueue(helper);
+    load.inject('queue', queue);
   });
 };
 
@@ -31,15 +32,19 @@ exports.withFakeQueue = () => {
  * make a queue object with the `task` method stubbed out, and with
  * an `addTask` method to add fake tasks.
  */
-const stubbedQueue = () => {
+const stubbedQueue = (fakeQueue) => {
   const tasks = {};
+
   // responses from claimWork
-  exports.claimableWork = [];
+  fakeQueue.claimableWork = [];
+
   // {taskId: resolution}
-  exports.taskResolutions = {};
-  exports.assertTaskResolved = (taskId, resolution) => {
-    return assert.deepEqual(exports.taskResolutions[taskId], resolution);
+  fakeQueue.taskResolutions = {};
+
+  fakeQueue.assertTaskResolved = (taskId, resolution) => {
+    return assert.deepEqual(fakeQueue.taskResolutions[taskId], resolution);
   };
+
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
@@ -54,7 +59,7 @@ const stubbedQueue = () => {
       },
       claimWork: async function (taskQueueId, payload) {
         assert.equal(this._options.credentials.clientId, 'built-in-workers');
-        const work = exports.claimableWork.pop();
+        const work = fakeQueue.claimableWork.pop();
         work.tasks.map(task => task.credentials = {
           clientId: 'task-creds',
           accessToken: 'none',
@@ -65,17 +70,17 @@ const stubbedQueue = () => {
       },
       reportCompleted: async function (taskId, runId) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
-        exports.taskResolutions[taskId] = { completed: true };
+        fakeQueue.taskResolutions[taskId] = { completed: true };
         return {};
       },
       reportFailed: async function (taskId, runId) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
-        exports.taskResolutions[taskId] = { failed: true };
+        fakeQueue.taskResolutions[taskId] = { failed: true };
         return {};
       },
       reportException: async function (taskId, runId, payload) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
-        exports.taskResolutions[taskId] = { exception: payload };
+        fakeQueue.taskResolutions[taskId] = { exception: payload };
         return {};
       },
     },

@@ -1,11 +1,11 @@
-const { slugid } = require('taskcluster-client');
-const PulseIterator = require('./PulseIterator');
-const MessageIterator = require('./MessageIterator');
-const EventIterator = require('./EventIterator');
-const Subscription = require('./Subscription');
-const pSynchronize = require('p-synchronize');
+import taskcluster from 'taskcluster-client';
+import PulseIterator from './PulseIterator.js';
+import MessageIterator from './MessageIterator.js';
+import EventIterator from './EventIterator.js';
+import Subscription from './Subscription.js';
+import pSynchronize from 'p-synchronize';
 
-module.exports = class PulseEngine {
+export default class PulseEngine {
   /* Operation:
    *
    * Each subscription gets one queue (named after the subscriptionId), with a
@@ -49,7 +49,7 @@ module.exports = class PulseEngine {
   }
 
   subscribe(subscriptions, handleMessage, handleError) {
-    const subscriptionId = slugid();
+    const subscriptionId = taskcluster.slugid();
 
     this.subscriptions.set(
       subscriptionId,
@@ -128,4 +128,4 @@ module.exports = class PulseEngine {
   eventIterator(eventName, subscriptions) {
     return new EventIterator(new PulseIterator(this, subscriptions), eventName);
   }
-};
+}

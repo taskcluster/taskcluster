@@ -1,51 +1,56 @@
-const load = require('../src/main');
-const taskcluster = require('taskcluster-client');
-const { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
-const sinon = require('sinon');
-const GithubClient = require('../src/login/clients/GithubClient');
-const libUrls = require('taskcluster-lib-urls');
-const request = require('superagent');
-const merge = require('deepmerge');
-const PulseEngine = require('../src/PulseEngine');
-const { WebSocketLink } = require('apollo-link-ws');
-const WebSocket = require('ws');
-const { SubscriptionClient } = require('subscriptions-transport-ws');
-const { ApolloClient } = require('apollo-client');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { HttpLink } = require('apollo-link-http');
-const got = require('got');
+import load from '../src/main.js';
+import taskcluster from 'taskcluster-client';
+import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from 'taskcluster-lib-testing';
+import sinon from 'sinon';
+import GithubClient from '../src/login/clients/GithubClient.js';
+import libUrls from 'taskcluster-lib-urls';
+import request from 'superagent';
+import merge from 'deepmerge';
+import PulseEngine from '../src/PulseEngine/index.js';
+import { WebSocketLink } from 'apollo-link-ws';
+import WebSocket from 'ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import apollo from 'apollo-client';
+const { ApolloClient } = apollo;
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
+import got from 'got';
+import path from 'path';
+import fs from 'fs/promises';
 
-exports.load = stickyLoader(load);
+const helper = {};
+export default helper;
+helper.load = stickyLoader(load);
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  helper.load.inject('profile', 'test');
+  helper.load.inject('process', 'test');
 });
 
-withMonitor(exports);
+withMonitor(helper);
 
-exports.rootUrl = libUrls.testRootUrl();
+helper.rootUrl = libUrls.testRootUrl();
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new Secrets({
   secrets: {
   },
-  load: exports.load,
+  load: helper.load,
 });
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'web_server');
+helper.withDb = (mock, skipping) => {
+  withDb(mock, skipping, helper, 'web_server');
 };
 
-exports.withPulse = (helper, skipping) => {
+helper.withPulse = (helper, skipping) => {
   withPulse({ helper, skipping, namespace: 'taskcluster-web-server' });
 };
 
-exports.withMockedEventIterator = () => {
+helper.withMockedEventIterator = () => {
   let PulseEngineCopy = Object.assign({}, PulseEngine);
 
   PulseEngineCopy.NextAsyncIterator = null;
-  exports.setNextAsyncIterator = (asyncIterator) => {
+  helper.setNextAsyncIterator = (asyncIterator) => {
     PulseEngineCopy.NextAsyncIterator = asyncIterator;
   };
 
@@ -56,24 +61,24 @@ exports.withMockedEventIterator = () => {
     return PulseEngineCopy.NextAsyncIterator;
   };
 
-  exports.load.inject('pulseEngine', PulseEngineCopy);
+  helper.load.inject('pulseEngine', PulseEngineCopy);
 
   suiteTeardown(() => {
-    exports.load.remove('pulseEngine');
+    helper.load.remove('pulseEngine');
   });
 };
 
-exports.withFakeAuth = (mock, skipping) => {
+helper.withFakeAuth = (mock, skipping) => {
   suiteSetup('withFakeAuth', function() {
     if (skipping()) {
       return;
     }
 
-    exports.load.inject('auth', stubbedAuth());
+    helper.load.inject('auth', stubbedAuth());
   });
 };
 
-exports.withClients = (mock, skipping) => {
+helper.withClients = (mock, skipping) => {
   suiteSetup('withClients', async function() {
     if (skipping()) {
       return;
@@ -81,22 +86,22 @@ exports.withClients = (mock, skipping) => {
 
     const clients = stubbedClients();
 
-    exports.load.inject('clients', clients);
-    exports.clients = clients;
+    helper.load.inject('clients', clients);
+    helper.clients = clients;
   });
 
   suiteTeardown(function () {
-    exports.load.remove('clients');
+    helper.load.remove('clients');
   });
 };
 
-exports.withServer = (mock, skipping) => {
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   // return a signed-in Superagent agent
   const signedInAgent = async () => {
     const agent = request.agent();
-    await agent.get(`http://127.0.0.1:${exports.serverPort}/login/test`);
+    await agent.get(`http://127.0.0.1:${helper.serverPort}/login/test`);
     return agent;
   };
 
@@ -104,9 +109,9 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    const cfg = await helper.load('cfg');
 
-    webServer = await exports.load('httpServer');
+    webServer = await helper.load('httpServer');
     await new Promise((resolve, reject) => {
       webServer.once('error', reject);
       webServer.listen(cfg.server.port, function() {
@@ -114,10 +119,10 @@ exports.withServer = (mock, skipping) => {
       });
     });
 
-    exports.serverPort = cfg.server.port;
-    exports.signedInAgent = signedInAgent;
+    helper.serverPort = cfg.server.port;
+    helper.signedInAgent = signedInAgent;
 
-    exports.load.cfg('app.publicUrl', `http://127.0.0.1:${exports.serverPort}`);
+    helper.load.cfg('app.publicUrl', `http://127.0.0.1:${helper.serverPort}`);
   });
 
   suiteTeardown(async function() {
@@ -131,7 +136,7 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.githubFixtures = {
+helper.githubFixtures = {
   users: {
     'octocat': 10,
     'taskcluster': 20,
@@ -161,7 +166,7 @@ exports.githubFixtures = {
   },
 };
 
-exports.makeTaskDefinition = (options = {}) => merge({
+helper.makeTaskDefinition = (options = {}) => merge({
   provisionerId: "no-provisioner-extended-extended",
   workerType: "test-worker-extended-extended",
   schedulerId: "my-scheduler-extended-extended",
@@ -188,7 +193,7 @@ exports.makeTaskDefinition = (options = {}) => merge({
   extra: {},
 }, options);
 
-exports.withGithubClient = () => {
+helper.withGithubClient = () => {
   function githubClient() {
     let currentUsername = null;
 
@@ -200,7 +205,7 @@ exports.withGithubClient = () => {
           throw new Error('uhoh');
         }
 
-        const user_id = exports.githubFixtures.users[username];
+        const user_id = helper.githubFixtures.users[username];
 
         if (!user_id) {
           const err = new Error('No such user');
@@ -211,7 +216,7 @@ exports.withGithubClient = () => {
         return { id: user_id };
       },
       async userMembershipsOrgs() {
-        const organizations = exports.githubFixtures.orgs[currentUsername];
+        const organizations = helper.githubFixtures.orgs[currentUsername];
 
         if (!organizations) {
           throw new Error(`memberships orgs for user ${currentUsername} not found`);
@@ -220,7 +225,7 @@ exports.withGithubClient = () => {
         return organizations;
       },
       async listTeams() {
-        const userTeams = exports.githubFixtures.teams[currentUsername];
+        const userTeams = helper.githubFixtures.teams[currentUsername];
 
         if (!userTeams) {
           throw new Error(`orgs for user ${currentUsername} not found`);
@@ -244,7 +249,7 @@ exports.withGithubClient = () => {
   });
 };
 
-exports.getHttpClient = () => {
+helper.getHttpClient = () => {
   const gotFetch = async (url, options) => {
     // Map Fetch API options to Got options
     const gotOptions = {
@@ -279,14 +284,14 @@ exports.getHttpClient = () => {
 
   const cache = new InMemoryCache();
   const httpLink = new HttpLink({
-    uri: `http://localhost:${exports.serverPort}/graphql`,
+    uri: `http://localhost:${helper.serverPort}/graphql`,
     fetch: gotFetch,
   });
 
   return new ApolloClient({ cache, link: httpLink });
 };
 
-exports.getWebsocketClient = (subscriptionClient) => {
+helper.getWebsocketClient = (subscriptionClient) => {
   const cache = new InMemoryCache();
   const link = new WebSocketLink(subscriptionClient);
 
@@ -295,10 +300,10 @@ exports.getWebsocketClient = (subscriptionClient) => {
 
 // If a subscription client is created for a test, it also needs to be closed.
 // Otherwise, the tests will just hang and timeout
-exports.createSubscriptionClient = async () => {
+helper.createSubscriptionClient = async () => {
   return new Promise(function(resolve, reject) {
     const subscriptionClient = new SubscriptionClient(
-      `ws://localhost:${exports.serverPort}/subscription`,
+      `ws://localhost:${helper.serverPort}/subscription`,
       {
         reconnect: true,
       },
@@ -315,7 +320,7 @@ exports.createSubscriptionClient = async () => {
 
 const stubbedAuth = () => {
   const auth = new taskcluster.Auth({
-    rootUrl: exports.rootUrl,
+    rootUrl: helper.rootUrl,
     fake: {
       createClient: async (clientId, input) => {
         return Promise.resolve({
@@ -341,7 +346,7 @@ const stubbedClients = () => {
   const roles = new Map();
   const workerPools = new Map();
   const options = {
-    rootUrl: exports.rootUrl,
+    rootUrl: helper.rootUrl,
     // credentials are required to generate signed URLs
     credentials: {
       clientId: 'testing',
@@ -355,7 +360,7 @@ const stubbedClients = () => {
     workerPools.clear();
   });
 
-  exports.fakes = {
+  helper.fakes = {
     makeWorkerPool: (workerPoolId, workerPool) => {
       workerPools.set(workerPoolId, {
         ...workerPool,
@@ -516,7 +521,7 @@ const stubbedClients = () => {
   });
 };
 
-exports.resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'authorization_codes',
@@ -525,4 +530,16 @@ exports.resetTables = (mock, skipping) => {
       'github_access_tokens',
     ] });
   });
+};
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const fixturesCache = new Map();
+helper.loadFixture = async (name) => {
+  if (!fixturesCache.has(name)) {
+    fixturesCache.set(
+      name,
+      await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'),
+    );
+  }
+  return fixturesCache.get(name);
 };

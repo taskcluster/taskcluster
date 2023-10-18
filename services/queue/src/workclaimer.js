@@ -1,9 +1,9 @@
-let assert = require('assert');
-let _ = require('lodash');
-let events = require('events');
-let taskCreds = require('./task-creds');
-const { Task } = require('./data');
-const HintPoller = require('./hintpoller');
+import assert from 'assert';
+import _ from 'lodash';
+import events from 'events';
+import taskCreds from './task-creds.js';
+import { Task } from './data.js';
+import HintPoller from './hintpoller.js';
 
 /** WorkClaimer manages to claim work from internal queues. */
 class WorkClaimer extends events.EventEmitter {
@@ -181,4 +181,4 @@ class WorkClaimer extends events.EventEmitter {
 }
 
 // Export WorkClaimer
-module.exports = WorkClaimer;
+export default WorkClaimer;

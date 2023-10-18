@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   LastFire: {
     __resolveType(obj) {
       if (obj.taskId) {

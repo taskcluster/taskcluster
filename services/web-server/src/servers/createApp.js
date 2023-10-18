@@ -1,26 +1,25 @@
-const bodyParser = require('body-parser');
-const path = require('path');
-const bodyParserGraphql = require('body-parser-graphql');
-const session = require('express-session');
-const compression = require('compression');
-const cors = require('cors');
-const express = require('express');
-const playground = require('graphql-playground-middleware-express').default;
-const passport = require('passport');
-const url = require('url');
-const MemoryStore = require('memorystore')(session);
-const credentials = require('./credentials');
-const oauth2AccessToken = require('./oauth2AccessToken');
-const oauth2 = require('./oauth2');
-const PostgresSessionStore = require('../login/PostgresSessionStore');
-const { traceMiddleware } = require('taskcluster-lib-app');
+import bodyParser from 'body-parser';
+import path from 'path';
+import bodyParserGraphql from 'body-parser-graphql';
+import session from 'express-session';
+import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import graphqlPlayground from 'graphql-playground-middleware-express';
+const playground = graphqlPlayground.default;
+import passport from 'passport';
+import url from 'url';
+import MemoryStoreFactory from 'memorystore';
+const MemoryStore = MemoryStoreFactory(session);
+import credentials from './credentials.js';
+import oauth2AccessToken from './oauth2AccessToken.js';
+import oauth2 from './oauth2.js';
+import PostgresSessionStore from '../login/PostgresSessionStore.js';
+import { traceMiddleware } from 'taskcluster-lib-app';
 
-const REPO_ROOT = path.join(__dirname, '../../../../');
+const __dirname = new URL('.', import.meta.url).pathname;
 
-const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-const taskclusterVersion = require(taskclusterVersionFile);
-
-module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
+export default async ({ cfg, strategies, auth, monitor, db }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -150,7 +149,10 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
     res.json({});
   });
-  app.get('/api/web-server/v1/__version__', (_req, res) => {
+  app.get('/api/web-server/v1/__version__', async (_req, res) => {
+    const REPO_ROOT = path.join(__dirname, '../../../../');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+    const taskclusterVersion = await import(taskclusterVersionFile);
     res.json(taskclusterVersion);
   });
   // TODO: add implementation

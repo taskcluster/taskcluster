@@ -1,11 +1,12 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const auth = require('@azure/ms-rest-nodeauth');
-const armCompute = require('@azure/arm-compute');
-const armNetwork = require('@azure/arm-network');
-//const msRestJS = require('@azure/ms-rest-js');
-const msRestAzure = require('@azure/ms-rest-azure-js');
-const slugid = require('slugid');
+import { FakeCloud } from './fake.js';
+import { strict as assert } from 'assert';
+import auth from '@azure/ms-rest-nodeauth';
+import armCompute from '@azure/arm-compute';
+import armNetwork from '@azure/arm-network';
+
+import msRestAzure from '@azure/ms-rest-azure-js';
+
+import slugid from 'slugid';
 
 /**
  * Fake the Azure SDK.
@@ -13,7 +14,7 @@ const slugid = require('slugid');
  * Instances have `computeClient`, `networkClient`, and `restClient` properties
  * that allow access to fakes for those interfaces.
  */
-class FakeAzure extends FakeCloud {
+export class FakeAzure extends FakeCloud {
   constructor() {
     super();
   }
@@ -214,7 +215,7 @@ class ResourceManager {
   }
 }
 
-class VMResourceManager extends ResourceManager {
+export class VMResourceManager extends ResourceManager {
   constructor(fake, resourceType, createSchema) {
     super(fake, resourceType, createSchema);
     this._instanceViews = new Map();
@@ -266,7 +267,7 @@ class VMResourceManager extends ResourceManager {
   }
 }
 
-class FakeRestClient {
+export class FakeRestClient {
   constructor(fake) {
     this.fake = fake;
   }
@@ -291,5 +292,3 @@ class FakeRestClient {
     };
   }
 }
-
-exports.FakeAzure = FakeAzure;

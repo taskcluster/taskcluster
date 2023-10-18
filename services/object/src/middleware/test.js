@@ -1,6 +1,6 @@
-const { Middleware } = require('./base');
+import { Middleware } from './base.js';
 
-class TestMiddleware extends Middleware {
+export class TestMiddleware extends Middleware {
   constructor(options) {
     super(options);
     this.config = options.config;
@@ -32,4 +32,4 @@ class TestMiddleware extends Middleware {
   }
 }
 
-module.exports = { TestMiddleware };
+export default { TestMiddleware };

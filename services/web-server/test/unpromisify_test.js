@@ -1,6 +1,6 @@
-const assert = require('assert');
-const unpromisify = require('../src/utils/unpromisify');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import unpromisify from '../src/utils/unpromisify.js';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), () => {
 

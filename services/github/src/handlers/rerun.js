@@ -1,5 +1,5 @@
-const { GITHUB_BUILD_STATES } = require('../constants');
-const { makeDebug } = require('./utils');
+import { GITHUB_BUILD_STATES } from '../constants.js';
+import { makeDebug } from './utils.js';
 
 /**
  * Github events that request a task rerun.
@@ -7,7 +7,7 @@ const { makeDebug } = require('./utils');
  * To be able to rerun a task, client will assume `repo:github.com/<owner>/<repo>:rerun` role.
  * This role needs to be defined and should include scopes necessary to call `queue.rerunTask`
  **/
-async function rerunHandler(message) {
+export async function rerunHandler(message) {
   const { body, checkRunId, checkSuiteId, organization, eventId, installationId, details } = message.payload;
   const repo = details['event.head.repo.name'];
 
@@ -68,6 +68,4 @@ async function rerunHandler(message) {
   }
 }
 
-module.exports = {
-  rerunHandler,
-};
+export default rerunHandler;

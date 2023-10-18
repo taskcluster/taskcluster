@@ -1,10 +1,10 @@
-let assert = require('assert');
-const _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from 'taskcluster-lib-api';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 
 /** Regular expression for valid namespaces */
-exports.namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
+export const namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -14,14 +14,14 @@ const makeError = (message, code, statusCode) => {
   return err;
 };
 
-exports.make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
+export const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
-exports.taskUtils = {
+export const taskUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.taskUtils.fromDb(rows[0]);
+      return taskUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -73,17 +73,17 @@ exports.taskUtils = {
     assert(db,
       'db must be set');
 
-    let [namespace, name] = exports.splitNamespace(fullNamespace);
+    let [namespace, name] = splitNamespace(fullNamespace);
 
     // Find expiration time and parse as date object
     let expires = new Date(input.expires);
 
     // Attempt to load indexed task
-    let task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+    let task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
 
     if (!task) {
       // Create namespace hierarchy
-      await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+      await namespaceUtils.ensureNamespace(db, namespace, expires);
 
       // Create indexed task
       try {
@@ -106,7 +106,7 @@ exports.taskUtils = {
       } catch (err) {
         // Load indexed task if it was constructed while we waited
         if (err && err.code === UNIQUE_VIOLATION) {
-          task = exports.taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
+          task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
         } else {
           throw err;
         }
@@ -124,9 +124,9 @@ exports.taskUtils = {
         expires,
       );
 
-      await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+      await namespaceUtils.ensureNamespace(db, namespace, expires);
 
-      return exports.taskUtils.fromDbRows(updatedTask);
+      return taskUtils.fromDbRows(updatedTask);
     } else {
       return task;
     }
@@ -161,7 +161,7 @@ exports.taskUtils = {
         ),
       });
 
-      const entries = rows.map(exports.taskUtils.fromDb);
+      const entries = rows.map(taskUtils.fromDb);
 
       return { rows: entries, continuationToken: continuationToken };
     };
@@ -171,12 +171,12 @@ exports.taskUtils = {
   },
 };
 
-exports.namespaceUtils = {
+export const namespaceUtils = {
   // Create a single instance, or undefined, from a set of rows containing zero
   // or one elements.
   fromDbRows(rows) {
     if (rows.length === 1) {
-      return exports.namespaceUtils.fromDb(rows[0]);
+      return namespaceUtils.fromDb(rows[0]);
     }
   },
   // Create a single instance from a DB row
@@ -232,7 +232,7 @@ exports.namespaceUtils = {
         ),
       });
 
-      const entries = rows.map(exports.namespaceUtils.fromDb);
+      const entries = rows.map(namespaceUtils.fromDb);
 
       return { rows: entries, continuationToken: continuationToken };
     };
@@ -264,23 +264,23 @@ exports.namespaceUtils = {
     let parent = namespace.join('.');
 
     // Load namespace, to check if it exists and if we should update expires
-    const folder = exports.taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));
+    const folder = taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));
 
     if (folder) {
       // Modify the namespace
       if (folder.expires < expires) {
         // Update all parents first though
-        await exports.namespaceUtils.ensureNamespace(db, namespace, expires);
+        await namespaceUtils.ensureNamespace(db, namespace, expires);
         // Update expires
         const updatedNamespace = await db.fns.update_index_namespace(parent, name, expires);
 
-        return exports.taskUtils.fromDbRows(updatedNamespace);
+        return taskUtils.fromDbRows(updatedNamespace);
       }
 
       return folder;
     } else {
       // Create parent namespaces
-      await exports.namespaceUtils.ensureNamespace(
+      await namespaceUtils.ensureNamespace(
         db,
         namespace,
         expires,
@@ -297,7 +297,7 @@ exports.namespaceUtils = {
 
         const namespace = await db.fns.get_index_namespace(parent, name);
 
-        return exports.namespaceUtils.fromDbRows(namespace);
+        return namespaceUtils.fromDbRows(namespace);
       }
     }
   },
@@ -308,7 +308,7 @@ exports.namespaceUtils = {
  * the rest as the parent namespace.  A value with no `.` is considered
  * to be a name in the root namespace.
  */
-exports.splitNamespace = namespace => {
+export const splitNamespace = namespace => {
   // Get namespace and ensure that we have a least one dot
   namespace = namespace.split('.');
 
@@ -318,3 +318,5 @@ exports.splitNamespace = namespace => {
 
   return [namespace, name];
 };
+
+export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat };

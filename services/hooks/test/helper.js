@@ -1,27 +1,32 @@
-const taskcluster = require('taskcluster-client');
-const taskcreator = require('../src/taskcreator');
-const { stickyLoader, fakeauth, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
+import { globalAgent } from 'http';
+import taskcluster from 'taskcluster-client';
+import taskcreator from '../src/taskcreator.js';
 
-const helper = exports;
+import testing from 'taskcluster-lib-testing';
+
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
+
+const load = testing.stickyLoader(loadMain);
+
+const helper = { load };
+export default helper;
 
 helper.rootUrl = 'http://localhost:60401';
 
-helper.load = stickyLoader(load);
-helper.load.inject('profile', 'test');
-helper.load.inject('process', 'test');
+load.inject('profile', 'test');
+load.inject('process', 'test');
 
-withMonitor(helper);
+testing.withMonitor(helper);
 
-helper.secrets = new Secrets({
+helper.secrets = new testing.Secrets({
   load: helper.load,
   secrets: {
   },
 });
 
 helper.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'hooks');
+  testing.withDb(mock, skipping, helper, 'hooks');
 };
 
 /**
@@ -49,8 +54,8 @@ helper.withTaskCreator = function(mock, skipping) {
   });
 };
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-hooks' });
+helper.withPulse = (mock, skipping) => {
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-hooks' });
 };
 
 /**
@@ -71,7 +76,7 @@ helper.withServer = (mock, skipping) => {
     await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({
+    testing.fakeauth.start({
       'test-client': ['*'],
     }, { rootUrl: helper.rootUrl });
 
@@ -83,7 +88,7 @@ helper.withServer = (mock, skipping) => {
       helper.hooks = new helper.Hooks({
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent: require('http').globalAgent,
+        agent: globalAgent,
         rootUrl: helper.rootUrl,
         retries: 0,
         credentials: {
@@ -110,9 +115,9 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-exports.resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'hooks',
       'hooks_queues',
       'hooks_last_fires',

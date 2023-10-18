@@ -1,4 +1,4 @@
-let { Exchanges } = require('taskcluster-lib-pulse');
+import { Exchanges } from 'taskcluster-lib-pulse';
 
 /** Declaration of exchanges used by hooks  */
 let exchanges = new Exchanges({
@@ -20,7 +20,7 @@ let exchanges = new Exchanges({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
 let buildCommonRoutingKey = (options) => {

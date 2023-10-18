@@ -1,8 +1,8 @@
-let assert = require('assert');
-let _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from 'taskcluster-lib-api';
 
-class TaskQueue {
+export class TaskQueue {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -105,6 +105,3 @@ class TaskQueue {
     return _.isEqual(other, this);
   }
 }
-
-// Export TaskQueue
-exports.TaskQueue = TaskQueue;

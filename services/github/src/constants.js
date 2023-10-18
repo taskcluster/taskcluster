@@ -1,24 +1,24 @@
-const CHECK_RUN_STATES = {
+export const CHECK_RUN_STATES = {
   QUEUED: 'queued',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
 };
 
-const TASK_STATE_TO_CHECK_RUN_STATE = {
+export const TASK_STATE_TO_CHECK_RUN_STATE = {
   unscheduled: CHECK_RUN_STATES.QUEUED,
   pending: CHECK_RUN_STATES.QUEUED,
   running: CHECK_RUN_STATES.IN_PROGRESS,
   completed: CHECK_RUN_STATES.COMPLETED,
 };
 
-const GITHUB_TASKS_FOR = {
+export const GITHUB_TASKS_FOR = {
   PUSH: 'github-push',
   RELEASE: 'github-release',
   PULL_REQUEST: 'github-pull-request',
   PULL_REQUEST_UNTRUSTED: 'github-pull-request-untrusted',
 };
 
-const GITHUB_BUILD_STATES = {
+export const GITHUB_BUILD_STATES = {
   FAILURE: 'failure',
   PENDING: 'pending',
   SUCCESS: 'success',
@@ -26,7 +26,7 @@ const GITHUB_BUILD_STATES = {
 };
 
 // https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads?actionType=released#release
-const GITHUB_RELEASE_ACTION = {
+export const GITHUB_RELEASE_ACTION = {
   CREATED: 'created',
   DELETED: 'deleted',
   EDITED: 'edited',
@@ -36,49 +36,63 @@ const GITHUB_RELEASE_ACTION = {
   UNPUBLISHED: 'unpublished',
 };
 
-module.exports = {
-  CONCLUSIONS: { // maps status communicated by the queue service to github checkrun conclusions
-    'completed': 'success',
-    'failed': 'failure',
-    'exception': 'failure',
-    'deadline-exceeded': 'timed_out',
-    'canceled': 'cancelled',
-    'claim-expired': 'failure',
-    'worker-shutdown': 'neutral', // queue status means: will be retried
-    'malformed-payload': 'action_required', // github status means "correct your task definition"
-    'resource-unavailable': 'failure',
-    'internal-error': 'failure',
-    'intermittent-task': 'neutral', // queue status means: will be retried
-  },
-  EVENT_TYPES: {
-    PULL_REQUEST: 'pull_request',
-    PUSH: 'push',
-    PING: 'ping',
-    RELEASE: 'release',
-    INSTALLATION: 'installation',
-    CHECK_SUITE: 'check_suite',
-    CHECK_RUN: 'check_run',
-  },
-  CHECK_RUN_ACTIONS: {
-    CREATED: 'created',
-    COMPLETED: 'completed',
-    REREQUESTED: 'rerequested',
-    REQUESTED_ACTION: 'requested_action',
-  },
+export const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
+  'completed': 'success',
+  'failed': 'failure',
+  'exception': 'failure',
+  'deadline-exceeded': 'timed_out',
+  'canceled': 'cancelled',
+  'claim-expired': 'failure',
+  'worker-shutdown': 'neutral', // queue status means: will be retried
+  'malformed-payload': 'action_required', // github status means "correct your task definition"
+  'resource-unavailable': 'failure',
+  'internal-error': 'failure',
+  'intermittent-task': 'neutral', // queue status means: will be retried
+};
+
+export const EVENT_TYPES = {
+  PULL_REQUEST: 'pull_request',
+  PUSH: 'push',
+  PING: 'ping',
+  RELEASE: 'release',
+  INSTALLATION: 'installation',
+  CHECK_SUITE: 'check_suite',
+  CHECK_RUN: 'check_run',
+};
+
+export const CHECK_RUN_ACTIONS = {
+  CREATED: 'created',
+  COMPLETED: 'completed',
+  REREQUESTED: 'rerequested',
+  REQUESTED_ACTION: 'requested_action',
+};
+
+export const PUBLISHERS = {
+  PULL_REQUEST: 'pullRequest',
+  PUSH: 'push',
+  RELEASE: 'release',
+  RERUN: 'rerun',
+};
+
+export const CHECKLOGS_TEXT = 'View logs in Taskcluster';
+export const CHECKRUN_TEXT = 'View task in Taskcluster';
+export const LIVE_BACKING_LOG_ARTIFACT_NAME = 'public/logs/live_backing.log';
+export const CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME = 'public/github/customCheckRunText.md';
+export const CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME = 'public/github/customCheckRunAnnotations.json';
+
+export default {
+  CONCLUSIONS,
+  EVENT_TYPES,
+  CHECK_RUN_ACTIONS,
   CHECK_RUN_STATES,
   TASK_STATE_TO_CHECK_RUN_STATE,
-  PUBLISHERS: {
-    PULL_REQUEST: 'pullRequest',
-    PUSH: 'push',
-    RELEASE: 'release',
-    RERUN: 'rerun',
-  },
+  PUBLISHERS,
   GITHUB_TASKS_FOR,
   GITHUB_BUILD_STATES,
   GITHUB_RELEASE_ACTION,
-  CHECKLOGS_TEXT: 'View logs in Taskcluster',
-  CHECKRUN_TEXT: 'View task in Taskcluster',
-  LIVE_BACKING_LOG_ARTIFACT_NAME: 'public/logs/live_backing.log',
-  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME: 'public/github/customCheckRunText.md',
-  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME: 'public/github/customCheckRunAnnotations.json',
+  CHECKLOGS_TEXT,
+  CHECKRUN_TEXT,
+  LIVE_BACKING_LOG_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
 };

@@ -1,12 +1,12 @@
-const path = require('path');
-const libUrls = require('taskcluster-lib-urls');
-const { CHECK_RUN_STATES } = require('../constants');
+import path from 'path';
+import libUrls from 'taskcluster-lib-urls';
+import { CHECK_RUN_STATES } from '../constants.js';
 
-const taskUI = (rootUrl, taskGroupId, taskId) =>
+export const taskUI = (rootUrl, taskGroupId, taskId) =>
   libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
-const taskGroupUI = (rootUrl, taskGroupId) =>
+export const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
-const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
+export const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
   libUrls.ui(rootUrl, path.join(`/tasks/${taskId}/runs/${runId}/logs/live/`, liveLogName));
 let debugCounter = 0;
 
@@ -14,7 +14,7 @@ let debugCounter = 0;
  * Create or refine a debug function with the given attributes.  This eventually calls
  * `monitor.log.handlerDebug`.
  */
-const makeDebug = (monitor, attrs = {}) => {
+export const makeDebug = (monitor, attrs = {}) => {
   const debugId = `id-${debugCounter}`;
   debugCounter += 1;
   const debug = message => monitor.log.handlerDebug({
@@ -33,7 +33,7 @@ const makeDebug = (monitor, attrs = {}) => {
   return debug;
 };
 
-class GithubCheckOutput {
+export class GithubCheckOutput {
   constructor({
     title = '',
     summary = '',
@@ -71,7 +71,7 @@ class GithubCheckOutput {
   }
 }
 
-class GithubCheck {
+export class GithubCheck {
   constructor({
     // for updates only
     check_run_id = null,
@@ -174,7 +174,7 @@ class GithubCheck {
   }
 }
 
-module.exports = {
+export default {
   taskUI,
   taskGroupUI,
   taskLogUI,

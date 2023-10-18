@@ -1,11 +1,11 @@
-const helper = require('../helper');
-const assert = require('assert');
-const aws = require('aws-sdk');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { AwsBackend, getBucketRegion } = require('../../src/backends/aws');
-const { promisify } = require('util');
-const zlib = require('zlib');
+import helper from '../helper/index.js';
+import assert from 'assert';
+import aws from 'aws-sdk';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import { AwsBackend, getBucketRegion } from '../../src/backends/aws.js';
+import { promisify } from 'util';
+import zlib from 'zlib';
 
 const gzip = promisify(zlib.gzip);
 

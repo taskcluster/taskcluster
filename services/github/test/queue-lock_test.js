@@ -1,6 +1,6 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const QueueLock = require('../src/queue-lock');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import QueueLock from '../src/queue-lock.js';
 
 suite(testing.suiteName(), function() {
   suite('Lock', function() {

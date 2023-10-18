@@ -1,9 +1,9 @@
-const helper = require('./helper');
-const assert = require('assert');
-const MockDate = require('mockdate');
-const testing = require('taskcluster-lib-testing');
-const { GithubCheckOutput, GithubCheck } = require('../src/handlers/utils');
-const { CHECK_RUN_STATES } = require('../src/constants');
+import helper from './helper.js';
+import assert from 'assert';
+import MockDate from 'mockdate';
+import testing from 'taskcluster-lib-testing';
+import { GithubCheckOutput, GithubCheck } from '../src/handlers/utils.js';
+import { CHECK_RUN_STATES } from '../src/constants.js';
 
 /**
  * Tests of installation syncing

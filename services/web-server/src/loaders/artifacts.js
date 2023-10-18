@@ -1,8 +1,8 @@
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
-const Artifacts = require('../entities/Artifacts');
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
+import Artifacts from '../entities/Artifacts.js';
 
-module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const artifacts = new ConnectionLoader(
     async ({ taskId, runId, filter, options }) => {
       const raw = await queue.listArtifacts(taskId, runId, options);

@@ -1,7 +1,7 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const slugid = require('slugid');
-const { google } = require('googleapis');
+import { FakeCloud } from './fake.js';
+import { strict as assert } from 'assert';
+import slugid from 'slugid';
+import { google } from 'googleapis';
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
 const PROJECT = 'testy';
@@ -16,7 +16,7 @@ const PROJECT = 'testy';
  * The `google.auth.OAuth2` class is defined by the `FakeOAuth2` class below, and
  * the instance returned from the constructor is available at `fake.oauth2`.
  */
-class FakeGoogle extends FakeCloud {
+export class FakeGoogle extends FakeCloud {
   constructor() {
     super();
   }
@@ -118,7 +118,7 @@ class FakeOAuth2 {
  *
  * Set failFakeInsertWith to an error instance to have the next insert() call fail
  */
-class Instances {
+export class Instances {
   constructor(fake) {
     this.fake = fake;
     this.getCalls = 0;
@@ -181,7 +181,7 @@ class Instances {
   }
 }
 
-class ServiceAccounts {
+export class ServiceAccounts {
   constructor(fake) {
     this.fake = fake;
   }
@@ -192,7 +192,7 @@ class ServiceAccounts {
   }
 }
 
-class Operations {
+export class Operations {
   constructor(fake, scope) {
     this.fake = fake;
     this.scope = scope;
@@ -257,5 +257,3 @@ class Operations {
     return this.ops.has(key);
   }
 }
-
-exports.FakeGoogle = FakeGoogle;

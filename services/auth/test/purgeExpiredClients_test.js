@@ -1,7 +1,7 @@
-const helper = require('./helper');
-const assume = require('assume');
-const taskcluster = require('taskcluster-client');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import assume from 'assume';
+import taskcluster from 'taskcluster-client';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);

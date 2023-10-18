@@ -1,9 +1,9 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
-const WorkerCompact = require('../entities/WorkerCompact');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
+import WorkerCompact from '../entities/WorkerCompact.js';
 
-module.exports = ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {

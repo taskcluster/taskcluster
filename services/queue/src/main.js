@@ -1,27 +1,29 @@
-require('../../prelude');
-let debug = require('debug')('app:main');
-let taskcluster = require('taskcluster-client');
-let builder = require('./api');
-let exchanges = require('./exchanges');
-let Bucket = require('./bucket');
-let QueueService = require('./queueservice');
-let EC2RegionResolver = require('./ec2regionresolver');
-let DeadlineResolver = require('./deadlineresolver');
-let ClaimResolver = require('./claimresolver');
-let DependencyTracker = require('./dependencytracker');
-let DependencyResolver = require('./dependencyresolver');
-let WorkClaimer = require('./workclaimer');
-let WorkerInfo = require('./workerinfo');
-let loader = require('taskcluster-lib-loader');
-let config = require('taskcluster-lib-config');
-let { MonitorManager } = require('taskcluster-lib-monitor');
-let SchemaSet = require('taskcluster-lib-validate');
-let libReferences = require('taskcluster-lib-references');
-let { App } = require('taskcluster-lib-app');
-const tcdb = require('taskcluster-db');
-let pulse = require('taskcluster-lib-pulse');
-const QuickLRU = require('quick-lru');
-const { artifactUtils } = require('./utils');
+import '../../prelude.js';
+import debugFactory from 'debug';
+const debug = debugFactory('app:main');
+import taskcluster from 'taskcluster-client';
+import builder from './api.js';
+import exchanges from './exchanges.js';
+import Bucket from './bucket.js';
+import QueueService from './queueservice.js';
+import EC2RegionResolver from './ec2regionresolver.js';
+import DeadlineResolver from './deadlineresolver.js';
+import ClaimResolver from './claimresolver.js';
+import DependencyTracker from './dependencytracker.js';
+import DependencyResolver from './dependencyresolver.js';
+import WorkClaimer from './workclaimer.js';
+import WorkerInfo from './workerinfo.js';
+import loader from 'taskcluster-lib-loader';
+import config from 'taskcluster-lib-config';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import SchemaSet from 'taskcluster-lib-validate';
+import libReferences from 'taskcluster-lib-references';
+import { App } from 'taskcluster-lib-app';
+import tcdb from 'taskcluster-db';
+import pulse from 'taskcluster-lib-pulse';
+import QuickLRU from 'quick-lru';
+import { artifactUtils } from './utils.js';
+import { fileURLToPath } from 'url';
 
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;
@@ -37,7 +39,7 @@ const MAX_BULK_DELETE_SIZE = 1000;
 // this is to limit total amount of concurrent updates to DB
 const NUMBER_OF_RECORDS_TO_PROCESS = 32;
 
-require('./monitor');
+import './monitor.js';
 
 // Create component loader
 let load = loader({
@@ -397,20 +399,14 @@ let load = loader({
     },
   },
 
-  // Create the load-test process (run as one-off job)
-  'load-test': {
-    requires: ['cfg'],
-    setup: ({ cfg }) => require('./load-test')(cfg),
-  },
-
 }, {
   profile: process.env.NODE_ENV,
   process: process.argv[2],
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

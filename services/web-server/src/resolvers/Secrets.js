@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   Query: {
     secrets(parent, { connection, filter }, { loaders }) {
       return loaders.secrets.load({ connection, filter });

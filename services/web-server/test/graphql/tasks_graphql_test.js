@@ -1,11 +1,8 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const taskQuery = require('../fixtures/task.graphql');
-const createTaskQuery = require('../fixtures/createTask.graphql');
-const subscribeTasks = require('../fixtures/tasksSubscriptions.graphql');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import gql from 'graphql-tag';
+import testing from 'taskcluster-lib-testing';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -18,6 +15,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('query works', async function() {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
+      const taskQuery = await helper.loadFixture('task.graphql');
 
       // 1. create task
       await client.mutate({
@@ -42,6 +41,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('mutation works', async function() {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
+
       const response = await client.mutate({
         mutation: gql`${createTaskQuery}`,
         variables: {
@@ -79,6 +80,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       helper.setNextAsyncIterator(asyncIterator);
+
+      const subscribeTasks = await helper.loadFixture('tasksSubscriptions.graphql');
 
       let tasksSubscriptionsResult;
       let taskSubscription = client.subscribe({
