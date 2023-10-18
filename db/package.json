@@ -3,9 +3,10 @@
   "private": true,
   "version": "56.0.3",
   "license": "MPL-2.0",
+  "type": "module",
   "scripts": {
     "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src/*.js src/**/*.js test/*_test.js test/**/*.js"
   },
-  "main": "./src/index.js"
+  "exports": "./src/index.js"
 }

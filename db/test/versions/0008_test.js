@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
-const hugeBufs = require('./fixtures/huge_bufs.js');
+import _ from 'lodash';
+import helper from '../helper.js';
+import testing from 'taskcluster-lib-testing';
+import { strict as assert } from 'assert';
+import * as hugeBufs from './fixtures/huge_bufs.js';
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
 
 // (copied from azure-entities)
 const encodeStringKey = function(str) {
@@ -37,6 +37,9 @@ const decodeCompositeKey = function(key) {
   return key.split('~').map(decodeStringKey);
 };
 
+// (this is used by 0010_test.js, too)
+export let entityBufDecodeTest = null;
+
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();
 
@@ -47,7 +50,7 @@ suite(testing.suiteName(), function() {
 
   const b64 = x => Buffer.from(x).toString('base64');
 
-  const entityBufDecodeTest = (name, encoded, expected, xfail) => {
+  entityBufDecodeTest = (name, encoded, expected, xfail) => {
     test(`entity_buf_decode: ${name}${xfail && ' (XFAIL)'}`, async function() {
       await helper.withDbClient(async client => {
         const t = await client.query(`
@@ -61,8 +64,6 @@ suite(testing.suiteName(), function() {
       });
     });
   };
-  // (this is used by 0010_test.js, too)
-  exports.entityBufDecodeTest = entityBufDecodeTest;
 
   entityBufDecodeTest('0 bufs', { __bufchunks_val: 0 }, '');
   entityBufDecodeTest('empty', { __bufchunks_val: 1, __buf0_val: '' }, '');

@@ -1,7 +1,8 @@
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { fromNow } = require('taskcluster-client');
-const helper = require('../helper');
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import tc from 'taskcluster-client';
+const { fromNow } = tc;
+import helper from '../helper.js';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'purge_cache' });

@@ -233,7 +233,7 @@ There are exceptions to this rule, but reviewers should carefully scrutinize any
 The `taskcluster-db` package exports an async `setup` function which is intended to be used in services' `main.js`:
 
 ```javascript
-const tcdb = require('taskcluster-db');
+import tcdb from 'taskcluster-db';
 // ...
   db: {
     requires: ['cfg'],
@@ -253,7 +253,7 @@ To upgrade to a specific version, pass `toVersion: <number>`.
 This functionality is typically used in tests, as in production deployments the deployers will run `yarn db:upgrade`.
 
 ```javascript
-const tcdb = require('taskcluster-db');
+import tcdb from 'taskcluster-db';
 
 setup('upgrade db', async function() {
   await tcdb.upgrade({

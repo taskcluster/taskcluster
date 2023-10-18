@@ -1,10 +1,11 @@
-const { fromNow } = require('taskcluster-client');
-const { range } = require('lodash');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { CHECK_VIOLATION, UNIQUE_VIOLATION, FOREIGN_KEY_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
+import tc from 'taskcluster-client';
+const { fromNow } = tc;
+import _ from 'lodash';
+import { strict as assert } from 'assert';
+import helper from '../helper.js';
+import testing from 'taskcluster-lib-testing';
+import { CHECK_VIOLATION, UNIQUE_VIOLATION, FOREIGN_KEY_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'object' });
@@ -192,7 +193,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('get_expired_objects pagination', async function(db) {
-    await insertData(range(100).flatMap(i => ([{
+    await insertData(_.range(100).flatMap(i => ([{
       name: `object-${i}-not-expired`,
       backend_id: 'be-not-expired',
       project_id: 'prj-not-expired',
@@ -206,7 +207,7 @@ suite(testing.suiteName(), function() {
       expires: fromNow('-1 day'),
     }])));
 
-    const expectedNames = range(100).map(
+    const expectedNames = _.range(100).map(
       i => `object-${i.toString().padStart(3, '0')}`);
 
     const gotNames = [];

@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import helper from '../helper.js';
+import testing from 'taskcluster-lib-testing';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
 
 // Since we don't migrate data from previous version, no need for tests for
