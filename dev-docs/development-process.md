@@ -228,7 +228,7 @@ expireArtifacts:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-artifacts
+  command: node services/queue/src/main.js expire-artifacts
 ```
 
 To run this process locally:

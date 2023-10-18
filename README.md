@@ -48,6 +48,7 @@ This repository is used to develop, build, and release the Taskcluster services.
         * [Taskcluster Download Support](clients/client-rust/download#readme)
         * [Taskcluster Upload Support](clients/client-rust/upload#readme)
     * [Taskcluster Client for Shell](clients/client-shell#readme)
+    * [Node client test](clients/client-test#readme)
     * [Taskcluster Client for Web](clients/client-web#readme)
 * [Taskcluster Database](db#readme)
     * [Database Versions](db/versions#readme)
