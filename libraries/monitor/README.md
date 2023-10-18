@@ -13,7 +13,7 @@ This library is initialized early in the Node process's lifetime, while modules 
 At this time, the static method `MonitorManager.register` can be called to register new log message types:
 
 ```js
-const {MonitorManager} = require('taskcluster-lib-monitor');
+import { MonitorManager } from 'taskcluster-lib-monitor';
 
 MonitorManager.register({
   name: 'somethingHappened',
@@ -286,7 +286,7 @@ Oftentimes a lot of a service's time will be spent interacting with AWS services
 as in the following example:
 
 ```js
-const aws = require('aws-sdk');
+import aws from 'aws-sdk';
 const ec2 = new aws.EC2({region: 'us-west-2'});
 monitor.patchAWS(ec2);
 await ec2.describeAvailabilityZones().promise().catch(err => {

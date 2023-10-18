@@ -27,7 +27,7 @@ interacting with a Client are not important -- just construct one and move on.
 Create a credentials function, choosing among:
 
 ```javascript
-const pulse = require('taskcluster-lib-pulse');
+import pulse from 'taskcluster-lib-pulse';
 
 let credentials;
 
@@ -226,7 +226,7 @@ invoking a callback for each message.
 Construct a PulseConsumer with the async `consume` function:
 
 ```javascript
-const pulse = require('taskcluster-lib-pulse');
+import pulse from 'taskcluster-lib-pulse';
 let pc = await pulse.consume({
   client,                // Client object for connecting to the server
   bindings: [{           // exchange/routingKey patterns to bind to
@@ -352,7 +352,7 @@ Begin by creating an `Exchanges` instance. This will collect all exchange
 definitions for the service.
 
 ```javascript
-const {Exchanges} = require('taskcluster-lib-pulse');
+import { Exchanges } from 'taskcluster-lib-pulse';
 
 const exchanges = new Exchanges({
   serviceName: 'myservice',

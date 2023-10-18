@@ -55,7 +55,7 @@ another component.  Note that the `server` component's `setup` method is
 asynchronous, and that `await` is used with the `load` method invocation.
 
 ```js
-let loader = require('taskcluster-lib-loader');
+import loader from 'taskcluster-lib-loader';
 
 // Create loader
 let load = loader({
@@ -104,7 +104,7 @@ set the default of the virtual component to a falsy value, you will force
 the user to provide a value for you.
 
 ```js
-let loader = require('taskcluster-lib-loader');
+import loader from 'taskcluster-lib-loader';
 
 // Create loader
 let load = loader({

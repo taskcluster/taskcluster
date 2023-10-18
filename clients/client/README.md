@@ -23,6 +23,8 @@ required, and it's unusual to configure any other options aside from
 
 ```js
 const taskcluster = require('taskcluster-client');
+// or
+import taskcluster from 'taskcluster-client';
 
 // Instantiate the Queue Client class
 const queue = new taskcluster.Queue({

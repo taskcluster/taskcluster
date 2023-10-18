@@ -10,9 +10,9 @@ fail too many times and does not fail silently.
 Here is a simple example of this library:
 
 ```javascript
-var Iterate = require(`taskcluster-lib-iterate`);
+import Iterate from `taskcluster-lib-iterate`;
 
-i = new Iterate({
+const i = new Iterate({
   name: 'something',
   maxFailures: 5,
   monitor,

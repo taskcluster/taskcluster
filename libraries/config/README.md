@@ -62,9 +62,9 @@ provide credentials. So in most cases, services load load configuration with
 
 The default options are shown here:
 ```js
-var config = require('taskcluster-lib-config');
+import config from 'taskcluster-lib-config';
 
-var cfg = config({
+const cfg = config({
   files: [ // Files to load configuration from
    // Paths are relative to services/<serviceName>
    {path: 'config.yml', required: true},
