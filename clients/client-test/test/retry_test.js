@@ -1,18 +1,12 @@
 import taskcluster from 'taskcluster-client';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
-
-// IMPLICIT DEPENDENCIES ...
 import { APIBuilder } from 'taskcluster-lib-api';
-
 import { App } from 'taskcluster-lib-app';
 import SchemaSet from 'taskcluster-lib-validate';
 import { monitorManager, monitor } from './monitor.js';
 
 const rootUrl = `http://localhost:60526`;
-
-// This depends on the library packages from the outside world..
-// this test needs to be included inside the main app instead
 
 suite(testing.suiteName(), function() {
   let proxier;
