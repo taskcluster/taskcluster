@@ -10,5 +10,18 @@ export const tasks = [{
 
     await writeRepoFile('clients/client/src/apis.js',
       '/* eslint-disable */\nmodule.exports = ' + stringify(apis, { space: 2 }) + ';\n');
+
+    // update client tests to include all exposed apis
+    const clientsTest = `// This file is auto-generated, don't edit
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
+
+test('Main clients exposed', function () {
+${Object.keys(apis)
+    .sort()
+    .map(api => `  assert.equal(taskcluster.${api} instanceof Function, true);`).join('\n')}
+});
+`;
+    await writeRepoFile('clients/client-test/test/clients_test.js', clientsTest);
   },
 }];
