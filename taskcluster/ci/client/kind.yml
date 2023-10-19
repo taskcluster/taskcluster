@@ -30,8 +30,8 @@ tasks:
         {{ yarn --frozen-lockfile || exit 99; }} &&
         yarn test &&
         yarn package-test
-  nodejs-client-test:
-    description: nodejs client tests
+  nodejs-client-external-test:
+    description: nodejs client external tests
     docker-image: node:{node_version}
     run:
       command: >-
