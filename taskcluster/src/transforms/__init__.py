@@ -141,14 +141,6 @@ def podman_run(config, tasks):
 
 
 @transforms.add
-def direct_dependencies(config, tasks):
-    for task in tasks:
-        task.setdefault("soft-dependencies", [])
-        task["soft-dependencies"] += [task.label for task in config.kind_dependencies_tasks]
-        yield task
-
-
-@transforms.add
 def parameterize_mounts(config, tasks):
     node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
     for task in tasks:
