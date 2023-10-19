@@ -5,8 +5,7 @@
   "engine-strict": true,
   "type": "module",
   "engines": {
-    "node": "18.18.1",
-    "yarn": "^1.22.19"
+    "node": "18.18.1"
   },
   "workspaces": [
     "libraries/*",
@@ -200,7 +199,7 @@
     "test:meta": "node infrastructure/tooling/src/main.js test:meta",
     "db:upgrade": "node db/src/main.js upgrade",
     "db:downgrade": "node db/src/main.js downgrade",
-    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --frozen-lockfile || exit 0"
+    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0"
   },
   "metatests": {
     "specialImports": [
@@ -216,5 +215,6 @@
     "**/node_modules/**",
     "services/web-server/build"
   ],
-  "heroku-run-build-script": true
+  "heroku-run-build-script": true,
+  "packageManager": "yarn@3.6.4"
 }

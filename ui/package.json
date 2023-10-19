@@ -4,8 +4,7 @@
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "18.18.1",
-    "yarn": "^1.22.19"
+    "node": "18.18.1"
   },
   "scripts": {
     "build": "export NODE_OPTIONS=--openssl-legacy-provider && webpack --mode production",
@@ -142,5 +141,6 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.0",
     "utf-8-validate": "^5.0.0"
-  }
+  },
+  "packageManager": "yarn@3.6.4"
 }

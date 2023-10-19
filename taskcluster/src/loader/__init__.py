@@ -13,7 +13,7 @@ def services_and_libraries_loader(kind, path, config, parameters, loaded_tasks):
             "name": package.name,
             "description": "package tests for {}".format(package.name),
             "run": {
-                "command": "yarn --frozen-lockfile && " +
+                "command": "yarn --immutable && " +
                 "./db/test-setup.sh && yarn workspace taskcluster-{}{} coverage:report".format(
                     config.get("prefix", ''),
                     package.name)

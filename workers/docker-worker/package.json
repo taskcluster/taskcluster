@@ -4,8 +4,7 @@
   "version": "56.0.3",
   "engine-strict": true,
   "engines": {
-    "node": "18.18.1",
-    "yarn": "^1.22.19"
+    "node": "18.18.1"
   },
   "description": "Docker task host for linux.",
   "bin": {
@@ -76,5 +75,6 @@
     "docker-exec-websocket-client": "^3.0.0",
     "nock": "^13.0.0",
     "taskcluster-lib-testing": "link:../../libraries/testing"
-  }
+  },
+  "packageManager": "yarn@3.6.4"
 }

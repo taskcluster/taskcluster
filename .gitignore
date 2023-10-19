@@ -1,4 +1,6 @@
 node_modules
+.yarn/cache
+.yarn/install-state.gz
 .eslintcache
 user-build-config.yml
 *.log

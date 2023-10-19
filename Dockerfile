@@ -21,11 +21,11 @@ COPY /.yarn /base/yarn-client/.yarn/
 
 # install all dependencies
 WORKDIR /base/yarn-client
-RUN yarn install --production --frozen-lockfile
+RUN yarn workspaces focus --all --production --immutable
 WORKDIR /base/yarn
-RUN yarn install --production --frozen-lockfile
+RUN yarn workspaces focus --all --production --immutable
 WORKDIR /base/yarn-ui
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 RUN mkdir -p /base/app/ui /base/app/clients/client
 RUN cp -r /base/yarn/node_modules /base/app/

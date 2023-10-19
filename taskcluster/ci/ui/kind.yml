@@ -21,9 +21,9 @@ tasks:
     description: UI Browser Tests
     run:
       command: >-
-        {{ yarn --frozen-lockfile || exit 99; }} &&
+        {{ yarn --immutable || exit 99; }} &&
         cd ui &&
-        {{ yarn --frozen-lockfile || exit 99; }} &&
+        {{ yarn --immutable || exit 99; }} &&
         yarn lint &&
         yarn test --coverage &&
         yarn build

@@ -34,7 +34,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | b
     nvm alias default $NODE_VERSION && \
     nvm use default && \
     npm install -g yarn@1.0.2 && \
-    yarn global add babel-cli
+    npm install -g babel-cli
 
 ENV HOME /home/tester
 ENV SHELL /bin/bash

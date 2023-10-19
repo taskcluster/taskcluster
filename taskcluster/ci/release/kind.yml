@@ -51,7 +51,7 @@ task-defaults:
       - cd taskcluster
       - git checkout {head_rev}
       # publish the release
-      - yarn --frozen-lockfile
+      - yarn --immutable
 
 tasks:
   publish:
