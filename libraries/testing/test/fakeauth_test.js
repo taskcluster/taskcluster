@@ -1,15 +1,18 @@
-const debug = require('debug')('test');
-const hawk = require('hawk');
-const request = require('superagent');
-const SchemaSet = require('taskcluster-lib-validate');
-const { APIBuilder } = require('taskcluster-lib-api');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { App } = require('taskcluster-lib-app');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const path = require('path');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import hawk from 'hawk';
+import request from 'superagent';
+import SchemaSet from 'taskcluster-lib-validate';
+import { APIBuilder } from 'taskcluster-lib-api';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { App } from 'taskcluster-lib-app';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import path from 'path';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 let monitor;
 suiteSetup(function() {

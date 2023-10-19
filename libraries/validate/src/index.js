@@ -1,17 +1,23 @@
-const debug = require('debug')('taskcluster-lib-validate');
-const _ = require('lodash');
-const fs = require('fs');
-const path = require('path');
-const walk = require('walk');
-const yaml = require('js-yaml');
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const { renderConstants, checkRefs } = require('./util');
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-validate');
+import _ from 'lodash';
+import fs from 'fs';
+import path from 'path';
+import walk from 'walk';
+import yaml from 'js-yaml';
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { renderConstants, checkRefs } from './util.js';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';
+
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(
+  path.join(REPO_ROOT, '/node_modules/ajv/lib/refs/json-schema-draft-06.json'), 'utf-8'));
 
 class SchemaSet {
   constructor(options) {
@@ -103,7 +109,7 @@ class SchemaSet {
   }
 
   async validator(rootUrl) {
-    const ajv = new Ajv({
+    const ajv = new Ajv.default({
       useDefaults: true,
       validateFormats: true,
       verbose: true,
@@ -113,7 +119,7 @@ class SchemaSet {
     });
 
     addFormats(ajv);
-    ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+    ajv.addMetaSchema(jsonSchemaDraft06);
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);
     });
@@ -147,4 +153,4 @@ class SchemaSet {
   }
 }
 
-module.exports = SchemaSet;
+export default SchemaSet;

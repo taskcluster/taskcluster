@@ -1,6 +1,6 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
-exports.getEntries = ({ partitionKey, rowKey, condition }, entries) => {
+export const getEntries = ({ partitionKey, rowKey, condition }, entries) => {
   entries = [...entries.values()];
   entries = _.sortBy(entries, e => [e.partition_key_out, e.row_key_out]);
 

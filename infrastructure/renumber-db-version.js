@@ -1,6 +1,6 @@
-const fs = require('fs');
-const child_process = require('child_process');
-const yaml = require('js-yaml');
+import fs from 'fs';
+import child_process from 'child_process';
+import yaml from 'js-yaml';
 
 /**
  * A very temporary script to renumber DB versions, which is helpful when lots
@@ -10,6 +10,10 @@ const yaml = require('js-yaml');
  *
  *   node infrastructure/renumber-db-version.js 21 22
  */
+if (process.argv.length !== 4) {
+  console.log('usage: node infrastructure/renumber-db-version.js <from> <to>');
+  process.exit(1);
+}
 
 const run = async command => {
   const proc = child_process.spawn(command[0], command.slice(1), {

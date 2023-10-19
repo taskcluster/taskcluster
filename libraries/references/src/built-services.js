@@ -1,5 +1,5 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
 
 /**
  * Read all references for this service and add them to the array of references.
@@ -76,4 +76,4 @@ const load = ({ directory }) => {
   return { references, schemas };
 };
 
-exports.load = load;
+export default load;

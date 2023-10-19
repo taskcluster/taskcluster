@@ -1,5 +1,5 @@
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { hrtime } = require('process');
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import { hrtime } from 'process';
 
 MonitorManager.register({
   name: 'apiMethod',
@@ -49,7 +49,7 @@ MonitorManager.register({
  * Log an API request on completion, including information determined
  * by the `remoteAuthentication` middleware, if present.
  */
-const logRequest = ({ builder, entry }) => {
+export const logRequest = ({ builder, entry }) => {
   return (req, res, next) => {
     let sent = false;
     const start = hrtime.bigint();
@@ -102,5 +102,3 @@ const logRequest = ({ builder, entry }) => {
     next();
   };
 };
-
-exports.logRequest = logRequest;

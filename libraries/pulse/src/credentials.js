@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 /**
  * Build Pulse ConnectionString, from options on the form:
@@ -10,7 +10,7 @@ const assert = require('assert');
  *   amqps   :          // whether to use amqps over amqp (default true)
  * }
  */
-const pulseCredentials = ({ username, password, hostname, vhost, amqps }) => {
+export const pulseCredentials = ({ username, password, hostname, vhost, amqps }) => {
   assert(username, 'options.username is required');
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
@@ -42,15 +42,11 @@ const pulseCredentials = ({ username, password, hostname, vhost, amqps }) => {
   };
 };
 
-exports.pulseCredentials = pulseCredentials;
-
 /**
   * Simply returns the same connectionstring send as a parameter,wrapped with an async function
  */
-const connectionStringCredentials = (connectionString) => {
+export const connectionStringCredentials = (connectionString) => {
   return async () => {
     return { connectionString };
   };
 };
-
-exports.connectionStringCredentials = connectionStringCredentials;

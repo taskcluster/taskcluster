@@ -53,7 +53,7 @@ WORKDIR /base/app
 # clean up some unnecessary and potentially large stuff
 RUN /bin/bash -c "\
     rm -rf .git; \
-    rm -rf clients/client-{go,py,web}; \
+    rm -rf clients/client-{go,py,web,test}; \
     rm -rf {services,libraries}/*/test; \
     rm -rf db/test db/versions; \
     rm -rf ui/node_modules ui/src ui/test; \

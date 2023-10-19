@@ -1,6 +1,6 @@
-let assert = require('assert');
-let Iterate = require('taskcluster-lib-iterate');
-const { sleep } = require('./utils');
+import assert from 'assert';
+import Iterate from 'taskcluster-lib-iterate';
+import { sleep } from './utils.js';
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -94,4 +94,4 @@ class DependencyResolver {
 }
 
 // Export DependencyResolver
-module.exports = DependencyResolver;
+export default DependencyResolver;

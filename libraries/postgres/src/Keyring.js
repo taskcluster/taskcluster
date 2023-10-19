@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 class Keyring {
   /**
@@ -64,4 +64,4 @@ class Keyring {
   }
 }
 
-module.exports = Keyring;
+export default Keyring;

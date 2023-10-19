@@ -1,10 +1,10 @@
-const hawk = require('hawk');
-const assert = require('assert');
-const scopes = require('taskcluster-lib-scopes');
-const crypto = require('crypto');
-const utils = require('../utils');
-const ScopeExpressionTemplate = require('../expressions');
-const { ErrorReply } = require('../error-reply');
+import hawk from 'hawk';
+import assert from 'assert';
+import scopes from 'taskcluster-lib-scopes';
+import crypto from 'crypto';
+import { cleanRouteAndParams } from '../utils.js';
+import ScopeExpressionTemplate from '../expressions.js';
+import { ErrorReply } from '../error-reply.js';
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
@@ -104,7 +104,7 @@ const { ErrorReply } = require('../error-reply');
  *
  * Reports 401 if authentication fails.
  */
-const remoteAuthentication = ({ signatureValidator, entry }) => {
+export const remoteAuthentication = ({ signatureValidator, entry }) => {
   assert(signatureValidator instanceof Function,
     'Expected signatureValidator to be a function!');
 
@@ -179,7 +179,7 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
     scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
-    let [, params, optionalParams] = utils.cleanRouteAndParams(entry.route);
+    let [, params, optionalParams] = cleanRouteAndParams(entry.route);
     // We can only decide to useUrlParams if all params are required params.
     // Otherwise if they are not provided the scope checking will fail.
     // This means all endpoints with optional params that get included in the
@@ -310,5 +310,3 @@ const remoteAuthentication = ({ signatureValidator, entry }) => {
     }
   };
 };
-
-exports.remoteAuthentication = remoteAuthentication;

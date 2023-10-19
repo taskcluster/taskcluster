@@ -1,10 +1,11 @@
-require('../../prelude');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const libReferences = require('taskcluster-lib-references');
-const taskcluster = require('taskcluster-client');
-const config = require('taskcluster-lib-config');
-const taskqueue = require('./TaskQueue');
+import '../../prelude.js';
+import loader from 'taskcluster-lib-loader';
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import libReferences from 'taskcluster-lib-references';
+import taskcluster from 'taskcluster-client';
+import config from 'taskcluster-lib-config';
+import TaskQueue from './TaskQueue.js';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -42,12 +43,12 @@ const load = loader({
 
   succeedTaskQueue: {
     requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
+    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
   },
 
   failTaskQueue: {
     requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new taskqueue.TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
+    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
   },
 
   server: {
@@ -65,8 +66,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

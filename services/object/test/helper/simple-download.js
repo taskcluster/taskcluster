@@ -1,13 +1,13 @@
-const request = require('superagent');
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
+import request from 'superagent';
+import crypto from 'crypto';
+import assert from 'assert';
+import { load, testObjectName } from '../helper/index.js';
 
 /**
  * Test the simple download method on the given backend.  This defines a suite
  * of tests.
  */
-exports.testSimpleDownloadMethod = ({
+export const testSimpleDownloadMethod = ({
   mock, skipping,
 
   // optional title suffix
@@ -38,13 +38,13 @@ exports.testSimpleDownloadMethod = ({
 
     let backend;
     setup(async function() {
-      const backends = await helper.load('backends');
+      const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
     test('supports simple downloads', async function() {
       const data = crypto.randomBytes(256);
-      const name = helper.testObjectName(prefix);
+      const name = testObjectName(prefix);
       const object = await makeObject({ name, data });
 
       // check it's supported..

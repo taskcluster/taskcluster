@@ -1,14 +1,14 @@
-const assert = require('assert');
-const assume = require('assume');
-const taskcreator = require('../src/taskcreator');
-const helper = require('./helper');
-const taskcluster = require('taskcluster-client');
-const { sleep } = require('taskcluster-lib-testing');
-const _ = require('lodash');
-const hookDef = require('./test_definition');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const { hookUtils } = require('../src/utils');
+import assert from 'assert';
+import assume from 'assume';
+import taskcreator from '../src/taskcreator.js';
+import helper from './helper.js';
+import taskcluster from 'taskcluster-client';
+import { sleep } from 'taskcluster-lib-testing';
+import _ from 'lodash';
+import hookDef from './test_definition.js';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
+import { hookUtils } from '../src/utils.js';
 
 suite(testing.suiteName(), function() {
   helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {

@@ -1,4 +1,4 @@
-class Backend {
+export class Backend {
   constructor({ backendId, db, monitor, rootUrl, config }) {
     this.backendId = backendId;
     this.db = db;
@@ -80,4 +80,4 @@ class Backend {
   }
 }
 
-module.exports = { Backend };
+export default { Backend };

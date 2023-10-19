@@ -1,14 +1,15 @@
-const debug = require('debug')('test:artifacts');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const request = require('superagent');
-const taskcluster = require('taskcluster-client');
-const { Netmask } = require('netmask');
-const { createArtifactCallsCompatible } = require('../src/artifacts.js');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test:artifacts');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import request from 'superagent';
+import taskcluster from 'taskcluster-client';
+import { Netmask } from 'netmask';
+import { createArtifactCallsCompatible } from '../src/artifacts.js';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {

@@ -1,11 +1,10 @@
-const assert = require('assert');
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
-const { REPO_ROOT } = require('../../utils');
+import assert from 'assert';
+import path from 'path';
+import fs from 'fs';
+import _ from 'lodash';
+import { REPO_ROOT } from '../../utils/index.js';
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [{
   title: 'Node versions match',
   requires: [],
   provides: [],
@@ -18,4 +17,4 @@ exports.tasks.push({
     // Node version for UI matches the rest of the repo
     assert.equal(packageJson.engines.node, uiPackageJson.engines.node);
   },
-});
+}];

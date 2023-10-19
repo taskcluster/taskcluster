@@ -1,10 +1,9 @@
-const fs = require('fs');
-const _ = require('lodash');
-const glob = require('glob');
-const { REPO_ROOT } = require('../../utils');
+import fs from 'fs';
+import _ from 'lodash';
+import glob from 'glob';
+import { REPO_ROOT } from '../../utils/index.js';
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [{
   title: 'Docs headings match expectations',
   requires: [],
   provides: [],
@@ -58,4 +57,4 @@ exports.tasks.push({
       throw new Error(errors);
     }
   },
-});
+}];

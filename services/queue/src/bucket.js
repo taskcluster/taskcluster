@@ -1,7 +1,8 @@
-let aws = require('aws-sdk');
-let _ = require('lodash');
-let debug = require('debug')('app:bucket');
-let assert = require('assert');
+import aws from 'aws-sdk';
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('app:bucket');
+import assert from 'assert';
 
 /**
  * Create S3 bucket wrapper.
@@ -52,7 +53,7 @@ let Bucket = function(options) {
 };
 
 // Export Bucket
-module.exports = Bucket;
+export default Bucket;
 
 /**
  * Create a signed PUT URL

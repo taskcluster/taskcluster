@@ -1,14 +1,14 @@
-const taskcluster = require('taskcluster-client');
+import taskcluster from 'taskcluster-client';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     'queue:create-task:highest:built-in/succeed',
     'queue:scheduler-id:smoketest',
   ],
 };
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [];
+tasks.push({
   title: 'Create an indexed task and find it in the index (--target index)',
   requires: [
     'ping-queue',

@@ -1,31 +1,43 @@
-const express = require('express');
-const _ = require('lodash');
-const debug = require('debug')('base:app');
-const assert = require('assert');
-const http = require('http');
-const sslify = require('express-sslify');
-const hsts = require('hsts');
-const csp = require('content-security-policy');
-const uuid = require('uuid');
-const path = require('path');
-const fs = require('fs');
+import express from 'express';
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('base:app');
+import assert from 'assert';
+import http from 'http';
+import sslify from 'express-sslify';
+import hsts from 'hsts';
+import csp from 'content-security-policy';
+import { v4 } from 'uuid';
+import path from 'path';
+import fs from 'fs/promises';
 
-const REPO_ROOT = path.join(__dirname, '../../../');
+// TODO: libraries/api/src/api.js defines same methods __version__, __heartbeat__
+let taskclusterVersion = null;
+const loadVersion = async () => {
+  if (!taskclusterVersion) {
+    const __dirname = new URL('.', import.meta.url).pathname;
+    const REPO_ROOT = path.join(__dirname, '../../../');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+
+    taskclusterVersion = await fs.readFile(taskclusterVersionFile, 'utf8');
+  }
+  return taskclusterVersion;
+};
 
 /**
  * Attach trace headers to requests. This is exported
  * to be used in web-server as well sice it doesn't use
  * lib-app.
  */
-const traceMiddleware = (req, res, next) => {
+export const traceMiddleware = (req, res, next) => {
   let traceId;
   if (req.headers['x-taskcluster-trace-id']) {
     traceId = req.headers['x-taskcluster-trace-id'];
   } else {
-    traceId = uuid.v4();
+    traceId = v4();
   }
   req.traceId = traceId;
-  req.requestId = uuid.v4();
+  req.requestId = v4();
   res.setHeader('x-for-trace-id', traceId);
   res.setHeader('x-for-request-id', req.requestId);
   next();
@@ -68,7 +80,7 @@ const createServer = function() {
 
 /** Create express application.  See the README for docs.
  */
-const app = async (options) => {
+export const App = async (options) => {
   assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
@@ -139,8 +151,7 @@ const app = async (options) => {
   }
 
   try {
-    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-    const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+    const taskclusterVersion = await loadVersion();
     app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
@@ -173,6 +184,3 @@ const app = async (options) => {
 
   return app.createServer();
 };
-
-// Export app creation utility
-module.exports = { App: app, traceMiddleware };

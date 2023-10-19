@@ -1,6 +1,6 @@
-const { AwsBackend } = require('./aws');
+import { AwsBackend } from './aws.js';
 
-const BACKEND_TYPES = {
+export const BACKEND_TYPES = {
   aws: AwsBackend,
 };
 
@@ -8,7 +8,7 @@ const BACKEND_TYPES = {
  * A container for all defined backends in a running instance of this service,
  * supporting getting backends either by name or for a newly uploaded object.
  */
-class Backends {
+export class Backends {
   async setup({ cfg, monitor, db }) {
     this.monitor = monitor;
     this.db = db;
@@ -120,4 +120,4 @@ class Backends {
   }
 }
 
-module.exports = { Backends, BACKEND_TYPES };
+export default { Backends, BACKEND_TYPES };

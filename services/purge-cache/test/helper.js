@@ -1,40 +1,42 @@
-const path = require('path');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { withDb, stickyLoader, Secrets, fakeauth, withMonitor } = require('taskcluster-lib-testing');
+import path from 'path';
+import builder from '../src/api.js';
+import taskcluster from 'taskcluster-client';
+import loadMain from '../src/main.js';
+import testing from 'taskcluster-lib-testing';
 
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
-exports.suiteName = path.basename;
-exports.rootUrl = 'http://localhost:60415';
+const suiteName = path.basename;
+const rootUrl = 'http://localhost:60415';
+const load = testing.stickyLoader(loadMain);
 
-exports.load = stickyLoader(load);
+const helper = { load, rootUrl, suiteName };
+export default helper;
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new testing.Secrets({
   secrets: {},
-  load: exports.load,
+  load: load,
 });
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'purge_cache');
+helper.withDb = (mock, skipping) => {
+  testing.withDb(mock, skipping, helper, 'purge_cache');
 };
 
 /**
  * Set up an API server.
  */
-exports.withServer = (mock, skipping) => {
+helper.withServer = (mock, skipping) => {
   let webServer;
   let cachePurgeCache = {};
 
@@ -42,32 +44,32 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    exports.load.save();
+    load.save();
 
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.load.cfg('taskcluster.clientId', null);
-    exports.load.cfg('taskcluster.accessToken', null);
-    fakeauth.start(testclients, { rootUrl: exports.rootUrl });
+    load.cfg('taskcluster.rootUrl', rootUrl);
+    load.cfg('taskcluster.clientId', null);
+    load.cfg('taskcluster.accessToken', null);
+    testing.fakeauth.start(testclients, { rootUrl });
 
-    exports.PurgeCacheClient = taskcluster.createClient(builder.reference());
+    helper.PurgeCacheClient = taskcluster.createClient(builder.reference());
 
-    exports.load.inject('cachePurgeCache', cachePurgeCache);
+    load.inject('cachePurgeCache', cachePurgeCache);
 
-    exports.apiClient = new exports.PurgeCacheClient({
+    helper.apiClient = new helper.PurgeCacheClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
       },
       retries: 0,
-      rootUrl: exports.rootUrl,
+      rootUrl,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   setup(function() {
@@ -82,7 +84,7 @@ exports.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
-    exports.load.restore();
+    testing.fakeauth.stop();
+    load.restore();
   });
 };

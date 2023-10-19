@@ -1,10 +1,16 @@
-const { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } = require('../../utils');
+import {
+  readRepoFile,
+  modifyRepoFile,
+  writeRepoFile,
+  modifyRepoJSON,
+  modifyRepoYAML,
+} from '../../utils/index.js';
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`
  * as authoritative.
  */
-exports.tasks = [{
+export const tasks = [{
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
@@ -57,6 +63,7 @@ exports.tasks = [{
       'ui/package.json',
       'workers/docker-worker/package.json',
       'clients/client/package.json',
+      'clients/client-test/package.json',
     ].forEach(file => {
       utils.status({ message: file });
       modifyRepoJSON(file,

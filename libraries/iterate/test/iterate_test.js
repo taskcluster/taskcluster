@@ -1,8 +1,9 @@
-const subject = require('../');
-const assume = require('assume');
-const debug = require('debug')('iterate-test');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const testing = require('taskcluster-lib-testing');
+import subject from '../src/index.js';
+import assume from 'assume';
+import debugFactory from 'debug';
+const debug = debugFactory('iterate-test');
+import { MonitorManager } from 'taskcluster-lib-monitor';
+import testing from 'taskcluster-lib-testing';
 
 const possibleEvents = [
   'started',

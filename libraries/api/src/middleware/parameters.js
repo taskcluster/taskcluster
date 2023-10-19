@@ -1,5 +1,5 @@
-const _ = require('lodash');
-const assert = require('assert');
+import _ from 'lodash';
+import assert from 'assert';
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
@@ -10,7 +10,7 @@ const assert = require('assert');
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const parameterValidator = ({ entry }) => {
+export const parameterValidator = ({ entry }) => {
   const { params } = entry;
 
   // Validate parameters
@@ -50,5 +50,3 @@ const parameterValidator = ({ entry }) => {
     return next();
   };
 };
-
-exports.parameterValidator = parameterValidator;

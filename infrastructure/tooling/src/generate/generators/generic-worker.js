@@ -1,14 +1,15 @@
-const path = require('path');
-const util = require('util');
-const rimraf = util.promisify(require('rimraf'));
-const glob = require('glob');
-const { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } = require('../../utils');
+import path from 'path';
+import util from 'util';
+import glob from 'glob';
+import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
-exports.tasks = [];
+export const tasks = [];
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
-exports.tasks.push({
+tasks.push({
   title: 'Generate Generic-Worker',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-generic-worker'],
@@ -21,7 +22,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate Generic-Worker Schemas`,
   requires: [],
   provides: [
@@ -48,7 +49,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: 'Update generic-worker README',
   requires: ['target-generic-worker'],
   provides: ['generic-worker-readme'],
@@ -93,7 +94,7 @@ import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 <SchemaTable schema="${$id}" />
 `;
 
-exports.tasks.push({
+tasks.push({
   title: 'Update generic-worker payload formats',
   requires: ['generic-worker-schemas'],
   provides: ['target-gw-docs'],

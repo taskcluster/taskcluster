@@ -1,7 +1,7 @@
-const slugid = require('slugid');
-const request = require('superagent');
+import slugid from 'slugid';
+import request from 'superagent';
 
-const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
+export const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
   let services = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     if (cfg.pulse_username !== undefined && (!userConfig[name] || !userConfig[name].pulse_username)) {
@@ -12,7 +12,7 @@ const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
   return services;
 };
 
-const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
+export const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
   const setupNeeded = servicesWithoutRabbitConfig(userConfig, configTmpl);
 
   prompts.push({
@@ -78,7 +78,7 @@ const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
   });
 };
 
-const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
+export const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   const setupNeeded = servicesWithoutRabbitConfig(userConfig, configTmpl);
   const { rabbitAdminPassword } = answer;
 
@@ -120,7 +120,7 @@ const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
-const rabbitAdminPasswordPrompt = ({ userConfig, prompts }) => {
+export const rabbitAdminPasswordPrompt = ({ userConfig, prompts }) => {
   prompts.push({
     type: 'password',
     name: 'rabbitAdminPassword',
@@ -128,7 +128,7 @@ const rabbitAdminPasswordPrompt = ({ userConfig, prompts }) => {
   });
 };
 
-const rabbitEnsureResources = async ({ userConfig, answer }) => {
+export const rabbitEnsureResources = async ({ userConfig, answer }) => {
   const apiUrl = `${userConfig.meta?.rabbitAdminManagementOrigin}/api`;
   const agent = request.agent().auth(userConfig.meta?.rabbitAdminUser, answer.rabbitAdminPassword).type('json');
   const vhost = userConfig.pulseVhost;
@@ -155,7 +155,7 @@ const rabbitEnsureResources = async ({ userConfig, answer }) => {
   }
 };
 
-module.exports = {
+export default {
   rabbitPrompts,
   rabbitResources,
   rabbitAdminPasswordPrompt,

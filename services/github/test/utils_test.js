@@ -1,9 +1,15 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const {
-  throttleRequest, shouldSkipCommit, shouldSkipPullRequest,
-  tailLog, ansi2txt, generateXHubSignature, checkGithubSignature,
-} = require('../src/utils');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+
+import {
+  throttleRequest,
+  shouldSkipCommit,
+  shouldSkipPullRequest,
+  tailLog,
+  ansi2txt,
+  generateXHubSignature,
+  checkGithubSignature,
+} from '../src/utils.js';
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {

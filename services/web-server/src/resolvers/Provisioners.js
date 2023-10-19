@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   ProvisionerStability: {
     EXPERIMENTAL: 'experimental',
     STABLE: 'stable',

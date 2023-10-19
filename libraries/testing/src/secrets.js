@@ -1,7 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const debug = require('debug')('tc-lib-testing:secrets');
+import _ from 'lodash';
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import debugFactory from 'debug';
+const debug = debugFactory('tc-lib-testing:secrets');
 
 class Secrets {
   constructor({ secretName, secrets, load }) {
@@ -210,4 +211,4 @@ class Secrets {
   }
 }
 
-module.exports = Secrets;
+export default Secrets;

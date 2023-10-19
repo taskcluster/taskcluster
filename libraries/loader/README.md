@@ -55,7 +55,7 @@ another component.  Note that the `server` component's `setup` method is
 asynchronous, and that `await` is used with the `load` method invocation.
 
 ```js
-let loader = require('taskcluster-lib-loader');
+import loader from 'taskcluster-lib-loader';
 
 // Create loader
 let load = loader({
@@ -104,7 +104,7 @@ set the default of the virtual component to a falsy value, you will force
 the user to provide a value for you.
 
 ```js
-let loader = require('taskcluster-lib-loader');
+import loader from 'taskcluster-lib-loader';
 
 // Create loader
 let load = loader({
@@ -157,6 +157,12 @@ process running the specified component.
 // If this file is executed launch component from first argument
 if (!module.parent) {
   // method to crash the program if different components get loaded
+  load.crashOnError(process.argv[2]);
+}
+
+// ES6
+import { fileURLToPath } from "url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 ```

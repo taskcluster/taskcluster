@@ -1,4 +1,4 @@
-const events = require('events');
+import events from 'events';
 
 /**
  * This is a watch dog timer.  Think of it as a ticking timebomb which will
@@ -49,4 +49,4 @@ class WatchDog extends events.EventEmitter {
     this._set();
   }
 }
-module.exports = WatchDog;
+export default WatchDog;

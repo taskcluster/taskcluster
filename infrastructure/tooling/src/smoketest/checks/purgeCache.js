@@ -1,14 +1,14 @@
-const taskcluster = require('taskcluster-client');
-const assert = require('assert');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     'purge-cache:built-in/succeed:smoketest-cache',
   ],
 };
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [];
+tasks.push({
   title: 'Purge a cache (--target purge-cache)',
   requires: [
     'ping-purge-cache',

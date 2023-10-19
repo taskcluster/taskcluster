@@ -1,9 +1,10 @@
-let assert = require('assert');
-let debug = require('debug')('taskcluster-lib-testing:schemas');
-let fs = require('fs');
-let SchemaSet = require('taskcluster-lib-validate');
-let libUrls = require('taskcluster-lib-urls');
-let path = require('path');
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-testing:schemas');
+import fs from 'fs';
+import SchemaSet from 'taskcluster-lib-validate';
+import libUrls from 'taskcluster-lib-urls';
+import path from 'path';
 
 /**
  * Test schemas with positive and negative test cases. This will call
@@ -69,4 +70,4 @@ let schemas = function(options) {
 };
 
 // Export schemas
-module.exports = schemas;
+export default schemas;

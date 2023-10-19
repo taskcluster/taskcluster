@@ -1,11 +1,12 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const debug = require('debug')('hooks:taskcreator');
-const _ = require('lodash');
-const jsone = require('json-e');
-const libUrls = require('taskcluster-lib-urls');
+import assert from 'assert';
+import taskcluster from 'taskcluster-client';
+import debugFactory from 'debug';
+const debug = debugFactory('hooks:taskcreator');
+import _ from 'lodash';
+import jsone from 'json-e';
+import libUrls from 'taskcluster-lib-urls';
 
-class TaskCreator {
+export class TaskCreator {
   /** Create a TaskCreator instance.
    *
    * options:
@@ -176,9 +177,7 @@ class TaskCreator {
   }
 }
 
-exports.TaskCreator = TaskCreator;
-
-class MockTaskCreator extends TaskCreator {
+export class MockTaskCreator extends TaskCreator {
   constructor() {
     super({ credentials: {}, rootUrl: libUrls.testRootUrl() });
     this.shouldFail = false;
@@ -221,4 +220,4 @@ class MockTaskCreator extends TaskCreator {
   }
 }
 
-exports.MockTaskCreator = MockTaskCreator;
+export default { TaskCreator, MockTaskCreator };

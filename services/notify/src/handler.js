@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const jsone = require('json-e');
-const { consume } = require('taskcluster-lib-pulse');
-const libUrls = require('taskcluster-lib-urls');
+import _ from 'lodash';
+import jsone from 'json-e';
+import { consume } from 'taskcluster-lib-pulse';
+import libUrls from 'taskcluster-lib-urls';
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
@@ -230,4 +230,4 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 }
 
 // Export Handler
-module.exports = Handler;
+export default Handler;

@@ -1,10 +1,11 @@
-let debug = require('debug')('app:deadline-resolver');
-let assert = require('assert');
-let _ = require('lodash');
-let QueueService = require('./queueservice');
-let Iterate = require('taskcluster-lib-iterate');
-const { Task } = require('./data');
-const { sleep } = require('./utils');
+import debugFactory from 'debug';
+const debug = debugFactory('app:deadline-resolver');
+import assert from 'assert';
+import _ from 'lodash';
+import QueueService from './queueservice.js';
+import Iterate from 'taskcluster-lib-iterate';
+import { Task } from './data.js';
+import { sleep } from './utils.js';
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
@@ -156,4 +157,4 @@ class DeadlineResolver {
 }
 
 // Export DeadlineResolver
-module.exports = DeadlineResolver;
+export default DeadlineResolver;

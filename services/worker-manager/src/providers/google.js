@@ -1,14 +1,14 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const uuid = require('uuid');
-const { google } = require('googleapis');
-const { ApiError, Provider } = require('./provider');
-const { CloudAPI } = require('./cloudapi');
-const { WorkerPool, Worker } = require('../data');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import * as uuid from 'uuid';
+import { google } from 'googleapis';
+import { ApiError, Provider } from './provider.js';
+import { CloudAPI } from './cloudapi.js';
+import { WorkerPool, Worker } from '../data.js';
 
-class GoogleProvider extends Provider {
+export class GoogleProvider extends Provider {
 
   constructor({
     providerConfig,
@@ -238,7 +238,7 @@ class GoogleProvider extends Provider {
       let op;
 
       const disks = [
-        ...cfg.disks || {},
+        ...(cfg.disks || {}),
       ];
       for (let disk of disks) {
         disk.labels = { ...disk.labels, ...labels };
@@ -253,7 +253,7 @@ class GoogleProvider extends Provider {
             ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'capacityPerInstance']),
             name: instanceName,
             labels: {
-              ...cfg.labels || {},
+              ...(cfg.labels || {}),
               ...labels,
             },
             description: cfg.description || workerPool.description,
@@ -275,12 +275,12 @@ class GoogleProvider extends Provider {
               ],
             }],
             scheduling: {
-              ...cfg.scheduling || {},
+              ...(cfg.scheduling || {}),
               automaticRestart: false,
             },
             metadata: {
               items: [
-                ...(cfg.metadata || {}).items || [],
+                ...((cfg.metadata || {}).items || []),
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({
@@ -523,7 +523,3 @@ class GoogleProvider extends Provider {
     return false;
   }
 }
-
-module.exports = {
-  GoogleProvider,
-};

@@ -9,7 +9,7 @@ The schema represents the organization of the data in the database, including ta
 This is constructed with:
 
 ```javascript
-const {Schema, Database} = require('taskcluster-lib-postgres');
+import { Schema, Database } from 'taskcluster-lib-postgres';
 const schema = Schema.fromDbDirectory('path/to/db/directory');
 ```
 
@@ -327,7 +327,7 @@ The `after_.._in` parameters must correspond to an index on the table, so that P
 For other uses in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
 
 ```javascript
-const {paginatedIterator} = require('taskcluster-lib-postgres');
+import { paginatedIterator } from 'taskcluster-lib-postgres';
 
 const doTheThings = async () => {
   for await (let row of paginatedIterator({
@@ -352,7 +352,7 @@ This is the "old way", and is not preferred both because it is not performant (t
 The `paginatedIterator` also works for this type of pagination:
 
 ```javascript
-const {paginatedIterator} = require('taskcluster-lib-postgres');
+import { paginatedIterator } from 'taskcluster-lib-postgres';
 
 const doTheThings = async () => {
   for await (let row of paginatedIterator({
@@ -491,7 +491,7 @@ Feel free to add any additional constants required in [`src/constants.js`](./src
 The `ignorePgErrors` function can be useful to perform an operation and ignore some errors, mostly in tests:
 
 ```js
-const {UNDEFINED, TABLE, ignorePgErrors} = require('taskcluster-lib-postgres');
+import { UNDEFINED, TABLE, ignorePgErrors } from 'taskcluster-lib-postgres';
 
 # ...
 

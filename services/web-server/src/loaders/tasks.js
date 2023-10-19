@@ -1,11 +1,11 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const got = require('got');
-const ConnectionLoader = require('../ConnectionLoader');
-const Task = require('../entities/Task');
-const maybeSignedUrl = require('../utils/maybeSignedUrl');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import got from 'got';
+import ConnectionLoader from '../ConnectionLoader.js';
+import Task from '../entities/Task.js';
+import maybeSignedUrl from '../utils/maybeSignedUrl.js';
 
-module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async (taskId) => {

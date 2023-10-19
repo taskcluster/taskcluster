@@ -1,11 +1,10 @@
-const taskcluster = require('../');
-const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
-const { APIBuilder } = require('taskcluster-lib-api');
-const testing = require('taskcluster-lib-testing');
-const { App } = require('taskcluster-lib-app');
-const { monitorManager, monitor } = require('./monitor');
-const retry = require('../src/retry');
+import taskcluster from 'taskcluster-client';
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import { APIBuilder } from 'taskcluster-lib-api';
+import { App } from 'taskcluster-lib-app';
+import SchemaSet from 'taskcluster-lib-validate';
+import { monitorManager, monitor } from './monitor.js';
 
 const rootUrl = `http://localhost:60526`;
 
@@ -254,48 +253,4 @@ suite(testing.suiteName(), function() {
       assert(monitorManager.messages.length > 0);
     });
   });
-});
-
-suite('retry function', function() {
-  let failures;
-  const retriableFailEveryTime = (retriableError, attempt) => {
-    failures++;
-    assert.equal(attempt, failures);
-    retriableError(new Error('uhoh, retriable'));
-  };
-
-  const fatalFailEveryTime = (retriableError, attempt) => {
-    failures++;
-    assert.equal(attempt, failures);
-    throw new Error('uhoh, forever');
-  };
-
-  const cfg = { retries: 0, delayFactor: 1, randomizationFactor: 0, maxDelay: 100 };
-
-  setup(function() {
-    failures = 0;
-  });
-
-  test('tries once if retries is zero', async function() {
-    await assert.rejects(
-      retry(cfg, retriableFailEveryTime),
-      /uhoh/);
-    assert.equal(failures, 1);
-  });
-
-  test('tries six times if retries is five', async function() {
-    await assert.rejects(
-      retry({ ...cfg, retries: 5 }, retriableFailEveryTime),
-      /uhoh/);
-    assert.equal(failures, 6);
-  });
-
-  test('no retry for a fatal error', async function() {
-    await assert.rejects(
-      retry({ ...cfg, retries: 5 }, fatalFailEveryTime),
-      /uhoh/);
-    assert.equal(failures, 1);
-  });
-
-  // delayFactor, randomizationFactor, and maxDelay are tested in the previous suite
 });

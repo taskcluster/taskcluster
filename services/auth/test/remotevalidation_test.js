@@ -1,9 +1,9 @@
-const assert = require('assert');
-const helper = require('./helper');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import helper from './helper.js';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import request from 'superagent';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);

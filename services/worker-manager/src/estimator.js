@@ -1,4 +1,4 @@
-class Estimator {
+export class Estimator {
   constructor({ queue, monitor }) {
     this.queue = queue;
     this.monitor = monitor;
@@ -66,7 +66,3 @@ class Estimator {
     return Math.max(toSpawn - requestedCapacity, 0);
   }
 }
-
-module.exports = {
-  Estimator,
-};

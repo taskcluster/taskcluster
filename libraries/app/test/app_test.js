@@ -1,12 +1,13 @@
-const assert = require('assert');
-const { App } = require('../');
-const request = require('superagent');
-const express = require('express');
-const isUUID = require('is-uuid');
-const testing = require('taskcluster-lib-testing');
-const path = require('path');
-const mockFs = require('mock-fs');
+import assert from 'assert';
+import { App } from '../src/index.js';
+import request from 'superagent';
+import express from 'express';
+import isUUID from 'is-uuid';
+import testing from 'taskcluster-lib-testing';
+import path from 'path';
+import mockFs from 'mock-fs';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 suite(testing.suiteName(), function() {

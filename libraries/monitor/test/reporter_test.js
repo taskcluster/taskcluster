@@ -1,7 +1,7 @@
-const nock = require('nock');
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const MonitorManager = require('../src/monitormanager');
+import nock from 'nock';
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
+import MonitorManager from '../src/monitormanager.js';
 
 suite(testing.suiteName(), function() {
 

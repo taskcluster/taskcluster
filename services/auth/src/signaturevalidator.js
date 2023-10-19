@@ -1,8 +1,10 @@
-const hawk = require('hawk');
-const assert = require('assert');
+import hawk from 'hawk';
+import assert from 'assert';
+
 // Someone should rename utils to scopes...
-const utils = require('taskcluster-lib-scopes');
-const crypto = require('crypto');
+import utils from 'taskcluster-lib-scopes';
+
+import crypto from 'crypto';
 
 /**
  * Limit the client scopes and possibly use temporary keys.
@@ -382,4 +384,4 @@ const createSignatureValidator = function(options) {
   };
 };
 
-exports.createSignatureValidator = createSignatureValidator;
+export default createSignatureValidator;

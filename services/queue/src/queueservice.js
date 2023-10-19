@@ -1,11 +1,12 @@
-let _ = require('lodash');
-let debug = require('debug')('app:queue');
-let assert = require('assert');
-let base32 = require('thirty-two');
-let crypto = require('crypto');
-let slugid = require('slugid');
-let { splitTaskQueueId } = require('./utils');
-const taskcluster = require('taskcluster-client');
+import _ from 'lodash';
+import makeDebug from 'debug';
+const debug = makeDebug('app:queue');
+import assert from 'assert';
+import base32 from 'thirty-two';
+import crypto from 'crypto';
+import slugid from 'slugid';
+import { splitTaskQueueId } from './utils.js';
+import taskcluster from 'taskcluster-client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -44,7 +45,7 @@ const MESSAGE_FREEZE_TIMEOUT = '5 minutes';
 /**
  * Utility class for managing task lifecycle queues.
  */
-class QueueService {
+export class QueueService {
   /**
    * options:
    * {
@@ -374,4 +375,4 @@ class QueueService {
   }
 }
 
-module.exports = QueueService;
+export default QueueService;

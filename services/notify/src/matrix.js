@@ -1,4 +1,4 @@
-const loglevel = require('loglevel');
+import loglevel from 'loglevel';
 
 class MatrixBot {
   constructor({ matrixClient, userId, monitor }) {
@@ -30,4 +30,4 @@ class MatrixBot {
   }
 }
 
-module.exports = MatrixBot;
+export default MatrixBot;

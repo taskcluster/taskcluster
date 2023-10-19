@@ -1,8 +1,8 @@
-const taskcluster = require('taskcluster-client');
-const { ApiError, Provider } = require('./provider');
-const { Worker } = require('../data');
+import taskcluster from 'taskcluster-client';
+import { ApiError, Provider } from './provider.js';
+import { Worker } from '../data.js';
 
-class StaticProvider extends Provider {
+export class StaticProvider extends Provider {
   constructor(conf) {
     super(conf);
     this.configSchema = 'config-static';
@@ -100,7 +100,3 @@ class StaticProvider extends Provider {
     };
   }
 }
-
-module.exports = {
-  StaticProvider,
-};

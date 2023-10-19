@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const request = require('superagent');
-const util = require('util');
+import crypto from 'crypto';
+import request from 'superagent';
+import util from 'util';
 
 const setTimeoutPromise = util.promisify(setTimeout);
 
@@ -14,7 +14,7 @@ const setTimeoutPromise = util.promisify(setTimeout);
  *
  * All other errors from superagent are thrown.
  */
-const throttleRequest = async ({ url, method, response = { status: 0 }, attempt = 1, delay = 100 }) => {
+export const throttleRequest = async ({ url, method, response = { status: 0 }, attempt = 1, delay = 100 }) => {
   if (attempt > 5) {
     return response;
   }
@@ -46,7 +46,7 @@ const throttleRequest = async ({ url, method, response = { status: 0 }, attempt 
 // for overriding in testing..
 throttleRequest.request = request;
 
-const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
+export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
 
 /**
  * Check if push event should be skipped.
@@ -61,7 +61,7 @@ const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
  *
  * @returns boolean
  */
-const shouldSkipCommit = ({ commits, head_commit = {} }) => {
+export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
   let last_commit = head_commit && head_commit.message ? head_commit : false;
 
   if (!last_commit && Array.isArray(commits) && commits.length > 0) {
@@ -82,7 +82,7 @@ const shouldSkipCommit = ({ commits, head_commit = {} }) => {
  *
  * @returns boolean
  */
-const shouldSkipPullRequest = ({ pull_request }) => {
+export const shouldSkipPullRequest = ({ pull_request }) => {
   return pull_request !== undefined &&
     (ciSkipRegexp.test(pull_request.title) || ciSkipRegexp.test(pull_request.body));
 };
@@ -98,7 +98,7 @@ const shouldSkipPullRequest = ({ pull_request }) => {
  * @param {string} src
  * @returns string
  */
-const ansi2txt = (src) => {
+export const ansi2txt = (src) => {
   // eslint-disable-next-line no-control-regex
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
@@ -115,22 +115,22 @@ const ansi2txt = (src) => {
  * @param {number} maxPayloadLength
  * @returns string
  */
-const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
+export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
   return ansi2txt(log).substring(log.length - maxPayloadLength)
     .split('\n')
     .slice(-maxLines)
     .join('\n');
 };
 
-const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
-const markdownAnchor = (name, url) => `[${name}](${url})`;
+export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
+export const markdownAnchor = (name, url) => `[${name}](${url})`;
 
 /**
  * Hashes a payload by some secret, using the same algorithm that
  * GitHub uses to compute their X-Hub-Signature HTTP header. Used
  * for verifying the legitimacy of WebHooks.
  **/
-function generateXHubSignature(secret, payload, algorithm = 'sha1') {
+export function generateXHubSignature(secret, payload, algorithm = 'sha1') {
   if (!['sha1', 'sha256'].includes(algorithm)) {
     throw new Error('Invalid algorithm');
   }
@@ -145,7 +145,7 @@ function generateXHubSignature(secret, payload, algorithm = 'sha1') {
  * Double hmac verification is the preferred way to do this
  * since we can't predict optimizations performed by the runtime.
  **/
-function compareSignatures(sOne, sTwo) {
+export function compareSignatures(sOne, sTwo) {
   const secret = crypto.randomBytes(16).toString('hex');
   const h1 = crypto.createHmac('sha1', secret).update(sOne);
   const h2 = crypto.createHmac('sha1', secret).update(sTwo);
@@ -155,13 +155,13 @@ function compareSignatures(sOne, sTwo) {
 /**
  * signature must be one of the: 'sha256=xxx', 'sha1=xxx'
  */
-const checkGithubSignature = (secret, payload, signature) => {
+export const checkGithubSignature = (secret, payload, signature) => {
   const [algorithm] = signature.split('=');
   const expected = generateXHubSignature(secret, payload, algorithm);
   return compareSignatures(signature, expected);
 };
 
-module.exports = {
+export default {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,

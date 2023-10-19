@@ -1,8 +1,8 @@
-const os = require('os');
-const assert = require('assert');
-const stringify = require('fast-json-stable-stringify');
+import os from 'os';
+import assert from 'assert';
+import stringify from 'fast-json-stable-stringify';
 
-const LEVELS = {
+export const LEVELS = {
   emerg: 0,
   alert: 1,
   crit: 2,
@@ -63,7 +63,7 @@ const elideSecrets = fields => {
  * We can consider supporting extra logging standards
  * later if we want.
  */
-class Logger {
+export class Logger {
   constructor({
     name,
     service,
@@ -221,5 +221,3 @@ class Logger {
     this._log(LEVELS['debug'], type, fields);
   }
 }
-
-module.exports = { Logger, LEVELS };

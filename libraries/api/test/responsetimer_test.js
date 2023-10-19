@@ -1,9 +1,9 @@
-const request = require('superagent');
-const assert = require('assert');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import request from 'superagent';
+import assert from 'assert';
+import { APIBuilder } from '../src/index.js';
+import helper, { monitorManager } from './helper.js';
+import libUrls from 'taskcluster-lib-urls';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   setup(async function() {
@@ -61,18 +61,18 @@ suite(testing.suiteName(), function() {
     await request.get(u('/single-param/Goodbye')),
     await request.get(u('/slash-param/Slash')).catch(err => {}),
     await request.get(u('/another-param/Another')).catch(err => {}),
-    assert.equal(helper.monitorManager.messages.length, 4);
-    helper.monitorManager.messages.forEach(event => {
+    assert.equal(monitorManager.messages.length, 4);
+    monitorManager.messages.forEach(event => {
       assert.equal(event.Type, 'monitor.apiMethod');
       assert.equal(event.Logger, 'taskcluster.lib-api');
     });
-    assert.equal(helper.monitorManager.messages[0].Fields.name, 'testParam');
-    assert.equal(helper.monitorManager.messages[0].Fields.statusCode, 200);
-    assert.equal(helper.monitorManager.messages[1].Fields.name, 'testParam');
-    assert.equal(helper.monitorManager.messages[1].Fields.statusCode, 200);
-    assert.equal(helper.monitorManager.messages[2].Fields.name, 'testSlashParam');
-    assert.equal(helper.monitorManager.messages[2].Fields.statusCode, 404);
-    assert.equal(helper.monitorManager.messages[3].Fields.name, 'testAnotherParam');
-    assert.equal(helper.monitorManager.messages[3].Fields.statusCode, 500);
+    assert.equal(monitorManager.messages[0].Fields.name, 'testParam');
+    assert.equal(monitorManager.messages[0].Fields.statusCode, 200);
+    assert.equal(monitorManager.messages[1].Fields.name, 'testParam');
+    assert.equal(monitorManager.messages[1].Fields.statusCode, 200);
+    assert.equal(monitorManager.messages[2].Fields.name, 'testSlashParam');
+    assert.equal(monitorManager.messages[2].Fields.statusCode, 404);
+    assert.equal(monitorManager.messages[3].Fields.name, 'testAnotherParam');
+    assert.equal(monitorManager.messages[3].Fields.statusCode, 500);
   });
 });

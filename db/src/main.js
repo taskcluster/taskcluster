@@ -1,6 +1,6 @@
-const util = require('util');
-const chalk = require('chalk');
-const { upgrade, downgrade } = require('taskcluster-db');
+import util from 'util';
+import chalk from 'chalk';
+import { upgrade, downgrade } from 'taskcluster-db';
 
 const main = async () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;

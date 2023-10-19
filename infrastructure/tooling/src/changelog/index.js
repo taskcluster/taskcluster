@@ -1,13 +1,23 @@
-const yaml = require('js-yaml');
-const semver = require('semver');
-const glob = require('glob');
-const chalk = require('chalk');
-const appRootDir = require('app-root-dir');
-const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitLog, gitCurrentBranch } = require('../utils');
-const taskcluster = require('taskcluster-client');
-const path = require('path');
-const openEditor = require('open-editor');
-const { Octokit } = require("@octokit/rest");
+import yaml from 'js-yaml';
+import semver from 'semver';
+import glob from 'glob';
+import chalk from 'chalk';
+import appRootDir from 'app-root-dir';
+
+import {
+  REPO_ROOT,
+  readRepoFile,
+  readRepoJSON,
+  writeRepoFile,
+  gitAdd,
+  gitLog,
+  gitCurrentBranch,
+} from '../utils/index.js';
+
+import taskcluster from 'taskcluster-client';
+import path from 'path';
+import openEditor from 'open-editor';
+import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
   'major': 1,
@@ -52,7 +62,7 @@ const strcmp = (a, b) => {
  *   skipUpdates: if true, don't load dependabot updates
  * }
  */
-class ChangeLog {
+export class ChangeLog {
   constructor(options = {}) {
     this.loaded = false;
     this.snippets = [];
@@ -286,7 +296,7 @@ const check_pr = async (pr) => {
   return true;
 };
 
-const add = async (options) => {
+export const add = async (options) => {
   let level, bad;
   if (options.major) {
     level = 'major';
@@ -373,7 +383,7 @@ const add = async (options) => {
   }
 };
 
-const show = async (options) => {
+export const show = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
@@ -382,16 +392,14 @@ const show = async (options) => {
   console.log(await cl.format());
 };
 
-const check = async (options) => {
+export const check = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
 
   if (options.pr) {
-    if (!await check_pr(options.pr)) {
+    if (!(await check_pr(options.pr))) {
       process.exit(1);
     }
   }
 };
-
-module.exports = { add, show, check, ChangeLog };

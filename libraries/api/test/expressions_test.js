@@ -1,6 +1,6 @@
-const assert = require('assert');
-const ScopeExpressionTemplate = require('../src/expressions');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import ScopeExpressionTemplate from '../src/expressions.js';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
 

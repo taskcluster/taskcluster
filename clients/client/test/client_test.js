@@ -2,12 +2,11 @@ const taskcluster = require('../');
 const assert = require('assert');
 const path = require('path');
 const nock = require('nock');
-const testing = require('taskcluster-lib-testing');
 const net = require('net');
-const helper = require('./helper');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference

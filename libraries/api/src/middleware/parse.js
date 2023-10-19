@@ -1,11 +1,11 @@
-const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 
 /**
  * Use body-parser to parse JSON requests and also store the text of the
  * response at req.text.
  */
 
-const parseBody = ({ inputLimit }) => {
+export const parseBody = ({ inputLimit }) => {
   const wrapped = bodyParser.text({
     limit: inputLimit,
     type: 'application/json',
@@ -42,5 +42,3 @@ const parseBody = ({ inputLimit }) => {
     });
   };
 };
-
-exports.parseBody = parseBody;

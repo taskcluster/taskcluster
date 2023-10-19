@@ -105,7 +105,7 @@ so schema operations on schemas should not be performed on the abstract form.
 To create a References instance, use one of the following methods:
 
 ```js
-const References = require('taskcluster-lib-references');
+import References from 'taskcluster-lib-references';
 
 // Build from a built services format (which is always abstract)
 references = References.fromBuiltServices({directory: '/build/directory'});
@@ -181,11 +181,11 @@ To catch validation errors within a Taskcluster service's unit tests, add this
 library as a devDependency and add a test file like this:
 
 ```js
-# test/references_test.js
-const builder = require('../src/api');
-const exchanges = require('../src/exchanges');
-const helper = require('./helper');
-const References = require('taskcluster-lib-references');
+// test/references_test.js
+import builder from '../src/api.js';
+import exchanges from '../src/exchanges.js';
+import helper from './helper.js';
+import References from 'taskcluster-lib-references';
 
 suite('references_test.js', function() {
   test('references validate', async function() {

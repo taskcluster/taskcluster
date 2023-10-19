@@ -1,5 +1,8 @@
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
+import path from 'path';
+import { URL } from 'url';
+import testing from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 /**
  * Test cases each defined with relative path, schema identifier and success as

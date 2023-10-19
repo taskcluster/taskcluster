@@ -1,9 +1,11 @@
-const yaml = require('js-yaml');
-const path = require('path');
-const fs = require('fs');
-const assert = require('assert');
+import yaml from 'js-yaml';
+import path from 'path';
+import fs from 'fs';
+import assert from 'assert';
 
 let _commonSchemas;
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 /**
  * Read the common schemas from this library's schemas/ directory.  Note
@@ -12,7 +14,7 @@ let _commonSchemas;
  * to $ref anything they like -- all things taskcluster-lib-validate does not
  * allow for services.
  */
-const getCommonSchemas = () => {
+export const getCommonSchemas = () => {
   if (_commonSchemas) {
     return _commonSchemas;
   }
@@ -32,5 +34,3 @@ const getCommonSchemas = () => {
   }
   return _commonSchemas;
 };
-
-exports.getCommonSchemas = getCommonSchemas;

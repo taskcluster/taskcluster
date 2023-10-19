@@ -1,4 +1,5 @@
-const { MonitorManager } = require('../');
+import MonitorManager from '../src/monitormanager.js';
+import '../src/builtins.js';
 
 const options = {
   shouldError: false,

@@ -1,33 +1,39 @@
-const taskcluster = require('taskcluster-client');
-const { FakeEC2, FakeAzure, FakeGoogle } = require('./fakes');
-const { Worker } = require('../src/data');
-const { stickyLoader, Secrets, fakeauth, withMonitor, withPulse, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
+import taskcluster from 'taskcluster-client';
+import { FakeEC2, FakeAzure, FakeGoogle } from './fakes/index.js';
+import { Worker } from '../src/data.js';
+import { globalAgent } from 'http';
 
-exports.rootUrl = 'http://localhost:60409';
+import testing from 'taskcluster-lib-testing';
 
-exports.load = stickyLoader(load);
-exports.load.inject('profile', 'test');
-exports.load.inject('process', 'test');
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
 
-withMonitor(exports);
+export const rootUrl = 'http://localhost:60409';
+export const load = testing.stickyLoader(loadMain);
+
+const helper = { load, rootUrl };
+export default helper;
+
+helper.load.inject('profile', 'test');
+helper.load.inject('process', 'test');
+
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new testing.Secrets({
   secrets: {},
-  load: exports.load,
+  load: helper.load,
 });
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'worker_manager');
+helper.withDb = (mock, skipping) => {
+  testing.withDb(mock, skipping, helper, 'worker_manager');
 };
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-worker-manager' });
+helper.withPulse = (mock, skipping) => {
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-worker-manager' });
 };
 
-exports.withProviders = (mock, skipping) => {
+helper.withProviders = (mock, skipping) => {
   const fakeEC2 = new FakeEC2();
   fakeEC2.forSuite();
 
@@ -38,23 +44,25 @@ exports.withProviders = (mock, skipping) => {
   fakeGoogle.forSuite();
 };
 
-exports.withProvisioner = (mock, skipping) => {
+helper.withProvisioner = (mock, skipping) => {
   let provisioner;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    exports.initiateProvisioner = async () => {
-      provisioner = await exports.load('provisioner');
+
+    helper.initiateProvisioner = async () => {
+      provisioner = await load('provisioner');
 
       // remove it right away, so it will be re-created next time
-      exports.load.remove('provisioner');
+      helper.load.remove('provisioner');
 
       await provisioner.initiate();
       return provisioner;
     };
-    exports.terminateProvisioner = async () => {
+
+    helper.terminateProvisioner = async () => {
       if (provisioner) {
         await provisioner.terminate();
         provisioner = null;
@@ -69,20 +77,22 @@ exports.withProvisioner = (mock, skipping) => {
   });
 };
 
-exports.withWorkerScanner = (mock, skipping) => {
+helper.withWorkerScanner = (mock, skipping) => {
   let scanner;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    exports.initiateWorkerScanner = async () => {
-      scanner = await exports.load('workerScanner');
+
+    helper.initiateWorkerScanner = async () => {
+      scanner = await load('workerScanner');
       // remove it right away, as it is started on load
-      exports.load.remove('workerScanner');
+      helper.load.remove('workerScanner');
       return scanner;
     };
-    exports.terminateWorkerScanner = async () => {
+
+    helper.terminateWorkerScanner = async () => {
       if (scanner) {
         await scanner.terminate();
         scanner = null;
@@ -104,14 +114,14 @@ exports.withWorkerScanner = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
 
-    exports.queue = stubbedQueue();
-    exports.load.inject('queue', exports.queue);
+    helper.queue = stubbedQueue();
+    helper.load.inject('queue', helper.queue);
   });
 };
 
@@ -124,22 +134,22 @@ exports.withFakeQueue = (mock, skipping) => {
  *
  * We consider any emailing to be test-failing at the moment
  */
-exports.withFakeNotify = (mock, skipping) => {
+helper.withFakeNotify = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
 
-    exports.notify = stubbedNotify();
-    exports.load.inject('notify', exports.notify);
+    helper.notify = stubbedNotify();
+    helper.load.inject('notify', helper.notify);
 
     setup(async function() {
-      exports.notify.emails.splice(0);
+      helper.notify.emails.splice(0);
     });
   });
 };
 
-exports.withServer = (mock, skipping) => {
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -147,22 +157,22 @@ exports.withServer = (mock, skipping) => {
       return;
     }
 
-    await exports.load('cfg');
+    await load('cfg');
 
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+    helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
-    fakeauth.start({
+    testing.fakeauth.start({
       'test-client': ['*'],
-    }, { rootUrl: exports.rootUrl });
+    }, { rootUrl: helper.rootUrl });
 
     // Create client for working with API
-    exports.WorkerManager = taskcluster.createClient(builder.reference());
+    helper.WorkerManager = taskcluster.createClient(builder.reference());
 
-    exports.workerManager = new exports.WorkerManager({
+    helper.workerManager = new helper.WorkerManager({
       // Ensure that we use global agent, to avoid problems with keepAlive
       // preventing tests from exiting
-      agent: require('http').globalAgent,
-      rootUrl: exports.rootUrl,
+      agent: globalAgent,
+      rootUrl: helper.rootUrl,
       retries: 0,
       credentials: {
         clientId: 'test-client',
@@ -170,7 +180,7 @@ exports.withServer = (mock, skipping) => {
       },
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -188,7 +198,7 @@ exports.withServer = (mock, skipping) => {
 const stubbedQueue = () => {
   const taskQueues = {};
   const queue = new taskcluster.Queue({
-    rootUrl: exports.rootUrl,
+    rootUrl: helper.rootUrl,
     credentials: {
       clientId: 'worker-manager',
       accessToken: 'none',
@@ -223,7 +233,7 @@ const stubbedQueue = () => {
 const stubbedNotify = () => {
   const emails = [];
   const notify = new taskcluster.Notify({
-    rootUrl: exports.rootUrl,
+    rootUrl: helper.rootUrl,
     credentials: {
       clientId: 'worker-manager',
       accessToken: 'none',
@@ -243,20 +253,20 @@ const stubbedNotify = () => {
 /**
  * Get all workers
  */
-exports.getWorkers = async () =>
-  Promise.all((await exports.db.fns.get_workers_without_provider_data(null, null, null, null, null, null)).map(
+helper.getWorkers = async () =>
+  Promise.all((await helper.db.fns.get_workers_without_provider_data(null, null, null, null, null, null)).map(
     async r => {
       const w = Worker.fromDb(r);
-      return await Worker.get(exports.db, {
+      return await Worker.get(helper.db, {
         workerPoolId: w.workerPoolId,
         workerGroup: w.workerGroup,
         workerId: w.workerId,
       });
     }));
 
-exports.resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'workers',
       'worker_pools',
       'worker_pool_errors',

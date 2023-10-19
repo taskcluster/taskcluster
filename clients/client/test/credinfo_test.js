@@ -1,7 +1,7 @@
 const taskcluster = require('../');
 const assert = require('assert');
 const nock = require('nock');
-const testing = require('taskcluster-lib-testing');
+const testing = require('./helper');
 
 suite(testing.suiteName(), function() {
   teardown(function() {

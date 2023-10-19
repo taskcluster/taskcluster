@@ -1,12 +1,14 @@
-const { Client, Exchanges, connectionStringCredentials } = require('../src');
-const path = require('path');
-const amqplib = require('amqplib');
-const assume = require('assume');
-const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
-const libUrls = require('taskcluster-lib-urls');
-const helper = require('./helper');
-const { suiteName, poll } = require('taskcluster-lib-testing');
+import { Client, Exchanges, connectionStringCredentials } from '../src/index.js';
+import path from 'path';
+import amqplib from 'amqplib';
+import assume from 'assume';
+import assert from 'assert';
+import SchemaSet from 'taskcluster-lib-validate';
+import libUrls from 'taskcluster-lib-urls';
+import helper from './helper.js';
+import { suiteName, poll } from 'taskcluster-lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {

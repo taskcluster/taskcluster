@@ -1,7 +1,7 @@
-const References = require('taskcluster-lib-references');
+import References from 'taskcluster-lib-references';
 
 // generate apis.js in the format the client tasks expect..
-exports.tasks = [{
+export const tasks = [{
   title: 'APIs data structure',
   requires: ['references-json'],
   provides: ['apis'],

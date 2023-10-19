@@ -1,9 +1,8 @@
-const MonitorManager = require('./monitormanager.js');
-const { LEVELS } = require('./logger');
+import MonitorManager from './monitormanager.js';
+import { LEVELS } from './logger.js';
+import './builtins.js';
 
-require('./builtins');
-
-module.exports = {
+export {
   MonitorManager,
   LEVELS,
 };

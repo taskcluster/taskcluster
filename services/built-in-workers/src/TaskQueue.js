@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 class TaskQueue {
   constructor(cfg, queue, monitor, type) {
@@ -46,4 +46,4 @@ class TaskQueue {
   }
 }
 
-exports.TaskQueue = TaskQueue;
+export default TaskQueue;

@@ -1,15 +1,15 @@
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const slugid = require('slugid');
-const yaml = require('js-yaml');
-const { Worker, WorkerPoolError } = require('../data.js');
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import slugid from 'slugid';
+import yaml from 'js-yaml';
+import { Worker, WorkerPoolError } from '../data.js';
 
 /**
  * The parent class for all providers.
  *
  * See ../../providers.md for information on writing providers.
  */
-class Provider {
+export class Provider {
   constructor({
     providerId,
     notify,
@@ -229,13 +229,8 @@ class Provider {
  * An error which, if thrown from API-related Provider methods, will be returned to
  * the user as a 400 Bad Request error containing `err.message`.
  */
-class ApiError extends Error {
+export class ApiError extends Error {
 }
-
-module.exports = {
-  Provider,
-  ApiError,
-};
 
 // Utility function for reportError
 const getExtraInfo = ({ extra, workerPoolId, description, errorId }) => {

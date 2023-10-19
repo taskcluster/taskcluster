@@ -1,24 +1,22 @@
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const forge = require('node-forge');
-const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
-const generator = require('generate-password');
-const got = require('got');
-const { rootCertificates } = require('tls');
-const { WorkerPool, Worker } = require('../../data');
-
-const auth = require('@azure/ms-rest-nodeauth');
-const armCompute = require('@azure/arm-compute');
-const armNetwork = require('@azure/arm-network');
-const msRestJS = require('@azure/ms-rest-js');
-const msRestAzure = require('@azure/ms-rest-azure-js');
-
-const { ApiError, Provider } = require('../provider');
-const { CloudAPI } = require('../cloudapi');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from 'taskcluster-client';
+import forge from 'node-forge';
+import crypto from 'crypto';
+import path from 'path';
+import fs from 'fs';
+import generator from 'generate-password';
+import got from 'got';
+import { rootCertificates } from 'tls';
+import { WorkerPool, Worker } from '../../data.js';
+import auth from '@azure/ms-rest-nodeauth';
+import armCompute from '@azure/arm-compute';
+import armNetwork from '@azure/arm-network';
+import msRestJS from '@azure/ms-rest-js';
+import msRestAzure from '@azure/ms-rest-azure-js';
+import { ApiError, Provider } from '../provider.js';
+import { CloudAPI } from '../cloudapi.js';
 
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/states-billing
@@ -76,7 +74,7 @@ function workerConfigWithSecrets(cfg) {
 }
 
 // Convert a Subject or Issuer Distinguished Name (DN) to a string
-function dnToString(dn) {
+export function dnToString(dn) {
   return dn.attributes.map(attr => {
     return `/${attr.shortName}=${attr.value}`;
   }).join();
@@ -85,7 +83,7 @@ function dnToString(dn) {
 // Calculate the fingerprint of a certificate
 // From https://github.com/digitalbazaar/forge/issues/596
 // Fingerprint is OpenSSL format, A1:B2:C3...
-function getCertFingerprint(cert) {
+export function getCertFingerprint(cert) {
   const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
   const messageDigest = forge.md.sha1.create();
   messageDigest.start();
@@ -105,7 +103,7 @@ function getCertFingerprint(cert) {
 //   method: "OSCP" or "CA Issuer",
 //   location: location, which may be a URL
 // },...]
-function getAuthorityAccessInfo(cert) {
+export function getAuthorityAccessInfo(cert) {
   // ASN.1 validator and data capture for AccessDescription items in
   // AuthorityAccessInfo extension
   const accessDescriptionValidator = {
@@ -162,7 +160,7 @@ function getAuthorityAccessInfo(cert) {
   return accessDescriptions;
 }
 
-class AzureProvider extends Provider {
+export class AzureProvider extends Provider {
 
   constructor({
     providerConfig,
@@ -261,6 +259,8 @@ class AzureProvider extends Provider {
     // can load, and 21 it can not (issue #3923)
     this.caStore = forge.pki.createCaStore();
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
+
+    const __dirname = new URL('.', import.meta.url).pathname;
 
     // node v12.9.0 doesn't have these certificates
     // Added from NSS 3.56, released 2020-08-21
@@ -394,7 +394,7 @@ class AzureProvider extends Provider {
         // #4987: Generic worker instances do not need public IP/NIC
         skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
         tags: {
-          ...cfg.tags || {},
+          ...(cfg.tags || {}),
           'created-by': `taskcluster-wm-${this.providerId}`,
           'managed-by': 'taskcluster',
           'provider-id': this.providerId,
@@ -1424,10 +1424,3 @@ class AzureProvider extends Provider {
     }
   }
 }
-
-module.exports = {
-  AzureProvider,
-  dnToString,
-  getCertFingerprint,
-  getAuthorityAccessInfo,
-};

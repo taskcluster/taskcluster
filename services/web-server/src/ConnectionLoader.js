@@ -1,9 +1,9 @@
-const DataLoader = require('dataloader');
+import DataLoader from 'dataloader';
 
 const LIMIT = 1000;
 const FIRST = '$$FIRST$$';
 
-module.exports = class ConnectionLoader {
+export default class ConnectionLoader {
   constructor(singleConnectionHandler) {
     const fetch = async ({ connection, options, ...props }) => {
       return connection
@@ -67,4 +67,4 @@ module.exports = class ConnectionLoader {
       edges,
     };
   }
-};
+}

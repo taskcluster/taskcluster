@@ -1,11 +1,11 @@
-const taskcluster = require('taskcluster-client');
-const slug = require('slugid');
-const assert = require('assert');
-const helper = require('./helper');
-const { WorkerPool, Worker } = require('../src/data');
-const testing = require('taskcluster-lib-testing');
-const fs = require('fs');
-const path = require('path');
+import taskcluster from 'taskcluster-client';
+import slug from 'slugid';
+import assert from 'assert';
+import helper from './helper.js';
+import { WorkerPool, Worker } from '../src/data.js';
+import testing from 'taskcluster-lib-testing';
+import fs from 'fs';
+import path from 'path';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
@@ -1192,6 +1192,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('[Integration] Successful registering an AWS worker', async function () {
+      const __dirname = new URL('.', import.meta.url).pathname;
       const awsProviderId = 'aws';
       const awsWorkerIdentityProof = {
         "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),

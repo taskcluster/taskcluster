@@ -1,9 +1,9 @@
 /**
  * Download coverage from previous tasks
  */
-const taskcluster = require('taskcluster-client');
-const fs = require('mz/fs');
-const path = require('path');
+import taskcluster from 'taskcluster-client';
+import fs from 'fs/promises';
+import path from 'path';
 
 const COVERAGE_DIR = 'coverage';
 

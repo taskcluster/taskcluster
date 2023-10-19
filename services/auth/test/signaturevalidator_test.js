@@ -1,13 +1,13 @@
-const hawk = require('hawk');
-const _ = require('lodash');
-const assert = require('assert');
-const slugid = require('slugid');
-const crypto = require('crypto');
-const taskcluster = require('taskcluster-client');
-const sigvalidator = require('../src/signaturevalidator');
-const utils = require('taskcluster-lib-scopes');
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
+import hawk from 'hawk';
+import _ from 'lodash';
+import assert from 'assert';
+import slugid from 'slugid';
+import crypto from 'crypto';
+import taskcluster from 'taskcluster-client';
+import createSignatureValidator from '../src/signaturevalidator.js';
+import utils from 'taskcluster-lib-scopes';
+import testing from 'taskcluster-lib-testing';
+import helper from './helper.js';
 
 suite(testing.suiteName(), function() {
   let one_hour = taskcluster.fromNow('1 hour');
@@ -45,7 +45,7 @@ suite(testing.suiteName(), function() {
   };
 
   suiteSetup(async function() {
-    validator = sigvalidator.createSignatureValidator({
+    validator = createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
           throw new Error('no such clientId');

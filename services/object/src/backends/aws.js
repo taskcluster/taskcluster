@@ -1,14 +1,14 @@
-const { Backend } = require('./base');
-const assert = require('assert');
-const aws = require('aws-sdk');
-const { reportError } = require('taskcluster-lib-api');
-const taskcluster = require('taskcluster-client');
-const qs = require('qs');
-const { parse: parseContentType } = require('content-type');
+import { Backend } from './base.js';
+import assert from 'assert';
+import aws from 'aws-sdk';
+import { reportError } from 'taskcluster-lib-api';
+import taskcluster from 'taskcluster-client';
+import qs from 'qs';
+import { parse as parseContentType } from 'content-type';
 
 const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 
-class AwsBackend extends Backend {
+export class AwsBackend extends Backend {
   constructor(options) {
     super(options);
 
@@ -247,7 +247,7 @@ class AwsBackend extends Backend {
   }
 }
 
-const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
+export const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
   let options = credentials;
   if (endpoint) {
     options.endpoint = new aws.Endpoint(endpoint);
@@ -263,4 +263,4 @@ const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
   return LocationConstraint === '' ? 'us-east-1' : LocationConstraint;
 };
 
-module.exports = { getBucketRegion, AwsBackend };
+export default { getBucketRegion, AwsBackend };

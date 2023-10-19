@@ -1,9 +1,10 @@
-const debug = require('debug')('test:rerun');
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test:rerun');
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from 'taskcluster-client';
+import helper from './helper.js';
+import testing from 'taskcluster-lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

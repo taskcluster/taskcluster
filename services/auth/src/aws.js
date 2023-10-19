@@ -1,8 +1,7 @@
-const AWS = require('aws-sdk');
-const builder = require('./api');
-const { find } = require('lodash');
+import AWS from 'aws-sdk';
+import _ from 'lodash';
 
-builder.declare({
+export const awsBuilder = builder => builder.declare({
   method: 'get',
   route: '/aws/s3/:level/:bucket/:prefix(*)',
   name: 'awsS3Credentials',
@@ -78,7 +77,7 @@ builder.declare({
 
   // find credentials for this bucket
   const awsCredentials = this.cfg.awsCredentials || {};
-  const bucketCreds = find(
+  const bucketCreds = _.find(
     awsCredentials.allowedBuckets || {},
     ({ buckets }) => buckets.includes(bucket));
   if (!bucketCreds) {

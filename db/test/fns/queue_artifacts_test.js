@@ -1,10 +1,10 @@
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const slugid = require('slugid');
-const _ = require('lodash');
-const helper = require('../helper');
-const taskcluster = require('taskcluster-client');
+import { strict as assert } from 'assert';
+import testing from 'taskcluster-lib-testing';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import slugid from 'slugid';
+import _ from 'lodash';
+import helper from '../helper.js';
+import taskcluster from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });

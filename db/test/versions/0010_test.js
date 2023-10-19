@@ -1,10 +1,10 @@
-const _ = require('lodash');
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const hugeBufs = require('./fixtures/huge_bufs.js');
-const { entityBufDecodeTest } = require('./0008_test.js');
+import _ from 'lodash';
+import helper from '../helper.js';
+import testing from 'taskcluster-lib-testing';
+import * as hugeBufs from './fixtures/huge_bufs.js';
+import { entityBufDecodeTest } from './0008_test.js';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(__filename)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
 const PREV_VERSION = THIS_VERSION - 1;
 
 suite(testing.suiteName(), function() {

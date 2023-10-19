@@ -1,9 +1,9 @@
-const { SubscriptionServer } = require('subscriptions-transport-ws');
-const { execute, subscribe } = require('graphql');
-const credentials = require('./credentials');
-const formatError = require('./formatError');
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, subscribe } from 'graphql';
+import credentials from './credentials.js';
+import formatError from './formatError.js';
 
-module.exports = ({ server, schema, context, path }) =>
+export default ({ server, schema, context, path }) =>
   SubscriptionServer.create(
     {
       schema,

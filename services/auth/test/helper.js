@@ -1,37 +1,46 @@
-const assert = require('assert');
-const debug = require('debug')('test-helper');
-const _ = require('lodash');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const slugid = require('slugid');
-const uuid = require('uuid');
-const { APIBuilder } = require('taskcluster-lib-api');
-const SchemaSet = require('taskcluster-lib-validate');
-const staticScopes = require('../src/static-scopes.json');
-const makeSentryManager = require('./../src/sentrymanager');
-const { syncStaticClients } = require('../src/static-clients');
-const { stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import assert from 'assert';
+import debugFactory from 'debug';
+const debug = debugFactory('test-helper');
+import _ from 'lodash';
+import builder from '../src/api.js';
+import taskcluster from 'taskcluster-client';
+import { default as mainLoad } from '../src/main.js';
+import slugid from 'slugid';
+import fs from 'fs/promises';
+import { v4 } from 'uuid';
+import { APIBuilder } from 'taskcluster-lib-api';
+import SchemaSet from 'taskcluster-lib-validate';
+import makeSentryManager from './../src/sentrymanager.js';
+import { syncStaticClients } from '../src/static-clients.js';
+import { stickyLoader, Secrets, withMonitor } from 'taskcluster-lib-testing';
+import * as libTesting from 'taskcluster-lib-testing';
+import { URL } from 'url';
+import path from 'path';
 
-exports.load = stickyLoader(load);
+export const load = stickyLoader(mainLoad);
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suiteSetup(async function() {
   process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
     'invalid@mozilla.com',
   ]);
 
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-exports.rootUrl = `http://localhost:60552`;
-exports.containerName = `auth-test-${uuid.v4()}`;
-exports.rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
+export const rootUrl = `http://localhost:60552`;
+export const containerName = `auth-test-${v4()}`;
+export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
-withMonitor(exports);
+const helper = { load, rootUrl, containerName, rootAccessToken };
+export default helper;
+
+withMonitor({ load });
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-auth',
     'project/taskcluster/testing/azure',
@@ -50,10 +59,12 @@ exports.secrets = new Secrets({
       { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
     ],
   },
-  load: exports.load,
+  load,
 });
 
-exports.withCfg = (mock, skipping) => {
+helper.loadJson = async (filename) => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
+
+helper.withCfg = (mock, skipping) => {
   if (skipping()) {
     return;
   }
@@ -62,23 +73,25 @@ exports.withCfg = (mock, skipping) => {
       return;
     }
 
-    exports.cfg = await exports.load('cfg');
+    helper.cfg = await load('cfg');
 
-    exports.load.save();
+    load.save();
+
+    const staticScopes = await helper.loadJson('../src/static-scopes.json');
 
     // override app.staticClients based on the static scopes
-    exports.load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
+    load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
       clientId,
-      accessToken: clientId === 'static/taskcluster/root' ? exports.rootAccessToken : 'must-be-at-least-22-characters',
+      accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
       description: 'testing',
     })));
 
     // override cfg.azureAccounts based on the azure secret, or mock it
     if (mock) {
-      exports.load.cfg('azureAccounts', undefined);
+      load.cfg('azureAccounts', undefined);
     } else {
-      const sec = exports.secrets.get('azure');
-      exports.load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
+      const sec = helper.secrets.get('azure');
+      load.cfg('azureAccounts', { [sec.accountId]: sec.accessKey });
     }
   });
 
@@ -87,25 +100,25 @@ exports.withCfg = (mock, skipping) => {
       return;
     }
 
-    exports.load.restore();
+    load.restore();
   });
 };
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'auth');
+helper.withDb = (mock, skipping) => {
+  libTesting.withDb(mock, skipping, helper, 'auth');
 };
 
 /**
  * Setup a fake sentry
  */
-exports.withSentry = (mock, skipping) => {
+helper.withSentry = (mock, skipping) => {
   const sentryOrgs = {};
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
 
-    const cfg = await exports.load('cfg');
+    const cfg = await load('cfg');
 
     const sentryClient = {
       organizations: {
@@ -142,15 +155,15 @@ exports.withSentry = (mock, skipping) => {
       },
     };
 
-    exports.load.inject('sentryManager', makeSentryManager({
+    load.inject('sentryManager', makeSentryManager({
       ...cfg.app.sentry,
       sentryClient,
     }));
   });
 };
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-auth' });
+helper.withPulse = (mock, skipping) => {
+  libTesting.withPulse({ helper, skipping, namespace: 'taskcluster-auth' });
 };
 
 const testServiceBuilder = new APIBuilder({
@@ -183,7 +196,7 @@ testServiceBuilder.declare({
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-exports.withServers = (mock, skipping) => {
+helper.withServers = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -191,56 +204,58 @@ exports.withServers = (mock, skipping) => {
       return;
     }
     debug('starting servers');
-    await exports.load('cfg');
+    await load('cfg');
 
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+    load.cfg('taskcluster.rootUrl', rootUrl);
 
     // First set up the auth service
-    exports.AuthClient = taskcluster.createClient(builder.reference());
+    helper.AuthClient = taskcluster.createClient(builder.reference());
 
-    exports.setupScopes = (...scopes) => {
-      exports.apiClient = new exports.AuthClient({
+    helper.setupScopes = (...scopes) => {
+      helper.apiClient = new helper.AuthClient({
         credentials: {
           clientId: 'static/taskcluster/root',
-          accessToken: exports.rootAccessToken,
+          accessToken: rootAccessToken,
         },
-        rootUrl: exports.rootUrl,
+        rootUrl: rootUrl,
         retries: 0,
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
     };
-    exports.setupScopes();
+
+    helper.setupScopes();
 
     // Now set up the test service
-    exports.TestClient = taskcluster.createClient(testServiceBuilder.reference());
-    exports.testClient = new exports.TestClient({
+    helper.TestClient = taskcluster.createClient(testServiceBuilder.reference());
+
+    helper.testClient = new helper.TestClient({
       credentials: {
         clientId: 'static/taskcluster/root',
-        accessToken: exports.rootAccessToken,
+        accessToken: rootAccessToken,
       },
       retries: 0,
-      rootUrl: exports.rootUrl,
+      rootUrl: rootUrl,
     });
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
-      monitor: (await exports.load('monitor')),
-      rootUrl: exports.rootUrl,
+      monitor: (await load('monitor')),
+      rootUrl: rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,
       }),
     });
 
     // include this test API in the APIs served, alongside the normal auth service
-    exports.load.inject('apis', [
-      await exports.load('api'),
+    load.inject('apis', [
+      await load('api'),
       testServiceApi,
     ]);
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   setup(() => {
-    exports.setupScopes();
+    helper.setupScopes();
   });
 
   suiteTeardown(async function() {
@@ -259,7 +274,7 @@ exports.withServers = (mock, skipping) => {
  * Set up the `google` component with a fake if mocking, otherwise
  * using real credentials.
  */
-exports.withGcp = (mock, skipping) => {
+helper.withGcp = (mock, skipping) => {
   let policy = {};
 
   const fakeGoogleApis = {
@@ -339,14 +354,14 @@ exports.withGcp = (mock, skipping) => {
         'invalid@mozilla.com',
       ];
 
-      exports.load.inject('gcp', {
+      load.inject('gcp', {
         auth,
         googleapis: fakeGoogleApis,
         credentials,
         allowedServiceAccounts,
       });
 
-      exports.gcpAccount = {
+      helper.gcpAccount = {
         email: 'test_client@example.com',
         project_id: credentials.project_id,
       };
@@ -355,8 +370,9 @@ exports.withGcp = (mock, skipping) => {
       // role.  In CI, this is the "auth-granter" service account in the "taskcluster-tests" project.
       // It issues credentials for itself, so the allowedServiceAccounts must be (in order)
       // [<service account email>, invalid@mozilla.com].
-      const { credentials, allowedServiceAccounts } = await exports.load('gcp');
-      exports.gcpAccount = {
+      const { credentials, allowedServiceAccounts } = await load('gcp');
+
+      helper.gcpAccount = {
         email: allowedServiceAccounts[0],
         project_id: credentials.project_id,
       };
@@ -364,20 +380,20 @@ exports.withGcp = (mock, skipping) => {
   });
 };
 
-exports.resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await libTesting.resetTables({ tableNames: [
       'roles',
       'clients',
     ] });
 
     // set up the static clients (which have already been overridden in withCfg)
-    const cfg = await exports.load('cfg');
-    const db = await exports.load('db');
+    const cfg = await load('cfg');
+    const db = await load('db');
     await syncStaticClients(db, cfg.app.staticClients || []);
 
     // ..and reload the resolver
-    const resolver = await exports.load('resolver');
+    const resolver = await load('resolver');
     await resolver.reload();
   });
 };

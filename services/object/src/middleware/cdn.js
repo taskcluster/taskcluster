@@ -1,7 +1,7 @@
-const assert = require('assert');
-const { Middleware } = require('./base.js');
+import assert from 'assert';
+import { Middleware } from './base.js';
 
-class CdnMiddleware extends Middleware {
+export class CdnMiddleware extends Middleware {
   constructor(options) {
     super(options);
     const { config } = options;
@@ -24,4 +24,4 @@ class CdnMiddleware extends Middleware {
   }
 }
 
-module.exports = { CdnMiddleware };
+export default { CdnMiddleware };

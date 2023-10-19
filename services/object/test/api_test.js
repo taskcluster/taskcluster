@@ -1,11 +1,10 @@
-const assert = require('assert').strict;
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const crypto = require('crypto');
-const { toDataUrl, TestBackend } = require('../src/backends/test');
-const { fromNow } = require('taskcluster-client');
+import { strict as assert } from 'assert';
+import helper from './helper/index.js';
+import testing from 'taskcluster-lib-testing';
+import taskcluster from 'taskcluster-client';
+import request from 'superagent';
+import crypto from 'crypto';
+import { toDataUrl, TestBackend } from '../src/backends/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -31,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       projectId: 'x',
       uploadId,
       hashes,
-      expires: fromNow('1 year'),
+      expires: taskcluster.fromNow('1 year'),
       proposedUploadMethods,
     });
     await helper.apiClient.finishUpload(name, { projectId: 'x', uploadId });
@@ -50,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.apiClient.createUpload('public/foo', {
         projectId: 'x',
         uploadId,
-        expires: fromNow('1 year'),
+        expires: taskcluster.fromNow('1 year'),
         proposedUploadMethods: {
           dataInline: {
             contentType: 'application/binary',
@@ -77,7 +76,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => helper.apiClient.createUpload('public/foo', {
           projectId: 'x',
           uploadId,
-          expires: fromNow('1 year'),
+          expires: taskcluster.fromNow('1 year'),
           proposedUploadMethods: {
             dataInline: {
               contentType: 'application/binary',
@@ -357,7 +356,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.apiClient.createUpload(name, {
         projectId,
         uploadId,
-        expires: fromNow('1 year'),
+        expires: taskcluster.fromNow('1 year'),
         proposedUploadMethods: {
           dataInline: {
             contentType: 'application/binary',

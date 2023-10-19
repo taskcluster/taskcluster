@@ -1,16 +1,16 @@
-const assert = require('assert');
-const request = require('superagent');
-const passport = require('passport');
-const Auth0Strategy = require('passport-auth0');
-const User = require('../User');
-const PersonAPI = require('../clients/PersonAPI');
-const WebServerError = require('../../utils/WebServerError');
-const { encode, decode } = require('../../utils/codec');
-const tryCatch = require('../../utils/tryCatch');
-const login = require('../../utils/login');
-const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
+import assert from 'assert';
+import request from 'superagent';
+import passport from 'passport';
+import Auth0Strategy from 'passport-auth0';
+import User from '../User.js';
+import PersonAPI from '../clients/PersonAPI.js';
+import WebServerError from '../../utils/WebServerError.js';
+import { encode, decode } from '../../utils/codec.js';
+import tryCatch from '../../utils/tryCatch.js';
+import login from '../../utils/login.js';
+import verifyJwtAuth0 from '../../utils/verifyJwtAuth0/index.js';
 
-module.exports = class MozillaAuth0 {
+export default class MozillaAuth0 {
   constructor({ name, cfg, monitor }) {
     const strategyCfg = cfg.login.strategies[name];
 
@@ -225,4 +225,4 @@ module.exports = class MozillaAuth0 {
       loginMiddleware,
     );
   }
-};
+}

@@ -1,20 +1,29 @@
-const assert = require('assert');
-const _ = require('lodash');
-const utils = require('./utils');
-const errors = require('./middleware/errors');
-const ScopeExpressionTemplate = require('./expressions');
-const API = require('./api');
-const { paginateResults } = require('./pagination');
-const { reportError } = require('./error-reply');
-const path = require('path');
+import assert from 'assert';
+import _ from 'lodash';
+import { cleanRouteAndParams } from './utils.js';
+import { ERROR_CODES } from './middleware/errors.js';
+import ScopeExpressionTemplate from './expressions.js';
+import API from './api.js';
+import path from 'path';
+import fs from 'fs/promises';
+import * as middleware from './middleware/index.js';
 
-exports.paginateResults = paginateResults;
-exports.reportError = reportError;
+export * from './pagination.js';
+export * from './error-reply.js';
 
-const REPO_ROOT = path.join(__dirname, '../../../');
+// TODO: libraries/app/src/api.js defines same methods __version__, __heartbeat__
+// TODO: also services/auth/src/api.js
+let taskclusterVersion = null;
+const loadVersion = async () => {
+  if (!taskclusterVersion) {
+    const __dirname = new URL('.', import.meta.url).pathname;
+    const REPO_ROOT = path.join(__dirname, '../../../');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
 
-const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-const taskclusterVersion = require(taskclusterVersionFile);
+    taskclusterVersion = JSON.parse(await fs.readFile(taskclusterVersionFile, 'utf8'));
+  }
+  return taskclusterVersion;
+};
 
 /**
  * A ping method, added automatically to every service
@@ -74,15 +83,15 @@ const version = {
     'Respond with the JSON version object.',
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
   ].join('\n'),
-  handler: function(_req, res) {
-    res.json(taskclusterVersion);
+  handler: async function(_req, res) {
+    res.json(await loadVersion());
   },
 };
 
 /**
  * Create an APIBuilder; see README for syntax
  */
-class APIBuilder {
+export class APIBuilder {
   constructor(options) {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
     assert(!options.version, 'version is now apiVersion');
@@ -92,7 +101,7 @@ class APIBuilder {
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
     assert(/^v[0-9]+$/.test(options.apiVersion), `apiVersion "${options.apiVersion}" is not valid`);
     options = _.defaults({
-      errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
+      errorCodes: _.defaults({}, options.errorCodes || {}, ERROR_CODES),
     }, options, {
       params: {},
       context: [],
@@ -234,7 +243,7 @@ class APIBuilder {
       serviceName: this.serviceName,
       apiVersion: this.apiVersion,
       entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
-        const [route, params] = utils.cleanRouteAndParams(entry.route);
+        const [route, params] = cleanRouteAndParams(entry.route);
 
         const retval = {
           type: 'function',
@@ -304,7 +313,5 @@ const stability = {
 const STABILITY_LEVELS = _.values(stability);
 APIBuilder.stability = stability;
 
-exports.APIBuilder = APIBuilder;
-
 // Re-export middleware
-APIBuilder.middleware = require('./middleware');
+APIBuilder.middleware = middleware;

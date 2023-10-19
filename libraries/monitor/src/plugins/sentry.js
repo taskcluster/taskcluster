@@ -1,4 +1,4 @@
-const Sentry = require('@sentry/node');
+import Sentry from '@sentry/node';
 
 const tcToSentryLevel = {
   emerg: 'fatal',
@@ -50,4 +50,4 @@ class SentryReporter {
   }
 }
 
-module.exports = SentryReporter;
+export default SentryReporter;

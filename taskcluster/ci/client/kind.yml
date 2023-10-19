@@ -30,6 +30,16 @@ tasks:
         {{ yarn --frozen-lockfile || exit 99; }} &&
         yarn test &&
         yarn package-test
+  nodejs-client-external-test:
+    description: nodejs client external tests
+    docker-image: node:{node_version}
+    run:
+      command: >-
+        {{ yarn --frozen-lockfile || exit 99; }} &&
+        eval $(python3 test/client-library-secrets.py) &&
+        cd clients/client-test &&
+        {{ yarn --frozen-lockfile || exit 99; }} &&
+        yarn test
   go:
     description: golang client tests
     docker-image: golang:{go_version}-bookworm

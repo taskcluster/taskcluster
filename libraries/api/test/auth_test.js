@@ -1,14 +1,17 @@
-const _ = require('lodash');
-const request = require('superagent');
-const hawk = require('hawk');
-const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
-const { App } = require('taskcluster-lib-app');
-const { APIBuilder } = require('../');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const path = require('path');
-const debug = require('debug')('auth_test');
+import _ from 'lodash';
+import request from 'superagent';
+import hawk from 'hawk';
+import assert from 'assert';
+import SchemaSet from 'taskcluster-lib-validate';
+import { App } from 'taskcluster-lib-app';
+import { APIBuilder } from '../src/index.js';
+import { monitor } from './helper.js';
+import testing from 'taskcluster-lib-testing';
+import path from 'path';
+import debugFactory from 'debug';
+const debug = debugFactory('auth_test');
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   // Reference for test api server
@@ -46,7 +49,7 @@ suite(testing.suiteName(), function() {
     // Create API
     const api = await builder.build({
       rootUrl,
-      monitor: helper.monitor,
+      monitor,
       schemaset: new SchemaSet({
         serviceName: 'test',
         folder: path.join(__dirname, 'schemas'),
@@ -309,7 +312,7 @@ suite(testing.suiteName(), function() {
         await req.authorize({ param: 'myfolder/resource' });
         res.reply({});
       } catch (err) {
-        const withAuth = await req.clientId() === 'nobody';
+        const withAuth = (await req.clientId()) === 'nobody';
         if (err.code === 'InsufficientScopes') {
           debug(`got details: ${JSON.stringify(err.details, null, 2)}`);
           debug(`got message: ${err.message}`);

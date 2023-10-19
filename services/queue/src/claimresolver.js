@@ -1,8 +1,8 @@
-const assert = require('assert');
-const QueueService = require('./queueservice');
-const Iterate = require('taskcluster-lib-iterate');
-const { Task } = require('./data');
-const { sleep } = require('./utils');
+import assert from 'assert';
+import QueueService from './queueservice.js';
+import Iterate from 'taskcluster-lib-iterate';
+import { Task } from './data.js';
+import { sleep } from './utils.js';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -179,4 +179,4 @@ class ClaimResolver {
 }
 
 // Export ClaimResolver
-module.exports = ClaimResolver;
+export default ClaimResolver;

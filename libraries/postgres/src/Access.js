@@ -1,5 +1,7 @@
-const { isPlainObject } = require('lodash');
-const assert = require('assert').strict;
+import lodash from 'lodash';
+import { strict as assert } from 'assert';
+
+const { isPlainObject } = lodash;
 
 class Access {
   /**
@@ -55,4 +57,4 @@ class Access {
   }
 }
 
-module.exports = Access;
+export default Access;

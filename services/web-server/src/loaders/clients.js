@@ -1,8 +1,8 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
-module.exports = ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const clients = new ConnectionLoader(
     async ({ filter, options, clientOptions }) => {
       const raw = await auth.listClients({ ...clientOptions, ...options });

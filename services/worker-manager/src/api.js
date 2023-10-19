@@ -1,10 +1,10 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const slug = require('slugid');
-const assert = require('assert');
-const { ApiError, Provider } = require('./providers/provider');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { WorkerPool, WorkerPoolError, Worker } = require('./data');
-const { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } = require('./util');
+import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import slug from 'slugid';
+import assert from 'assert';
+import { ApiError, Provider } from './providers/provider.js';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
@@ -35,7 +35,7 @@ let builder = new APIBuilder({
   ],
 });
 
-module.exports = builder;
+export default builder;
 
 // Some methods mistakenly had a path with an extra colon,
 // `/workers/<workerPoolId>:/...`. This wraps such methods to also generate an

@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const url = require('url');
-const libUrls = require('taskcluster-lib-urls');
-const typeis = require('type-is');
-const Debug = require('debug');
+import _ from 'lodash';
+import url from 'url';
+import libUrls from 'taskcluster-lib-urls';
+import typeis from 'type-is';
+import Debug from 'debug';
 
 const debug = Debug('api:schema');
 
@@ -25,7 +25,7 @@ const debug = Debug('api:schema');
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
+export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
   // convert relative schema references to id's
   const input = entry.input && !entry.skipInputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
@@ -97,5 +97,3 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
     next();
   };
 };
-
-exports.validateSchemas = validateSchemas;

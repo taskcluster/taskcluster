@@ -1,7 +1,8 @@
-const assert = require('assert');
-const libUrls = require('taskcluster-lib-urls');
-const debug = require('debug')('taskcluster-lib-pulse.publisher');
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import assert from 'assert';
+import libUrls from 'taskcluster-lib-urls';
+import debugFactory from 'debug';
+const debug = debugFactory('taskcluster-lib-pulse.publisher');
+import { MonitorManager } from 'taskcluster-lib-monitor';
 
 MonitorManager.register({
   name: 'pulsePublisherBlocked',
@@ -19,7 +20,7 @@ MonitorManager.register({
   },
 });
 
-class Exchanges {
+export class Exchanges {
   constructor(options) {
     assert(options.serviceName, 'serviceName is required');
     assert(options.projectName, 'projectName is required');
@@ -70,9 +71,7 @@ class Exchanges {
   }
 }
 
-exports.Exchanges = Exchanges;
-
-class Entry {
+export class Entry {
   constructor({ exchanges, ...options }) {
     assert(options.exchange, 'exchange is required');
     assert(options.name, 'name is required');
@@ -171,7 +170,7 @@ class Entry {
   }
 }
 
-class PulsePublisher {
+export class PulsePublisher {
   constructor({ rootUrl, schemaset, client, exchanges, sendDeadline }) {
     this.rootUrl = rootUrl;
     this.schemaset = schemaset;

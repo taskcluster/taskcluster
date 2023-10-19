@@ -17,12 +17,12 @@ it again on the next call; it can also have a dependency injected.  Use it like
 this in `helper.js`:
 
 ```javascript
-const {stickyLoader} = require('taskcluster-lib-testing');
-const load = require('../src/server');
+import { stickyLoader } from 'taskcluster-lib-testing';
+import _load from '../src/server.js';
 
-exports.load = stickyLoader(load);
-exports.load.inject('profile', 'test');
-exports.load.inject('process', 'test');
+export const load = stickyLoader(_load);
+load.inject('profile', 'test');
+load.inject('process', 'test');
 ```
 
 The `load.inject(component, value)` method sets a loader overwrite without
@@ -32,7 +32,7 @@ remove a component.
 In test scripts:
 
 ```javascript
-const {load} = require('./helper');
+import { load } from './helper.js';
 
 suite('SomeTable', function() {
   suiteSetup(async function() {
@@ -76,9 +76,9 @@ secrets are available.  It integrates with `taskcluster-lib-config`.  Set it up 
 in `test/helper.js`:
 
 ```javascript
-const {Secrets} = require('taskcluster-lib-testing');
+import { Secrets } from 'taskcluster-lib-testing';
 
-exports.secrets = new Secrets({
+export const secrets = new Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-foo',
     'project/taskcluster/testing/taskcluster-foo/main-only',
@@ -152,10 +152,11 @@ secrets.mockSuite('mySuite', [..], function(mock, skipping) {
 
 ```javascript
 // helper.js
-const {Secrets, stickyLoader} = require('taskcluster-lib-testing');
+import { Secrets, stickyLoader } from 'taskcluster-lib-testing';
+import _load from '../src/main.js';
 
-const load = stickyLoader(require('../src/main'));
-const secrets = new Secrets({
+export const load = stickyLoader(_load);
+export const secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-ping',
   secrets: {
     pingdom: [
@@ -168,14 +169,11 @@ const secrets = new Secrets({
   },
   load,
 });
-
-exports.secrets = secrets;
-exports.load = load;
 ```
 
 ```javascript
 // some_test.js
-const {secrets, load} = require('./helper');
+import { secrets, load } from './helper.js';
 
 // for testing by passing secrets to the subject..
 secrets.mockSuite('pingdom updates', ['pingdom'], function(mock, skipping) {
@@ -317,12 +315,13 @@ The function is typically used like this:
 
 ```javascript
 // helper.js
-exports.secrets = new Secrets({
+const helper = { load };
+helper.secrets = new Secrets({
   // ...
 });
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'my-service');
+helper.withDb = (mock, skipping) => {
+  withDb(mock, skipping, helper, 'my-service');
 };
 ```
 
@@ -340,9 +339,9 @@ There is also a utility function, `resetTables`, which will truncate a list of t
 This is typically used in a `setup` function to start each test with a clean slate.
 
 ```js
-const {resetTables} = require('taskcluster-lib-testing');
+import { resetTables } from 'taskcluster-lib-testing';
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
     await resetTables({tableNames: [
       'some_table',
@@ -355,7 +354,7 @@ exports.resetTables = (mock, skipping) => {
 Finally, to completely reset the DB to an empty state (but with per-service users defined), call `resetDb`:
 
 ```javascript
-const {resetDb} = require('taskcluster-lib-testing');
+import { resetDb } from 'taskcluster-lib-testing';
 
 // this automatically uses TEST_DB_URL.
 await resetDb();
@@ -368,9 +367,10 @@ This function helps test applications that publish pulse messages.
 It is typically set up in `test/helper.js` like this:
 
 ```js
-const {withPulse} = require('taskcluster-lib-testing');
-exports.withPulse = (mock, skipping) => {
-  withPulse({helper, skipping, namespace: 'taskcluster-someservice'});
+import testing from 'taskcluster-lib-testing';
+const helper = { load };
+export const withPulse = (mock, skipping) => {
+  testing.withPulse({helper, skipping, namespace: 'taskcluster-someservice'});
 };
 ```
 
@@ -411,7 +411,7 @@ Tests should import the MonitorManager instance from `../src/monitor.js` to get 
 
 Libraries can use this function as
 ```js
-withMonitor(exports, {noLoader: true});
+withMonitor({ load }, {noLoader: true});
 ```
 
 Time

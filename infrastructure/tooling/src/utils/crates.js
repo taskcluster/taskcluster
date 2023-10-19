@@ -1,12 +1,13 @@
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const child_process = require('child_process');
-const Observable = require('zen-observable');
-const taskcluster = require('taskcluster-client');
-const { REPO_ROOT } = require('./repo');
+import fs from 'fs';
+import util from 'util';
+import path from 'path';
+import mkdirp from 'mkdirp';
+import child_process from 'child_process';
+import Observable from 'zen-observable';
+import taskcluster from 'taskcluster-client';
+import { REPO_ROOT } from './repo.js';
+import * as _rimraf from 'rimraf';
+const rimraf = util.promisify(_rimraf.default);
 
 /**
  * Set up Cargo credentials and call `cargo publish`
@@ -17,7 +18,7 @@ const { REPO_ROOT } = require('./repo');
  * - logfile -- name of the file to write the log to
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.cargoPublish = async ({ dir, token, push, logfile, utils }) => {
+export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
   // override HOME so this doesn't use the user's credentials
   const homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
 

@@ -1,13 +1,13 @@
-const process = require('process');
-const Iterate = require('taskcluster-lib-iterate');
-const { paginatedIterator } = require('taskcluster-lib-postgres');
-const { WorkerPool, Worker } = require('./data');
-const { ApiError } = require('./providers/provider');
+import process from 'process';
+import Iterate from 'taskcluster-lib-iterate';
+import { paginatedIterator } from 'taskcluster-lib-postgres';
+import { WorkerPool, Worker } from './data.js';
+import { ApiError } from './providers/provider.js';
 
 /**
  * Run all provisioning logic
  */
-class Provisioner {
+export class Provisioner {
   constructor({ providers, iterateConf, Worker, WorkerPool,
     monitor, notify, db, reference,
     rootUrl, ownName }) {
@@ -212,7 +212,3 @@ class Provisioner {
 
   }
 }
-
-module.exports = {
-  Provisioner,
-};

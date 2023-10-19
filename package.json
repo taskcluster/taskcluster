@@ -3,6 +3,7 @@
   "version": "56.0.3",
   "private": true,
   "engine-strict": true,
+  "type": "module",
   "engines": {
     "node": "18.18.1",
     "yarn": "^1.22.19"
@@ -41,7 +42,7 @@
     "cron-parser": "4.7.0",
     "dataloader": "^2.0.0",
     "debug": "^4.1.1",
-    "deepmerge": "^4.0.0",
+    "deepmerge": "^4.3.1",
     "ejs": "^3.1.7",
     "email-templates": "^10.0.1",
     "express": "4.18.2",
@@ -50,7 +51,6 @@
     "fast-azure-storage": "^3.1.2",
     "fast-json-stable-stringify": "^2.0.0",
     "generate-password": "^1.5.0",
-    "get-caller-file": "^2.0.5",
     "googleapis": "^73.0.0",
     "got": "^11.7.0",
     "graphql": "^15.0.0",
@@ -150,7 +150,6 @@
     "mock-fs": "^4.8.0",
     "mockdate": "^3.0.2",
     "moment": "^2.29.4",
-    "mz": "^2.7.0",
     "nock": "13.3.0",
     "open-editor": "^3.0.0",
     "qlobber": "^5.0.3",

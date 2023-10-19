@@ -1,8 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const References = require('taskcluster-lib-references');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import References from 'taskcluster-lib-references';
 
-const build = (input, output, rootUrl) => {
+export const build = (input, output, rootUrl) => {
   const serializable = JSON.parse(fs.readFileSync(input, { encoding: 'utf8' }));
   const refs = References.fromSerializable({ serializable });
 
@@ -13,7 +14,7 @@ const build = (input, output, rootUrl) => {
   fs.writeFileSync(path.join(output, 'references', 'references.json'), JSON.stringify(serializable, null, 2));
 };
 
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (!process.env.TASKCLUSTER_ROOT_URL) {
     console.error('TASKCLUSTER_ROOT_URL is not set');
     process.exit(1);
@@ -29,4 +30,4 @@ if (!module.parent) {
   build(input, output, process.env.TASKCLUSTER_ROOT_URL);
 }
 
-exports.build = build;
+export default { build };

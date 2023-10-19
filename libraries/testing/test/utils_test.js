@@ -1,5 +1,5 @@
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
   test('sleep', async function() {

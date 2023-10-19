@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
-const { MAX_MODIFY_ATTEMPTS } = require('./util');
-const { paginateResults } = require('taskcluster-lib-api');
+import _ from 'lodash';
+import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from 'taskcluster-client';
+import { MAX_MODIFY_ATTEMPTS } from './util.js';
+import { paginateResults } from 'taskcluster-lib-api';
 
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
@@ -14,7 +14,7 @@ const makeError = (message, code, statusCode) => {
 
 const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
-class WorkerPool {
+export class WorkerPool {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -156,7 +156,7 @@ class WorkerPool {
   }
 }
 
-class WorkerPoolError {
+export class WorkerPoolError {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -257,7 +257,7 @@ class WorkerPoolError {
   }
 }
 
-class Worker {
+export class Worker {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -600,10 +600,4 @@ Worker.states = {
   RUNNING: 'running',
   STOPPING: 'stopping',
   STOPPED: 'stopped',
-};
-
-module.exports = {
-  Worker,
-  WorkerPool,
-  WorkerPoolError,
 };

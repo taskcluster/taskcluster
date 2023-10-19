@@ -1,5 +1,7 @@
-const base = require('../../');
-const debug = require('debug')('base:test:bin:app.js');
+import base from '../../index.js';
+import { fileURLToPath } from 'url';
+import debugFactory from 'debug';
+const debug = debugFactory('base:test:bin:app.js');
 
 /** Global State where we count requests */
 let global_state = 0;
@@ -37,7 +39,8 @@ const launch = function() {
 };
 
 // If is executed run launch
-if (!module.parent) {
+// If this file is executed launch component from first argument
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   launch().then(function() {
     debug('Launched app.js successfully');
   }).catch(function(err) {
@@ -47,4 +50,4 @@ if (!module.parent) {
 }
 
 // Export launch in-case anybody cares
-module.exports = launch;
+export default launch;
