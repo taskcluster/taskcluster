@@ -1,6 +1,7 @@
 import util from 'util';
 import chalk from 'chalk';
 import { upgrade, downgrade } from 'taskcluster-db';
+import { renumberVersions, newVersion } from './versions.js';
 
 const main = async () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;
@@ -17,21 +18,34 @@ const main = async () => {
     util.log(chalk.green(message));
   };
 
-  const toVersion = process.argv[3] ? parseInt(process.argv[3]) : undefined;
+  const toVersion = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
   if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion))) {
     throw new Error('invalid db version specified -- must be an integer DB version, not a TC release version');
   }
 
-  if (process.argv[2] === 'upgrade') {
-    await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
-  } else if (process.argv[2] === 'downgrade') {
-    if (!toVersion) {
-      throw new Error('must specify a version to downgrade to');
-    }
-    await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
-  } else {
-    throw new Error('invalid subcommand for db/src/main.js');
+  switch (process.argv[2]) {
+    case 'upgrade':
+      await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion: toVersion });
+      break;
+    case 'downgrade':
+      if (!toVersion) {
+        throw new Error('must specify a version to downgrade to');
+      }
+      await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion: toVersion });
+      break;
+    case 'renumber':
+      if (process.argv.length !== 5) {
+        throw new Error('usage: node db/src/main.js renumber <from> <to>');
+      }
+      await renumberVersions(toVersion, parseInt(process.argv[4], 10));
+      break;
+    case 'new':
+      await newVersion();
+      break;
+    default:
+      throw new Error('invalid subcommand for db/src/main.js');
   }
+
 };
 
 main().catch(err => {
