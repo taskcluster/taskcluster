@@ -233,21 +233,13 @@ export default ({ tasks, cmdOptions, credentials }) => {
           `\\"version\\": \\"${requirements['release-version']}`));
       changed.push('generic-worker.Dockerfile');
 
-      const dockerCompose = 'docker-compose.yml';
-      utils.status({ message: `Update ${dockerCompose}` });
-      await modifyRepoFile(dockerCompose, contents =>
-        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
-      await modifyRepoFile(dockerCompose, contents =>
-        contents.replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker));
-      changed.push(dockerCompose);
-
-      const dockerComposeDev = 'docker-compose.dev.yml';
-      utils.status({ message: `Update ${dockerComposeDev}` });
-      await modifyRepoFile(dockerComposeDev, contents =>
-        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
-      await modifyRepoFile(dockerComposeDev, contents =>
-        contents.replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker));
-      changed.push(dockerComposeDev);
+      const dockerEnv = '.env';
+      utils.status({ message: `Update ${dockerEnv}` });
+      await modifyRepoFile(dockerEnv, contents =>
+        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage)
+          .replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker),
+      );
+      changed.push(dockerEnv);
 
       return { 'version-updated': changed };
     },

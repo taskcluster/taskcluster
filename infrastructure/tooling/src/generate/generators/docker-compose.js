@@ -3,6 +3,7 @@ import { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } from '../../
 
 const SERVICES = listServices();
 
+const GLOBAL_ENV = '.env';
 const COMPOSE_FILENAME = 'docker-compose.yml';
 const DEV_COMPOSE_FILENAME = 'docker-compose.dev.yml';
 const PROD_COMPOSE_FILENAME = 'docker-compose.prod.yml';
@@ -174,6 +175,13 @@ tasks.push({
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
     const [, currentVersion] = currentRelease.image.split(':');
 
+    // shared variables stored in .env file for docker-compose.*.yml
+    const globalEnvs = {
+      IMAGE: currentRelease.image,
+      IMAGE_DEV: `${currentRelease.image}-devel`,
+      IMAGE_GENERIC_WORKER: `taskcluster/generic-worker:${currentVersion}`,
+    };
+
     const serviceEnv = (name) => {
       let config = name === 'ui' ? uiConfig : requirements[`configs-${name}`];
       if (!config) {
@@ -217,7 +225,7 @@ tasks.push({
     };
 
     const serviceDefinition = (name, { _noPorts, _useEnvFile, ...opts } = {}) => ({
-      image: currentRelease.image,
+      image: '${IMAGE}', // will be read by docker compose from .env file
       networks: ['local'],
       ...(_useEnvFile ? { env_file: `${ENV_FILE_PATH}.${name}` } : {}),
       ...opts,
@@ -233,7 +241,7 @@ tasks.push({
     });
 
     const serviceDefinitionDev = (name, profiles = null, originalCommand) => ({
-      image: `${currentRelease.image}-devel`,
+      image: '${IMAGE_DEV}', // will be read by docker compose from .env file
       environment: {
         NODE_ENV: 'development',
         DEBUG: '*',
@@ -418,7 +426,7 @@ tasks.push({
 
     ['standalone', 'static'].forEach(type => {
       dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
-        image: `taskcluster/generic-worker:${currentVersion}`, // this image is built locally at the moment
+        image: '${IMAGE_GENERIC_WORKER}',
         restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
         volumes: [
           './docker/generic-worker-config.json:/etc/generic-worker/config.json',
@@ -443,7 +451,7 @@ tasks.push({
 
       // allow rebuild
       dockerComposeDev.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
-        image: `taskcluster/generic-worker:${currentVersion}`,
+        image: '${IMAGE_GENERIC_WORKER}',
         build: {
           context: '.',
           dockerfile: 'generic-worker.Dockerfile',
@@ -524,6 +532,8 @@ tasks.push({
     await writeRepoYAML(path.join('.', COMPOSE_FILENAME), dockerCompose, yamlOpts);
     await writeRepoYAML(path.join('.', PROD_COMPOSE_FILENAME), dockerComposeProd, yamlOpts);
     await writeRepoYAML(path.join('.', DEV_COMPOSE_FILENAME), dockerComposeDev, yamlOpts);
+    await writeRepoFile(path.join('.', GLOBAL_ENV),
+      `${Object.entries(globalEnvs).map(([key, value]) => `${key}=${value}`).join('\n')}\n`);
 
     await Promise.all(
       Object.keys(envFiles)
