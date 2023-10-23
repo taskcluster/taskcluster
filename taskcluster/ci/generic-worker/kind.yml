@@ -9,7 +9,12 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
+kind-dependencies:
+  - lint
+
 task-defaults:
+  dependencies:
+    lint: lint-golang
   run:
     using: bare
   worker:

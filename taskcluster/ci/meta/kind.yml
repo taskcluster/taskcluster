@@ -8,6 +8,9 @@ transforms:
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
+kind-dependencies:
+  - lint
+
 task-defaults:
   worker-type: gw-ubuntu-22-04
   run:
@@ -24,6 +27,8 @@ tasks:
         yarn &&
         set -o pipefail && yarn test:meta | cat
   generate:
+    dependencies:
+      lint: lint-golang
     description: check that `yarn generate` was run
     run:
       command: >-
