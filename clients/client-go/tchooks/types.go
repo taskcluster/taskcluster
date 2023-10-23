@@ -298,9 +298,10 @@ type (
 
 		// Task state derived from tasks last run status.
 		// This value can change through time as tasks are being scheduled, run and re-run.
-		// If task doesn't exist or was just created, this value will default to `unscheduled`.
+		// If task doesn't exist or was just created, this value will default to `unknown`.
 		//
 		// Possible values:
+		//   * "unknown"
 		//   * "unscheduled"
 		//   * "pending"
 		//   * "running"

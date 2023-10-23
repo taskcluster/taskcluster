@@ -691,7 +691,7 @@ builder.declare({
       taskCreateTime: row.task_create_time.toJSON(),
       result: row.result,
       error: row.error,
-      taskState: row.task_state || 'unscheduled',
+      taskState: row.task_state || 'unknown',
     })),
     continuationToken,
   });
