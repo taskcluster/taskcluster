@@ -878,6 +878,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(taskIds).eql(dataTaskIds);
       assume(lastFires[0].taskState).equals('completed');
     });
+    test('lists lastfires and reports "unknown" for task status', async () => {
+      const taskIds = [];
+      taskIds.push(lastFire.taskId);
+      await appendLastFire(lastFire);
+      for (let i = 1;i <= 2;i++) {
+        taskIds.push(taskcluster.slugid());
+        await appendLastFire({ ...lastFire,
+          taskId: taskIds[i],
+          taskCreateTime: new Date(),
+        });
+      }
+      const { lastFires } = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
+      assume(lastFires[0].taskState).equals('unknown');
+      assume(lastFires[1].taskState).equals('unknown');
+    });
   });
 
   suite('pulseHooks', function() {
