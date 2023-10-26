@@ -111,11 +111,11 @@ async function buildVolumeBindings(runtime, taskVolumeBindings, volumeCache, exp
       'The task is missing the following scopes:',
       '',
       '```',
-      `${unsatisfied}`,
+      JSON.stringify(unsatisfied),
       '```',
       'This requested devices requires the task scopes to satisfy the following scope expression:',
       '```',
-      `${scopeExpression}`,
+      JSON.stringify(scopeExpression),
       '```',
     ].join('\n'));
   }
