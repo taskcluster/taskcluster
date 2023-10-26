@@ -108,6 +108,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     const aborted = new Promise(resolve => setTimeout(resolve, 100));
+    // we request 1 but pollPendingQueue returns 2
+    // so second one would be released back
     await hintPoller.requestClaim(1, aborted);
     assume(pollCalls).equals(1);
     assume(released).equals(true);

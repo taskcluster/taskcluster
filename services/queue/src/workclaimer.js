@@ -53,17 +53,17 @@ class WorkClaimer extends events.EventEmitter {
   async claim(taskQueueId, workerGroup, workerId, count, aborted) {
     let claims = [];
     let done = false;
-
-    const hintPoller = this.getHintPoller(taskQueueId);
+    let hintPoller;
 
     aborted.then(() => done = true);
     // As soon as we have claims we return so work can get started.
     // We don't try to claim up to the count, that could take time and we risk
     // dropping the claims in case of server crash.
     while (claims.length === 0 && !done) {
+      hintPoller = this.getHintPoller(taskQueueId);
+
       // Poll for hints (messages saying a task may be pending)
       let hints = await hintPoller.requestClaim(count, aborted);
-
       // Try to claim all the hints
       claims = await Promise.all(hints.map(async (hint) => {
         try {
