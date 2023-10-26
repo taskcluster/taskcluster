@@ -2,12 +2,11 @@
 testSuite:
   name: Task definition test
   description: Test that d2g can translate a Docker Worker task definition to a Generic Worker task definition
-  tests:
+  taskDefTests:
     - name: Task definition test
       description: >-
         d2g should properly translate this Docker Worker task definition
         into a valid Generic Worker task definition
-      isTaskDef: true
       dockerWorkerTaskDefinition:
         provisionerId: proj-taskcluster
         workerType: gw-ubuntu-22-04
@@ -86,3 +85,4 @@ testSuite:
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04
         workerType: gw-ubuntu-22-04
+  payloadTests: []

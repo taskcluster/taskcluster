@@ -2,7 +2,7 @@
 testSuite:
   name: Docker Worker feature tests
   description: Tests for docker-worker features
-  tests:
+  payloadTests:
     - name: Allow ptrace
       description: >-
         Test when ptrace feature is enabled
@@ -28,3 +28,4 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+  taskDefTests: []

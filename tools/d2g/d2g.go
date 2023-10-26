@@ -31,19 +31,19 @@ type (
 
 func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
-	var parsedDwTaskDef map[string]interface{}
-	err := json.Unmarshal(dwTaskDef, &parsedDwTaskDef)
+	var parsedTaskDef map[string]interface{}
+	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse task definition: %v", err)
 	}
 
-	if _, exists := parsedDwTaskDef["payload"]; !exists {
+	if _, exists := parsedTaskDef["payload"]; !exists {
 		return nil, fmt.Errorf("task definition does not contain a payload")
 	}
 
 	dwPayload := new(dockerworker.DockerWorkerPayload)
 	defaults.SetDefaults(dwPayload)
-	dwPayloadJSON, err := json.Marshal(parsedDwTaskDef["payload"])
+	dwPayloadJSON, err := json.Marshal(parsedTaskDef["payload"])
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal Docker Worker payload: %v", err)
 	}
@@ -57,15 +57,12 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
 
-	if scopes, exists := parsedDwTaskDef["scopes"]; exists {
+	if scopes, exists := parsedTaskDef["scopes"]; exists {
 		var dwScopes []string
 		for _, scope := range scopes.([]interface{}) {
 			dwScopes = append(dwScopes, scope.(string))
 		}
-		parsedDwTaskDef["scopes"], err = Scopes(dwScopes, dwTaskDef)
-		if err != nil {
-			return nil, fmt.Errorf("cannot convert Docker Worker scopes: %v", err)
-		}
+		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, parsedTaskDef["taskQueueId"].(string))
 	}
 
 	d2gConvertedPayloadJSON, err := json.Marshal(*gwPayload)
@@ -73,9 +70,9 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("cannot marshal Generic Worker payload: %v", err)
 	}
 
-	parsedDwTaskDef["payload"] = json.RawMessage(d2gConvertedPayloadJSON)
+	parsedTaskDef["payload"] = json.RawMessage(d2gConvertedPayloadJSON)
 
-	gwTaskDef, err = json.MarshalIndent(parsedDwTaskDef, "", "  ")
+	gwTaskDef, err = json.MarshalIndent(parsedTaskDef, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal Generic Worker task definition: %v", err)
 	}
@@ -87,7 +84,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
-func Scopes(dwScopes []string, dwTaskDef json.RawMessage) (gwScopes []string, err error) {
+func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID string) (gwScopes []string) {
 	gwScopes = make([]string, len(dwScopes))
 	for i, s := range dwScopes {
 		switch true {
@@ -106,29 +103,8 @@ func Scopes(dwScopes []string, dwTaskDef json.RawMessage) (gwScopes []string, er
 		}
 	}
 
-	if dwTaskDef == nil {
-		return
-	}
-
-	var parsedDwTaskDef map[string]interface{}
-	err = json.Unmarshal(dwTaskDef, &parsedDwTaskDef)
-	if err != nil {
-		return []string{}, fmt.Errorf("cannot parse Docker Worker task definition: %v", err)
-	}
-
-	dwPayload := new(dockerworker.DockerWorkerPayload)
-	defaults.SetDefaults(dwPayload)
-	dwPayloadJSON, err := json.Marshal(parsedDwTaskDef["payload"])
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshal Docker Worker payload: %v", err)
-	}
-	err = json.Unmarshal(dwPayloadJSON, &dwPayload)
-	if err != nil {
-		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
-	}
-
-	if dwPayload.Capabilities.Devices.KVM {
-		gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/kvm", parsedDwTaskDef["taskQueueId"]))
+	if dwPayload != nil && dwPayload.Capabilities.Devices.KVM {
+		gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/kvm", taskQueueID))
 	}
 
 	return

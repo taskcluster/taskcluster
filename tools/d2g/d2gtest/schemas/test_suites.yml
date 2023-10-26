@@ -17,27 +17,17 @@ properties:
     required:
       - name
       - description
-      - tests
     additionalProperties: false
     properties:
-      name:
-        title: Test Suite Name
-        description: |-
-          Name for the test suite
-        type: string
-      description:
-        title: Test Suite Description
-        description: |-
-          Detailed information about what the test cases do and do not test
-        type: string
-      tests:
-        title: Test cases
+      name: {$ref: '#/definitions/suiteName'}
+      description: {$ref: '#/definitions/suiteDescription'}
+      payloadTests:
+        title: Task payload test cases
         description: |-
           The test cases which this test suite contains
         type: array
-        minItems: 1
         items:
-          title: Test case
+          title: Task payload test case
           description: |-
             A test case contains a static input Docker Worker task payload, and an
             expected Generic Worker task payload output. The Docker Worker task payload
@@ -48,24 +38,12 @@ properties:
           required:
             - name
             - description
+            - dockerWorkerTaskPayload
+            - genericWorkerTaskPayload
           additionalProperties: false
           properties:
-            name:
-              title: Test Case Name
-              description: |-
-                Name for the test case
-              type: string
-            description:
-              title: Test Case Description
-              description: |-
-                Detailed information about what the test case tests
-              type: string
-            isTaskDef:
-              title: Is Task Definition
-              description: |-
-                Set to true if the test input are task definitions in
-                dockerWorkerTaskDefinition and genericWorkerTaskDefinition.
-              type: boolean
+            name: {$ref: '#/definitions/caseName'}
+            description: {$ref: '#/definitions/caseDescription'}
             dockerWorkerTaskPayload:
               # validation of this object is handled in test harness, rather
               # than using $ref, since gojsonschema can't interpret yaml
@@ -78,6 +56,29 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
+      taskDefTests:
+        title: Task definition test cases
+        description: |-
+          The test cases which this test suite contains
+        type: array
+        items:
+          title: Task definition test case
+          description: |-
+            A test case contains a static input Docker Worker task definition, and an
+            expected Generic Worker task definition output. The Docker Worker task definition
+            is converted by d2g to a Generic Worker task definition. The test is successful
+            if the generated Generic Worker task definition exactly matches the Generic
+            Worker task definition in the test case.
+          type: object
+          required:
+            - name
+            - description
+            - dockerWorkerTaskDefinition
+            - genericWorkerTaskDefinition
+          additionalProperties: false
+          properties:
+            name: {$ref: '#/definitions/caseName'}
+            description: {$ref: '#/definitions/caseDescription'}
             dockerWorkerTaskDefinition:
               # validation of this object is handled in test harness, rather
               # than using $ref, since gojsonschema can't interpret yaml
@@ -90,3 +91,24 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
+definitions:
+  suiteName:
+    title: Test Suite Name
+    description: |-
+      Name for the test suite
+    type: string
+  suiteDescription:
+    title: Test Suite Description
+    description: |-
+      Detailed information about what the test cases do and do not test
+    type: string
+  caseName:
+    title: Test Case Name
+    description: |-
+      Name for the test case
+    type: string
+  caseDescription:
+    title: Test Case Description
+    description: |-
+      Detailed information about what the test case tests
+    type: string

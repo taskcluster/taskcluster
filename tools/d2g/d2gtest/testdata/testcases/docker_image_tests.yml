@@ -2,7 +2,7 @@
 testSuite:
   name: Tests all the possible docker image types
   description: Test all the possible docker image types (DockerImageName|NamedDockerImage|IndexedDockerImage|DockerImageArtifact).
-  tests:
+  payloadTests:
     - name: DockerImageName
       description: Test DockerImageName
       dockerWorkerTaskPayload:
@@ -246,3 +246,4 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+  taskDefTests: []
