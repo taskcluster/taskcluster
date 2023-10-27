@@ -1,31 +1,33 @@
 ##
 # Build /app
 
-FROM node:18.18.1 as build
+FROM node:18.18.1 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
 
 # prepare top level dependencies
 RUN mkdir -p /base/yarn
-COPY /yarn.lock /.yarnrc /package.json /base/yarn/
+COPY /yarn.lock /.yarnrc.yml /package.json /base/yarn/
 COPY /.yarn /base/yarn/.yarn/
 # prepare ui dependencies
 RUN mkdir -p /base/yarn-ui
-COPY /ui/yarn.lock /.yarnrc /ui/package.json /base/yarn-ui/
+COPY /ui/yarn.lock /.yarnrc.yml /ui/package.json /base/yarn-ui/
 COPY /.yarn /base/yarn-ui/.yarn/
 # prepare clients/client dependencies
 RUN mkdir -p /base/yarn-client
-COPY /clients/client/yarn.lock /.yarnrc /clients/client/package.json /base/yarn-client/
+COPY /clients/client/yarn.lock /.yarnrc.yml /clients/client/package.json /base/yarn-client/
 COPY /.yarn /base/yarn-client/.yarn/
 
 # install all dependencies
 WORKDIR /base/yarn-client
-RUN yarn install --production --frozen-lockfile
+RUN corepack enable
+RUN yarn set version berry
+RUN yarn workspaces focus --all --production
 WORKDIR /base/yarn
-RUN yarn install --production --frozen-lockfile
+RUN yarn workspaces focus --all --production
 WORKDIR /base/yarn-ui
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 RUN mkdir -p /base/app/ui /base/app/clients/client
 RUN cp -r /base/yarn/node_modules /base/app/

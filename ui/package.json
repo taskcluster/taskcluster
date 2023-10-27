@@ -4,13 +4,13 @@
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "18.18.1",
-    "yarn": "^1.22.19"
+    "node": "18.18.1"
   },
+  "packageManager": "yarn@4.0.0",
   "scripts": {
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && webpack --mode production",
-    "start": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
-    "start:docker": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env GENERATE_ENV_JS=1 webpack-dev-server --host 0.0.0.0 --disable-host-check --hot --mode development",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
+    "start:docker": "NODE_OPTIONS=--openssl-legacy-provider cross-env GENERATE_ENV_JS=1 webpack-dev-server --host 0.0.0.0 --disable-host-check --hot --mode development",
     "test": "cross-env TZ=Europe/Berlin jest",
     "test:update-snapshots": "cross-env TZ=Europe/Berlin jest --updateSnapshot",
     "test:watch": "cross-env TZ=Europe/Berlin jest --watch",
@@ -27,8 +27,8 @@
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@sentry/browser": "^6.0.0",
-    "ajv": "8.11.2",
-    "ajv-formats": "1.x",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",
     "apollo-client": "^2.5.1",

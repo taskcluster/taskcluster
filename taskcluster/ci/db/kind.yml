@@ -20,14 +20,14 @@ tasks:
     description: db library tests
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         ./db/test-setup.sh &&
         cd db && yarn test
   upgrade:
     description: yarn db:upgrade tests
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         ./db/test-setup.sh --users &&
         export ADMIN_DB_URL="$TEST_DB_URL" &&
         export USERNAME_PREFIX="test" &&

@@ -8,8 +8,7 @@
   ignore = "git diff --quiet HEAD^ HEAD -- . ':!docs'"
 
 [build.environment]
-  YARN_FLAGS = "--frozen-lockfile"
-  YARN_VERSION = "1.22.19"
+  YARN_FLAGS = "--immutable"
   NODE_VERSION = "18.18.1"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"

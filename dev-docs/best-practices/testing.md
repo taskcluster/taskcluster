@@ -17,7 +17,7 @@ The following best practices relate to Javascript applications and libraries, bu
 
 Projects should be easy for new contributors to get started on quickly and independently.
 Include a section in the repository's `README.md` describing how to get started modifying the code.
-Services with a lockfile should suggest that contributors run `yarn install --frozen-lockfile`, while libraries should use `yarn`; after that, run `yarn test`.
+Services with a lockfile should suggest that contributors run `yarn install --immutable`, while libraries should use `yarn`; after that, run `yarn test`.
 The test run should be successful, even if it skips many of the tests.
 
 ## Hard Dependencies

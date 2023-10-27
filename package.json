@@ -5,9 +5,9 @@
   "engine-strict": true,
   "type": "module",
   "engines": {
-    "node": "18.18.1",
-    "yarn": "^1.22.19"
+    "node": "18.18.1"
   },
+  "packageManager": "yarn@4.0.0",
   "workspaces": [
     "libraries/*",
     "services/*",
@@ -26,7 +26,7 @@
     "@octokit/rest": "^18.0.0",
     "@sentry/node": "^6.0.0",
     "@slack/web-api": "^6.7.1",
-    "ajv": "^7.2.1",
+    "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "amqplib": "^0.8.0",
     "apollo-server-core": "^3.12.1",
@@ -170,13 +170,13 @@
     "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
     "lint:go": "bash test/go-lint.sh",
     "lint:py": "bash test/py-lint.sh",
-    "test": "yarn workspaces run test",
+    "test": "yarn workspaces foreach -A run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",
     "release": "node infrastructure/tooling/src/main.js release",
     "staging-release": "node infrastructure/tooling/src/main.js staging-release",
     "release:publish": "node infrastructure/tooling/src/main.js release:publish",
-    "generate": "export NODE_OPTIONS=--dns-result-order=ipv4first && node infrastructure/tooling/src/main.js generate",
+    "generate": "NODE_OPTIONS=--dns-result-order=ipv4first node infrastructure/tooling/src/main.js generate",
     "minify": "node infrastructure/tooling/src/main.js minify",
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
@@ -202,7 +202,7 @@
     "db:downgrade": "node db/src/main.js downgrade",
     "db:renumber": "node db/src/main.js renumber",
     "db:new": "node db/src/main.js new",
-    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --frozen-lockfile || exit 0"
+    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0"
   },
   "metatests": {
     "specialImports": [

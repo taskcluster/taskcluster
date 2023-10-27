@@ -32,7 +32,7 @@ tasks:
     description: check that `yarn generate` was run
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         ./db/test-setup.sh --users &&
         set -o pipefail &&
         yarn generate | cat &&
@@ -45,19 +45,19 @@ tasks:
     description: taskcluster build dry-run
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         yarn build --dry-run
   changelog-pr:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-pull-request]
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]
     run:
       command: >-
-        yarn --frozen-lockfile &&
+        yarn --immutable &&
         yarn changelog:check

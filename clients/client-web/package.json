@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "test": "export NODE_OPTIONS=--openssl-legacy-provider && karma start --single-run"
+    "test": "NODE_OPTIONS=--openssl-legacy-provider karma start --single-run"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

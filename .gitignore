@@ -1,4 +1,5 @@
 node_modules
+install-state.gz
 .eslintcache
 user-build-config.yml
 *.log
