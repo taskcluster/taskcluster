@@ -52,7 +52,7 @@
     "fast-json-stable-stringify": "^2.0.0",
     "generate-password": "^1.5.0",
     "googleapis": "^73.0.0",
-    "got": "^11.7.0",
+    "got": "^13.0.0",
     "graphql": "^15.0.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-playground-middleware-express": "^1.7.8",
