@@ -80,12 +80,22 @@ then a service outage may occur while upgrading to the new version.  And if
 corner cases for the DB functions are not carefully tested, we may cause data
 loss when those cases occur in production.
 
+## Creating new versions
+
+To create new version and test for it you can run:
+
+```shell
+yarn db:new
+```
+
+This will create `db/versions/<next_version>.yml` and `db/test/versions/<next_version>_test.js` files.
+
 ## Rebasing
 
 As many people are writing versions, it's common to need to re-number a DB version. There is a temporary script that can help:
 
 ```shell
-node infrastructure/renumber-db-version.js <oldversion> <newversion>
+yarn db:renumber <oldversion> <newversion>
 ```
 
 ---
