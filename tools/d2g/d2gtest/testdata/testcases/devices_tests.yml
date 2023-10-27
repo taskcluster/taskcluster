@@ -2,7 +2,7 @@
 testSuite:
   name: Devices tests
   description: Test that devices should be mounted as volumes in the resulting generic worker task payload.
-  tests:
+  payloadTests:
     - name: Host Shared Memory
       description: >-
         Tests that host shared memory device is mounted as a volume in the resulting generic worker task payload.
@@ -58,6 +58,8 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+        osGroups:
+          - kvm
 
     - name: Video Loopback
       description: >-
@@ -118,3 +120,4 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+  taskDefTests: []

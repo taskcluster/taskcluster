@@ -2,7 +2,7 @@
 testSuite:
   name: No artifacts test
   description: Test that no artifacts will be created if disabled in the docker worker payload.
-  tests:
+  payloadTests:
     - name: No artifacts test
       description: >-
         If artifacts are disabled in the docker worker payload, no artifacts should be created
@@ -36,3 +36,4 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+  taskDefTests: []

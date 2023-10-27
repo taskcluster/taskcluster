@@ -2,7 +2,7 @@
 testSuite:
   name: Artifacts test
   description: Test that artifacts will be created.
-  tests:
+  payloadTests:
     - name: Artifacts test
       description: >-
         Tests that artifacts will be created in the resulting generic worker task payload.
@@ -53,3 +53,4 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+  taskDefTests: []

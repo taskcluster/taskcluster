@@ -7,12 +7,32 @@ import (
 )
 
 type (
-	// Static d2g input/output test cases. Contains pairs of Docker Worker payload
-	// (inputs) and Generic Worker expected payload (outputs).
+	// Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
+	// (inputs) and Generic Worker expected task def/payload (outputs).
 	D2GTestCases struct {
 
 		// A suite of tests for a particular d2g feature or set of features
 		TestSuite TestSuite `json:"testSuite"`
+	}
+
+	// A test case contains a static input Docker Worker task definition, and an
+	// expected Generic Worker task definition output. The Docker Worker task definition
+	// is converted by d2g to a Generic Worker task definition. The test is successful
+	// if the generated Generic Worker task definition exactly matches the Generic
+	// Worker task definition in the test case.
+	TaskDefinitionTestCase struct {
+
+		// Detailed information about what the test case tests
+		Description string `json:"description"`
+
+		// Additional properties allowed
+		DockerWorkerTaskDefinition json.RawMessage `json:"dockerWorkerTaskDefinition"`
+
+		// Additional properties allowed
+		GenericWorkerTaskDefinition json.RawMessage `json:"genericWorkerTaskDefinition"`
+
+		// Name for the test case
+		Name string `json:"name"`
 	}
 
 	// A test case contains a static input Docker Worker task payload, and an
@@ -20,7 +40,7 @@ type (
 	// is converted by d2g to a Generic Worker task payload. The test is successful
 	// if the generated Generic Worker task payload exactly matches the Generic
 	// Worker task payload in the test case.
-	TestCase struct {
+	TaskPayloadTestCase struct {
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -45,7 +65,10 @@ type (
 		Name string `json:"name"`
 
 		// The test cases which this test suite contains
-		Tests []TestCase `json:"tests"`
+		PayloadTests []TaskPayloadTestCase `json:"payloadTests,omitempty"`
+
+		// The test cases which this test suite contains
+		TaskDefTests []TaskDefinitionTestCase `json:"taskDefTests,omitempty"`
 	}
 )
 
@@ -66,32 +89,48 @@ func JSONSchema() string {
   "$id": "schemas/test_suites.json#",
   "$schema": "http://json-schema.org/draft-06/schema#",
   "additionalProperties": false,
-  "description": "Static d2g input/output test cases. Contains pairs of Docker Worker payload\n(inputs) and Generic Worker expected payload (outputs).",
+  "definitions": {
+    "caseDescription": {
+      "description": "Detailed information about what the test case tests",
+      "title": "Test Case Description",
+      "type": "string"
+    },
+    "caseName": {
+      "description": "Name for the test case",
+      "title": "Test Case Name",
+      "type": "string"
+    },
+    "suiteDescription": {
+      "description": "Detailed information about what the test cases do and do not test",
+      "title": "Test Suite Description",
+      "type": "string"
+    },
+    "suiteName": {
+      "description": "Name for the test suite",
+      "title": "Test Suite Name",
+      "type": "string"
+    }
+  },
+  "description": "Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload\n(inputs) and Generic Worker expected task def/payload (outputs).",
   "properties": {
     "testSuite": {
       "additionalProperties": false,
       "description": "A suite of tests for a particular d2g feature or set of features",
       "properties": {
         "description": {
-          "description": "Detailed information about what the test cases do and do not test",
-          "title": "Test Suite Description",
-          "type": "string"
+          "$ref": "#/definitions/suiteDescription"
         },
         "name": {
-          "description": "Name for the test suite",
-          "title": "Test Suite Name",
-          "type": "string"
+          "$ref": "#/definitions/suiteName"
         },
-        "tests": {
+        "payloadTests": {
           "description": "The test cases which this test suite contains",
           "items": {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task payload, and an\nexpected Generic Worker task payload output. The Docker Worker task payload\nis converted by d2g to a Generic Worker task payload. The test is successful\nif the generated Generic Worker task payload exactly matches the Generic\nWorker task payload in the test case.",
             "properties": {
               "description": {
-                "description": "Detailed information about what the test case tests",
-                "title": "Test Case Description",
-                "type": "string"
+                "$ref": "#/definitions/caseDescription"
               },
               "dockerWorkerTaskPayload": {
                 "type": "object"
@@ -100,9 +139,7 @@ func JSONSchema() string {
                 "type": "object"
               },
               "name": {
-                "description": "Name for the test case",
-                "title": "Test Case Name",
-                "type": "string"
+                "$ref": "#/definitions/caseName"
               }
             },
             "required": [
@@ -111,18 +148,47 @@ func JSONSchema() string {
               "dockerWorkerTaskPayload",
               "genericWorkerTaskPayload"
             ],
-            "title": "Test case",
+            "title": "Task payload test case",
             "type": "object"
           },
-          "minItems": 1,
-          "title": "Test cases",
+          "title": "Task payload test cases",
+          "type": "array"
+        },
+        "taskDefTests": {
+          "description": "The test cases which this test suite contains",
+          "items": {
+            "additionalProperties": false,
+            "description": "A test case contains a static input Docker Worker task definition, and an\nexpected Generic Worker task definition output. The Docker Worker task definition\nis converted by d2g to a Generic Worker task definition. The test is successful\nif the generated Generic Worker task definition exactly matches the Generic\nWorker task definition in the test case.",
+            "properties": {
+              "description": {
+                "$ref": "#/definitions/caseDescription"
+              },
+              "dockerWorkerTaskDefinition": {
+                "type": "object"
+              },
+              "genericWorkerTaskDefinition": {
+                "type": "object"
+              },
+              "name": {
+                "$ref": "#/definitions/caseName"
+              }
+            },
+            "required": [
+              "name",
+              "description",
+              "dockerWorkerTaskDefinition",
+              "genericWorkerTaskDefinition"
+            ],
+            "title": "Task definition test case",
+            "type": "object"
+          },
+          "title": "Task definition test cases",
           "type": "array"
         }
       },
       "required": [
         "name",
-        "description",
-        "tests"
+        "description"
       ],
       "title": "Test Suite",
       "type": "object"
