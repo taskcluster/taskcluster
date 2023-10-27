@@ -35,6 +35,8 @@ task-overrides:
     docker-image: taskcluster/rabbit-test:{node_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         service rabbitmq-server start &&
         yarn workspace taskcluster-lib-pulse coverage:report

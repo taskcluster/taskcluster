@@ -24,6 +24,8 @@ tasks:
     docker-image: node:{node_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         {{ yarn --immutable || exit 99; }} &&
         eval $(python3 test/client-library-secrets.py) &&
         cd clients/client &&
@@ -35,6 +37,8 @@ tasks:
     docker-image: node:{node_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         {{ yarn --immutable || exit 99; }} &&
         eval $(python3 test/client-library-secrets.py) &&
         cd clients/client-test &&
@@ -61,6 +65,8 @@ tasks:
     docker-image: taskcluster/browser-test:{node_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         {{ yarn --immutable || exit \99; }} &&
         cd clients/client-web &&
         {{ yarn --immutable || exit 99; }} &&

@@ -44,8 +44,8 @@ task-defaults:
       - . ~/.nvm/nvm.sh
       - nvm install $NODE_VERSION
       # set up yarn
-      - curl -o- -L https://yarnpkg.com/install.sh | bash
-      - export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+      - corepack enable
+      - yarn set version berry
       # clone the repo (shallow won't work here as it misses tags)
       - git clone --quiet --no-single-branch --tags {head_repository} taskcluster
       - cd taskcluster

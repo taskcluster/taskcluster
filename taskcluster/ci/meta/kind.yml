@@ -32,6 +32,8 @@ tasks:
     description: check that `yarn generate` was run
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         ./db/test-setup.sh --users &&
         set -o pipefail &&
@@ -45,6 +47,8 @@ tasks:
     description: taskcluster build dry-run
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         yarn build --dry-run
   changelog-pr:
@@ -52,6 +56,8 @@ tasks:
     run-on-tasks-for: [github-pull-request]
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
@@ -59,5 +65,7 @@ tasks:
     run-on-tasks-for: [github-push]
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         yarn changelog:check

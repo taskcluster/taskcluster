@@ -21,6 +21,8 @@ tasks:
     description: UI Browser Tests
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         {{ yarn --immutable || exit 99; }} &&
         cd ui &&
         {{ yarn --immutable || exit 99; }} &&

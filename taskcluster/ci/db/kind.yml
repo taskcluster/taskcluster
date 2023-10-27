@@ -20,6 +20,8 @@ tasks:
     description: db library tests
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         ./db/test-setup.sh &&
         cd db && yarn test
@@ -27,6 +29,8 @@ tasks:
     description: yarn db:upgrade tests
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn --immutable &&
         ./db/test-setup.sh --users &&
         export ADMIN_DB_URL="$TEST_DB_URL" &&
