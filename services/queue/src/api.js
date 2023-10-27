@@ -1910,6 +1910,96 @@ builder.declare({
   });
 });
 
+/** List pending tasks for given taskQueue */
+builder.declare({
+  method: 'get',
+  route: '/task-queues/:taskQueueId(*)/pending',
+  query: paginateResults.query,
+  name: 'listPendingTasks',
+  scopes: 'queue:pending-list:<taskQueueId>',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Metadata',
+  output: 'list-pending-tasks-response.yml',
+  title: 'List Pending Tasks',
+  description: [
+    'List pending tasks for the given `taskQueueId`.',
+    '',
+    'As task states may change rapidly, this information might not represent the exact',
+    'state of such tasks, but a very good approximation.',
+  ].join('\n'),
+}, async function(req, res) {
+  const pendingTasks = await paginateResults({
+    query: req.query,
+    indexColumns: ['inserted', 'task_id'],
+    fetch: (page_size_in, after) => this.db.fns.get_pending_tasks_by_task_queue_id({
+      task_queue_id_in: req.params.taskQueueId,
+      page_size_in,
+      ...after,
+    }),
+  });
+
+  const result = {
+    tasks: pendingTasks.rows.map(({ task_id, run_id, inserted, ...taskColumns }) => ({
+      taskId: task_id,
+      runId: run_id,
+      task: Task.fromDb(taskColumns).definition(),
+      inserted: inserted.toJSON(),
+    })),
+  };
+
+  if (pendingTasks.continuationToken) {
+    result.continuationToken = pendingTasks.continuationToken;
+  }
+
+  return res.reply(result);
+});
+
+/** List claimed tasks for given taskQueue */
+builder.declare({
+  method: 'get',
+  route: '/task-queues/:taskQueueId(*)/claimed',
+  query: paginateResults.query,
+  name: 'listClaimedTasks',
+  scopes: 'queue:claimed-list:<taskQueueId>',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Metadata',
+  output: 'list-claimed-tasks-response.yml',
+  title: 'List claimed Tasks',
+  description: [
+    'List claimed tasks for the given `taskQueueId`.',
+    '',
+    'As task states may change rapidly, this information might not represent the exact',
+    'state of such tasks, but a very good approximation.',
+  ].join('\n'),
+}, async function(req, res) {
+  const claimedTasks = await paginateResults({
+    query: req.query,
+    indexColumns: ['claimed', 'task_id'],
+    fetch: (page_size_in, after) => this.db.fns.get_claimed_tasks_by_task_queue_id({
+      task_queue_id_in: req.params.taskQueueId,
+      page_size_in,
+      ...after,
+    }),
+  });
+
+  const result = {
+    tasks: claimedTasks.rows.map(({ task_id, run_id, claimed, worker_group, worker_id, ...taskColumns }) => ({
+      taskId: task_id,
+      runId: run_id,
+      workerGroup: worker_group,
+      workerId: worker_id,
+      claimed: claimed.toJSON(),
+      task: Task.fromDb(taskColumns).definition(),
+    })),
+  };
+
+  if (claimedTasks.continuationToken) {
+    result.continuationToken = claimedTasks.continuationToken;
+  }
+
+  return res.reply(result);
+});
+
 /** List worker-types for a given provisioner */
 builder.declare({
   method: 'get',

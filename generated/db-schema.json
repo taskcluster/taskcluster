@@ -7007,6 +7007,30 @@
         }
       },
       "version": 93
+    },
+    {
+      "description": "fetch pending and claimed tasks for task queue",
+      "methods": {
+        "get_claimed_tasks_by_task_queue_id": {
+          "args": "task_queue_id_in text, page_size_in integer, after_claimed_in timestamptz, after_task_id_in text",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until,\n    -- for pagination and results\n    q.run_id,\n    q.worker_group,\n    q.worker_id,\n    q.claimed\n  from queue_claimed_tasks q\n  left join tasks on tasks.task_id=q.task_id\n  where q.task_queue_id = task_queue_id_in\n    and tasks.task_id is not null\n    and (after_claimed_in is null or q.claimed > after_claimed_in)\n    and (after_task_id_in is null or q.task_id != after_task_id_in)\n  order by q.claimed asc\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get all tasks that are currently claimed by workers in a given task queue.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  run_id integer,\n  worker_group text,\n  worker_id text,\n  claimed timestamptz\n)",
+          "serviceName": "queue"
+        },
+        "get_pending_tasks_by_task_queue_id": {
+          "args": "task_queue_id_in text, page_size_in integer, after_inserted_in timestamptz, after_task_id_in text",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until,\n    -- one for the pagination\n    q.run_id,\n    q.inserted\n  from queue_pending_tasks q\n  left join tasks on tasks.task_id=q.task_id\n  where q.task_queue_id = task_queue_id_in\n    and tasks.task_id is not null\n    and (after_inserted_in is null or q.inserted > after_inserted_in)\n    -- timestamp alone might not be enough\n    -- since time part is truncated to 1000th of a second\n    and (after_task_id_in is null or q.task_id != after_task_id_in)\n  order by q.inserted asc\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get all tasks that are currently pending in a given task queue.\nRecords would be returned by insert time, or when tasks were scheduled.\nTo iterate over all pending tasks, `after_inserted_in`, `after_task_id_in`\nparameters can be used.\n\nFull task record is being returned plus `inserted` for pagination purposes",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  run_id integer,\n  inserted timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 94
     }
   ]
 }

@@ -2881,6 +2881,44 @@ module.exports = {
         },
         {
           "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listPendingTasks",
+          "output": "v1/list-pending-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/pending",
+          "scopes": "queue:pending-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listClaimedTasks",
+          "output": "v1/list-claimed-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/claimed",
+          "scopes": "queue:claimed-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List claimed Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
             "provisionerId"
           ],
           "category": "Worker Metadata",

@@ -402,6 +402,26 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
 
+	// Response from a `listClaimedTasks` request.
+	ListClaimedTasksResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of dependent tasks.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listClaimedTasks` with
+		// `continuationToken` until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of tasks that are currently claimed by workers and are not yet resolved.
+		// Results might not represent the actual state of the tasks,
+		// as they might be currently resolved by a worker or claim-resolver.
+		//
+		// Tasks are returned by claimed time, with the oldest claimed tasks first.
+		Tasks []Var1 `json:"tasks"`
+	}
+
 	// Response from a `listDependentTasks` request.
 	ListDependentTasksResponse struct {
 
@@ -421,6 +441,26 @@ type (
 
 		// List of tasks that have `taskId` in the `task.dependencies` property.
 		Tasks []TaskDefinitionAndStatus `json:"tasks"`
+	}
+
+	// Response from a `listPendingTasks` request.
+	ListPendingTasksResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of dependent tasks.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listPendingTasks` with
+		// `continuationToken` until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of tasks that are currently waiting for workers to be claimed.
+		// Results may not represent the actual state of the tasks,
+		// as they might be actively claimed by a worker.
+		//
+		// Tasks are returned in inserted order.
+		Tasks []Var `json:"tasks"`
 	}
 
 	ListProvisionersResponse struct {
@@ -1869,6 +1909,50 @@ type (
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerType string `json:"workerType"`
+	}
+
+	Var struct {
+		Inserted tcclient.Time `json:"inserted"`
+
+		// Unique run identifier, this is a number between 0 and 1000 inclusive.
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		RunID int64 `json:"runId"`
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+	}
+
+	Var1 struct {
+		Claimed tcclient.Time `json:"claimed"`
+
+		// Unique run identifier, this is a number between 0 and 1000 inclusive.
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		RunID int64 `json:"runId"`
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+
+		WorkerGroup string `json:"workerGroup"`
+
+		WorkerID string `json:"workerId"`
 	}
 
 	Worker struct {

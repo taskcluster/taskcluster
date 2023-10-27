@@ -52,6 +52,14 @@ projectId-max-length:  500
 min-run-id:     0
 max-run-id:     1000
 
+runId:
+  title:            "Run Identifier"
+  description: |
+    Unique run identifier, this is a number between 0 and 1000 inclusive.
+  type:             integer
+  minimum:          {$const: min-run-id}
+  maximum:          {$const: max-run-id}
+
 # Task-specific routing key
 routing:
   title:        Routing Key

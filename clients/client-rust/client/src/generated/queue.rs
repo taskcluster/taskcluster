@@ -1283,6 +1283,86 @@ impl Queue {
         (path, query)
     }
 
+    /// List Pending Tasks
+    ///
+    /// List pending tasks for the given `taskQueueId`.
+    ///
+    /// As task states may change rapidly, this information might not represent the exact
+    /// state of such tasks, but a very good approximation.
+    pub async fn listPendingTasks(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listPendingTasks_details(taskQueueId, continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listPendingTasks endpoint
+    pub fn listPendingTasks_url(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listPendingTasks_details(taskQueueId, continuationToken, limit);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listPendingTasks endpoint
+    pub fn listPendingTasks_signed_url(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listPendingTasks_details(taskQueueId, continuationToken, limit);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listPendingTasks
+    fn listPendingTasks_details<'a>(taskQueueId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-queues/{}/pending", urlencode(taskQueueId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
+    /// List claimed Tasks
+    ///
+    /// List claimed tasks for the given `taskQueueId`.
+    ///
+    /// As task states may change rapidly, this information might not represent the exact
+    /// state of such tasks, but a very good approximation.
+    pub async fn listClaimedTasks(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listClaimedTasks_details(taskQueueId, continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listClaimedTasks endpoint
+    pub fn listClaimedTasks_url(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listClaimedTasks_details(taskQueueId, continuationToken, limit);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listClaimedTasks endpoint
+    pub fn listClaimedTasks_signed_url(&self, taskQueueId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listClaimedTasks_details(taskQueueId, continuationToken, limit);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listClaimedTasks
+    fn listClaimedTasks_details<'a>(taskQueueId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-queues/{}/claimed", urlencode(taskQueueId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Get a list of all active worker-types
     ///
     /// Get all active worker-types for the given provisioner.

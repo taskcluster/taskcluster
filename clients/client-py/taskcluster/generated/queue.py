@@ -743,6 +743,34 @@ class Queue(BaseClient):
 
         return self._makeApiCall(self.funcinfo["pendingTasks"], *args, **kwargs)
 
+    def listPendingTasks(self, *args, **kwargs):
+        """
+        List Pending Tasks
+
+        List pending tasks for the given `taskQueueId`.
+
+        As task states may change rapidly, this information might not represent the exact
+        state of such tasks, but a very good approximation.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listPendingTasks"], *args, **kwargs)
+
+    def listClaimedTasks(self, *args, **kwargs):
+        """
+        List claimed Tasks
+
+        List claimed tasks for the given `taskQueueId`.
+
+        As task states may change rapidly, this information might not represent the exact
+        state of such tasks, but a very good approximation.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listClaimedTasks"], *args, **kwargs)
+
     def listWorkerTypes(self, *args, **kwargs):
         """
         Get a list of all active worker-types
@@ -1082,6 +1110,15 @@ class Queue(BaseClient):
             'route': '/task/<taskId>/runs/<runId>/artifacts',
             'stability': 'stable',
         },
+        "listClaimedTasks": {
+            'args': ['taskQueueId'],
+            'method': 'get',
+            'name': 'listClaimedTasks',
+            'output': 'v1/list-claimed-tasks-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/task-queues/<taskQueueId>/claimed',
+            'stability': 'experimental',
+        },
         "listDependentTasks": {
             'args': ['taskId'],
             'method': 'get',
@@ -1099,6 +1136,15 @@ class Queue(BaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/artifacts',
             'stability': 'stable',
+        },
+        "listPendingTasks": {
+            'args': ['taskQueueId'],
+            'method': 'get',
+            'name': 'listPendingTasks',
+            'output': 'v1/list-pending-tasks-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/task-queues/<taskQueueId>/pending',
+            'stability': 'experimental',
         },
         "listProvisioners": {
             'args': [],

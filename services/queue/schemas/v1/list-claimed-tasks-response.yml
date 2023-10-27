@@ -1,0 +1,53 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "List Claimed Tasks Response"
+description: |
+  Response from a `listClaimedTasks` request.
+type: object
+properties:
+  tasks:
+    type: array
+    title: "Task that are currently running in a given task queue"
+    description: |
+      List of tasks that are currently claimed by workers and are not yet resolved.
+      Results might not represent the actual state of the tasks,
+      as they might be currently resolved by a worker or claim-resolver.
+
+      Tasks are returned by claimed time, with the oldest claimed tasks first.
+
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        taskId: { $const: "taskId" }
+        runId: { $const: "runId" }
+        workerGroup:
+          type: string
+        workerId:
+          type: string
+        claimed:
+          type: string
+          format: date-time
+        task: { $ref: "task.json#" }
+      additionalProperties: false
+      required:
+        - taskId
+        - runId
+        - workerGroup
+        - workerId
+        - claimed
+        - task
+
+  continuationToken:
+    type: string
+    title: "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of dependent tasks.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listClaimedTasks` with
+      `continuationToken` until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+  - tasks
