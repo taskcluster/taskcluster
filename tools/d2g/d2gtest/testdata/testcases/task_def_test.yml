@@ -85,4 +85,85 @@ testSuite:
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04
         workerType: gw-ubuntu-22-04
+    - name: Task definition test without taskQueueId set
+      description: >-
+        d2g should properly translate this Docker Worker task definition
+        into a valid Generic Worker task definition, even if taskQueueId
+        is not set
+      dockerWorkerTaskDefinition:
+        provisionerId: proj-taskcluster
+        workerType: gw-ubuntu-22-04
+        schedulerId: taskcluster-ui
+        projectId: none
+        taskGroupId: PIxhISDQSDa98W9ppGUNsw
+        dependencies: []
+        requires: all-completed
+        routes: []
+        priority: lowest
+        retries: 5
+        created: '2023-10-26T14:06:09.867Z'
+        deadline: '2023-10-26T17:06:09.867Z'
+        expires: '2024-10-26T17:06:09.867Z'
+        scopes:
+          - docker-worker:apples
+        payload:
+          image: ubuntu:latest
+          command:
+            - /bin/bash
+            - '-c'
+            - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
+          maxRunTime: 630
+          capabilities:
+            devices:
+              kvm: true
+        metadata:
+          name: example-task
+          owner: name@example.com
+          source: https://community-tc.services.mozilla.com/tasks/create
+          description: An **example** task
+        tags: {}
+        extra: {}
+      genericWorkerTaskDefinition:
+        created: "2023-10-26T14:06:09.867Z"
+        deadline: "2023-10-26T17:06:09.867Z"
+        dependencies: []
+        expires: "2024-10-26T17:06:09.867Z"
+        extra: {}
+        metadata:
+          description: An **example** task
+          name: example-task
+          owner: name@example.com
+          source: https://community-tc.services.mozilla.com/tasks/create
+        payload:
+          command:
+          - - bash
+            - -cx
+            - podman run -t --rm --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep
+              1; done'
+          features:
+            backingLog: true
+            liveLog: true
+          logs:
+            backing: public/logs/live_backing.log
+            live: public/logs/live.log
+          maxRunTime: 630
+          onExitStatus:
+            retry:
+            - 125
+          osGroups:
+            - kvm
+        priority: lowest
+        projectId: none
+        provisionerId: proj-taskcluster
+        requires: all-completed
+        retries: 5
+        routes: []
+        schedulerId: taskcluster-ui
+        scopes:
+          - generic-worker:apples
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
+        tags: {}
+        taskGroupId: PIxhISDQSDa98W9ppGUNsw
+        workerType: gw-ubuntu-22-04
   payloadTests: []

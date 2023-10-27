@@ -62,7 +62,19 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		for _, scope := range scopes.([]interface{}) {
 			dwScopes = append(dwScopes, scope.(string))
 		}
-		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, parsedTaskDef["taskQueueId"].(string))
+		var taskQueueID string
+		if parsedTaskDef["taskQueueId"] == nil {
+			if parsedTaskDef["provisionerId"] == nil || parsedTaskDef["workerType"] == nil {
+				return nil, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required")
+			}
+			taskQueueID = fmt.Sprintf("%s/%s", parsedTaskDef["provisionerId"].(string), parsedTaskDef["workerType"].(string))
+		} else {
+			taskQueueID = parsedTaskDef["taskQueueId"].(string)
+		}
+		if taskQueueID == "" {
+			return nil, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required")
+		}
+		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, taskQueueID)
 	}
 
 	d2gConvertedPayloadJSON, err := json.Marshal(*gwPayload)
