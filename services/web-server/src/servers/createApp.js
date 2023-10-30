@@ -16,6 +16,7 @@ import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
 import { traceMiddleware } from 'taskcluster-lib-app';
+import { loadVersion } from 'taskcluster-lib-api';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -150,10 +151,7 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     res.json({});
   });
   app.get('/api/web-server/v1/__version__', async (_req, res) => {
-    const REPO_ROOT = path.join(__dirname, '../../../../');
-    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-    const taskclusterVersion = await import(taskclusterVersionFile);
-    res.json(taskclusterVersion);
+    res.json(await loadVersion());
   });
   // TODO: add implementation
   app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
