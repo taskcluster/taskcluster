@@ -8,7 +8,7 @@
 ### GENERAL
 
 ▶ [patch] [#6644](https://github.com/taskcluster/taskcluster/issues/6644)
-Fixes __version__ endpiont in web-server
+Fixes __version__ endpoint in web-server
 
 ▶ [patch] [#6634](https://github.com/taskcluster/taskcluster/issues/6634)
 Fixes `queue.claimWork` endpoint returning `500` in some rare conditions.
