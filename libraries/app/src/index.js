@@ -8,21 +8,7 @@ import sslify from 'express-sslify';
 import hsts from 'hsts';
 import csp from 'content-security-policy';
 import { v4 } from 'uuid';
-import path from 'path';
-import fs from 'fs/promises';
-
-// TODO: libraries/api/src/api.js defines same methods __version__, __heartbeat__
-let taskclusterVersion = null;
-const loadVersion = async () => {
-  if (!taskclusterVersion) {
-    const __dirname = new URL('.', import.meta.url).pathname;
-    const REPO_ROOT = path.join(__dirname, '../../../');
-    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-
-    taskclusterVersion = await fs.readFile(taskclusterVersionFile, 'utf8');
-  }
-  return taskclusterVersion;
-};
+import { loadVersion } from 'taskcluster-lib-api';
 
 /**
  * Attach trace headers to requests. This is exported

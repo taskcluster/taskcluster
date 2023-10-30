@@ -45,4 +45,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ['https://tc.example.com', "/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/"],
     'https://deploy-preview-897--taskcluster-web.netlify.com/',
     'https://deploy-preview-897--taskcluster-web.netlify.com/');
+
+  suite('service endpoints', function() {
+    helper.withServer(mock, skipping);
+
+    test('version', async function() {
+      const version = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__version__`);
+      assert(typeof version.body.version !== 'undefined');
+      assert(typeof version.body.commit !== 'undefined');
+      assert(typeof version.body.source !== 'undefined');
+      assert(typeof version.body.build !== 'undefined');
+    });
+    test('heartbeat', async function() {
+      const heartbeat = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__heartbeat__`);
+      assert(heartbeat.body);
+    });
+    test('lbheartbeat', async function() {
+      const heartbeat = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__lbheartbeat__`);
+      assert(heartbeat.body);
+    });
+  });
 });

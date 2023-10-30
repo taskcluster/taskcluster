@@ -14491,6 +14491,29 @@
       "serviceName": "web-server",
       "types": [
         {
+          "description": "A timer and audit for express API endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
+          "fields": {
+            "apiVersion": "The version of the API (e.g., `v1`)",
+            "authenticated": "Will be `true` if the request has successfully authenticated (`auth-success` or `no-auth`) but\n`false` if req.authenticate() has not been called (for example when no scopes are required), or\nif the request has invalid credentials (`auth-failed`). It does *not* imply\nauthorization (i.e. scope satisfaction not guaranteed).",
+            "clientId": "The clientId that made the request, if there was one.",
+            "duration": "The duration in ms of the call.",
+            "expires": "The expiration date of the credentials, if the header was authenticated.",
+            "method": "The http method of the request.",
+            "name": "The name of the API method",
+            "public": "True if the endpoint requires no scopes.",
+            "query": "Query params that were passed to the request (only ones that are specified as possible in the entry)",
+            "resource": "The path of the http request.",
+            "satisfyingScopes": "The set of scopes posessed by the caller that were\nused to authorize this request, or [] if scopes were not required.\n\nThis set of scopes is intuitively the scopes the caller used to\nauthorize the call.  More precisely, it is the minimal subset of the supplied\nscopes required to satisfy the API method's authorization requirements.\nBut is not quite minimal in one sense: If several alternatives of an\n`AnyOf` in the API method's scope ression are satisfied, then the\nscopes used to satisfy *all* such alternatives are included.",
+            "sourceIp": "The API method caller's IP",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "level": "notice",
+          "name": "apiMethod",
+          "title": "API Method Report",
+          "type": "monitor.apiMethod",
+          "version": 2
+        },
+        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",

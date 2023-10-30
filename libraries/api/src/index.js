@@ -11,10 +11,8 @@ import * as middleware from './middleware/index.js';
 export * from './pagination.js';
 export * from './error-reply.js';
 
-// TODO: libraries/app/src/api.js defines same methods __version__, __heartbeat__
-// TODO: also services/auth/src/api.js
 let taskclusterVersion = null;
-const loadVersion = async () => {
+export const loadVersion = async () => {
   if (!taskclusterVersion) {
     const __dirname = new URL('.', import.meta.url).pathname;
     const REPO_ROOT = path.join(__dirname, '../../../');
