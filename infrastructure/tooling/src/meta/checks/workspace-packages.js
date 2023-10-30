@@ -17,7 +17,6 @@ export const tasks = [{
       'engineStrict',
       'engine-strict',
       'dependencies',
-      'devDependencies',
       'files',
     ];
     for (let filename of packageJsons) {

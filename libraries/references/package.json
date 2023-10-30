@@ -11,5 +11,10 @@
     "test": "mocha test/*_test.js"
   },
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
+  }
 }

@@ -13,5 +13,10 @@
     "lint": "eslint src test",
     "fixlint": "eslint --fix src test",
     "test": "mocha test/*_test.js test/**/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
   }
 }

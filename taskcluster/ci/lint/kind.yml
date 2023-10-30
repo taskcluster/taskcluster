@@ -20,6 +20,8 @@ tasks:
     docker-image: node:{node_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn &&
         yarn lint
   golang:
@@ -27,6 +29,8 @@ tasks:
     docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn &&
         yarn lint:go
   python:

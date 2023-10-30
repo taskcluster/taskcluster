@@ -9,5 +9,10 @@
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src/*.js src/**/*.js test/*.js test/**/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
   }
 }

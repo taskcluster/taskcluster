@@ -129,7 +129,7 @@
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
     "builtin-modules": "^3.1.0",
-    "c8": "^7.13.0",
+    "c8": "^8.0.1",
     "commander": "^9.4.1",
     "console-taskgraph": "^1.7.2",
     "cronstrue": "^2.24.0",
@@ -203,6 +203,15 @@
     "db:renumber": "node db/src/main.js renumber",
     "db:new": "node db/src/main.js new",
     "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0"
+  },
+  "metatests": {
+    "specialImports": [
+      "eslint",
+      "c8",
+      "cross-env",
+      "ejs",
+      "@octokit/core"
+    ]
   },
   "eslintIgnore": [
     "**/node_modules/**",

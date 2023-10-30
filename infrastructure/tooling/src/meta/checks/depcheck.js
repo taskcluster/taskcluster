@@ -144,7 +144,6 @@ if (isMainThread) {
     if (extraDev.length) {
       throw new Error(`Extra development dependencies! Remove ${stringify(extraDev)} from devDependencies in package.json (or add to metatests.specialImports if required)`);
     }
-
   };
 
   main().then(

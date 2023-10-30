@@ -24,6 +24,8 @@ tasks:
     description: taskcluster package meta tests
     run:
       command: >-
+        corepack enable &&
+        yarn set version berry &&
         yarn &&
         set -o pipefail && yarn test:meta | cat
   generate:

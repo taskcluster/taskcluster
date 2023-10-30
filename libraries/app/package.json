@@ -12,5 +12,10 @@
     "test": "mocha test/*_test.js"
   },
   "exports": "./src/index.js",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
+  }
 }
