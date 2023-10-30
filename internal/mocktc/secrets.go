@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v56/clients/client-go"
-	"github.com/taskcluster/taskcluster/v56/clients/client-go/tcsecrets"
+	tcclient "github.com/taskcluster/taskcluster/v57/clients/client-go"
+	"github.com/taskcluster/taskcluster/v57/clients/client-go/tcsecrets"
 )
 
 type Secrets struct {

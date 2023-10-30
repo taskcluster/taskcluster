@@ -3,6 +3,88 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v57.0.0
+
+### GENERAL
+
+▶ [patch] [#6644](https://github.com/taskcluster/taskcluster/issues/6644)
+Fixes __version__ endpiont in web-server
+
+▶ [patch] [#6634](https://github.com/taskcluster/taskcluster/issues/6634)
+Fixes `queue.claimWork` endpoint returning `500` in some rare conditions.
+
+### USERS
+
+▶ [minor] [#6371](https://github.com/taskcluster/taskcluster/issues/6371)
+D2G tool now can convert an entire Docker Worker task definition to a Generic Worker task definition.
+
+New `taskcluster d2g -h` output:
+
+```bash
+Converts a docker-worker payload (JSON) to a generic-worker payload (JSON).
+To convert a task definition (JSON), you must use the task definition flag (-t, --task-def).
+
+Usage:
+  taskcluster d2g [flags]
+
+Examples:
+  taskcluster d2g -f /path/to/input/payload.json
+  taskcluster d2g -t -f /path/to/input/task-definition.json
+  cat /path/to/input/payload.json | taskcluster d2g
+  cat /path/to/input/task-definition.json | taskcluster d2g -t
+  echo '{"image": "ubuntu", "command": ["bash", "-c", "echo hello world"], "maxRunTime": 300}' | taskcluster d2g
+
+Flags:
+  -f, --file string   Path to a .json file containing a docker-worker payload or task definition.
+  -h, --help          help for d2g
+  -t, --task-def      Must use if the input is a docker-worker task definition.
+
+Global Flags:
+  -v, --verbose   verbose output
+```
+
+▶ [patch]
+Hooks last fires display `unknown` as task state if task is missing or not scheduled. This can happen with task was expired and removed but last run information still exist.
+
+▶ [patch] [#6472](https://github.com/taskcluster/taskcluster/issues/6472)
+D2G: Add the `kvm` OS group to the Generic Worker payload if the KVM device is enabled in the Docker Worker payload.
+
+▶ [patch]
+docker-worker: fix error message when a task is missing scopes for cache volumes
+
+### DEVELOPERS
+
+▶ [MAJOR] [#4260](https://github.com/taskcluster/taskcluster/issues/4260)
+Javascript codebase converted to use ECMAScript modules (ESM).
+This includes `db`, `libraries/*`, `services/*` and `infrastructure/tooling/*` folders.
+
+Clients remain unchanged.
+
+▶ [patch]
+Introduces helper databaes utilities to create new version (migration) and renumber existing.
+
+`yarn db:new` creates new db migration and test
+`yarn db:renumber old new` renumbers existing version
+
+▶ [patch]
+Move docker compose image names to `.env` file to keep compose files unchanged between releases.
+
+### OTHER
+
+▶ Additional change not described here: [#6621](https://github.com/taskcluster/taskcluster/issues/6621).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump browserify-sign from 4.2.1 to 4.2.2 in /ui (bc0ca946e)
+* build(deps): bump browserify-sign in /clients/client-web (140940e03)
+* build(deps): bump crypto-js from 4.1.1 to 4.2.0 in /ui (1b8caf495)
+* build(deps): bump crypto-js from 4.1.1 to 4.2.0 in /clients/client-web (49f381675)
+
+</details>
+
 ## v56.0.3
 
 ### USERS

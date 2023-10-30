@@ -37,7 +37,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v56/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v57/clients/client-go"
 )
 
 type Hooks tcclient.Client

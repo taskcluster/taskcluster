@@ -585,10 +585,6 @@ Only update the state of a build and update the `updated` timestamp
 
 Create a single integration.
 
-### deprecated methods
-
-* `get_github_check_by_task_id(task_id_in text)` (compatibility guaranteed until v57.0.0)
-
 ## hooks
 
 * [`create_hook`](#create_hook)
@@ -2490,11 +2486,6 @@ client side.
 
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
-
-### deprecated methods
-
-* `azure_queue_put(queue_name text, message_text text, visible timestamp, expires timestamp)` (compatibility guaranteed until v57.0.0)
-* `queue_task_deadline_resolved(task_id_in text)` (compatibility guaranteed until v57.0.0)
 
 ## secrets
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/streadway/amqp"
 	"github.com/taskcluster/pulse-go/pulse"
-	"github.com/taskcluster/taskcluster/v56/clients/client-go/tcqueueevents"
+	"github.com/taskcluster/taskcluster/v57/clients/client-go/tcqueueevents"
 )
 
 func Example_taskclusterSniffer() {
