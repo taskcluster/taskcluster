@@ -136,6 +136,6 @@ suite(testing.suiteName(), () => {
       { value: 42, unwanted_value: 1729 },
       libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
     assert.notEqual(error, null);
-    assert(error.includes('data should NOT have additional properties: "unwanted_value"'));
+    assert(error.includes('data must NOT have additional properties: "unwanted_value"'));
   });
 });

@@ -175,7 +175,7 @@ suite(testing.suiteName(), function() {
       })
       .end();
     assertProblems(references, [
-      'test-schema.yml: schema/properties/abc should be object,boolean',
+      'test-schema.yml: schema/properties/abc must be object,boolean',
     ]);
   });
 
@@ -235,7 +235,7 @@ suite(testing.suiteName(), function() {
       })
       .end();
     assertProblems(references, [
-      'test-schema.yml: schema/metadata should have required property \'name\'',
+      'test-schema.yml: schema/metadata must have required property \'name\'',
     ]);
   });
 
@@ -267,7 +267,7 @@ suite(testing.suiteName(), function() {
       .apiref({ serviceName: true })
       .end();
     assertProblems(references, [
-      'test-api-ref.yml: reference/serviceName should be string',
+      'test-api-ref.yml: reference/serviceName must be string',
     ]);
   });
 
@@ -277,7 +277,7 @@ suite(testing.suiteName(), function() {
       .exchangesref({ title: false })
       .end();
     assertProblems(references, [
-      'test-exch-ref.yml: reference/title should be string',
+      'test-exch-ref.yml: reference/title must be string',
     ]);
   });
 

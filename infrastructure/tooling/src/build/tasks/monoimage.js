@@ -166,7 +166,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       await writeRepoFile('temp/devel-image/Dockerfile', [
         `FROM ${requirements['monoimage-docker-image']}`,
         'RUN npm install --global nodemon',
-        'RUN yarn install && yarn cache clean --all',
+        'RUN corepack enable && yarn set version berry && yarn install && yarn cache clean --all',
       ].join('\n'));
 
       try {

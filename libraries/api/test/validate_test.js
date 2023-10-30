@@ -211,9 +211,9 @@ suite(testing.suiteName(), function() {
       .catch(function(err) {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
-        assert(!err.toString().match(/data.value should be/));
+        assert(!err.toString().match(/data.value must be/));
         assert.equal(monitorManager.messages.length, 2);
-        assert(monitorManager.messages[0].Fields.message.match(/data.value should be <= 10/));
+        assert(monitorManager.messages[0].Fields.message.match(/data.value must be <= 10/));
       });
   });
 
@@ -294,9 +294,9 @@ suite(testing.suiteName(), function() {
       }).catch(function(err) {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
-        assert(!err.toString().match(/data should be object/));
+        assert(!err.toString().match(/data must be object/));
         assert.equal(monitorManager.messages.length, 2);
-        assert(monitorManager.messages[0].Fields.message.match(/data should be object/));
+        assert(monitorManager.messages[0].Fields.message.match(/data must be object/));
       });
   });
 

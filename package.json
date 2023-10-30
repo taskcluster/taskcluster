@@ -7,7 +7,7 @@
   "engines": {
     "node": "18.18.1"
   },
-  "packageManager": "yarn@4.0.0",
+  "packageManager": "yarn@4.0.1",
   "workspaces": [
     "libraries/*",
     "services/*",
@@ -136,7 +136,7 @@
     "cross-env": "^7.0.2",
     "dockerode": "^3.3.4",
     "error-stack-parser": "^2.0.2",
-    "eslint": "^7.11.0",
+    "eslint": "^8.52.0",
     "github-slugger": "^1.2.1",
     "glob": "^8.0.3",
     "graphql-tag": "^2.10.1",
@@ -203,16 +203,6 @@
     "db:renumber": "node db/src/main.js renumber",
     "db:new": "node db/src/main.js new",
     "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0"
-  },
-  "metatests": {
-    "specialImports": [
-      "eslint",
-      "c8",
-      "cross-env",
-      "ejs",
-      "@octokit/core",
-      "got"
-    ]
   },
   "eslintIgnore": [
     "**/node_modules/**",
