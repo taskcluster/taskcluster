@@ -103,6 +103,7 @@ enum HookTaskState {
   COMPLETED
   FAILED
   EXCEPTION
+  UNKNOWN
 }
 
 type HookLastFire {

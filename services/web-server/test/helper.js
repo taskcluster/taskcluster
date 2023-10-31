@@ -275,9 +275,14 @@ helper.getHttpClient = () => {
       status: response.statusCode,
       statusText: response.statusMessage,
       json: async () => response.body,
-      text: async () => JSON.stringify(response.body),
+      text: async () => JSON.stringify(response.body, null, 2),
       headers: response.headers,
     };
+
+    // useful to debug real errors before HttpLink throws obfuscated errors
+    if (!fetchResponse.ok || response.body?.errors) {
+      console.error(`Error from ${url}: \n${await fetchResponse.text()}`);
+    }
 
     return fetchResponse;
   };
@@ -374,7 +379,37 @@ const stubbedClients = () => {
 
   return () => ({
     github: new taskcluster.Github(options),
-    hooks: new taskcluster.Hooks(options),
+    hooks: new taskcluster.Hooks({
+      ...options,
+      fake: {
+        createHook: async (hookGroupId, hookId, payload) => {
+          return Promise.resolve({
+            hookGroupId,
+            hookId,
+            payload,
+          });
+        },
+        hook: async (hookGroupId, hookId) => {
+          return Promise.resolve({
+            hookGroupId,
+            hookId,
+          });
+        },
+        listLastFires: async (hookGroupId, hookId, filter) => {
+          const taskStates = ['unscheduled', 'pending', 'running', 'completed', 'failed', 'exception', 'unknown'];
+          const fireResults = ['success', 'error', 'no-fire'];
+          const lastFires = taskStates.map((taskState, i) => ({
+            hookGroupId,
+            hookId,
+            taskId: taskcluster.slugid(),
+            taskState,
+            result: fireResults[i % fireResults.length],
+            error: '',
+          }));
+          return Promise.resolve({ lastFires });
+        },
+      },
+    }),
     index: new taskcluster.Index(options),
     purgeCache: new taskcluster.PurgeCache(options),
     secrets: new taskcluster.Secrets(options),
