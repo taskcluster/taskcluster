@@ -279,6 +279,7 @@ export class AzureProvider extends Provider {
       'microsoft_rsa_tls_ca_1.pem',
       'microsoft_rsa_tls_ca_2.pem',
       'microsoft_azure_tls_issuing_ca_01_xsign.pem',
+      'microsoft_azure_tls_issuing_ca_05_xsign.pem',
     ].map(f => fs.readFileSync(path.resolve(__dirname, 'azure-ca-certs', f)));
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
