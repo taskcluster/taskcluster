@@ -880,17 +880,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     test('lists lastfires and reports "unknown" for task status', async () => {
       const taskIds = [];
-      taskIds.push(lastFire.taskId);
-      await appendLastFire(lastFire);
-      for (let i = 1;i <= 2;i++) {
+      const hookGroupId = 'test-listLastFiresState';
+      for (let i = 0; i < 2; i++) {
         taskIds.push(taskcluster.slugid());
         await appendLastFire({ ...lastFire,
+          hookGroupId,
           taskId: taskIds[i],
           taskCreateTime: new Date(),
         });
       }
-      const { lastFires } = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
-      assume(lastFires[0].taskState).equals('unknown');
+      await createTask(taskIds[1], 'unscheduled'); // set the last one
+      const { lastFires } = await helper.hooks.listLastFires(hookGroupId, lastFire.hookId);
+      assume(lastFires[0].taskState).equals('unscheduled'); // it will be the most recent
       assume(lastFires[1].taskState).equals('unknown');
     });
   });

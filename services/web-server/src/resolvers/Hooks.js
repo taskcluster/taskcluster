@@ -30,6 +30,7 @@ export default {
     COMPLETED: 'completed',
     FAILED: 'failed',
     EXCEPTION: 'exception',
+    UNKNOWN: 'unknown', // task not found
   },
   Hook: {
     status({ hookGroupId, hookId }, args, { loaders }) {
