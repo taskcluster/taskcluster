@@ -12,7 +12,8 @@ additional steps are needed.
 To update the node version:
 
 * Install the new node version, such as `nvm install --lts`
-* Install yarn, such as `npm install -g yarn`
+* Enable [corepack](https://nodejs.org/api/corepack.html): `corepack enable`
+* Set yarn version: `yarn set version berry`
 * Update `package.json`
 * Run `yarn install`
 * Run `yarn generate`

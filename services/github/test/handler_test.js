@@ -772,7 +772,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
-      assert(args[0][0].body.indexOf('data/tasks should be array') !== -1);
+      assert(args[0][0].body.indexOf('data/tasks must be array') !== -1);
     });
 
     test('invalid YAML results in a comment', async function () {
@@ -790,7 +790,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
-      assert(args[0][0].body.indexOf('data should NOT have additional properties') !== -1);
+      assert(args[0][0].body.indexOf('data must NOT have additional properties') !== -1);
     });
 
     test('error creating task is reported correctly', async function () {

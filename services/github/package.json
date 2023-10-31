@@ -8,6 +8,11 @@
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "lint": "eslint src/*.js test/*.js",
-    "test": "export NODE_OPTIONS=--dns-result-order=ipv4first && mocha test/*_test.js"
+    "test": "NODE_OPTIONS=--dns-result-order=ipv4first mocha test/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
   }
 }

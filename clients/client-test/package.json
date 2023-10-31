@@ -8,8 +8,12 @@
     "test": "mocha test/*_test.js"
   },
   "devDependencies": {
-    "taskcluster-db": "link:db",
+    "http-proxy": "^1.18.0",
+    "mocha": "^10.2.0",
+    "nock": "^13.0.0",
+    "stream-buffers": "^3.0.2",
     "taskcluster-client": "link:../client",
+    "taskcluster-db": "link:db",
     "taskcluster-lib-api": "link:../libraries/api",
     "taskcluster-lib-app": "link:../libraries/app",
     "taskcluster-lib-config": "link:../libraries/config",
@@ -19,14 +23,10 @@
     "taskcluster-lib-postgres": "link:../libraries/postgres",
     "taskcluster-lib-pulse": "link:../libraries/pulse",
     "taskcluster-lib-references": "link:../libraries/references",
-    "taskcluster-lib-validate": "link:../libraries/validate",
-    "taskcluster-lib-testing": "link:../libraries/testing",
     "taskcluster-lib-scopes": "^11.0.0",
+    "taskcluster-lib-testing": "link:../libraries/testing",
     "taskcluster-lib-urls": "^13.0.0",
-    "http-proxy": "^1.18.0",
-    "mocha": "^10.2.0",
-    "nock": "^13.0.0",
-    "stream-buffers": "^3.0.2"
+    "taskcluster-lib-validate": "link:../libraries/validate"
   },
   "engines": {
     "node": "18.18.1"

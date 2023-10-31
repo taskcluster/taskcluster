@@ -6,11 +6,13 @@ import {
   modifyRepoYAML,
 } from '../../utils/index.js';
 
+export const tasks = [];
+
 /**
  * Update the node version to match everywhere, treating that in `package.json`
  * as authoritative.
  */
-export const tasks = [{
+tasks.push({
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
@@ -80,4 +82,32 @@ export const tasks = [{
         return contents;
       });
   },
-}];
+});
+
+/**
+ * Update the yarn version to match everywhere, treating that in `package.json`
+ * as authoritative.
+ */
+tasks.push({
+  title: 'Yarn Version',
+  provides: ['target-yarn-version'],
+  run: async (requirements, utils) => {
+    const yarnVersion = JSON.parse(await readRepoFile('package.json')).packageManager;
+    if (!yarnVersion || !yarnVersion.match(/yarn@[0-9.]+/)) {
+      throw new Error(`invalid yarn version ${yarnVersion} in package.json`);
+    }
+    utils.step({ title: `Setting yarn version ${yarnVersion}` });
+
+    [
+      'ui/package.json',
+      'workers/docker-worker/package.json',
+    ].forEach(file => {
+      utils.status({ message: file });
+      modifyRepoJSON(file,
+        contents => {
+          contents.packageManager = yarnVersion;
+          return contents;
+        });
+    });
+  },
+});

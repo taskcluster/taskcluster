@@ -12,5 +12,12 @@
     "start": "cross-env NODE_ENV=development node src/main.js devServer",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha test/*_test.js test/**/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.52.0",
+    "eslint-formatter-codeframe": "^7.32.1",
+    "mocha": "^10.2.0"
   }
 }

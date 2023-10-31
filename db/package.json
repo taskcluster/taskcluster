@@ -8,5 +8,10 @@
     "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src/*.js src/**/*.js test/*_test.js test/**/*.js"
   },
-  "exports": "./src/index.js"
+  "exports": "./src/index.js",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.52.0",
+    "mocha": "^10.2.0"
+  }
 }

@@ -1,4 +1,5 @@
 node_modules
+install-state.gz
 .eslintcache
 user-build-config.yml
 *.log
@@ -34,6 +35,7 @@ _testmain.go
 
 # Coverage report
 /coverage.report
+coverage
 
 # Created by generic worker tests
 /downloads/

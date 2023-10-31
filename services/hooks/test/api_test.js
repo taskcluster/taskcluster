@@ -182,7 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => {
-          if (!/should have required property 'routingKeyPattern'/.test(err)) {
+          if (!/must have required property 'routingKeyPattern'/.test(err)) {
             throw err;
           }
         });
@@ -195,7 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => {
-          if (!/should be array/.test(err)) {
+          if (!/must be array/.test(err)) {
             throw err;
           }
         });
@@ -697,7 +697,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => { throw new Error('Expected an error'); },
         (err) => {
           debug('Got expected error: %s', err);
-          assert(/should be/.test(err.message));
+          assert(/must be/.test(err.message));
         });
     });
 
@@ -723,7 +723,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => { throw new Error('Expected an error'); },
         (err) => {
           debug('Got expected error: %s', err);
-          assert(/should be/.test(err.message));
+          assert(/must be/.test(err.message));
         });
     });
   });
