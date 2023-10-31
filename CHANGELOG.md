@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v57.0.1
+
+### GENERAL
+
+▶ [patch]
+Expired azure test certificates updated
+
+▶ [patch]
+Fix hooks UI page "unknown" task state error.
+
+▶ [patch] [#6636](https://github.com/taskcluster/taskcluster/issues/6636)
+Fix Dockerfile from PR #6646. The `.yarn` directory does not exist anymore, so it shouldn't be copied.
+
+### DEVELOPERS
+
+▶ [patch] [#6636](https://github.com/taskcluster/taskcluster/issues/6636)
+Upgrades to modern Yarn version 4.
+
+To enable on your machine:
+
+```bash
+corepack enable
+yarn set version berry
+```
+
 ## v57.0.0
 
 ### GENERAL
