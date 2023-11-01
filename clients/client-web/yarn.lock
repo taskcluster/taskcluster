@@ -849,13 +849,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-colors@npm:^3.0.0":
-  version: 3.2.4
-  resolution: "ansi-colors@npm:3.2.4"
-  checksum: 1785466547bac3b1cb8055325a415c8c946a818669da4fd3d1247cab7617b845b221c2ae04756277074d278b52d90efd67f73d2dd927c7a0d1a10395c1b7665b
-  languageName: node
-  linkType: hard
-
 "ansi-regex@npm:^3.0.0":
   version: 3.0.1
   resolution: "ansi-regex@npm:3.0.1"
@@ -3619,19 +3612,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"karma-webpack@npm:^4.0.2":
-  version: 4.0.2
-  resolution: "karma-webpack@npm:4.0.2"
+"karma-webpack@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "karma-webpack@npm:5.0.0"
   dependencies:
-    clone-deep: "npm:^4.0.1"
-    loader-utils: "npm:^1.1.0"
-    neo-async: "npm:^2.6.1"
-    schema-utils: "npm:^1.0.0"
-    source-map: "npm:^0.7.3"
-    webpack-dev-middleware: "npm:^3.7.0"
+    glob: "npm:^7.1.3"
+    minimatch: "npm:^3.0.4"
+    webpack-merge: "npm:^4.1.5"
   peerDependencies:
-    webpack: ^4.0.0
-  checksum: a0cd74127c373cc1e08b328e55ecd988bda3353eda9e05d4ceb241dfd8b4029e661ed54e8e08bad00adc131cb615c9b4833a73f294d0ccbe1740a256bda5dcfd
+    webpack: ^5.0.0
+  checksum: 82e6169e137444cd61cf3f4f43e3bd5f8766519f7708acc43e4031f1ddffa25dcee390aaae9a1635b3fa5db0e1d6198d8f2ab28cfac859e107f3b4eeba68d54d
   languageName: node
   linkType: hard
 
@@ -3718,7 +3708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loader-utils@npm:^1.1.0, loader-utils@npm:^1.2.3":
+"loader-utils@npm:^1.2.3":
   version: 1.4.2
   resolution: "loader-utils@npm:1.4.2"
   dependencies:
@@ -3764,7 +3754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.21":
+"lodash@npm:^4.17.15, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
@@ -3973,7 +3963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime@npm:^2.4.4, mime@npm:^2.5.2":
+"mime@npm:^2.5.2":
   version: 2.6.0
   resolution: "mime@npm:2.6.0"
   bin:
@@ -5406,13 +5396,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map@npm:^0.7.3":
-  version: 0.7.3
-  resolution: "source-map@npm:0.7.3"
-  checksum: 7d2ddb51f3d2451847692a9ac7808da2b2b3bf7aef92ece33128919040a7e74d9a5edfde7a781f035c974deff876afaf83f2e30484faffffb86484e7408f5d7c
-  languageName: node
-  linkType: hard
-
 "split-on-first@npm:^1.0.0":
   version: 1.1.0
   resolution: "split-on-first@npm:1.1.0"
@@ -5647,7 +5630,7 @@ __metadata:
     karma-mocha: "npm:^2.0.1"
     karma-mocha-reporter: "npm:^2.2.5"
     karma-sourcemap-loader: "npm:^0.4.0"
-    karma-webpack: "npm:^4.0.2"
+    karma-webpack: "npm:^5.0.0"
     query-string: "npm:^7.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
     webpack: "npm:^4.47.0"
@@ -6002,15 +5985,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^3.3.2":
-  version: 3.4.0
-  resolution: "uuid@npm:3.4.0"
-  bin:
-    uuid: ./bin/uuid
-  checksum: 1c13950df865c4f506ebfe0a24023571fa80edf2e62364297a537c80af09c618299797bbf2dbac6b1f8ae5ad182ba474b89db61e0e85839683991f7e08795347
-  languageName: node
-  linkType: hard
-
 "vary@npm:^1":
   version: 1.1.2
   resolution: "vary@npm:1.1.2"
@@ -6091,28 +6065,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-dev-middleware@npm:^3.7.0":
-  version: 3.7.3
-  resolution: "webpack-dev-middleware@npm:3.7.3"
+"webpack-merge@npm:^4.1.5":
+  version: 4.2.2
+  resolution: "webpack-merge@npm:4.2.2"
   dependencies:
-    memory-fs: "npm:^0.4.1"
-    mime: "npm:^2.4.4"
-    mkdirp: "npm:^0.5.1"
-    range-parser: "npm:^1.2.1"
-    webpack-log: "npm:^2.0.0"
-  peerDependencies:
-    webpack: ^4.0.0 || ^5.0.0
-  checksum: f9bd8318c6f356d006dc99e3e46ef8870d67640e43f26cfcd2bb36c9e7eaf64015513f43498e92b532896f7fbd8f32c0710d4489fc81d7a45ea328d7e4cf3085
-  languageName: node
-  linkType: hard
-
-"webpack-log@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "webpack-log@npm:2.0.0"
-  dependencies:
-    ansi-colors: "npm:^3.0.0"
-    uuid: "npm:^3.3.2"
-  checksum: 515b800433da1c0b5722317baaeb05fc185da5a1fde5e39d25bed0b05c13ee3a544aa13844db8590696274a3c5dc04fd5abdd39f38f8c46a4084b74ff0dc9c60
+    lodash: "npm:^4.17.15"
+  checksum: 283cb4ffe4d4ae6de23d595154868780126835ded241748da0b070c6cca6974c229493ac0b6b7160c2c92950c950c8e5edf036a192da78e32e22a9c81593ad16
   languageName: node
   linkType: hard
 
