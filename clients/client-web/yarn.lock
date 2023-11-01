@@ -39,7 +39,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.12.3, @babel/core@npm:^7.23.0":
+"@babel/core@npm:^7.12.3":
   version: 7.23.0
   resolution: "@babel/core@npm:7.23.0"
   dependencies:
@@ -59,6 +59,29 @@ __metadata:
     json5: "npm:^2.2.3"
     semver: "npm:^6.3.1"
   checksum: ba3604b28de28cdb07d7829f67127b03ad2e826c4e28a0560a037c8bbe16b8dc8cdb8baf344e916ad3c28c63aab88c1a1a38f5e3df6047ab79c910b41bb3a4e8
+  languageName: node
+  linkType: hard
+
+"@babel/core@npm:^7.23.2":
+  version: 7.23.2
+  resolution: "@babel/core@npm:7.23.2"
+  dependencies:
+    "@ampproject/remapping": "npm:^2.2.0"
+    "@babel/code-frame": "npm:^7.22.13"
+    "@babel/generator": "npm:^7.23.0"
+    "@babel/helper-compilation-targets": "npm:^7.22.15"
+    "@babel/helper-module-transforms": "npm:^7.23.0"
+    "@babel/helpers": "npm:^7.23.2"
+    "@babel/parser": "npm:^7.23.0"
+    "@babel/template": "npm:^7.22.15"
+    "@babel/traverse": "npm:^7.23.2"
+    "@babel/types": "npm:^7.23.0"
+    convert-source-map: "npm:^2.0.0"
+    debug: "npm:^4.1.0"
+    gensync: "npm:^1.0.0-beta.2"
+    json5: "npm:^2.2.3"
+    semver: "npm:^6.3.1"
+  checksum: 14ad6e0a3ac0085dc008e7fb0c8513f0a3e39f2ab883a964a89ef1311338d49cf085c94cb6165c07fdec0fdcc6e865ce4811253c479f9f45ac375226dfe3ad3b
   languageName: node
   linkType: hard
 
@@ -187,6 +210,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/helpers@npm:^7.23.2":
+  version: 7.23.2
+  resolution: "@babel/helpers@npm:7.23.2"
+  dependencies:
+    "@babel/template": "npm:^7.22.15"
+    "@babel/traverse": "npm:^7.23.2"
+    "@babel/types": "npm:^7.23.0"
+  checksum: 3a6a939c5277a27486e7c626812f0643b35d1c053ac2eb66911f5ae6c0a4e4bcdd40750eba36b766b0ee8a753484287f50ae56232a5f8f2947116723e44b9e35
+  languageName: node
+  linkType: hard
+
 "@babel/highlight@npm:^7.22.13":
   version: 7.22.13
   resolution: "@babel/highlight@npm:7.22.13"
@@ -218,7 +252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/traverse@npm:^7.23.0":
+"@babel/traverse@npm:^7.23.0, @babel/traverse@npm:^7.23.2":
   version: 7.23.2
   resolution: "@babel/traverse@npm:7.23.2"
   dependencies:
@@ -296,10 +330,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.50.0":
-  version: 8.50.0
-  resolution: "@eslint/js@npm:8.50.0"
-  checksum: 92cb0a823869e85f287bd172f14a6a20d7d65c3f4db886a0356a9efebfe8fe519e9ead84a5687bd18f45eca417bdcce96e3b83fe3feae8baf0f8f44d14073bae
+"@eslint/js@npm:8.52.0":
+  version: 8.52.0
+  resolution: "@eslint/js@npm:8.52.0"
+  checksum: cdcf8f9b54994fe1a5dc086c714a75dca5fe5899f9b362986abd12b3b5bec9c9755f7608e663ce072edd3fa3910cc752afef8d149fda0288a477652b65865a1c
   languageName: node
   linkType: hard
 
@@ -344,14 +378,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@humanwhocodes/config-array@npm:^0.11.11":
-  version: 0.11.11
-  resolution: "@humanwhocodes/config-array@npm:0.11.11"
+"@humanwhocodes/config-array@npm:^0.11.13":
+  version: 0.11.13
+  resolution: "@humanwhocodes/config-array@npm:0.11.13"
   dependencies:
-    "@humanwhocodes/object-schema": "npm:^1.2.1"
+    "@humanwhocodes/object-schema": "npm:^2.0.1"
     debug: "npm:^4.1.1"
     minimatch: "npm:^3.0.5"
-  checksum: 4195f68e485f7d1a7c95cf0f126cc41f7223eeda2f1b46b893123c99b35bb76145c37d25e2ba452d54815ed69bb656c0ce9e343ffa984470c08afa6e82a4713f
+  checksum: d76ca802d853366094d0e98ff0d0994117fc8eff96649cd357b15e469e428228f597cd2e929d54ab089051684949955f16ee905bb19f7b2f0446fb377157be7a
   languageName: node
   linkType: hard
 
@@ -362,10 +396,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@humanwhocodes/object-schema@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@humanwhocodes/object-schema@npm:1.2.1"
-  checksum: c3c35fdb70c04a569278351c75553e293ae339684ed75895edc79facc7276e351115786946658d78133130c0cca80e57e2203bc07f8fa7fe7980300e8deef7db
+"@humanwhocodes/object-schema@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@humanwhocodes/object-schema@npm:2.0.1"
+  checksum: 9dba24e59fdb4041829d92b693aacb778add3b6f612aaa9c0774f3b650c11a378cc64f042a59da85c11dae33df456580a3c36837b953541aed6ff94294f97fac
   languageName: node
   linkType: hard
 
@@ -507,6 +541,13 @@ __metadata:
   version: 18.11.9
   resolution: "@types/node@npm:18.11.9"
   checksum: aeaa925406f841c41679b32def9391a9892171e977105e025050e9f66e2830b4c50d0d974a1af0077ead3337a1f3bdf49ee7e7f402ebf2e034a3f97d9d240dba
+  languageName: node
+  linkType: hard
+
+"@ungap/structured-clone@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@ungap/structured-clone@npm:1.2.0"
+  checksum: 8209c937cb39119f44eb63cf90c0b73e7c754209a6411c707be08e50e29ee81356dca1a848a405c8bdeebfe2f5e4f831ad310ae1689eeef65e7445c090c6657d
   languageName: node
   linkType: hard
 
@@ -2232,17 +2273,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.50.0":
-  version: 8.50.0
-  resolution: "eslint@npm:8.50.0"
+"eslint@npm:^8.52.0":
+  version: 8.52.0
+  resolution: "eslint@npm:8.52.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.2.0"
     "@eslint-community/regexpp": "npm:^4.6.1"
     "@eslint/eslintrc": "npm:^2.1.2"
-    "@eslint/js": "npm:8.50.0"
-    "@humanwhocodes/config-array": "npm:^0.11.11"
+    "@eslint/js": "npm:8.52.0"
+    "@humanwhocodes/config-array": "npm:^0.11.13"
     "@humanwhocodes/module-importer": "npm:^1.0.1"
     "@nodelib/fs.walk": "npm:^1.2.8"
+    "@ungap/structured-clone": "npm:^1.2.0"
     ajv: "npm:^6.12.4"
     chalk: "npm:^4.0.0"
     cross-spawn: "npm:^7.0.2"
@@ -2275,7 +2317,7 @@ __metadata:
     text-table: "npm:^0.2.0"
   bin:
     eslint: bin/eslint.js
-  checksum: 91629528cb240bc61b25480574d35cd54ed444cb61a70fa76f7d5ab26af2b637b94bf8fba94403c9052c1baa944a169b6ab9cc8070496e925f7eeef730ff9038
+  checksum: 9269b32ccf6e9947d994f871888d5b541da4a8539160ee19d80ecac0c70c51a7d3a7c111a58cf1adf81f093a7c1b5564edefa5c6dbe29b1df9c9f3e30700af30
   languageName: node
   linkType: hard
 
@@ -5633,12 +5675,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "taskcluster-client-web@workspace:."
   dependencies:
-    "@babel/core": "npm:^7.23.0"
+    "@babel/core": "npm:^7.23.2"
     chai: "npm:^4.3.10"
     chai-as-promised: "npm:^7.1.1"
     crypto-js: "npm:^4.2.0"
     dotenv: "npm:^16.3.1"
-    eslint: "npm:^8.50.0"
+    eslint: "npm:^8.52.0"
     hawk: "npm:^9.0.1"
     karma: "npm:^6.4.2"
     karma-cli: "npm:^2.0.0"
