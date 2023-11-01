@@ -1,0 +1,38 @@
+---
+testSuite:
+  name: Environment variable escaping test
+  description: Test that environment variables are properly escaped.
+  payloadTests:
+    - name: Env escaping test
+      description: >-
+        If an environment variable contains spaces or special characters,
+        it should be escaped before passing to the podman run command.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image: ubuntu
+        maxRunTime: 3600
+        env:
+          test123 --help ; whoami ;: testing
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run -t --rm
+              -e RUN_ID
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_ID
+              -e 'test123 --help ; whoami ;'
+              ubuntu 'echo "Hello world"'
+        env:
+          test123 --help ; whoami ;: testing
+        features:
+          backingLog: true
+          liveLog: true
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+  taskDefTests: []

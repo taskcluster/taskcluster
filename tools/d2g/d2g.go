@@ -451,7 +451,7 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 }
 
 func podmanEnvSetting(envVarName string) string {
-	return fmt.Sprintf(" -e %s", envVarName)
+	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
 }
 
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
