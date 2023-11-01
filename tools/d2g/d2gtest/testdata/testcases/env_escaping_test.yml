@@ -13,21 +13,21 @@ testSuite:
         image: ubuntu
         maxRunTime: 3600
         env:
-          test123 --help ; whoami ;: testing
+          ' test123 --help  ; whoami ; ': testing
       genericWorkerTaskPayload:
         command:
           - - bash
             - '-cx'
             - >-
               podman run -t --rm
+              -e ' test123 --help  ; whoami ; '
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID
-              -e 'test123 --help ; whoami ;'
               ubuntu 'echo "Hello world"'
         env:
-          test123 --help ; whoami ;: testing
+          ' test123 --help  ; whoami ; ': testing
         features:
           backingLog: true
           liveLog: true
