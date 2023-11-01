@@ -985,7 +985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+"lodash@npm:^4.17.4":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
@@ -1248,14 +1248,13 @@ __metadata:
   linkType: hard
 
 "nock@npm:^13.0.0":
-  version: 13.3.3
-  resolution: "nock@npm:13.3.3"
+  version: 13.3.7
+  resolution: "nock@npm:13.3.7"
   dependencies:
     debug: "npm:^4.1.0"
     json-stringify-safe: "npm:^5.0.1"
-    lodash: "npm:^4.17.21"
     propagate: "npm:^2.0.0"
-  checksum: c6e53164d21708533d48f507da25586493b51f869adacc12fd9f2cfd1516a1ed4005b024cc668c6f37f5d68e9749cda16ebc454d3c7c71e6eb26ca1c866997ee
+  checksum: ec5b0b67eb46d4a9871927b9cf3ba43a3e9b4a3a8763a9db371e3103d6f5b532f40087170e9189a86320c0113e16de7e41999fb5beb85539d32e99e0d1f80164
   languageName: node
   linkType: hard
 
