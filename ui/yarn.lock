@@ -11437,12 +11437,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdi-react@npm:^6.2.0, mdi-react@npm:^6.7.0":
+"mdi-react@npm:^6.7.0":
   version: 6.7.0
   resolution: "mdi-react@npm:6.7.0"
   peerDependencies:
     react: ">=0.14.0"
   checksum: fad730cd8090b7f87eb0255cab7af4f2ff43de1cf9b9350570ed3e0c1f6caf5df00eb26f3ed20a9894ee8bd4f17b789d01f069643869b9afb3474959832440df
+  languageName: node
+  linkType: hard
+
+"mdi-react@npm:^9.3.0":
+  version: 9.3.0
+  resolution: "mdi-react@npm:9.3.0"
+  peerDependencies:
+    react: ">=0.14.0"
+  checksum: b6aeeac33cd8325f6f3f7176e102a36a9156f06179a88c493f5ffa0909da7278fded929a263db5471c9c63d38d8a436a2bfde90bc991e89430775c23ac991833
   languageName: node
   linkType: hard
 
@@ -15721,7 +15730,7 @@ __metadata:
     markdown-it-highlightjs: "npm:^3.0.0"
     markdown-it-link-attributes: "npm:^3.0.0"
     material-ui-json-schema-viewer: "npm:^2.0.0"
-    mdi-react: "npm:^6.2.0"
+    mdi-react: "npm:^9.3.0"
     mdx-loader: "npm:^3.0.2"
     mitt: "npm:^2.0.0"
     mocha: "npm:^9.2.2"
