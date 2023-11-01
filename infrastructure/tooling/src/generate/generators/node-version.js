@@ -1,7 +1,6 @@
 import {
   readRepoFile,
   modifyRepoFile,
-  writeRepoFile,
   modifyRepoJSON,
   modifyRepoYAML,
 } from '../../utils/index.js';
@@ -9,16 +8,16 @@ import {
 export const tasks = [];
 
 /**
- * Update the node version to match everywhere, treating that in `package.json`
+ * Update the node version to match everywhere, treating that in `.nvmrc`
  * as authoritative.
  */
 tasks.push({
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
-    const nodeVersion = JSON.parse(await readRepoFile('package.json')).engines.node;
-    if (!nodeVersion || !nodeVersion.match(/[0-9.]+/)) {
-      throw new Error(`invalid node version ${nodeVersion} in package.json`);
+    const nodeVersion = (await readRepoFile('.nvmrc')).trim();
+    if (!nodeVersion?.match(/[0-9.]+/)) {
+      throw new Error(`invalid node version ${nodeVersion} in .nvmrc`);
     }
     utils.step({ title: `Setting node version ${nodeVersion}` });
 
@@ -46,9 +45,6 @@ tasks.push({
         /^FROM node:[0-9.]+(.*)$/gm,
         `FROM node:${nodeVersion}$1`));
 
-    utils.status({ message: '.nvmrc' });
-    await writeRepoFile('.nvmrc', nodeVersion + '\n');
-
     utils.status({ message: 'dev-docs/development-process.md' });
     await modifyRepoFile('dev-docs/development-process.md',
       contents => contents.replace(
@@ -62,6 +58,7 @@ tasks.push({
         `$1${nodeVersion}$2`));
 
     [
+      'package.json',
       'ui/package.json',
       'workers/docker-worker/package.json',
       'clients/client/package.json',
@@ -93,7 +90,7 @@ tasks.push({
   provides: ['target-yarn-version'],
   run: async (requirements, utils) => {
     const yarnVersion = JSON.parse(await readRepoFile('package.json')).packageManager;
-    if (!yarnVersion || !yarnVersion.match(/yarn@[0-9.]+/)) {
+    if (!yarnVersion?.match(/yarn@[0-9.]+/)) {
       throw new Error(`invalid yarn version ${yarnVersion} in package.json`);
     }
     utils.step({ title: `Setting yarn version ${yarnVersion}` });

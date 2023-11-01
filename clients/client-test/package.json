@@ -29,7 +29,7 @@
     "taskcluster-lib-validate": "link:../libraries/validate"
   },
   "engines": {
-    "node": "18.18.1"
+    "node": "20.9.0"
   },
   "type": "module"
 }

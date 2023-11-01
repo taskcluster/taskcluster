@@ -14,8 +14,7 @@ To update the node version:
 * Install the new node version, such as `nvm install --lts`
 * Enable [corepack](https://nodejs.org/api/corepack.html): `corepack enable`
 * Set yarn version: `yarn set version berry`
-* Update `package.json`
-* Run `yarn install`
+* Update `.nvmrc`
 * Run `yarn generate`
 * Create a changelog file and commit
 * Build and push new images (see below)
