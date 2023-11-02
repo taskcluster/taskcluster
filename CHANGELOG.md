@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v57.1.0
+
+### GENERAL
+
+▶ [minor] [#2939](https://github.com/taskcluster/taskcluster/issues/2939)
+Introduces `queue.listPendingTasks(taskQueueId)` and `queue.listClaimedTasks(taskQueueId)`.
+Those endpoints return a list of tasks that are currently pending or claimed by workers.
+
+New scopes introduced for those endpoints:
+- `queue:pending-list:<taskQueueId>`
+- `queue:claimed-list:<taskQueueId>`
+
+▶ [patch] [#6656](https://github.com/taskcluster/taskcluster/issues/6656)
+D2G now shell escapes environment variable key names in case they contain spaces or special characters that would previously mess up the `podman run...` command.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps-dev): bump the deps group (ef65976fe)
+* build(deps): bump taskcluster from 55.3.2 to 57.0.1 in /taskcluster (dfbcf2cac)
+* build(deps): bump the deps group with 3 updates (79ce5c89b)
+
+</details>
+
 ## v57.0.1
 
 ### GENERAL
