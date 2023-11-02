@@ -1,7 +1,8 @@
+import fs from 'fs';
 import path from 'path';
 import aws from 'aws-sdk';
 import { fork } from 'child_process';
-import mockFs from 'mock-fs';
+import { mock } from 'node:test';
 import assert from 'assert';
 import testing from 'taskcluster-lib-testing';
 import MonitorManager from '../src/monitormanager.js';
@@ -35,7 +36,7 @@ suite(testing.suiteName(), function() {
   teardown(function() {
     errorBucket.splice(0);
     monitorManager.reset();
-    mockFs.restore();
+    mock.restoreAll();
   });
 
   suite('timer', function() {
@@ -485,9 +486,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('dockerflow version file', async () => {
-    mockFs({
-      '../../version.json': JSON.stringify({ version: 'whatever' }),
-    });
+    mock.method(fs, 'readFileSync', () => JSON.stringify({ version: 'whatever' }));
     const monitor = MonitorManager.setup({
       serviceName: 'testing-service',
       level: 'debug',
