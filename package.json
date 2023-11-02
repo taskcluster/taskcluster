@@ -128,7 +128,6 @@
     "apollo-link-ws": "^1.0.19",
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
-    "builtin-modules": "^3.1.0",
     "c8": "^8.0.1",
     "commander": "^9.4.1",
     "console-taskgraph": "^1.7.2",

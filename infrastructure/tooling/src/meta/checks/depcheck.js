@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { gitLsFiles, readRepoFile } from '../../utils/index.js';
 import * as acorn from 'acorn-loose';
 import * as walk from 'acorn-walk';
-import builtinModules from 'builtin-modules';
+import { isBuiltin } from 'node:module';
 import stringify from 'fast-json-stable-stringify';
 
 const __filename = new URL('', import.meta.url).pathname;
@@ -54,7 +54,7 @@ if (isMainThread) {
       packageName = packageName.split('/')[0];
     }
 
-    if (builtinModules.includes(packageName)) {
+    if (isBuiltin(packageName)) {
       return;
     }
 

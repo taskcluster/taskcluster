@@ -2727,13 +2727,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"builtin-modules@npm:^3.1.0":
-  version: 3.3.0
-  resolution: "builtin-modules@npm:3.3.0"
-  checksum: 2cb3448b4f7306dc853632a4fcddc95e8d4e4b9868c139400027b71938fc6806d4ff44007deffb362ac85724bd40c2c6452fb6a0aa4531650eeddb98d8e5ee8a
-  languageName: node
-  linkType: hard
-
 "bytes@npm:3.0.0":
   version: 3.0.0
   resolution: "bytes@npm:3.0.0"
@@ -9901,7 +9894,6 @@ __metadata:
     aws-sdk: "npm:^2.1426.0"
     body-parser: "npm:1.20.1"
     body-parser-graphql: "npm:^1.0.0"
-    builtin-modules: "npm:^3.1.0"
     c8: "npm:^8.0.1"
     chalk: "npm:^4.0.0"
     commander: "npm:^9.4.1"
