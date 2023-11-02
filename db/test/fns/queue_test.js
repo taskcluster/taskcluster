@@ -12,6 +12,67 @@ import taskcluster from 'taskcluster-client';
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });
 
+  const taskId = 'hOTDAv0gRfW6YA2hm4n5FQ';
+  const created = taskcluster.fromNow('0 hours');
+  const deadline = taskcluster.fromNow('1 hour');
+  const expires = taskcluster.fromNow('2 hours');
+  const create = async (db, options = {}) => {
+    await db.fns.create_task_projid(
+      options.taskId || taskId,
+      options.taskQueueId || 'prov/wt',
+      'sched',
+      options.projectId || 'proj',
+      options.taskGroupId || '0cM7dCL2Rpaz0wdnDG4LLg',
+      JSON.stringify(['jcy-h6_7SFuRuKLPByiFTg']),
+      'all-completed',
+      JSON.stringify(['index.foo']),
+      'high',
+      5,
+      created,
+      options.deadline || deadline,
+      options.expires || expires,
+      JSON.stringify(['a:scope']),
+      { payload: true },
+      { metadata: true },
+      JSON.stringify(["you're", "it"]),
+      { extra: true },
+    );
+  };
+
+  // fix 'runs' for easier assert.deepEqual, since dates are generated internally.  This
+  // replaces dates with the string "date".
+  const fixRuns = rows => {
+    rows = cloneDeep(rows);
+    for (let row of rows) {
+      for (let run of row.runs) {
+        for (let prop of ['scheduled', 'started', 'resolved', 'takenUntil']) {
+          if (prop in run && typeof run[prop] === 'string' && !isNaN(new Date(run[prop]))) {
+            run[prop] = 'date';
+          }
+        }
+      }
+    }
+    return rows;
+  };
+
+  const setTaskRuns = async (db, runs) => {
+    await helper.withDbClient(async client => {
+      await client.query('update tasks set runs = $2 where task_id = $1', [taskId, JSON.stringify(runs)]);
+    });
+  };
+
+  const setTaskTakenUntil = async (db, taken_until) => {
+    await helper.withDbClient(async client => {
+      await client.query('update tasks set taken_until = $2 where task_id = $1', [taskId, taken_until]);
+    });
+  };
+
+  const setTaskRetriesLeft = async (db, retries_left) => {
+    await helper.withDbClient(async client => {
+      await client.query('update tasks set retries_left = $2 where task_id = $1', [taskId, retries_left]);
+    });
+  };
+
   suite('tests for pending tasks', function() {
     setup('reset table', async function () {
       await helper.withDbClient(async client => {
@@ -102,6 +163,28 @@ suite(testing.suiteName(), function() {
         assert.deepEqual(res.rows[0], { count: '0' });
       });
     });
+
+    helper.dbTest('listing pending tasks', async function (db) {
+      const res = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', null, null, null);
+      assert.deepEqual(res, []);
+
+      for (let i = 0; i < 5; i++) {
+        const taskId = `taskId${i}`;
+        await db.fns.queue_pending_tasks_put('task/queue', 0, taskId, 0, 'hint1', fromNow('20 seconds'), 'queue-name-compat');
+        await create(db, { taskId });
+      }
+
+      const res2 = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', null, null, null);
+      assert.equal(res2.length, 5);
+      assert.equal(res2[0].task_id, 'taskId0');
+
+      // pagination should work
+      const res3 = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', 2, null, null);
+      assert.equal(res3.length, 2);
+
+      const res4 = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
+      assert.equal(res4.length, 2);
+    });
   });
 
   suite('tests for claimed tasks', function() {
@@ -166,6 +249,28 @@ suite(testing.suiteName(), function() {
       const result = await db.fns.queue_claimed_task_get(fromNow('10 seconds'), 1);
       assert.equal(result.length, 1);
       assert.equal(result[0].task_id, 't2');
+    });
+
+    helper.dbTest('listing claimed tasks', async function (db) {
+      const res = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', null, null, null);
+      assert.deepEqual(res, []);
+
+      for (let i = 0; i < 5; i++) {
+        const taskId = `taskClaimedId${i}`;
+        await db.fns.queue_claimed_task_put(taskId, 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+        await create(db, { taskId });
+      }
+
+      const res2 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', null, null, null);
+      assert.equal(res2.length, 5);
+      assert.equal(res2[0].task_id, 'taskClaimedId0');
+
+      // pagination should work
+      const res3 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', 2, null, null);
+      assert.equal(res3.length, 2);
+
+      const res4 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
+      assert.equal(res4.length, 2);
     });
   });
 
@@ -415,67 +520,6 @@ suite(testing.suiteName(), function() {
         assert(tgs[0].expires > expires);
       });
     });
-
-    const taskId = 'hOTDAv0gRfW6YA2hm4n5FQ';
-    const created = taskcluster.fromNow('0 hours');
-    const deadline = taskcluster.fromNow('1 hour');
-    const expires = taskcluster.fromNow('2 hours');
-    const create = async (db, options = {}) => {
-      await db.fns.create_task_projid(
-        options.taskId || taskId,
-        options.taskQueueId || 'prov/wt',
-        'sched',
-        options.projectId || 'proj',
-        options.taskGroupId || '0cM7dCL2Rpaz0wdnDG4LLg',
-        JSON.stringify(['jcy-h6_7SFuRuKLPByiFTg']),
-        'all-completed',
-        JSON.stringify(['index.foo']),
-        'high',
-        5,
-        created,
-        options.deadline || deadline,
-        options.expires || expires,
-        JSON.stringify(['a:scope']),
-        { payload: true },
-        { metadata: true },
-        JSON.stringify(["you're", "it"]),
-        { extra: true },
-      );
-    };
-
-    // fix 'runs' for easier assert.deepEqual, since dates are generated internally.  This
-    // replaces dates with the string "date".
-    const fixRuns = rows => {
-      rows = cloneDeep(rows);
-      for (let row of rows) {
-        for (let run of row.runs) {
-          for (let prop of ['scheduled', 'started', 'resolved', 'takenUntil']) {
-            if (prop in run && typeof run[prop] === 'string' && !isNaN(new Date(run[prop]))) {
-              run[prop] = 'date';
-            }
-          }
-        }
-      }
-      return rows;
-    };
-
-    const setTaskRuns = async (db, runs) => {
-      await helper.withDbClient(async client => {
-        await client.query('update tasks set runs = $2 where task_id = $1', [taskId, JSON.stringify(runs)]);
-      });
-    };
-
-    const setTaskTakenUntil = async (db, taken_until) => {
-      await helper.withDbClient(async client => {
-        await client.query('update tasks set taken_until = $2 where task_id = $1', [taskId, taken_until]);
-      });
-    };
-
-    const setTaskRetriesLeft = async (db, retries_left) => {
-      await helper.withDbClient(async client => {
-        await client.query('update tasks set retries_left = $2 where task_id = $1', [taskId, retries_left]);
-      });
-    };
 
     helper.dbTest('create_task_projid/get_task_projid', async function(db) {
       await create(db);

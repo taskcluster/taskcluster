@@ -1166,6 +1166,94 @@ func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Dur
 	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// List pending tasks for the given `taskQueueId`.
+//
+// As task states may change rapidly, this information might not represent the exact
+// state of such tasks, but a very good approximation.
+//
+// Required scopes:
+//
+//	queue:pending-list:<taskQueueId>
+//
+// See #listPendingTasks
+func (queue *Queue) ListPendingTasks(taskQueueId, continuationToken, limit string) (*ListPendingTasksResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/pending", new(ListPendingTasksResponse), v)
+	return responseObject.(*ListPendingTasksResponse), err
+}
+
+// Returns a signed URL for ListPendingTasks, valid for the specified duration.
+//
+// Required scopes:
+//
+//	queue:pending-list:<taskQueueId>
+//
+// See ListPendingTasks for more details.
+func (queue *Queue) ListPendingTasks_SignedURL(taskQueueId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/pending", v, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// List claimed tasks for the given `taskQueueId`.
+//
+// As task states may change rapidly, this information might not represent the exact
+// state of such tasks, but a very good approximation.
+//
+// Required scopes:
+//
+//	queue:claimed-list:<taskQueueId>
+//
+// See #listClaimedTasks
+func (queue *Queue) ListClaimedTasks(taskQueueId, continuationToken, limit string) (*ListClaimedTasksResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/claimed", new(ListClaimedTasksResponse), v)
+	return responseObject.(*ListClaimedTasksResponse), err
+}
+
+// Returns a signed URL for ListClaimedTasks, valid for the specified duration.
+//
+// Required scopes:
+//
+//	queue:claimed-list:<taskQueueId>
+//
+// See ListClaimedTasks for more details.
+func (queue *Queue) ListClaimedTasks_SignedURL(taskQueueId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/claimed", v, duration)
+}
+
 // Stability: *** DEPRECATED ***
 //
 // Get all active worker-types for the given provisioner.

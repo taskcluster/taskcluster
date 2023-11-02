@@ -94,8 +94,10 @@
    * [`expire_task_groups`](#expire_task_groups)
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
+   * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+   * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
    * [`get_task_group_size`](#get_task_group_size)
@@ -1319,8 +1321,10 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`expire_task_groups`](#expire_task_groups)
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
+* [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+* [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
 * [`get_task_group_size`](#get_task_group_size)
@@ -1729,6 +1733,44 @@ Returns a count of rows that have been deleted.
 Delete tasks with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
 
+### get_claimed_tasks_by_task_queue_id
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `page_size_in integer`
+  * `after_claimed_in timestamptz`
+  * `after_task_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  run_id integer`
+  * `  worker_group text`
+  * `  worker_id text`
+  * `  claimed timestamptz `
+* *Last defined on version*: 94
+
+Get all tasks that are currently claimed by workers in a given task queue.
+
 ### get_dependent_tasks
 
 * *Mode*: read
@@ -1775,6 +1817,47 @@ complex and expensive table scans.
 As table is very big doing a sequential scan without ordering is faster.
 Expired entities are expected to be deleted right after as this function
 doesn't support pagination with offsets.
+
+### get_pending_tasks_by_task_queue_id
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `page_size_in integer`
+  * `after_inserted_in timestamptz`
+  * `after_task_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  run_id integer`
+  * `  inserted timestamptz `
+* *Last defined on version*: 94
+
+Get all tasks that are currently pending in a given task queue.
+Records would be returned by insert time, or when tasks were scheduled.
+To iterate over all pending tasks, `after_inserted_in`, `after_task_id_in`
+parameters can be used.
+
+Full task record is being returned plus `inserted` for pagination purposes
 
 ### get_queue_artifact
 

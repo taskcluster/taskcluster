@@ -4472,6 +4472,66 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/list-pending-tasks-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `listPendingTasks` request.\n",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of dependent tasks.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listPendingTasks` with\n`continuationToken` until you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "tasks": {
+          "description": "List of tasks that are currently waiting for workers to be claimed.\nResults may not represent the actual state of the tasks,\nas they might be actively claimed by a worker.\n\nTasks are returned in inserted order.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "inserted": {
+                "format": "date-time",
+                "title": "Date and time when the task was inserted in the pending queue",
+                "type": "string"
+              },
+              "runId": {
+                "description": "Unique run identifier, this is a number between 0 and 1000 inclusive.\n",
+                "maximum": 1000,
+                "minimum": 0,
+                "title": "Run Identifier",
+                "type": "integer"
+              },
+              "task": {
+                "$ref": "task.json#"
+              },
+              "taskId": {
+                "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
+                "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                "title": "Task Identifier",
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskId",
+              "runId",
+              "task",
+              "inserted"
+            ],
+            "type": "object"
+          },
+          "title": "Tasks that are currently pending in a given task queue",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "tasks"
+      ],
+      "title": "List Pending Tasks Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/list-pending-tasks-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/list-dependent-tasks-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -4506,6 +4566,73 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/list-dependent-tasks-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/list-claimed-tasks-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from a `listClaimedTasks` request.\n",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of dependent tasks.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listClaimedTasks` with\n`continuationToken` until you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "tasks": {
+          "description": "List of tasks that are currently claimed by workers and are not yet resolved.\nResults might not represent the actual state of the tasks,\nas they might be currently resolved by a worker or claim-resolver.\n\nTasks are returned by claimed time, with the oldest claimed tasks first.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "claimed": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "runId": {
+                "description": "Unique run identifier, this is a number between 0 and 1000 inclusive.\n",
+                "maximum": 1000,
+                "minimum": 0,
+                "title": "Run Identifier",
+                "type": "integer"
+              },
+              "task": {
+                "$ref": "task.json#"
+              },
+              "taskId": {
+                "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
+                "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+                "title": "Task Identifier",
+                "type": "string"
+              },
+              "workerGroup": {
+                "type": "string"
+              },
+              "workerId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskId",
+              "runId",
+              "workerGroup",
+              "workerId",
+              "claimed",
+              "task"
+            ],
+            "type": "object"
+          },
+          "title": "Task that are currently running in a given task queue",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "tasks"
+      ],
+      "title": "List Claimed Tasks Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/list-claimed-tasks-response.json"
   },
   {
     "content": {
@@ -16762,6 +16889,44 @@
           "scopes": "queue:pending-count:<taskQueueId>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listPendingTasks",
+          "output": "v1/list-pending-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/pending",
+          "scopes": "queue:pending-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listClaimedTasks",
+          "output": "v1/list-claimed-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/claimed",
+          "scopes": "queue:claimed-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List claimed Tasks",
           "type": "function"
         },
         {

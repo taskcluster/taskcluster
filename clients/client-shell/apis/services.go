@@ -1797,6 +1797,38 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "listPendingTasks",
+				Title:       "List Pending Tasks",
+				Description: "List pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/task-queues/<taskQueueId>/pending",
+				Args: []string{
+					"taskQueueId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "listClaimedTasks",
+				Title:       "List claimed Tasks",
+				Description: "List claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/task-queues/<taskQueueId>/claimed",
+				Args: []string{
+					"taskQueueId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkerTypes",
 				Title:       "Get a list of all active worker-types",
 				Description: "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",
