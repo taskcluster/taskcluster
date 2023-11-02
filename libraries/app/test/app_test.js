@@ -1,14 +1,11 @@
+import fs from 'fs/promises';
 import assert from 'assert';
 import { App } from '../src/index.js';
 import request from 'superagent';
 import express from 'express';
 import isUUID from 'is-uuid';
 import testing from 'taskcluster-lib-testing';
-import path from 'path';
-import mockFs from 'mock-fs';
-
-const __dirname = new URL('.', import.meta.url).pathname;
-const REPO_ROOT = path.join(__dirname, '../../../');
+import { mock } from 'node:test';
 
 suite(testing.suiteName(), function() {
 
@@ -17,9 +14,7 @@ suite(testing.suiteName(), function() {
     let server;
 
     suiteSetup(async function() {
-      mockFs({
-        [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
-      });
+      mock.method(fs, 'readFile', async () => JSON.stringify({ version: 'v99.99.99' }));
 
       // this library expects an "api" to have an express method that sets it up..
       const fakeApi = {
@@ -118,7 +113,7 @@ suite(testing.suiteName(), function() {
     });
 
     teardown(function() {
-      mockFs.restore();
+      mock.restoreAll();
     });
 
     suiteTeardown(function() {
