@@ -328,8 +328,7 @@ CREATE TABLE queue_claimed_tasks (
     claimed timestamp with time zone NOT NULL,
     taken_until timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid,
-    message_id_compat uuid NOT NULL
+    pop_receipt uuid
 );
 ```
 
@@ -345,9 +344,7 @@ CREATE TABLE queue_pending_tasks (
     inserted timestamp with time zone NOT NULL,
     expires timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid,
-    queue_name_compat text NOT NULL,
-    message_id_compat uuid NOT NULL
+    pop_receipt uuid
 );
 ```
 
@@ -361,8 +358,7 @@ CREATE TABLE queue_resolved_tasks (
     resolution text NOT NULL,
     resolved timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid,
-    message_id_compat uuid NOT NULL
+    pop_receipt uuid
 );
 ```
 
@@ -376,8 +372,7 @@ CREATE TABLE queue_task_deadlines (
     created timestamp with time zone NOT NULL,
     deadline timestamp with time zone NOT NULL,
     visible timestamp with time zone NOT NULL,
-    pop_receipt uuid,
-    message_id_compat uuid NOT NULL
+    pop_receipt uuid
 );
 ```
 
