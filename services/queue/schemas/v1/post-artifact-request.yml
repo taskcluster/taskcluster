@@ -173,6 +173,7 @@ oneOf:
           - file-missing-on-worker
           - invalid-resource-on-worker
           - too-large-file-on-worker
+          - file-not-readable-on-worker
       message:
         description: |
           Human readable explanation of why the artifact is missing

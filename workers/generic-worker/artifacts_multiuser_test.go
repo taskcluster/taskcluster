@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	tcclient "github.com/taskcluster/taskcluster/v57/clients/client-go"
+	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/fileutil"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -326,5 +328,63 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		if string(b) == string(x) {
 			t.Fatalf("Protected artifact %v seems to have overridden content from X.txt in task %v", artifactName, taskID)
 		}
+	}
+}
+
+func TestPrivilegedFileUpload(t *testing.T) {
+	// This test shouldn't use an external taskcluster instance,
+	// as it depends on an updated queue service.
+	// Otherwise, the test will run into a schema validation
+	// failure due to fact that the post-artifact-request.yml
+	// schema on Community-TC doesn't have "file-not-readable-on-worker"
+	// reason as a valid option during the development of PR #6673.
+	useExternalTC := os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
+	err := os.Unsetenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
+	if err != nil {
+		t.Fatalf("Could not unset the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable: %v", err)
+	}
+	defer func() {
+		err := os.Setenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER", useExternalTC)
+		if err != nil {
+			t.Fatalf("Could not set the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable back to original value: %v", err)
+		}
+	}()
+
+	setup(t)
+
+	tempFile, err := os.CreateTemp(testdataDir, t.Name())
+	if err != nil {
+		t.Fatalf("Could not create temporary file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	err = fileutil.SecureFiles(tempFile.Name())
+	if err != nil {
+		t.Fatalf("Could not secure temporary file: %v", err)
+	}
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:    filepath.Join("../../../", filepath.Base(tempFile.Name())),
+				Expires: expires,
+				Type:    "file",
+				Name:    fmt.Sprintf("public/build/%s.txt", t.Name()),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	if config.RunTasksAsCurrentUser {
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	} else {
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
 	}
 }

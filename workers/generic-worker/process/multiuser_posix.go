@@ -113,14 +113,10 @@ func (r *Result) Crashed() bool {
 	return false
 }
 
-func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, platformData *PlatformData, setOutputStreams bool) (*Command, error) {
+func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	cmd := f()
 	cmd.Env = env
 	cmd.Dir = workingDirectory
-	if setOutputStreams {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
 	if platformData.SysProcAttr != nil {
 		attrs := *platformData.SysProcAttr
 		cmd.SysProcAttr = &attrs
@@ -137,16 +133,26 @@ func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory strin
 
 func NewCommand(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
+		cmd := exec.Command(commandLine[0], commandLine[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd
+	}
+	return newCommand(f, commandLine, workingDirectory, env, platformData)
+}
+
+func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
+	f := func() *exec.Cmd {
 		return exec.Command(commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, platformData, true)
+	return newCommand(f, commandLine, workingDirectory, env, platformData)
 }
 
 func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, platformData, false)
+	return newCommand(f, commandLine, workingDirectory, env, platformData)
 }
 
 func (c *Command) SetEnv(envVar, value string) {

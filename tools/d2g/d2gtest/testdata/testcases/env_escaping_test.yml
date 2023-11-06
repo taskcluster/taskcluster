@@ -28,9 +28,6 @@ testSuite:
               ubuntu 'echo "Hello world"'
         env:
           ' test123 --help  ; whoami ; ': testing
-        features:
-          backingLog: true
-          liveLog: true
         maxRunTime: 3600
         onExitStatus:
           retry:

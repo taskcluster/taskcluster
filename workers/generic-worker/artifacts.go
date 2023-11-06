@@ -9,8 +9,10 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
@@ -110,11 +112,11 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 }
 
 // File should be resolved as an S3Artifact if file exists as file and is
-// readable, otherwise i) if it does not exist or ii) cannot be read, as a
-// "file-missing-on-worker" ErrorArtifact, otherwise if it exists as a
-// directory, as "invalid-resource-on-worker" ErrorArtifact. A directory should
-// resolve as `nil` if directory exists as directory and is readable, otherwise
-// i) if it does not exist or ii) cannot be read, as a "file-missing-on-worker"
+// readable, otherwise i) if it does not exist as a "file-missing-on-worker" ErrorArtifact,
+// or ii) if it cannot be read by the task user, as a "file-not-readable-on-worker" ErrorArtifact,
+// otherwise if it exists as a directory, as an "invalid-resource-on-worker" ErrorArtifact.
+// A directory should resolve as `nil` if directory exists as directory and is readable,
+// otherwise i) if it does not exist or ii) cannot be read, as a "file-missing-on-worker"
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
@@ -160,6 +162,17 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 	if artifactType == "directory" {
 		return nil
 	}
+
+	tempPath, err := copyToTempFileAsTaskUser(fullPath)
+	if err != nil {
+		return &artifacts.ErrorArtifact{
+			BaseArtifact: base,
+			Message:      fmt.Sprintf("Could not copy file '%s' to temporary location as task user", fullPath),
+			Reason:       "file-not-readable-on-worker",
+			Path:         path,
+		}
+	}
+
 	// Is content type specified in task payload?
 	if contentType == "" {
 		extension := filepath.Ext(path)
@@ -208,7 +221,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 			contentEncoding = "gzip"
 		}
 	}
-	return createDataArtifact(base, fullPath, contentType, contentEncoding)
+	return createDataArtifact(base, fullPath, tempPath, contentType, contentEncoding)
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a
@@ -228,6 +241,7 @@ func canonicalPath(path string) string {
 func createDataArtifact(
 	base *artifacts.BaseArtifact,
 	path string,
+	contentPath string,
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
@@ -243,6 +257,7 @@ func createDataArtifact(
 	return &artifacts.S3Artifact{
 		BaseArtifact:    base,
 		Path:            path,
+		ContentPath:     contentPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
 	}
@@ -256,6 +271,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 				// logs expire when task expires
 				Expires: task.Definition.Expires,
 			},
+			path,
 			path,
 			"text/plain; charset=utf-8",
 			"gzip",
@@ -341,4 +357,52 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	}
 
 	return nil
+}
+
+func copyToTempFileAsTaskUser(filePath string) (tempFilePath string, err error) {
+	// We want to run generic-worker, which is os.Args[0] if we are running generic-worker, but if
+	// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
+	// installed binary. This hack will go if we can impersonate the logged on user.
+	var exe string
+	if testing.Testing() {
+		exe = os.Getenv("GOPATH")
+		switch runtime.GOOS {
+		case "windows":
+			exe += `\bin\generic-worker.exe`
+		default:
+			exe += "/bin/generic-worker"
+		}
+	} else {
+		exe = os.Args[0]
+	}
+
+	cmd, err := gwCopyToTempFile(exe, filePath)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("Failed to copy file %s to temporary location as task user: %v", filePath, err)
+	}
+
+	tempFilePath = strings.TrimSpace(string(output))
+
+	if runtime.GOOS == "windows" {
+		// Windows syscall logs are sent to stdout, even though the code appears
+		// to send to stderr through the log package.
+		// TODO: Figure out why this is the case and remove this hack.
+		// https://github.com/taskcluster/taskcluster/issues/6677
+		//
+		// We need to get the filepath from the final line of output.
+		//
+		// Example output:
+		// 2023/11/07 19:56:06Z Making system call GetProfilesDirectoryW with args: [C0000C15F0 C00027E980]
+		// 2023/11/07 19:56:06Z   Result: 1 0 The operation completed successfully.
+		// C:\Windows\SystemTemp\TestPrivilegedFileUpload664016823956663638
+		outputLines := strings.Split(tempFilePath, "\n")
+		tempFilePath = strings.TrimSpace(outputLines[len(outputLines)-1])
+	}
+
+	return
 }

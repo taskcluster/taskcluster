@@ -9,6 +9,9 @@ The following instructions should be considered more as a guide rather than
 concrete requirements.  In particular, it does not use
 worker-runner, and contains some outdated references to the
 "legacy" deployment of Taskcluster at https://taskcluster.net.
+A critical instruction to follow is to ensure that the generic-worker
+binary is readable and executable by the task user. Make sure it's not only the
+root user who can read and execute the binary.
 
 They document _possible_ (and simple) ways to install and run generic-worker on
 various platforms. Real life production deployments may be integrated quite

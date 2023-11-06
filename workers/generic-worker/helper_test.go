@@ -444,6 +444,7 @@ func GWTest(t *testing.T) *Test {
 	// but test methods/functions directly
 	taskContext = &TaskContext{
 		TaskDir: testdataDir,
+		pd:      newPlatformData(testConfig),
 	}
 
 	// useful for expiry dates of tasks

@@ -18,9 +18,13 @@ import (
 
 type S3Artifact struct {
 	*BaseArtifact
-	// Path is the filename of the file containing the data
-	// for this artifact.
-	Path            string
+	// Path is the filename of the file declared in the task payload.
+	Path string
+	// ContentPath is the filename of the file containing the data
+	// for this artifact. ContentPath may be equal to Path, or,
+	// in the case where a temporary file is created, it may be different.
+	// ContentPath will always be read from when uploading the artifact.
+	ContentPath     string
 	ContentEncoding string
 	ContentType     string
 }
@@ -43,7 +47,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 		gzipLogWriter.Name = baseName
 		target = gzipLogWriter
 	}
-	source, err := os.Open(s3Artifact.Path)
+	source, err := os.Open(s3Artifact.ContentPath)
 	if err != nil {
 		panic(err)
 	}
@@ -59,6 +63,13 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 
 	transferContentFile := s3Artifact.createTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
+
+	defer func() {
+		if s3Artifact.Path != s3Artifact.ContentPath {
+			// If we created a temporary file, delete it.
+			os.Remove(s3Artifact.ContentPath)
+		}
+	}()
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}

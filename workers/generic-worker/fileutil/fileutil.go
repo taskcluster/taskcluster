@@ -52,7 +52,7 @@ func Copy(dst, src string) (nBytes int64, err error) {
 		return
 	}
 	if !sourceFileStat.Mode().IsRegular() {
-		err = fmt.Errorf("Cannot copy %s to %s: %s is not a regular file", src, dst, src)
+		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
 		return
 	}
 	var source *os.File
@@ -74,5 +74,23 @@ func Copy(dst, src string) (nBytes int64, err error) {
 	}
 	defer closeFile(destination)
 	nBytes, err = io.Copy(destination, source)
+	return
+}
+
+func CopyToTempFile(src string) (tempFilePath string, err error) {
+	baseName := filepath.Base(src)
+	var tempFile *os.File
+	tempFile, err = os.CreateTemp("", baseName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err2 := tempFile.Close()
+		if err == nil {
+			err = err2
+		}
+	}()
+	tempFilePath = tempFile.Name()
+	_, err = Copy(tempFilePath, src)
 	return
 }
