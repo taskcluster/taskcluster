@@ -14,119 +14,57 @@ import (
 	"github.com/taskcluster/taskcluster/v57/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v57/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/process"
 )
 
 type S3Artifact struct {
 	*BaseArtifact
-	// Path is the filename of the original file containing the data
+	// Path is the filename of the file containing the data
 	// for this artifact.
 	Path            string
 	ContentEncoding string
 	ContentType     string
-	// File is copied to a temp location, so that the content is frozen and
-	// can't change during file upload etc
-	TempCopyPath string
 }
 
-func (s3Artifact *S3Artifact) copyToTempFile(directory string, pd *process.PlatformData) (err error) {
+// createTempFileForPUTBody gzip-compresses the file at Path and
+// writes it to a temporary file in the same directory. The file path of the
+// generated temporary file is returned.  It is the responsibility of the
+// caller to delete the temporary file.
+func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 	baseName := filepath.Base(s3Artifact.Path)
-	var tempFile *os.File
-	tempFile, err = os.CreateTemp("", "stage1-"+baseName)
+	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
-		return
+		panic(err)
 	}
-	defer func() {
-		err2 := tempFile.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	s3Artifact.TempCopyPath = tempFile.Name()
-	var source *os.File
-	source, err = os.Open(s3Artifact.Path)
+	defer tmpFile.Close()
+	var target io.Writer = tmpFile
+	if s3Artifact.ContentEncoding == "gzip" {
+		gzipLogWriter := gzip.NewWriter(tmpFile)
+		defer gzipLogWriter.Close()
+		gzipLogWriter.Name = baseName
+		target = gzipLogWriter
+	}
+	source, err := os.Open(s3Artifact.Path)
 	if err != nil {
-		return
+		panic(err)
 	}
-	defer func() {
-		err2 := source.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	_, err = io.Copy(tempFile, source)
-	return
+	defer source.Close()
+	_, _ = io.Copy(target, source)
+	return tmpFile.Name()
 }
 
-func (s3Artifact *S3Artifact) writeTransferContentToFile() (err error) {
-	if s3Artifact.ContentEncoding != "gzip" {
-		return
-	}
-	oldTempFile := s3Artifact.TempCopyPath
-	baseName := filepath.Base(s3Artifact.Path)
-	newTempFile, err := os.CreateTemp("", "stage2-"+baseName)
-	if err != nil {
-		return
-	}
-	defer func() {
-		err2 := newTempFile.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	gzipLogWriter := gzip.NewWriter(newTempFile)
-	defer func() {
-		err2 := gzipLogWriter.Close()
-		if err == nil {
-			err = err2
-		}
-	}()
-	gzipLogWriter.Name = baseName
-	source, err := os.Open(oldTempFile)
-	if err != nil {
-		return
-	}
-	defer func() {
-		err2 := source.Close()
-		if err == nil {
-			err = err2
-		}
-		s3Artifact.TempCopyPath = newTempFile.Name()
-		err3 := os.Remove(oldTempFile)
-		if err == nil {
-			err = err3
-		}
-	}()
-	_, err = io.Copy(gzipLogWriter, source)
-	return
-}
-
-func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) (err error) {
+func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
 
-	err = s3Artifact.copyToTempFile(directory, pd)
-	if err != nil {
-		return
-	}
-	defer func(s3Artifact *S3Artifact) {
-		err2 := os.Remove(s3Artifact.TempCopyPath)
-		if err == nil {
-			err = err2
-		}
-	}(s3Artifact)
-
-	err = s3Artifact.writeTransferContentToFile()
-	if err != nil {
-		return
-	}
+	transferContentFile := s3Artifact.createTempFileForPUTBody()
+	defer os.Remove(transferContentFile)
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
 	httpCall := func() (putResp *http.Response, tempError error, permError error) {
 		var transferContent *os.File
-		transferContent, permError = os.Open(s3Artifact.TempCopyPath)
+		transferContent, permError = os.Open(transferContentFile)
 		if permError != nil {
 			return
 		}
@@ -166,9 +104,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 		}
 		return
 	}
-	var putResp *http.Response
-	var putAttempts int
-	putResp, putAttempts, err = httpbackoff.Retry(httpCall)
+	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
 	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
 	if putResp != nil {
 		defer putResp.Body.Close()
@@ -180,7 +116,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 			log.Print(string(respBody))
 		}
 	}
-	return
+	return err
 }
 
 func (s3Artifact *S3Artifact) RequestObject() interface{} {
