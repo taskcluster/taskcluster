@@ -10009,7 +10009,6 @@ __metadata:
     taskcluster-lib-testing: "link:libraries/testing"
     taskcluster-lib-urls: "npm:^13.0.0"
     taskcluster-lib-validate: "link:libraries/validate"
-    thirty-two: "npm:^1.0.2"
     topo-sort: "npm:^1.0.0"
     type-is: "npm:^1.6.15"
     uuid: "npm:^9.0.0"
@@ -10036,13 +10035,6 @@ __metadata:
   version: 0.2.0
   resolution: "text-table@npm:0.2.0"
   checksum: 02805740c12851ea5982686810702e2f14369a5f4c5c40a836821e3eefc65ffeec3131ba324692a37608294b0fd8c1e55a2dd571ffed4909822787668ddbee5c
-  languageName: node
-  linkType: hard
-
-"thirty-two@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "thirty-two@npm:1.0.2"
-  checksum: a6f8c69a153a1aa4d6948eabe004f5a38e45cb869d7d6c535df7460fc44c95c596a60efc56cce56b5e4f0988601db1298be5d1b6ae3fe12dcdeb461c9aeadd17
   languageName: node
   linkType: hard
 

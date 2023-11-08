@@ -113,7 +113,6 @@
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "taskcluster-lib-validate": "link:libraries/validate",
-    "thirty-two": "^1.0.2",
     "topo-sort": "^1.0.0",
     "type-is": "^1.6.15",
     "uuid": "^9.0.0",

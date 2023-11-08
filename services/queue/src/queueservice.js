@@ -2,10 +2,7 @@ import _ from 'lodash';
 import makeDebug from 'debug';
 const debug = makeDebug('app:queue');
 import assert from 'assert';
-import base32 from 'thirty-two';
-import crypto from 'crypto';
 import slugid from 'slugid';
-import { splitTaskQueueId } from './utils.js';
 import taskcluster from 'taskcluster-client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
@@ -262,29 +259,6 @@ export class QueueService {
   }
 
   /**
-   * This is a compatibility layer for the old pending queue name
-   * It only exists to support v90 - v91 - v90 upgrades and downgrades
-   * It should be removed in v92
-   *
-   * @param {String} taskQueueId
-   * @param {Number} priorityAsNumber
-   * @returns String
-   */
-  _pendingQueueCompatName(taskQueueId, priorityAsNumber) {
-    let hashId = (id) => {
-      let h = crypto.createHash('sha256').update(id).digest();
-      return base32.encode(h.slice(0, 15)).toString('utf-8').toLowerCase();
-    };
-    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
-    return [
-      this.prefix, // prefix all queues
-      hashId(provisionerId), // hash of provisionerId
-      hashId(workerType), // hash of workerType
-      priorityAsNumber,
-    ].join('-');
-  }
-
-  /**
    * Enqueue message about a new pending task in appropriate queue
    *
    * The `task` argument is an object with the properties:
@@ -314,14 +288,13 @@ export class QueueService {
     }
 
     const priority = PRIORITY_TO_CONSTANT[task.priority] || 0;
-    await this.db.fns.queue_pending_tasks_put(
+    await this.db.fns.queue_pending_tasks_add(
       task.taskQueueId,
       priority,
       task.taskId,
       runId,
       slugid.v4(), // hintId
       taskcluster.fromNow(`${timeToDeadline} seconds`), // expires in
-      this._pendingQueueCompatName(task.taskQueueId, priority),
     );
   }
 

@@ -12,24 +12,24 @@ suite(testing.suiteName(), function () {
   const insertOldRecords = async (db, dt1, dt2) => {
     const msg = obj => Buffer.from(JSON.stringify(obj)).toString('base64');
     await Promise.all([
-      db.fns.azure_queue_put_extra('claim-queue', msg({
+      db.deprecatedFns.azure_queue_put_extra('claim-queue', msg({
         taskId: 'taskId',
         runId: 0,
         takenUntil: dt2.toJSON(),
       }), dt1, dt2, '', 0),
-      db.fns.azure_queue_put_extra('resolved-queue', msg({
+      db.deprecatedFns.azure_queue_put_extra('resolved-queue', msg({
         taskId: 'taskId',
         taskGroupId: 'taskGroupId',
         schedulerId: 'schedulerId',
         resolution: 'completed',
       }), dt1, dt2, '', 0),
-      db.fns.azure_queue_put_extra('deadline-queue', msg({
+      db.deprecatedFns.azure_queue_put_extra('deadline-queue', msg({
         taskId: 'taskId',
         taskGroupId: 'taskGroupId',
         schedulerId: 'schedulerId',
         deadline: dt2.toJSON(),
       }), dt1, dt2, '', 0),
-      db.fns.azure_queue_put_extra('some-cryptic-queue-name', msg({
+      db.deprecatedFns.azure_queue_put_extra('some-cryptic-queue-name', msg({
         taskId: 'taskId',
         runId: 1,
         hintId: 'hintId',
