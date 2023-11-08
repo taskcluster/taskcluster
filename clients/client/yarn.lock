@@ -1547,12 +1547,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slugid@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "slugid@npm:4.0.0"
+"slugid@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "slugid@npm:5.0.0"
   dependencies:
     uuid: "npm:^9.0.0"
-  checksum: 5ddeda72e827f0059f0000d495e802a9d5cf9d598cbc5b9756fe1ccdba2fafae2c4696605a5486e125eb26e4b17f73cc753a954643f6e648855b0e3f8e455ce7
+  checksum: e871bf0fa6bedfe996f7d19c737a4a4b9819445e5e33cda33e58a3bf8ad2a101c8094ee3a840bb8600b58a53cc24fbb89e4dcc3cf1c0581633cdae4886616937
   languageName: node
   linkType: hard
 
@@ -1679,7 +1679,7 @@ __metadata:
     lodash: "npm:^4.17.4"
     mocha: "npm:^10.2.0"
     nock: "npm:^13.0.0"
-    slugid: "npm:^4.0.0"
+    slugid: "npm:^5.0.0"
     stream-buffers: "npm:^3.0.2"
     taskcluster-lib-urls: "npm:^13.0.0"
   languageName: unknown
