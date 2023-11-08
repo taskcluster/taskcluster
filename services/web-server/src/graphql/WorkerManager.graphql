@@ -37,6 +37,11 @@ type WorkerManagerError {
     extra: JSON!
 }
 
+type WorkerManagerErrorsStatsConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerManagerErrorsEdge]
+}
+
 type WorkerManagerErrorsConnection implements Connection {
   pageInfo: PageInfo
   edges: [WorkerManagerErrorsEdge]
@@ -70,10 +75,25 @@ input WorkerPoolInput {
     config: JSON!
 }
 
+
+type WorkerPoolErrorTotals {
+  total: Int!
+  hourly: JSON!
+  daily: JSON!
+  byTitle: JSON!
+  byCode: JSON!
+}
+
+type WorkerManagerErrorsStats {
+  workerPoolId: String!
+  totals: WorkerPoolErrorTotals!
+}
+
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
 
     WorkerManagerErrors(workerPoolId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
+    WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
 

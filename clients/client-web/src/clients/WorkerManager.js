@@ -20,6 +20,7 @@ export default class WorkerManager extends Client {
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:get-worker-pool:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","scopes":"worker-manager:list-worker-pools","stability":"stable","type":"function"}; // eslint-disable-line
     this.reportWorkerError.entry = {"args":["workerPoolId"],"category":"Worker Interface","input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.workerPoolErrorStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"workerPoolErrorStats","output":true,"query":["workerPoolId"],"route":"/worker-pool-errors/stats","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit"],"route":"/worker-pool-errors/<workerPoolId>","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerGroup.entry = {"args":["workerPoolId","workerGroup"],"category":"Workers","method":"get","name":"listWorkersForWorkerGroup","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>/<workerGroup>","scopes":"worker-manager:list-workers:<workerPoolId>/<workerGroup>","stability":"stable","type":"function"}; // eslint-disable-line
     this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -128,6 +129,17 @@ export default class WorkerManager extends Client {
     this.validate(this.reportWorkerError.entry, args);
 
     return this.request(this.reportWorkerError.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the list of worker pool errors count.
+  // Contains total count of errors for the past 7 days and 24 hours
+  // Also includes total counts grouped by titles of error and error code.
+  // If `workerPoolId` is not specified, it will return the count of all errors
+  /* eslint-enable max-len */
+  workerPoolErrorStats(...args) {
+    this.validate(this.workerPoolErrorStats.entry, args);
+
+    return this.request(this.workerPoolErrorStats.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of worker pool errors.

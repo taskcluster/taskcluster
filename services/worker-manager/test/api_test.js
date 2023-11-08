@@ -1028,6 +1028,126 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     ]);
   });
 
+  test('get worker pool error stats - all worker pools', async function () {
+    const workerPoolId1 = 'foobar/baz1';
+    const workerPoolId2 = 'foobar/baz2';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    workerPoolCompare(workerPoolId1, input,
+      await helper.workerManager.createWorkerPool(workerPoolId1, input));
+    workerPoolCompare(workerPoolId2, input,
+      await helper.workerManager.createWorkerPool(workerPoolId2, input));
+
+    await helper.workerManager.reportWorkerError(workerPoolId1, {
+      kind: 'something-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+        code: 'error-code',
+      },
+    });
+
+    await helper.workerManager.reportWorkerError(workerPoolId2, {
+      kind: 'another-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about another something',
+      description: 'huh',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    let data = await helper.workerManager.workerPoolErrorStats();
+    assert.equal(data.workerPoolId, '');
+
+    assert(data.totals !== undefined);
+    assert.equal(data.totals.total, 2);
+    assert.deepEqual(Object.values(data.totals.daily), [0, 0, 0, 0, 0, 0, 2]);
+    assert.deepEqual(Object.values(data.totals.hourly), [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 2,
+    ]);
+    assert.deepEqual(data.totals.byTitle, {
+      'And Error about Something': 1,
+      'And Error about another something': 1,
+    });
+    assert.deepEqual(data.totals.byCode, {
+      'error-code': 1,
+      'other': 1,
+    });
+  });
+
+  test('get worker pool error stats - single worker pools', async function () {
+    const workerPoolId1 = 'foobar/baz1';
+    const workerPoolId2 = 'foobar/baz2';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    workerPoolCompare(workerPoolId1, input,
+      await helper.workerManager.createWorkerPool(workerPoolId1, input));
+    workerPoolCompare(workerPoolId2, input,
+      await helper.workerManager.createWorkerPool(workerPoolId2, input));
+
+    await helper.workerManager.reportWorkerError(workerPoolId1, {
+      kind: 'something-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+        code: 'error-code',
+      },
+    });
+
+    await helper.workerManager.reportWorkerError(workerPoolId2, {
+      kind: 'another-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about another something',
+      description: 'huh',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    let data = await helper.workerManager.workerPoolErrorStats({ workerPoolId: workerPoolId1 });
+    assert.equal(data.workerPoolId, workerPoolId1);
+
+    assert(data.totals !== undefined);
+    assert.equal(data.totals.total, 1);
+    assert.deepEqual(Object.values(data.totals.daily), [0, 0, 0, 0, 0, 0, 1]);
+    assert.deepEqual(Object.values(data.totals.hourly), [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 1,
+    ]);
+    assert.deepEqual(data.totals.byTitle, {
+      'And Error about Something': 1,
+    });
+    assert.deepEqual(data.totals.byCode, {
+      'error-code': 1,
+    });
+  });
+
   const googleInput = {
     providerId: 'google',
     description: 'bar',

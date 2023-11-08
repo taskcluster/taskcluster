@@ -154,6 +154,21 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["reportWorkerError"], *args, **kwargs)
 
+    async def workerPoolErrorStats(self, *args, **kwargs):
+        """
+        List Worker Pool Errors Count
+
+        Get the list of worker pool errors count.
+        Contains total count of errors for the past 7 days and 24 hours
+        Also includes total counts grouped by titles of error and error code.
+
+        If `workerPoolId` is not specified, it will return the count of all errors
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["workerPoolErrorStats"], *args, **kwargs)
+
     async def listWorkerPoolErrors(self, *args, **kwargs):
         """
         List Worker Pool Errors
@@ -507,6 +522,15 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-pool-full.json#',
             'route': '/worker-pool/<workerPoolId>',
             'stability': 'stable',
+        },
+        "workerPoolErrorStats": {
+            'args': [],
+            'method': 'get',
+            'name': 'workerPoolErrorStats',
+            'output': 'v1/worker-pool-error-stats.json#',
+            'query': ['workerPoolId'],
+            'route': '/worker-pool-errors/stats',
+            'stability': 'experimental',
         },
     }
 

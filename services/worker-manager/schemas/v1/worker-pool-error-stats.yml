@@ -1,0 +1,50 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Error Stats
+description: |
+  Total number of errors for given worker pool or all worker pools
+  broken down daily for the past 7 days, hourly for the past 24 hours.
+  Also includes breakdown by title and error code.
+type: object
+properties:
+  workerPoolId:
+    oneOf:
+    - {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+    - const: ''
+  totals:
+    type: object
+    properties:
+      total:
+        title: Total number of errors in the past 7 days
+        type: number
+        description: Total number of errors
+      daily:
+        title: Last 7 days
+        description: Breakdown by day
+        type: object
+        additionalProperties: true
+      hourly:
+        title: Last 24 hours
+        description: Breakdown by hour
+        type: object
+        additionalProperties: true
+      byTitle:
+        title: By title
+        description: Breakdown by title
+        type: object
+        additionalProperties: true
+      byCode:
+        title: By error code
+        description: Breakdown by error code where available
+        type: object
+        additionalProperties: true
+    additionalProperties: false
+    required:
+    - total
+    - daily
+    - hourly
+    - byTitle
+    - byCode
+additionalProperties: false
+required:
+  - workerPoolId
+  - totals

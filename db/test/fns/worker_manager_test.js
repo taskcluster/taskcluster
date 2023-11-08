@@ -322,7 +322,7 @@ suite(testing.suiteName(), function() {
   });
 
   suite(`${testing.suiteName()} - worker_pool_errors`, function() {
-    helper.dbTest('create_worker_pool_error/get_worker_pool_error', async function(db, isFake) {
+    helper.dbTest('create_worker_pool_error/get_worker_pool_error', async function(db) {
       const now = new Date();
       await create_worker_pool_error(db, { reported: now });
       const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
@@ -335,17 +335,17 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].extra, { extra: true });
     });
 
-    helper.dbTest('get_worker_pool_error not found', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_error not found', async function(db) {
       const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool empty', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty', async function(db) {
       const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async function(db) {
       const now = new Date();
       await create_worker_pool_error(db, { reported: now });
       const rows = await db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
@@ -358,7 +358,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].extra, { extra: true });
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async function(db, isFake) {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async function(db) {
       let newestDate;
       for (let i = 9; i >= 0; i--) {
         newestDate = fromNow(`- ${i} days`);
@@ -385,7 +385,7 @@ suite(testing.suiteName(), function() {
         [4, 5].map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
     });
 
-    helper.dbTest('expire_worker_pool_errors', async function(db, isFake) {
+    helper.dbTest('expire_worker_pool_errors', async function(db) {
       await create_worker_pool_error(db, { error_id: 'done', reported: fromNow('- 1 day') });
       await create_worker_pool_error(db, { error_id: 'also-done', reported: fromNow('- 2 days') });
       await create_worker_pool_error(db, { error_id: 'still-running', reported: fromNow('1 day') });
@@ -396,7 +396,7 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('delete_worker_pool_errors', async function(db, isFake) {
+    helper.dbTest('delete_worker_pool_errors', async function(db) {
       await create_worker_pool_error(db);
 
       await db.fns.delete_worker_pool_error('e/id', 'wp/id');
@@ -404,6 +404,57 @@ suite(testing.suiteName(), function() {
       const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
+    helper.dbTest('get_worker_pool_error_stats_last_24_hours', async function(db) {
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_stats_last_24_hours(null);
+      assert.equal(res.length, 24);
+      assert.equal(res[23].count, 2); // latest record is last hour
+
+      const res2 = await db.fns.get_worker_pool_error_stats_last_24_hours('wp/id1');
+      assert.equal(res2.length, 24);
+      assert.equal(res2[23].count, 1);
+
+      const res3 = await db.fns.get_worker_pool_error_stats_last_24_hours('wp/id2');
+      assert.equal(res3.length, 24);
+      assert.equal(res3[23].count, 1);
+    });
+    helper.dbTest('get_worker_pool_error_stats_last_7_days', async function(db) {
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_stats_last_7_days(null);
+      assert.equal(res.length, 7);
+      assert.equal(res[6].count, 2); // latest record is last hour
+
+      const res2 = await db.fns.get_worker_pool_error_stats_last_7_days('wp/id1');
+      assert.equal(res2.length, 7);
+      assert.equal(res2[6].count, 1);
+
+      const res3 = await db.fns.get_worker_pool_error_stats_last_7_days('wp/id2');
+      assert.equal(res3.length, 7);
+      assert.equal(res3[6].count, 1);
+    });
+    helper.dbTest('get_worker_pool_error_titles', async function(db) {
+      await create_worker_pool_error(db, { error_id: 'id1', title: 'title1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', title: 'title2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_titles(null);
+      assert.equal(res.length, 2);
+      assert.equal(res[0].count, 1);
+      assert.equal(res[1].count, 1);
+    });
+    helper.dbTest('get_worker_pool_error_codes', async function(db) {
+      await create_worker_pool_error(db, { error_id: 'id1', kind: 'kind1', worker_pool_id: 'wp/id1', extra: { code: 'c1' } });
+      await create_worker_pool_error(db, { error_id: 'id2', kind: 'kind2', worker_pool_id: 'wp/id2', extra: { code: 'c2' } });
+
+      const res = await db.fns.get_worker_pool_error_codes(null);
+      assert.equal(res.length, 2);
+      assert.equal(res[0].count, 1);
+      assert.equal(res[1].count, 1);
+    });
+
   });
 
   suite(`${testing.suiteName()} - workers`, function() {

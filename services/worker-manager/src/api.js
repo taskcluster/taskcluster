@@ -374,6 +374,77 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/worker-pool-errors/stats',
+  name: 'workerPoolErrorStats',
+  query: {
+    workerPoolId: /^([a-zA-Z0-9/-]+)?$/,
+  },
+  scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
+  title: 'List Worker Pool Errors Count',
+  category: 'Worker Pools',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-error-stats.yml',
+  description: [
+    'Get the list of worker pool errors count.',
+    'Contains total count of errors for the past 7 days and 24 hours',
+    'Also includes total counts grouped by titles of error and error code.',
+    '',
+    'If `workerPoolId` is not specified, it will return the count of all errors',
+  ].join('\n'),
+}, async function (req, res) {
+  const { workerPoolId } = req.query;
+
+  if (workerPoolId) {
+    await req.authorize({ workerPoolId });
+    const workerPool = await WorkerPool.get(this.db, workerPoolId);
+    if (!workerPool) {
+      return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+    }
+  } else {
+    await req.authorize({ workerPoolId: '*' });
+  }
+
+  const out = {
+    workerPoolId: workerPoolId || '',
+    totals: {
+      total: 0,
+      hourly: {},
+      daily: {},
+      byTitle: {},
+      byCode: {},
+    },
+  };
+
+  const rowsToDict = (dict, rows, column) => {
+    for (const row of rows) {
+      if (row[column] instanceof Date) {
+        dict[row[column].toISOString()] = row.count;
+      } else {
+        dict[row[column]] = row.count;
+      }
+    }
+  };
+
+  const [daily, hourly, titles, codes] = await Promise.all([
+    this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
+  ]);
+
+  for (const row of daily) {
+    out.totals.total += row.count;
+  }
+  rowsToDict(out.totals.daily, daily, 'day');
+  rowsToDict(out.totals.hourly, hourly, 'hour');
+  rowsToDict(out.totals.byTitle, titles, 'title');
+  rowsToDict(out.totals.byCode, codes, 'code');
+
+  return res.reply(out);
+});
+
+builder.declare({
+  method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
   query: paginateResults.query,
   name: 'listWorkerPoolErrors',

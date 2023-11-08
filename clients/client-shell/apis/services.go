@@ -2216,6 +2216,19 @@ var services = map[string]definitions.Service{
 				Input: "v1/report-worker-error-request.json#",
 			},
 			definitions.Entry{
+				Name:        "workerPoolErrorStats",
+				Title:       "List Worker Pool Errors Count",
+				Description: "Get the list of worker pool errors count.\nContains total count of errors for the past 7 days and 24 hours\nAlso includes total counts grouped by titles of error and error code.\n\nIf `workerPoolId` is not specified, it will return the count of all errors",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pool-errors/stats",
+				Args:        []string{},
+				Query: []string{
+					"workerPoolId",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkerPoolErrors",
 				Title:       "List Worker Pool Errors",
 				Description: "Get the list of worker pool errors.",

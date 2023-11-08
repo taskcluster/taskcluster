@@ -433,6 +433,75 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-pool-error-stats.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Total number of errors for given worker pool or all worker pools\nbroken down daily for the past 7 days, hourly for the past 24 hours.\nAlso includes breakdown by title and error code.\n",
+      "properties": {
+        "totals": {
+          "additionalProperties": false,
+          "properties": {
+            "byCode": {
+              "additionalProperties": true,
+              "description": "Breakdown by error code where available",
+              "title": "By error code",
+              "type": "object"
+            },
+            "byTitle": {
+              "additionalProperties": true,
+              "description": "Breakdown by title",
+              "title": "By title",
+              "type": "object"
+            },
+            "daily": {
+              "additionalProperties": true,
+              "description": "Breakdown by day",
+              "title": "Last 7 days",
+              "type": "object"
+            },
+            "hourly": {
+              "additionalProperties": true,
+              "description": "Breakdown by hour",
+              "title": "Last 24 hours",
+              "type": "object"
+            },
+            "total": {
+              "description": "Total number of errors",
+              "title": "Total number of errors in the past 7 days",
+              "type": "number"
+            }
+          },
+          "required": [
+            "total",
+            "daily",
+            "hourly",
+            "byTitle",
+            "byCode"
+          ],
+          "type": "object"
+        },
+        "workerPoolId": {
+          "oneOf": [
+            {
+              "$ref": "worker-pool-full.json#/properties/workerPoolId"
+            },
+            {
+              "const": ""
+            }
+          ]
+        }
+      },
+      "required": [
+        "workerPoolId",
+        "totals"
+      ],
+      "title": "Worker Pool Error Stats",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-pool-error-stats.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/worker-pool-error-list.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -14381,6 +14450,23 @@
           },
           "stability": "stable",
           "title": "Report an error from a worker",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Worker Pools",
+          "description": "Get the list of worker pool errors count.\nContains total count of errors for the past 7 days and 24 hours\nAlso includes total counts grouped by titles of error and error code.\n\nIf `workerPoolId` is not specified, it will return the count of all errors",
+          "method": "get",
+          "name": "workerPoolErrorStats",
+          "output": "v1/worker-pool-error-stats.json#",
+          "query": [
+            "workerPoolId"
+          ],
+          "route": "/worker-pool-errors/stats",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Errors Count",
           "type": "function"
         },
         {
