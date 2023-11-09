@@ -25,7 +25,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn &&
         set -o pipefail && yarn test:meta | cat
   generate:
@@ -35,7 +34,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn --immutable &&
         ./db/test-setup.sh --users &&
         set -o pipefail &&
@@ -50,7 +48,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn --immutable &&
         yarn build --dry-run
   changelog-pr:
@@ -59,7 +56,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn --immutable &&
         yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
@@ -68,6 +64,5 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn --immutable &&
         yarn changelog:check

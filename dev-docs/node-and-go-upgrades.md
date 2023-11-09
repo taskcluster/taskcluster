@@ -13,7 +13,6 @@ To update the node version:
 
 * Install the new node version, such as `nvm install --lts`
 * Enable [corepack](https://nodejs.org/api/corepack.html): `corepack enable`
-* Set yarn version: `yarn set version berry`
 * Update `package.json`
 * Run `yarn generate`
 * Run `yarn install`

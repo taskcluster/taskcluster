@@ -21,7 +21,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn &&
         yarn lint
   golang:
@@ -30,7 +29,6 @@ tasks:
     run:
       command: >-
         corepack enable &&
-        yarn set version berry &&
         yarn &&
         yarn lint:go
   python:

@@ -45,7 +45,6 @@ task-defaults:
       - nvm install $NODE_VERSION
       # set up yarn
       - corepack enable
-      - yarn set version berry
       # clone the repo (shallow won't work here as it misses tags)
       - git clone --quiet --no-single-branch --tags {head_repository} taskcluster
       - cd taskcluster
