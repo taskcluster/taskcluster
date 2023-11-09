@@ -15,6 +15,7 @@ To update the node version:
 * Enable [corepack](https://nodejs.org/api/corepack.html): `corepack enable`
 * Set yarn version: `yarn set version berry`
 * Update `package.json`
+* Run `yarn generate`
 * Run `yarn install`
 * Run `yarn generate`
 * Create a changelog file and commit
@@ -24,8 +25,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version: `gvm install go1.21.3`
-* Use the new go version (--default to set permanently): `gvm use go1.21.3`
+* Install the new go version: `gvm install go1.21.4`
+* Use the new go version (--default to set permanently): `gvm use go1.21.4`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
