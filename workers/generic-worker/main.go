@@ -408,6 +408,11 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
+	err = validateGenericWorkerBinary()
+	if err != nil {
+		log.Printf("Invalid generic-worker binary: %v", err)
+		return INTERNAL_ERROR
+	}
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
@@ -689,6 +694,20 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 	// happened before or after the execution of task specific Turing
 	// complete code.
 	return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
+}
+
+func validateGenericWorkerBinary() error {
+	cmd, err := gwVersion()
+	if err != nil {
+		return fmt.Errorf("could not determine generic-worker binary version: %v", err)
+	}
+
+	result := cmd.Execute()
+	if !result.Succeeded() {
+		return fmt.Errorf("generic-worker binary is not readable and executable by task user: %v", result)
+	}
+
+	return nil
 }
 
 // CommandExecutionError wraps error Cause which has occurred during task

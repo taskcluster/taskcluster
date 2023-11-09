@@ -55,3 +55,16 @@ func SecureFiles(filepaths ...string) (err error) {
 	}
 	return nil
 }
+
+func UnsecureFiles(filepaths ...string) (err error) {
+	for _, path := range filepaths {
+		err = os.Chmod(
+			path,
+			0777,
+		)
+		if err != nil {
+			return
+		}
+	}
+	return
+}

@@ -9,10 +9,10 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
-	"testing"
 	"time"
 
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/win32"
 )
 
@@ -171,16 +171,7 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 	} else {
 		log.Printf("SID %v NOT found in %#v - granting access...", sid, sidsThatCanControlDesktopAndWindowsStation)
 
-		// We want to run generic-worker exe, which is os.Args[0] if we are running generic-worker, but if
-		// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
-		// installed binary. This hack will go if we can use ImpersonateLoggedOnUser / RevertToSelf instead.
-		var exe string
-		if testing.Testing() {
-			exe = os.Getenv("GOPATH") + `\bin\generic-worker.exe`
-		} else {
-			exe = os.Args[0]
-		}
-		cmd, err := NewCommand([]string{exe, "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
+		cmd, err := NewCommand([]string{runtime.GenericWorkerBinary(), "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
 		cmd.DirectOutput(os.Stdout)
 		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		if err != nil {

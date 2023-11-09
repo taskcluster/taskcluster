@@ -11,7 +11,9 @@ worker-runner, and contains some outdated references to the
 "legacy" deployment of Taskcluster at https://taskcluster.net.
 A critical instruction to follow is to ensure that the generic-worker
 binary is readable and executable by the task user. Make sure it's not only the
-root user who can read and execute the binary.
+root user who can read and execute the binary. If the generic-worker binary
+is not readable and executable by the task user, the worker will exit
+with exit code 69, internal error.
 
 They document _possible_ (and simple) ways to install and run generic-worker on
 various platforms. Real life production deployments may be integrated quite

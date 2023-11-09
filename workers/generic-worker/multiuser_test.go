@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/gwconfig"
 )
 
@@ -55,4 +57,35 @@ func TestWhoAmI(t *testing.T) {
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
+	setup(t)
+
+	if config.RunTasksAsCurrentUser {
+		t.Skip("Skipping since we're testing if the generic-worker binary is executable by the task user.")
+	}
+
+	_ = filepath.WalkDir(os.Getenv("GOPATH"), func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			t.Fatalf("Error walking directory: %v", err)
+		}
+		if strings.HasPrefix(d.Name(), "generic-worker") {
+			fmt.Printf("Found generic-worker binary: %s\n", path)
+		}
+		return nil
+	})
+
+	err := fileutil.SecureFiles(os.Getenv("GOPATH"))
+	if err != nil {
+		t.Fatalf("Could not secure generic-worker binary: %v", err)
+	}
+	defer func() {
+		err := fileutil.UnsecureFiles(os.Getenv("GOPATH"))
+		if err != nil {
+			t.Fatalf("Could not make generic-worker binary readable/executable by task user: %v", err)
+		}
+	}()
+
+	execute(t, INTERNAL_ERROR)
 }

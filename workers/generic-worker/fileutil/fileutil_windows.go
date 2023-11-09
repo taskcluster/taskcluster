@@ -16,3 +16,13 @@ func SecureFiles(filepaths ...string) (err error) {
 	}
 	return
 }
+
+func UnsecureFiles(filepaths ...string) (err error) {
+	for _, path := range filepaths {
+		err = host.Run("icacls", path, "/reset", "/t")
+		if err != nil {
+			return
+		}
+	}
+	return
+}
