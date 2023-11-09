@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"syscall"
+	"testing"
 	"time"
 
 	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/host"
@@ -68,7 +68,8 @@ func (r *Result) Crashed() bool {
 	return r.SystemError != nil && !r.Aborted
 }
 
-func NewCommand(commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+	cmd := f()
 	var err error
 	var combined *[]string
 	accessToken := pd.CommandAccessToken
@@ -84,11 +85,8 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pd 
 	if err != nil {
 		return nil, err
 	}
-	cmd := exec.Command(commandLine[0], commandLine[1:]...)
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
 	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
 	if !isWindows8OrGreater {
@@ -104,6 +102,23 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pd 
 		Cmd:   cmd,
 		abort: make(chan struct{}),
 	}, nil
+}
+
+func NewCommand(commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+	f := func() *exec.Cmd {
+		cmd := exec.Command(commandLine[0], commandLine[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd
+	}
+	return newCommand(f, commandLine, workingDirectory, env, pd)
+}
+
+func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+	f := func() *exec.Cmd {
+		return exec.Command(commandLine[0], commandLine[1:]...)
+	}
+	return newCommand(f, commandLine, workingDirectory, env, pd)
 }
 
 func (c *Command) Kill() (killOutput string, err error) {
@@ -160,10 +175,10 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
 		// installed binary. This hack will go if we can use ImpersonateLoggedOnUser / RevertToSelf instead.
 		var exe string
-		if filepath.Base(os.Args[0]) == "generic-worker.exe" {
-			exe = os.Args[0]
-		} else {
+		if testing.Testing() {
 			exe = os.Getenv("GOPATH") + `\bin\generic-worker.exe`
+		} else {
+			exe = os.Args[0]
 		}
 		cmd, err := NewCommand([]string{exe, "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
 		cmd.DirectOutput(os.Stdout)

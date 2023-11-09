@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v57/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/process"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
@@ -30,4 +32,12 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 	}
 
 	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func newPlatformData(conf *gwconfig.Config) (pd *process.PlatformData) {
+	pd, err := process.NewPlatformData(conf.RunTasksAsCurrentUser)
+	if err != nil {
+		panic(err)
+	}
+	return
 }

@@ -41,6 +41,17 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	got := tr.PayloadArtifacts()
 
+	// remove the ContentPath field from the got artifacts
+	// if it's of type S3Artifact. We can't compare this
+	// as it's non-deterministic
+	for _, a := range got {
+		s3Artifact, ok := a.(*artifacts.S3Artifact)
+		if !ok {
+			continue
+		}
+		s3Artifact.ContentPath = ""
+	}
+
 	if !reflect.DeepEqual(got, expected) {
 		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, got)
 	}

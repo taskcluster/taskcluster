@@ -184,6 +184,10 @@ func main() {
 	case arguments["new-ed25519-keypair"]:
 		err := generateEd25519Keypair(arguments["--file"].(string))
 		exitOnError(CANT_CREATE_ED25519_KEYPAIR, err, "Error generating ed25519 keypair %v for worker", arguments["--file"].(string))
+	case arguments["copy-to-temp-file"]:
+		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
+		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
+		fmt.Println(tempFilePath)
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))

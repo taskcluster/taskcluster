@@ -234,6 +234,7 @@ type (
 		//   * "file-missing-on-worker"
 		//   * "invalid-resource-on-worker"
 		//   * "too-large-file-on-worker"
+		//   * "file-not-readable-on-worker"
 		Reason string `json:"reason"`
 
 		// Artifact storage type, in this case `error`

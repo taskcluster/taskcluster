@@ -4,7 +4,6 @@ import (
 	"github.com/taskcluster/taskcluster/v57/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v57/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/process"
 )
 
 type RedirectArtifact struct {
@@ -13,7 +12,7 @@ type RedirectArtifact struct {
 	ContentType string
 }
 
-func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config, directory string, pd *process.PlatformData) error {
+func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
 	logger.Infof("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", redirectArtifact.Name, redirectArtifact.URL, redirectArtifact.ContentType, redirectArtifact.Expires)
 	// nothing to do
 	return nil

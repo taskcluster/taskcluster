@@ -21,6 +21,7 @@ and reports back results to the queue.
                                             [--worker-runner-protocol-pipe PIPE]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker copy-to-temp-file        --copy-file COPY-FILE
     generic-worker --help
     generic-worker --version
 
@@ -38,6 +39,9 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
+    copy-to-temp-file                       This will copy the specified file to a temporary
+                                            location and will return the temporary file path
+                                            to stdout. Intended for internal use.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -56,6 +60,7 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
+    --copy-file COPY-FILE                   The path to the file to copy.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 

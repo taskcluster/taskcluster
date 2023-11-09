@@ -3981,7 +3981,8 @@
               "enum": [
                 "file-missing-on-worker",
                 "invalid-resource-on-worker",
-                "too-large-file-on-worker"
+                "too-large-file-on-worker",
+                "file-not-readable-on-worker"
               ],
               "type": "string"
             },

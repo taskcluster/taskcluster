@@ -203,6 +203,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Expires: feature.task.Definition.Expires,
 			},
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
+			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
 			"application/octet-stream",
 			"gzip",
 		),
