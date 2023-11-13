@@ -1117,3 +1117,37 @@ func TestEvictNext(t *testing.T) {
 		t.Fatalf("Was expecting second cache item to be \"pear\" because \"apple\" should have been evicted, but it is %q", key)
 	}
 }
+
+func TestRelativePathFileMount(t *testing.T) {
+	setup(t)
+
+	granting, _ := grantingDenying(t, "file", "test.txt")
+	expectedLogs := append([]string{
+		`Copying .* to .*`,
+		`Copied 10 bytes from .* to .*`,
+		`Download .* of Raw .*`,
+		`Creating directory .*` + t.Name() + `.* with permissions 0700`,
+		`Copying .* to .*` + t.Name() + `.*test.txt`,
+	},
+		granting...,
+	)
+
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&FileMount{
+					File: filepath.Join("../../../", "test.txt"),
+					Content: json.RawMessage(`{
+						"raw": "Hello Raw!"
+					}`),
+				},
+			},
+			TaskRunResolutionState: "completed",
+			TaskRunReasonResolved:  "completed",
+			PerTaskRunLogExcerpts: [][]string{
+				expectedLogs,
+			},
+		},
+	)
+}

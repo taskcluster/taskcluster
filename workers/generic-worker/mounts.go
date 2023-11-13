@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/mholt/archiver/v3"
@@ -631,6 +632,15 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return err
 	}
 
+	// We need to trim prefix and clean the path
+	// twice to cover edge cases. For example:
+	// ../../foo/bar.txt --> /foo/bar.txt
+	// ./../foo/bar.txt --> /foo/bar.txt
+	// ././../foo/bar.txt --> /foo/bar.txt
+	for i := 0; i < 2; i++ {
+		f.File = strings.TrimPrefix(f.File, "..")
+		f.File = filepath.Clean(f.File)
+	}
 	file := filepath.Join(taskContext.TaskDir, f.File)
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
