@@ -110,7 +110,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
 		if config.RunTasksAsCurrentUser {
-			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", filepath.Join(cwd, "current-task-user.json"))
+			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
 		}
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
