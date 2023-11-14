@@ -51,7 +51,6 @@ To enable on your machine:
 
 ```bash
 corepack enable
-yarn set version berry
 ```
 
 ## v57.0.0

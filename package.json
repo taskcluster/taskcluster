@@ -7,7 +7,7 @@
   "engines": {
     "node": "18.18.2"
   },
-  "packageManager": "yarn@4.0.1",
+  "packageManager": "yarn@4.0.2",
   "workspaces": [
     "libraries/*",
     "services/*",

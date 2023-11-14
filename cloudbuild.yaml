@@ -64,7 +64,6 @@ steps:
       - |
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
         && corepack enable \
-        && yarn set version berry \
         && yarn \
         && yarn dev:db:upgrade \
         && yarn dev:apply > /dev/null
@@ -87,7 +86,7 @@ steps:
   - name: node:${_NODE_VERSION}
     args:
       - '-c'
-      - corepack enable && yarn set version berry && yarn && yarn smoketest
+      - corepack enable && yarn && yarn smoketest
     id: Smoketest
     entrypoint: bash
     env:
