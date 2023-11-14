@@ -144,7 +144,7 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 	if config.RunTasksAsCurrentUser {
-		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
+		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
 	}
 	if runtime.GOOS == "linux" {
 		taskEnv["DISPLAY"] = ":0"

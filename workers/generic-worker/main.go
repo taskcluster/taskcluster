@@ -48,6 +48,8 @@ var (
 	reclaimEvery5Seconds = false
 	// Current working directory of process
 	cwd = CwdOrPanic()
+	// Tasks resolved count file
+	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
 	// General platform independent user settings, such as home directory, username...
@@ -295,15 +297,15 @@ func setupExposer() (err error) {
 }
 
 func ReadTasksResolvedFile() uint {
-	b, err := os.ReadFile("tasks-resolved-count.txt")
+	b, err := os.ReadFile(trcPath)
 	if err != nil {
-		log.Printf("could not open tasks-resolved-count.txt: %s (ignored)", err)
+		log.Printf("could not open %q: %s (ignored)", trcPath, err)
 		return 0
 	}
 	i, err := strconv.Atoi(string(b))
 	if err != nil {
 		// treat an invalid (usually empty) file as nonexistent
-		log.Printf("could not parse content of tasks-resolved-count.txt: %s (ignored)", err)
+		log.Printf("could not parse content of %q: %s (ignored)", trcPath, err)
 		return 0
 	}
 	return uint(i)
@@ -312,11 +314,11 @@ func ReadTasksResolvedFile() uint {
 // Also called from tests, so avoid panic in this function since this could
 // cause tests to silently pass - instead require error handling.
 func UpdateTasksResolvedFile(t uint) error {
-	err := os.WriteFile("tasks-resolved-count.txt", []byte(strconv.Itoa(int(t))), 0777)
+	err := os.WriteFile(trcPath, []byte(strconv.Itoa(int(t))), 0777)
 	if err != nil {
 		return err
 	}
-	return fileutil.SecureFiles("tasks-resolved-count.txt")
+	return fileutil.SecureFiles(trcPath)
 }
 
 // HandleCrash reports a crash in worker logs and reports the crash to sentry
@@ -364,6 +366,8 @@ func RunWorker() (exitCode ExitCode) {
 	if host, err := sysinfo.Host(); err == nil {
 		logEvent("instanceBoot", nil, host.Info().BootTime)
 	}
+	log.Printf("Working directory: %q", cwd)
+	log.Printf("Tasks resolved count file: %q", trcPath)
 
 	err = setupExposer()
 	if err != nil {

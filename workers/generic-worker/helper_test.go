@@ -103,7 +103,7 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 	t.Helper()
 	err := UpdateTasksResolvedFile(0)
 	if err != nil {
-		t.Fatalf("Test setup failure - could not write to tasks-resolved-count.txt file: %v", err)
+		t.Fatalf("Test setup failure - could not write to file %q: %v", trcPath, err)
 	}
 	exitCode := RunWorker()
 

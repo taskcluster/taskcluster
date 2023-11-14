@@ -21,6 +21,13 @@ const (
 	engine = "multiuser"
 )
 
+var (
+	// don't initialise here, because cwd might not yet be initialised
+	// instead we set up later in PlatformTaskEnvironmentSetup
+	ctuPath string
+	ntuPath string
+)
+
 func secure(configFile string) {
 	if !config.RunTasksAsCurrentUser {
 		secureError := fileutil.SecureFiles(configFile)
@@ -29,14 +36,18 @@ func secure(configFile string) {
 }
 
 func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
+	ctuPath = filepath.Join(cwd, "current-task-user.json")
+	ntuPath = filepath.Join(cwd, "next-task-user.json")
+	log.Printf("Current task user file: %q", ctuPath)
+	log.Printf("Next task user file: %q", ntuPath)
 	reboot = true
-	_, err := os.Stat("next-task-user.json")
+	_, err := os.Stat(ntuPath)
 	if err == nil {
-		_, err = fileutil.Copy("current-task-user.json", "next-task-user.json")
+		_, err = fileutil.Copy(ctuPath, ntuPath)
 		if err != nil {
 			panic(err)
 		}
-		err = fileutil.SecureFiles("current-task-user.json")
+		err = fileutil.SecureFiles(ctuPath)
 		if err != nil {
 			panic(err)
 		}
@@ -53,7 +64,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			panic(err)
 		}
 		if taskUserCredentials.Name != interactiveUsername {
-			panic(fmt.Errorf("Interactive username %v does not match task user %v from next-task-user.json file", interactiveUsername, taskUserCredentials.Name))
+			panic(fmt.Errorf("Interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
 		}
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
@@ -152,11 +163,11 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	err = fileutil.WriteToFileAsJSON(nextTaskUser, "next-task-user.json")
+	err = fileutil.WriteToFileAsJSON(nextTaskUser, ntuPath)
 	if err != nil {
 		panic(err)
 	}
-	err = fileutil.SecureFiles("next-task-user.json")
+	err = fileutil.SecureFiles(ntuPath)
 	if err != nil {
 		panic(err)
 	}
@@ -202,7 +213,7 @@ func deleteExistingOSUsers() (err error) {
 }
 
 func StoredUserCredentials() (*runtime.OSUser, error) {
-	credsFile, err := os.Open("current-task-user.json")
+	credsFile, err := os.Open(ctuPath)
 	if err != nil {
 		return nil, err
 	}
