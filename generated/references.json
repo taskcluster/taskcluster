@@ -441,16 +441,10 @@
         "totals": {
           "additionalProperties": false,
           "properties": {
-            "byCode": {
+            "code": {
               "additionalProperties": true,
               "description": "Breakdown by error code where available",
               "title": "By error code",
-              "type": "object"
-            },
-            "byTitle": {
-              "additionalProperties": true,
-              "description": "Breakdown by title",
-              "title": "By title",
               "type": "object"
             },
             "daily": {
@@ -465,6 +459,12 @@
               "title": "Last 24 hours",
               "type": "object"
             },
+            "title": {
+              "additionalProperties": true,
+              "description": "Breakdown by title",
+              "title": "By error title",
+              "type": "object"
+            },
             "total": {
               "description": "Total number of errors",
               "title": "Total number of errors in the past 7 days",
@@ -475,8 +475,8 @@
             "total",
             "daily",
             "hourly",
-            "byTitle",
-            "byCode"
+            "title",
+            "code"
           ],
           "type": "object"
         },

@@ -27,12 +27,12 @@ properties:
         description: Breakdown by hour
         type: object
         additionalProperties: true
-      byTitle:
-        title: By title
+      title:
+        title: By error title
         description: Breakdown by title
         type: object
         additionalProperties: true
-      byCode:
+      code:
         title: By error code
         description: Breakdown by error code where available
         type: object
@@ -42,8 +42,8 @@ properties:
     - total
     - daily
     - hourly
-    - byTitle
-    - byCode
+    - title
+    - code
 additionalProperties: false
 required:
   - workerPoolId

@@ -13,7 +13,7 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
   const [path, setPath] = useState('');
 
   useEffect(() => {
-    const max = Math.max(1, Math.max(...data)); // avoid devision by 0
+    const max = Math.max(1, Math.max(...data)); // avoid divide by 0
     const path = data
       .map((value, index) => {
         const x = (width * index) / (data.length - 1);

@@ -1079,11 +1079,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 2,
     ]);
-    assert.deepEqual(data.totals.byTitle, {
+    assert.deepEqual(data.totals.title, {
       'And Error about Something': 1,
       'And Error about another something': 1,
     });
-    assert.deepEqual(data.totals.byCode, {
+    assert.deepEqual(data.totals.code, {
       'error-code': 1,
       'other': 1,
     });
@@ -1140,10 +1140,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 1,
     ]);
-    assert.deepEqual(data.totals.byTitle, {
+    assert.deepEqual(data.totals.title, {
       'And Error about Something': 1,
     });
-    assert.deepEqual(data.totals.byCode, {
+    assert.deepEqual(data.totals.code, {
       'error-code': 1,
     });
   });

@@ -347,12 +347,7 @@ type (
 		// Breakdown by error code where available
 		//
 		// Additional properties allowed
-		ByCode json.RawMessage `json:"byCode"`
-
-		// Breakdown by title
-		//
-		// Additional properties allowed
-		ByTitle json.RawMessage `json:"byTitle"`
+		Code json.RawMessage `json:"code"`
 
 		// Breakdown by day
 		//
@@ -363,6 +358,11 @@ type (
 		//
 		// Additional properties allowed
 		Hourly json.RawMessage `json:"hourly"`
+
+		// Breakdown by title
+		//
+		// Additional properties allowed
+		Title json.RawMessage `json:"title"`
 
 		// Total number of errors
 		Total float64 `json:"total"`

@@ -410,8 +410,8 @@ builder.declare({
       total: 0,
       hourly: {},
       daily: {},
-      byTitle: {},
-      byCode: {},
+      title: {},
+      code: {},
     },
   };
 
@@ -437,8 +437,8 @@ builder.declare({
   }
   rowsToDict(out.totals.daily, daily, 'day');
   rowsToDict(out.totals.hourly, hourly, 'hour');
-  rowsToDict(out.totals.byTitle, titles, 'title');
-  rowsToDict(out.totals.byCode, codes, 'code');
+  rowsToDict(out.totals.title, titles, 'title');
+  rowsToDict(out.totals.code, codes, 'code');
 
   return res.reply(out);
 });

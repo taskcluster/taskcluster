@@ -80,8 +80,8 @@ type WorkerPoolErrorTotals {
   total: Int!
   hourly: JSON!
   daily: JSON!
-  byTitle: JSON!
-  byCode: JSON!
+  title: JSON!
+  code: JSON!
 }
 
 type WorkerManagerErrorsStats {
