@@ -31,6 +31,12 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     },
   );
 
+  const WorkerManagerErrorsStats = new DataLoader(queries => Promise.all(
+    queries.map(async ({ workerPoolId }) => {
+      return await workerManager.workerPoolErrorStats(workerPoolId);
+    }),
+  ));
+
   const WorkerManagerProviders = new ConnectionLoader(
     async ({ filter, options }) => {
       const raw = await workerManager.listProviders(options);
@@ -46,6 +52,7 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
   return {
     WorkerManagerWorkerPoolSummaries,
     WorkerManagerErrors,
+    WorkerManagerErrorsStats,
     WorkerPool,
     WorkerManagerProviders,
   };

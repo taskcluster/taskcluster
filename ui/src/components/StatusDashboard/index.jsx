@@ -3,13 +3,46 @@ import { object } from 'prop-types';
 import { Grid, Paper, withStyles, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import summarizeWorkerPools from './summarizeWorkerPools';
+import summarizeWorkerPoolsStats from './summarizeWorkerPoolsStats';
 import summarizeProvisioners from './summarizeProvisioners';
 import summarizeHooks from './summarizeHooks';
 import summarizeAuthorization from './summarizeAuthorization';
 
 const getLength = value => String(value).length;
+const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
+  const [path, setPath] = useState('');
+
+  useEffect(() => {
+    const max = Math.max(1, Math.max(...data)); // avoid divide by 0
+    const path = data
+      .map((value, index) => {
+        const x = (width * index) / (data.length - 1);
+        const y = height - (height * value) / max;
+
+        return `${x},${y}`;
+      })
+      .join(' ');
+
+    setPath(path);
+  }, [data, width, height]);
+
+  return (
+    <svg width={width} height={height}>
+      <polyline
+        points={path}
+        fill="none"
+        stroke="#FF4500"
+        strokeWidth="1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 const Item = ({
   title,
+  type,
   value,
   classMain,
   classValue,
@@ -35,12 +68,17 @@ const Item = ({
         )}
       </Typography>
       <abbr title={error}>
-        <Typography
-          className={classValue}
-          style={altColor ? { color: '#51e9f1' } : {}}
-          variant={getLength(value) < 10 ? 'h2' : 'h4'}>
-          {value}
-        </Typography>
+        {type === 'graph' && (
+          <MiniSvgGraph data={value} className={classValue} />
+        )}
+        {(!type || type !== 'graph') && (
+          <Typography
+            className={classValue}
+            style={altColor ? { color: '#51e9f1' } : {}}
+            variant={getLength(value) < 10 ? 'h2' : 'h4'}>
+            {value}
+          </Typography>
+        )}
       </abbr>
     </Paper>
   );
@@ -77,6 +115,7 @@ export default class StatusDashboard extends Component {
     clients: object,
     secrets: object,
     roles: object,
+    wmStats: object,
   };
 
   static defaultProps = {
@@ -86,12 +125,14 @@ export default class StatusDashboard extends Component {
     clients: {},
     secrets: {},
     roles: {},
+    wmStats: {},
   };
 
   render() {
     const {
       classes,
       workerPools,
+      wmStats,
       provisioners,
       hookGroups,
       clients,
@@ -104,6 +145,7 @@ export default class StatusDashboard extends Component {
       'Worker Manager Provisioning': filterAvailable(
         summarizeWorkerPools(workerPools, 'provisioning')
       ),
+      'Worker Manager Errors': summarizeWorkerPoolsStats(wmStats),
       'Worker Manager Stats': filterAvailable(
         summarizeWorkerPools(workerPools, 'stats')
       ),

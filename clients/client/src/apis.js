@@ -4036,6 +4036,23 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Worker Pools",
+          "description": "Get the list of worker pool errors count.\nContains total count of errors for the past 7 days and 24 hours\nAlso includes total counts grouped by titles of error and error code.\n\nIf `workerPoolId` is not specified, it will return the count of all errors",
+          "method": "get",
+          "name": "workerPoolErrorStats",
+          "output": "v1/worker-pool-error-stats.json#",
+          "query": [
+            "workerPoolId"
+          ],
+          "route": "/worker-pool-errors/stats",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Errors Count",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Worker Pools",

@@ -342,6 +342,32 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
+	Totals struct {
+
+		// Breakdown by error code where available
+		//
+		// Additional properties allowed
+		Code json.RawMessage `json:"code"`
+
+		// Breakdown by day
+		//
+		// Additional properties allowed
+		Daily json.RawMessage `json:"daily"`
+
+		// Breakdown by hour
+		//
+		// Additional properties allowed
+		Hourly json.RawMessage `json:"hourly"`
+
+		// Breakdown by title
+		//
+		// Additional properties allowed
+		Title json.RawMessage `json:"title"`
+
+		// Total number of errors
+		Total float64 `json:"total"`
+	}
+
 	Var struct {
 
 		// The id of this provider
@@ -350,6 +376,9 @@ type (
 		// The provider implementation underlying this provider
 		ProviderType string `json:"providerType"`
 	}
+
+	// Constant value: ""
+	Var1 string
 
 	Worker struct {
 
@@ -767,6 +796,18 @@ type (
 		WorkerPoolErrors []WorkerPoolError `json:"workerPoolErrors"`
 	}
 
+	// Total number of errors for given worker pool or all worker pools
+	// broken down daily for the past 7 days, hourly for the past 24 hours.
+	// Also includes breakdown by title and error code.
+	WorkerPoolErrorStats struct {
+		Totals Totals `json:"totals"`
+
+		// One of:
+		//   * WorkerPoolID
+		//   * Var1
+		WorkerPoolID json.RawMessage `json:"workerPoolId"`
+	}
+
 	// A complete worker pool definition.
 	WorkerPoolFullDefinition struct {
 
@@ -851,6 +892,11 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
+
+	// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+	//
+	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+	WorkerPoolID string
 
 	// A list of worker pools
 	WorkerPoolList struct {

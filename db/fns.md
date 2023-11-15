@@ -174,6 +174,10 @@
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
    * [`get_worker_pool_error`](#get_worker_pool_error)
+   * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+   * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
+   * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
+   * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
    * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
@@ -2769,6 +2773,10 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
 * [`get_worker_pool_error`](#get_worker_pool_error)
+* [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+* [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
+* [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
+* [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
 * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
@@ -3135,6 +3143,62 @@ Get an existing worker. The returned table will have one or (if no such worker i
 * *Last defined on version*: 29
 
 Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+
+### get_worker_pool_error_codes
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `code text`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns errors grouped by error code for given worker pool or all worker pools
+
+
+### get_worker_pool_error_stats_last_24_hours
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `hour timestamptz`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns total number of errors for given worker pool or all worker pools
+broken down by hour.
+There will be a breakdown for the last 24h even if there are no errors.
+
+
+### get_worker_pool_error_stats_last_7_days
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `day timestamptz`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns total number of errors for given worker pool or all worker pools
+broken down by hour.
+There will be a breakdown for the last 7 days even if there are no errors.
+
+
+### get_worker_pool_error_titles
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `title text`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns errors grouped by title for given worker pool or all worker pools
+
 
 ### get_worker_pool_errors_for_worker_pool
 

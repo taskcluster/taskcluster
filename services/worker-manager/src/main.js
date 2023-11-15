@@ -75,7 +75,10 @@ let load = loader({
     requires: ['cfg', 'monitor', 'db'],
     setup: ({ cfg, monitor, db }, ownName) => {
       return monitor.childMonitor('expireErrors').oneShot(ownName, async () => {
-        const count = await WorkerPoolError.expire({ db, monitor });
+        const count = await WorkerPoolError.expire({
+          db,
+          retentionDays: cfg.app.workerPoolErrorRetentionDays,
+        });
         monitor.info(`deleted ${count} expired worker pool errors`);
       });
     },

@@ -303,6 +303,45 @@ func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, paylo
 	return responseObject.(*WorkerPoolError), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Get the list of worker pool errors count.
+// Contains total count of errors for the past 7 days and 24 hours
+// Also includes total counts grouped by titles of error and error code.
+//
+// # If `workerPoolId` is not specified, it will return the count of all errors
+//
+// Required scopes:
+//
+//	worker-manager:list-worker-pool-errors:<workerPoolId>
+//
+// See #workerPoolErrorStats
+func (workerManager *WorkerManager) WorkerPoolErrorStats(workerPoolId string) (*WorkerPoolErrorStats, error) {
+	v := url.Values{}
+	if workerPoolId != "" {
+		v.Add("workerPoolId", workerPoolId)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool-errors/stats", new(WorkerPoolErrorStats), v)
+	return responseObject.(*WorkerPoolErrorStats), err
+}
+
+// Returns a signed URL for WorkerPoolErrorStats, valid for the specified duration.
+//
+// Required scopes:
+//
+//	worker-manager:list-worker-pool-errors:<workerPoolId>
+//
+// See WorkerPoolErrorStats for more details.
+func (workerManager *WorkerManager) WorkerPoolErrorStats_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if workerPoolId != "" {
+		v.Add("workerPoolId", workerPoolId)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pool-errors/stats", v, duration)
+}
+
 // Get the list of worker pool errors.
 //
 // Required scopes:

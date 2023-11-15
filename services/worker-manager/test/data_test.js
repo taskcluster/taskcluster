@@ -2,7 +2,8 @@ import assert from 'assert';
 import helper from './helper.js';
 import _ from 'lodash';
 import testing from 'taskcluster-lib-testing';
-import { Worker } from '../src/data.js';
+import taskcluster from 'taskcluster-client';
+import { Worker, WorkerPoolError } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -73,4 +74,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(now.getTime() + 50000000, w.providerData.terminateAfter);
   });
 
+  test('worker pool error expire', async function () {
+    const err1 = WorkerPoolError.fromApi({
+      errorId: 'e/id',
+      workerPoolId: 'wp/id',
+      kind: 'kind',
+      title: 'title',
+      description: 'description',
+    });
+    err1.reported = taskcluster.fromNow('-4 days');
+    await err1.create(helper.db);
+
+    const err2 = WorkerPoolError.fromApi({
+      errorId: 'e/id2',
+      workerPoolId: 'wp/id2',
+      kind: 'kind',
+      title: 'title',
+      description: 'description',
+    });
+    err2.reported = taskcluster.fromNow('-2 days');
+    await err2.create(helper.db);
+
+    const count = await WorkerPoolError.expire({ db: helper.db, retentionDays: 3 });
+    assert.equal(count, 1);
+
+    const removedError = await WorkerPoolError.get(helper.db, err1.errorId, err1.workerPoolId);
+    assert(!removedError);
+    const persistedError = await WorkerPoolError.get(helper.db, err2.errorId, err2.workerPoolId);
+    assert(persistedError);
+
+    await WorkerPoolError.expire({ db: helper.db, retentionDays: 1 });
+    const removedError2 = await WorkerPoolError.get(helper.db, err2.errorId, err2.workerPoolId);
+    assert(!removedError2);
+  });
 });

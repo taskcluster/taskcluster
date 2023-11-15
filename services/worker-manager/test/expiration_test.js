@@ -113,6 +113,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return await helper.db.fns.get_worker_pool_errors_for_worker_pool(eid, 'pp/wt', null, null);
     };
 
+    const expireWithRetentionDays = async retentionDays => {
+      await helper.load('cfg');
+      helper.load.cfg('app.workerPoolErrorRetentionDays', retentionDays);
+      await helper.load('expireErrors');
+    };
+
     setup(function() {
       helper.load.remove('expireErrors');
     });
@@ -124,13 +130,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('active error', async function() {
       await makeWPE({ reported: taskcluster.fromNow('10 hours') });
-      await helper.load('expireErrors');
+      await expireWithRetentionDays(1);
       assert.equal((await checkWPE()).length, 1);
     });
 
     test('old error', async function() {
-      await makeWPE({ reported: taskcluster.fromNow('-10 hours') });
-      await helper.load('expireErrors');
+      await makeWPE({ reported: taskcluster.fromNow('-3 days') });
+      await expireWithRetentionDays(2);
+      assert.equal((await checkWPE()).length, 0);
+    });
+
+    test('old error', async function() {
+      await makeWPE({ reported: taskcluster.fromNow('-3 days') });
+      await expireWithRetentionDays(2);
       assert.equal((await checkWPE()).length, 0);
     });
   });

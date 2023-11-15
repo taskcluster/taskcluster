@@ -7091,6 +7091,48 @@
       },
       "migrationScript": "begin\n  ALTER TABLE queue_pending_tasks\n    DROP COLUMN queue_name_compat,\n    DROP COLUMN message_id_compat;\n\n  ALTER TABLE queue_task_deadlines DROP COLUMN message_id_compat;\n  ALTER TABLE queue_resolved_tasks DROP COLUMN message_id_compat;\n  ALTER TABLE queue_claimed_tasks DROP COLUMN message_id_compat;\n\nend",
       "version": 95
+    },
+    {
+      "description": "Worker pool errors statistics",
+      "methods": {
+        "get_worker_pool_error_codes": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  RETURN query\n  SELECT COALESCE(worker_pool_errors.extra->>'code', 'other'), count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n  GROUP BY worker_pool_errors.extra->>'code';\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by error code for given worker pool or all worker pools\n",
+          "mode": "read",
+          "returns": "table (code text, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_stats_last_24_hours": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  -- fill in missing hours and add zeroes for them\n  RETURN query\n  WITH hours AS (\n    SELECT generate_series(\n      date_trunc('hour', now() - interval '23 hours'),\n      date_trunc('hour', now()), -- including now\n      interval '1 hour'\n    ) as hour\n  )\n  SELECT\n    hours.hour,\n    COALESCE(worker_pool_errors.count, 0)::int\n  FROM hours\n  LEFT JOIN (\n    SELECT\n      date_trunc('hour', reported) as hour,\n      count(*) as count\n    FROM worker_pool_errors\n    WHERE\n      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    GROUP BY hour\n  ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;\nend",
+          "deprecated": false,
+          "description": "Returns total number of errors for given worker pool or all worker pools\nbroken down by hour.\nThere will be a breakdown for the last 24h even if there are no errors.\n",
+          "mode": "read",
+          "returns": "table (hour timestamptz, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_stats_last_7_days": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  -- fill in missing hours and add zeroes for them\n  RETURN query\n  WITH days AS (\n    SELECT generate_series(\n      date_trunc('day', now() - interval '6 days'),\n      date_trunc('day', now()), -- including now\n      interval '1 day'\n    ) as day\n  )\n  SELECT\n    days.day,\n    COALESCE(worker_pool_errors.count, 0)::int\n  FROM days\n  LEFT JOIN (\n    SELECT\n      date_trunc('day', reported) as day,\n      count(*) as count\n    FROM worker_pool_errors\n    WHERE\n      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    GROUP BY day\n  ) worker_pool_errors ON worker_pool_errors.day = days.day;\nend",
+          "deprecated": false,
+          "description": "Returns total number of errors for given worker pool or all worker pools\nbroken down by hour.\nThere will be a breakdown for the last 7 days even if there are no errors.\n",
+          "mode": "read",
+          "returns": "table (day timestamptz, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_titles": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.title, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n  GROUP BY worker_pool_errors.title;\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by title for given worker pool or all worker pools\n",
+          "mode": "read",
+          "returns": "table (title text, count integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 96
     }
   ]
 }
