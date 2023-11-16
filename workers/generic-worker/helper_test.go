@@ -163,18 +163,18 @@ func ensureResolution(t *testing.T, taskID, state, reason string) {
 	if err != nil {
 		t.Fatal("Error retrieving status from queue")
 	}
+	t.Log("Task logs:")
+	// This extra space is *super-useful* for breaking up the output since
+	// this shows a task log embedded inside a different task log
+	t.Log("")
+	t.Log("")
+	t.Log("")
+	t.Fatal(LogText(t))
+	t.Log("")
+	t.Log("")
+	t.Log("")
 	if status.Status.Runs[0].State != state || status.Status.Runs[0].ReasonResolved != reason {
 		t.Logf("Expected task %v to resolve as '%v/%v' but resolved as '%v/%v'", taskID, state, reason, status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
-		t.Log("Task logs:")
-		// This extra space is *super-useful* for breaking up the output since
-		// this shows a task log embedded inside a different task log
-		t.Log("")
-		t.Log("")
-		t.Log("")
-		t.Fatal(LogText(t))
-		t.Log("")
-		t.Log("")
-		t.Log("")
 	} else {
 		t.Logf("Task %v resolved as %v/%v as required.", taskID, status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
 	}
