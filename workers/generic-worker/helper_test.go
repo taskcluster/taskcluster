@@ -97,6 +97,7 @@ func scheduleNamedTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload
 		t.Fatalf("Could not submit task: %v", err)
 	}
 	t.Logf("Scheduled task %v", taskID)
+	t.Logf("%v", string(td.Payload))
 }
 
 func execute(t *testing.T, expectedExitCode ExitCode) {

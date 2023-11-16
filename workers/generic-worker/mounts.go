@@ -386,9 +386,11 @@ func garbageCollection() error {
 
 // called when a task starts
 func (taskMount *TaskMount) Start() *CommandExecutionError {
+	taskMount.Info("In Start()")
 	if taskMount.payloadError != nil {
 		return MalformedPayloadError(taskMount.payloadError)
 	}
+	taskMount.Info("No payload error")
 	// Check if any caches need to be purged. See:
 	//   https://docs.taskcluster.net/docs/reference/core/purge-cache
 	err := taskMount.purgeCaches()
@@ -406,6 +408,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
+		taskMount.Infof("Found mount %v", mount)
 		err = mount.Mount(taskMount)
 		// An error is returned if it is a task problem, such as an invalid url
 		// to download content, or a downloaded archive cannot be extracted.
