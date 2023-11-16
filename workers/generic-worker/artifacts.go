@@ -19,6 +19,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
 	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
 )
 
 var (
@@ -83,7 +84,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 				// cause the task to fail, and the cause to be preserved in the
 				// error artifact.
 				case incomingErr != nil:
-					fullPath := filepath.Join(taskContext.TaskDir, subPath)
+					fullPath := fileutil.AbsFrom(taskContext.TaskDir, subPath)
 					payloadArtifacts = append(
 						payloadArtifacts,
 						&artifacts.ErrorArtifact{
@@ -104,7 +105,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.Walk(fileutil.AbsFrom(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
 	return payloadArtifacts
@@ -120,7 +121,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
 func resolve(base *artifacts.BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) artifacts.TaskArtifact {
-	fullPath := filepath.Join(taskContext.TaskDir, path)
+	fullPath := fileutil.AbsFrom(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact

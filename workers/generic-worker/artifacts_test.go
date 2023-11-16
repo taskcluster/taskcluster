@@ -1032,3 +1032,32 @@ func TestObjectArtifact(t *testing.T) {
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
+
+func TestFileArtifactWithAbsolutePath(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires: inAnHour,
+				Path:    filepath.Join(cwd, filepath.Join("testdata", "SampleArtifacts", "b", "c", "d.jpg")),
+				Type:    "file",
+				Name:    "public/build/firefox.exe",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
+				Path:            filepath.Join(cwd, filepath.Join("testdata", "SampleArtifacts", "b", "c", "d.jpg")),
+			},
+		})
+}

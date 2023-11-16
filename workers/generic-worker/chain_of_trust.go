@@ -127,15 +127,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if feature.disabled {
 		return
 	}
-	logFile := filepath.Join(taskContext.TaskDir, logPath)
-	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
-	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)
-	ed25519SignedCert := filepath.Join(taskContext.TaskDir, ed25519SignedCertPath)
+	logFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
+	certifiedLogFile := fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)
+	unsignedCert := fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)
+	ed25519SignedCert := fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath)
 	copyErr := copyFileContents(logFile, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)))
 	artifactHashes := map[string]ArtifactHash{}
 	for _, artifact := range feature.task.Artifacts {
 		// make sure SHA256 is calculated
@@ -188,7 +188,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
@@ -202,8 +202,8 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.Definition.Expires,
 			},
-			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
-			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
+			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
+			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
 			"application/octet-stream",
 			"gzip",
 		),

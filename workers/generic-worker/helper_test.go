@@ -193,7 +193,7 @@ func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
 
 func LogText(t *testing.T) string {
 	t.Helper()
-	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	bytes, err := os.ReadFile(fileutil.AbsFrom(taskContext.TaskDir, logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
