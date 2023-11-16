@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 
 	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
 )
 
 type (
@@ -49,7 +49,7 @@ func (bltf *BackingLogTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (bltf *BackingLogTaskFeature) Start() *CommandExecutionError {
-	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
+	absLogFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		return executionError(internalError, errored, err)
@@ -76,9 +76,9 @@ func (bltf *BackingLogTaskFeature) Stop(err *ExecutionErrors) {
 	}
 	bltf.task.closeLog(bltf.logHandle)
 	if bltf.task.Payload.Features.BackingLog {
-		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
+		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, fileutil.AbsFrom(taskContext.TaskDir, logPath)))
 	}
 	if config.CleanUpTaskDirs {
-		_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
+		_ = os.Remove(fileutil.AbsFrom(taskContext.TaskDir, logPath))
 	}
 }
