@@ -62,6 +62,9 @@ defaults:
     # Trust a forwarding proxy
     trustProxy:               !env:bool TRUST_PROXY
 
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds:         !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
+
   azure:
     # deprecated way of specifying an encryption key
     cryptoKey:               !env:optional AZURE_CRYPTO_KEY

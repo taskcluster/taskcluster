@@ -241,6 +241,7 @@ let load = loader({
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
       trustProxy: cfg.server.trustProxy,
+      keepAliveTimeoutSeconds: cfg.server.keepAliveTimeoutSeconds,
       apis: [api],
     }),
   },

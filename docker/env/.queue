@@ -17,6 +17,7 @@ ERROR_CONFIG=
 PORT=80
 NODE_ENV=development
 FORCE_SSL=false
+KEEP_ALIVE_TIMEOUT_SECONDS=
 READ_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 WRITE_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 PULSE_USERNAME=admin

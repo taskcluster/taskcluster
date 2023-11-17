@@ -63,6 +63,7 @@ const defaultValues = {
   LEVEL: 'info',
   FORCE_SSL: 'false',
   TRUST_PROXY: 'true',
+  KEEP_ALIVE_TIMEOUT: '90000',
 
   USERNAME_PREFIX: 'taskcluster',
   ADMIN_DB_URL: 'postgresql://postgres@postgres:5432/taskcluster',
@@ -587,6 +588,7 @@ http {
   access_log  /dev/stdout;
   sendfile on;
   charset utf-8;
+  keepalive_timeout  65;
 
   server {
     listen 80;

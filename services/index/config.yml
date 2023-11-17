@@ -30,6 +30,9 @@ defaults:
     forceSSL: !env:bool FORCE_SSL
     trustProxy: !env:bool TRUST_PROXY
 
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
+
   # Configuration of access to other taskcluster components
   taskcluster:
     # Taskcluster credentials for this server, these must have scopes:

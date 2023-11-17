@@ -20,6 +20,8 @@ defaults:
     env: !env NODE_ENV
     forceSSL: !env:bool FORCE_SSL
     trustProxy: !env:bool TRUST_PROXY
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
   pulse:
     hostname: !env PULSE_HOSTNAME
     username: !env PULSE_USERNAME
