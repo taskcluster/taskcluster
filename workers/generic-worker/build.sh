@@ -141,7 +141,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v57/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v58/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
   goimports -w .

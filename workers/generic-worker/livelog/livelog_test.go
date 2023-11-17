@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	tchttputil "github.com/taskcluster/taskcluster/v57/internal/httputil"
+	tchttputil "github.com/taskcluster/taskcluster/v58/internal/httputil"
 )
 
 func TestLiveLog(t *testing.T) {

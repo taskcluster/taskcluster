@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v57/internal/scopes"
+	"github.com/taskcluster/taskcluster/v58/internal/scopes"
 )
 
 type LoopbackAudioFeature struct {

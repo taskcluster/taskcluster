@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v57/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
 )
 
 // InteractiveUsername attempts to determine which single user is currently

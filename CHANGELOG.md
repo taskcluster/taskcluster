@@ -3,6 +3,48 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v58.0.0
+
+### GENERAL
+
+▶ [MAJOR] [bug 1855653](http://bugzil.la/1855653)
+Generic Worker: The `generic-worker` binary _must be_ readable and executable by the task user. If it's not, artifact uploads _will fail_.
+
+Generic Worker: Add `copy-to-temp-file` subcommand to `generic-worker` to copy a file (`--copy-file`) to a temporary file.
+
+▶ [patch] [#6671](https://github.com/taskcluster/taskcluster/issues/6671)
+Introduces `workerManager.workerPoolErrorStats()` to return total number of errors for any worker pool or all worker pools.
+Stats are split into totals by day, hour, kind of error and error code.
+Worker Pool errors are kept in db for 7 days.
+
+▶ [patch]
+Removes compatibility columns in refactored queue tables that were used during migration for backward-compatibility purposes.
+
+▶ [patch] [#6682](https://github.com/taskcluster/taskcluster/issues/6682)
+Tweaking `server.keepAliveTimeout` to fix downstream errors in reverse proxy and load balancer.
+Default node's http server keepAliveTimeout is 5s which might be an issue when working behind a reverse proxy which has bigger timeouts.
+To reduce number of `502` errors, application's keep alive timeout should be larger than the one of the reverse proxy,
+and that in turn, should be larger than the Load Balancer's one.
+
+▶ [patch]
+Upgrades to go1.21.4 and node 18.18.2.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1859323](http://bugzil.la/1859323)
+Generic Worker now reports the full path of tasks-resolved-count.txt, next-task-user.json and current-task-user.json in worker logs.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump aiohttp from 3.8.5 to 3.8.6 in /taskcluster (cfd8296cf)
+* build(deps): bump @babel/traverse from 7.13.13 to 7.23.2 in /ui (ea440855c)
+* build(deps-dev): bump the deps group in /clients/client with 1 update (575193ad7)
+
+</details>
+
 ## v57.1.0
 
 ### GENERAL
