@@ -9904,6 +9904,9 @@
                 }
               ]
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10110,6 +10113,9 @@
             "github_private_pem": {
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10249,6 +10255,9 @@
             "influx_connection": {
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10382,6 +10391,9 @@
             "debug": {
               "title": "node debug env var",
               "type": "string"
+            },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
             },
             "level": {
               "type": "string"
@@ -10550,6 +10562,9 @@
             "email_source_address": {
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10693,6 +10708,9 @@
               "title": "node debug env var",
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10796,6 +10814,9 @@
               "title": "node debug env var",
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -10898,6 +10919,9 @@
               "type": "string"
             },
             "expire_artifacts_batch_size": {
+              "type": "number"
+            },
+            "keep_alive_timeout_seconds": {
               "type": "number"
             },
             "level": {
@@ -11228,6 +11252,9 @@
               "title": "node debug env var",
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -11403,6 +11430,9 @@
               "title": "node debug env var",
               "type": "string"
             },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
+            },
             "level": {
               "type": "string"
             },
@@ -11568,6 +11598,9 @@
             "debug": {
               "title": "node debug env var",
               "type": "string"
+            },
+            "keep_alive_timeout_seconds": {
+              "type": "number"
             },
             "level": {
               "type": "string"

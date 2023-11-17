@@ -82,6 +82,8 @@ defaults:
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
     trustProxy:       true
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
 
   # DB credentials
   postgres:

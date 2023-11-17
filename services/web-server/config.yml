@@ -17,6 +17,9 @@ defaults:
     port: !env:number PORT
     trustProxy: !env:bool TRUST_PROXY
 
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
+
     # The CORS allowed origins (passed to https://yarnpkg.com/en/package/cors);
     # typically this is the root URL, but in testing it may have other values.
     # The legacy root URL is special-cased.  Values beginning with `/` are

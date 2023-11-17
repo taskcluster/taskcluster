@@ -61,6 +61,10 @@ const createServer = function() {
       debug('Server listening on port ' + this.get('port'));
       accept(server);
     });
+
+    // let reverse proxies and load balancer enough time to read the response
+    debug(`Setting keepAliveTimeout to ${this.get('keepAliveTimeout')} seconds`);
+    server.keepAliveTimeout = this.get('keepAliveTimeout') * 1000;
   });
 };
 
@@ -74,18 +78,25 @@ export const App = async (options) => {
   });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env === 'development' ||
-         options.env === 'production', 'env must be production or development');
+  options.env === 'production', 'env must be production or development');
   assert(options.forceSSL !== undefined, 'forceSSL must be defined');
   assert(options.trustProxy !== undefined, 'trustProxy must be defined');
   assert(options.apis, 'Must provide an array of apis');
+  assert(options.keepAliveTimeoutSeconds !== '' || typeof options.keepAliveTimeoutSeconds === 'number', 'keepAliveTimeout must be a number');
   assert(!options.rootDocsLink, '`rootDocsLink` is no longer allowed');
   assert(!options.docs, '`docs` is no longer allowed');
+
+  // This mitigates the issue with reverse proxy and Load Balancer,
+  // where connections are being closed before response is sent.
+  // This timeout should be larger than downstream's timeout
+  const DEFAULT_KEEP_ALIVE_TIMEOUT_SECONDS = 90;
 
   // Create application
   const app = express();
   app.set('port', options.port);
   app.set('env', options.env);
   app.set('json spaces', 2);
+  app.set('keepAliveTimeout', options.keepAliveTimeoutSeconds || DEFAULT_KEEP_ALIVE_TIMEOUT_SECONDS);
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
