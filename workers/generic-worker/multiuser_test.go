@@ -3,10 +3,11 @@
 package main
 
 import (
-	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,6 +16,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -66,24 +68,43 @@ func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 		t.Skip("Skipping since we're testing if the generic-worker binary is executable by the task user.")
 	}
 
-	_ = filepath.WalkDir(os.Getenv("GOPATH"), func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			t.Fatalf("Error walking directory: %v", err)
-		}
-		if strings.HasPrefix(d.Name(), "generic-worker") {
-			fmt.Printf("Found generic-worker binary: %s\n", path)
-		}
-		return nil
-	})
-
-	err := fileutil.SecureFiles(os.Getenv("GOPATH"))
+	goPath, err := host.CombinedOutput("go", "env", "GOPATH")
 	if err != nil {
-		t.Fatalf("Could not secure generic-worker binary: %v", err)
+		t.Fatalf("Could not get GOPATH: %v", err)
+	}
+	if goPath == "" {
+		t.Fatal("GOPATH is empty")
+	}
+	goPath = strings.TrimSpace(goPath)
+
+	permissionsBeforeStr, err := fileutil.GetPermissionsString(goPath)
+	if err != nil {
+		t.Fatalf("Could not get permissions (string) of GOPATH: %v", err)
+	}
+	var fileMode fs.FileMode
+	if runtime.GOOS != "windows" {
+		fileMode, err = fileutil.GetPermissions(goPath)
+		if err != nil {
+			t.Fatalf("Could not get permissions of GOPATH: %v", err)
+		}
+	}
+
+	err = fileutil.SecureFiles(goPath)
+	if err != nil {
+		t.Fatalf("Could not secure GOPATH: %v", err)
 	}
 	defer func() {
-		err := fileutil.UnsecureFiles(os.Getenv("GOPATH"))
+		err := fileutil.ResetPermissions(goPath, fileMode)
 		if err != nil {
-			t.Fatalf("Could not make generic-worker binary readable/executable by task user: %v", err)
+			t.Fatalf("Could not reset permissions of GOPATH: %v", err)
+		}
+		permissionsAfterStr, err := fileutil.GetPermissionsString(goPath)
+		if err != nil {
+			t.Fatalf("Could not get permissions (string) of GOPATH: %v", err)
+		}
+
+		if permissionsBeforeStr != permissionsAfterStr {
+			t.Fatalf("Permissions changed from %s to %s", permissionsBeforeStr, permissionsAfterStr)
 		}
 	}()
 
