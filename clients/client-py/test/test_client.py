@@ -345,7 +345,7 @@ class ObjWithDotJson(object):
         return self.x
 
     def raise_for_status(self):
-        if self.status_code >= 300 or self.status_code < 200:
+        if self.status_code >= 400 or self.status_code < 200:
             raise requests.exceptions.HTTPError()
 
 
@@ -440,6 +440,14 @@ def test_success_fifth_try_connection_errors(client, apiPath):
         v = client._makeHttpRequest('GET', 'test', None)
         p.assert_has_calls(expectedCalls)
         assert expected == v
+
+
+def test_redirect_status_code(client, apiPath):
+    with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
+        p.return_value = ObjWithDotJson(301, None)
+        expectedCalls = [mock.call('GET', apiPath, None, mock.ANY)]
+        client._makeHttpRequest('GET', 'test', None)
+        p.assert_has_calls(expectedCalls)
 
 
 def test_failure_status_code(client, apiPath):

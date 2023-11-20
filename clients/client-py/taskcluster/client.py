@@ -9,13 +9,13 @@ import hashlib
 import hmac
 import datetime
 import calendar
-import requests
 import time
 import warnings
 import urllib
 
 import mohawk
 import mohawk.bewit
+import requests
 
 import taskcluster.exceptions as exceptions
 import taskcluster.utils as utils
@@ -499,18 +499,19 @@ class BaseClient(object):
                 )
 
             # Handle non 2xx status code and retry if possible
-            status = response.status_code
-            if status == 204:
-                return None
+            try:
+                response.raise_for_status()
+                if response.status_code == 204:
+                    return None
 
-            # Catch retryable errors and go to the beginning of the loop
-            # to do the retry
-            if 500 <= status and status < 600 and retry < retries:
-                log.warning('Retrying because of a %s status code' % status)
-                continue
+            except requests.exceptions.HTTPError:
+                status = response.status_code
+                # Catch retryable errors and go to the beginning of the loop
+                # to do the retry
+                if 500 <= status and status < 600 and retry < retries:
+                    log.warning('Retrying because of a %s status code' % status)
+                    continue
 
-            # Throw errors for non-retryable errors
-            if status < 200 or status >= 300:
                 data = {}
                 try:
                     data = response.json()
