@@ -122,12 +122,39 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     });
   };
 
+  getWorkerPoolSummaries() {
+    // merge data from main query and stats to have everything in single table
+    const {
+      data: { WorkerManagerWorkerPoolSummaries, WorkerManagerErrorsStats },
+    } = this.props;
+
+    if (!WorkerManagerWorkerPoolSummaries) {
+      return null;
+    }
+
+    if (!WorkerManagerErrorsStats) {
+      return WorkerManagerWorkerPoolSummaries;
+    }
+
+    const edges = WorkerManagerWorkerPoolSummaries.edges.map(({ node }) => ({
+      node: {
+        ...node,
+        errorsCount:
+          WorkerManagerErrorsStats?.totals?.workerPool?.[node.workerPoolId] ||
+          0,
+      },
+    }));
+
+    return { ...WorkerManagerWorkerPoolSummaries, edges };
+  }
+
   render() {
     const {
-      data: { loading, error, WorkerManagerWorkerPoolSummaries },
+      data: { loading, error },
       classes,
     } = this.props;
     const { workerPoolSearch } = this.state;
+    const WorkerManagerWorkerPoolSummaries = this.getWorkerPoolSummaries();
 
     return (
       <Dashboard

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
+import { Typography, Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
@@ -10,6 +11,8 @@ import workerPoolQuery from './workerPool.graphql';
 import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 
 @withApollo
 @graphql(providersQuery, {
@@ -125,6 +128,17 @@ export default class WMEditWorkerPool extends Component {
             ? 'Create Worker Pool'
             : `Worker Pool "${decodeURIComponent(match.params.workerPoolId)}"`
         }>
+        <Box marginBottom={2}>
+          <Breadcrumbs>
+            <Link to="/worker-manager">
+              <Typography variant="body2">Worker Manager</Typography>
+            </Link>
+            <Typography variant="body2" color="textSecondary">
+              {decodeURIComponent(match.params.workerPoolId)}
+            </Typography>
+          </Breadcrumbs>
+        </Box>
+
         <ErrorPanel fixed error={error} />
         {loading && <Spinner loading />}
         {!loading &&
@@ -137,6 +151,7 @@ export default class WMEditWorkerPool extends Component {
           ) : (
             <WMWorkerPoolEditor
               workerPool={data.WorkerPool}
+              errorStats={data.WorkerManagerErrorsStats}
               providers={providers}
               saveRequest={this.updateWorkerPoolRequest}
               deleteRequest={this.deleteRequest}

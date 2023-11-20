@@ -20,9 +20,9 @@ import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import RunIcon from 'mdi-react/RunIcon';
 import TimerSandIcon from 'mdi-react/TimerSandIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
-import grey from '@material-ui/core/colors/grey';
 import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
+import red from '@material-ui/core/colors/red';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
 import WorkerIcon from 'mdi-react/WorkerIcon';
@@ -38,6 +38,7 @@ import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
 import Link from '../../utils/Link';
 import {
   WorkerManagerWorkerPoolSummary,
+  WorkerManagerWorkerPoolErrorStats,
   providersArray,
 } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
@@ -109,7 +110,7 @@ import SpeedDial from '../SpeedDial';
     display: 'flex',
     flexGrow: 1,
     flexBasis: 0,
-    padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    padding: theme.spacing(1),
     justifyContent: 'space-around',
     cursor: 'pointer',
     margin: theme.spacing(1),
@@ -136,15 +137,15 @@ import SpeedDial from '../SpeedDial';
     },
   },
   stoppingCapacity: {
-    backgroundColor: theme.palette.error.main,
+    backgroundColor: theme.palette.grey[600],
     '&:hover': {
-      backgroundColor: theme.palette.error.dark,
+      backgroundColor: theme.palette.grey[800],
     },
   },
   pendingTasks: {
-    backgroundColor: grey[600],
+    backgroundColor: theme.palette.grey[600],
     '&:hover': {
-      backgroundColor: grey[800],
+      backgroundColor: theme.palette.grey[800],
     },
   },
   requestedCapacity: {
@@ -153,11 +154,21 @@ import SpeedDial from '../SpeedDial';
       backgroundColor: purple[600],
     },
   },
+  errorsTile: {
+    backgroundColor: red[400],
+    '&:hover': {
+      backgroundColor: red[600],
+    },
+  },
+  extraLinks: {
+    marginLeft: theme.spacing(3),
+  },
 }))
 export default class WMWorkerPoolEditor extends Component {
   static defaultProps = {
     isNewWorkerPool: false,
     workerPool: NULL_WORKER_POOL,
+    errorStats: null,
     dialogError: null,
     onDialogActionError: null,
     onDialogActionComplete: null,
@@ -167,6 +178,7 @@ export default class WMWorkerPoolEditor extends Component {
 
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
+    errorStats: WorkerManagerWorkerPoolErrorStats.isRequired,
     providers: providersArray.isRequired,
     saveRequest: func.isRequired,
     isNewWorkerPool: bool,
@@ -377,6 +389,7 @@ export default class WMWorkerPoolEditor extends Component {
       onDialogActionError,
       onDialogActionOpen,
       onDialogActionComplete,
+      errorStats,
     } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
     const {
@@ -407,7 +420,9 @@ export default class WMWorkerPoolEditor extends Component {
         value: pendingTasks,
         className: 'pendingTasks',
         Icon: ClockOutlineIcon,
-        href: '',
+        href: `/worker-manager/${encodeURIComponent(
+          workerPoolId
+        )}/pending-tasks`,
       },
       {
         label: 'Requested Capacity',
@@ -435,6 +450,13 @@ export default class WMWorkerPoolEditor extends Component {
         href: `/provisioners/${encodeURIComponent(
           provisionerId
         )}/worker-types/${encodeURIComponent(workerType)}?filterBy=stopping`,
+      },
+      {
+        label: 'Errors',
+        value: errorStats?.totals?.total,
+        className: 'errorsTile',
+        Icon: MessageAlertIcon,
+        href: `/worker-manager/${encodeURIComponent(workerPoolId)}/errors`,
       },
     ];
 
@@ -484,33 +506,31 @@ export default class WMWorkerPoolEditor extends Component {
                   );
                 }
               )}
-              <li>
-                <Chip
-                  size="medium"
-                  className={classes.metadata}
-                  icon={<WorkerIcon />}
-                  label="Workers (Queue View)"
-                  component={Link}
-                  clickable
-                  to={`/provisioners/${encodeURIComponent(
-                    provisionerId
-                  )}/worker-types/${encodeURIComponent(workerType)}`}
-                />
-              </li>
-              <li>
-                <Chip
-                  size="medium"
-                  className={classes.metadata}
-                  icon={<MessageAlertIcon />}
-                  label="Worker Pool Errors"
-                  component={Link}
-                  clickable
-                  to={`/worker-manager/${encodeURIComponent(
-                    workerPoolId
-                  )}/errors`}
-                />
-              </li>
             </Paper>
+            <div className={classes.extraLinks}>
+              <Chip
+                size="medium"
+                className={classes.metadata}
+                icon={<WorkerIcon />}
+                label="Workers (Queue View)"
+                component={Link}
+                clickable
+                to={`/provisioners/${encodeURIComponent(
+                  provisionerId
+                )}/worker-types/${encodeURIComponent(workerType)}`}
+              />
+              <Chip
+                size="medium"
+                className={classes.metadata}
+                icon={<WorkerIcon />}
+                label="Workers (Worker Manager View)"
+                component={Link}
+                clickable
+                to={`/worker-manager/${encodeURIComponent(
+                  workerPoolId
+                )}/workers`}
+              />
+            </div>
           </Fragment>
         )}
         <List>

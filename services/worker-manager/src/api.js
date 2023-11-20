@@ -412,6 +412,7 @@ builder.declare({
       daily: {},
       title: {},
       code: {},
+      workerPool: {},
     },
   };
 
@@ -425,11 +426,12 @@ builder.declare({
     }
   };
 
-  const [daily, hourly, titles, codes] = await Promise.all([
+  const [daily, hourly, titles, codes, pools] = await Promise.all([
     this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
     this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
   ]);
 
   for (const row of daily) {
@@ -439,6 +441,7 @@ builder.declare({
   rowsToDict(out.totals.hourly, hourly, 'hour');
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
+  rowsToDict(out.totals.workerPool, pools, 'worker_pool');
 
   return res.reply(out);
 });
@@ -492,7 +495,7 @@ declareWithTrailingColon({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_workers_without_provider_data(
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers(
       workerPoolId,
       workerGroup,
       null,
@@ -718,7 +721,10 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/workers/:workerPoolId(*)',
-  query: paginateResults.query,
+  query: {
+    ...paginateResults.query,
+    state: /^(requested|running|stopping|stopped|standalone)$/,
+  },
   name: 'listWorkersForWorkerPool',
   scopes: 'worker-manager:list-workers:<workerPoolId>',
   title: 'Workers in a Worker Pool',
@@ -739,11 +745,11 @@ builder.declare({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_workers_without_provider_data({
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers({
       worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,
-      state_in: null,
+      state_in: req.query.state || null,
       page_size_in: size,
       page_offset_in: offset,
     }),

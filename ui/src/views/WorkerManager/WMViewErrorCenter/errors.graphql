@@ -17,13 +17,4 @@ query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnecti
       }
     }
   }
-  WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
-    totals {
-      total
-      daily
-      hourly
-      title
-      code
-    }
-  }
 }

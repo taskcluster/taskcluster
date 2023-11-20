@@ -18,6 +18,7 @@ import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
 import KeyIcon from 'mdi-react/KeyIcon';
 import PulseIcon from 'mdi-react/PulseIcon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import SidebarListGroup from './SidebarListGroup';
 import SidebarListItem from './SidebarListItem';
 
@@ -66,6 +67,12 @@ export default class SidebarList extends Component {
 
         <SidebarListItem to="/worker-manager" icon={<HexagonSlice4 />}>
           Worker Manager
+        </SidebarListItem>
+
+        <SidebarListItem
+          to="/worker-manager/errors"
+          icon={<MessageAlertIcon />}>
+          Provisioning Errors
         </SidebarListItem>
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>

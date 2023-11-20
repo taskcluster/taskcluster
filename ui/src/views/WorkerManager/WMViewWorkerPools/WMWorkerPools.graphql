@@ -28,4 +28,10 @@ query workerPools($connection: PageConnection, $filter: JSON) {
       }
     }
   }
+  # this is a separate query to avoid doing N+1 queries to merge errors count into the worker pool summaries
+  WorkerManagerErrorsStats {
+    totals {
+      workerPool
+    }
+  }
 }

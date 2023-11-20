@@ -82,11 +82,35 @@ type WorkerPoolErrorTotals {
   daily: JSON!
   title: JSON!
   code: JSON!
+  workerPool: JSON!
 }
 
 type WorkerManagerErrorsStats {
   workerPoolId: String!
   totals: WorkerPoolErrorTotals!
+}
+
+type WMWorker {
+  workerPoolId: String!
+  workerGroup: String!
+  workerId: String!
+  providerId: String!
+  state: String!
+  created: DateTime!
+  expires: DateTime!
+  capacity: Int!
+  lastModified: DateTime!
+  lastChecked: DateTime!
+}
+
+type WorkerManagerWorkerEdge implements Edge {
+  cursor: String
+  node: WMWorker
+}
+
+type WorkerManagerWorkerConnection {
+  pageInfo: PageInfo
+  edges: [WorkerManagerWorkerEdge]
 }
 
 extend type Query {
@@ -98,6 +122,8 @@ extend type Query {
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
 
     WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
+
+    WorkerManagerWorkers(workerPoolId: String!, state: String, connection: PageConnection): WorkerManagerWorkerConnection!
 }
 
 extend type Mutation {

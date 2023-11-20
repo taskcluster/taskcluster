@@ -1087,6 +1087,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       'error-code': 1,
       'other': 1,
     });
+    assert.deepEqual(data.totals.workerPool, {
+      [workerPoolId1]: 1,
+      [workerPoolId2]: 1,
+    });
   });
 
   test('get worker pool error stats - single worker pools', async function () {
@@ -1145,6 +1149,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
     assert.deepEqual(data.totals.code, {
       'error-code': 1,
+    });
+    assert.deepEqual(data.totals.workerPool, {
+      [workerPoolId1]: 1,
     });
   });
 

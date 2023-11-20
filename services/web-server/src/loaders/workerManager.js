@@ -19,6 +19,20 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     return await workerManager.workerPool(workerPoolId);
   })));
 
+  const WorkerManagerWorkers = new ConnectionLoader(
+    async ({ workerPoolId, state, options }) => {
+      if (state) {
+        options.state = state;
+      }
+      const raw = await workerManager.listWorkersForWorkerPool(workerPoolId, options);
+
+      return {
+        ...raw,
+        items: raw.workers,
+      };
+    },
+  );
+
   const WorkerManagerErrors = new ConnectionLoader(
     async ({ workerPoolId, filter, options }) => {
       const raw = await workerManager.listWorkerPoolErrors(workerPoolId, options);
@@ -33,7 +47,7 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
 
   const WorkerManagerErrorsStats = new DataLoader(queries => Promise.all(
     queries.map(async ({ workerPoolId }) => {
-      return await workerManager.workerPoolErrorStats(workerPoolId);
+      return await workerManager.workerPoolErrorStats({ workerPoolId });
     }),
   ));
 
@@ -55,5 +69,6 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     WorkerManagerErrorsStats,
     WorkerPool,
     WorkerManagerProviders,
+    WorkerManagerWorkers,
   };
 };

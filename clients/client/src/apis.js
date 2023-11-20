@@ -4178,7 +4178,8 @@ module.exports = {
           "output": "v1/worker-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "state"
           ],
           "route": "/workers/<workerPoolId>",
           "scopes": "worker-manager:list-workers:<workerPoolId>",

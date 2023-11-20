@@ -546,28 +546,28 @@ impl WorkerManager {
     /// Workers in a Worker Pool
     ///
     /// Get the list of all the existing workers in a given worker pool.
-    pub async fn listWorkersForWorkerPool(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+    pub async fn listWorkersForWorkerPool(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, state: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
+        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit, state);
         let body = None;
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkersForWorkerPool endpoint
-    pub fn listWorkersForWorkerPool_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
+    pub fn listWorkersForWorkerPool_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, state: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit, state);
         self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkersForWorkerPool endpoint
-    pub fn listWorkersForWorkerPool_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit);
+    pub fn listWorkersForWorkerPool_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, state: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkersForWorkerPool_details(workerPoolId, continuationToken, limit, state);
         self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkersForWorkerPool
-    fn listWorkersForWorkerPool_details<'a>(workerPoolId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn listWorkersForWorkerPool_details<'a>(workerPoolId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, state: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("workers/{}", urlencode(workerPoolId));
         let mut query = None;
         if let Some(q) = continuationToken {
@@ -575,6 +575,9 @@ impl WorkerManager {
         }
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = state {
+            query.get_or_insert_with(Vec::new).push(("state", q));
         }
 
         (path, query)
