@@ -1,9 +1,6 @@
 package fileutil
 
 import (
-	"fmt"
-	"io/fs"
-
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
 )
 
@@ -20,14 +17,19 @@ func SecureFiles(filepaths ...string) (err error) {
 	return
 }
 
-func ResetPermissions(path string, permissions fs.FileMode) error {
+func GetPermissions(path string) (string, func() error, error) {
+	permissions, err := host.CombinedOutput("icacls", path)
+	if err != nil {
+		return "", nil, err
+	}
+
+	reset := func() error {
+		return resetPermissions(path)
+	}
+
+	return permissions, reset, nil
+}
+
+func resetPermissions(path string) error {
 	return host.Run("icacls", path, "/reset", "/t")
-}
-
-func GetPermissionsString(path string) (string, error) {
-	return host.CombinedOutput("icacls", path)
-}
-
-func GetPermissions(path string) (fs.FileMode, error) {
-	return 0, fmt.Errorf("GetPermissions not implemented on Windows")
 }

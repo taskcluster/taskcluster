@@ -7,8 +7,11 @@ import (
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
 )
 
-// This is executed as the task user to ensure that the
-// generic-worker binary is readable/executable.
+// gwVersion returns a command that will run the
+// `generic-worker --version` command as the task user.
+// This is used during the startup of the worker to
+// ensure that the generic-worker binary is readable/executable
+// by the task user.
 func gwVersion() (*process.Command, error) {
 	return process.NewCommand([]string{runtime.GenericWorkerBinary(), "--version"}, taskContext.TaskDir, []string{}, taskContext.pd)
 }

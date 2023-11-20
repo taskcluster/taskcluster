@@ -3,11 +3,9 @@
 package main
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -77,16 +75,9 @@ func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 	}
 	goPath = strings.TrimSpace(goPath)
 
-	permissionsBeforeStr, err := fileutil.GetPermissionsString(goPath)
+	permissionsBefore, resetPermissions, err := fileutil.GetPermissions(goPath)
 	if err != nil {
-		t.Fatalf("Could not get permissions (string) of GOPATH: %v", err)
-	}
-	var fileMode fs.FileMode
-	if runtime.GOOS != "windows" {
-		fileMode, err = fileutil.GetPermissions(goPath)
-		if err != nil {
-			t.Fatalf("Could not get permissions of GOPATH: %v", err)
-		}
+		t.Fatalf("Could not get permissions of GOPATH (before): %v", err)
 	}
 
 	err = fileutil.SecureFiles(goPath)
@@ -94,17 +85,18 @@ func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 		t.Fatalf("Could not secure GOPATH: %v", err)
 	}
 	defer func() {
-		err := fileutil.ResetPermissions(goPath, fileMode)
+		err := resetPermissions()
 		if err != nil {
 			t.Fatalf("Could not reset permissions of GOPATH: %v", err)
 		}
-		permissionsAfterStr, err := fileutil.GetPermissionsString(goPath)
+
+		permissionsAfter, _, err := fileutil.GetPermissions(goPath)
 		if err != nil {
-			t.Fatalf("Could not get permissions (string) of GOPATH: %v", err)
+			t.Fatalf("Could not get permissions of GOPATH (after): %v", err)
 		}
 
-		if permissionsBeforeStr != permissionsAfterStr {
-			t.Fatalf("Permissions changed from %s to %s", permissionsBeforeStr, permissionsAfterStr)
+		if permissionsBefore != permissionsAfter {
+			t.Fatalf("Permissions changed from %s to %s", permissionsBefore, permissionsAfter)
 		}
 	}()
 

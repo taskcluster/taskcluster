@@ -696,10 +696,17 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 	return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
 }
 
+// validateGenericWorkerBinary runs `generic-worker --version` as the
+// task user to ensure that the binary is readable and executable before
+// the worker claims any tasks. This is useful to test that the task user
+// has permissions to run generic-worker subcommands, which are used
+// internally during the artifact upload process. The version string
+// is not returned, since it is not needed. A non-nil error is returned
+// if the `generic-worker --version` command cannot be run successfully.
 func validateGenericWorkerBinary() error {
 	cmd, err := gwVersion()
 	if err != nil {
-		return fmt.Errorf("could not determine generic-worker binary version: %v", err)
+		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
 
 	result := cmd.Execute()

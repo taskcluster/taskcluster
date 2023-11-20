@@ -30,12 +30,12 @@ func SecureFiles(filepaths ...string) (err error) {
 	uidString = strings.TrimSpace(uidString)
 	uid, err := strconv.Atoi(uidString)
 	if err != nil {
-		return fmt.Errorf("Could not convert %v to an integer uid: %v", uidString, err)
+		return fmt.Errorf("could not convert %v to an integer uid: %v", uidString, err)
 	}
 	gidString = strings.TrimSpace(gidString)
 	gid, err := strconv.Atoi(gidString)
 	if err != nil {
-		return fmt.Errorf("Could not convert %v to an integer gid: %v", gidString, err)
+		return fmt.Errorf("could not convert %v to an integer gid: %v", gidString, err)
 	}
 	for _, path := range filepaths {
 		err = os.Chown(
@@ -44,38 +44,36 @@ func SecureFiles(filepaths ...string) (err error) {
 			gid,
 		)
 		if err != nil {
-			return fmt.Errorf("Could not change owner/group of %v to %v/%v: %v", path, uid, gid, err)
+			return fmt.Errorf("could not change owner/group of %v to %v/%v: %v", path, uid, gid, err)
 		}
 		err = os.Chmod(
 			path,
 			0600,
 		)
 		if err != nil {
-			return fmt.Errorf("Could not change file permissions of %v to 0600: %v", path, err)
+			return fmt.Errorf("could not change file permissions of %v to 0600: %v", path, err)
 		}
 	}
 	return nil
 }
 
-func ResetPermissions(path string, permissions fs.FileMode) error {
+func GetPermissions(path string) (string, func() error, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return "", nil, err
+	}
+
+	permissions := fileInfo.Mode().Perm()
+	reset := func() error {
+		return setPermissions(path, permissions)
+	}
+
+	return permissions.String(), reset, nil
+}
+
+func setPermissions(path string, permissions fs.FileMode) error {
 	return os.Chmod(
 		path,
 		permissions,
 	)
-}
-
-func GetPermissionsString(path string) (string, error) {
-	fileMode, err := GetPermissions(path)
-	if err != nil {
-		return "", err
-	}
-	return fileMode.String(), nil
-}
-
-func GetPermissions(path string) (fs.FileMode, error) {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return 0, err
-	}
-	return fileInfo.Mode().Perm(), nil
 }
