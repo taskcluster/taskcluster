@@ -36,6 +36,7 @@ and reports back results to the queue.
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker copy-to-temp-file        --copy-file COPY-FILE
+    generic-worker can-write-to-directory   --directory DIRECTORY
     generic-worker --help
     generic-worker --version
 
@@ -56,6 +57,8 @@ and reports back results to the queue.
     copy-to-temp-file                       This will copy the specified file to a temporary
                                             location and will return the temporary file path
                                             to stdout. Intended for internal use.
+    can-write-to-directory                  This will check if the current user can write to
+                                            the specified directory. Intended for internal use.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -75,6 +78,8 @@ and reports back results to the queue.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.` + sidSID() + `
     --copy-file COPY-FILE                   The path to the file to copy.
+    --directory DIRECTORY                   The path to the directory to check for write
+                                            access.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
@@ -171,6 +172,17 @@ func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
 	result := cmd.Execute()
 	if result.ExitError != nil {
 		return fmt.Errorf("Cannot create directory %v with permissions %v as task user %v from directory %v: %v", dir, perms, taskContext.User.Name, taskContext.TaskDir, result)
+	}
+	cmd, err = process.NewCommandNoOutputStreams([]string{gwruntime.GenericWorkerBinary(), "can-write-to-directory", "--directory", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
+	if err != nil {
+		return fmt.Errorf("Cannot create process to check permissions of directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
+	}
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Task user %v does not have permissions to directory %v: %v", taskContext.User.Name, dir, err)
+	}
+	if strings.TrimSpace(string(output)) != "true" {
+		return fmt.Errorf("Task user %v does not have permissions to directory %v: %v", taskContext.User.Name, dir, string(output))
 	}
 	return nil
 }

@@ -190,6 +190,13 @@ func main() {
 		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
 		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
 		fmt.Println(tempFilePath)
+	case arguments["can-write-to-directory"]:
+		err := fileutil.CanWriteToDirectory(arguments["--directory"].(string))
+		if err != nil {
+			fmt.Printf("Cannot write to directory %v: %v\n", arguments["--directory"].(string), err)
+		} else {
+			fmt.Println("true")
+		}
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))

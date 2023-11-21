@@ -94,3 +94,11 @@ func CopyToTempFile(src string) (tempFilePath string, err error) {
 	_, err = Copy(tempFilePath, src)
 	return
 }
+
+func CanWriteToDirectory(dir string) error {
+	tempFile, err := os.CreateTemp(dir, "test")
+	if err != nil {
+		return err
+	}
+	return os.Remove(tempFile.Name())
+}
