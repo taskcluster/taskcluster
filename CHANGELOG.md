@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v58.0.1
+
+### GENERAL
+
+▶ [patch]
+Generic Worker: Adds validation that the task user is able to read and execute the generic-worker binary on startup of the worker. If the task user is not able to read and execute the binary, the worker will exit with exit code 69, internal error.
+
+### USERS
+
+▶ [patch] [#4998](https://github.com/taskcluster/taskcluster/issues/4998)
+This fixes a bug in the Python client where an exception was raised on 300 HTTP
+status.
+
 ## v58.0.0
 
 ### GENERAL
