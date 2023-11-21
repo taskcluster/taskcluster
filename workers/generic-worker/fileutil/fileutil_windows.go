@@ -16,3 +16,20 @@ func SecureFiles(filepaths ...string) (err error) {
 	}
 	return
 }
+
+func GetPermissions(path string) (string, func() error, error) {
+	permissions, err := host.CombinedOutput("icacls", path)
+	if err != nil {
+		return "", nil, err
+	}
+
+	reset := func() error {
+		return resetPermissions(path)
+	}
+
+	return permissions, reset, nil
+}
+
+func resetPermissions(path string) error {
+	return host.Run("icacls", path, "/reset", "/t")
+}

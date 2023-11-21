@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
@@ -360,23 +359,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 }
 
 func copyToTempFileAsTaskUser(filePath string) (tempFilePath string, err error) {
-	// We want to run generic-worker, which is os.Args[0] if we are running generic-worker, but if
-	// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
-	// installed binary. This hack will go if we can impersonate the logged on user.
-	var exe string
-	if testing.Testing() {
-		exe = os.Getenv("GOPATH")
-		switch runtime.GOOS {
-		case "windows":
-			exe += `\bin\generic-worker.exe`
-		default:
-			exe += "/bin/generic-worker"
-		}
-	} else {
-		exe = os.Args[0]
-	}
-
-	cmd, err := gwCopyToTempFile(exe, filePath)
+	cmd, err := gwCopyToTempFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("Failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
 	}
