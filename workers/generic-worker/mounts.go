@@ -139,15 +139,15 @@ func (feature *MountsFeature) PersistState() (err error) {
 	return
 }
 
-func MkdirAll(taskMount *TaskMount, dir string, perms os.FileMode) error {
-	taskMount.Infof("Creating directory %v with permissions 0%o", dir, perms)
-	return MkdirAllTaskUser(dir, perms)
+func MkdirAll(taskMount *TaskMount, dir string) error {
+	taskMount.Infof("Creating directory %v", dir)
+	return MkdirAllTaskUser(dir)
 }
 
-func MkdirAllOrDie(taskMount *TaskMount, dir string, perms os.FileMode) {
-	err := MkdirAll(taskMount, dir, perms)
+func MkdirAllOrDie(taskMount *TaskMount, dir string) {
+	err := MkdirAll(taskMount, dir)
 	if err != nil {
-		panic(fmt.Errorf("[mounts] Not able to create directory %v with permissions %o: %v", dir, perms, err))
+		panic(fmt.Errorf("[mounts] Not able to create directory %v: %v", dir, err))
 	}
 }
 
@@ -513,7 +513,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		src := directoryCaches[w.CacheName].Location
 		parentDir := filepath.Dir(target)
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
-		MkdirAllOrDie(taskMount, parentDir, 0700)
+		MkdirAllOrDie(taskMount, parentDir)
 		err := RenameCrossDevice(src, target)
 		if err != nil {
 			panic(fmt.Errorf("[mounts] Not able to rename dir %v as %v: %v", src, target, err))
@@ -542,7 +542,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			}
 		} else {
 			// no preloaded content => just create dir in place
-			MkdirAllOrDie(taskMount, target, 0700)
+			MkdirAllOrDie(taskMount, target)
 		}
 	}
 	// Regardless of whether we are running as current user, grant task user access
@@ -718,7 +718,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 		log.Printf("Could not cache content: %v", err)
 		return err
 	}
-	err = MkdirAll(taskMount, dir, 0700)
+	err = MkdirAll(taskMount, dir)
 	if err != nil {
 		return err
 	}
@@ -765,7 +765,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 	}
 
 	parentDir := filepath.Dir(file)
-	err = MkdirAll(taskMount, parentDir, 0700)
+	err = MkdirAll(taskMount, parentDir)
 	// this could be a user error, if someone supplies an invalid path, so let's not
 	// panic, but make this a task failure
 	if err != nil {

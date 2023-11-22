@@ -4,6 +4,6 @@ package main
 
 import "os"
 
-func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
-	return os.MkdirAll(dir, perms)
+func MkdirAllTaskUser(dir string) error {
+	return os.MkdirAll(dir, 0700)
 }
