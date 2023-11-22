@@ -13,5 +13,5 @@ import (
 // ensure that the generic-worker binary is readable/executable
 // by the task user.
 func gwVersion() (*process.Command, error) {
-	return process.NewCommand([]string{runtime.GenericWorkerBinary(), "--version"}, taskContext.TaskDir, []string{})
+	return process.NewCommand([]string{runtime.GenericWorkerBinary(), "--version"}, "", []string{})
 }
