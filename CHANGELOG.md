@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v58.0.2
+
+### GENERAL
+
+▶ [patch] [#6701](https://github.com/taskcluster/taskcluster/issues/6701)
+Generic Worker: Fixes `permission denied` error while checking if `generic-worker` binary is executable by the task user for simple engine.
+
+▶ [patch]
+Upgrades rust version to 1.74.0 and ran `cargo audit fix` to fix insecure crates.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump slugid from 4.0.0 to 5.0.1 in /clients/client (947e00ba6)
+
+</details>
+
 ## v58.0.1
 
 ### GENERAL
