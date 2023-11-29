@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	gwruntime "github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/win32"
 )
 
@@ -171,7 +171,7 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 	} else {
 		log.Printf("SID %v NOT found in %#v - granting access...", sid, sidsThatCanControlDesktopAndWindowsStation)
 
-		cmd, err := NewCommand([]string{runtime.GenericWorkerBinary(), "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
+		cmd, err := NewCommand([]string{gwruntime.GenericWorkerBinary(), "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
 		cmd.DirectOutput(os.Stdout)
 		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		if err != nil {

@@ -519,23 +519,8 @@ func TestMountFileAtCWD(t *testing.T) {
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
-				// Required text from first task with no cached value
-				[]string{
-					`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-					`Creating directory .*`,
-					`Copying .* to .*`,
-					`Not able to mount content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip at path .*`,
-					`open .*: is a directory`,
-				},
-				// Required text from second task when download is already cached
-				[]string{
-					`No SHA256 specified in task mounts for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip - SHA256 from downloaded file .* is 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e.`,
-					`Creating directory .*`,
-					`Copying .* to .*`,
-					`Not able to mount content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip at path .*`,
-					`open .*: is a directory`,
+				{
+					`Cannot mount file .* since it is a directory`,
 				},
 			},
 		},

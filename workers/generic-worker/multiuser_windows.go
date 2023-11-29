@@ -536,21 +536,6 @@ func PreRebootSetup(nextTaskUser *runtime.OSUser) {
 	}
 }
 
-func MkdirAllTaskUser(dir string) error {
-	if _, err := os.Stat(dir); err == nil {
-		return nil
-	}
-	cmd, err := process.NewCommand([]string{"mkdir", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
-	if err != nil {
-		return fmt.Errorf("Cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
-	}
-	result := cmd.Execute()
-	if result.ExitError != nil {
-		return fmt.Errorf("Cannot create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, result)
-	}
-	return nil
-}
-
 func convertNilToEmptyString(val interface{}) string {
 	if val == nil {
 		return ""

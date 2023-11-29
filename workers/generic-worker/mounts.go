@@ -632,6 +632,9 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	}
 
 	file := filepath.Join(taskContext.TaskDir, f.File)
+	if info, err := os.Stat(file); err == nil && info.IsDir() {
+		return fmt.Errorf("Cannot mount file %v since it is a directory", file)
+	}
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
 		return err
@@ -725,36 +728,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	taskMount.Infof("Extracting %v file %v to '%v'", format, cacheFile, dir)
 	// Useful for worker logs too (not just task logs)
 	log.Printf("[mounts] Extracting %v file %v to '%v'", format, cacheFile, dir)
-	var unarchiver archiver.Unarchiver
-	switch format {
-	case "zip":
-		unarchiver = &archiver.Zip{}
-	case "tar.gz":
-		unarchiver = &archiver.TarGz{
-			Tar: &archiver.Tar{},
-		}
-	case "rar":
-		unarchiver = &archiver.Rar{}
-	case "tar.bz2":
-		unarchiver = &archiver.TarBz2{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.xz":
-		unarchiver = &archiver.TarXz{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.zst":
-		unarchiver = &archiver.TarZstd{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.lz4":
-		unarchiver = &archiver.TarLz4{
-			Tar: &archiver.Tar{},
-		}
-	default:
-		return fmt.Errorf("Unsupported archive format %v", format)
-	}
-	return unarchiver.Unarchive(cacheFile, dir)
+	return unarchive(cacheFile, dir, format)
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
@@ -789,6 +763,14 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
+		dst, err := CreateFileAsTaskUser(file)
+		if err != nil {
+			return fmt.Errorf("Not able to create %v as task user: %v", file, err)
+		}
+		err = dst.Close()
+		if err != nil {
+			return fmt.Errorf("Not able to close %v: %v", file, err)
+		}
 		taskMount.Infof("Copying %v to %v", cacheFile, file)
 		err = copyFileContents(cacheFile, file)
 		if err != nil {
@@ -808,15 +790,19 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
 	src, err := os.Open(cacheFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("Not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	dst, err := os.Create(file)
+	dst, err := CreateFileAsTaskUser(file)
 	if err != nil {
-		return err
+		return fmt.Errorf("Not able to create %v as task user: %v", file, err)
 	}
 	defer dst.Close()
-	return d.Decompress(src, dst)
+	err = d.Decompress(src, dst)
+	if err != nil {
+		return fmt.Errorf("Not able to decompress %v to %v: %v", cacheFile, file, err)
+	}
+	return nil
 }
 
 // FSContentFrom returns either a *ArtifactContent, *IndexedContent,

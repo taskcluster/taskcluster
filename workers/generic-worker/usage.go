@@ -19,6 +19,9 @@ const (
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
 	CANT_COPY_TO_TEMP_FILE      ExitCode = 76
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
+	CANT_UNARCHIVE              ExitCode = 79
+	CANT_CREATE_FILE            ExitCode = 80
+	CANT_CREATE_DIRECTORY       ExitCode = 81
 )
 
 func usage(versionName string) string {
@@ -36,6 +39,11 @@ and reports back results to the queue.
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker copy-to-temp-file        --copy-file COPY-FILE
+    generic-worker unarchive                --archive-src ARCHIVE-SRC-FILE
+                                            --archive-dst ARCHIVE-DST-DIR
+                                            --archive-format ARCHIVE-FORMAT
+    generic-worker create-file              --create-file CREATE-FILE
+    generic-worker create-dir               --create-dir CREATE-DIR
     generic-worker --help
     generic-worker --version
 
@@ -56,6 +64,14 @@ and reports back results to the queue.
     copy-to-temp-file                       This will copy the specified file to a temporary
                                             location and will return the temporary file path
                                             to stdout. Intended for internal use.
+    unarchive                               This will unarchive the specified archive file
+                                            into the specified destination directory. The
+                                            archive format is specified by the archive-format
+                                            argument. Intended for internal use.
+    create-file                             This will create a file at the specified path.
+                                            Intended for internal use.
+    create-dir                              This will create a directory (and any subdirectories)
+                                            at the specified path. Intended for internal use.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -75,6 +91,15 @@ and reports back results to the queue.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.` + sidSID() + `
     --copy-file COPY-FILE                   The path to the file to copy.
+    --archive-src ARCHIVE-SRC-FILE          The path to the archive file to unarchive.
+    --archive-dst ARCHIVE-DST-DIR           The path to the directory to unarchive the
+                                            archive file to. The directory must already
+                                            exist.
+    --archive-format ARCHIVE-FORMAT         The format of the archive file. Valid values
+                                            are 'zip', 'tar.gz', 'rar', 'tar.bz2', 'tar.xz',
+                                            'tar.zst', and 'tar.lz4'.
+    --create-file CREATE-FILE               The path to the file to create.
+    --create-dir CREATE-DIR                 The path to the directory to create.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 

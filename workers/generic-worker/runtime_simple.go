@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
 )
 
 // gwVersion returns a command that will run the
@@ -13,5 +13,5 @@ import (
 // ensure that the generic-worker binary is readable/executable
 // by the task user.
 func gwVersion() (*process.Command, error) {
-	return process.NewCommand([]string{runtime.GenericWorkerBinary(), "--version"}, "", []string{})
+	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "--version"}, "", []string{})
 }
