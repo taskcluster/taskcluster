@@ -16,7 +16,7 @@ have isolated these into utility functions and tested them thoroughly.  If you
 find a need for more utility functions, add them, but be careful to test lots
 of cases, including backslashes.  In particular, note that there is an
 "alternative" string-escaping syntax `E'..'` documented at
-https://www.postgresql.org/docs/11/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS.
+https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS.
 
 **Avoid Selecting Star**.  Using `select * from`, from a table which may someday
 grow additional columns, is likely to lead to unhappy surprises when data
@@ -27,7 +27,7 @@ timezone, so it could mean anything!  Use `timestamptz` instead.  This is
 enforced in CI.
 
 **Transactions Aren't Magic**. Bookmark [this mind-blowing
-page](https://www.postgresql.org/docs/11/transaction-iso.html), noting that
+page](https://www.postgresql.org/docs/15/transaction-iso.html), noting that
 *read committed* is the default and what we use for all transactions.  That
 means that even inside a transaction, two read operations may return different
 data.  Where necessary, use locking primitives such as `select .. for update`
@@ -37,7 +37,7 @@ regard.
 
 **Prefer JSONB over JSON**.  Use JSONB data types, and where possible use `jsonb_`
 utility functions.  The
-[docs](https://www.postgresql.org/docs/11/datatype-json.html) provide a good
+[docs](https://www.postgresql.org/docs/15/datatype-json.html) provide a good
 description of the difference between the types.
 
 **Always Use Objects for JSON data**.  The node-pg library has no context to

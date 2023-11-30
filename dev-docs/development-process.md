@@ -29,7 +29,7 @@ The currently-required version of Rust is in `rust-toolchain`.
 
 ### Postgres
 
-All Taskcluster services require a Postgres 11 or 15 server to run.
+All Taskcluster services require a Postgres 15 server to run.
 The easiest and best way to do this is to use docker, but if you prefer you can install a Postgres server locally.
 *NOTE* the test suites repeatedly drop the `public` schema and re-create it, effectively deleting all data in the database.
 Do not run these tests against a database instance that contains any useful data!
