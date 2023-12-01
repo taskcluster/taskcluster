@@ -12,6 +12,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@acuminous/bitsyntax@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "@acuminous/bitsyntax@npm:0.1.2"
+  dependencies:
+    buffer-more-ints: "npm:~1.0.0"
+    debug: "npm:^4.3.4"
+    safe-buffer: "npm:~5.1.2"
+  checksum: bb54b5a1cf33bd67c317febfa2e4e89be803e7fc6ffae91c675ecc97aee144edf1ca15779b8b2413f44545b47db3340120891efb86e4e23a98f8bfab08c123bf
+  languageName: node
+  linkType: hard
+
 "@apollo/protobufjs@npm:1.2.6":
   version: 1.2.6
   resolution: "@apollo/protobufjs@npm:1.2.6"
@@ -359,9 +370,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "@eslint/eslintrc@npm:2.1.2"
+"@eslint/eslintrc@npm:^2.1.3":
+  version: 2.1.3
+  resolution: "@eslint/eslintrc@npm:2.1.3"
   dependencies:
     ajv: "npm:^6.12.4"
     debug: "npm:^4.3.2"
@@ -372,14 +383,14 @@ __metadata:
     js-yaml: "npm:^4.1.0"
     minimatch: "npm:^3.1.2"
     strip-json-comments: "npm:^3.1.1"
-  checksum: 00efdc3797e6f05518060522b7788e5f5aff02f13facbd0c83b176c3dee86554023283a5f68542df379c5137685d2d29745c87f62bf2406a1d38d95471f44ce6
+  checksum: f4103f4346126292eb15581c5a1d12bef03410fd3719dedbdb92e1f7031d46a5a2d60de8566790445d5d4b70b75ba050876799a11f5fff8265a91ee3fa77dab0
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.52.0":
-  version: 8.52.0
-  resolution: "@eslint/js@npm:8.52.0"
-  checksum: cdcf8f9b54994fe1a5dc086c714a75dca5fe5899f9b362986abd12b3b5bec9c9755f7608e663ce072edd3fa3910cc752afef8d149fda0288a477652b65865a1c
+"@eslint/js@npm:8.54.0":
+  version: 8.54.0
+  resolution: "@eslint/js@npm:8.54.0"
+  checksum: d61fb4a0be6af2d8cb290121c329697664a75d6255a29926d5454fb02aeb02b87112f67fdf218d10abac42f90c570ac366126751baefc5405d0e017ed0c946c5
   languageName: node
   linkType: hard
 
@@ -1354,22 +1365,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@slack/web-api@npm:^6.7.1":
-  version: 6.9.0
-  resolution: "@slack/web-api@npm:6.9.0"
+"@slack/web-api@npm:^6.10.0":
+  version: 6.10.0
+  resolution: "@slack/web-api@npm:6.10.0"
   dependencies:
     "@slack/logger": "npm:^3.0.0"
     "@slack/types": "npm:^2.8.0"
     "@types/is-stream": "npm:^1.1.0"
     "@types/node": "npm:>=12.0.0"
-    axios: "npm:^0.27.2"
+    axios: "npm:^1.6.0"
     eventemitter3: "npm:^3.1.0"
     form-data: "npm:^2.5.0"
     is-electron: "npm:2.2.2"
     is-stream: "npm:^1.1.0"
     p-queue: "npm:^6.6.1"
     p-retry: "npm:^4.0.0"
-  checksum: 3ce1858a371e65160b955be08b1138d18599b07ed0f12f65e9d8a8a0ea7e2bf734fd2911073fc6d8b4ce8c8435c8d97c285eb6eefec1d52af3f747105bacba55
+  checksum: ce3ef74e3085b914104cc2eacb3c39fb90dfff74725d3bbad6b18d3be8a34c1fbe5508cc608ab6b96937ddbc13af85d7d2549fcabd0ff8756eb8de296775c5b4
   languageName: node
   linkType: hard
 
@@ -1892,17 +1903,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "amqplib@npm:0.8.0"
+"amqplib@npm:^0.10.3":
+  version: 0.10.3
+  resolution: "amqplib@npm:0.10.3"
   dependencies:
-    bitsyntax: "npm:~0.1.0"
-    bluebird: "npm:^3.7.2"
+    "@acuminous/bitsyntax": "npm:^0.1.2"
     buffer-more-ints: "npm:~1.0.0"
     readable-stream: "npm:1.x >=1.1.9"
-    safe-buffer: "npm:~5.2.1"
-    url-parse: "npm:~1.5.1"
-  checksum: 424a1ba0e98473f7f0d54184ff26b40756b2cab4119da2af3055124d2f8165755d03a276a66d21f7e7d2a1ec33048d4f686b5f2df99be03a38ddbd3590dd4516
+    url-parse: "npm:~1.5.10"
+  checksum: 873d557795edd3a0bdbec146dfa57fdb0d7791951fc44f34fac8af6d58d5b5113ed896a39636e34a967ac4b6fb9f415cbb279c3e6e9af028dcd3d53120c56588
   languageName: node
   linkType: hard
 
@@ -2115,9 +2124,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-core@npm:^3.12.1":
-  version: 3.12.1
-  resolution: "apollo-server-core@npm:3.12.1"
+"apollo-server-core@npm:^3.13.0":
+  version: 3.13.0
+  resolution: "apollo-server-core@npm:3.13.0"
   dependencies:
     "@apollo/utils.keyvaluecache": "npm:^1.0.1"
     "@apollo/utils.logger": "npm:^1.0.0"
@@ -2144,7 +2153,7 @@ __metadata:
     whatwg-mimetype: "npm:^3.0.0"
   peerDependencies:
     graphql: ^15.3.0 || ^16.0.0
-  checksum: 8187652dd46d0c28a0183186cf09a90d05d6a76d3fcf092fea2e2cfd062f8c802aaaffacd2f4bc6275a9d0892fe5abd6572da9ca0ea4b8f2caa57ddf99113ea6
+  checksum: 60f2265af914c56621840e8375ba1f3ec9f95c3d827b6ccecaaa69d64f970e03d617421049a0f4038de8f9748e2f8fbfd6487f4d83ca01190fc4f52fbe15fc33
   languageName: node
   linkType: hard
 
@@ -2166,9 +2175,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-express@npm:^3.11.1":
-  version: 3.12.1
-  resolution: "apollo-server-express@npm:3.12.1"
+"apollo-server-express@npm:^3.13.0":
+  version: 3.13.0
+  resolution: "apollo-server-express@npm:3.13.0"
   dependencies:
     "@types/accepts": "npm:^1.3.5"
     "@types/body-parser": "npm:1.19.2"
@@ -2176,7 +2185,7 @@ __metadata:
     "@types/express": "npm:4.17.14"
     "@types/express-serve-static-core": "npm:4.17.31"
     accepts: "npm:^1.3.5"
-    apollo-server-core: "npm:^3.12.1"
+    apollo-server-core: "npm:^3.13.0"
     apollo-server-types: "npm:^3.8.0"
     body-parser: "npm:^1.19.0"
     cors: "npm:^2.8.5"
@@ -2184,7 +2193,7 @@ __metadata:
   peerDependencies:
     express: ^4.17.1
     graphql: ^15.3.0 || ^16.0.0
-  checksum: 11fdf9c1768caac3145e47b689433959fd0eb96d4642c2e5a6559b47d0e7c73cc1564e10e2a6b80dac154947902550aebd5c849e7547c23b73295a4ea5e262d2
+  checksum: b2c741a6f78350886913b606471d86704b3015ab8ed8a3035df5652c27e0ee12e3d52f927af06546ac8f6c89f424b6773e5214dadab2bc474212e80f6b329feb
   languageName: node
   linkType: hard
 
@@ -2385,9 +2394,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:^2.1426.0":
-  version: 2.1483.0
-  resolution: "aws-sdk@npm:2.1483.0"
+"aws-sdk@npm:^2.1509.0":
+  version: 2.1509.0
+  resolution: "aws-sdk@npm:2.1509.0"
   dependencies:
     buffer: "npm:4.9.2"
     events: "npm:1.1.1"
@@ -2399,7 +2408,7 @@ __metadata:
     util: "npm:^0.12.4"
     uuid: "npm:8.0.0"
     xml2js: "npm:0.5.0"
-  checksum: 4fc123328acd70320156388a517ce6a8b8a0fe7c2da595b59a15b4b1ea57d9025da2fbc02b26673798c3ea36bd516713c2539e94303e957fb7ba549816318123
+  checksum: 86938abbbd368b6425c4d408bbec65dc5f7bd11f790e16a6b8d0bc2fb86e92039f126b4e73f9da922ae7e8719d2755dd8e2dc3c7a873c2010ef7fc1c1e62c570
   languageName: node
   linkType: hard
 
@@ -2423,16 +2432,6 @@ __metadata:
   dependencies:
     follow-redirects: "npm:^1.14.0"
   checksum: fbcff55ec68f71f02d3773d467db2fcecdf04e749826c82c2427a232f9eba63242150a05f15af9ef15818352b814257541155de0281f8fb2b7e8a5b79f7f2142
-  languageName: node
-  linkType: hard
-
-"axios@npm:^0.27.2":
-  version: 0.27.2
-  resolution: "axios@npm:0.27.2"
-  dependencies:
-    follow-redirects: "npm:^1.14.9"
-    form-data: "npm:^4.0.0"
-  checksum: 76d673d2a90629944b44d6f345f01e58e9174690f635115d5ffd4aca495d99bcd8f95c590d5ccb473513f5ebc1d1a6e8934580d0c57cdd0498c3a101313ef771
   languageName: node
   linkType: hard
 
@@ -2521,17 +2520,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bitsyntax@npm:~0.1.0":
-  version: 0.1.0
-  resolution: "bitsyntax@npm:0.1.0"
-  dependencies:
-    buffer-more-ints: "npm:~1.0.0"
-    debug: "npm:~2.6.9"
-    safe-buffer: "npm:~5.1.2"
-  checksum: c6fdfff63585ba83a1b62a61d14618dff8f1b3ffabaceb4c0c674bcd8d8a9072b475dd438890ba3907f3b34d27ec705564d6614e1dda10c06e609194d30fa143
-  languageName: node
-  linkType: hard
-
 "bl@npm:^4.0.3, bl@npm:^4.1.0":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
@@ -2579,7 +2567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:^1.18.2, body-parser@npm:^1.19.0":
+"body-parser@npm:1.20.2, body-parser@npm:^1.18.2, body-parser@npm:^1.19.0":
   version: 1.20.2
   resolution: "body-parser@npm:1.20.2"
   dependencies:
@@ -2812,7 +2800,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"call-bind@npm:^1.0.0, call-bind@npm:^1.0.2, call-bind@npm:^1.0.4":
+"call-bind@npm:^1.0.0, call-bind@npm:^1.0.2, call-bind@npm:^1.0.4, call-bind@npm:^1.0.5":
   version: 1.0.5
   resolution: "call-bind@npm:1.0.5"
   dependencies:
@@ -3333,21 +3321,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron-parser@npm:4.7.0":
-  version: 4.7.0
-  resolution: "cron-parser@npm:4.7.0"
+"cron-parser@npm:4.9.0":
+  version: 4.9.0
+  resolution: "cron-parser@npm:4.9.0"
   dependencies:
-    luxon: "npm:^3.1.0"
-  checksum: e226534c8e6a8988e18e312bfba32292e1b0146566085370d338f552f29f92df89f48c5a9b013e6a85c9dff5b6796004c7404cd5bb7fd46dbe162a70c682bfd7
+    luxon: "npm:^3.2.1"
+  checksum: 348622bdcd1a15695b61fc33af8a60133e5913a85cf99f6344367579e7002896514ba3b0a9d6bb569b02667d6b06836722bf2295fcd101b3de378f71d37bed0b
   languageName: node
   linkType: hard
 
-"cronstrue@npm:^2.24.0":
-  version: 2.41.0
-  resolution: "cronstrue@npm:2.41.0"
+"cronstrue@npm:^2.44.0":
+  version: 2.44.0
+  resolution: "cronstrue@npm:2.44.0"
   bin:
     cronstrue: bin/cli.js
-  checksum: 5ee3a9c88a2693c91ddaecab5c38d871b3a27b829d71e161f5a0b7455eb7e0d9e25da4e01e11bf671fb5805a4897007f62c32d1526f37285b0a9fe845e484f98
+  checksum: f8f80fc81edd51b92ec147ac8e0395b1b514b742c6c7ce0d574fc7da2ad80c02cfd1b9ab728d1867743ec955c2871d974a0bde95c17b42fe664b111ff3978b66
   languageName: node
   linkType: hard
 
@@ -3461,7 +3449,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:2.6.9, debug@npm:2.x.x, debug@npm:~2.6.9":
+"debug@npm:2.6.9, debug@npm:2.x.x":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:
@@ -4090,14 +4078,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.52.0":
-  version: 8.52.0
-  resolution: "eslint@npm:8.52.0"
+"eslint@npm:^8.54.0":
+  version: 8.54.0
+  resolution: "eslint@npm:8.54.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.2.0"
     "@eslint-community/regexpp": "npm:^4.6.1"
-    "@eslint/eslintrc": "npm:^2.1.2"
-    "@eslint/js": "npm:8.52.0"
+    "@eslint/eslintrc": "npm:^2.1.3"
+    "@eslint/js": "npm:8.54.0"
     "@humanwhocodes/config-array": "npm:^0.11.13"
     "@humanwhocodes/module-importer": "npm:^1.0.1"
     "@nodelib/fs.walk": "npm:^1.2.8"
@@ -4134,7 +4122,7 @@ __metadata:
     text-table: "npm:^0.2.0"
   bin:
     eslint: bin/eslint.js
-  checksum: 9269b32ccf6e9947d994f871888d5b541da4a8539160ee19d80ecac0c70c51a7d3a7c111a58cf1adf81f093a7c1b5564edefa5c6dbe29b1df9c9f3e30700af30
+  checksum: 4f205f832bdbd0218cde374b067791f4f76d7abe8de86b2dc849c273899051126d912ebf71531ee49b8eeaa22cad77febdc8f2876698dc2a76e84a8cb976af22
   languageName: node
   linkType: hard
 
@@ -4615,7 +4603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.14.9, follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.15.0":
   version: 1.15.3
   resolution: "follow-redirects@npm:1.15.3"
   peerDependenciesMeta:
@@ -5886,6 +5874,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isarray@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "isarray@npm:2.0.5"
+  checksum: 4199f14a7a13da2177c66c31080008b7124331956f47bca57dd0b6ea9f11687aa25e565a2c7a2b519bc86988d10398e3049a1f5df13c9f6b7664154690ae79fd
+  languageName: node
+  linkType: hard
+
 "isexe@npm:^2.0.0":
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
@@ -6045,12 +6040,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-e@npm:^4.5.0":
-  version: 4.5.3
-  resolution: "json-e@npm:4.5.3"
+"json-e@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "json-e@npm:4.6.0"
   dependencies:
     json-stable-stringify-without-jsonify: "npm:^1.0.1"
-  checksum: ecd09c1f0164a85a0a64b8c8eacae4e7f66620ac4d2801f73650ff954b9433b3a7739b2d6cda765c10cd8a7cfd1cac7b226fecd1c8c0fe658155285a8e8d2d1d
+  checksum: 322cce67bc1a5e2e4e6524e850ad48fd0c8b6c8e8a14b36743eeadd907c5e6d0836943934b00a20f77a6ae061f88d90044f32e4e415cbdb0505e064c5409685f
   languageName: node
   linkType: hard
 
@@ -6092,12 +6087,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-stable-stringify@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "json-stable-stringify@npm:1.0.2"
+"json-stable-stringify@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "json-stable-stringify@npm:1.1.0"
   dependencies:
+    call-bind: "npm:^1.0.5"
+    isarray: "npm:^2.0.5"
     jsonify: "npm:^0.0.1"
-  checksum: 502d021c3c59c09587faa40d7693d77c00460fd6c68bae95d6e35804909ec8c4aec71b136d3a09df61a7ebf803eb6e820f23ede76b77e74b8b02c76afb2ada8c
+    object-keys: "npm:^1.1.1"
+  checksum: 8888ac86dbf55c1d494bdf40705171c30884686911c37383d3aab777754bf5c1d60dc7a4dfd67f32ba37b184da5c99948a382f1c2912895a35453002e253314b
   languageName: node
   linkType: hard
 
@@ -6603,10 +6601,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^3.1.0":
-  version: 3.4.3
-  resolution: "luxon@npm:3.4.3"
-  checksum: 65ad727684d367af9c8fcbde05ad7989ef2436a4496b62d993059baaa641e90a5fa74e98f34ee2ff29f7af7f2b27238ca78b87834f9068624e4133d786f87bc7
+"luxon@npm:^3.2.1":
+  version: 3.4.4
+  resolution: "luxon@npm:3.4.4"
+  checksum: 02e26a0b039c11fd5b75e1d734c8f0332c95510f6a514a9a0991023e43fb233884da02d7f966823ffb230632a733fc86d4a4b1e63c3fbe00058b8ee0f8c728af
   languageName: node
   linkType: hard
 
@@ -7274,15 +7272,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nock@npm:13.3.0":
-  version: 13.3.0
-  resolution: "nock@npm:13.3.0"
+"nock@npm:13.4.0":
+  version: 13.4.0
+  resolution: "nock@npm:13.4.0"
   dependencies:
     debug: "npm:^4.1.0"
     json-stringify-safe: "npm:^5.0.1"
-    lodash: "npm:^4.17.21"
     propagate: "npm:^2.0.0"
-  checksum: eafc39aae9300b4b9dc3bd93ba10087851f7d184550781faae5d6e9e13a3e2376e7faac1f0d27bdeb9fba1fa7dcc45f1772a7f1336bbfc56b377aad53c96c81d
+  checksum: b2e4407e71b6e9c42bc74bf631c008b79fa06b17e885d270b8f3ac7081d029dd966cd09024acb96ae5dd77a4737cc86951340715ffabece6893a62dc71ce5b08
   languageName: node
   linkType: hard
 
@@ -7813,14 +7810,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "passport@npm:0.6.0"
+"passport@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "passport@npm:0.7.0"
   dependencies:
     passport-strategy: "npm:1.x.x"
     pause: "npm:0.0.1"
     utils-merge: "npm:^1.0.1"
-  checksum: 1d8651a4a1a72b84ea08c498cff9cfc209aebfe18baed4cf93292ded3f8e30a04e30b404fdfce39dfb6aa7247e205f1df43fbfd7bc7c1a67a600884359d46ee6
+  checksum: 08c940b86e4adbfe43e753f8097300a5a9d1ce9a3aa002d7b12d27770943a1a87202c54597c0f04dbfd4117d67de76303433577512fc19c7e364fec37b0d3fc5
   languageName: node
   linkType: hard
 
@@ -8793,7 +8790,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:5.2.1, safe-buffer@npm:^5.0.1, safe-buffer@npm:^5.1.0, safe-buffer@npm:^5.1.2, safe-buffer@npm:~5.2.0, safe-buffer@npm:~5.2.1":
+"safe-buffer@npm:5.2.1, safe-buffer@npm:^5.0.1, safe-buffer@npm:^5.1.0, safe-buffer@npm:^5.1.2, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: 6501914237c0a86e9675d4e51d89ca3c21ffd6a31642efeba25ad65720bce6921c9e7e974e5be91a786b25aa058b5303285d3c15dbabf983a919f5f630d349f3
@@ -9419,9 +9416,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"subscriptions-transport-ws@npm:^0.9.7":
-  version: 0.9.19
-  resolution: "subscriptions-transport-ws@npm:0.9.19"
+"subscriptions-transport-ws@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "subscriptions-transport-ws@npm:0.11.0"
   dependencies:
     backo2: "npm:^1.0.2"
     eventemitter3: "npm:^3.1.0"
@@ -9429,8 +9426,8 @@ __metadata:
     symbol-observable: "npm:^1.0.4"
     ws: "npm:^5.2.0 || ^6.0.0 || ^7.0.0"
   peerDependencies:
-    graphql: ">=0.10.0"
-  checksum: 6f2ade56865f0ba291d3ff82c79781b051c2374873bac853286fedfdbc05001b8c4018ab7cba44af667ead7f573e48d18892d58a8f9ca8d90dfb4bff5c125045
+    graphql: ^15.7.2 || ^16.0.0
+  checksum: 697441333e59b6932bff51212e29f8dcac477badb067971bd94c30c5f3f7a2e2ea72fb1a21f3c1abbf32774da01515aa24739e620be45f6d576784bd96fd10da
   languageName: node
   linkType: hard
 
@@ -9538,7 +9535,7 @@ __metadata:
   resolution: "taskcluster-auth@workspace:services/auth"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9548,7 +9545,7 @@ __metadata:
   resolution: "taskcluster-built-in-workers@workspace:services/built-in-workers"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9570,7 +9567,7 @@ __metadata:
   resolution: "taskcluster-db@workspace:db"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9580,7 +9577,7 @@ __metadata:
   resolution: "taskcluster-github@workspace:services/github"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9590,7 +9587,7 @@ __metadata:
   resolution: "taskcluster-hooks@workspace:services/hooks"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9600,7 +9597,7 @@ __metadata:
   resolution: "taskcluster-index@workspace:services/index"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9616,7 +9613,7 @@ __metadata:
   resolution: "taskcluster-lib-api@workspace:libraries/api"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9632,7 +9629,7 @@ __metadata:
   resolution: "taskcluster-lib-app@workspace:libraries/app"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9648,7 +9645,7 @@ __metadata:
   resolution: "taskcluster-lib-config@workspace:libraries/config"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9664,7 +9661,7 @@ __metadata:
   resolution: "taskcluster-lib-iterate@workspace:libraries/iterate"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9680,7 +9677,7 @@ __metadata:
   resolution: "taskcluster-lib-loader@workspace:libraries/loader"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9696,7 +9693,7 @@ __metadata:
   resolution: "taskcluster-lib-monitor@workspace:libraries/monitor"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9712,7 +9709,7 @@ __metadata:
   resolution: "taskcluster-lib-postgres@workspace:libraries/postgres"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9728,7 +9725,7 @@ __metadata:
   resolution: "taskcluster-lib-pulse@workspace:libraries/pulse"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9744,7 +9741,7 @@ __metadata:
   resolution: "taskcluster-lib-references@workspace:libraries/references"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9769,7 +9766,7 @@ __metadata:
   resolution: "taskcluster-lib-testing@workspace:libraries/testing"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9792,7 +9789,7 @@ __metadata:
   resolution: "taskcluster-lib-validate@workspace:libraries/validate"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9802,7 +9799,7 @@ __metadata:
   resolution: "taskcluster-notify@workspace:services/notify"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9812,7 +9809,7 @@ __metadata:
   resolution: "taskcluster-object@workspace:services/object"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9822,7 +9819,7 @@ __metadata:
   resolution: "taskcluster-purge-cache@workspace:services/purge-cache"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9832,7 +9829,7 @@ __metadata:
   resolution: "taskcluster-queue@workspace:services/queue"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9842,7 +9839,7 @@ __metadata:
   resolution: "taskcluster-secrets@workspace:services/secrets"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9853,7 +9850,7 @@ __metadata:
   dependencies:
     c8: "npm:^8.0.1"
     cross-env: "npm:^7.0.3"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     eslint-formatter-codeframe: "npm:^7.32.1"
     mocha: "npm:^10.2.0"
   languageName: unknown
@@ -9864,7 +9861,7 @@ __metadata:
   resolution: "taskcluster-worker-manager@workspace:services/worker-manager"
   dependencies:
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     mocha: "npm:^10.2.0"
   languageName: unknown
   linkType: soft
@@ -9884,22 +9881,22 @@ __metadata:
     "@octokit/plugin-retry": "npm:^3.0.4"
     "@octokit/rest": "npm:^18.0.0"
     "@sentry/node": "npm:^6.0.0"
-    "@slack/web-api": "npm:^6.7.1"
+    "@slack/web-api": "npm:^6.10.0"
     acorn-loose: "npm:^8.0.1"
     acorn-walk: "npm:^8.0.0"
     ajv: "npm:^8.12.0"
     ajv-formats: "npm:^2.1.1"
-    amqplib: "npm:^0.8.0"
+    amqplib: "npm:^0.10.3"
     apollo-cache-inmemory: "npm:^1.6.3"
     apollo-client: "npm:^2.6.4"
     apollo-link-http: "npm:^1.5.16"
     apollo-link-ws: "npm:^1.0.19"
-    apollo-server-core: "npm:^3.12.1"
-    apollo-server-express: "npm:^3.11.1"
+    apollo-server-core: "npm:^3.13.0"
+    apollo-server-express: "npm:^3.13.0"
     app-root-dir: "npm:^1.0.2"
     assume: "npm:^2.1.0"
-    aws-sdk: "npm:^2.1426.0"
-    body-parser: "npm:1.20.1"
+    aws-sdk: "npm:^2.1509.0"
+    body-parser: "npm:1.20.2"
     body-parser-graphql: "npm:^1.0.0"
     builtin-modules: "npm:^3.1.0"
     c8: "npm:^8.0.1"
@@ -9910,8 +9907,8 @@ __metadata:
     content-security-policy: "npm:^0.3.0"
     content-type: "npm:^1.0.4"
     cors: "npm:^2.8.4"
-    cron-parser: "npm:4.7.0"
-    cronstrue: "npm:^2.24.0"
+    cron-parser: "npm:4.9.0"
+    cronstrue: "npm:^2.44.0"
     cross-env: "npm:^7.0.2"
     dataloader: "npm:^2.0.0"
     debug: "npm:^4.1.1"
@@ -9920,7 +9917,7 @@ __metadata:
     ejs: "npm:^3.1.7"
     email-templates: "npm:^10.0.1"
     error-stack-parser: "npm:^2.0.2"
-    eslint: "npm:^8.52.0"
+    eslint: "npm:^8.54.0"
     express: "npm:4.18.2"
     express-session: "npm:^1.17.3"
     express-sslify: "npm:1.2.0"
@@ -9946,9 +9943,9 @@ __metadata:
     is-uuid: "npm:^1.0.2"
     iterall: "npm:^1.2.2"
     js-yaml: "npm:^4.0.0"
-    json-e: "npm:^4.5.0"
+    json-e: "npm:^4.6.0"
     json-parameterization: "npm:^2.0.1"
-    json-stable-stringify: "npm:^1.0.1"
+    json-stable-stringify: "npm:^1.1.0"
     jsonwebtoken: "npm:^9.0.0"
     jwks-rsa: "npm:^2.1.5"
     lodash: "npm:4.17.21"
@@ -9966,7 +9963,7 @@ __metadata:
     moment: "npm:^2.29.4"
     netmask: "npm:^2.0.0"
     newrelic: "npm:^7.0.0"
-    nock: "npm:13.3.0"
+    nock: "npm:13.4.0"
     node-forge: "npm:^1.0.0"
     nodemailer: "npm:^6.8.0"
     oauth2orize: "npm:^1.11.0"
@@ -9974,7 +9971,7 @@ __metadata:
     p-queue: "npm:^6.6.2"
     p-synchronize: "npm:^1.0.0"
     parseurl: "npm:^1.3.3"
-    passport: "npm:^0.6.0"
+    passport: "npm:^0.7.0"
     passport-auth0: "npm:^1.4.3"
     passport-github: "npm:^1.1.0"
     pg: "npm:^8.11.1"
@@ -9992,7 +9989,7 @@ __metadata:
     sinon: "npm:^13.0.0"
     slugid: "npm:^3.2.0"
     snake-case: "npm:^3.0.3"
-    subscriptions-transport-ws: "npm:^0.9.7"
+    subscriptions-transport-ws: "npm:^0.11.0"
     superagent: "npm:^6.0.0"
     taskcluster-client: "link:clients/client"
     taskcluster-db: "link:db"
@@ -10401,7 +10398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-parse@npm:~1.5.1":
+"url-parse@npm:~1.5.10":
   version: 1.5.10
   resolution: "url-parse@npm:1.5.10"
   dependencies:
