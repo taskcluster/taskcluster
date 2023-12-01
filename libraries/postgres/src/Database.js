@@ -443,8 +443,8 @@ class Database {
       `);
       const ver = version.rows[0].current_setting;
       const majorVersion = Math.floor(ver / 10000);
-      if (majorVersion !== 11 && majorVersion !== 15) {
-        throw new Error("Postgres version is not 11.x or 15.x. Please upgrade to 11.x or 15.x");
+      if (majorVersion !== 15) {
+        throw new Error("Postgres version is not 15.x. Please change to 15.x");
       }
     });
   }
