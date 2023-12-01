@@ -151,7 +151,7 @@
     "moment": "^2.29.4",
     "nock": "13.3.0",
     "open-editor": "^3.0.0",
-    "qlobber": "^5.0.3",
+    "qlobber": "^8.0.0",
     "semver": "^7.5.2",
     "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
