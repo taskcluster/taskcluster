@@ -16,7 +16,7 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "cross-env": "^7.0.3",
-    "eslint": "^8.52.0",
+    "eslint": "^8.54.0",
     "eslint-formatter-codeframe": "^7.32.1",
     "mocha": "^10.2.0"
   }
