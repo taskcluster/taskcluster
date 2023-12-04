@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}

@@ -3,6 +3,30 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#5514](https://github.com/taskcluster/taskcluster/issues/5514)
+Removes postgres v11 support.
+
+▶ [minor] [#6716](https://github.com/taskcluster/taskcluster/issues/6716)
+Services now support graceful server termination by listening to `SIGTERM` and letting existing connections to be served while rejecting new connections.
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* bump the deps group in /ui with 21 updates (9a5f92ace)
+* build(deps): bump the deps group with 14 updates (2c4e72139)
+* build(deps-dev): bump the deps group in /clients/client with 1 update (7d6e6cb72)
+* build(deps): bump taskcluster from 57.0.1 to 58.0.2 in /taskcluster (6cdb51eab)
+* build(deps): bump the deps group with 8 updates (6eff15e94)
+* build(deps): bump aiohttp from 3.8.6 to 3.9.0 in /taskcluster (cf9985828)
+
+</details>
+
 ## v58.0.2
 
 ### GENERAL

@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v58/clients/client-go"
-	"github.com/taskcluster/taskcluster/v58/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v58/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
+	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v59/clients/client-shell/config"
 )
 
 var (

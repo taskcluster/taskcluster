@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-auth",
-  "version": "58.0.2",
+  "version": "59.0.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

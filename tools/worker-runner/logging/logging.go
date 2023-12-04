@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v58/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v58/tools/worker-runner/logging/logging"
-	"github.com/taskcluster/taskcluster/v58/tools/worker-runner/logging/stdio"
+	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/logging/stdio"
 )
 
 var Destination logging.Logger

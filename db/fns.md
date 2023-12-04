@@ -2466,16 +2466,6 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
-### deprecated methods
-
-* `azure_queue_count(queue_name text)` (compatibility guaranteed until v59.0.0)
-* `azure_queue_delete(queue_name text, message_id uuid, pop_receipt uuid)` (compatibility guaranteed until v59.0.0)
-* `azure_queue_delete_expired()` (compatibility guaranteed until v59.0.0)
-* `azure_queue_get(queue_name text, visible timestamp, count integer)` (compatibility guaranteed until v59.0.0)
-* `azure_queue_put_extra(queue_name text, message_text text, visible timestamp, expires timestamp, task_queue_id text, priority int)` (compatibility guaranteed until v59.0.0)
-* `azure_queue_update(queue_name text, message_text text, message_id uuid, pop_receipt uuid, visible timestamp)` (compatibility guaranteed until v59.0.0)
-* `queue_pending_tasks_put(task_queue_id_in text, priority_in integer, task_id_in text, run_id_in integer, hint_id_in text, expires_in timestamp, queue_name_compat_in text)` (compatibility guaranteed until v59.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)

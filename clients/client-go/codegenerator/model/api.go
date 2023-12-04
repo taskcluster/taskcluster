@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v58/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v59/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v58/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client
