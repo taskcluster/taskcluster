@@ -117,6 +117,21 @@ suite(testing.suiteName(), function() {
       throw new Error('expected exception not seen');
     });
 
+    test('graceful shutdown', async function() {
+      const conn = request.get('http://localhost:1459/__heartbeat__')
+        .set('Connection', 'keep-alive');
+
+      // test sigterm signal stops accepting new connections
+      await server.terminate();
+
+      assert(conn.abort, 'connection aborted');
+      try {
+        await request.get('http://localhost:1459/__heartbeat__');
+      } catch (err) {
+        assert.equal(err.code, 'ECONNREFUSED');
+      }
+    });
+
     teardown(function() {
       mockFs.restore();
     });

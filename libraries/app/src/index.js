@@ -40,12 +40,46 @@ const createServer = function() {
     res.status(404).json({ error: 'Not found' });
   });
 
+  let server;
+  let terminating;
+
+  function shutdown() {
+    if (terminating || !server) {
+      debug('Already terminating or server not started');
+      return terminating;
+    }
+
+    terminating = true;
+    debug('Shutting down server');
+
+    server.getConnections((err, count) => {
+      if (err) {
+        debug('Error getting connections', err);
+        return;
+      }
+      debug('Connections open: ' + count);
+    });
+    server.terminate()
+      .then(() => {
+        debug('Server terminated');
+        process.exit(0);
+      });
+  }
+  process.on('SIGTERM', shutdown);
+
   return new Promise((accept, reject) => {
     // Launch HTTP server
-    const server = http.createServer(this);
+    server = http.createServer(this);
 
     // Add a little method to help kill the server
     server.terminate = () => {
+      // tell existing connections to close
+      server.on('request', (req, res) => {
+        if (!res.headersSent) {
+          res.setHeader('Connection', 'close');
+        }
+      });
+
       return new Promise((accept, reject) => {
         server.close(accept);
       }).then(() => {

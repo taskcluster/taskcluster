@@ -225,6 +225,27 @@
   },
   {
     "element": "h1",
+    "id": "cloud-networking",
+    "path": "/manual/deploying/cloud-networking",
+    "subtitle": null,
+    "title": "Cloud Networking"
+  },
+  {
+    "element": "h2",
+    "id": "graceful-shutdown",
+    "path": "/manual/deploying/cloud-networking",
+    "subtitle": "Graceful Shutdown",
+    "title": "Cloud Networking"
+  },
+  {
+    "element": "h2",
+    "id": "keep-alive-timeouts",
+    "path": "/manual/deploying/cloud-networking",
+    "subtitle": "Keep-Alive Timeouts",
+    "title": "Cloud Networking"
+  },
+  {
+    "element": "h1",
     "id": "database-configuration",
     "path": "/manual/deploying/database",
     "subtitle": null,
