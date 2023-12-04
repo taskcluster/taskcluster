@@ -20,13 +20,6 @@ spec:
       serviceAccountName: taskcluster-purge-cache
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 45
-      lifecycle:
-        preStop:
-          exec:
-            command:
-              - /bin/sh
-              - '-c'
-              - sleep 30
       containers:
         - name: taskcluster-purge-cache-web
           image: '{{ .Values.dockerImage }}'
@@ -67,3 +60,10 @@ spec:
             initialDelaySeconds: 86400
             periodSeconds: 60
             failureThreshold: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - '-c'
+                  - sleep 30

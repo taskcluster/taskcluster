@@ -19,10 +19,6 @@ spec:
       # new connections would be rejected as server will be closed
       # and under normal conditions pod will stop faster than this timeout
       terminationGracePeriodSeconds: 45
-      lifecycle:
-        preStop:
-          exec:
-            command: ['/bin/sh', '-c', 'sleep 30']
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
@@ -72,3 +68,10 @@ spec:
           initialDelaySeconds: 86400
           periodSeconds: 60
           failureThreshold: 1
+        # allow graceful termination of existing connections and let them finish
+        lifecycle:
+          $if: 'needsService'
+          then:
+            preStop:
+              exec:
+                command: ['/bin/sh', '-c', 'sleep 30']
