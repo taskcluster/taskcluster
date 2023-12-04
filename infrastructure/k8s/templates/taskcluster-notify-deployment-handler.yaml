@@ -19,7 +19,14 @@ spec:
     spec:
       serviceAccountName: taskcluster-notify
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: 45
+      lifecycle:
+        preStop:
+          exec:
+            command:
+              - /bin/sh
+              - '-c'
+              - sleep 30
       containers:
         - name: taskcluster-notify-handler
           image: '{{ .Values.dockerImage }}'
