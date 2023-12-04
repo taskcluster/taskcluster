@@ -520,7 +520,7 @@ func TestMountFileAtCWD(t *testing.T) {
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				{
-					`Cannot mount file .* since it is a directory`,
+					"Cannot mount file at path .* since it already exists as a directory",
 				},
 			},
 		},

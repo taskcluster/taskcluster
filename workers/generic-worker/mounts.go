@@ -144,13 +144,6 @@ func MkdirAll(taskMount *TaskMount, dir string) error {
 	return MkdirAllTaskUser(dir)
 }
 
-func MkdirAllOrDie(taskMount *TaskMount, dir string) {
-	err := MkdirAll(taskMount, dir)
-	if err != nil {
-		panic(fmt.Errorf("[mounts] Not able to create directory %v: %v", dir, err))
-	}
-}
-
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 	_, err := os.Stat(stateFile)
 	if err != nil {
@@ -513,8 +506,11 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		src := directoryCaches[w.CacheName].Location
 		parentDir := filepath.Dir(target)
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
-		MkdirAllOrDie(taskMount, parentDir)
-		err := RenameCrossDevice(src, target)
+		err := MkdirAll(taskMount, parentDir)
+		if err != nil {
+			return fmt.Errorf("[mounts] Not able to create directory %v: %v", parentDir, err)
+		}
+		err = RenameCrossDevice(src, target)
 		if err != nil {
 			panic(fmt.Errorf("[mounts] Not able to rename dir %v as %v: %v", src, target, err))
 		}
@@ -542,7 +538,10 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			}
 		} else {
 			// no preloaded content => just create dir in place
-			MkdirAllOrDie(taskMount, target)
+			err := MkdirAll(taskMount, target)
+			if err != nil {
+				return fmt.Errorf("[mounts] Not able to create directory %v: %v", target, err)
+			}
 		}
 	}
 	// Regardless of whether we are running as current user, grant task user access
@@ -633,7 +632,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 
 	file := filepath.Join(taskContext.TaskDir, f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
-		return fmt.Errorf("Cannot mount file %v since it is a directory", file)
+		return fmt.Errorf("Cannot mount file at path %v since it already exists as a directory", file)
 	}
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {

@@ -46,8 +46,9 @@ and reports back results to the queue.
                                             to stdout. Intended for internal use.
     create-file                             This will create a file at the specified path.
                                             Intended for internal use.
-    create-dir                              This will create a directory (and any subdirectories)
-                                            at the specified path. Intended for internal use.
+    create-dir                              This will create a directory (including missing
+                                            parent directories) at the specified path.
+                                            Intended for internal use.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See

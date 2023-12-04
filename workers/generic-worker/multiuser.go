@@ -237,7 +237,11 @@ func MkdirAllTaskUser(dir string) error {
 		if err != nil {
 			return err
 		}
-		return file.Close()
+		err = file.Close()
+		if err != nil {
+			return err
+		}
+		return os.Remove(file.Name())
 	}
 
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
