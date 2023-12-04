@@ -1664,13 +1664,35 @@
             },
             "name": "cloud-credentials",
             "next": {
-              "path": "manual/deploying/database",
-              "title": "Database Configuration"
+              "path": "manual/deploying/cloud-networking",
+              "title": "Cloud Networking"
             },
             "path": "manual/deploying/cloud-credentials",
             "prev": {
               "path": "manual/deploying/backups",
               "title": "Backups"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
+              "title": "Cloud Networking"
+            },
+            "name": "cloud-networking",
+            "next": {
+              "path": "manual/deploying/database",
+              "title": "Database Configuration"
+            },
+            "path": "manual/deploying/cloud-networking",
+            "prev": {
+              "path": "manual/deploying/cloud-credentials",
+              "title": "Cloud Credentials"
             },
             "up": {
               "path": "manual/deploying",
@@ -1691,8 +1713,8 @@
             },
             "path": "manual/deploying/database",
             "prev": {
-              "path": "manual/deploying/cloud-credentials",
-              "title": "Cloud Credentials"
+              "path": "manual/deploying/cloud-networking",
+              "title": "Cloud Networking"
             },
             "up": {
               "path": "manual/deploying",

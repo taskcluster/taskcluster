@@ -19,6 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-web-server
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 120
       containers:
         - name: taskcluster-web-server-web
           image: '{{ .Values.dockerImage }}'

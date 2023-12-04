@@ -1,0 +1,33 @@
+---
+title: Cloud Networking
+---
+
+# Cloud Networking
+
+If you are using kubernetes deployment you would likely to use external Load Balancer
+and Ingress Controller to expose your services to the internet.
+
+You could also use autoscaling to create and remove pods based on the load.
+
+## Keep-Alive Timeouts
+
+It is important to set up keep-alive timeouts for your load balancer and ingress controller properly.
+
+Usually cloud's load balancer has fixed timeout for keep-alive connections.
+In case of [GCP](https://cloud.google.com/load-balancing/docs/https#timeout-keepalive-backends) it is 600 seconds.
+
+Ingress controller should have keep-alive timeout that's larger than load balancer's timeout.
+For example, 650 seconds.
+
+Ingress, in turn, opens connections to the pods-services, which should have keep-alive timeout larger than that.
+This can be set per-service using `KEEP_ALIVE_TIMEOUT_SECONDS` environment variable.
+
+## Graceful Shutdown
+
+When you are using autoscaling, pods can be removed at any time.
+To make sure that existing connections are not dropped, you should use graceful shutdown.
+
+Services and pods listen to `SIGTERM` signal and stop accepting new connections, while letting existing to finish.
+Kubernetes deployments also have `terminationGracePeriodSeconds` option, which is set to 120 seconds by default.
+
+If you are using different configuration make sure to handle termination gracefuly.

@@ -15,6 +15,10 @@ spec:
     spec:
       serviceAccountName: ${projectName}
       imagePullSecrets: IMAGE_PULL_SECRETS_STRING
+      # allow server to terminate gracefully while still serving existing connections
+      # new connections would be rejected as server will be closed
+      # and under normal conditions pod will stop faster than this timeout
+      terminationGracePeriodSeconds: 120
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
