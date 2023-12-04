@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.0.1
+
+### DEPLOYERS
+
+▶ [patch] [#6716](https://github.com/taskcluster/taskcluster/issues/6716)
+Adds lifecycle preStop hook for services to allow graceful termination of pods in kubernetes without loss of connections.
+
+▶ [patch] [#6716](https://github.com/taskcluster/taskcluster/issues/6716)
+Fix kubernetes deployment configuration - `lifecycle` was misplaced.
+
 ## v59.0.0
 
 ### DEPLOYERS
