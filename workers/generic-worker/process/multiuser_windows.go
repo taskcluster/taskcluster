@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	gwruntime "github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/win32"
 )
 

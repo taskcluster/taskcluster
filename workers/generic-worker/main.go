@@ -190,9 +190,6 @@ func main() {
 		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
 		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
 		fmt.Println(tempFilePath)
-	case arguments["unarchive"]:
-		err := fileutil.Unarchive(arguments["--archive-src"].(string), arguments["--archive-dst"].(string), arguments["--archive-format"].(string))
-		exitOnError(CANT_UNARCHIVE, err, "Error unarchiving file %v to destination %v", arguments["--archive-src"].(string), arguments["--archive-dst"].(string))
 	case arguments["create-file"]:
 		err := fileutil.CreateFile(arguments["--create-file"].(string))
 		exitOnError(CANT_CREATE_FILE, err, "Error creating file %v", arguments["--create-file"].(string))

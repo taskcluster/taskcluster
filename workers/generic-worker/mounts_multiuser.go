@@ -4,10 +4,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-
-	"github.com/taskcluster/taskcluster/v58/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v58/workers/generic-worker/runtime"
 )
 
 func makeFileReadWritableForTaskUser(taskMount *TaskMount, file string) error {
@@ -38,23 +34,6 @@ func makeDirUnreadableForTaskUser(taskMount *TaskMount, dir string) error {
 	err := makeDirUnreadableForUser(dir, taskContext.User)
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to make root-owned directory %v have permissions 0700 in order to make it unreadable for %v: %v", dir, taskContext.User.Name, err)
-	}
-	return nil
-}
-
-func unarchive(src, dst, format string) error {
-	log.Printf("Granting %v control of %v", taskContext.User.Name, src)
-	err := makeFileOrDirReadWritableForUser(false, src, taskContext.User)
-	if err != nil {
-		return fmt.Errorf("Not able to make source file %v readable for unarchiving: %v", src, err)
-	}
-	cmd, err := process.NewCommandNoOutputStreams([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", src, "--archive-dst", dst, "--archive-format", format}, taskContext.TaskDir, []string{}, taskContext.pd)
-	if err != nil {
-		return fmt.Errorf("Cannot create process to unarchive %v to %v as task user %v from directory %v: %v", src, dst, taskContext.User.Name, taskContext.TaskDir, err)
-	}
-	output, err := cmd.Output()
-	if err != nil {
-		return fmt.Errorf("Cannot unarchive %v to %v as task user %v from directory %v: %v", src, dst, taskContext.User.Name, taskContext.TaskDir, string(output))
 	}
 	return nil
 }
