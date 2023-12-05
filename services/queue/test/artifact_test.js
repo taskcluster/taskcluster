@@ -171,7 +171,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         let res = await request.get(url).ok(() => true).redirects(0);
         assume(res.status).equals(303);
         assume(res.headers.location).to.not.be.empty();
-        assume(res.headers.location).does.not.contain('&Signature=');
+        assume(res.headers.location).does.not.contain('&X-Amz-Signature=');
         const location = res.headers.location;
         res = await request.get(location);
         assume(res.ok).is.ok();
@@ -1124,7 +1124,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       res = await request.get(url).ok(() => true).redirects(0);
       assume(res.status).equals(303);
       assume(res.headers.location).to.not.be.empty();
-      assume(res.headers.location).contains('&Signature=');
+      assume(res.headers.location).contains('&X-Amz-Signature=');
       res = await request.get(res.headers.location);
       assume(res.ok).is.ok();
       assume(res.body).to.be.eql({ message: 'Hello World' });

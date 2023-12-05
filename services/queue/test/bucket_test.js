@@ -80,7 +80,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let res = await request.put(putUrl).send({ message: 'Hello' });
     assert(res.ok, 'put request failed');
 
-    const getUrl = bucket.createGetUrl(key);
+    const getUrl = await bucket.createGetUrl(key);
     debug('createGetUrl -> %s', getUrl);
 
     res = await request.get(getUrl);
@@ -98,7 +98,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       bucketCDN: 'https://example.com',
       monitor: await helper.load('monitor'),
     });
-    const url = bucket.createGetUrl('test');
+    const url = await bucket.createGetUrl('test');
     assert(url === 'https://example.com/test');
+  });
+
+  test('default endpoint', async function() {
+    const cfg = await helper.load('cfg');
+
+    // Create bucket instance
+    const bucket = new Bucket({
+      bucket: cfg.app.publicArtifactBucket,
+      awsOptions: cfg.aws,
+      monitor: await helper.load('monitor'),
+    });
+    const url = await bucket.createGetUrl('testX');
+    assert(url.includes(cfg.app.publicArtifactBucket));
+    assert(url.includes(cfg.aws.region));
+    assert(url.includes('testX'));
+  });
+
+  test('custom endpoint + forcePathStyle', async function() {
+    const cfg = await helper.load('cfg');
+    const customEndpoint = 'http://localhost:45678';
+
+    // Create bucket instance
+    const bucket = new Bucket({
+      bucket: cfg.app.publicArtifactBucket,
+      awsOptions: {
+        ...cfg.aws,
+        endpoint: customEndpoint,
+        s3ForcePathStyle: true,
+      },
+      monitor: await helper.load('monitor'),
+    });
+    const url = await bucket.createGetUrl('/testX');
+    assert.equal(url, `${customEndpoint}/${cfg.app.publicArtifactBucket}/testX`);
   });
 });

@@ -1,5 +1,5 @@
 import '../../prelude.js';
-import aws from 'aws-sdk';
+import { SESClient } from '@aws-sdk/client-ses';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { App } from 'taskcluster-lib-app';
 import loader from 'taskcluster-lib-loader';
@@ -122,7 +122,13 @@ const load = loader({
 
   ses: {
     requires: ['cfg'],
-    setup: ({ cfg }) => new aws.SES(cfg.aws),
+    setup: ({ cfg }) => new SESClient({
+      credentials: {
+        accessKeyId: cfg.aws.accessKeyId,
+        secretAccessKey: cfg.aws.secretAccessKey,
+      },
+      region: cfg.aws.region || 'us-east-1',
+    }),
   },
 
   denier: {

@@ -1,44 +1,59 @@
 import _ from 'lodash';
-import AWS from 'aws-sdk';
+import {
+  IAMClient,
+  CreateAccessKeyCommand,
+  CreateUserCommand,
+  DeleteAccessKeyCommand,
+  EntityAlreadyExistsException,
+  ListAccessKeysCommand,
+  PutUserPolicyCommand,
+} from '@aws-sdk/client-iam';
+import {
+  S3Client,
+  CreateBucketCommand,
+  GetBucketLocationCommand,
+  PutBucketPolicyCommand,
+} from '@aws-sdk/client-s3';
 
-const setupIam = async ({ iam, iamName, iamPolicy }) => {
+const setupIam = async ({ iam = new IAMClient(), iamName, iamPolicy }) => {
   try {
-    await iam.createUser({
+    await iam.send(new CreateUserCommand({
       Path: '/taskcluster-service/',
       UserName: iamName,
-    }).promise();
+    }));
   } catch (err) {
-    if (err.code !== 'EntityAlreadyExists') {
+    if (err instanceof EntityAlreadyExistsException) {
       throw err;
     }
   }
-  await iam.putUserPolicy({
+
+  await iam.send(new PutUserPolicyCommand({
     PolicyDocument: JSON.stringify(iamPolicy),
     PolicyName: `${iamName}-policy`,
     UserName: iamName,
-  }).promise();
+  }));
 
-  const { AccessKeyMetadata: existingKeys } = await iam.listAccessKeys({
+  const { AccessKeyMetadata: existingKeys } = await iam.send(new ListAccessKeysCommand({
     UserName: iamName,
-  }).promise();
+  }));
 
   for (const key of existingKeys) {
-    await iam.deleteAccessKey({
+    await iam.send(new DeleteAccessKeyCommand({
       UserName: iamName,
       AccessKeyId: key.AccessKeyId,
-    }).promise();
+    }));
   }
 
-  const { AccessKey: accessKey } = await iam.createAccessKey({
+  const { AccessKey: accessKey } = await iam.send(new CreateAccessKeyCommand({
     UserName: iamName,
-  }).promise();
+  }));
 
   return accessKey;
 };
 
 export default async ({ userConfig, answer, configTmpl }) => {
-  const iam = new AWS.IAM();
-  const s3 = new AWS.S3();
+  const iam = new IAMClient();
+  const s3 = new S3Client();
   const prefix = answer.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix;
 
   userConfig.queue = userConfig.queue || {};
@@ -48,17 +63,17 @@ export default async ({ userConfig, answer, configTmpl }) => {
   const privateBucketName = `${prefix}-private-artifacts`;
 
   if (!userConfig.queue.public_artifact_bucket) {
-    await s3.createBucket({
+    await s3.send(new CreateBucketCommand({
       Bucket: publicBucketName,
       ACL: 'public-read',
-    }).promise();
+    }));
     userConfig.queue.public_artifact_bucket = publicBucketName;
   }
 
   if (!userConfig.queue.artifact_region) {
-    const { LocationConstraint } = await s3.getBucketLocation({
+    const { LocationConstraint } = await s3.send(new GetBucketLocationCommand({
       Bucket: publicBucketName,
-    }).promise();
+    }));
     const region = LocationConstraint === '' ? 'us-east-1' : LocationConstraint;
     userConfig.queue.artifact_region = region;
   }
@@ -79,18 +94,18 @@ export default async ({ userConfig, answer, configTmpl }) => {
   };
   if (!userConfig.meta.lastAppliedPublicBucketPolicy ||
       !_.isEqual(userConfig.meta.lastAppliedPublicBucketPolicy, publicPolicy)) {
-    await s3.putBucketPolicy({
+    await s3.send(new PutBucketPolicyCommand({
       Bucket: publicBucketName,
       Policy: JSON.stringify(publicPolicy),
-    }).promise();
+    }));
     userConfig.meta.lastAppliedPublicBucketPolicy = publicPolicy;
   }
 
   if (!userConfig.queue.private_artifact_bucket) {
-    await s3.createBucket({
+    await s3.send(new CreateBucketCommand({
       Bucket: privateBucketName,
       ACL: 'private',
-    }).promise();
+    }));
     userConfig.queue.private_artifact_bucket = privateBucketName;
   }
 

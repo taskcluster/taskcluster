@@ -102,15 +102,10 @@ export const artifactUtils = {
               monitor.reportError(err);
             }
           } catch (err) {
-            if (err.message === 'Error deleting objects' && err.stack?.includes('/mock-aws-s3/')) {
-              // ignoring for testing: aws-mock-s3 throws error here when file not found
-              // instead of returning normal response with Errors and Deleted, like real s3
-            } else {
-              // and this is an api response error, most likely network issue or this needs to be retried
-              monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
-              if (!ignoreError) {
-                throw err;
-              }
+            // and this is an api response error, most likely network issue or this needs to be retried
+            monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);
+            if (!ignoreError) {
+              throw err;
             }
           }
         }

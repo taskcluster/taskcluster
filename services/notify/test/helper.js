@@ -1,6 +1,25 @@
 import assert from 'assert';
 import path from 'path';
-import aws from 'aws-sdk';
+import {
+  SESClient,
+  SendRawEmailCommand,
+} from '@aws-sdk/client-ses';
+import {
+  SNSClient,
+  CreateTopicCommand,
+  ListSubscriptionsByTopicCommand,
+  SubscribeCommand,
+} from '@aws-sdk/client-sns';
+import {
+  SQSClient,
+  CreateQueueCommand,
+  DeleteMessageCommand,
+  GetQueueAttributesCommand,
+  PurgeQueueCommand,
+  ReceiveMessageCommand,
+  SetQueueAttributesCommand,
+} from '@aws-sdk/client-sqs';
+import { mockClient } from 'aws-sdk-client-mock';
 import taskcluster from 'taskcluster-client';
 import testing from 'taskcluster-lib-testing';
 import builder from '../src/api.js';
@@ -59,29 +78,6 @@ helper.withDenier = (mock, skipping) => {
   });
 };
 
-class MockSES {
-  constructor() {
-    this.emails = [];
-  }
-
-  // simulate the AWS SDK v2 API
-  sendRawEmail(c) {
-    return {
-      promise: async () => {
-        this.emails.push({
-          delivery: { recipients: c.Destinations },
-          data: c.RawMessage.Data.toString(),
-        });
-        return { MessageId: 'a-message' };
-      },
-    };
-  }
-
-  reset() {
-    this.emails = [];
-  }
-}
-
 helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
@@ -94,7 +90,17 @@ helper.withSES = (mock, skipping) => {
     const cfg = await load('cfg');
 
     if (mock) {
-      ses = new MockSES();
+      ses = mockClient(SESClient);
+      ses.emails = [];
+      ses
+        .on(SendRawEmailCommand)
+        .callsFake(async (c) => {
+          ses.emails.push({
+            delivery: { recipients: c.Destinations },
+            data: c.RawMessage.Data.toString(),
+          });
+          return { MessageId: 'a-message' };
+        });
       load.inject('ses', ses);
 
       helper.checkEmails = (check) => {
@@ -102,42 +108,48 @@ helper.withSES = (mock, skipping) => {
         check(ses.emails.pop());
       };
     } else {
-      sqs = new aws.SQS(cfg.aws);
-      const emailSQSQueue = await sqs.createQueue({
+      sqs = new SQSClient({
+        credentials: {
+          accessKeyId: cfg.aws.accessKeyId,
+          secretAccessKey: cfg.aws.secretAccessKey,
+        },
+        region: cfg.aws.region || 'us-east-1',
+      });
+      const { QueueUrl: emailSQSQueue } = await sqs.send(new CreateQueueCommand({
         QueueName: 'taskcluster-notify-test-emails',
-      }).promise().then(req => req.QueueUrl);
-      let emailAttr = await sqs.getQueueAttributes({
+      }));
+      const { Attributes: emailAttr } = await sqs.send(new GetQueueAttributesCommand({
         QueueUrl: emailSQSQueue,
         AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
-      }).promise().then(req => req.Attributes);
+      }));
       if (emailAttr.ApproximateNumberOfMessages !== '0') {
         debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
-        await sqs.purgeQueue({
+        await sqs.send(new PurgeQueueCommand({
           QueueUrl: emailSQSQueue,
-        }).promise();
+        }));
       }
 
       // Send emails to sqs for testing
-      let sns = new aws.SNS(cfg.aws);
-      let snsArn = await sns.createTopic({
-        Name: 'taskcluster-notify-test',
-      }).promise().then(res => res.TopicArn);
-      let subscribed = await sns.listSubscriptionsByTopic({
-        TopicArn: snsArn,
-      }).promise().then(req => {
-        for (let subscription of req.Subscriptions) {
-          if (subscription.Endpoint === emailAttr.QueueArn) {
-            return true;
-          }
-        }
-        return false;
+      let sns = new SNSClient({
+        credentials: {
+          accessKeyId: cfg.aws.accessKeyId,
+          secretAccessKey: cfg.aws.secretAccessKey,
+        },
+        region: cfg.aws.region || 'us-east-1',
       });
+      const { TopicArn: snsArn } = await sns.send(new CreateTopicCommand({
+        Name: 'taskcluster-notify-test',
+      }));
+      const { Subscriptions: subscriptions } = await sns.send(new ListSubscriptionsByTopicCommand({
+        TopicArn: snsArn,
+      }));
+      const subscribed = subscriptions.some(subscription => subscription.Endpoint === emailAttr.QueueArn);
       if (!subscribed) {
-        await sns.subscribe({
+        await sns.send(new SubscribeCommand({
           Protocol: 'sqs',
           TopicArn: snsArn,
           Endpoint: emailAttr.QueueArn,
-        }).promise();
+        }));
 
         // This policy allows the SNS topic subscription to send messages to
         // the SQS queue.  The AWS Console adds a policy automatically when you
@@ -159,28 +171,28 @@ helper.withSES = (mock, skipping) => {
             },
           ],
         };
-        await sns.setQueueAttributes({
+        await sqs.send(new SetQueueAttributesCommand({
           QueueUrl: emailSQSQueue,
           Attributes: {
             Policy,
           },
-        }).promise();
+        }));
       }
 
       helper.checkEmails = async (check) => {
-        const resp = await sqs.receiveMessage({
+        const resp = await sqs.send(new ReceiveMessageCommand({
           QueueUrl: emailSQSQueue,
           AttributeNames: ['ApproximateReceiveCount'],
           MaxNumberOfMessages: 10,
           VisibilityTimeout: 30,
           WaitTimeSeconds: 20,
-        }).promise();
+        }));
         const messages = resp.Messages || [];
         for (let message of messages) {
-          await sqs.deleteMessage({
+          await sqs.send(new DeleteMessageCommand({
             QueueUrl: emailSQSQueue,
             ReceiptHandle: message.ReceiptHandle,
-          }).promise();
+          }));
         }
         assert.equal(messages.length, 1);
         check(JSON.parse(JSON.parse(messages[0].Body).Message));
@@ -193,7 +205,7 @@ helper.withSES = (mock, skipping) => {
       return;
     }
     if (mock) {
-      ses.reset();
+      ses.restore();
     }
   });
 };

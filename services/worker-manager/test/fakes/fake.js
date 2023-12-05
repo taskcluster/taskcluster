@@ -32,6 +32,7 @@ export class FakeCloud {
     setup(() => this._reset());
     suiteTeardown(() => {
       this.sinon.restore();
+      this._restore();
     });
   }
 
@@ -47,6 +48,13 @@ export class FakeCloud {
    */
   _reset() {
     throw new Error('Subclasses should implement this');
+  }
+
+  /**
+   * Restore removes the mock altogether
+   */
+  _restore() {
+    return;
   }
 
   /**

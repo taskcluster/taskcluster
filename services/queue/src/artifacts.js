@@ -98,7 +98,7 @@ const generateS3Url = async function({ artifact, skipCDN, req }) {
       skipCDN = true;
     }
 
-    url = this.publicBucket.createGetUrl(prefix, skipCDN);
+    url = await this.publicBucket.createGetUrl(prefix, skipCDN);
   }
 
   return url;

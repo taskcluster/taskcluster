@@ -1,6 +1,18 @@
 import { Backend } from './base.js';
 import assert from 'assert';
-import aws from 'aws-sdk';
+import {
+  S3Client,
+  GetBucketLocationCommand,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  PutObjectTaggingCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import {
+  getEndpointFromInstructions,
+  toEndpointV1,
+} from '@aws-sdk/middleware-endpoint';
 import { reportError } from 'taskcluster-lib-api';
 import taskcluster from 'taskcluster-client';
 import qs from 'qs';
@@ -20,20 +32,26 @@ export class AwsBackend extends Backend {
   }
 
   async setup() {
-    const credentials = {
-      accessKeyId: this.config.accessKeyId,
-      secretAccessKey: this.config.secretAccessKey,
+    const options = {
+      credentials: {
+        accessKeyId: this.config.accessKeyId,
+        secretAccessKey: this.config.secretAccessKey,
+      },
+      region: 'us-east-1',
     };
     // only include endpoint if included, since included for gcp backend but not needed for aws backend
-    let options = { ...credentials };
     if ('endpoint' in this.config) {
-      options.endpoint = new aws.Endpoint(this.config.endpoint);
-      options.s3ForcePathStyle = this.config.s3ForcePathStyle;
+      options.endpoint = toEndpointV1(this.config.endpoint);
+      options.forcePathStyle = this.config.s3ForcePathStyle;
     } else {
-      this.region = await getBucketRegion({ bucket: this.config.bucket, endpoint: this.config.endpoint, credentials });
+      this.region = await getBucketRegion({
+        bucket: this.config.bucket,
+        endpoint: this.config.endpoint,
+        ...options,
+      });
       options.region = this.region;
     }
-    this.s3 = new aws.S3(options);
+    this.s3 = new S3Client(options);
 
     // determine whether we are talking to a genuine AWS S3, or an emulation of it
     this.isAws = !this.config.endpoint;
@@ -71,7 +89,7 @@ export class AwsBackend extends Backend {
 
     const contentDisposition = this.contentDisposition(contentType);
 
-    await this.s3.putObject({
+    await this.s3.send(new PutObjectCommand({
       Bucket: this.config.bucket,
       Key: object.name,
       ContentType: contentType,
@@ -80,20 +98,29 @@ export class AwsBackend extends Backend {
       ...(this.isAws && contentDisposition ? { ContentDisposition: contentDisposition } : {}),
       Body: bytes,
       Tagging: this.objectTaggingHeader(object),
-    }).promise();
+    }));
 
     return { dataInline: true };
   }
 
   async createPutUrlUpload(object, { contentType, contentLength }) {
+    const contentDisposition = this.contentDisposition(contentType);
     const expires = taskcluster.fromNow(`${PUT_URL_EXPIRES_SECONDS} s`);
-    const url = await this.s3.getSignedUrlPromise('putObject', {
+    const command = new PutObjectCommand({
       Bucket: this.config.bucket,
       Key: object.name,
       ContentType: contentType,
+      ContentLength: contentLength,
+      ...(this.isAws && contentDisposition ? { ContentDisposition: contentDisposition } : {}),
       ...(this.isAws ? { Tagging: this.objectTaggingHeader(object) } : {}),
-      // NOTE: AWS does not allow us to enforce Content-Length, so that is ignored here
-      Expires: PUT_URL_EXPIRES_SECONDS + 10, // 10s for clock skew
+    });
+    const url = await getSignedUrl(this.s3, command, {
+      expiresIn: PUT_URL_EXPIRES_SECONDS + 10,
+      signableHeaders: new Set([
+        'content-type',
+        'content-length',
+        'content-disposition',
+      ]),
     });
 
     const headers = {
@@ -107,14 +134,8 @@ export class AwsBackend extends Backend {
     // all sorts of browser-based vulnerabilities.  note that GCS's S3
     // emulation does not support this; see
     // https://github.com/taskcluster/taskcluster/issues/4748
-    const contentDisposition = this.contentDisposition(contentType);
     if (this.isAws && contentDisposition) {
       headers['Content-Disposition'] = contentDisposition;
-    }
-
-    // tags are not supported on GCS, so only add this header on AWS
-    if (this.isAws) {
-      headers['x-amz-tagging'] = this.objectTaggingHeader(object);
     }
 
     return {
@@ -133,11 +154,11 @@ export class AwsBackend extends Backend {
       // URL (!!), so we also add the tag after-the-fact here, in case a poorly
       // behaved uploader fails to include the header.  This has the side-effect
       // of verifying that the object is present on S3 when finished.
-      await this.s3.putObjectTagging({
+      await this.s3.send(new PutObjectTaggingCommand({
         Bucket: this.config.bucket,
         Key: object.name,
         Tagging: this.objectTaggingArg(object),
-      }).promise();
+      }));
     }
   }
 
@@ -149,18 +170,21 @@ export class AwsBackend extends Backend {
     switch (method){
       case 'simple': {
         let url;
+        const command = new GetObjectCommand({
+          Bucket: this.config.bucket,
+          Key: object.name,
+        });
         if (this.config.signGetUrls) {
-          url = await this.s3.getSignedUrlPromise('getObject', {
-            Bucket: this.config.bucket,
-            Key: object.name,
+          url = await getSignedUrl(this.s3, command, {
             // 30 minutes is copied from the queue; the idea is that the download
             // begins almost immediately.  It might also make sense to use the
             // expiration time of the object here.
             // https://github.com/taskcluster/taskcluster/issues/3946
-            Expires: 30 * 60,
+            expiresIn: 30 * 60,
           });
         } else {
-          url = `${this.s3.endpoint.href}${this.config.bucket}/${encodeURIComponent(object.name)}`;
+          const { url: { href } } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
+          url = `${href}${encodeURIComponent(object.name)}`;
         }
         return { method, url };
       }
@@ -169,12 +193,14 @@ export class AwsBackend extends Backend {
         // allow one minute for the caller to begin downloading the data
         const expirationSecs = 60;
         const expires = taskcluster.fromNow(`${expirationSecs}s`);
-        let url = await this.s3.getSignedUrlPromise('getObject', {
+        const command = new GetObjectCommand({
           Bucket: this.config.bucket,
           Key: object.name,
+        });
+        const url = await getSignedUrl(this.s3, command, {
           // Since S3 does not give a definite expiration time, allow an extra 60 seconds
           // to cover any clock skew or other ambiguity.
-          Expires: expirationSecs + 60,
+          expiresIn: expirationSecs + 60,
         });
 
         const hashRes = await this.db.fns.get_object_hashes(object.name);
@@ -196,13 +222,13 @@ export class AwsBackend extends Backend {
     // leaking storage.  Note that s3.deleteObject is idempotent in AWS, but not in Google,
     // and since we don't care about objects that couldn't be deleted, we swallow NoSuchKey errors.
     try {
-      await this.s3.deleteObject({
+      await this.s3.send(new DeleteObjectCommand({
         Bucket: this.config.bucket,
         Key: object.name,
-      }).promise();
+      }));
     } catch (error) {
       // Ignore NoSuchKey errors
-      if (error.code !== "NoSuchKey") {
+      if (error.Code !== "NoSuchKey") {
         throw error;
       }
     }
@@ -247,15 +273,16 @@ export class AwsBackend extends Backend {
   }
 }
 
-export const getBucketRegion = async ({ bucket, endpoint, ...credentials }) => {
-  let options = credentials;
+export const getBucketRegion = async ({ bucket, endpoint, ...options }) => {
   if (endpoint) {
-    options.endpoint = new aws.Endpoint(endpoint);
+    options.endpoint = toEndpointV1(endpoint);
   }
-  const s3 = new aws.S3(options);
-  const { LocationConstraint } = await s3.getBucketLocation({
+  const s3 = new S3Client({
+    ...options,
+  });
+  const { LocationConstraint } = await s3.send(new GetBucketLocationCommand({
     Bucket: bucket,
-  }).promise();
+  }));
 
   // us-east-1 is represented by an empty LocationConstraint,
   // because it was invented before there were regions (c.f.
