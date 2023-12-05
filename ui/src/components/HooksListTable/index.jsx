@@ -12,7 +12,9 @@ import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
 import StatusLabel from '../StatusLabel';
+import DateDistance from '../DateDistance';
 import { hookWithLastFire } from '../../utils/prop-types';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 
 @withRouter
 export default class HooksListTable extends Component {
@@ -191,6 +193,18 @@ export default class HooksListTable extends Component {
             undefined
           )}
         </TableCell>
+
+        <CopyToClipboardTableCell
+          tooltipTitle={lastFire?.taskCreateTime}
+          textToCopy={lastFire?.taskCreateTime}
+          text={
+            lastFire?.taskCreateTime ? (
+              <DateDistance from={lastFire.taskCreateTime} />
+            ) : (
+              undefined
+            )
+          }
+        />
       </TableRow>
     );
   };
@@ -213,8 +227,13 @@ export default class HooksListTable extends Component {
         type: 'string',
       },
       {
-        label: 'Last Fire',
+        label: 'Last Fire State',
         id: 'lastFire.taskState',
+        type: 'string',
+      },
+      {
+        label: 'Last Fire Time',
+        id: 'lastFire.taskCreateTime',
         type: 'string',
       },
     ];
