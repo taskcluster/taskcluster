@@ -24,7 +24,7 @@
     "stream-buffers": "^3.0.2"
   },
   "engines": {
-    "node": "18.18.2"
+    "node": "18.19.0"
   },
   "files": [
     "src"
