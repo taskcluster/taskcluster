@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.1.0
+
+### GENERAL
+
+▶ [minor] [bug 1858424](http://bugzil.la/1858424)
+Generic Worker: ensure task user has access to the mount location specified.
+
+Generic Worker: Add `create-file` and `create-dir` subcommands to `generic-worker` intended for internal use during task execution.
+
+### USERS
+
+▶ [patch] [#6688](https://github.com/taskcluster/taskcluster/issues/6688)
+The hooks list table now displays the timestamp of each hook's latest created task.
+
 ## v59.0.1
 
 ### DEPLOYERS
