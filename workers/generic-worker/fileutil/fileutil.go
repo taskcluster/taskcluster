@@ -94,3 +94,19 @@ func CopyToTempFile(src string) (tempFilePath string, err error) {
 	_, err = Copy(tempFilePath, src)
 	return
 }
+
+func CreateFile(file string) (err error) {
+	var f *os.File
+	f, err = os.Create(file)
+	defer func() {
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
+	return
+}
+
+func CreateDir(dir string) error {
+	return os.MkdirAll(dir, 0700)
+}

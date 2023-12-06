@@ -92,7 +92,7 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
-func RenameCrossDevice(oldpath, newpath string) (err error) {
+func RenameCrossDevice(oldpath, newpath string) error {
 	// TODO: here we should be able to rename when oldpath and newpath are on
 	// different partitions - for now this will cover 99% of cases.
 	return os.Rename(oldpath, newpath)
@@ -161,18 +161,6 @@ func (task *TaskRun) EnvVars() []string {
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
-}
-
-func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
-	cmd, err := process.NewCommand([]string{"mkdir", "-p", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
-	if err != nil {
-		return fmt.Errorf("Cannot create process to create directory %v with permissions %v as task user %v from directory %v: %v", dir, perms, taskContext.User.Name, taskContext.TaskDir, err)
-	}
-	result := cmd.Execute()
-	if result.ExitError != nil {
-		return fmt.Errorf("Cannot create directory %v with permissions %v as task user %v from directory %v: %v", dir, perms, taskContext.User.Name, taskContext.TaskDir, result)
-	}
-	return nil
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {

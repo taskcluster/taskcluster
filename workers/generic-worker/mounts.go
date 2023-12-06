@@ -139,16 +139,9 @@ func (feature *MountsFeature) PersistState() (err error) {
 	return
 }
 
-func MkdirAll(taskMount *TaskMount, dir string, perms os.FileMode) error {
-	taskMount.Infof("Creating directory %v with permissions 0%o", dir, perms)
-	return MkdirAllTaskUser(dir, perms)
-}
-
-func MkdirAllOrDie(taskMount *TaskMount, dir string, perms os.FileMode) {
-	err := MkdirAll(taskMount, dir, perms)
-	if err != nil {
-		panic(fmt.Errorf("[mounts] Not able to create directory %v with permissions %o: %v", dir, perms, err))
-	}
+func MkdirAll(taskMount *TaskMount, dir string) error {
+	taskMount.Infof("Creating directory %v", dir)
+	return MkdirAllTaskUser(dir)
 }
 
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -513,8 +506,11 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		src := directoryCaches[w.CacheName].Location
 		parentDir := filepath.Dir(target)
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
-		MkdirAllOrDie(taskMount, parentDir, 0700)
-		err := RenameCrossDevice(src, target)
+		err := MkdirAll(taskMount, parentDir)
+		if err != nil {
+			return fmt.Errorf("[mounts] Not able to create directory %v: %v", parentDir, err)
+		}
+		err = RenameCrossDevice(src, target)
 		if err != nil {
 			panic(fmt.Errorf("[mounts] Not able to rename dir %v as %v: %v", src, target, err))
 		}
@@ -542,7 +538,10 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			}
 		} else {
 			// no preloaded content => just create dir in place
-			MkdirAllOrDie(taskMount, target, 0700)
+			err := MkdirAll(taskMount, target)
+			if err != nil {
+				return fmt.Errorf("[mounts] Not able to create directory %v: %v", target, err)
+			}
 		}
 	}
 	// Regardless of whether we are running as current user, grant task user access
@@ -632,6 +631,9 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	}
 
 	file := filepath.Join(taskContext.TaskDir, f.File)
+	if info, err := os.Stat(file); err == nil && info.IsDir() {
+		return fmt.Errorf("Cannot mount file at path %v since it already exists as a directory", file)
+	}
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
 		return err
@@ -718,7 +720,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 		log.Printf("Could not cache content: %v", err)
 		return err
 	}
-	err = MkdirAll(taskMount, dir, 0700)
+	err = MkdirAll(taskMount, dir)
 	if err != nil {
 		return err
 	}
@@ -752,7 +754,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 			Tar: &archiver.Tar{},
 		}
 	default:
-		return fmt.Errorf("Unsupported archive format %v", format)
+		return fmt.Errorf("unsupported archive format %v", format)
 	}
 	return unarchiver.Unarchive(cacheFile, dir)
 }
@@ -765,7 +767,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 	}
 
 	parentDir := filepath.Dir(file)
-	err = MkdirAll(taskMount, parentDir, 0700)
+	err = MkdirAll(taskMount, parentDir)
 	// this could be a user error, if someone supplies an invalid path, so let's not
 	// panic, but make this a task failure
 	if err != nil {
@@ -789,6 +791,14 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
+		dst, err := CreateFileAsTaskUser(file)
+		if err != nil {
+			return fmt.Errorf("Not able to create %v as task user: %v", file, err)
+		}
+		err = dst.Close()
+		if err != nil {
+			return fmt.Errorf("Not able to close %v: %v", file, err)
+		}
 		taskMount.Infof("Copying %v to %v", cacheFile, file)
 		err = copyFileContents(cacheFile, file)
 		if err != nil {
@@ -808,15 +818,19 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
 	src, err := os.Open(cacheFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("Not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	dst, err := os.Create(file)
+	dst, err := CreateFileAsTaskUser(file)
 	if err != nil {
-		return err
+		return fmt.Errorf("Not able to create %v as task user: %v", file, err)
 	}
 	defer dst.Close()
-	return d.Decompress(src, dst)
+	err = d.Decompress(src, dst)
+	if err != nil {
+		return fmt.Errorf("Not able to decompress %v to %v: %v", cacheFile, file, err)
+	}
+	return nil
 }
 
 // FSContentFrom returns either a *ArtifactContent, *IndexedContent,

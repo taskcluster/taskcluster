@@ -12,9 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
 )
 
 const (
@@ -55,11 +56,11 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		err = runtime.WaitForLoginCompletion(5 * time.Minute)
+		err = gwruntime.WaitForLoginCompletion(5 * time.Minute)
 		if err != nil {
 			panic(err)
 		}
-		interactiveUsername, err := runtime.InteractiveUsername()
+		interactiveUsername, err := gwruntime.InteractiveUsername()
 		if err != nil {
 			panic(err)
 		}
@@ -149,9 +150,9 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	// account. Username can only be 20 chars, uuids are too long, therefore
 	// use prefix (5 chars) plus seconds since epoch (10 chars).
 
-	nextTaskUser := &runtime.OSUser{
+	nextTaskUser := &gwruntime.OSUser{
 		Name:     taskDirName,
-		Password: runtime.GeneratePassword(),
+		Password: gwruntime.GeneratePassword(),
 	}
 	err = nextTaskUser.CreateNew(false)
 	if err != nil {
@@ -159,7 +160,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	}
 	PreRebootSetup(nextTaskUser)
 	// configure worker to auto-login to this newly generated user account
-	err = runtime.SetAutoLogin(nextTaskUser)
+	err = gwruntime.SetAutoLogin(nextTaskUser)
 	if err != nil {
 		panic(err)
 	}
@@ -180,8 +181,8 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(runtime.UserHomeDirectoriesParent(), taskContext.User.Name, runtime.AutoLogonUser())
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, runtime.AutoLogonUser())
+	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name, gwruntime.AutoLogonUser())
+	deleteTaskDirs(config.TasksDir, taskContext.User.Name, gwruntime.AutoLogonUser())
 	// regardless of whether we are running as current user or not, we should purge old task users
 	err := deleteExistingOSUsers()
 	if err != nil {
@@ -192,15 +193,15 @@ func purgeOldTasks() error {
 
 func deleteExistingOSUsers() (err error) {
 	log.Print("Looking for existing task users to delete...")
-	userAccounts, err := runtime.ListUserAccounts()
+	userAccounts, err := gwruntime.ListUserAccounts()
 	if err != nil {
 		return
 	}
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != runtime.AutoLogonUser() {
+		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != gwruntime.AutoLogonUser() {
 			log.Print("Attempting to remove user " + username + "...")
-			err2 := runtime.DeleteUser(username)
+			err2 := gwruntime.DeleteUser(username)
 			if err2 != nil {
 				allErrors = append(allErrors, fmt.Sprintf("Could not remove user account %v: %v", username, err2))
 			}
@@ -212,7 +213,7 @@ func deleteExistingOSUsers() (err error) {
 	return
 }
 
-func StoredUserCredentials() (*runtime.OSUser, error) {
+func StoredUserCredentials() (*gwruntime.OSUser, error) {
 	credsFile, err := os.Open(ctuPath)
 	if err != nil {
 		return nil, err
@@ -222,10 +223,46 @@ func StoredUserCredentials() (*runtime.OSUser, error) {
 	}()
 	decoder := json.NewDecoder(credsFile)
 	decoder.DisallowUnknownFields()
-	var user runtime.OSUser
+	var user gwruntime.OSUser
 	err = decoder.Decode(&user)
 	if err != nil {
 		panic(err)
 	}
 	return &user, nil
+}
+
+func MkdirAllTaskUser(dir string) error {
+	if info, err := os.Stat(dir); err == nil && info.IsDir() {
+		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()))
+		if err != nil {
+			return err
+		}
+		err = file.Close()
+		if err != nil {
+			return err
+		}
+		return os.Remove(file.Name())
+	}
+
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
+	if err != nil {
+		return fmt.Errorf("Cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
+	}
+	result := cmd.Execute()
+	if result.ExitError != nil {
+		return fmt.Errorf("Cannot create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, result)
+	}
+	return nil
+}
+
+func CreateFileAsTaskUser(file string) (*os.File, error) {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskContext.TaskDir, []string{}, taskContext.pd)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot create process to create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, err)
+	}
+	result := cmd.Execute()
+	if result.ExitError != nil {
+		return nil, fmt.Errorf("Cannot create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, result)
+	}
+	return os.OpenFile(file, os.O_RDWR, 0600)
 }

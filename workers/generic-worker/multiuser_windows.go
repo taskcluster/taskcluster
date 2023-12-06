@@ -536,10 +536,6 @@ func PreRebootSetup(nextTaskUser *runtime.OSUser) {
 	}
 }
 
-func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
-	return os.MkdirAll(dir, perms)
-}
-
 func convertNilToEmptyString(val interface{}) string {
 	if val == nil {
 		return ""

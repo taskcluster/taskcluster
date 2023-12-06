@@ -190,6 +190,12 @@ func main() {
 		tempFilePath, err := fileutil.CopyToTempFile(arguments["--copy-file"].(string))
 		exitOnError(CANT_COPY_TO_TEMP_FILE, err, "Error copying file %v to temp file", arguments["--copy-file"].(string))
 		fmt.Println(tempFilePath)
+	case arguments["create-file"]:
+		err := fileutil.CreateFile(arguments["--create-file"].(string))
+		exitOnError(CANT_CREATE_FILE, err, "Error creating file %v", arguments["--create-file"].(string))
+	case arguments["create-dir"]:
+		err := fileutil.CreateDir(arguments["--create-dir"].(string))
+		exitOnError(CANT_CREATE_DIRECTORY, err, "Error creating directory %v", arguments["--create-dir"].(string))
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
