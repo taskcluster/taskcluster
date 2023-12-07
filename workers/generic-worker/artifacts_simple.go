@@ -8,5 +8,5 @@ import (
 )
 
 func gwCopyToTempFile(filePath string) (*process.Command, error) {
-	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "copy-to-temp-file", "--copy-file", filePath}, taskContext.TaskDir, []string{})
+	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "copy-to-temp-file", "--copy-file", filePath}, "", []string{})
 }

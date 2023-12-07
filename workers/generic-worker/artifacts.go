@@ -166,7 +166,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 	if err != nil {
 		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
-			Message:      fmt.Sprintf("Could not copy file '%s' to temporary location as task user", fullPath),
+			Message:      fmt.Sprintf("Could not copy file '%s' to temporary location as task user: %v", fullPath, err),
 			Reason:       "file-not-readable-on-worker",
 			Path:         path,
 		}
