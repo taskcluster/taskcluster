@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.1.1
+
+### GENERAL
+
+▶ [patch] [#6733](https://github.com/taskcluster/taskcluster/issues/6733)
+Generic Worker: fixes `file-not-readable-on-worker` error while uploading artifacts with the simple engine.
+
+▶ [patch]
+Upgrades to go1.21.5 and Node 18.19.0.
+
 ## v59.1.0
 
 ### GENERAL
