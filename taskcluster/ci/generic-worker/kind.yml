@@ -116,6 +116,7 @@ tasks:
           format: tar.gz
       env:
         ENGINE: multiuser
+        GW_TESTS_RUN_AS_CURRENT_USER: ''
         GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
           Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
           to help ensure that mock implementations remain consistent with real services.
@@ -139,8 +140,6 @@ tasks:
             VET=
           fi
           export CGO_ENABLED=0
-          # The next two lines are edited by infrastructure/tooling/src/generate/generators/go-version.js
-          #   DO NOT CHANGE HERE!
           export GOROOT="$(pwd)/$GO_VERSION/go"
           export GOPATH="$(pwd)/gopath$GO_RELEASE"
           export PATH="${{GOPATH}}/bin:${{GOROOT}}/bin:$(pwd)/bin:${{PATH}}"
@@ -170,14 +169,39 @@ tasks:
           go vet -tags "${{ENGINE}}" ./...
           if [ "${{ENGINE}}" == "multiuser" ]; then
             cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
-            # IMPORTANT - run go test with GW_TESTS_RUN_AS_CURRENT_USER=true *before* running it without
-            # otherwise tests that call `go run ....` will write go object files to .cache as root
-            GW_TESTS_RUN_AS_CURRENT_USER=true GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} .
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
+          else
+            GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
           fi
-          GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
-          # The next line is edited by infrastructure/tooling/src/generate/generators/golangci-lint-version.js
-          #   DO NOT CHANGE HERE!
           ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
+  build/test-multiuser-current-user-ubuntu-22.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 22.04 as the current user
+    worker-type: gw-ci-ubuntu-22-04
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker
+          name: public/build/generic-worker-linux-amd64
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-linux-amd64.tar.gz'
+          directory: golangci-lint
+          format: tar.gz
+      env:
+        ENGINE: multiuser
+        GW_TESTS_RUN_AS_CURRENT_USER: 'true'
+        GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
+          Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
+          to help ensure that mock implementations remain consistent with real services.
+    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
   build/test-simple-ubuntu-22.04-amd64:
     description: This builds and tests the amd64 version of generic-worker (simple engine) on Ubuntu 22.04
     worker-type: gw-ci-ubuntu-22-04
@@ -225,6 +249,32 @@ tasks:
           format: tar.gz
       env:
         ENGINE: multiuser
+        GW_TESTS_RUN_AS_CURRENT_USER: ''
+    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+  build/test-multiuser-current-user-macos-13-arm64:
+    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13 as the current user
+    worker-type: gw-ci-macos-13
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker
+          name: public/build/generic-worker-darwin-arm64
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.darwin-arm64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-darwin-arm64.tar.gz'
+          directory: golangci-lint
+          format: tar.gz
+      env:
+        ENGINE: multiuser
+        GW_TESTS_RUN_AS_CURRENT_USER: 'true'
     copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
   build/test-multiuser-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
@@ -315,9 +365,6 @@ tasks:
         - set CGO_ENABLED=%CGO_ENABLED_TESTS%
         - set GORACE=history_size=7
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        - set GW_TESTS_RUN_AS_CURRENT_USER=true
-        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% .
-        - set GW_TESTS_RUN_AS_CURRENT_USER=
         - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v59/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
         - |
           :: assumption here is that if something inside the if fails, we'll get a non zero exit code
@@ -328,3 +375,39 @@ tasks:
           ) else (
             ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
           )
+  build/test-multiuser-current-user-windows-server-2022-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022 as the current user
+    worker-type: gw-ci-windows-2022
+    scopes:
+      - generic-worker:cache:generic-worker-checkout
+      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
+    worker:
+      taskcluster-proxy: true
+      artifacts:
+        - path: gopath{go_version}/bin/generic-worker.exe
+          name: public/build/generic-worker-windows-amd64.exe
+          type: file
+      mounts:
+        - content:
+            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
+          directory: '{go_version}'
+          format: zip
+        - content:
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/MinGit-2.41.0-64-bit.zip'
+          directory: git
+          format: zip
+        - content:
+            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-windows-amd64.zip'
+          directory: golangci-lint
+          format: zip
+        - content:
+            url: https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe
+          file: bin/jq.exe
+        - content:
+            url: http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds
+          file: ci-creds.json
+      env:
+        ENGINE: multiuser
+        GW_TESTS_RUN_AS_CURRENT_USER: 'true'
+        GW_SKIP_Z_DRIVE_TESTS: 'true'
+    copy-command-from: build/test-multiuser-windows-server-2022-amd64
