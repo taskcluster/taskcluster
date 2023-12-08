@@ -28,9 +28,13 @@ RUN ./build.sh && \
   mv generic-worker-multiuser-* /generic-worker-multiuser && \
   mv generic-worker-simple-* /generic-worker
 
-FROM alpine:3
+FROM ubuntu:jammy
 
-RUN apk add --no-cache ca-certificates curl gzip
+RUN apt-get update && apt-get install -y \
+  ca-certificates \
+  curl \
+  gzip \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /livelog /taskcluster-proxy /start-worker /taskcluster /generic-worker* /usr/local/bin/
 RUN ls -la /usr/local/bin
