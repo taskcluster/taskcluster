@@ -4,7 +4,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
   - src.transforms:taskcluster_image_versions
   - src.transforms:podman_run
-  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.run:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:

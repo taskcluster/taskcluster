@@ -5,7 +5,7 @@ transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
   - src.transforms:parameterize_artifacts
-  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.run:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:
