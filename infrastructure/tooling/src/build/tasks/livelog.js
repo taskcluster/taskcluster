@@ -67,10 +67,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM ubuntu:jammy AS certs',
-        'RUN apt-get update',
-        'RUN apt-get upgrade -y',
-        'RUN apt-get install -y ca-certificates',
+        'FROM alpine:3 AS certs',
+        'RUN apk add --no-cache ca-certificates',
         'RUN mkdir /empty',
         'FROM scratch',
         'EXPOSE 60023',
