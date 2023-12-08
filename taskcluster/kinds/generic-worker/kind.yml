@@ -6,7 +6,7 @@ transforms:
   - src.transforms:parameterize_mounts
   - src.transforms:parameterize_artifacts
   - src.transforms:copy_command_from
-  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.run:transforms
   - taskgraph.transforms.task:transforms
 
 kind-dependencies:

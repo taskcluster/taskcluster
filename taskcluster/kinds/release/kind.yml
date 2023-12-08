@@ -4,7 +4,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
-  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.run:transforms
   - taskgraph.transforms.task:transforms
 
 task-defaults:

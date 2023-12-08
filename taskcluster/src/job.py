@@ -1,4 +1,4 @@
-from taskgraph.transforms.job import run_job_using
+from taskgraph.transforms.run import run_task_using
 from taskgraph.util.schema import Schema
 
 from voluptuous import Required, Optional, Extra, Any
@@ -16,7 +16,7 @@ bare_defaults = {
 }
 
 
-@run_job_using("docker-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("docker-worker", "bare", schema=bare_schema, defaults=bare_defaults)
 def bare_docker_worker(config, job, taskdesc):
     run = job["run"]
     worker = taskdesc['worker'] = job['worker']
@@ -36,7 +36,7 @@ def bare_docker_worker(config, job, taskdesc):
     worker["command"] = ["/bin/bash", "-ec", "".join(command)]
 
 
-@run_job_using("generic-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("generic-worker", "bare", schema=bare_schema, defaults=bare_defaults)
 def bare_generic_worker(config, job, taskdesc):
     run = job['run']
     worker = taskdesc['worker'] = job['worker']

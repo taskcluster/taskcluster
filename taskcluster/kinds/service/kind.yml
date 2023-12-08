@@ -5,7 +5,7 @@ transforms:
   - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
   - src.transforms:podman_run
-  - taskgraph.transforms.job:transforms
+  - taskgraph.transforms.run:transforms
   - taskgraph.transforms.task:transforms
 
 workspace: services
