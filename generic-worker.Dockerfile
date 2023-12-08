@@ -1,27 +1,36 @@
 # Simple generic worker
 
-FROM golang:1.21.5-bookworm AS build
+FROM golang:1.21.5-alpine AS build
+
+ENV CGO_ENABLED=0
 
 WORKDIR /app
 
 # build depends on the .git
 COPY . .
 
-ENV CGO_ENABLED=0
-RUN cd tools/livelog && go build -o /livelog && cd ..
-RUN cd tools/worker-runner && go build -o /start-worker ./cmd/start-worker && cd ..
-RUN cd tools/taskcluster-proxy && go build -o /taskcluster-proxy && cd ..
-RUN cd clients/client-shell && go build -o /taskcluster && cd ../..
-RUN cd workers/generic-worker && \
-  ./build.sh && \
+RUN apk add --no-cache git
+
+WORKDIR /app/tools/livelog
+RUN go build -o /livelog
+
+WORKDIR /app/tools/worker-runner
+RUN go build -o /start-worker ./cmd/start-worker
+
+WORKDIR /app/tools/taskcluster-proxy
+RUN go build -o /taskcluster-proxy
+
+WORKDIR /app/clients/client-shell
+RUN go build -o /taskcluster
+
+WORKDIR /app/workers/generic-worker
+RUN ./build.sh && \
   mv generic-worker-multiuser-* /generic-worker-multiuser && \
   mv generic-worker-simple-* /generic-worker
 
+FROM alpine:3
 
-FROM ubuntu:jammy
-
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y ca-certificates curl gzip
+RUN apk add --no-cache ca-certificates curl gzip
 
 COPY --from=build /livelog /taskcluster-proxy /start-worker /taskcluster /generic-worker* /usr/local/bin/
 RUN ls -la /usr/local/bin

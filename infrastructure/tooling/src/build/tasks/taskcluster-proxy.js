@@ -60,16 +60,15 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        // get the latest ca-certificates from Ubuntu
-        'FROM ubuntu:jammy as ubuntu',
-        'RUN apt-get update',
-        'RUN apt-get install -y ca-certificates',
+        // get the latest ca-certificates from Alpine
+        'FROM alpine:3 AS certs',
+        'RUN apk add --no-cache ca-certificates',
         // start over in an empty image and just copy the certs in
         'FROM scratch',
         'EXPOSE 80',
         'COPY version.json /app/version.json',
         'COPY taskcluster-proxy /taskcluster-proxy',
-        'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
       let command = [
