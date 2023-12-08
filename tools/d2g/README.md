@@ -1,15 +1,14 @@
 # d2g
 
-The `d2g` repo is intended to contain the following tooling:
+d2g is a go library for converting legacy Docker Worker tasks into native
+Generic Worker tasks.
 
-  * A go library for converting Docker Worker task payloads into Generic Worker task payloads
-  * A CLI wrapper for the above go library
+This library is used internally by Generic Worker, in order to run tasks that
+were originally intended for Docker Worker. On detecting that a claimed task
+has a Docker Worker payload, Generic Worker will first convert it to its
+own native format before validating and executing the task.
 
-Eventually this library will be used in Generic Worker, in order to support Docker Worker
-task payloads. On detecting that a claimed task has a Docker Worker payload, it will use
-the d2g library to convert the payload into its own native format, before validating and executing it.
-
-The intention is that this library will also be helpful to users wishing to
-convert Docker Worker task payloads directly to Generic Worker native task
-payloads, as it is intended to eventually deprecate the Docker Worker payload
-format entirely.
+For users wishing to convert Docker Worker tasks to Generic Worker tasks at
+source, please see the [`taskcluster
+d2g`](https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#translating-docker-worker-task-definitionpayload-to-generic-worker-task-definitionpayload)
+cli subcommand.

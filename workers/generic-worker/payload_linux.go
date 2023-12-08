@@ -69,11 +69,10 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("Could not convert task definition from JSON to YAML: %v\n", err))
 	}
 
-	task.Warn("This task was designed to run under Docker Worker. Docker Worker is a worker implementation")
-	task.Warn("that is _no longer_ maintained.")
+	task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")
 	task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
 	task.Warn("utility (Docker Worker 2 Generic Worker):")
-	task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/tools/d2g")
+	task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#translating-docker-worker-task-definitionpayload-to-generic-worker-task-definitionpayload")
 	task.Warn("")
 	task.Warn("We recommend that you convert all your Docker Worker tasks to Generic Worker tasks, to ensure")
 	task.Warn("continued support. For this task, see the converted payload below. If you have many tasks that")
