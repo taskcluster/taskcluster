@@ -5,7 +5,7 @@ import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), async function() {
   const rootUrl = libUrls.testRootUrl();
 
   const assert_file = (serializable, filename, content) => {
@@ -24,7 +24,7 @@ suite(testing.suiteName(), function() {
   };
 
   const references = new References({
-    schemas: getCommonSchemas(),
+    schemas: (await getCommonSchemas()),
     references: [{
       filename: 'test-ref.json',
       content: {

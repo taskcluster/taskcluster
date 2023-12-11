@@ -43,9 +43,9 @@ export class References {
    * The data in the directory will be amended with the "common" schemas and
    * meta-schemas.
    */
-  static fromBuiltServices({ directory }) {
-    let { references, schemas } = load({ directory });
-    schemas = schemas.concat(getCommonSchemas());
+  static async fromBuiltServices({ directory }) {
+    let { references, schemas } = await load({ directory });
+    schemas = schemas.concat((await getCommonSchemas()));
     return new References({
       rootUrl: undefined,
       references,
@@ -86,8 +86,8 @@ export class References {
    * schemas are valid, and used during `yarn generate` to generate new
    * references.
    */
-  static fromService({ schemaset, references }) {
-    const schemas = Array.from(getCommonSchemas());
+  static async fromService({ schemaset, references }) {
+    const schemas = Array.from((await getCommonSchemas()));
     if (schemaset) {
       Object.entries(schemaset.abstractSchemas()).forEach(([filename, content]) => {
         schemas.push({ filename, content });

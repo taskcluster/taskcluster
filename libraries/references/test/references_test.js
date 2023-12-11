@@ -6,13 +6,13 @@ import mockFs from 'mock-fs';
 import References from '../src/index.js';
 import testing from 'taskcluster-lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), async function() {
   teardown(function() {
     mockFs.restore();
   });
 
   const references = new References({
-    schemas: getCommonSchemas(),
+    schemas: (await getCommonSchemas()),
     references: [],
   });
 
@@ -22,7 +22,7 @@ suite(testing.suiteName(), function() {
       '/schemas/common/manifest-v3.json#');
   });
 
-  test('fromService', function() {
+  test('fromService', async function() {
     // mock SchemaSet from taskcluster-lib-validate
     const schemaset = {
       abstractSchemas() {
@@ -34,7 +34,7 @@ suite(testing.suiteName(), function() {
       },
     };
 
-    const references = References.fromService({
+    const references = await References.fromService({
       schemaset,
       references: [
         {
@@ -53,7 +53,7 @@ suite(testing.suiteName(), function() {
       makeSerializable({ references }));
   });
 
-  test('writes uri-structured', function() {
+  test('writes uri-structured', async function() {
     mockFs({});
     const references = new References({
       references: [
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
           },
         },
       ],
-      schemas: getCommonSchemas().concat([{
+      schemas: ((await getCommonSchemas())).concat([{
         filename: 'foo.json',
         content: {
           $schema: '/schemas/common/metaschema.json#',

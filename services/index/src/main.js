@@ -70,10 +70,10 @@ export const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => (await libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('index')],
-    }).generateReferences(),
+    })).generateReferences(),
   },
 
   api: {

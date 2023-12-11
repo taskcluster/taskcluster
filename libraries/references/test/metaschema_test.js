@@ -6,9 +6,9 @@ import testing from 'taskcluster-lib-testing';
 suite(testing.suiteName(), function() {
   let validate;
 
-  suiteSetup('setup Ajv', function() {
+  suiteSetup('setup Ajv', async function() {
     const references = new References({
-      schemas: getCommonSchemas(),
+      schemas: (await getCommonSchemas()),
       references: [],
     });
     const ajv = references.asAbsolute(libUrls.testRootUrl()).makeAjv();

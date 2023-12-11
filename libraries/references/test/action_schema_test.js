@@ -3,11 +3,11 @@ import libUrls from 'taskcluster-lib-urls';
 import References from '../src/index.js';
 import testing from 'taskcluster-lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), async function() {
   const rootUrl = libUrls.testRootUrl();
 
   const references = new References({
-    schemas: getCommonSchemas(),
+    schemas: (await getCommonSchemas()),
     references: [],
   });
   const ajv = references.asAbsolute(rootUrl).makeAjv();
