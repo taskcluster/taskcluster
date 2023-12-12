@@ -293,9 +293,12 @@ and reports back results to the queue.
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
     75     Not able to create an ed25519 key pair.
+    76     Not able to copy --copy-file to a temporary file.
     77     Not able to apply required file access permissions to the generic-worker config
            file so that task users can't read from or write to it.
     78     Not able to connect to --worker-runner-protocol-pipe.
+    79     Not able to create file at --create-file path.
+    80     Not able to create directory at --create-dir path.
 ```
 <!-- HELP END -->
 
