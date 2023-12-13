@@ -306,7 +306,10 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.` + exitCode74() + `
-    75     Not able to create an ed25519 key pair.` + exitCode77() + `
+    75     Not able to create an ed25519 key pair.
+    76     Not able to copy --copy-file to a temporary file.` + exitCode77() + `
     78     Not able to connect to --worker-runner-protocol-pipe.
+    79     Not able to create file at --create-file path.
+    80     Not able to create directory at --create-dir path.
 `
 }
