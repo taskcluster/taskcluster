@@ -92,7 +92,6 @@ helper.withSES = (mock, skipping) => {
     }
 
     const cfg = await load('cfg');
-    console.log(cfg);
 
     if (mock) {
       ses = new MockSES();
