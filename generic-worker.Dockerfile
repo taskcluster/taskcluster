@@ -9,7 +9,7 @@ WORKDIR /app
 # build depends on the .git
 COPY . .
 
-RUN apk add --no-cache git
+RUN apk add --no-cache bash git
 
 WORKDIR /app/tools/livelog
 RUN go build -o /livelog
