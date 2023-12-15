@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.1.3
+
+No changes
+
+## v59.1.2
+
+### GENERAL
+
+▶ [patch]
+Generic Worker docker image needs to be based off of ubuntu:jammy for now, can't be alpine.
+
+▶ [patch]
+Use alpine base images for generic worker dockerfile and for fetching latest certs for livelog and taskcluster proxy docker images.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6739](https://github.com/taskcluster/taskcluster/issues/6739)
+Generic Worker: Updates `--help` text to include missing exit codes (76, 79, and 80).
+
 ## v59.1.1
 
 ### GENERAL

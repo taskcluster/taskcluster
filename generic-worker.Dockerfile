@@ -9,7 +9,7 @@ WORKDIR /app
 # build depends on the .git
 COPY . .
 
-RUN apk add --no-cache git
+RUN apk add --no-cache bash git
 
 WORKDIR /app/tools/livelog
 RUN go build -o /livelog
@@ -50,7 +50,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > /version.json; \
 else \
-    echo \{\"version\": \"59.1.1\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
+    echo \{\"version\": \"59.1.3\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
 fi
 
 VOLUME /etc/generic-worker/config.json
