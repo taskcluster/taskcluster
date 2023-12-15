@@ -2,15 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
+
+	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gwconfig"
 )
 
@@ -219,6 +223,7 @@ type MountsLoggingTestCase struct {
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
+	m.Test.Helper()
 	payload := m.Payload
 	if payload == nil {
 		payload = &GenericWorkerPayload{
@@ -321,8 +326,9 @@ func TestValidSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or simple engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "directory", "unknown_issuer_app_1")
 
 	// Required text from first task with no cached value
@@ -376,8 +382,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or simple engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", t.Name())
 
 	// No cache on first pass
@@ -531,8 +538,9 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or simple engine but is independent of whether running as current
+	// user or not.
 	granting, denying := grantingDenying(t, "directory", t.Name())
 
 	// No cache on first pass
@@ -852,8 +860,9 @@ func TestCacheMoved(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or simple engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "directory", t.Name())
 
 	// No cache on first pass
@@ -936,8 +945,9 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or simple engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", "file-located-here")
 
 	// No cache on first pass
@@ -1008,6 +1018,80 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 			},
 		},
 	)
+}
+
+func TestIndexedArtifact(t *testing.T) {
+	setup(t)
+
+	testIndexedArtifact := func(file string, namespace string, rank float64) {
+		// Create a task containing artifact
+		taskID1 := CreateArtifactFromFile(t, file, "public/indexed-artifact")
+
+		// Now index it under a unique namespace (so that test runs don't interfere with each other if using real taskcluster index service)
+		index := serviceFactory.Index(config.Credentials(), config.RootURL)
+
+		_, err := index.InsertTask(namespace, &tcindex.InsertTaskRequest{
+			Data:    json.RawMessage([]byte("{}")),
+			Expires: inAnHour,
+			TaskID:  taskID1,
+			Rank:    rank,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Now create a task to mount the file, using not the taskID, but the namespace where it was inserted into the index
+		ic := &IndexedContent{
+			Artifact:  "public/indexed-artifact",
+			Namespace: namespace,
+		}
+		rawMessageContent, err := json.Marshal(ic)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fileMount := &FileMount{
+			File:    file,
+			Content: rawMessageContent,
+		}
+		rawMessageMount, err := json.Marshal(fileMount)
+		if err != nil {
+			t.Fatal(err)
+		}
+		payload1 := GenericWorkerPayload{
+			Mounts: []json.RawMessage{
+				rawMessageMount,
+			},
+			// declare the mount also as an artifact, so that the file is mounted and immediately published as an artifact
+			Artifacts: []Artifact{
+				Artifact{
+					Name: "public/republished-artifact",
+					Path: file,
+					Type: "file",
+				},
+			},
+			Command:    helloGoodbye(),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload1)
+
+		td := testTask(t)
+
+		// taskID2 mounts and publishes the artifact from taskID1
+		taskID2 := submitAndAssert(t, td, payload1, "completed", "completed")
+
+		// now check that in the process of mounting the artifact via the index namespace, that the content of the artifact hasn't changed
+		data1 := getArtifactContent(t, taskID1, "public/indexed-artifact")
+		data2 := getArtifactContent(t, taskID2, "public/republished-artifact")
+
+		// simplest way to compare two byte slices is to convert to strings, which can be directly compared
+		if string(data1) != string(data2) {
+			t.Fatalf("Was expecting artifact from file %v in tasks %v and %v to be identical, but they weren't: %v, %v", file, taskID1, taskID2, len(data1), len(data2))
+		}
+	}
+
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.TestIndexedArtifact.%v", time.Now().UnixMilli())
+	testIndexedArtifact("unknown_issuer_app_1.zip", namespace, 119)
+	testIndexedArtifact("mozharness.zip", namespace, 239)
 }
 
 func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
