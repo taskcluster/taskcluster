@@ -193,6 +193,12 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
+  getPendingTasksLink(workerPoolId) {
+    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+
+    return `/provisioners/${provisionerId}/worker-types/${workerType}/pending-tasks`;
+  }
+
   renderRow = ({ node: workerPool }) => {
     const {
       match: { path },
@@ -238,10 +244,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Link
-            to={`${path}/${encodeURIComponent(
-              workerPool.workerPoolId
-            )}/pending-tasks`}>
+          <Link to={this.getPendingTasksLink(workerPool.workerPoolId)}>
             <TableCellItem button>
               <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
                 Pending Tasks:
@@ -278,9 +281,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
         <TableCell>
           <Link
-            to={`/provisioners/${encodeURIComponent(
-              provisionerId
-            )}/worker-types/${encodeURIComponent(workerType)}`}>
+            to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
             <Button
               className={classes.linksButton}
               variant="outlined"

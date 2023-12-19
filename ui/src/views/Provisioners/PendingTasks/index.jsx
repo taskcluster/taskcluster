@@ -57,9 +57,7 @@ export default class WMViewPendingTasks extends Component {
   get workersLink() {
     const { provisionerId, workerType } = this.props.match.params;
 
-    return `/provisioners/${encodeURIComponent(
-      provisionerId
-    )}/worker-types/${encodeURIComponent(workerType)}`;
+    return `/provisioners/${provisionerId}/worker-types/${workerType}`;
   }
 
   renderRow({ node: { taskId, runId, inserted, task } }) {

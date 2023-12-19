@@ -414,49 +414,43 @@ export default class WMWorkerPoolEditor extends Component {
       joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2) !==
         workerPoolId;
     const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+    const workerTypeUrl = `/provisioners/${provisionerId}/worker-types/${workerType}`;
+    const workerPoolUrl = `/worker-manager/${encodeURIComponent(workerPoolId)}`;
     const workerPoolStats = [
       {
         label: 'Pending Tasks',
         value: pendingTasks,
         className: 'pendingTasks',
         Icon: ClockOutlineIcon,
-        href: `/worker-manager/${encodeURIComponent(
-          workerPoolId
-        )}/pending-tasks`,
+        href: `${workerTypeUrl}/pending-tasks`,
       },
       {
         label: 'Requested Capacity',
         value: requestedCapacity,
         className: 'requestedCapacity',
         Icon: TimerSandIcon,
-        href: `/provisioners/${encodeURIComponent(
-          provisionerId
-        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=requested`,
+        href: `${workerTypeUrl}?filterBy=requested`,
       },
       {
         label: 'Running Capacity',
         value: runningCapacity,
         className: 'runningCapacity',
         Icon: RunIcon,
-        href: `/provisioners/${encodeURIComponent(
-          provisionerId
-        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=running`,
+        href: `${workerTypeUrl}?filterBy=running`,
       },
       {
         label: 'Stopping Capacity',
         value: stoppingCapacity,
         className: 'stoppingCapacity',
         Icon: CloseIcon,
-        href: `/provisioners/${encodeURIComponent(
-          provisionerId
-        )}/worker-types/${encodeURIComponent(workerType)}?filterBy=stopping`,
+        href: `${workerTypeUrl}?filterBy=stopping`,
       },
       {
         label: 'Errors',
         value: errorStats?.totals?.total,
         className: 'errorsTile',
         Icon: MessageAlertIcon,
-        href: `/worker-manager/${encodeURIComponent(workerPoolId)}/errors`,
+        href: `${workerPoolUrl}/errors`,
       },
     ];
 
@@ -515,9 +509,7 @@ export default class WMWorkerPoolEditor extends Component {
                 label="Workers (Queue View)"
                 component={Link}
                 clickable
-                to={`/provisioners/${encodeURIComponent(
-                  provisionerId
-                )}/worker-types/${encodeURIComponent(workerType)}`}
+                to={workerTypeUrl}
               />
               <Chip
                 size="medium"
@@ -526,9 +518,7 @@ export default class WMWorkerPoolEditor extends Component {
                 label="Workers (Worker Manager View)"
                 component={Link}
                 clickable
-                to={`/worker-manager/${encodeURIComponent(
-                  workerPoolId
-                )}/workers`}
+                to={`${workerPoolUrl}/workers`}
               />
             </div>
           </Fragment>
