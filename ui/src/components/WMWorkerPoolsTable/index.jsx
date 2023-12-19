@@ -244,7 +244,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
             )}/pending-tasks`}>
             <TableCellItem button>
               <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
-                Pending tasks:
+                Pending Tasks:
               </Hidden>
               {workerPool.pendingTasks}
               <LinkIcon size={iconSize} />
@@ -267,7 +267,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                   lgUp
                   implementation="css"
                   className={classes.hiddenLabel}>
-                  Total errors:
+                  Total Errors:
                 </Hidden>
                 {workerPool.errorsCount}
               </div>

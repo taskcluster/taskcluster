@@ -12,7 +12,6 @@ const styles = theme => ({
   },
   item: {
     backgroundColor: theme.palette.type === 'dark' ? '#444' : '#eee',
-    // ...theme.typography.body1,
     padding: theme.spacing(1),
     textAlign: 'center',
     color:

@@ -87,7 +87,6 @@ export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, c
   );
   const listPendingTasks = new ConnectionLoader(
     async ({ taskQueueId, options }) => {
-      console.log(options);
       const raw = await queue.listPendingTasks(taskQueueId, options);
 
       return {
@@ -103,7 +102,6 @@ export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, c
   );
   const listClaimedTasks = new ConnectionLoader(
     async ({ taskQueueId, options }) => {
-      console.log(options);
       const raw = await queue.listClaimedTasks(taskQueueId, options);
 
       return {
