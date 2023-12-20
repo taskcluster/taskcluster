@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v59.2.0
+
+### USERS
+
+▶ [minor] [#6671](https://github.com/taskcluster/taskcluster/issues/6671)
+Several UI changes:
+- pending and claimed tasks can be seen in UI
+- worker manager errors center and overview
+- navigation improvements
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump golang.org/x/crypto from 0.16.0 to 0.17.0 (fac49b217)
+
+</details>
+
 ## v59.1.3
 
 No changes
