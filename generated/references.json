@@ -469,6 +469,12 @@
               "description": "Total number of errors",
               "title": "Total number of errors in the past 7 days",
               "type": "number"
+            },
+            "workerPool": {
+              "additionalProperties": true,
+              "description": "Breakdown by worker pool if workerPoolId is not specified.\nIf specified, this will only include the worker pool specified.\n",
+              "title": "By worker pool",
+              "type": "object"
             }
           },
           "required": [
@@ -14629,7 +14635,8 @@
           "output": "v1/worker-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "state"
           ],
           "route": "/workers/<workerPoolId>",
           "scopes": "worker-manager:list-workers:<workerPoolId>",

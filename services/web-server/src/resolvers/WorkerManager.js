@@ -17,11 +17,14 @@ export default {
     WorkerManagerErrors(parent, { workerPoolId, connection, filter }, { loaders }) {
       return loaders.WorkerManagerErrors.load({ workerPoolId, connection, filter });
     },
-    WorkerManagerErrorsStats(parent, { workerPoolId, connection, filter }, { loaders }) {
+    WorkerManagerErrorsStats(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerManagerErrorsStats.load({ workerPoolId });
     },
     WorkerPool(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
+    },
+    WorkerManagerWorkers(parent, { workerPoolId, state, connection }, { loaders }) {
+      return loaders.WorkerManagerWorkers.load({ workerPoolId, state, connection });
     },
     WorkerManagerProviders(parent, { connection, filter }, { loaders }) {
       return loaders.WorkerManagerProviders.load({ connection, filter });

@@ -85,6 +85,38 @@ export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, c
       };
     },
   );
+  const listPendingTasks = new ConnectionLoader(
+    async ({ taskQueueId, options }) => {
+      const raw = await queue.listPendingTasks(taskQueueId, options);
+
+      return {
+        ...raw,
+        items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
+          taskId,
+          runId,
+          inserted,
+          task: new Task(taskId, null, task),
+        })),
+      };
+    },
+  );
+  const listClaimedTasks = new ConnectionLoader(
+    async ({ taskQueueId, options }) => {
+      const raw = await queue.listClaimedTasks(taskQueueId, options);
+
+      return {
+        ...raw,
+        items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
+          taskId,
+          runId,
+          claimed,
+          workerGroup,
+          workerId,
+          task: new Task(taskId, null, task),
+        })),
+      };
+    },
+  );
 
   return {
     dependents,
@@ -92,5 +124,7 @@ export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, c
     indexedTask,
     taskGroup,
     taskActions,
+    listPendingTasks,
+    listClaimedTasks,
   };
 };

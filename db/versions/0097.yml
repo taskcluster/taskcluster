@@ -1,0 +1,66 @@
+version: 97
+description: Worker pools extra stats
+migrationScript: |-
+  begin
+    create index workers_created_idx on workers (created);
+  end
+downgradeScript: |-
+  begin
+    drop index workers_created_idx;
+  end
+methods:
+  get_worker_pool_error_worker_pools:
+    description: |
+      Returns errors grouped by worker pool
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (worker_pool text, count integer)
+    body: |-
+      begin
+        RETURN query
+        SELECT worker_pool_errors.worker_pool_id, count(*)::int
+        FROM worker_pool_errors
+        WHERE
+          (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+        GROUP BY worker_pool_errors.worker_pool_id;
+      end
+
+  get_workers_without_provider_data:
+    deprecated: true
+
+  get_worker_manager_workers:
+    description: |-
+      Get workers created by worker manager filtered by the optional arguments,
+      ordered by `created` timestamp.
+      This returns only worker manager view without queue data.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, capacity integer, last_modified timestamptz, last_checked timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked
+        from workers
+        where
+          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (workers.worker_group = worker_group_in or worker_group_in is null) and
+          (workers.worker_id = worker_id_in or worker_id_in is null) and
+          (workers.state = state_in or state_in is null)
+        order by created desc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

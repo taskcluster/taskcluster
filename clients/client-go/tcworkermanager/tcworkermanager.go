@@ -506,13 +506,16 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 //	worker-manager:list-workers:<workerPoolId>
 //
 // See #listWorkersForWorkerPool
-func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, limit string) (*WorkerListInAGivenWorkerPool, error) {
+func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, limit, state string) (*WorkerListInAGivenWorkerPool, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
 	}
 	if limit != "" {
 		v.Add("limit", limit)
+	}
+	if state != "" {
+		v.Add("state", state)
 	}
 	cd := tcclient.Client(*workerManager)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId), new(WorkerListInAGivenWorkerPool), v)
@@ -526,13 +529,16 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 //	worker-manager:list-workers:<workerPoolId>
 //
 // See ListWorkersForWorkerPool for more details.
-func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, limit, state string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
 	}
 	if limit != "" {
 		v.Add("limit", limit)
+	}
+	if state != "" {
+		v.Add("state", state)
 	}
 	cd := tcclient.Client(*workerManager)
 	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId), v, duration)

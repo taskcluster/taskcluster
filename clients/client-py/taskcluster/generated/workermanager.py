@@ -437,7 +437,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkersForWorkerPool',
             'output': 'v1/worker-list.json#',
-            'query': ['continuationToken', 'limit'],
+            'query': ['continuationToken', 'limit', 'state'],
             'route': '/workers/<workerPoolId>',
             'stability': 'stable',
         },

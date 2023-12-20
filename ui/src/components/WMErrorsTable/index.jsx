@@ -6,7 +6,6 @@ import memoize from 'fast-memoize';
 import { shape, arrayOf, string, func } from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from 'mdi-react/CloseIcon';
-import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import TableRow from '@material-ui/core/TableRow';
 import Drawer from '@material-ui/core/Drawer';
 import TableCell from '@material-ui/core/TableCell';
@@ -143,7 +142,7 @@ export default class WorkerManagerErrorsTable extends Component {
     });
   };
 
-  handleDrawerOpen = ({ currentTarget: { name } }) => {
+  handleDrawerOpen(name) {
     const { errorsConnection } = this.props;
     const drawerError = errorsConnection.edges.find(
       ({ node }) => node.errorId === name
@@ -152,27 +151,24 @@ export default class WorkerManagerErrorsTable extends Component {
     this.setState({
       drawerError,
     });
-  };
+  }
 
   renderTableRow = error => {
     const { classes } = this.props;
     const { errorId, title, description, reported } = error.node;
-    const iconSize = 16;
 
     return (
       <TableRow key={errorId}>
-        <TableCell>
+        <TableCell
+          style={{ cursor: 'pointer' }}
+          onClick={() => this.handleDrawerOpen(errorId)}>
           <TableCellItem>
             <ListItemText disableTypography primary={title} />
           </TableCellItem>
         </TableCell>
-        <TableCell>
-          <IconButton
-            className={classes.infoButton}
-            name={errorId}
-            onClick={this.handleDrawerOpen}>
-            <InformationVariantIcon size={iconSize} />
-          </IconButton>
+        <TableCell
+          style={{ cursor: 'pointer' }}
+          onClick={() => this.handleDrawerOpen(errorId)}>
           <Typography
             variant="body2"
             className={classes.errorDescription}

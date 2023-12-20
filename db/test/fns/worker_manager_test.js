@@ -517,7 +517,7 @@ suite(testing.suiteName(), function() {
 
       const count = (await db.fns.expire_workers(fromNow()))[0].expire_workers;
       assert.equal(count, 2);
-      const rows = await db.fns.get_workers_without_provider_data(null, null, null, null, null, null);
+      const rows = await db.fns.get_worker_manager_workers(null, null, null, null, null, null);
       assert.equal(rows.length, 1);
     });
 
@@ -535,7 +535,7 @@ suite(testing.suiteName(), function() {
         });
       }
 
-      let rows = await db.fns.get_workers_without_provider_data(null, null, null, null, null, null);
+      let rows = await db.fns.get_worker_manager_workers(null, null, null, null, null, null);
       assert.equal(rows.length, 2);
 
       for (let i = 0; i < rows.length; i++) {

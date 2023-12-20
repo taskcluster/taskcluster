@@ -1939,7 +1939,7 @@ builder.declare({
   });
 
   const result = {
-    tasks: pendingTasks.rows.map(({ task_id, run_id, inserted, ...taskColumns }) => ({
+    tasks: pendingTasks.rows?.map(({ task_id, run_id, inserted, ...taskColumns }) => ({
       taskId: task_id,
       runId: run_id,
       task: Task.fromDb(taskColumns).definition(),

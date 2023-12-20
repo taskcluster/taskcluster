@@ -366,6 +366,12 @@ type (
 
 		// Total number of errors
 		Total float64 `json:"total"`
+
+		// Breakdown by worker pool if workerPoolId is not specified.
+		// If specified, this will only include the worker pool specified.
+		//
+		// Additional properties allowed
+		WorkerPool json.RawMessage `json:"workerPool,omitempty"`
 	}
 
 	Var struct {

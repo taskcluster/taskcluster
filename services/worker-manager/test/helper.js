@@ -254,7 +254,7 @@ const stubbedNotify = () => {
  * Get all workers
  */
 helper.getWorkers = async () =>
-  Promise.all((await helper.db.fns.get_workers_without_provider_data(null, null, null, null, null, null)).map(
+  Promise.all((await helper.db.fns.get_worker_manager_workers(null, null, null, null, null, null)).map(
     async r => {
       const w = Worker.fromDb(r);
       return await Worker.get(helper.db, {

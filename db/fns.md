@@ -173,15 +173,16 @@
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_2`](#get_worker_2)
+   * [`get_worker_manager_workers`](#get_worker_manager_workers)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
    * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
    * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
    * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
+   * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
    * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
-   * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -2762,15 +2763,16 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_2`](#get_worker_2)
+* [`get_worker_manager_workers`](#get_worker_manager_workers)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
 * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
 * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
 * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
+* [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
 * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
-* [`get_workers_without_provider_data`](#get_workers_without_provider_data)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -3116,6 +3118,35 @@ Otherwise, page_size rows are returned at offset page_offset.
 
 Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
 
+### get_worker_manager_workers
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+  * `state_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `worker_group text`
+  * `worker_id text`
+  * `provider_id text`
+  * `created timestamptz`
+  * `expires timestamptz`
+  * `state text`
+  * `capacity integer`
+  * `last_modified timestamptz`
+  * `last_checked timestamptz`
+* *Last defined on version*: 97
+
+Get workers created by worker manager filtered by the optional arguments,
+ordered by `created` timestamp.
+This returns only worker manager view without queue data.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
 ### get_worker_pool_error
 
 * *Mode*: read
@@ -3188,6 +3219,19 @@ There will be a breakdown for the last 7 days even if there are no errors.
 * *Last defined on version*: 96
 
 Returns errors grouped by title for given worker pool or all worker pools
+
+
+### get_worker_pool_error_worker_pools
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool text`
+  * `count integer`
+* *Last defined on version*: 97
+
+Returns errors grouped by worker pool
 
 
 ### get_worker_pool_errors_for_worker_pool
@@ -3271,34 +3315,6 @@ Get an existing worker pool.  The returned table will have one or (if no such wo
 * *Last defined on version*: 70
 
 Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
-### get_workers_without_provider_data
-
-* *Mode*: read
-* *Arguments*:
-  * `worker_pool_id_in text`
-  * `worker_group_in text`
-  * `worker_id_in text`
-  * `state_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `provider_id text`
-  * `created timestamptz`
-  * `expires timestamptz`
-  * `state text`
-  * `capacity integer`
-  * `last_modified timestamptz`
-  * `last_checked timestamptz`
-* *Last defined on version*: 48
-
-Get existing workers (without their `provider_data`) filtered by the optional arguments,
-ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
-If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
 ### remove_worker_pool_previous_provider_id
@@ -3405,3 +3421,7 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+
+### deprecated methods
+
+* `get_workers_without_provider_data(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v61.0.0)

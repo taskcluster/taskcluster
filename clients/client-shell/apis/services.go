@@ -2334,6 +2334,7 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"state",
 				},
 				Input: "",
 			},
