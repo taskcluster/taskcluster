@@ -175,14 +175,13 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 			},
 			ContentType: "text/html; charset=utf-8",
 			URL:         url,
+			HideURL:     true,
 		},
 	)
 
 	if uploadErr != nil {
 		return uploadErr
 	}
-
-	it.task.Infof("[interactive] session available at %s", url)
 
 	return nil
 }
