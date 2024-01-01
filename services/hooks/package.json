@@ -13,7 +13,7 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "c8": "^8.0.1",
-    "eslint": "^8.54.0",
+    "eslint": "^8.56.0",
     "mocha": "^10.2.0"
   }
 }
