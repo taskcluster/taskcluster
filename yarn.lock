@@ -6680,12 +6680,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-table@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "markdown-table@npm:2.0.0"
-  dependencies:
-    repeat-string: "npm:^1.0.0"
-  checksum: f257e0781ea50eb946919df84bdee4ba61f983971b277a369ca7276f89740fd0e2749b9b187163a42df4c48682b71962d4007215ce3523480028f06c11ddc2e6
+"markdown-table@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "markdown-table@npm:3.0.3"
+  checksum: 47433a3f31e4637a184e38e873ab1d2fadfb0106a683d466fec329e99a2d8dfa09f091fa42202c6f13ec94aef0199f449a684b28042c636f2edbc1b7e1811dcd
   languageName: node
   linkType: hard
 
@@ -8585,13 +8583,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"repeat-string@npm:^1.0.0":
-  version: 1.6.1
-  resolution: "repeat-string@npm:1.6.1"
-  checksum: 87fa21bfdb2fbdedc44b9a5b118b7c1239bdd2c2c1e42742ef9119b7d412a5137a1d23f1a83dc6bb686f4f27429ac6f542e3d923090b44181bafa41e8ac0174d
-  languageName: node
-  linkType: hard
-
 "request-ip@npm:^3.3.0":
   version: 3.3.0
   resolution: "request-ip@npm:3.3.0"
@@ -9957,7 +9948,7 @@ __metadata:
     jwks-rsa: "npm:^2.1.5"
     lodash: "npm:4.17.21"
     loglevel: "npm:^1.8.1"
-    markdown-table: "npm:^2.0.0"
+    markdown-table: "npm:^3.0.3"
     marked: "npm:^4.1.1"
     matrix-js-sdk: "npm:^25.1.1"
     md-directory: "npm:^1.0.2"
