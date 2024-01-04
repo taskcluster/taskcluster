@@ -922,7 +922,7 @@ func (task *TaskRun) kill() {
 }
 
 func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
+	absLogFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		panic(err)
@@ -979,10 +979,10 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		}
 		task.closeLog(logHandle)
 		if task.Payload.Features.BackingLog {
-			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
+			err.add(task.uploadLog(task.Payload.Logs.Backing, fileutil.AbsFrom(taskContext.TaskDir, logPath)))
 		}
 		if config.CleanUpTaskDirs {
-			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
+			_ = os.Remove(fileutil.AbsFrom(taskContext.TaskDir, logPath))
 		}
 	}()
 
@@ -1183,7 +1183,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 	if PlatformTaskEnvironmentSetup(taskDirName) {
 		return true
 	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
+	logDir := fileutil.AbsFrom(taskContext.TaskDir, filepath.Dir(logPath))
 	err := os.MkdirAll(logDir, 0700)
 	if err != nil {
 		panic(err)

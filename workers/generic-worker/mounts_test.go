@@ -656,7 +656,8 @@ func TestMounts(t *testing.T) {
 			}`),
 		},
 		&FileMount{
-			File: filepath.Join("preloaded", "shasums"),
+			// use absolute path of file
+			File: filepath.Join(taskContext.TaskDir, "preloaded", "shasums"),
 			Content: json.RawMessage(`{
 				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/shasums"
 			}`),
@@ -715,9 +716,9 @@ func TestMounts(t *testing.T) {
 			Format: "zip",
 		},
 
-		// read only directory from url
+		// read only directory from url with absolute path for directory
 		&ReadOnlyDirectory{
-			Directory: filepath.Join("my-task-caches", "package"),
+			Directory: filepath.Join(taskContext.TaskDir, "my-task-caches", "package"),
 			Content: json.RawMessage(`{
 				"url": "https://github.com/taskcluster/logserver/raw/53134a5b9cbece05752c0ecc1a6c6d7c2fbf6580/node_modules/express/node_modules/connect/node_modules/multiparty/test/fixture/file/binaryfile.tar.gz"
 			}`),

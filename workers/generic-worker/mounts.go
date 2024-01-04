@@ -386,9 +386,11 @@ func garbageCollection() error {
 
 // called when a task starts
 func (taskMount *TaskMount) Start() *CommandExecutionError {
+	taskMount.Info("In Start()")
 	if taskMount.payloadError != nil {
 		return MalformedPayloadError(taskMount.payloadError)
 	}
+	taskMount.Info("No payload error")
 	// Check if any caches need to be purged. See:
 	//   https://docs.taskcluster.net/docs/reference/core/purge-cache
 	err := taskMount.purgeCaches()
@@ -406,6 +408,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
+		taskMount.Infof("Found mount %v", mount)
 		err = mount.Mount(taskMount)
 		// An error is returned if it is a task problem, such as an invalid url
 		// to download content, or a downloaded archive cannot be extracted.
@@ -497,7 +500,7 @@ func (f *FileMount) FSContent() (FSContent, error) {
 }
 
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
-	target := filepath.Join(taskContext.TaskDir, w.Directory)
+	target := fileutil.AbsFrom(taskContext.TaskDir, w.Directory)
 	// cache already there?
 	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
 		// bump counter
@@ -559,7 +562,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	cache := directoryCaches[w.CacheName]
 	cacheDir := cache.Location
-	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
+	taskCacheDir := fileutil.AbsFrom(taskContext.TaskDir, w.Directory)
 	taskMount.Infof("Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
 	err := RenameCrossDevice(taskCacheDir, cacheDir)
 	if err != nil {
@@ -611,7 +614,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 	if err != nil {
 		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 	}
-	dir := filepath.Join(taskContext.TaskDir, r.Directory)
+	dir := fileutil.AbsFrom(taskContext.TaskDir, r.Directory)
 	err = extract(c, r.Format, dir, taskMount)
 	if err != nil {
 		return err
@@ -630,7 +633,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return err
 	}
 
-	file := filepath.Join(taskContext.TaskDir, f.File)
+	file := fileutil.AbsFrom(taskContext.TaskDir, f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("Cannot mount file at path %v since it already exists as a directory", file)
 	}

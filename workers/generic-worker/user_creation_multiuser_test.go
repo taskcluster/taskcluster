@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
 )
 
 func TestRunAfterUserCreation(t *testing.T) {
@@ -28,7 +30,7 @@ func TestRunAfterUserCreation(t *testing.T) {
 			t.Fatalf("Problem deleting old tasks: %v", err)
 		}
 	}()
-	fileContents, err := os.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
+	fileContents, err := os.ReadFile(fileutil.AbsFrom(taskContext.TaskDir, "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)
 	}

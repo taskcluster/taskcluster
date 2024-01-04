@@ -13,6 +13,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
 	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
@@ -59,7 +60,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
+	wrapper := fileutil.AbsFrom(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
 	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, taskContext.pd)
 	if err != nil {
@@ -75,11 +76,11 @@ func (task *TaskRun) generateCommand(index int) error {
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := filepath.Join(taskContext.TaskDir, "env.txt")
-	dir := filepath.Join(taskContext.TaskDir, "dir.txt")
+	env := fileutil.AbsFrom(taskContext.TaskDir, "env.txt")
+	dir := fileutil.AbsFrom(taskContext.TaskDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
-	script := filepath.Join(taskContext.TaskDir, commandName+".bat")
+	wrapper := fileutil.AbsFrom(taskContext.TaskDir, commandName+"_wrapper.bat")
+	script := fileutil.AbsFrom(taskContext.TaskDir, commandName+".bat")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
