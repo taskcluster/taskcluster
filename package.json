@@ -142,7 +142,7 @@
     "inquirer": "^8.0.0",
     "is-uuid": "^1.0.2",
     "json-stable-stringify": "^1.1.0",
-    "markdown-table": "^2.0.0",
+    "markdown-table": "^3.0.3",
     "md-directory": "^1.0.2",
     "mocha": "^10.2.0",
     "mock-aws-s3": "^4.0.1",
