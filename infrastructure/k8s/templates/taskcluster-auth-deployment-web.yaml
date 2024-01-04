@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-auth
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
-      terminationGracePeriodSeconds: 45
+      terminationGracePeriodSeconds: 120
       containers:
         - name: taskcluster-auth-web
           image: '{{ .Values.dockerImage }}'
@@ -50,20 +50,18 @@ spec:
               port: 80
             timeoutSeconds: 5
             periodSeconds: 10
-            initialDelaySeconds: 3
+            initialDelaySeconds: 6
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - '-c'
-                - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
-            periodSeconds: 60
-            failureThreshold: 1
+            httpGet:
+              path: /api/auth/v1/ping
+              port: 80
+            timeoutSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
           lifecycle:
             preStop:
               exec:
                 command:
                   - /bin/sh
                   - '-c'
-                  - sleep 30
+                  - sleep 10

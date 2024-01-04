@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-github
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
-      terminationGracePeriodSeconds: 45
+      terminationGracePeriodSeconds: 120
       containers:
         - name: taskcluster-github-worker
           image: '{{ .Values.dockerImage }}'
@@ -47,6 +47,6 @@ spec:
                 - /bin/sh
                 - '-c'
                 - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
+            initialDelaySeconds: 432000
             periodSeconds: 60
             failureThreshold: 1
