@@ -15,6 +15,7 @@ import {
 } from '@aws-sdk/middleware-endpoint';
 import { reportError } from 'taskcluster-lib-api';
 import taskcluster from 'taskcluster-client';
+import path from 'path';
 import qs from 'qs';
 import { parse as parseContentType } from 'content-type';
 
@@ -169,13 +170,13 @@ export class AwsBackend extends Backend {
   async startDownload(object, method, params) {
     switch (method){
       case 'simple': {
-        let url;
+        let downloadUrl;
         const command = new GetObjectCommand({
           Bucket: this.config.bucket,
           Key: object.name,
         });
         if (this.config.signGetUrls) {
-          url = await getSignedUrl(this.s3, command, {
+          downloadUrl = await getSignedUrl(this.s3, command, {
             // 30 minutes is copied from the queue; the idea is that the download
             // begins almost immediately.  It might also make sense to use the
             // expiration time of the object here.
@@ -183,10 +184,11 @@ export class AwsBackend extends Backend {
             expiresIn: 30 * 60,
           });
         } else {
-          const { url: { href } } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
-          url = `${href}${encodeURIComponent(object.name)}`;
+          const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
+          url.pathname = path.join(url.pathname, encodeURIComponent(object.name));
+          downloadUrl = url.href;
         }
-        return { method, url };
+        return { method, url: downloadUrl };
       }
 
       case 'getUrl': {
