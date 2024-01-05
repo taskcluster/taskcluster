@@ -10,6 +10,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
 import _ from 'lodash';
+import path from 'path';
 import debugFactory from 'debug';
 const debug = debugFactory('app:bucket');
 import assert from 'assert';
@@ -107,8 +108,9 @@ Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
     Bucket: this.bucket,
     Key: prefix,
   });
-  const { url: { href: url } } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
-  return `${url}${prefix}`;
+  const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
+  url.pathname = path.join(url.pathname, prefix);
+  return url.href;
 };
 
 /**

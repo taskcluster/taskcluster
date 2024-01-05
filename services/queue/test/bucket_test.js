@@ -112,9 +112,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       monitor: await helper.load('monitor'),
     });
     const url = await bucket.createGetUrl('testX');
-    assert(url.includes(cfg.app.publicArtifactBucket));
-    assert(url.includes(cfg.aws.region));
-    assert(url.includes('testX'));
+    assert.equal(url, `https://${cfg.app.publicArtifactBucket}.s3.${cfg.aws.region}.amazonaws.com/testX`);
+  });
+
+  test('handles slashes', async function() {
+    const cfg = await helper.load('cfg');
+
+    // Create bucket instance
+    const bucket = new Bucket({
+      bucket: cfg.app.publicArtifactBucket,
+      awsOptions: {
+        ...cfg.aws,
+        endpoint: 'http://taskcluster',
+        s3ForcePathStyle: true,
+      },
+      monitor: await helper.load('monitor'),
+    });
+    const url = await bucket.createGetUrl('testX');
+    assert.equal(url, `http://taskcluster/${cfg.app.publicArtifactBucket}/testX`);
   });
 
   test('custom endpoint + forcePathStyle', async function() {
