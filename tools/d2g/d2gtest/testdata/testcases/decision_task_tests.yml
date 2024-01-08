@@ -57,6 +57,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
           purgeCaches:
             - 123
             - 456
@@ -153,6 +154,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
           purgeCaches:
             - 123
             - 456

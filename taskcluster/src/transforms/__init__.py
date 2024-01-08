@@ -135,7 +135,10 @@ def podman_run(config, tasks):
         # An error sometimes occurs while pulling the docker image:
         # Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
         # And this exits 125, so we'd like to retry.
-        task["worker"].setdefault("retry-exit-status", []).append(125)
+        # Another error sometimes occurs while pulling the docker image:
+        # error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)
+        # And this exits 128, so we'd like to retry.
+        task["worker"].setdefault("retry-exit-status", []).extend([125, 128])
 
         yield task
 

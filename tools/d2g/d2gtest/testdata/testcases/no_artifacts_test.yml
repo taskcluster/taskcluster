@@ -36,4 +36,5 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
   taskDefTests: []
