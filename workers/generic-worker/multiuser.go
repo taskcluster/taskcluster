@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v60/workers/generic-worker/runtime"
 )
 
 const (

@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/internal/scopes"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/tcproxy"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/internal/scopes"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/tcproxy"
 )
 
 type TaskclusterProxyFeature struct {

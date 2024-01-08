@@ -3,6 +3,36 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.0.0
+
+### GENERAL
+
+▶ [patch]
+Generic Worker: No longer logs out the redirect URL for the interactive shell feature since they are signed.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#6759](https://github.com/taskcluster/taskcluster/issues/6759)
+Kubernetes pods use liveness probe instead of unconditionally killing containers daily.
+
+▶ [patch] [#6641](https://github.com/taskcluster/taskcluster/issues/6641)
+Worker-manager no longer counts "stopping" instances as part of the existing capacity when estimating the number of workers to start (although they are still counted towards maxCapacity).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump markdown-table from 2.0.0 to 3.0.3 (979bdebbe)
+* build(deps): bump the deps group in /ui with 5 updates (d1b5aedaf)
+* build(deps): bump taskcluster from 58.0.2 to 59.2.0 in /taskcluster (dcb3409ae)
+* build(deps): bump the deps group with 7 updates (3381ad533)
+* build(deps): bump the deps group with 1 update (497c11ff6)
+* build(deps): bump the deps group in /taskcluster with 1 update (156da5e47)
+* build(deps): bump github/codeql-action from 2 to 3 (1d9788a67)
+
+</details>
+
 ## v59.2.0
 
 ### USERS
