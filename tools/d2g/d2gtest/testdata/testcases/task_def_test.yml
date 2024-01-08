@@ -69,6 +69,7 @@ testSuite:
           onExitStatus:
             retry:
             - 125
+            - 128
           osGroups:
             - kvm
         priority: lowest
@@ -151,6 +152,7 @@ testSuite:
           onExitStatus:
             retry:
             - 125
+            - 128
           osGroups:
             - kvm
         priority: lowest
@@ -235,6 +237,7 @@ testSuite:
           onExitStatus:
             retry:
             - 125
+            - 128
           osGroups:
             - kvm
         priority: lowest

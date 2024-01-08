@@ -25,6 +25,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: NamedDockerImage
       description: Test NamedDockerImage
@@ -50,6 +51,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: IndexedDockerImage
       description: Test IndexedDockerImage
@@ -83,6 +85,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: IndexedDockerImage with .lz4 extension
       description: Test IndexedDockerImage with .lz4 extension
@@ -117,6 +120,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: IndexedDockerImage with .zst extension
       description: Test IndexedDockerImage with .zst extension
@@ -151,6 +155,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: DockerImageArtifact
       description: Test DockerImageArtifact
@@ -182,6 +187,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: DockerImageArtifact with .lz4 extension
       description: Test DockerImageArtifact with .lz4 extension
@@ -214,6 +220,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: DockerImageArtifact with .zst extension
       description: Test DockerImageArtifact with .zst extension
@@ -246,4 +253,5 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
   taskDefTests: []
