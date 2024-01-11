@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.0.1
+
+### GENERAL
+
+▶ [patch] [#6762](https://github.com/taskcluster/taskcluster/issues/6762)
+Generic Worker: Tasks internally translated by D2G will add exit code 128 to the retry exit status array for retrying on an intermittent docker image pull issue.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump follow-redirects from 1.14.8 to 1.15.4 in /ui (d0f85465b)
+* build(deps): bump follow-redirects in /clients/client (fdf26413e)
+* build(deps): bump follow-redirects from 1.15.3 to 1.15.4 (77c73c527)
+* build(deps): bump follow-redirects in /clients/client-test (1465e064d)
+* build(deps): bump follow-redirects in /clients/client-web (924ecbb91)
+
+</details>
+
 ## v60.0.0
 
 ### GENERAL
