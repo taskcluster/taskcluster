@@ -178,6 +178,7 @@ func (f *forwarder) forward() {
 	// just to be sure
 	defer f.kill()
 	if err != nil {
+		log.Error(err)
 		return
 	}
 
