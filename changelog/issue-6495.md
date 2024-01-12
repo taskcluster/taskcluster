@@ -1,5 +1,5 @@
 audience: users
-level: minor
+level: patch
 reference: issue 6495
 ---
 
