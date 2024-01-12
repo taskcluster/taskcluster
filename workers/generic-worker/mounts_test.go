@@ -143,8 +143,8 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	logtext := LogText(t)
-	if !strings.Contains(logtext, "zip: not a valid zip file") {
-		t.Fatalf("Was expecting log file to contain a zip error message, but it instead contains:\n%v", logtext)
+	if !strings.Contains(logtext, "Cannot unarchive") {
+		t.Fatalf("Was expecting log file to contain an unarchive error message, but it instead contains:\n%v", logtext)
 	}
 }
 
@@ -323,7 +323,8 @@ func TestValidSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "directory", "unknown_issuer_app_1")
+	grantingDir, _ := grantingDenying(t, "directory", false, "unknown_issuer_app_1")
+	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// Required text from first task with no cached value
 	pass1 := append([]string{
@@ -331,18 +332,28 @@ func TestValidSHA256(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1`,
-		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 	},
-		granting...,
+		grantingCacheFile...,
+	)
+	pass1 = append(pass1,
+		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+	)
+	pass1 = append(pass1,
+		grantingDir...,
 	)
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
 		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1`,
-		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 	},
-		granting...,
+		grantingCacheFile...,
+	)
+	pass2 = append(pass2,
+		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+	)
+	pass2 = append(pass2,
+		grantingDir...,
 	)
 
 	LogTest(
@@ -378,7 +389,7 @@ func TestFileMountNoSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "file", t.Name())
+	granting, _ := grantingDenying(t, "file", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -433,7 +444,7 @@ func TestFileMountWithCompression(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "file", t.Name())
+	granting, _ := grantingDenying(t, "file", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -533,7 +544,8 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, denying := grantingDenying(t, "directory", t.Name())
+	grantingDir, denying := grantingDenying(t, "directory", false, t.Name())
+	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -542,9 +554,14 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .*` + t.Name(),
-		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
-		granting...,
+		grantingCacheFile...,
+	)
+	pass1 = append(pass1,
+		`Extracting zip file .* to '.*`+t.Name()+`'`,
+	)
+	pass1 = append(pass1,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -557,7 +574,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
 		`Creating directory .*`,
 	},
-		granting...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -854,7 +871,8 @@ func TestCacheMoved(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "directory", t.Name())
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
+	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -863,9 +881,14 @@ func TestCacheMoved(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*` + t.Name(),
-		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
-		granting...,
+		grantingCacheFile...,
+	)
+	pass1 = append(pass1,
+		`Extracting zip file .* to '.*`+t.Name()+`'`,
+	)
+	pass1 = append(pass1,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -880,9 +903,14 @@ func TestCacheMoved(t *testing.T) {
 		`No existing writable directory cache 'banana-cache' - creating .*`,
 		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*` + t.Name(),
-		`Extracting zip file .* to '.*` + t.Name() + `'`,
 	},
-		granting...,
+		grantingCacheFile...,
+	)
+	pass2 = append(pass2,
+		`Extracting zip file .* to '.*`+t.Name()+`'`,
+	)
+	pass2 = append(pass2,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -938,7 +966,7 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
-	granting, _ := grantingDenying(t, "file", "file-located-here")
+	granting, _ := grantingDenying(t, "file", false, "file-located-here")
 
 	// No cache on first pass
 	pass1 := append([]string{
