@@ -24,7 +24,7 @@ index 3153ab63f..b2e679230 100644
  	n, err := copyAndFlush(wf, resp.Body, 100*time.Millisecond)
  	p.logf(id, r.RemoteAddr, "data transfered over request: %d bytes, error: %v", n, err)
  }
- 
+
  // validate jwt
  // jwt signing and verification algorithm must be HMAC
  func (p *proxy) validateJWT(id string, tokenString string) error {
@@ -37,7 +37,7 @@ index 3153ab63f..b2e679230 100644
  		ValidMethods:         []string{"HS256"},
  		SkipClaimsValidation: true, // Claims will be verified if token can be decoded using secret
  	}
- 
+
 ```
 
 For the latter, a patch like this to generic-worker is recommended:
@@ -47,7 +47,7 @@ index 51bd3eb8f..b3efac30f 100644
 --- a/workers/generic-worker/artifacts.go
 +++ b/workers/generic-worker/artifacts.go
 @@ -280,16 +280,17 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
- 
+
  func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
  	task.Artifacts[artifact.Base().Name] = artifact
  	payload, err := json.Marshal(artifact.RequestObject())
