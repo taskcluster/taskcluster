@@ -77,11 +77,12 @@ func CreateInteractiveJob(createCmd CreateInteractiveProcess, conn *websocket.Co
 }
 
 func (itj *InteractiveJob) Terminate() (err error) {
-	if itj.cmd.ProcessState != nil {
+	select {
+	case <-itj.done:
 		return nil
+	default:
+		return itj.cmd.Process.Kill()
 	}
-
-	return itj.cmd.Process.Kill()
 }
 
 func (itj *InteractiveJob) copyCommandOutputStream() {
