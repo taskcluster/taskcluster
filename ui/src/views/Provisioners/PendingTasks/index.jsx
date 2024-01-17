@@ -15,6 +15,7 @@ import TableCellItem from '../../../components/TableCellItem';
 import DateDistance from '../../../components/DateDistance';
 import Label from '../../../components/Label';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import ErrorPanel from '../../../components/ErrorPanel';
 
 @graphql(pendingTasks, {
   options: props => ({
@@ -141,6 +142,8 @@ export default class WMViewPendingTasks extends Component {
         </Box>
 
         {loading && <Spinner loading />}
+
+        {error && <ErrorPanel fixed error={error} />}
 
         {!error && !loading && (
           <ConnectionDataTable
