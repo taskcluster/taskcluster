@@ -7,6 +7,7 @@ import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
 import Email from 'email-templates';
 import nodemailer from 'nodemailer';
+import { SendRawEmailCommand } from '@aws-sdk/client-ses';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -27,7 +28,7 @@ class Notifier {
     this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
-      SES: options.ses,
+      SES: { ses: options.ses, aws: { SendRawEmailCommand } },
     });
     this.emailer = new Email({
       transport,

@@ -1,5 +1,11 @@
 import { ApiError, Provider } from './provider.js';
-import aws from 'aws-sdk';
+import {
+  EC2Client,
+  DescribeRegionsCommand,
+  RunInstancesCommand,
+  DescribeInstanceStatusCommand,
+  TerminateInstancesCommand,
+} from '@aws-sdk/client-ec2';
 import taskcluster from 'taskcluster-client';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -46,17 +52,17 @@ export class AwsProvider extends Provider {
   }
 
   async setup() {
-    const ec2 = new aws.EC2({
+    const ec2 = new EC2Client({
       credentials: this.providerConfig.credentials,
       region: 'us-east-1', // This is supposed to be the default region for EC2 requests, but in practice it would throw an error without a region
     });
 
-    const regions = (await ec2.describeRegions({}).promise()).Regions;
+    const { Regions: regions } = await ec2.send(new DescribeRegionsCommand({}));
 
     let requestTypes = {};
     this.ec2s = {};
     regions.forEach(r => {
-      this.ec2s[r.RegionName] = new aws.EC2({
+      this.ec2s[r.RegionName] = new EC2Client({
         region: r.RegionName,
         credentials: this.providerConfig.credentials,
       });
@@ -159,7 +165,7 @@ export class AwsProvider extends Provider {
       const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / config.capacityPerInstance);
       let spawned;
       try {
-        spawned = await this._enqueue(`${config.region}.modify`, () => this.ec2s[config.region].runInstances({
+        spawned = await this._enqueue(`${config.region}.modify`, () => this.ec2s[config.region].send(new RunInstancesCommand({
           ...config.launchConfig,
 
           UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
@@ -217,7 +223,7 @@ export class AwsProvider extends Provider {
                 }],
             },
           ],
-        }).promise());
+        })));
       } catch (e) {
         return await this.reportError({
           workerPool,
@@ -329,10 +335,10 @@ export class AwsProvider extends Provider {
     let state;
     try {
       const region = worker.providerData.region;
-      const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].describeInstanceStatus({
+      const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].send(new DescribeInstanceStatusCommand({
         InstanceIds: [worker.workerId.toString()],
         IncludeAllInstances: true,
-      }).promise())).InstanceStatuses;
+      })))).InstanceStatuses;
       monitor.debug(`instance statuses: ${instanceStatuses.map(is => is.InstanceState.Name).join(', ')}`);
       for (const is of instanceStatuses) {
         switch (is.InstanceState.Name) {
@@ -403,9 +409,9 @@ export class AwsProvider extends Provider {
     let result;
     try {
       const region = worker.providerData.region;
-      result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].terminateInstances({
+      result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
         InstanceIds: [worker.workerId],
-      }).promise());
+      })));
     } catch (e) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       if (workerPool) {

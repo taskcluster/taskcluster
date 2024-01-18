@@ -1,4 +1,7 @@
-import AWS from 'aws-sdk';
+import {
+  STSClient,
+  GetFederationTokenCommand,
+} from '@aws-sdk/client-sts';
 import _ from 'lodash';
 
 export const awsBuilder = builder => builder.declare({
@@ -86,9 +89,12 @@ export const awsBuilder = builder => builder.declare({
       { bucket });
   }
 
-  const sts = new AWS.STS({
-    accessKeyId: bucketCreds.accessKeyId,
-    secretAccessKey: bucketCreds.secretAccessKey,
+  const sts = new STSClient({
+    credentials: {
+      accessKeyId: bucketCreds.accessKeyId,
+      secretAccessKey: bucketCreds.secretAccessKey,
+    },
+    region: 'us-east-1',
   });
 
   // Prevent prefix to start with a slash, this is bad behavior. Technically
@@ -112,7 +118,7 @@ export const awsBuilder = builder => builder.declare({
   }
 
   // For details on the policy see: http://amzn.to/1ETStaL
-  let iamReq = await sts.getFederationToken({
+  let iamReq = await sts.send(new GetFederationTokenCommand({
     // this must correspond to the federated-user/.. ARN in the policy
     Name: 'TemporaryS3ReadWriteCredentials',
     Policy: JSON.stringify({
@@ -158,7 +164,7 @@ export const awsBuilder = builder => builder.declare({
       ],
     }),
     DurationSeconds: 60 * 60, // Expire credentials in an hour
-  }).promise();
+  }));
 
   // Make result compatibility with how EC2 metadata service let's instances
   // access IAM roles

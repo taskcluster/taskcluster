@@ -30,7 +30,7 @@ export const testGetUrlDownloadMethod = ({
 
   // an optional async function({name, url}) to verify that the correct URL was
   // returned for the object with the given name
-  checkUrl = () => {},
+  checkUrl = async () => {},
 
   // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
   // necessary, and any extra tests
