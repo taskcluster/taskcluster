@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.1.1
+
+### USERS
+
+▶ [patch] [#6775](https://github.com/taskcluster/taskcluster/issues/6775)
+Fixed error messages not being displayed on Pending/Claimed tasks pages in case scopes were missing.
+
 ## v60.1.0
 
 ### WORKER-DEPLOYERS
