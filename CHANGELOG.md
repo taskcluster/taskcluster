@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6779](https://github.com/taskcluster/taskcluster/issues/6779)
+Interactive feature data race fixed, whereby an error could cause a concurrent read and write of process state in different go routines.
+
+### USERS
+
+▶ [minor] [bug 1874568](http://bugzil.la/1874568)
+Fixes token expiry issue for Auth0 login strategy that was not refetched.
+
+▶ [patch] [#6495](https://github.com/taskcluster/taskcluster/issues/6495)
+Improve changelog rendering in UI
+
+### DEVELOPERS
+
+▶ [patch]
+Added helper script to make it easier to run websocktunnel locally.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump jinja2 from 3.1.2 to 3.1.3 in /taskcluster (c97cf83aa)
+
+</details>
+
 ## v60.0.1
 
 ### GENERAL
