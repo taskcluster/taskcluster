@@ -38,6 +38,13 @@ type Config struct {
 
 	// A Logger for logging status updates; default is no logging
 	Logger util.Logger
+
+	// A function that will be called each time the client connects or reconnects.
+	// This is useful to handle cases where a Client loses connection. Generally,
+	// if you have any post-connect set-up that must be run, you should run inside
+	// of a ConnectHook to ensure that it is done both for initial connections,
+	// and reconnections.
+	ConnectHook func(*Client)
 }
 
 // Configurer is a function which can generate a Config object to be used by
@@ -48,18 +55,19 @@ type Configurer func() (Config, error)
 // Client is used to connect to a websocktunnel instance and serve content over
 // the tunnel.  Client implements net.Listener.
 type Client struct {
-	m          sync.Mutex
-	id         string
-	tunnelAddr string
-	token      string
-	url        atomic.Value
-	retry      RetryConfig
-	logger     util.Logger
-	configurer Configurer
-	session    *wsmux.Session
-	state      clientState
-	closed     chan struct{}
-	acceptErr  net.Error
+	m           sync.Mutex
+	id          string
+	tunnelAddr  string
+	token       string
+	url         atomic.Value
+	retry       RetryConfig
+	logger      util.Logger
+	configurer  Configurer
+	session     *wsmux.Session
+	state       clientState
+	closed      chan struct{}
+	acceptErr   net.Error
+	connectHook func(*Client)
 }
 
 // New creates a new Client instance.
@@ -78,6 +86,9 @@ func New(configurer Configurer) (*Client, error) {
 	}
 	cl.url.Store(url)
 	cl.session = wsmux.Client(conn, wsmux.Config{})
+	if cl.connectHook != nil {
+		cl.connectHook(cl)
+	}
 	return cl, nil
 }
 
@@ -164,6 +175,7 @@ func (c *Client) setConfig(config Config) {
 	if c.logger == nil {
 		c.logger = &util.NilLogger{}
 	}
+	c.connectHook = config.ConnectHook
 }
 
 // connectWithRetry returns a websocket connection to the tunnel
@@ -251,7 +263,9 @@ func (c *Client) reconnect() {
 	c.state = stateRunning
 	c.logger.Printf("state: running")
 	c.acceptErr = nil
-
+	if c.connectHook != nil {
+		c.connectHook(c)
+	}
 }
 
 // simple utility to check if client should retry connection
