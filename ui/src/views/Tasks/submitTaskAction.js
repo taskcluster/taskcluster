@@ -25,7 +25,7 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
   }
 
   if (!valid) {
-    throw new Error(ajv.errorsText(validateActionsJsonInstance.errors));
+    throw new Error(ajv.errorsText(validate.errors));
   }
 
   const context = merge(
