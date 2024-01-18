@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.1.2
+
+### USERS
+
+▶ [patch] [#6563](https://github.com/taskcluster/taskcluster/issues/6563)
+Ensure livelog and interactive tasks tunnels work after a websocktunnel restart.
+
 ## v60.1.1
 
 ### USERS
