@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.1.3
+
+### GENERAL
+
+▶ [patch] [#6235](https://github.com/taskcluster/taskcluster/issues/6235)
+Migrates to aws sdk v3.
+
 ## v60.1.2
 
 ### USERS
