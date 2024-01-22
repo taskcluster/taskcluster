@@ -196,6 +196,9 @@ func main() {
 	case arguments["create-dir"]:
 		err := fileutil.CreateDir(arguments["--create-dir"].(string))
 		exitOnError(CANT_CREATE_DIRECTORY, err, "Error creating directory %v", arguments["--create-dir"].(string))
+	case arguments["unarchive"]:
+		err := fileutil.Unarchive(arguments["--archive-src"].(string), arguments["--archive-dst"].(string), arguments["--archive-fmt"].(string))
+		exitOnError(CANT_UNARCHIVE, err, "Error unarchiving %v to %v", arguments["--archive-src"].(string), arguments["--archive-dst"].(string))
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
