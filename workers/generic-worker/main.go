@@ -397,7 +397,7 @@ func RunWorker() (exitCode ExitCode) {
 
 	err = initialiseFeatures()
 	if err != nil {
-		panic(err)
+		return featureInitFailure(err)
 	}
 	defer func() {
 		err := persistFeaturesState()

@@ -180,3 +180,7 @@ func (task *TaskRun) EnvVars() []string {
 	log.Printf("Environment: %#v", taskEnvArray)
 	return taskEnvArray
 }
+
+func featureInitFailure(err error) ExitCode {
+	panic(err)
+}

@@ -266,3 +266,14 @@ func CreateFileAsTaskUser(file string) (*os.File, error) {
 	}
 	return os.OpenFile(file, os.O_RDWR, 0600)
 }
+
+func featureInitFailure(err error) (exitCode ExitCode) {
+	switch err.(type) {
+	case *MissingED25519PrivateKey:
+		exitCode = MISSING_ED25519_PRIVATE_KEY
+	default:
+		panic(err)
+	}
+	log.Print(err)
+	return
+}

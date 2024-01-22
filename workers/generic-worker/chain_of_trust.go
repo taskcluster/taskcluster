@@ -65,6 +65,14 @@ type ChainOfTrustTaskFeature struct {
 	disabled       bool
 }
 
+type MissingED25519PrivateKey struct {
+	Err error
+}
+
+func (m *MissingED25519PrivateKey) Error() string {
+	return fmt.Sprintf("Missing ED25519 Private Key: %v", m.Err)
+}
+
 func (feature *ChainOfTrustFeature) Name() string {
 	return "Chain of Trust"
 }
@@ -76,7 +84,9 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	feature.Ed25519PrivateKey, err = readEd25519PrivateKeyFromFile(config.Ed25519SigningKeyLocation)
 	if err != nil {
-		return
+		return &MissingED25519PrivateKey{
+			Err: err,
+		}
 	}
 
 	// platform-specific mechanism to lock down file permissions
