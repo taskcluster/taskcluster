@@ -332,11 +332,13 @@ func TestValidSHA256(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1`,
+		`Copying file '.*' to '.*'`,
 	},
 		grantingCacheFile...,
 	)
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
 		grantingDir...,
@@ -346,11 +348,13 @@ func TestValidSHA256(t *testing.T) {
 	pass2 := append([]string{
 		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1`,
+		`Copying file '.*' to '.*'`,
 	},
 		grantingCacheFile...,
 	)
 	pass2 = append(pass2,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
+		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
 		grantingDir...,
@@ -554,11 +558,13 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
 		`Creating directory .*` + t.Name(),
+		`Copying file '.*' to '.*'`,
 	},
 		grantingCacheFile...,
 	)
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
+		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
 		grantingDir...,
@@ -853,11 +859,13 @@ func TestCacheMoved(t *testing.T) {
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*` + t.Name(),
+		`Copying file '.*' to '.*'`,
 	},
 		grantingCacheFile...,
 	)
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
+		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
 		grantingDir...,
@@ -875,11 +883,13 @@ func TestCacheMoved(t *testing.T) {
 		`No existing writable directory cache 'banana-cache' - creating .*`,
 		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*` + t.Name(),
+		`Copying file '.*' to '.*'`,
 	},
 		grantingCacheFile...,
 	)
 	pass2 = append(pass2,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
+		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
 		grantingDir...,

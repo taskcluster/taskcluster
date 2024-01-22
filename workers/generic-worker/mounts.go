@@ -714,24 +714,38 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 	return
 }
 
-func extract(fsContent FSContent, format string, dir string, taskMount *TaskMount) error {
-	cacheFile, err := ensureCached(fsContent, taskMount)
+func extract(fsContent FSContent, format string, dir string, taskMount *TaskMount) (err error) {
+	var cacheFile string
+	cacheFile, err = ensureCached(fsContent, taskMount)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
-		return err
+		return
 	}
 	err = MkdirAll(taskMount, dir)
 	if err != nil {
-		return err
+		return
 	}
-	err = makeFileReadWritableForTaskUser(taskMount, cacheFile)
+	copyToPath := filepath.Join(taskContext.TaskDir, filepath.Base(cacheFile))
+	defer func() {
+		taskMount.Infof("Removing file '%v'", copyToPath)
+		err2 := os.Remove(copyToPath)
+		if err == nil {
+			err = err2
+		}
+	}()
+	taskMount.Infof("Copying file '%v' to '%v'", cacheFile, copyToPath)
+	_, err = fileutil.Copy(copyToPath, cacheFile)
 	if err != nil {
-		return err
+		return
 	}
-	taskMount.Infof("Extracting %v file %v to '%v'", format, cacheFile, dir)
+	err = makeFileReadWritableForTaskUser(taskMount, copyToPath)
+	if err != nil {
+		return
+	}
+	taskMount.Infof("Extracting %v file %v to '%v'", format, copyToPath, dir)
 	// Useful for worker logs too (not just task logs)
-	log.Printf("[mounts] Extracting %v file %v to '%v'", format, cacheFile, dir)
-	return unarchive(cacheFile, dir, format)
+	log.Printf("[mounts] Extracting %v file %v to '%v'", format, copyToPath, dir)
+	return unarchive(copyToPath, dir, format)
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
