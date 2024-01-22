@@ -307,6 +307,7 @@ and reports back results to the queue.
     79     Not able to create file at --create-file path.
     80     Not able to create directory at --create-dir path.
     81     Not able to unarchive --archive-src to --archive-dst.
+    82     Missing ed25519 private key. Did you run generic-worker new-ed25519-keypair?
 ```
 <!-- HELP END -->
 
