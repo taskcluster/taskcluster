@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.2.0
+
+### GENERAL
+
+▶ [patch]
+Go upgrade to 1.21.6.
+
+>go1.21.6 (released 2024-01-09) includes fixes to the compiler, the runtime, and the crypto/tls, maps, and runtime/pprof packages. See the [Go 1.21.6 milestone](https://github.com/golang/go/issues?q=milestone%3AGo1.21.6+label%3ACherryPickApproved) on our issue tracker for details.
+
+### WORKER-DEPLOYERS
+
+▶ [minor]
+Generic Worker: adds `unarchive` subcommand to the `generic-worker` binary.
+
+### USERS
+
+▶ [minor] [#6720](https://github.com/taskcluster/taskcluster/issues/6720)
+The taskcluster UI now shows errors when an action's input does not match the `action.schema`
+
 ## v60.1.3
 
 ### GENERAL
