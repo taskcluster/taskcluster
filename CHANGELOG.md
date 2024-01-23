@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.3.0
+
+### GENERAL
+
+▶ [patch]
+Generic Worker now copies archives to the task user's directory before unarchiving.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#6785](https://github.com/taskcluster/taskcluster/issues/6785)
+Generic Worker now exits with exit code 82 if the chain of trust key is missing.
+
 ## v60.2.0
 
 ### GENERAL
