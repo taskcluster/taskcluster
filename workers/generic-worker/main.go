@@ -600,6 +600,7 @@ func ClaimWork() *TaskRun {
 			Artifacts:         map[string]artifacts.TaskArtifact{},
 			featureArtifacts:  map[string]string{},
 			LocalClaimTime:    localClaimTime,
+			OriginalScopes:    taskResponse.Task.Scopes,
 		}
 		defaults.SetDefaults(&task.Payload)
 		task.StatusManager = NewTaskStatusManager(task)

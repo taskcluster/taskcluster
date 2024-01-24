@@ -21,6 +21,7 @@ type (
 		TaskClaimResponse   tcqueue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse tcqueue.TaskReclaimResponse    `json:"-"`
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
+		OriginalScopes      []string                       `json:"-"`
 		Payload             GenericWorkerPayload           `json:"-"`
 		// Artifacts is a map from artifact name to artifact
 		Artifacts map[string]artifacts.TaskArtifact `json:"-"`
