@@ -55,8 +55,8 @@ payload:
   command:
     - /bin/bash
     - '-c'
-    - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
-  maxRunTime: 1200
+    - for ((i=1;i<=60;i++)); do echo $i; sleep 1; done
+  maxRunTime: 90
 metadata:
   name: Example Task
   description: Markdown description of **what** this task does

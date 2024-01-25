@@ -349,7 +349,7 @@ exports[`should render TaskDetailsCard 1`] = `
                           <span
                             class="hljs-string"
                           >
-                            ((i=1;i&lt;=600;i++));
+                            ((i=1;i&lt;=60;i++));
                           </span>
                            
                           <span
@@ -416,7 +416,7 @@ exports[`should render TaskDetailsCard 1`] = `
                           <span
                             class="hljs-number"
                           >
-                            630
+                            90
                           </span>
                           
 

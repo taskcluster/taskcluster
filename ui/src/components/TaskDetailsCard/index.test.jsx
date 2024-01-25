@@ -26,10 +26,10 @@ it('should render TaskDetailsCard', () => {
             command: [
               '/bin/bash',
               '-c',
-              'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done',
+              'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
             ],
             image: 'ubuntu:latest',
-            maxRunTime: 630,
+            maxRunTime: 90,
           },
           metadata: {
             source: 'https://test.taskcluster-dev.net/task/taskId',
