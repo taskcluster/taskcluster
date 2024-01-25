@@ -298,7 +298,7 @@ export const UI_SCHEDULER_ID = 'taskcluster-ui';
 const payloadCommand = [
   '/bin/bash',
   '-c',
-  'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done',
+  'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
 ];
 
 export const TASK_PAYLOAD_SCHEMAS = {
@@ -309,7 +309,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     samplePayload: {
       image: 'ubuntu:latest',
       command: payloadCommand,
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
   'generic-simple-posix': {
@@ -318,7 +318,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     schema: 'simple_posix.json',
     samplePayload: {
       command: [payloadCommand],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
   'generic-multi-win': {
@@ -327,7 +327,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     schema: 'multiuser_windows.json',
     samplePayload: {
       command: ['dir'],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
   'generic-multi-posix': {
@@ -336,7 +336,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     schema: 'multiuser_posix.json',
     samplePayload: {
       command: [payloadCommand],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
 };
