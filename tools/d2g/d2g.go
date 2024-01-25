@@ -286,12 +286,11 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString("podman run -t")
 	switch containerName {
 	case "":
-		command.WriteString(" --rm")
+		command.WriteString("podman run -t --rm")
 	default:
-		command.WriteString(" --name " + containerName)
+		command.WriteString(fmt.Sprintf("timeout %v podman run -t --name %v", dwPayload.MaxRunTime, containerName))
 	}
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
 		command.WriteString(" --privileged")
@@ -372,6 +371,10 @@ func setMounts(gwPayload *genericworker.GenericWorkerPayload, gwWritableDirector
 
 func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.MaxRunTime = dwPayload.MaxRunTime
+	if len(gwPayload.Artifacts) > 0 {
+		// Add 15 minutes as buffer for task to be able to upload artifacts
+		gwPayload.MaxRunTime += 900
+	}
 }
 
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {

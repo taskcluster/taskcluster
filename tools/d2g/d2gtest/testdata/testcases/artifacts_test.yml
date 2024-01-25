@@ -33,7 +33,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --name taskcontainer
+              timeout 3600 podman run -t --name taskcontainer
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
@@ -49,7 +49,7 @@ testSuite:
               podman rm taskcontainer
 
               exit "${exit_code}"
-        maxRunTime: 3600
+        maxRunTime: 4500
         onExitStatus:
           retry:
             - 125
