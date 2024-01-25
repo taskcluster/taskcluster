@@ -81,7 +81,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --name taskcontainer --privileged -v
+              timeout 3600 podman run -t --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host
               -e GECKO_BASE_REPOSITORY
@@ -147,7 +147,7 @@ testSuite:
         logs:
           live: apple/banana.log
           backing: apple/banana_backing.log
-        maxRunTime: 3600
+        maxRunTime: 4500
         mounts:
           - cacheName: gecko-level-3-checkouts-sparse-v3
             directory: cache0
