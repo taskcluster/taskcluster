@@ -172,7 +172,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	cotCert := &ChainOfTrustData{
 		Version:     1,
 		Artifacts:   artifactHashes,
-		Task:        feature.task.Definition,
+		Task:        feature.task.TaskClaimResponse.Task,
 		TaskID:      feature.task.TaskID,
 		RunID:       feature.task.RunID,
 		WorkerGroup: config.WorkerGroup,
@@ -210,7 +210,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
-				Expires: feature.task.Definition.Expires,
+				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
