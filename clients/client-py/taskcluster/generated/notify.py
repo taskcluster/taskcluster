@@ -67,6 +67,9 @@ class Notify(BaseClient):
         email. If a link is included, it will be rendered to a nice button in the
         HTML version of the email
 
+        In case when duplicate message has been detected and no email was sent,
+        this endpoint will return 204 status code.
+
         This method is ``experimental``
         """
 
@@ -77,6 +80,8 @@ class Notify(BaseClient):
         Publish a Pulse Message
 
         Publish a message on pulse with the given `routingKey`.
+
+        Endpoint will return 204 when duplicate message has been detected
 
         This method is ``experimental``
         """
@@ -95,6 +100,9 @@ class Notify(BaseClient):
         Note that the matrix client used by taskcluster must be invited to a room before
         it can post there!
 
+        In case when duplicate message has been detected and no message was sent,
+        this endpoint will return 204 status code.
+
         This method is ``experimental``
         """
 
@@ -110,6 +118,9 @@ class Notify(BaseClient):
 
         The Slack app can post into public channels by default but will need to be added
         to private channels before it can post messages there.
+
+        In case when duplicate message has been detected and no message was sent,
+        this endpoint will return 204 status code.
 
         This method is ``experimental``
         """
