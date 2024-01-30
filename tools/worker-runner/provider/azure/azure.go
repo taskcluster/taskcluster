@@ -147,7 +147,7 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(30 * time.Second)
+	p.terminationTicker = time.NewTicker(15 * time.Second)
 	go func() {
 		for {
 			<-p.terminationTicker.C
