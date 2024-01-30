@@ -123,7 +123,7 @@ func TestCheckTerminationTime(t *testing.T) {
 		// not time yet..
 		require.False(t, p.checkTerminationTime())
 
-		metaData["/instance/preempted"] = "TRUE"
+		metaData["/instance/preempted?wait_for_change=true"] = "TRUE"
 		require.True(t, p.checkTerminationTime())
 	}
 
