@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-db",
   "private": true,
-  "version": "60.3.1",
+  "version": "60.3.2",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {

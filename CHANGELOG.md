@@ -3,6 +3,45 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.3.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Worker Runner now checks for termination notice when starting the Google provider.
+
+When Worker Runner runs, the instance may already be scheduled to be shutdown. So on Google provider startup, we now check for this case.
+
+This functionality mimics what's already in place for AWS.
+
+This change also decreases the time Worker Runner checks to see if the instance is scheduled to be shutdown from 30 seconds to 15 seconds on the Google and Azure providers, as they each have a 30 second notice before a hard-shutdown Google: https://cloud.google.com/compute/docs/instances/spot#preemption-process Azure: https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms.
+
+### USERS
+
+▶ [patch] [#6801](https://github.com/taskcluster/taskcluster/issues/6801)
+Fixes a bug in notify service where multiple messages to the same channel were not sent.
+Adds `204` status code to the email, matrix, pulse, slack endoints when message was detected to be duplicate and was not sent.
+
+▶ [patch] [#6793](https://github.com/taskcluster/taskcluster/issues/6793)
+D2G will now ensure that tasks whose max run time is exceeded still have the chance to publish artifacts.
+This means that Docker Worker tasks definitions that are run under Generic Worker and are aborted due to
+hitting the max run time should still publish the artifacts from the aborted docker container they ran in.
+
+▶ [patch] [#6798](https://github.com/taskcluster/taskcluster/issues/6798)
+Generic Worker now includes the original Docker Worker task definition in the chain of trust certificate, if the task payload is a Docker Worker task payload. Previously, it was including the internal Generic Worker representation of the task definition.
+
+▶ [patch]
+The Task Creator now defaults to a task that only takes 1 minute to run instead of 10 mins, to redue resource consumption. Tutorials updated to reflect change.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump aiohttp from 3.9.0 to 3.9.2 in /taskcluster (c7f9d9250)
+
+</details>
+
 ## v60.3.1
 
 ### USERS
