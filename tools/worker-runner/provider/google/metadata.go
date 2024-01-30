@@ -5,6 +5,7 @@ package google
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/taskcluster/httpbackoff/v3"
@@ -55,11 +56,13 @@ func (mds *realMetadataService) queryMetadata(path string) (string, error) {
 	// google's metadata service requires this header
 	req.Header.Set("Metadata-Flavor", "Google")
 
+	log.Println("Requesting metadata:", path)
 	resp, _, err := httpbackoff.ClientDo(&client, req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 	content, err := io.ReadAll(resp.Body)
+	log.Println("Got metadata response:", string(content))
 	return string(content), err
 }
