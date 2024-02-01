@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.3.3
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades to yarn v4.1.0
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps-dev): bump the deps group in /ui with 3 updates (319f484a6)
+* build(deps): bump taskcluster from 59.2.0 to 60.3.2 in /taskcluster (cde9bb384)
+* build(deps): bump the deps group in /taskcluster with 1 update (35e1bf6fb)
+* build(deps): bump the deps group with 4 updates (87b4265a4)
+* build(deps-dev): bump the deps group in /clients/client with 1 update (8944d3619)
+
+</details>
+
 ## v60.3.2
 
 ### WORKER-DEPLOYERS
