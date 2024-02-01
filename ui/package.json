@@ -6,7 +6,7 @@
   "engines": {
     "node": "18.19.0"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
   "scripts": {
     "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
     "start": "NODE_OPTIONS=--openssl-legacy-provider cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
