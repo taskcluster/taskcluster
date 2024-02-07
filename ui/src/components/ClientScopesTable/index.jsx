@@ -1,33 +1,40 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { arrayOf, func, shape, string } from 'prop-types';
-import {
-  filter,
-  pipe,
-  path,
-  map,
-  toLower,
-  identity,
-  includes,
-  contains,
-  length,
-  sort as rSort,
-} from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
 import memoize from 'fast-memoize';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import ConnectionDataTable from '../ConnectionDataTable';
+import { FixedSizeList } from 'react-window';
+import Divider from '@material-ui/core/Divider';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Typography from '@material-ui/core/Typography';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
 import { pageInfo, client } from '../../utils/prop-types';
-import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
 
+@withStyles(theme => ({
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  listItemCell: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: theme.spacing(1),
+    ...theme.mixins.hover,
+  },
+  noRolesText: {
+    marginTop: theme.spacing(2),
+  },
+}))
 export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -56,60 +63,55 @@ export default class ClientScopesTable extends Component {
   clients = null;
 
   createSortedClientsConnection = memoize(
-    (clientsConnection, selectedScope) => {
-      const extractClients = pipe(
-        filter(
-          pipe(
-            path(['node', 'expandedScopes']),
-            filter(pipe(toLower, includes(selectedScope), length))
-          )
-        ),
-        map(pipe(path(['node', 'clientId']))),
-        rSort(sort)
-      );
+    (clientsConnection, selectedScope, searchTerm) => {
+      const items = (clientsConnection.edges || [])
+        .filter(
+          node =>
+            node.node.expandedScopes.filter(
+              scope => scope.toLowerCase() === selectedScope.toLowerCase()
+            ).length > 0
+        )
+        .map(node => node.node.clientId);
 
-      if (clientsConnection) {
-        this.clients = extractClients(clientsConnection.edges);
-      }
-
-      return clientsConnection;
+      return searchTerm
+        ? items.filter(item => item.includes(searchTerm))
+        : items;
     },
     {
-      serializer: ([clientsConnection, selectedScope]) => {
+      serializer: ([clientsConnection, selectedScope, searchTerm]) => {
         const ids = sorted(clientsConnection.edges);
 
-        return `${ids.join('-')}-${selectedScope}`;
+        return `${ids.join('-')}-${selectedScope}-${searchTerm}`;
       },
     }
   );
 
-  renderRow = (scope, index) => {
-    const { searchTerm, selectedScope } = this.props;
+  renderItem = items => ({ index, style }) => {
+    const { selectedScope, classes } = this.props;
+    const item = items[index];
+    const iconSize = 16;
 
-    if (index !== 0) {
-      return null;
-    }
-
-    return pipe(
-      searchTerm ? filter(contains(searchTerm)) : identity,
-      map(node => (
-        <TableRow key={node}>
-          <TableCell>
-            <Link
-              to={
-                selectedScope
-                  ? `/auth/clients/${encodeURIComponent(node)}`
-                  : `/auth/scopes/${encodeURIComponent(node)}`
-              }>
-              <TableCellItem button>
-                {node}
-                <LinkIcon size={16} />
-              </TableCellItem>
-            </Link>
-          </TableCell>
-        </TableRow>
-      ))
-    )(this.clients);
+    return (
+      <Fragment>
+        <Link
+          to={
+            selectedScope
+              ? `/auth/clients/${encodeURIComponent(item)}`
+              : `/auth/scopes/${encodeURIComponent(item)}`
+          }>
+          <ListItem className={classes.listItemButton} style={style} button>
+            {item}
+            <LinkIcon size={iconSize} />
+          </ListItem>
+        </Link>
+        <Divider
+          style={{
+            ...style,
+            height: 1,
+          }}
+        />
+      </Fragment>
+    );
   };
 
   render() {
@@ -118,23 +120,30 @@ export default class ClientScopesTable extends Component {
       clientsConnection,
       selectedScope,
       onPageChange,
+      classes,
       ...props
     } = this.props;
-    const connection = this.createSortedClientsConnection(
+    const filteredItems = this.createSortedClientsConnection(
       clientsConnection,
-      selectedScope
+      selectedScope,
+      searchTerm
     );
+    const windowHeight = window.innerHeight;
+    const tableHeight = windowHeight > 400 ? 0.8 * windowHeight : 400;
+    const itemCount = filteredItems.length;
 
-    return (
-      <ConnectionDataTable
-        searchTerm={searchTerm}
-        columnsSize={1}
-        connection={connection}
-        pageSize={VIEW_CLIENT_SCOPES_INSPECT_SIZE}
-        renderRow={this.renderRow}
-        onPageChange={onPageChange}
-        {...props}
-      />
+    return itemCount ? (
+      <List dense {...props}>
+        <FixedSizeList height={tableHeight} itemCount={itemCount} itemSize={48}>
+          {this.renderItem(filteredItems)}
+        </FixedSizeList>
+      </List>
+    ) : (
+      <Typography variant="body2" className={classes.noRolesText}>
+        {searchTerm
+          ? `No clients available for search term ${searchTerm}.`
+          : 'No clients found.'}
+      </Typography>
     );
   }
 }
