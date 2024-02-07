@@ -100,7 +100,7 @@ func (binding HookDeleted) NewPayloadObject() interface{} {
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag
