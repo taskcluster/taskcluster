@@ -97,7 +97,7 @@ func TestInteractiveCommand(t *testing.T) {
 				expectedBytes := []byte(SENTINEL)
 				completeOutput := []byte{}
 				ok := false
-				for i := 0; i < 20; i++ {
+				for range 20 {
 					_, output, err = conn.ReadMessage()
 					if err != nil {
 						t.Fatalf("read error: %v", err)

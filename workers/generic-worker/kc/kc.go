@@ -22,7 +22,7 @@ func Encode(password []byte) []byte {
 		paddingLength += len(MagicKey) + 1 - overflow
 	}
 	data := append(password, make([]byte, paddingLength)...)
-	for j := 0; j < len(data); j++ {
+	for j := range len(data) {
 		data[j] ^= MagicKey[j%len(MagicKey)]
 	}
 	return data
@@ -30,7 +30,7 @@ func Encode(password []byte) []byte {
 
 func Decode(encoded []byte) []byte {
 	data := make([]byte, len(encoded))
-	for j := 0; j < len(encoded); j++ {
+	for j := range len(encoded) {
 		data[j] = encoded[j] ^ MagicKey[j%len(MagicKey)]
 		if data[j] == 0 {
 			return data[:j]

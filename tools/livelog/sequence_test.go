@@ -64,7 +64,7 @@ func TestSequence(t *testing.T) {
 
 	// generate some longish chunks
 	var chunks [][]byte
-	for i := 0; i < 5000; i++ {
+	for i := range 5000 {
 		chunks = append(chunks, []byte(fmt.Sprintf("%d|%s\n", i, TEXT)))
 	}
 

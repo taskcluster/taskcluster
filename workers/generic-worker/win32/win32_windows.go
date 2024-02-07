@@ -768,7 +768,7 @@ func DumpTokenInfo(token syscall.Token) {
 		panic(err)
 	}
 	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount)
-	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
+	for i := range tokenGroups.GroupCount {
 		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
 		groupSid := groups[i].Sid.String()
 		account, domain, accType, err := groups[i].Sid.LookupAccount("")
@@ -843,7 +843,7 @@ func ArgvToCommandLineW(text string) string {
 		return text
 	}
 	escaped := `"`
-	for i := 0; i < len(text); i++ {
+	for i := range len(text) {
 		backslashes := 0
 		for ; i < len(text) && text[i] == '\\'; i++ {
 			backslashes++

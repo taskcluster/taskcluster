@@ -87,7 +87,7 @@ func TestNewCredentials(t *testing.T) {
 			// messages are handled asynchronously, so poll until
 			// seeing the updated creds
 
-			for i := 0; i < 200; i++ {
+			for range 200 {
 				creds := config.Credentials()
 				if creds.ClientID != "old" {
 					require.Equal(t, clientID, creds.ClientID)
