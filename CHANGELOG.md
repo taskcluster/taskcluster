@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.3.4
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.22.0
+
+### USERS
+
+▶ [patch] [#6820](https://github.com/taskcluster/taskcluster/issues/6820)
+Fixes scope view in the UI. Search by scope shows roles and clients that use given scope.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump the deps group with 1 update (ecf946205)
+
+</details>
+
 ## v60.3.3
 
 ### DEVELOPERS
