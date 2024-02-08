@@ -66,7 +66,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 
 	d2gConvertedTaskDefinitionYAML, err := yaml.JSONToYAML(d2gConvertedTaskDefinitionJSON)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("Could not convert task definition from JSON to YAML: %v\n", err))
+		return executionError(internalError, errored, fmt.Errorf("could not convert task definition from JSON to YAML: %v", err))
 	}
 
 	task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")

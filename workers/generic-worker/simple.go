@@ -158,7 +158,7 @@ func (task *TaskRun) EnvVars() []string {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
 			spl := strings.SplitN(j, "=", 2)
 			if len(spl) != 2 {
-				panic(fmt.Errorf("Could not interpret string %q as `key=value`", j))
+				panic(fmt.Errorf("could not interpret string %q as `key=value`", j))
 			}
 			taskEnv[spl[0]] = spl[1]
 		}

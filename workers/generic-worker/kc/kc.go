@@ -42,11 +42,11 @@ func Decode(encoded []byte) []byte {
 func SetAutoLogin(user string, password []byte) (err error) {
 	err = host.Run("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser", "-string", user)
 	if err != nil {
-		return fmt.Errorf("Error setting autoLoginUser: %v", err)
+		return fmt.Errorf("error setting autoLoginUser: %v", err)
 	}
 	err = host.Run("defaults", "write", "/Library/Preferences/com.apple.loginwindow", "autoLoginUserScreenLocked", "-bool", "false")
 	if err != nil {
-		return fmt.Errorf("Error setting autoLoginUserScreenLocked: %v", err)
+		return fmt.Errorf("error setting autoLoginUserScreenLocked: %v", err)
 	}
 	encodedPassword := Encode(password)
 	return os.WriteFile("/etc/kcpassword", encodedPassword, 0600)
@@ -64,7 +64,7 @@ func AutoLoginUser() (user string, password []byte, err error) {
 func AutoLoginUsername() (user string, err error) {
 	output, err := host.CombinedOutput("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
 	if err != nil {
-		return "", fmt.Errorf("Error reading autoLoginUser: %v", err)
+		return "", fmt.Errorf("error reading autoLoginUser: %v", err)
 	}
 	// remove last char (\n) from string
 	return output[:len(output)-1], nil

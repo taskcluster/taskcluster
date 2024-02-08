@@ -40,7 +40,7 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 		osGroups.AddedGroups = append(osGroups.AddedGroups, group)
 	}
 	if len(notAddedGroupNames) > 0 {
-		return MalformedPayloadError(fmt.Errorf("Could not add task user to OS group(s) %v", notAddedGroupNames))
+		return MalformedPayloadError(fmt.Errorf("could not add task user to OS group(s) %v", notAddedGroupNames))
 	}
 	return osGroups.refreshTaskCommands()
 }
@@ -55,6 +55,6 @@ func (osGroups *OSGroups) Stop(err *ExecutionErrors) {
 		}
 	}
 	if len(notRemovedGroupNames) > 0 {
-		err.add(executionError(internalError, errored, fmt.Errorf("Could not remove task user from OS group(s) %v", notRemovedGroupNames)))
+		err.add(executionError(internalError, errored, fmt.Errorf("could not remove task user from OS group(s) %v", notRemovedGroupNames)))
 	}
 }

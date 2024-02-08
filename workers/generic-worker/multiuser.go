@@ -65,7 +65,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			panic(err)
 		}
 		if taskUserCredentials.Name != interactiveUsername {
-			panic(fmt.Errorf("Interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
+			panic(fmt.Errorf("interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
 		}
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
@@ -246,11 +246,11 @@ func MkdirAllTaskUser(dir string) error {
 
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
 	if err != nil {
-		return fmt.Errorf("Cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
+		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return fmt.Errorf("Cannot create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, result)
+		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, result)
 	}
 	return nil
 }
@@ -258,11 +258,11 @@ func MkdirAllTaskUser(dir string) error {
 func CreateFileAsTaskUser(file string) (*os.File, error) {
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskContext.TaskDir, []string{}, taskContext.pd)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot create process to create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, err)
+		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return nil, fmt.Errorf("Cannot create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, result)
+		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, result)
 	}
 	return os.OpenFile(file, os.O_RDWR, 0600)
 }

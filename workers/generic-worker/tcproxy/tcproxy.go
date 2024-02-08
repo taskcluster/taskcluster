@@ -85,5 +85,5 @@ func waitForPortToBeActive(port uint16) error {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return fmt.Errorf("Timeout waiting for taskcluster-proxy port %v to be active", port)
+	return fmt.Errorf("timeout waiting for taskcluster-proxy port %v to be active", port)
 }

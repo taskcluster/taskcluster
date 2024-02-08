@@ -58,11 +58,11 @@ func init() {
 			Validate: func(value interface{}) error {
 				s, ok := value.(string)
 				if !ok {
-					return errors.New("Must be a string containing certificate in JSON")
+					return errors.New("must be a string containing certificate in JSON")
 				}
 				var cert tcclient.Certificate
 				if err := json.Unmarshal([]byte(s), &cert); err != nil {
-					return fmt.Errorf("Failed to parse JSON string, error: %s", err)
+					return fmt.Errorf("failed to parse JSON string, error: %s", err)
 				}
 				return nil
 			},
@@ -81,7 +81,7 @@ func init() {
 					}
 				}
 				if !ok {
-					return errors.New("Must be a list of strings")
+					return errors.New("must be a list of strings")
 				}
 				return nil
 			},

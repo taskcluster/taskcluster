@@ -57,13 +57,13 @@ func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
 	for _, c := range l.task.Commands {
 		adminToken, err := win32.GetLinkedToken(c.Cmd.SysProcAttr.Token)
 		if err != nil {
-			return MalformedPayloadError(fmt.Errorf(`Could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
+			return MalformedPayloadError(fmt.Errorf(`could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
 		}
 		c.SysProcAttr.Token = adminToken
 	}
 	adminToken, err := taskContext.pd.LoginInfo.ElevatedAccessToken()
 	if err != nil {
-		return MalformedPayloadError(fmt.Errorf(`Could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
+		return MalformedPayloadError(fmt.Errorf(`could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
 	}
 	taskContext.pd.CommandAccessToken = adminToken
 	return nil

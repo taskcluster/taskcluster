@@ -24,5 +24,5 @@ func WaitForLocalTCPListener(port uint16, timeout time.Duration) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Timed out waiting for port %v to be active after %v", port, timeout)
+	return fmt.Errorf("timed out waiting for port %v to be active after %v", port, timeout)
 }

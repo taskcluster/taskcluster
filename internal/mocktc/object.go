@@ -70,7 +70,7 @@ func (object *Object) CreateUpload(name string, payload *tcobject.CreateUploadRe
 func (object *Object) FinishUpload(name string, payload *tcobject.FinishUploadRequest) error {
 	o, exists := object.objects[name]
 	if !exists {
-		return fmt.Errorf("Cannot finish upload for %v (not found)", name)
+		return fmt.Errorf("cannot finish upload for %v (not found)", name)
 	}
 	o.uploadFinished = true
 
@@ -93,7 +93,7 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 	object.startDownloadCount++
 	o, exists := object.objects[name]
 	if !exists {
-		return nil, fmt.Errorf("Cannot start download for upload ID %v (not found)", name)
+		return nil, fmt.Errorf("cannot start download for upload ID %v (not found)", name)
 	}
 
 	hashesJson, _ := json.Marshal(o.hashes)

@@ -207,7 +207,7 @@ func assertMaxTaskRunTimeError(t *testing.T, err error) {
 	if cmdErr.Reason != "malformed-payload" || cmdErr.TaskStatus != errored {
 		t.Errorf("Bad task payload should have returned malformed-payload, but actually returned:\n%#v", err)
 	}
-	const expectedErrorText = "Task's maxRunTime of 310 exceeded allowed maximum of 300"
+	const expectedErrorText = "task's maxRunTime of 310 exceeded allowed maximum of 300"
 	if !strings.Contains(err.Error(), expectedErrorText) {
 		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}

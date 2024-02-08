@@ -182,7 +182,7 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 		case "freebsd":
 			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
 		}
-		return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
+		return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 	}
 	switch runtime.GOOS {
 	case "darwin":
@@ -192,7 +192,7 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 	case "freebsd":
 		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
 	}
-	return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 }
 
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {

@@ -97,7 +97,7 @@ type Certificate struct {
 // See https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
-		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.Client).CreateTemporaryCredentials(...) method")
+		return nil, errors.New("temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.Client).CreateTemporaryCredentials(...) method")
 	}
 
 	now := time.Now()
@@ -105,13 +105,13 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID stri
 	expiry := now.Add(duration)
 
 	if permaCreds.ClientID == "" {
-		return nil, errors.New("Temporary credentials cannot be created from credentials that have an empty ClientId")
+		return nil, errors.New("temporary credentials cannot be created from credentials that have an empty ClientId")
 	}
 	if permaCreds.AccessToken == "" {
-		return nil, errors.New("Temporary credentials cannot be created from credentials that have an empty AccessToken")
+		return nil, errors.New("temporary credentials cannot be created from credentials that have an empty AccessToken")
 	}
 	if permaCreds.Certificate != "" {
-		return nil, errors.New("Temporary credentials cannot be created from temporary credentials, only from permanent credentials")
+		return nil, errors.New("temporary credentials cannot be created from temporary credentials, only from permanent credentials")
 	}
 
 	cert := &Certificate{
