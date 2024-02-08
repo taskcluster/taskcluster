@@ -64,14 +64,14 @@ func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 	}
 
 	httpAPI := `<!--HTTP-API-start-->` +
-		amqpLinks +
+		httpLinks +
 		` <!--HTTP-API-end-->`
 
-	AmqpAPI := `<!--AMQP-API-start-->` +
-		httpLinks +
+	amqpAPI := `<!--AMQP-API-start-->` +
+		amqpLinks +
 		` <!--AMQP-API-end-->`
 
-	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
+	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(amqpAPI))
 	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
 	exitOnFail(os.WriteFile(path, formattedContent, 0644))
