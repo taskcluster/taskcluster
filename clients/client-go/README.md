@@ -19,22 +19,6 @@ This library provides the following packages to interface with Taskcluster:
 ### HTTP APIs
 
 <!--HTTP-API-start-->
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcauthevents
-
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcgithubevents
-
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tchooksevents
-
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcnotifyevents
-
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueueevents
-
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanagerevents
- <!--HTTP-API-end-->
-
-### AMQP APIs
-
-<!--AMQP-API-start-->
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcauth
 
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcgithub
@@ -54,6 +38,22 @@ This library provides the following packages to interface with Taskcluster:
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcsecrets
 
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager
+ <!--HTTP-API-end-->
+
+### AMQP APIs
+
+<!--AMQP-API-start-->
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcauthevents
+
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcgithubevents
+
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tchooksevents
+
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcnotifyevents
+
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueueevents
+
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanagerevents
  <!--AMQP-API-end-->
 
 ### Setup
