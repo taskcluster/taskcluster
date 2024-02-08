@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/notify/v1/api.json
+// This package was generated from the reference schema of
+// the Notify service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/notify/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The notification service listens for tasks with associated notifications
 // and handles requests to send emails and post pulse messages.
 //
