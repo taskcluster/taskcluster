@@ -159,9 +159,9 @@ func verifyPrivateToOwner(filename string) (err error) {
 }
 
 // Get the SID of the current user
-func getCurrentUser() (sid *windows.SID, err error) {
+func getCurrentUser() (*windows.SID, error) {
 	token := windows.GetCurrentProcessToken()
 	tokenuser, err := token.GetTokenUser()
-	sid = tokenuser.User.Sid
-	return
+	sid := tokenuser.User.Sid
+	return sid, err
 }
