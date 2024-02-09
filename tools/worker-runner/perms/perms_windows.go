@@ -160,12 +160,7 @@ func verifyPrivateToOwner(filename string) (err error) {
 
 // Get the SID of the current user
 func getCurrentUser() (sid *windows.SID, err error) {
-	token, err := windows.OpenCurrentProcessToken()
-	if err != nil {
-		return
-	}
-	defer token.Close()
-
+	token := windows.GetCurrentProcessToken()
 	tokenuser, err := token.GetTokenUser()
 	sid = tokenuser.User.Sid
 	return
