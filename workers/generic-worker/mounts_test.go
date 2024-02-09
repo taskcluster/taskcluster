@@ -143,7 +143,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 
 	logtext := LogText(t)
-	if !strings.Contains(logtext, "Cannot unarchive") {
+	if !strings.Contains(logtext, "cannot unarchive") {
 		t.Fatalf("Was expecting log file to contain an unarchive error message, but it instead contains:\n%v", logtext)
 	}
 }
@@ -535,7 +535,7 @@ func TestMountFileAtCWD(t *testing.T) {
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				{
-					"Cannot mount file at path .* since it already exists as a directory",
+					"cannot mount file at path .* since it already exists as a directory",
 				},
 			},
 		},
@@ -875,7 +875,7 @@ func TestCacheMoved(t *testing.T) {
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 		`Removing cache banana-cache from cache table`,
 		`Deleting cache banana-cache file\(s\) at .*`,
-		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
 	)
 
 	// On second pass, cache already exists
@@ -899,7 +899,7 @@ func TestCacheMoved(t *testing.T) {
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 		`Removing cache banana-cache from cache table`,
 		`Deleting cache banana-cache file\(s\) at .*`,
-		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
 	)
 
 	payload := GenericWorkerPayload{
@@ -965,7 +965,7 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 		`Found existing download for artifact:`+taskID+`:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*file-located-here`,
 		// error is platform specific
-		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|Cannot create directory .*file-located-here)`,
+		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|cannot create directory .*file-located-here)`,
 	)
 
 	// On second pass, cache already exists
@@ -981,7 +981,7 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 		`Found existing download for artifact:`+taskID+`:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*file-located-here`,
 		// error is platform specific
-		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|Cannot create directory .*file-located-here)`,
+		`(mkdir .*file-located-here: not a directory|mkdir .*file-located-here: The system cannot find the path specified.|cannot create directory .*file-located-here)`,
 	)
 
 	LogTest(

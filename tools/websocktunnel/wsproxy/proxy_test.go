@@ -200,7 +200,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Log(resp)
 		t.Fatalf("bad status code on get request")
 	}
@@ -217,7 +217,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("bad status code on post request")
 	}
 	reply, err = io.ReadAll(resp.Body)
@@ -233,7 +233,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 504 {
+	if resp.StatusCode != http.StatusGatewayTimeout {
 		t.Fatalf("request should fail with 504")
 	}
 }
@@ -294,7 +294,7 @@ func TestProxyURIRewrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatal("bad status code")
 	}
 }

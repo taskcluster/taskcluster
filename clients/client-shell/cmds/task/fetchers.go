@@ -215,7 +215,7 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 
 	resp, err := http.Get(path)
 	if err != nil {
-		return fmt.Errorf("Error making request to %v: %v", path, err)
+		return fmt.Errorf("error making request to %v: %v", path, err)
 	}
 	defer resp.Body.Close()
 
@@ -226,7 +226,7 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 	}
 
 	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("Received unexpected response code %v", resp.StatusCode)
+		return fmt.Errorf("received unexpected response code %v", resp.StatusCode)
 	}
 
 	return nil

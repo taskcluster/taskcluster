@@ -66,7 +66,7 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 	if !config.EnableInteractive {
 		workerPoolID := config.WorkerGroup + "/" + config.WorkerType
 		workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
-		return MalformedPayloadError(fmt.Errorf(`This task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
+		return MalformedPayloadError(fmt.Errorf(`this task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
 If you do not require an interactive task, remove payload.features.interactive from the task definition.
 If you do require an interactive task, please do one of two things:
 	1. Contact the owner of the worker pool %s (see %s) and ask for interactive tasks to be enabled.

@@ -158,7 +158,7 @@ func (pd *PlatformData) RefreshLoginSession(user, pass string) {
 	err = pd.LoginInfo.SetActiveConsoleSessionId()
 	if err != nil {
 		// implies a serious bug
-		panic(fmt.Sprintf("Could not set token session information: %v", err))
+		panic(fmt.Sprintf("could not set token session information: %v", err))
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
 	win32.DumpTokenInfo(pd.LoginInfo.AccessToken())
@@ -179,7 +179,7 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		}
 		result := cmd.Execute()
 		if !result.Succeeded() {
-			panic(fmt.Sprintf("Failed to grant everyone access to windows station and desktop:\n%v", result))
+			panic(fmt.Sprintf("failed to grant everyone access to windows station and desktop:\n%v", result))
 		}
 		log.Printf("Granted %v full control of interactive windows station and desktop", sid)
 		sidsThatCanControlDesktopAndWindowsStation[sid] = true

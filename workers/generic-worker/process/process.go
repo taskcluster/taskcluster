@@ -81,7 +81,7 @@ func (c *Command) Execute() (r *Result) {
 			}
 		}
 	case <-c.abort:
-		r.SystemError = fmt.Errorf("Process aborted")
+		r.SystemError = fmt.Errorf("process aborted")
 		r.Aborted = true
 	}
 	finished := time.Now()

@@ -76,7 +76,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		},
 	)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("Could not start taskcluster proxy: %s", err))
+		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy: %s", err))
 	}
 	l.taskclusterProxy = taskclusterProxy
 	l.taskStatusChangeListener = &TaskStatusChangeListener{

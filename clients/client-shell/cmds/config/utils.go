@@ -78,7 +78,7 @@ func formatJSON(value interface{}) []byte {
 
 func isString(value interface{}) error {
 	if _, ok := value.(string); !ok {
-		return errors.New("Must be a string")
+		return errors.New("must be a string")
 	}
 	return nil
 }

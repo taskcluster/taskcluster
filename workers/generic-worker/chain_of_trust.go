@@ -20,7 +20,7 @@ import (
 const (
 	// ChainOfTrustKeyNotSecureMessage contains message to log when chain of
 	// trust key is discovered at runtime not to be secure
-	ChainOfTrustKeyNotSecureMessage = "Was expecting attempt to read private chain of trust key as task user to fail - however, it did not!"
+	ChainOfTrustKeyNotSecureMessage = "was expecting attempt to read private chain of trust key as task user to fail - however, it did not"
 )
 
 var (

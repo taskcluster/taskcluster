@@ -110,7 +110,7 @@ func setURL(client *Client, route string, query url.Values) (u *url.URL, err err
 	URL := tcurls.API(client.RootURL, client.ServiceName, client.APIVersion, route)
 	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) set correctly?\n%v\n", URL, client.RootURL, err)
+		return nil, fmt.Errorf("cannot parse url: '%v', is RootURL (%v) set correctly?\n%v", URL, client.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -133,11 +133,11 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		ioReader := bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v\n", u.String(), client.RootURL, err)
+			return nil, nil, fmt.Errorf("internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v", u.String(), client.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
@@ -206,7 +206,7 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 	reqAuth := hawk.NewRequestAuth(req, credentials, 0)
 	reqAuth.Ext, err = getExtHeader(c)
 	if err != nil {
-		return fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
+		return fmt.Errorf("internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
 	}
 	req.Header.Set("Authorization", reqAuth.RequestHeader())
 	return nil

@@ -274,7 +274,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		// We have to check keys to find out...
 		var m map[string]interface{}
 		if err := json.Unmarshal(taskMount, &m); err != nil {
-			tm.payloadError = fmt.Errorf("Could not read task mount %v: %v\n%v", i, string(taskMount), err)
+			tm.payloadError = fmt.Errorf("could not read task mount %v: %v\n%v", i, string(taskMount), err)
 			return tm
 		}
 		switch {
@@ -285,7 +285,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		case m["file"] != nil:
 			tm.Unmarshal(taskMount, &FileMount{})
 		default:
-			tm.payloadError = fmt.Errorf("Unrecognised mount entry in payload - %#v", m)
+			tm.payloadError = fmt.Errorf("unrecognised mount entry in payload - %#v", m)
 		}
 	}
 	tm.initRequiredScopes()
@@ -530,7 +530,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		if w.Content != nil {
 			c, err := FSContentFrom(w.Content)
 			if err != nil {
-				return fmt.Errorf("Not able to retrieve FSContent: %v", err)
+				return fmt.Errorf("not able to retrieve FSContent: %v", err)
 			}
 			err = extract(c, w.Format, target, taskMount)
 			if err != nil {
@@ -593,7 +593,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		// The cache directory inside the task (taskCacheDir) will in any case
 		// be cleaned up when task folder is deleted so no need to do anything
 		// with it.
-		return Failure(fmt.Errorf("Could not persist cache %q due to %v", cache.Key, err))
+		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
 	}
 	// Regardless of whether we are running as current user, remove task user access
 	// since the mounted folder sits inside the task directory of the task user,
@@ -609,7 +609,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 	c, err := FSContentFrom(r.Content)
 	if err != nil {
-		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
+		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
 	dir := filepath.Join(taskContext.TaskDir, r.Directory)
 	err = extract(c, r.Format, dir, taskMount)
@@ -632,7 +632,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 
 	file := filepath.Join(taskContext.TaskDir, f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
-		return fmt.Errorf("Cannot mount file at path %v since it already exists as a directory", file)
+		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
@@ -662,7 +662,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 		// (panic), not a task failure
 		_, err = os.Stat(file)
 		if err != nil {
-			panic(fmt.Errorf("File in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
+			panic(fmt.Errorf("file in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
 		}
 		fileCaches[cacheKey].Hits++
 
@@ -682,7 +682,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 		taskMount.Infof("Found existing download of %v (%v) with SHA256 %v but task definition explicitly requires %v so deleting it", cacheKey, file, sha256, requiredSHA256)
 		err = fileCaches[cacheKey].Evict(taskMount)
 		if err != nil {
-			panic(fmt.Errorf("Could not delete cache entry %v: %v", fileCaches[cacheKey], err))
+			panic(fmt.Errorf("could not delete cache entry %v: %v", fileCaches[cacheKey], err))
 		}
 	}
 	file, sha256, err = fsContent.Download(taskMount)
@@ -706,7 +706,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v; not retrying download as there were no connection failures and HTTP response status code was 200", file, fsContent, sha256, requiredSHA256)
 		err2 := fileCaches[cacheKey].Evict(taskMount)
 		if err2 != nil {
-			panic(fmt.Errorf("Could not delete cache entry %v: %v", fileCaches[cacheKey], err2))
+			panic(fmt.Errorf("could not delete cache entry %v: %v", fileCaches[cacheKey], err2))
 		}
 		return
 	}
@@ -782,11 +782,11 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// the user could change the rights and then modify it.
 		dst, err := CreateFileAsTaskUser(file)
 		if err != nil {
-			return fmt.Errorf("Not able to create %v as task user: %v", file, err)
+			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
 		err = dst.Close()
 		if err != nil {
-			return fmt.Errorf("Not able to close %v: %v", file, err)
+			return fmt.Errorf("not able to close %v: %v", file, err)
 		}
 		taskMount.Infof("Copying %v to %v", cacheFile, file)
 		err = copyFileContents(cacheFile, file)
@@ -794,12 +794,12 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 			// this could be a system error, but it can also be that e.g. the task
 			// specified an invalid path, so resolve as malformed payload rather
 			// than panic
-			taskMount.Errorf("Not able to mount content from %v at path %v", fsContent.String(), file)
+			taskMount.Errorf("not able to mount content from %v at path %v", fsContent.String(), file)
 			return err
 		}
 		return nil
 	default:
-		return fmt.Errorf("Unsupported decompression format %v", format)
+		return fmt.Errorf("unsupported decompression format %v", format)
 	}
 
 	taskMount.Infof("Decompressing %v file %v to '%v'", format, cacheFile, file)
@@ -807,17 +807,17 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
 	src, err := os.Open(cacheFile)
 	if err != nil {
-		return fmt.Errorf("Not able to open %v: %v", cacheFile, err)
+		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
 	dst, err := CreateFileAsTaskUser(file)
 	if err != nil {
-		return fmt.Errorf("Not able to create %v as task user: %v", file, err)
+		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}
 	defer dst.Close()
 	err = d.Decompress(src, dst)
 	if err != nil {
-		return fmt.Errorf("Not able to decompress %v to %v: %v", cacheFile, file, err)
+		return fmt.Errorf("not able to decompress %v to %v: %v", cacheFile, file, err)
 	}
 	return nil
 }
@@ -853,7 +853,7 @@ func FSContentFrom(c json.RawMessage) (FSContent, error) {
 		return UnmarshalInto(c, &Base64Content{})
 	}
 
-	return nil, errors.New("Unrecognised mount entry in payload")
+	return nil, errors.New("unrecognised mount entry in payload")
 }
 
 // Utility method to unmarshal Content (json.RawMessage) into *ArtifactContent,

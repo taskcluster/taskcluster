@@ -30,7 +30,7 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 func TaskUserPlatformData() (pd *PlatformData, err error) {
 	user, err := runtime.InteractiveUsername()
 	if err != nil {
-		return nil, fmt.Errorf("Could not determine interactive username: %v", err)
+		return nil, fmt.Errorf("could not determine interactive username: %v", err)
 	}
 
 	id := func(description string, command string, args ...string) (uint32, error) {
@@ -91,7 +91,7 @@ func (r *Result) CrashCause() error {
 
 func (r *Result) FailureCause() error {
 	if r.Aborted {
-		return fmt.Errorf("Task was aborted")
+		return fmt.Errorf("task was aborted")
 	}
 	if r.ExitError != nil {
 		return r.ExitError

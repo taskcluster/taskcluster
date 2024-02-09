@@ -32,7 +32,7 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 
 		wsconn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Could not upgrade: %s", err), 500)
+			http.Error(w, fmt.Sprintf("Could not upgrade: %s", err), http.StatusInternalServerError)
 			return
 		}
 		defer wsconn.Close()
@@ -42,7 +42,7 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 
 		tcpconn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", targetPort))
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Could not connect to TCP port: %s", err), 502)
+			http.Error(w, fmt.Sprintf("Could not connect to TCP port: %s", err), http.StatusBadGateway)
 			return
 		}
 		defer tcpconn.Close()

@@ -58,7 +58,7 @@ func (lat *LoopbackAudioTask) ReservedArtifacts() []string {
 
 func (lat *LoopbackAudioTask) Start() *CommandExecutionError {
 	if config.LoopbackAudioDeviceNumber > 31 {
-		return executionError(internalError, errored, fmt.Errorf("LoopbackAudioDeviceNumber must be between 0 and 31, inclusive."))
+		return executionError(internalError, errored, fmt.Errorf("loopback audio device number must be between 0 and 31, inclusive"))
 	}
 
 	return lat.setupAudioDevice()

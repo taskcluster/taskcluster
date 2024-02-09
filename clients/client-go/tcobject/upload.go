@@ -115,7 +115,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 	case uploadResp.UploadMethod.PutURL.URL != "":
 		return putURLUpload(object.HTTPBackoffClient, uploadResp.UploadMethod, hashingReadSeeker)
 	}
-	return errors.New("Could not negotiate an upload method")
+	return errors.New("could not negotiate an upload method")
 }
 
 func putURLUpload(httpBackoffClient *httpbackoff.Client, uploadMethod SelectedUploadMethodOrNone, readSeeker io.ReadSeeker) error {

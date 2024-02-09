@@ -44,11 +44,11 @@ func makeDirUnreadableForTaskUser(taskMount *TaskMount, dir string) error {
 func unarchive(source, destination, format string) error {
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, taskContext.TaskDir, []string{}, taskContext.pd)
 	if err != nil {
-		return fmt.Errorf("Cannot create process to unarchive %v to %v as task user %v from directory %v: %v", source, destination, taskContext.User.Name, taskContext.TaskDir, err)
+		return fmt.Errorf("cannot create process to unarchive %v to %v as task user %v from directory %v: %v", source, destination, taskContext.User.Name, taskContext.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return fmt.Errorf("Cannot unarchive %v to %v as task user %v from directory %v: %v", source, destination, taskContext.User.Name, taskContext.TaskDir, result)
+		return fmt.Errorf("cannot unarchive %v to %v as task user %v from directory %v: %v", source, destination, taskContext.User.Name, taskContext.TaskDir, result)
 	}
 	return nil
 }
