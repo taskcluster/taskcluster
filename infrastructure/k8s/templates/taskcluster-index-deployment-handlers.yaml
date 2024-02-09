@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-index
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: 210
       containers:
         - name: taskcluster-index-handlers
           image: '{{ .Values.dockerImage }}'

@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: taskcluster-hooks
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: 210
       containers:
         - name: taskcluster-hooks-web
           image: '{{ .Values.dockerImage }}'
@@ -64,4 +64,4 @@ spec:
                 command:
                   - /bin/sh
                   - '-c'
-                  - sleep 10
+                  - sleep 120

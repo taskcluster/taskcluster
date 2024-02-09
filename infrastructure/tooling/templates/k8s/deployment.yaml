@@ -18,7 +18,7 @@ spec:
       # allow server to terminate gracefully while still serving existing connections
       # new connections would be rejected as server will be closed
       # and under normal conditions pod will stop faster than this timeout
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: 210
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
@@ -80,4 +80,4 @@ spec:
           then:
             preStop:
               exec:
-                command: ['/bin/sh', '-c', 'sleep 10']
+                command: ['/bin/sh', '-c', 'sleep 120']
