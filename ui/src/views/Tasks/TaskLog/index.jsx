@@ -74,6 +74,14 @@ export default class TaskLog extends Component {
     return getArtifactUrl({ user, taskId, runId, name });
   }
 
+  goToLog() {
+    // as log url contains bewit, the link could expire
+    // raw logs will be opened in new tab/window
+    const url = this.getLogUrl();
+
+    window.open(url, '_blank', 'noopener noreferrer');
+  }
+
   render() {
     const {
       classes,
@@ -117,15 +125,14 @@ export default class TaskLog extends Component {
                   <ArrowLeftIcon />
                 </Button>
               </Link>
-              <Link to={url}>
-                <Button
-                  spanProps={{ className: classes.rawLog }}
-                  tooltipProps={{ title: 'Raw Log' }}
-                  variant="round"
-                  color="secondary">
-                  <OpenInNewIcon size={20} />
-                </Button>
-              </Link>
+              <Button
+                onClick={() => this.goToLog()}
+                spanProps={{ className: classes.rawLog }}
+                tooltipProps={{ title: 'Raw Log' }}
+                variant="round"
+                color="secondary">
+                <OpenInNewIcon size={20} />
+              </Button>
             </Fragment>
           }
         />
