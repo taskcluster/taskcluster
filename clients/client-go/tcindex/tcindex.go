@@ -156,6 +156,34 @@ func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath), nil, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// # List the tasks given their labels
+//
+// This endpoint
+// lists up to 1000 tasks. If more tasks are present, a
+// `continuationToken` will be returned, which can be given in the next
+// request, along with the same input data. If the input data is different
+// the continuationToken will have no effect.
+//
+// Required scopes:
+//
+//	For indexPath in indexPaths each index:find-task:<indexPath>
+//
+// See #findTasksAtIndex
+func (index *Index) FindTasksAtIndex(continuationToken, limit string, payload *ListTasksAtIndexRequest) (*ListTasksResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*index)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/indexes", new(ListTasksResponse), v)
+	return responseObject.(*ListTasksResponse), err
+}
+
 // List the namespaces immediately under a given namespace.
 //
 // This endpoint

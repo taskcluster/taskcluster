@@ -14,6 +14,7 @@ export default class Index extends Client {
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.findTask.entry = {"args":["indexPath"],"category":"Index Service","method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","scopes":"index:find-task:<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.findTasksAtIndex.entry = {"args":[],"category":"Index Service","input":true,"method":"post","name":"findTasksAtIndex","output":true,"query":["continuationToken","limit"],"route":"/tasks/indexes","scopes":{"AllOf":[{"each":"index:find-task:<indexPath>","for":"indexPath","in":"indexPaths"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","scopes":"index:list-namespaces:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","scopes":"index:list-tasks:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
     this.insertTask.entry = {"args":["namespace"],"category":"Index Service","input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -56,6 +57,19 @@ export default class Index extends Client {
     this.validate(this.findTask.entry, args);
 
     return this.request(this.findTask.entry, args);
+  }
+  /* eslint-disable max-len */
+  // List the tasks given their labels
+  // This endpoint
+  // lists up to 1000 tasks. If more tasks are present, a
+  // `continuationToken` will be returned, which can be given in the next
+  // request, along with the same input data. If the input data is different
+  // the continuationToken will have no effect.
+  /* eslint-enable max-len */
+  findTasksAtIndex(...args) {
+    this.validate(this.findTasksAtIndex.entry, args);
+
+    return this.request(this.findTasksAtIndex.entry, args);
   }
   /* eslint-disable max-len */
   // List the namespaces immediately under a given namespace.

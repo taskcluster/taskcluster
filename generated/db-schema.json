@@ -7162,6 +7162,21 @@
       },
       "migrationScript": "begin\n  create index workers_created_idx on workers (created);\nend",
       "version": 97
+    },
+    {
+      "description": "Add batched tasks fetching",
+      "methods": {
+        "get_tasks_from_indexes": {
+          "args": "indexes_in jsonb, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    uuid_to_slugid(indexed_tasks.task_id) as task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  where\n    indexed_tasks.namespace || '.' || indexed_tasks.name in (SELECT jsonb_array_elements_text(indexes_in))\n    limit get_page_limit(page_size_in)\n    offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get tasks matching the given indexes, 0 or 1 per input index.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        }
+      },
+      "version": 98
     }
   ]
 }

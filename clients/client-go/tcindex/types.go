@@ -76,6 +76,16 @@ type (
 		Namespaces []Namespace `json:"namespaces"`
 	}
 
+	// Request to list tasks at the given indexes.
+	ListTasksAtIndexRequest struct {
+
+		// Default:    []
+		//
+		// Array items:
+		// Index of a task to list
+		Indexes []string `json:"indexes,omitempty"`
+	}
+
 	// Representation of an indexed task.
 	ListTasksResponse struct {
 

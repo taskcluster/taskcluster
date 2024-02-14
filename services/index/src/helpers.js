@@ -169,6 +169,35 @@ export const taskUtils = {
     // Fetch results
     return fetchResults(query ? query.continuationToken : {});
   },
+
+  async findTasksAtIndexes(db, { indexes }, { query } = {}) {
+    assert(_.isArray(indexes), 'indexes must be an Array');
+    for (let index of indexes) {
+      assert(_.isString(index), 'index must be a String');
+    }
+    const fetchResults = async (continuation) => {
+      let q = query;
+
+      if (continuation) {
+        q.continuationToken = continuation;
+      }
+
+      const { continuationToken, rows } = await paginateResults({
+        query: q,
+        fetch: (size, offset) => db.fns.get_tasks_from_indexes(
+          JSON.stringify(indexes),
+          size,
+          offset,
+        ),
+      });
+
+      const tasks = rows.map(taskUtils.fromDb);
+      return { tasks, continuationToken };
+    };
+
+    // Fetch results
+    return fetchResults(query ? query.continuationToken : {});
+  },
 };
 
 export const namespaceUtils = {

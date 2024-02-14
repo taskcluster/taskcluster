@@ -895,6 +895,20 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "findTasksAtIndex",
+				Title:       "Find tasks at indexes",
+				Description: "List the tasks given their labels\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest, along with the same input data. If the input data is different\nthe continuationToken will have no effect.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/tasks/indexes",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "v1/list-tasks-at-index.json#",
+			},
+			definitions.Entry{
 				Name:        "listNamespaces",
 				Title:       "List Namespaces",
 				Description: "List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.",
