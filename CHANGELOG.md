@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.3.5
+
+### GENERAL
+
+▶ [patch]
+Switched to use `math/rand/v2` ([new in go1.22](https://tip.golang.org/doc/go1.22#math_rand_v2)), removed [deprecated](https://pkg.go.dev/golang.org/x/sys@v0.16.0/windows#OpenCurrentProcessToken) call to `windows.OpenCurrentProcessToken()`, fixed `staticcheck` errors, and added a `staticcheck` GitHub actions workflow for our repo.
+
+▶ [patch]
+Upgrades to node v18.19.1, which is a [security release](https://nodejs.org/en/blog/vulnerability/february-2024-security-releases/).
+
+### DEPLOYERS
+
+▶ [patch]
+Kubernetes lifecycle timeouts correctly set to avoid having 502s.
+
+### USERS
+
+▶ [patch] [#6795](https://github.com/taskcluster/taskcluster/issues/6795)
+Fixes "Raw Log" button in UI that can point to an expired artifact.
+
 ## v60.3.4
 
 ### GENERAL
