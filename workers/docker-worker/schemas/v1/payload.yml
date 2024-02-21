@@ -114,6 +114,15 @@ properties:
           configured to enable it.
         type: boolean
         default: false
+      disableSeccomp:
+        title: Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.
+        description: >-
+          Allowed a task to run without seccomp, similar to running docker with
+          `--security-opt seccomp=unconfined`.  This only worked for worker-types
+          configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload
+          still includes feature in order for d2g to work with it.
+        type: boolean
+        default: false
       devices:
         title: Devices to be attached to task containers
         description: >-

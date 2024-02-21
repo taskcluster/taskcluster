@@ -133,6 +133,11 @@ type (
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
 		Devices Devices `json:"devices,omitempty"`
 
+		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
+		//
+		// Default:    false
+		DisableSeccomp bool `json:"disableSeccomp" default:"false"`
+
 		// Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.
 		//
 		// Default:    false
@@ -1283,6 +1288,12 @@ func JSONSchema() string {
               "required": [],
               "title": "Devices to be attached to task containers",
               "type": "object"
+            },
+            "disableSeccomp": {
+              "default": false,
+              "description": "Allowed a task to run without seccomp, similar to running docker with ` + "`" + `--security-opt seccomp=unconfined` + "`" + `.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.",
+              "title": "Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.",
+              "type": "boolean"
             },
             "privileged": {
               "default": false,

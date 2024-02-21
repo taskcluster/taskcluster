@@ -295,6 +295,9 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
 		command.WriteString(" --privileged")
 	}
+	if dwPayload.Capabilities.DisableSeccomp {
+		command.WriteString(" --security-opt=seccomp=unconfined")
+	}
 	if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
