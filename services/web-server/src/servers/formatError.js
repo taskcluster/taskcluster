@@ -1,7 +1,5 @@
-import { formatError } from 'graphql';
-
 export default error => {
-  const data = formatError(error);
+  const data = error?.toJson?.() || error;
 
   if (
     error.originalError &&

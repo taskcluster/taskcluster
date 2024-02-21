@@ -155,10 +155,7 @@ const load = loader(
         app.use(
           '/graphql',
           expressMiddleware(server, {
-            // context: ({ req }) => {
-            //   console.log(req.headers);
-            //   return req.headers;
-            // },
+            context,
           }),
         );
 
