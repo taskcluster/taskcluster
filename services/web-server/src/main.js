@@ -96,7 +96,6 @@ const load = loader(
           resolverValidationOptions: {
             requireResolversForResolveType: false,
           },
-          validationRules: [depthLimit(10), createComplexityLimitRule(1000)],
         }),
     },
 
@@ -144,6 +143,11 @@ const load = loader(
           csrfPrevention: true,
           // https://www.apollographql.com/docs/apollo-server/performance/cache-backends/#ensuring-a-bounded-cache
           cache: 'bounded',
+          introspection: true,
+          validationRules: [
+            depthLimit(10),
+            createComplexityLimitRule(1000),
+          ],
         });
         await server.start();
 
