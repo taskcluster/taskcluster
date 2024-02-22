@@ -37,10 +37,13 @@ func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd,
 	var processCmd *process.Command
 	var err error
 
+	var envVars = task.EnvVars()
+	envVars = append(envVars, "TERM=hterm-256color")
+
 	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, task.EnvVars())
+		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, task.EnvVars())
+		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars)
 	}
 
 	return processCmd.Cmd, err
