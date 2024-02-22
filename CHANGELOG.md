@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.4.0
+
+### USERS
+
+▶ [minor] [#6845](https://github.com/taskcluster/taskcluster/issues/6845)
+D2G now provides support for the (discontinued) disableSeccomp capability which was removed from Docker Worker, but was still used by the bugmon fuzzing project in the Community taskcluster environment. This was added to ease the migration path of this project from Docker Worker to Generic Worker.
+
+▶ [patch] [#6848](https://github.com/taskcluster/taskcluster/issues/6848)
+Fix an issue where an interactive session would close up when the shell would output invalid UTF-8.
+
+▶ [patch] [#6850](https://github.com/taskcluster/taskcluster/issues/6850)
+Add a proper TERM environment variable to interative sessions. This helps with some ncurses apps and tmux for example.
+
+### OTHER
+
+▶ Additional change not described here: [#6852](https://github.com/taskcluster/taskcluster/issues/6852).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump ip from 2.0.0 to 2.0.1 (34cb19df2)
+* build(deps): bump ip from 1.1.5 to 1.1.9 in /ui (98d1c2c37)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client-test (360fdb2af)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client (19094b0d6)
+
+</details>
+
 ## v60.3.5
 
 ### GENERAL
