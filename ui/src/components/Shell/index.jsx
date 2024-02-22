@@ -5,7 +5,7 @@ import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
-const DECODER = new TextDecoder('utf-8');
+const DECODER = new TextDecoder('utf-8', { fatal: false });
 const defaultCommand = [
   'sh',
   '-c',
@@ -131,7 +131,15 @@ export default class Shell extends Component {
           };
 
           this.wsClient.onmessage = ({ data }) => {
-            io.writeUTF16(data);
+            if (typeof data === 'string') {
+              // Generic-worker 60.3.5 and previous were sending text on the
+              // websocket, this ended up being an issue for invalid UTF-8.
+              // We switched to binary after, but we keep this here for
+              // backwards compatibility
+              io.writeUTF16(data);
+            } else {
+              io.writeUTF8(DECODER.decode(data));
+            }
           };
 
           this.wsClient.onopen = () => {

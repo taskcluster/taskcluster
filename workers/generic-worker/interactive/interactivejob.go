@@ -104,7 +104,7 @@ func (itj *InteractiveJob) copyCommandOutputStream() {
 			if n == 0 {
 				continue
 			}
-			if err := itj.writeWsMessage(websocket.TextMessage, buf[:n]); err != nil {
+			if err := itj.writeWsMessage(websocket.BinaryMessage, buf[:n]); err != nil {
 				itj.errors <- err
 				return
 			}
@@ -163,7 +163,7 @@ func (itj *InteractiveJob) handleWebsocketMessages() {
 
 func (itj *InteractiveJob) reportError(errorMessage string) {
 	log.Println(errorMessage)
-	err := itj.writeWsMessage(websocket.TextMessage, []byte(errorMessage))
+	err := itj.writeWsMessage(websocket.BinaryMessage, []byte(errorMessage))
 	if err != nil {
 		log.Println("Error while reporting error to client")
 	}
