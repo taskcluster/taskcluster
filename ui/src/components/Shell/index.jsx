@@ -92,10 +92,12 @@ export default class Shell extends Component {
           });
 
           this.client.resize(
-            terminal.screenSize.width,
-            terminal.screenSize.height
+            terminal.screenSize.height,
+            terminal.screenSize.width
           );
-          io.onTerminalResize = (c, r) => this.client.resize(c, r);
+          // onTerminalResize provides width then height;
+          // DockerExecClient.resize needs height then width
+          io.onTerminalResize = (cols, rows) => this.client.resize(rows, cols);
           this.client.stdout.on('data', data =>
             io.writeUTF8(DECODER.decode(data))
           );
