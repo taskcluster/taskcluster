@@ -157,6 +157,12 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
     res.json({});
   });
+  app.get('/api/web-server/v1/ping', (_req, res) => {
+    res.status(200).json({
+      alive: true,
+      uptime: process.uptime(),
+    });
+  });
 
   // Error handling middleware
   app.use((err, req, res, next) => {
