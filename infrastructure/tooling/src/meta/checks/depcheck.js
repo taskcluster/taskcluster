@@ -52,6 +52,9 @@ if (isMainThread) {
     // within the package
     if (!packageName.startsWith('@')) {
       packageName = packageName.split('/')[0];
+    } else {
+      // i.e. @apollo/client may be used as @apollo/client/core/index.js
+      packageName = packageName.split('/').slice(0, 2).join('/');
     }
 
     if (builtinModules.includes(packageName)) {
