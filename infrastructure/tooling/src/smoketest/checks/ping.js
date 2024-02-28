@@ -34,7 +34,7 @@ tasks.push({
     `ping-web-server`,
   ],
   run: async (requirements, utils) => {
-    const serverHealth = `${process.env.TASKCLUSTER_ROOT_URL}/.well-known/apollo/server-health`;
+    const serverHealth = `${process.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/ping`;
     const resp = await got.get(serverHealth);
 
     // For now we just check statuscode because ping doesn't return

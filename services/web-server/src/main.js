@@ -7,6 +7,7 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import depthLimit from 'graphql-depth-limit';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
+import queryLimit from 'graphql-query-count-limit';
 import loader from 'taskcluster-lib-loader';
 import config from 'taskcluster-lib-config';
 import libReferences from 'taskcluster-lib-references';
@@ -143,7 +144,11 @@ const load = loader(
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,
           introspection: true,
+          parseOptions: {
+            maxTokens: 100000,
+          },
           validationRules: [
+            queryLimit(1000),
             depthLimit(10),
             createComplexityLimitRule(1000),
           ],

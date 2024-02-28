@@ -6668,6 +6668,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-query-count-limit@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "graphql-query-count-limit@npm:1.0.0"
+  peerDependencies:
+    graphql: "*"
+  checksum: 10c0/2568bda1ab27464301416cf05012c709e4f16f4984ae78dee9cc1e6a1e3cfb22863dd1b7552096e867893b25d7cd2a0aaa9cb27602819e965d3232d468ca7b51
+  languageName: node
+  linkType: hard
+
 "graphql-scalars@npm:^1.22.4":
   version: 1.22.4
   resolution: "graphql-scalars@npm:1.22.4"
@@ -11490,6 +11499,7 @@ __metadata:
     graphql: "npm:^16.8.1"
     graphql-depth-limit: "npm:^1.1.0"
     graphql-playground-middleware-express: "npm:^1.7.23"
+    graphql-query-count-limit: "npm:^1.0.0"
     graphql-scalars: "npm:^1.22.4"
     graphql-tag: "npm:^2.12.6"
     graphql-type-json: "npm:^0.3.2"

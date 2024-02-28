@@ -46,14 +46,14 @@ spec:
             - containerPort: 80
           readinessProbe:
             httpGet:
-              path: .well-known/apollo/server-health
+              path: /api/web-server/v1/ping
               port: 80
             timeoutSeconds: 5
             periodSeconds: 10
             initialDelaySeconds: 6
           livenessProbe:
             httpGet:
-              path: .well-known/apollo/server-health
+              path: /api/web-server/v1/ping
               port: 80
             timeoutSeconds: 3
             initialDelaySeconds: 15

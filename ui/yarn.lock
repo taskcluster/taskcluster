@@ -9740,10 +9740,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:^15.0.0":
-  version: 15.8.0
-  resolution: "graphql@npm:15.8.0"
-  checksum: 10c0/30cc09b77170a9d1ed68e4c017ec8c5265f69501c96e4f34f8f6613f39a886c96dd9853eac925f212566ed651736334c8fe24ceae6c44e8d7625c95c3009a801
+"graphql@npm:^16.8.1":
+  version: 16.8.1
+  resolution: "graphql@npm:16.8.1"
+  checksum: 10c0/129c318156b466f440914de80dbf7bc67d17f776f2a088a40cb0da611d19a97c224b1c6d2b13cbcbc6e5776e45ed7468b8432f9c3536724e079b44f1a3d57a8a
   languageName: node
   linkType: hard
 
@@ -17096,7 +17096,7 @@ __metadata:
     escape-string-regexp: "npm:^5.0.0"
     eslint: "npm:^7.0.0"
     fast-memoize: "npm:^2.5.1"
-    graphql: "npm:^15.0.0"
+    graphql: "npm:^16.8.1"
     graphql-tag: "npm:^2.8.0"
     highlight.js: "npm:^11.9.0"
     hterm-umdjs: "npm:^1.4.1"
