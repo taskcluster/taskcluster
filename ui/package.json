@@ -52,7 +52,7 @@
     "error-stack-parser": "^2.0.6",
     "escape-string-regexp": "^5.0.0",
     "fast-memoize": "^2.5.1",
-    "graphql": "^15.0.0",
+    "graphql": "^16.8.1",
     "highlight.js": "^11.9.0",
     "hterm-umdjs": "^1.4.1",
     "is-absolute-url": "^4.0.1",
