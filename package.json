@@ -61,6 +61,7 @@
     "graphql": "^16.8.1",
     "graphql-depth-limit": "^1.1.0",
     "graphql-playground-middleware-express": "^1.7.23",
+    "graphql-query-count-limit": "^1.0.0",
     "graphql-scalars": "^1.22.4",
     "graphql-type-json": "^0.3.2",
     "graphql-validation-complexity": "^0.4.2",
