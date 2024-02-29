@@ -12599,10 +12599,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-it-link-attributes@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "markdown-it-link-attributes@npm:3.0.0"
-  checksum: 10c0/ca117c1191542e24d6e21a6f97c09037beeecefd62d6b4e684df67f98be2bc51eab0f3e272fa6b926ab41fff1cb3e61cb93600c130701c78b28735a0d1d067ee
+"markdown-it-link-attributes@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "markdown-it-link-attributes@npm:4.0.1"
+  checksum: 10c0/2033214ca0af1c94bc9493c2f3a7c6e5e73cec9f6655e043bc14e256b23c70bac768525ca4723f40e6ac850b36d43b64285b21ca03fedcb2f3436ef0c96355e3
   languageName: node
   linkType: hard
 
@@ -17114,7 +17114,7 @@ __metadata:
     lower-case: "npm:^2.0.1"
     markdown-it: "npm:^12.3.2"
     markdown-it-highlightjs: "npm:^3.0.0"
-    markdown-it-link-attributes: "npm:^3.0.0"
+    markdown-it-link-attributes: "npm:^4.0.1"
     material-ui-json-schema-viewer: "npm:^2.0.0"
     mdi-react: "npm:^6.2.0"
     mdx-loader: "npm:^3.0.2"
