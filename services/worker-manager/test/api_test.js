@@ -591,7 +591,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     await createWorkerPool();
 
-    await Promise.all(input.map(i => createWorker(i)));
+    await createWorker(input[0]);
+    await createWorker(input[1]);
 
     input = input.map(i => {
       i.created = i.created.toJSON();
@@ -638,7 +639,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       secret: null,
     }));
 
-    await Promise.all(input.map(i => createWorker(i)));
+    await createWorker(input[0]);
+    await createWorker(input[1]);
 
     input = input.map(i => {
       i.created = i.created.toJSON();
