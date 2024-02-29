@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.4.1
+
+### USERS
+
+▶ [patch]
+Fix docker worker interactive shell UI rows/cols settings.
+
+▶ [patch] [#6836](https://github.com/taskcluster/taskcluster/issues/6836)
+Upgrades graphql server and client libraries to graphql 16.8
+
+▶ [patch] [#6836](https://github.com/taskcluster/taskcluster/issues/6836)
+Upgrades graphql to 16.8.1 in ui
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump es5-ext from 0.10.62 to 0.10.64 (485a491c2)
+
+</details>
+
 ## v60.4.0
 
 ### USERS
