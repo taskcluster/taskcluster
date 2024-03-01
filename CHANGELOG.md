@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.4.2
+
+### USERS
+
+▶ [patch]
+Fixes graphql validation rules for hooks groups query.
+
+▶ [patch] [#6864](https://github.com/taskcluster/taskcluster/issues/6864)
+D2G now passes `--privileged` flag to the generated `podman run` command when
+Docker Worker payload enables device capability `hostSharedMemory`.  Without
+this option, the podman container could not successfully access the shared
+memory, despite the inclusion of argument `--device=/dev/shm`. With both
+arguments present (`--privileged` and `--device=/dev/shm`), shared memory now
+appears to be available inside the podman container.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump mitt from 2.1.0 to 3.0.1 in /ui (280678fc9)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client-web (be7836a3c)
+* build(deps): bump markdown-it-link-attributes from 3.0.0 to 4.0.1 in /ui (008b3fe0a)
+
+</details>
+
 ## v60.4.1
 
 ### USERS
