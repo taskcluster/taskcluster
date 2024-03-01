@@ -320,6 +320,7 @@ suite(testing.suiteName(), function() {
     let artifact;
 
     suiteSetup(function() {
+      nock.cleanAll();
       // for testing artifact downloads, we use a fake queue but a real object service.
       queue = new taskcluster.Queue({
         ...taskcluster.fromEnvVars(),
