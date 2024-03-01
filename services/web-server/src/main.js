@@ -150,7 +150,7 @@ const load = loader(
           validationRules: [
             queryLimit(1000),
             depthLimit(10),
-            createComplexityLimitRule(1000),
+            createComplexityLimitRule(4500),
           ],
         });
         await server.start();

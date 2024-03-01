@@ -246,7 +246,7 @@ helper.withGithubClient = () => {
   });
 };
 
-helper.getHttpClient = () => {
+helper.getHttpClient = (clientOptions = {}) => {
   const gotFetch = async (url, options) => {
     // Map Fetch API options to Got options
     const gotOptions = {
@@ -277,7 +277,7 @@ helper.getHttpClient = () => {
     };
 
     // useful to debug real errors before HttpLink throws obfuscated errors
-    if (!fetchResponse.ok || response.body?.errors) {
+    if (!clientOptions.suppressErrors && (!fetchResponse.ok || response.body?.errors)) {
       console.error(`Error from ${url}: \n${await fetchResponse.text()}`);
     }
 
