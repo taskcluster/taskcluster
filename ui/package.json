@@ -71,7 +71,7 @@
     "material-ui-json-schema-viewer": "^2.0.0",
     "mdi-react": "^6.2.0",
     "mdx-loader": "^3.0.2",
-    "mitt": "^2.0.0",
+    "mitt": "^3.0.1",
     "param-case": "^3.0.3",
     "prism-themes": "^1.0.1",
     "prismjs": "^1.29.0",

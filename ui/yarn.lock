@@ -13131,10 +13131,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mitt@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "mitt@npm:2.1.0"
-  checksum: 10c0/9236f7fbba86bdf9e9c2298f84ca4ca199e8e6b5f34830ab556f020270804d73e7427b2fc141746631751c2e8a6eac97971677294f0576de83bb78cba9614e8c
+"mitt@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: 10c0/3ab4fdecf3be8c5255536faa07064d05caa3dd332bd318ff02e04621f7b3069ca1de9106cfe8e7ced675abfc2bec2ce4c4ef321c4a1bb1fb29df8ae090741913
   languageName: node
   linkType: hard
 
@@ -17118,7 +17118,7 @@ __metadata:
     material-ui-json-schema-viewer: "npm:^2.0.0"
     mdi-react: "npm:^6.2.0"
     mdx-loader: "npm:^3.0.2"
-    mitt: "npm:^2.0.0"
+    mitt: "npm:^3.0.1"
     mocha: "npm:^9.2.2"
     neutrino: "npm:^9.1.0"
     param-case: "npm:^3.0.3"
