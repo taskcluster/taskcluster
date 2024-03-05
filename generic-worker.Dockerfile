@@ -1,6 +1,6 @@
 # Simple generic worker
 
-FROM golang:1.22.0-alpine AS build
+FROM golang:1.22.1-alpine AS build
 
 ENV CGO_ENABLED=0
 
