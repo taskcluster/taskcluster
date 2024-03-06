@@ -228,7 +228,11 @@ export class GoogleProvider extends Provider {
       // workers in taskcluster.
       const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
-      const workerGroup = cfg.region;
+      // Historically we set workerGroup to cfg.region (e.g. 'us-east1') but
+      // cfg.zone (e.g. 'us-east1-d') is more specific, and required for e.g.
+      // terminating instances with:
+      //   `gcloud compute instances delete <workerId> --zone=<workerGroup>`
+      const workerGroup = cfg.zone;
       const labels = {
         'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
         'managed-by': 'taskcluster',

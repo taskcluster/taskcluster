@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = workers[0];
 
       assert.equal(worker.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-      assert.equal(worker.workerGroup, defaultLaunchConfig.region, 'Worker group should be region');
+      assert.equal(worker.workerGroup, defaultLaunchConfig.zone, 'Worker group should be zone');
       assert.equal(worker.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
       assert.equal(worker.providerData.zone, defaultLaunchConfig.zone, 'Zone should come from the chosen config');
       assert.deepEqual(worker.providerData.workerConfig, {});
@@ -169,7 +169,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(tcmeta, {
         workerPoolId,
         providerId,
-        workerGroup: defaultLaunchConfig.region,
+        workerGroup: defaultLaunchConfig.zone,
         rootUrl: helper.rootUrl,
         workerConfig: {},
       });
@@ -378,7 +378,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const workerId = '12345';
     const worker = await makeWorker({
       workerPoolId,
-      workerGroup: 'us-east1',
+      workerGroup: 'us-east1-a',
       workerId,
       providerId,
       created: taskcluster.fromNow('0 seconds'),
@@ -398,7 +398,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const suiteMakeWorker = async (overrides) => {
       return await makeWorker({
         workerPoolId,
-        workerGroup: 'us-east1',
+        workerGroup: 'us-east1-a',
         workerId,
         providerId,
         created: taskcluster.fromNow('-2 weeks'),
@@ -593,7 +593,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('registerWorker', function() {
-    const workerGroup = 'us-east1';
+    const workerGroup = 'us-east1-a';
     const workerId = 'abc123';
 
     const defaultWorker = {
