@@ -59,9 +59,9 @@ export class References {
    * If the data is absolute, provide the rootUrl; for abstract data, pass
    * rootUrl: undefined.
    */
-  static fromUriStructured({ directory, rootUrl }) {
+  static async fromUriStructured({ directory, rootUrl }) {
     return References.fromSerializable({
-      serializable: readUriStructured({ directory }),
+      serializable: await readUriStructured({ directory }),
       rootUrl,
     });
   }
@@ -138,8 +138,8 @@ export class References {
   /**
    * Write out a URI-structured form of this instance.
    */
-  writeUriStructured({ directory }) {
-    writeUriStructured({
+  async writeUriStructured({ directory }) {
+    await writeUriStructured({
       directory,
       serializable: this.makeSerializable(),
     });

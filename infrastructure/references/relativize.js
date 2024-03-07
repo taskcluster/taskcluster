@@ -1,17 +1,17 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import References from 'taskcluster-lib-references';
 
-export const build = (input, output, rootUrl) => {
-  const serializable = JSON.parse(fs.readFileSync(input, { encoding: 'utf8' }));
+export const build = async (input, output, rootUrl) => {
+  const serializable = JSON.parse(await fs.readFile(input, { encoding: 'utf8' }));
   const refs = References.fromSerializable({ serializable });
 
   // write uri-structured data to the root where nginx will serve it
-  refs.asAbsolute(rootUrl).writeUriStructured({ directory: output });
+  await refs.asAbsolute(rootUrl).writeUriStructured({ directory: output });
 
   // write out a single `references/references.json` containing the same data
-  fs.writeFileSync(path.join(output, 'references', 'references.json'), JSON.stringify(serializable, null, 2));
+  await fs.writeFile(path.join(output, 'references', 'references.json'), JSON.stringify(serializable, null, 2));
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

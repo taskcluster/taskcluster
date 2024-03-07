@@ -1,13 +1,11 @@
 import fs from 'fs';
-import util from 'util';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import child_process from 'child_process';
 import Observable from 'zen-observable';
 import taskcluster from 'taskcluster-client';
 import { REPO_ROOT } from './repo.js';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 
 /**
  * Call the Python client's `release.sh`

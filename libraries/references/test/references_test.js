@@ -94,7 +94,7 @@ suite(testing.suiteName(), function() {
       }]),
     });
 
-    references.writeUriStructured({ directory: '/refdata' });
+    await references.writeUriStructured({ directory: '/refdata' });
     assert.deepEqual(JSON.parse(fs.readFileSync('/refdata/schemas/test/sch.json')), {
       $id: '/schemas/test/sch.json#',
       $schema: '/schemas/common/metaschema.json#',

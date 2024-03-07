@@ -98,7 +98,7 @@
     "quick-lru": "^5.0.0",
     "regex-escape": "^3.4.8",
     "request-ip": "^3.3.0",
-    "rimraf": "^3.0.0",
+    "rimraf": "^5.0.5",
     "sanitize-html": "^2.12.1",
     "sentry-api": "^0.2.0",
     "sift": "^17.0.0",
