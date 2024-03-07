@@ -53,10 +53,10 @@ let load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('secrets')],
-    }).generateReferences(),
+    }).then(ref => ref.generateReferences()),
   },
 
   api: {

@@ -1,4 +1,3 @@
-import util from 'util';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -10,8 +9,7 @@ import { REPO_ROOT } from './repo.js';
 import got from 'got';
 import { execCommand } from './command.js';
 import mkdirp from 'mkdirp';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 
 /**
  * Set up to call docker in the given baseDir (internal use only)

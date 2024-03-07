@@ -453,7 +453,7 @@ for publication under `<rootUrl>/references`.
 This is typically passed to [taskcluster-lib-references](../references) like this:
 
 ```javascript
-libReferences.fromService({
+await libReferences.fromService({
   schemaset,
   references: [exchanges.reference()],
 })
