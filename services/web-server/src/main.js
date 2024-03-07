@@ -121,9 +121,9 @@ const load = loader(
 
     generateReferences: {
       requires: ['cfg'],
-      setup: ({ cfg }) => libReferences.fromService({
+      setup: async ({ cfg }) => libReferences.fromService({
         references: [MonitorManager.reference('web-server')],
-      }).generateReferences(),
+      }).then(ref => ref.generateReferences()),
     },
 
     app: {

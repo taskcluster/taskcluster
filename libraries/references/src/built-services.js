@@ -1,5 +1,17 @@
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
+
+const directoryExists = async (directory) => {
+  try {
+    const stat = await fs.stat(directory);
+    return stat.isDirectory();
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return false;
+    }
+    throw err;
+  }
+};
 
 /**
  * Read all references for this service and add them to the array of references.
@@ -7,16 +19,15 @@ import fs from 'fs';
  * Note that nothing is determined from the filename - the reference itself contains
  * enough data to determine its eventual URL.
  */
-const loadReferences = (serviceDirectory, references) => {
+const loadReferences = async (serviceDirectory, references) => {
   const referencesDir = path.join(serviceDirectory, 'references');
-  if (!fs.existsSync(referencesDir)) {
+  if (!await directoryExists(referencesDir)) {
     return;
   }
-  for (let filename of fs
-    .readdirSync(referencesDir)
-    .filter(filename => path.extname(filename) === '.json')) {
+  const files = await fs.readdir(referencesDir);
+  for (let filename of files.filter(filename => path.extname(filename) === '.json')) {
     filename = path.join(referencesDir, filename);
-    const data = fs.readFileSync(filename);
+    const data = await fs.readFile(filename);
     const content = JSON.parse(data);
 
     references.push({ filename, content });
@@ -29,24 +40,26 @@ const loadReferences = (serviceDirectory, references) => {
  * Note that the schema filenames are ignored - the schema's $id is enough to determine
  * its eventual URL.
  */
-const loadSchemas = (serviceDirectory, schemas) => {
+const loadSchemas = async (serviceDirectory, schemas) => {
   const schemasDir = path.join(serviceDirectory, 'schemas');
-  if (!fs.existsSync(schemasDir)) {
+  if (!await directoryExists(schemasDir)) {
     return;
   }
 
   const queue = [schemasDir];
   while (queue.length) {
     const filename = queue.shift();
-    const st = fs.lstatSync(filename);
+    const st = await fs.lstat(filename);
     if (st.isDirectory()) {
-      for (let dentry of fs.readdirSync(filename)) {
+      const dentries = await fs.readdir(filename);
+      for (let dentry of dentries) {
         queue.push(path.join(filename, dentry));
       }
     } else {
+      const data = await fs.readFile(filename);
       schemas.push({
         filename,
-        content: JSON.parse(fs.readFileSync(filename)),
+        content: JSON.parse(data),
       });
     }
   }
@@ -55,23 +68,24 @@ const loadSchemas = (serviceDirectory, schemas) => {
 /**
  * Load all schemas and references from `directory`.
  */
-const load = ({ directory }) => {
+const load = async ({ directory }) => {
   const references = [];
   const schemas = [];
 
-  fs.readdirSync(directory).forEach(dentry => {
+  const files = await fs.readdir(directory);
+  for (const dentry of files) {
     if (dentry.startsWith('.')) {
       return;
     }
 
     const filename = path.join(directory, dentry);
-    if (!fs.lstatSync(filename).isDirectory()) {
+    if (!(await fs.lstat(filename)).isDirectory()) {
       throw new Error(`${filename} is not a directory`);
     }
 
-    loadReferences(filename, references);
-    loadSchemas(filename, schemas);
-  });
+    await loadReferences(filename, references);
+    await loadSchemas(filename, schemas);
+  }
 
   return { references, schemas };
 };

@@ -23,8 +23,8 @@ suite(testing.suiteName(), function() {
     throw new Error(`filename ${filename} not found`);
   };
 
-  const references = new References({
-    schemas: getCommonSchemas(),
+  const getReferences = async () => new References({
+    schemas: await getCommonSchemas(),
     references: [{
       filename: 'test-ref.json',
       content: {
@@ -49,7 +49,8 @@ suite(testing.suiteName(), function() {
     }],
   });
 
-  test('generates an abstract manifest', function() {
+  test('generates an abstract manifest', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/manifest.json', {
       $schema: '/schemas/common/manifest-v3.json#',
@@ -60,7 +61,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates an absolute manifest', function() {
+  test('generates an absolute manifest', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'references/manifest.json', {
       $schema: rootUrl + '/schemas/common/manifest-v3.json#',
@@ -71,7 +73,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates abstract schema filenames', function() {
+  test('generates abstract schema filenames', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, '/schemas/common/metadata-metaschema.json#');
@@ -79,7 +82,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates absolute schema filenames', function() {
+  test('generates absolute schema filenames', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
       assert.equal(content.$schema, rootUrl + '/schemas/common/metadata-metaschema.json#');
@@ -87,7 +91,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates an API reference filename', function() {
+  test('generates an API reference filename', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/test/v1/api.json', {
       $schema: '/schemas/common/api-reference-v0.json#',
@@ -99,7 +104,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('generates an exchanges reference filename', function() {
+  test('generates an exchanges reference filename', async function() {
+    const references = await getReferences();
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/test2/v2/exchanges.json', {
       $schema: '/schemas/common/exchanges-reference-v0.json#',

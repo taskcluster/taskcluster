@@ -11,18 +11,20 @@ suite(testing.suiteName(), function() {
     mockFs.restore();
   });
 
-  const references = new References({
-    schemas: getCommonSchemas(),
-    references: [],
-  });
+  const getReferences = async () => {
+    return new References({
+      schemas: await getCommonSchemas(),
+      references: [],
+    });
+  };
 
-  test('getSchema', function() {
+  test('getSchema', async function() {
     assert.equal(
-      references.getSchema('/schemas/common/manifest-v3.json#').$id,
+      (await getReferences()).getSchema('/schemas/common/manifest-v3.json#').$id,
       '/schemas/common/manifest-v3.json#');
   });
 
-  test('fromService', function() {
+  test('fromService', async function() {
     // mock SchemaSet from taskcluster-lib-validate
     const schemaset = {
       abstractSchemas() {
@@ -34,7 +36,7 @@ suite(testing.suiteName(), function() {
       },
     };
 
-    const references = References.fromService({
+    const references = await References.fromService({
       schemaset,
       references: [
         {
@@ -47,13 +49,14 @@ suite(testing.suiteName(), function() {
     assert(references.schemas.some(s => s.content.$id === 'somefile.json#'));
   });
 
-  test('makeSerializable', function() {
+  test('makeSerializable', async function() {
+    const references = await getReferences();
     assert.deepEqual(
       references.makeSerializable(),
       makeSerializable({ references }));
   });
 
-  test('writes uri-structured', function() {
+  test('writes uri-structured', async function() {
     mockFs({});
     const references = new References({
       references: [
@@ -80,7 +83,7 @@ suite(testing.suiteName(), function() {
           },
         },
       ],
-      schemas: getCommonSchemas().concat([{
+      schemas: (await getCommonSchemas()).concat([{
         filename: 'foo.json',
         content: {
           $schema: '/schemas/common/metaschema.json#',
