@@ -14,6 +14,10 @@ export default class PersonAPI {
     this.accessToken = accessToken;
   }
 
+  setAccessToken(accessToken) {
+    this.accessToken = accessToken;
+  }
+
   async getProfileFromUserId(userId) {
     const { body: profile } = await request
       .get(`${baseUrl}/user/user_id/${userId}`)

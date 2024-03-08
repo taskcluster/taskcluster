@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/mholt/archiver/v3"
 )
 
 func WriteToFileAsJSON(obj interface{}, filename string) error {
@@ -109,4 +111,37 @@ func CreateFile(file string) (err error) {
 
 func CreateDir(dir string) error {
 	return os.MkdirAll(dir, 0700)
+}
+
+func Unarchive(source, destination, format string) error {
+	var unarchiver archiver.Unarchiver
+	switch format {
+	case "zip":
+		unarchiver = &archiver.Zip{}
+	case "tar.gz":
+		unarchiver = &archiver.TarGz{
+			Tar: &archiver.Tar{},
+		}
+	case "rar":
+		unarchiver = &archiver.Rar{}
+	case "tar.bz2":
+		unarchiver = &archiver.TarBz2{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.xz":
+		unarchiver = &archiver.TarXz{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.zst":
+		unarchiver = &archiver.TarZstd{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.lz4":
+		unarchiver = &archiver.TarLz4{
+			Tar: &archiver.Tar{},
+		}
+	default:
+		return fmt.Errorf("unsupported archive format %v", format)
+	}
+	return unarchiver.Unarchive(source, destination)
 }

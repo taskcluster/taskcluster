@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/Microsoft/go-winio"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v59/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
 )
@@ -29,18 +29,18 @@ func (m *serviceRunMethod) start(w *genericworker, state *run.State) (workerprot
 	m.serviceName = w.wicfg.Service
 	m.mgr, err = mgr.Connect()
 	if err != nil {
-		return nil, fmt.Errorf("Error opening service manager: %s", err)
+		return nil, fmt.Errorf("error opening service manager: %s", err)
 	}
 
 	s, err := m.mgr.OpenService(m.serviceName)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting service %s: %s", m.serviceName, err)
+		return nil, fmt.Errorf("error getting service %s: %s", m.serviceName, err)
 	}
 	defer s.Close()
 
 	err = s.Start()
 	if err != nil {
-		return nil, fmt.Errorf("Error starting service %s: %s", m.serviceName, err)
+		return nil, fmt.Errorf("error starting service %s: %s", m.serviceName, err)
 	}
 
 	// connect the transport to the named
@@ -71,7 +71,7 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWrite
 	// user and to "Local System" (shorthand SY)
 	cu, err := user.Current()
 	if err != nil {
-		return fmt.Errorf("Error getting current user: %s", err)
+		return fmt.Errorf("error getting current user: %s", err)
 	}
 
 	c := winio.PipeConfig{
@@ -83,7 +83,7 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWrite
 	}
 	listener, err := winio.ListenPipe(protocolPipe, &c)
 	if err != nil {
-		return fmt.Errorf("Error setting up protocolPipe: %s", err)
+		return fmt.Errorf("error setting up protocolPipe: %s", err)
 	}
 
 	go func() {
@@ -118,13 +118,13 @@ func (m *serviceRunMethod) wait() error {
 	for {
 		s, err := m.mgr.OpenService(m.serviceName)
 		if err != nil {
-			return fmt.Errorf("Error while polling service %s status: %s", m.serviceName, err)
+			return fmt.Errorf("error while polling service %s status: %s", m.serviceName, err)
 		}
 		status, err := s.Query()
 		s.Close()
 
 		if err != nil {
-			return fmt.Errorf("Error querying service %s status: %s", m.serviceName, err)
+			return fmt.Errorf("error querying service %s status: %s", m.serviceName, err)
 		}
 		if status.State != svc.StartPending && status.State != svc.Running {
 			break

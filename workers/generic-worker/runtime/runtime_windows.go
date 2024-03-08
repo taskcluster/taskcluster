@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -141,20 +141,20 @@ func SetAutoLogin(user *OSUser) error {
 	// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Winlogon
 	k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.WRITE|registry.WOW64_64KEY)
 	if err != nil {
-		return fmt.Errorf(`Was not able to create registry key 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' due to %s`, err)
+		return fmt.Errorf(`was not able to create registry key 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' due to %s`, err)
 	}
 	defer k.Close()
 	err = k.SetDWordValue("AutoAdminLogon", 1)
 	if err != nil {
-		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\AutoAdminLogon' to 1 due to %s`, err)
+		return fmt.Errorf(`was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\AutoAdminLogon' to 1 due to %s`, err)
 	}
 	err = k.SetStringValue("DefaultUserName", user.Name)
 	if err != nil {
-		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultUserName' to %q due to %s`, user.Name, err)
+		return fmt.Errorf(`was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultUserName' to %q due to %s`, user.Name, err)
 	}
 	err = k.SetStringValue("DefaultPassword", user.Password)
 	if err != nil {
-		return fmt.Errorf(`Was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword' to %q due to %s`, user.Password, err)
+		return fmt.Errorf(`was not able to set registry entry 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\DefaultPassword' to %q due to %s`, user.Password, err)
 	}
 	return nil
 }

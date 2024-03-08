@@ -1,8 +1,6 @@
 import path from 'path';
 import os from 'os';
-import util from 'util';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 import taskcluster from 'taskcluster-client';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';

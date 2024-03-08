@@ -37,6 +37,13 @@ properties:
         description: Breakdown by error code where available
         type: object
         additionalProperties: true
+      workerPool:
+        title: By worker pool
+        description: |
+          Breakdown by worker pool if workerPoolId is not specified.
+          If specified, this will only include the worker pool specified.
+        type: object
+        additionalProperties: true
     additionalProperties: false
     required:
     - total

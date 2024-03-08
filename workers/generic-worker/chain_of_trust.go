@@ -10,17 +10,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v59/internal/scopes"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/internal/scopes"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
 	"golang.org/x/crypto/ed25519"
 )
 
 const (
 	// ChainOfTrustKeyNotSecureMessage contains message to log when chain of
 	// trust key is discovered at runtime not to be secure
-	ChainOfTrustKeyNotSecureMessage = "Was expecting attempt to read private chain of trust key as task user to fail - however, it did not!"
+	ChainOfTrustKeyNotSecureMessage = "was expecting attempt to read private chain of trust key as task user to fail - however, it did not"
 )
 
 var (
@@ -65,6 +65,14 @@ type ChainOfTrustTaskFeature struct {
 	disabled       bool
 }
 
+type MissingED25519PrivateKey struct {
+	Err error
+}
+
+func (m *MissingED25519PrivateKey) Error() string {
+	return fmt.Sprintf("Missing ED25519 Private Key: %v", m.Err)
+}
+
 func (feature *ChainOfTrustFeature) Name() string {
 	return "Chain of Trust"
 }
@@ -76,7 +84,9 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	feature.Ed25519PrivateKey, err = readEd25519PrivateKeyFromFile(config.Ed25519SigningKeyLocation)
 	if err != nil {
-		return
+		return &MissingED25519PrivateKey{
+			Err: err,
+		}
 	}
 
 	// platform-specific mechanism to lock down file permissions
@@ -162,7 +172,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	cotCert := &ChainOfTrustData{
 		Version:     1,
 		Artifacts:   artifactHashes,
-		Task:        feature.task.Definition,
+		Task:        feature.task.TaskClaimResponse.Task,
 		TaskID:      feature.task.TaskID,
 		RunID:       feature.task.RunID,
 		WorkerGroup: config.WorkerGroup,
@@ -200,7 +210,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
-				Expires: feature.task.Definition.Expires,
+				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),

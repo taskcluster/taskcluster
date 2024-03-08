@@ -47,7 +47,7 @@ func (r Resources) Swap(i, j int) {
 func runGarbageCollection(r Resources) error {
 	currentFreeSpace, err := freeDiskSpaceBytes(taskContext.TaskDir)
 	if err != nil {
-		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
 	for currentFreeSpace < requiredFreeSpace {
@@ -65,7 +65,7 @@ func runGarbageCollection(r Resources) error {
 		}
 	}
 	if currentFreeSpace < requiredFreeSpace {
-		return fmt.Errorf("Not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
+		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
 	return nil
 }

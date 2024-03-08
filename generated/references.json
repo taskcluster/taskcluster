@@ -469,6 +469,12 @@
               "description": "Total number of errors",
               "title": "Total number of errors in the past 7 days",
               "type": "number"
+            },
+            "workerPool": {
+              "additionalProperties": true,
+              "description": "Breakdown by worker pool if workerPoolId is not specified.\nIf specified, this will only include the worker pool specified.\n",
+              "title": "By worker pool",
+              "type": "object"
             }
           },
           "required": [
@@ -9290,6 +9296,12 @@
                   "title": "Devices to be attached to task containers",
                   "type": "object"
                 },
+                "disableSeccomp": {
+                  "default": false,
+                  "description": "Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.",
+                  "title": "Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.",
+                  "type": "boolean"
+                },
                 "privileged": {
                   "default": false,
                   "description": "Allows a task to run in a privileged container, similar to running docker with `--privileged`.  This only works for worker-types configured to enable it.",
@@ -9607,6 +9619,12 @@
               ],
               "title": "Devices to be attached to task containers",
               "type": "object"
+            },
+            "disableSeccomp": {
+              "default": false,
+              "description": "Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.",
+              "title": "Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.",
+              "type": "boolean"
             },
             "privileged": {
               "default": false,
@@ -14629,7 +14647,8 @@
           "output": "v1/worker-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "state"
           ],
           "route": "/workers/<workerPoolId>",
           "scopes": "worker-manager:list-workers:<workerPoolId>",
@@ -18295,7 +18314,7 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
+          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email\n\nIn case when duplicate message has been detected and no email was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/email-request.json#",
           "method": "post",
           "name": "email",
@@ -18311,7 +18330,7 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Publish a message on pulse with the given `routingKey`.",
+          "description": "Publish a message on pulse with the given `routingKey`.\n\nEndpoint will return 204 when duplicate message has been detected",
           "input": "v1/pulse-request.json#",
           "method": "post",
           "name": "pulse",
@@ -18327,7 +18346,7 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/matrix-request.json#",
           "method": "post",
           "name": "matrix",
@@ -18343,7 +18362,7 @@
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/slack-request.json#",
           "method": "post",
           "name": "slack",

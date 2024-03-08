@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v59/tools/d2g"
-	"github.com/taskcluster/taskcluster/v59/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v59/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v60/tools/d2g"
+	"github.com/taskcluster/taskcluster/v60/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go/text"
 
 	"sigs.k8s.io/yaml"
 )
@@ -66,7 +66,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 
 	d2gConvertedTaskDefinitionYAML, err := yaml.JSONToYAML(d2gConvertedTaskDefinitionJSON)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("Could not convert task definition from JSON to YAML: %v\n", err))
+		return executionError(internalError, errored, fmt.Errorf("could not convert task definition from JSON to YAML: %v", err))
 	}
 
 	task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")

@@ -229,6 +229,17 @@ export const WorkerManagerWorkerPoolSummary = shape({
   pendingTasks: number,
 });
 
+export const WorkerManagerWorkerPoolErrorStats = shape({
+  workerPoolId: string,
+  totals: shape({
+    total: number,
+    daily: object,
+    hourly: object,
+    title: object,
+    code: object,
+  }),
+});
+
 export const providersArray = arrayOf(
   shape({
     providerId: string,

@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v59/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v59/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v60/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v60/tools/d2g/genericworker"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/shell"
@@ -286,15 +286,17 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString("podman run -t")
 	switch containerName {
 	case "":
-		command.WriteString(" --rm")
+		command.WriteString("podman run -t --rm")
 	default:
-		command.WriteString(" --name " + containerName)
+		command.WriteString(fmt.Sprintf("timeout %v podman run -t --name %v", dwPayload.MaxRunTime, containerName))
 	}
-	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind {
+	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
 		command.WriteString(" --privileged")
+	}
+	if dwPayload.Capabilities.DisableSeccomp {
+		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
 	if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
@@ -372,21 +374,33 @@ func setMounts(gwPayload *genericworker.GenericWorkerPayload, gwWritableDirector
 
 func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.MaxRunTime = dwPayload.MaxRunTime
+	if len(gwPayload.Artifacts) > 0 {
+		// Add 15 minutes as buffer for task to be able to upload artifacts
+		gwPayload.MaxRunTime += 900
+	}
 }
 
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.OnExitStatus.Retry = dwPayload.OnExitStatus.Retry
 	gwPayload.OnExitStatus.PurgeCaches = dwPayload.OnExitStatus.PurgeCaches
 
+	appendIfNotPresent := func(exitCode int64) {
+		for _, retryCode := range gwPayload.OnExitStatus.Retry {
+			if retryCode == exitCode {
+				return
+			}
+		}
+		gwPayload.OnExitStatus.Retry = append(gwPayload.OnExitStatus.Retry, exitCode)
+	}
+
 	// An error sometimes occurs while pulling the docker image:
 	// Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
 	// And this exits 125, so we'd like to retry.
-	for _, exitCode := range gwPayload.OnExitStatus.Retry {
-		if exitCode == 125 {
-			return
-		}
-	}
-	gwPayload.OnExitStatus.Retry = append(gwPayload.OnExitStatus.Retry, 125)
+	// Another error sometimes occurs while pulling the docker image:
+	// error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)
+	// And this exits 128, so we'd like to retry.
+	appendIfNotPresent(125)
+	appendIfNotPresent(128)
 }
 
 func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {

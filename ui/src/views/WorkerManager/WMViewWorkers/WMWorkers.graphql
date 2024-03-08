@@ -1,23 +1,25 @@
-query WorkerManagerWorkers($workerPool: String, $provider: String, $quarantined: Boolean) {
-  WorkerManagerWorkers(workerPool: $workerPool, provider: $provider, isQuarantined: $quarantined) {
-    workerId
-    workerGroup
-    workerAge
-
-    latestTaskRun {
-      taskId
-      runId
-      state
-      reasonResolved
-      scheduled
-      started
-      resolved
+query WorkerManagerWorkers($workerPoolId: String!, $state: String, $workersConnection: PageConnection) {
+  WorkerManagerWorkers(workerPoolId: $workerPoolId, state: $state, connection: $workersConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
     }
-    quarantineUntil
-
-    recentErrors
-
-    providerId
-    workerPool
+    edges {
+      node {
+        workerPoolId
+        workerGroup
+        workerId
+        providerId
+        state
+        created
+        expires
+        capacity
+        lastModified
+        lastChecked
+      }
+    }
   }
 }

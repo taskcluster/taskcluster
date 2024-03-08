@@ -66,6 +66,7 @@ const createServer = function() {
       });
   }
   process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 
   return new Promise((accept, reject) => {
     // Launch HTTP server
@@ -73,11 +74,13 @@ const createServer = function() {
 
     // Add a little method to help kill the server
     server.terminate = () => {
+      debug('Terminating server');
       // tell existing connections to close
       server.on('request', (req, res) => {
         if (!res.headersSent) {
           res.setHeader('Connection', 'close');
         }
+        res.on('finish', () => req.socket.destroy());
       });
 
       return new Promise((accept, reject) => {

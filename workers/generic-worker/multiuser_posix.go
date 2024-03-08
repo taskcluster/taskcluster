@@ -13,9 +13,9 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v60/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -66,10 +66,13 @@ func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd,
 	var processCmd *process.Command
 	var err error
 
+	var envVars = task.EnvVars()
+	envVars = append(envVars, "TERM=hterm-256color")
+
 	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars, taskContext.pd)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars, taskContext.pd)
 	}
 
 	return processCmd.Cmd, err
@@ -182,7 +185,7 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 		case "freebsd":
 			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
 		}
-		return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
+		return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 	}
 	switch runtime.GOOS {
 	case "darwin":
@@ -192,7 +195,7 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 	case "freebsd":
 		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
 	}
-	return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 }
 
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {

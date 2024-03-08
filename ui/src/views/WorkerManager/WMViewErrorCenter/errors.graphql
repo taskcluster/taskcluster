@@ -1,0 +1,20 @@
+query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $filter: JSON) {
+  WorkerManagerErrors(workerPoolId: $workerPoolId, connection: $errorsConnection, filter: $filter) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        errorId
+        title
+        description
+        reported
+        extra
+      }
+    }
+  }
+}

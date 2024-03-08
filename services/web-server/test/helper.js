@@ -10,10 +10,7 @@ import PulseEngine from '../src/PulseEngine/index.js';
 import { WebSocketLink } from 'apollo-link-ws';
 import WebSocket from 'ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
-import apollo from 'apollo-client';
-const { ApolloClient } = apollo;
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { HttpLink } from 'apollo-link-http';
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
 import got from 'got';
 import path from 'path';
 import fs from 'fs/promises';
@@ -249,7 +246,7 @@ helper.withGithubClient = () => {
   });
 };
 
-helper.getHttpClient = () => {
+helper.getHttpClient = (clientOptions = {}) => {
   const gotFetch = async (url, options) => {
     // Map Fetch API options to Got options
     const gotOptions = {
@@ -276,11 +273,11 @@ helper.getHttpClient = () => {
       statusText: response.statusMessage,
       json: async () => response.body,
       text: async () => JSON.stringify(response.body, null, 2),
-      headers: response.headers,
+      headers: new Headers(response.headers),
     };
 
     // useful to debug real errors before HttpLink throws obfuscated errors
-    if (!fetchResponse.ok || response.body?.errors) {
+    if (!clientOptions.suppressErrors && (!fetchResponse.ok || response.body?.errors)) {
       console.error(`Error from ${url}: \n${await fetchResponse.text()}`);
     }
 

@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v59/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {
@@ -110,7 +110,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 		}
 		// bug 1394557: s3 incorrectly returns HTTP 400 for connection inactivity,
 		// which can/should be retried, so explicitly handle...
-		if putResp.StatusCode == 400 {
+		if putResp.StatusCode == http.StatusBadRequest {
 			tempError = fmt.Errorf("S3 returned status code 400 which could be an intermittent issue - see https://bugzilla.mozilla.org/show_bug.cgi?id=1394557")
 		}
 		return

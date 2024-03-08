@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v59/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
 )
 
 type AzureProvider struct {
@@ -147,7 +147,7 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(30 * time.Second)
+	p.terminationTicker = time.NewTicker(15 * time.Second)
 	go func() {
 		for {
 			<-p.terminationTicker.C

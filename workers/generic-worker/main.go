@@ -26,20 +26,20 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v59/internal"
-	"github.com/taskcluster/taskcluster/v59/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v59/internal/scopes"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/internal"
+	"github.com/taskcluster/taskcluster/v60/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v60/internal/scopes"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v60/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -196,6 +196,9 @@ func main() {
 	case arguments["create-dir"]:
 		err := fileutil.CreateDir(arguments["--create-dir"].(string))
 		exitOnError(CANT_CREATE_DIRECTORY, err, "Error creating directory %v", arguments["--create-dir"].(string))
+	case arguments["unarchive"]:
+		err := fileutil.Unarchive(arguments["--archive-src"].(string), arguments["--archive-dst"].(string), arguments["--archive-fmt"].(string))
+		exitOnError(CANT_UNARCHIVE, err, "Error unarchiving %v to %v", arguments["--archive-src"].(string), arguments["--archive-dst"].(string))
 	default:
 		// platform specific...
 		os.Exit(int(platformTargets(arguments)))
@@ -394,7 +397,7 @@ func RunWorker() (exitCode ExitCode) {
 
 	err = initialiseFeatures()
 	if err != nil {
-		panic(err)
+		return featureInitFailure(err)
 	}
 	defer func() {
 		err := persistFeaturesState()
@@ -635,17 +638,17 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 			// Don't be too strict: allow 1s discrepancy to account for
 			// possible timestamp rounding on upstream systems
 			if time.Time(artifact.Expires).Add(time.Second).Before(time.Time(task.Definition.Deadline)) {
-				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
+				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
 			}
 			// Don't be too strict: allow 1s discrepancy to account for
 			// possible timestamp rounding on upstream systems
 			if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires).Add(time.Second)) {
-				return MalformedPayloadError(fmt.Errorf("Malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
+				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
 			}
 		}
 	}
 	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
-		return MalformedPayloadError(fmt.Errorf("Task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
+		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
 	}
 	return nil
 }
@@ -699,7 +702,7 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 	// failed. The difference is whether or not the unexpected behavior
 	// happened before or after the execution of task specific Turing
 	// complete code.
-	return MalformedPayloadError(fmt.Errorf("Validation of payload failed for task %v", task.TaskID))
+	return MalformedPayloadError(fmt.Errorf("validation of payload failed for task %v", task.TaskID))
 }
 
 // validateGenericWorkerBinary runs `generic-worker --version` as the
@@ -829,7 +832,7 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	case task.result.Failed():
 		if task.IsIntermittentExitCode(int64(task.result.ExitCode())) {
 			return &CommandExecutionError{
-				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode()),
+				Cause:      fmt.Errorf("task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode()),
 				Reason:     intermittentTask,
 				TaskStatus: errored,
 			}
@@ -900,7 +903,7 @@ func (task *TaskRun) setMaxRunTimer() *time.Timer {
 		func() {
 			// ignore any error the Abort function returns - we are in the
 			// wrong go routine to properly handle it
-			err := task.StatusManager.Abort(Failure(fmt.Errorf("Task aborted - max run time exceeded")))
+			err := task.StatusManager.Abort(Failure(fmt.Errorf("task aborted - max run time exceeded")))
 			if err != nil {
 				task.Warnf("Error when aborting task: %v", err)
 			}

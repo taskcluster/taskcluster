@@ -40,7 +40,7 @@ func (r *Result) CrashCause() error {
 
 func (r *Result) FailureCause() error {
 	if r.Aborted {
-		return fmt.Errorf("Task was aborted")
+		return fmt.Errorf("task was aborted")
 	}
 	if r.ExitError != nil {
 		return r.ExitError

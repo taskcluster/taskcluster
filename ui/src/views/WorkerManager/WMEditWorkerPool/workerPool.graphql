@@ -17,4 +17,10 @@ query WorkerPool($workerPoolId: String!) {
         stoppedCapacity,
         pendingTasks
     }
+
+    WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
+        totals {
+            total
+        }
+    }
 }

@@ -108,7 +108,7 @@ To create a References instance, use one of the following methods:
 import References from 'taskcluster-lib-references';
 
 // Build from a built services format (which is always abstract)
-references = References.fromBuiltServices({directory: '/build/directory'});
+references = await References.fromBuiltServices({directory: '/build/directory'});
 
 // Build from a uri-structured format; omit rootUrl when on-disk data is abstract
 references = References.fromUriStructured({directory: '/app', rootUrl});
@@ -118,7 +118,7 @@ references = References.fromSerializable({serializable, rootUrl});
 
 // Build from "live" components of a Taskcluster service; pass the schemaset
 // and the service's reference documents.
-references = References.fromService({schemaset, references});
+references = await References.fromService({schemaset, references});
 ```
 
 To validate the references, call `references.validate()`.
@@ -190,7 +190,7 @@ import References from 'taskcluster-lib-references';
 suite('references_test.js', function() {
   test('references validate', async function() {
     const schemaset = await helper.load('schemaset');
-    const references = References.fromService({
+    const references = await References.fromService({
       schemaset,
       references: [
         builder.reference(),

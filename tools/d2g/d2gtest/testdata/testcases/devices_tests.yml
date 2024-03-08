@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm
+              podman run -t --rm --privileged
               --device=/dev/shm
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
@@ -30,6 +30,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: KVM
       description: >-
@@ -58,6 +59,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
         osGroups:
           - kvm
 
@@ -90,6 +92,7 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
 
     - name: Audio Loopback
       description: >-
@@ -120,4 +123,5 @@ testSuite:
         onExitStatus:
           retry:
             - 125
+            - 128
   taskDefTests: []

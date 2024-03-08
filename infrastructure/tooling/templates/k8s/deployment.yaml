@@ -18,7 +18,7 @@ spec:
       # allow server to terminate gracefully while still serving existing connections
       # new connections would be rejected as server will be closed
       # and under normal conditions pod will stop faster than this timeout
-      terminationGracePeriodSeconds: 45
+      terminationGracePeriodSeconds: 210
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
@@ -55,23 +55,29 @@ spec:
               port: 80
             timeoutSeconds: 5
             periodSeconds: 10
-            initialDelaySeconds: 3
-        # After 24 hours, we start randomly deciding to exit the container.
-        # Taskcluster services are created with the assumption that they will
-        # not run indefinitely.
+            initialDelaySeconds: 6
         livenessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-          initialDelaySeconds: 86400
-          periodSeconds: 60
-          failureThreshold: 1
+          $if: 'needsService'
+          then:
+            httpGet:
+              path: ${readinessPath}
+              port: 80
+            timeoutSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          else:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
+            initialDelaySeconds: 432000 # 5 days
+            periodSeconds: 60
+            failureThreshold: 1
         # allow graceful termination of existing connections and let them finish
         lifecycle:
           $if: 'needsService'
           then:
             preStop:
               exec:
-                command: ['/bin/sh', '-c', 'sleep 30']
+                command: ['/bin/sh', '-c', 'sleep 120']

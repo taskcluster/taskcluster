@@ -1,7 +1,6 @@
 import format from './format';
 
-export default wmStats => {
-  const link = '/worker-manager';
+export default (wmStats, link = '/worker-manager/errors') => {
   const { data, loading, error } = wmStats;
   const stats = data?.WorkerManagerErrorsStats?.totals;
   let last24hours = 0;

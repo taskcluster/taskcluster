@@ -12,15 +12,15 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
 // and denying a task user access to a file/folder (specified by taskPath).
 // filetype should be 'directory' or 'file'.
-func grantingDenying(t *testing.T, filetype string, taskPath ...string) (granting, denying []string) {
+func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...string) (granting, denying []string) {
 	t.Helper()
 	// We need to escape file path that is contained in final regexp, e.g. due
 	// to '\' path separator on Windows. However, the path also includes an
@@ -31,8 +31,13 @@ func grantingDenying(t *testing.T, filetype string, taskPath ...string) (grantin
 	// characters that need escaping, then to escape the full expression, and
 	// finally to replace the swapped in slug with the desired regexp that we
 	// couldn't include before escaping.
-	slug := slugid.V4()
-	pathRegExp := strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
+	var pathRegExp string
+	if cacheFile {
+		pathRegExp = ".*"
+	} else {
+		slug := slugid.V4()
+		pathRegExp = strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
+	}
 	return []string{
 			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
 		}, []string{

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gdm3"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gdm3"
 )
 
 const (
@@ -50,7 +50,7 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 		return nil
 	}
 	log.Print("Timed out waiting for user login")
-	return errors.New("No user logged in with console session")
+	return errors.New("no user logged in with console session")
 }
 
 func InteractiveUsername() (string, error) {
@@ -60,12 +60,12 @@ func InteractiveUsername() (string, error) {
 func SetAutoLogin(user *OSUser) error {
 	source, err := os.ReadFile(gdm3CustomConfFile)
 	if err != nil {
-		return fmt.Errorf("Could not read file %v to update auto login user: %v", gdm3CustomConfFile, err)
+		return fmt.Errorf("could not read file %v to update auto login user: %v", gdm3CustomConfFile, err)
 	}
 	updated := gdm3.SetAutoLogin(user.Name, source)
 	err = os.WriteFile(gdm3CustomConfFile, updated, 0644)
 	if err != nil {
-		return fmt.Errorf("Error overwriting file %v: %v", gdm3CustomConfFile, err)
+		return fmt.Errorf("error overwriting file %v: %v", gdm3CustomConfFile, err)
 	}
 	return nil
 }

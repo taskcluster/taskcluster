@@ -591,7 +591,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     await createWorkerPool();
 
-    await Promise.all(input.map(i => createWorker(i)));
+    await createWorker(input[0]);
+    await createWorker(input[1]);
 
     input = input.map(i => {
       i.created = i.created.toJSON();
@@ -638,7 +639,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       secret: null,
     }));
 
-    await Promise.all(input.map(i => createWorker(i)));
+    await createWorker(input[0]);
+    await createWorker(input[1]);
 
     input = input.map(i => {
       i.created = i.created.toJSON();
@@ -1087,6 +1089,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       'error-code': 1,
       'other': 1,
     });
+    assert.deepEqual(data.totals.workerPool, {
+      [workerPoolId1]: 1,
+      [workerPoolId2]: 1,
+    });
   });
 
   test('get worker pool error stats - single worker pools', async function () {
@@ -1145,6 +1151,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
     assert.deepEqual(data.totals.code, {
       'error-code': 1,
+    });
+    assert.deepEqual(data.totals.workerPool, {
+      [workerPoolId1]: 1,
     });
   });
 

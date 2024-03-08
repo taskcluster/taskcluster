@@ -16,8 +16,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -525,7 +525,7 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 		return queue.Artifact(taskId, runId, a.Artifact)
 
 	default:
-		return nil, fmt.Errorf("Unsupported artifact storage type %T", artifact)
+		return nil, fmt.Errorf("unsupported artifact storage type %T", artifact)
 	}
 
 	// convert that encoded JSON into an object of the correct type
@@ -697,7 +697,7 @@ func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name strin
 		return queue.DownloadArtifactToBuf(taskId, runId, linkContent.Artifact)
 
 	default:
-		err = fmt.Errorf("Unsupported artifact storageType '%s'", artifact.StorageType)
+		err = fmt.Errorf("unsupported artifact storageType '%s'", artifact.StorageType)
 		return
 	}
 }

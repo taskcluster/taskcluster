@@ -12,7 +12,7 @@ import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/orcaman/writerseeker"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/internal"
 )
 
 type HTTPRetryError = internal.HTTPRetryError
@@ -90,7 +90,7 @@ func (object *Object) getUrlDownload(rawResponse *DownloadObjectResponse, name s
 				return
 			}
 			if downloadResponse.Method != "getUrl" {
-				err = fmt.Errorf("Got unexpected download method %v", downloadResponse.Method)
+				err = fmt.Errorf("got unexpected download method %v", downloadResponse.Method)
 				return
 			}
 			responseUsed = false
@@ -102,7 +102,7 @@ func (object *Object) getUrlDownload(rawResponse *DownloadObjectResponse, name s
 		resp, tempError = http.Get(downloadResponse.URL)
 
 		// httpbackoff handles http status codes, so we can consider all errors worth retrying here
-		if tempError != nil || resp.StatusCode != 200 {
+		if tempError != nil || resp.StatusCode != http.StatusOK {
 			// temporary error!
 			return
 		}
@@ -180,7 +180,7 @@ func verifyHashes(hashingWriter *hashingWriteSeeker, expectedHashes map[string]s
 	for algo, oh := range observedHashes {
 		if eh, ok := expectedHashes[algo]; ok {
 			if oh != eh {
-				return fmt.Errorf("Validation of object data's %s hash failed", algo)
+				return fmt.Errorf("validation of object data's %s hash failed", algo)
 			}
 			for _, a := range ACCEPTABLE_HASHES {
 				if algo == a {
@@ -191,7 +191,7 @@ func verifyHashes(hashingWriter *hashingWriteSeeker, expectedHashes map[string]s
 	}
 
 	if !someValidAcceptableHash {
-		return errors.New("No acceptable hashes found in object metadata")
+		return errors.New("no acceptable hashes found in object metadata")
 	}
 
 	return nil
@@ -223,5 +223,5 @@ func (object *Object) DownloadToWriteSeeker(name string, writeSeeker io.WriteSee
 	case "getUrl":
 		return object.getUrlDownload(downloadObjectResponse, name, writeSeeker)
 	}
-	return "", 0, fmt.Errorf("Unknown download method %q for object %q", bareResp.Method, name)
+	return "", 0, fmt.Errorf("unknown download method %q for object %q", bareResp.Method, name)
 }

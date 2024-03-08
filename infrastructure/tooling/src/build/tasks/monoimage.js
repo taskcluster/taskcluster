@@ -12,9 +12,7 @@ import {
 } from '../../utils/index.js';
 
 import path from 'path';
-import util from 'util';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');

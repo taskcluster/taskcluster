@@ -393,7 +393,7 @@ func WTSQueryUserToken(
 func WTSGetActiveConsoleSessionId() (sessionId uint32, err error) {
 	r1, _, _ := procWTSGetActiveConsoleSessionId.Call()
 	if r1 == 0xFFFFFFFF {
-		err = os.NewSyscallError("WTSGetActiveConsoleSessionId", errors.New("There is no session attached to the physical console (return code 0xFFFFFFFF in WTSGetActiveConsoleSessionId)"))
+		err = os.NewSyscallError("WTSGetActiveConsoleSessionId", errors.New("there is no session attached to the physical console (return code 0xFFFFFFFF in WTSGetActiveConsoleSessionId)"))
 	} else {
 		sessionId = uint32(r1)
 	}
@@ -571,7 +571,7 @@ func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -612,7 +612,7 @@ func GetTokenSessionID(hToken syscall.Token) (uint32, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenSessionId, (*byte)(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -626,7 +626,7 @@ func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenUIAccess, (*byte)(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -768,7 +768,7 @@ func DumpTokenInfo(token syscall.Token) {
 		panic(err)
 	}
 	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount)
-	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
+	for i := range tokenGroups.GroupCount {
 		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
 		groupSid := groups[i].Sid.String()
 		account, domain, accType, err := groups[i].Sid.LookupAccount("")
@@ -843,7 +843,7 @@ func ArgvToCommandLineW(text string) string {
 		return text
 	}
 	escaped := `"`
-	for i := 0; i < len(text); i++ {
+	for i := range len(text) {
 		backslashes := 0
 		for ; i < len(text) && text[i] == '\\'; i++ {
 			backslashes++

@@ -247,4 +247,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
+  test('stopping + requested capacity exceeds pending', async function () {
+    const workerInfo = {
+      existingCapacity: 0,
+      requestedCapacity: 10,
+      stoppingCapacity: 10,
+    };
+    helper.queue.setPending('foo/bar', 20);
+    const estimate = await estimator.simple({
+      workerPoolId: 'foo/bar',
+      maxCapacity: 50,
+      minCapacity: 0,
+      scalingRatio: 1,
+      workerInfo,
+    });
+
+    assert.strictEqual(estimate, 10);
+    assert.strictEqual(monitor.manager.messages.length, 1);
+    assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
+  });
 });

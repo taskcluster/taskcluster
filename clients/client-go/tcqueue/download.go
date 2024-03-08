@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/orcaman/writerseeker"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/internal"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcobject"
 )
 
 type HTTPRetryError = internal.HTTPRetryError
@@ -113,7 +113,7 @@ func (queue *Queue) DownloadArtifactToWriteSeeker(taskID string, runID int64, na
 		return "", 0, fmt.Errorf("%s: %s", errContent.Message, errContent.Reason)
 
 	default:
-		err = fmt.Errorf("Unsupported artifact storageType '%s'", artifact.StorageType)
+		err = fmt.Errorf("unsupported artifact storageType '%s'", artifact.StorageType)
 		return
 	}
 }

@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v59/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v59/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v59/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v60/tools/workerproto/testing"
 )
 
 func TestHandleMessage(t *testing.T) {
@@ -49,7 +49,7 @@ func TestHandleMessage(t *testing.T) {
 	var reports []*tcworkermanager.WorkerErrorReport
 	var err error
 	func() {
-		for i := 0; i < 200; i++ {
+		for range 200 {
 			reports, err = tc.FakeWorkerManagerWorkerErrorReports()
 			if len(reports) == 1 {
 				return

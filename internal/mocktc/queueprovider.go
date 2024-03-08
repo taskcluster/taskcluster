@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v59/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/internal/mocktc/tc"
 )
 
 type QueueProvider struct {
@@ -79,7 +79,7 @@ func (qp *QueueProvider) GetLatestArtifact_SignedURL(w http.ResponseWriter, r *h
 		ReportError(w, err)
 		return
 	}
-	http.Redirect(w, r, location.String(), 302)
+	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
 func (qp *QueueProvider) ListArtifacts(w http.ResponseWriter, r *http.Request) {

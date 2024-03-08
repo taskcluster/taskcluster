@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v59/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v60/clients/client-shell/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -78,7 +78,7 @@ func formatJSON(value interface{}) []byte {
 
 func isString(value interface{}) error {
 	if _, ok := value.(string); !ok {
-		return errors.New("Must be a string")
+		return errors.New("must be a string")
 	}
 	return nil
 }

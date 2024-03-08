@@ -4,10 +4,17 @@ import slugid from 'slugid';
 import taskcluster from 'taskcluster-client';
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';
-import { tmpdir } from 'os';
-import { mkdtempSync, rmSync } from 'fs';
-import { sep } from 'path';
-import mockAwsS3 from 'mock-aws-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetBucketCorsCommand,
+  ListObjectsCommand,
+  PutBucketCorsCommand,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
+import { mockClient } from 'aws-sdk-client-mock';
 import nock from 'nock';
 import testing from 'taskcluster-lib-testing';
 import { globalAgent } from 'http';
@@ -47,115 +54,121 @@ helper.secrets = secrets;
 helper.rootUrl = 'http://localhost:60401';
 
 /**
- * Set up to use mock-aws-s3 for S3 operations when mocking.
+ * Set up to use aws-sdk-client-mock for S3 operations when mocking.
  */
 export const withS3 = (mock, skipping) => {
-  let tmpDir;
-
   suiteSetup('setup withS3', async function() {
     if (skipping()) {
       return;
     }
 
     if (mock) {
-      tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
-      mockAwsS3.config.basePath = tmpDir;
-
       await load('cfg');
       load.cfg('aws.accessKeyId', undefined);
       load.cfg('aws.secretAccessKey', undefined);
 
-      const mock = new mockAwsS3.S3({
-        params: {
-          Bucket: 'fake-public',
-        },
-      });
-      // emulate AWS's "promise" mode
-      const makeAwsFunc = fn => (...args) => ({
-        promise: () => fn.apply(mock, args),
-      });
+      let artifacts = [];
+      let corsRules = [];
+      const mock = mockClient(S3Client);
 
-      // mockAwsS3 does not cover CORS methods
-      let CORSRules = [];
-      mock.getBucketCors = makeAwsFunc(async () => ({
-        CORSRules,
-      }));
-      mock.putBucketCors = makeAwsFunc(async ({ CORSConfiguration }) => {
-        CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
-      });
+      mock
+        .on(PutObjectCommand)
+        .callsFake(async ({ Bucket, Key, Body }) => {
+          artifacts.push({ Bucket, Key, Body });
+          return {};
+        })
+        .on(ListObjectsCommand)
+        .callsFake(async ({ Bucket, Prefix }) => {
+          const Contents = artifacts.filter(a => a.Bucket === Bucket && a.Key.startsWith(Prefix));
+          return { Contents };
+        })
+        .on(DeleteObjectCommand)
+        .callsFake(async ({ Key }) => {
+          artifacts = artifacts.filter(a => a.Key !== Key);
+          return {};
+        })
+        .on(DeleteObjectsCommand)
+        .callsFake(async ({ Delete }) => {
+          for (let { Key } of Delete.Objects) {
+            artifacts = artifacts.filter(a => a.Key !== Key);
+          }
+          return {};
+        })
+        .on(GetBucketCorsCommand)
+        .resolves({ CORSRules: corsRules })
+        .on(PutBucketCorsCommand)
+        .callsFake(async ({ CORSConfiguration }) => {
+          corsRules = _.cloneDeep(CORSConfiguration.CORSRules);
+          return { CORSRules: corsRules };
+        });
 
       load.cfg('aws.mock', mock);
-    }
-  });
-
-  suiteTeardown('cleanup withS3', function() {
-    if (tmpDir) {
-      rmSync(tmpDir, { recursive: true });
     }
   });
 };
 helper.withS3 = withS3;
 
 /**
- * Set up to use mock-aws-s3 for S3-like operations on GCS
+ * Set up to use aws-sdk-client-mock for S3-like operations on GCS
  *
  * Discovered differencies os far:
  * - DeleteObject throws 404 (aws returns 204)
  * - DeleteObjects not supported
  */
 export const withGCS = (mock, skipping) => {
-  let tmpDir;
-
   suiteSetup('setup withGCS', async function() {
     if (skipping()) {
       return;
     }
 
     if (mock) {
-      tmpDir = mkdtempSync(`${tmpdir()}${sep}`);
-      mockAwsS3.config.basePath = tmpDir;
-
       await load('cfg');
       load.cfg('aws.accessKeyId', undefined);
       load.cfg('aws.secretAccessKey', undefined);
 
-      const mock = new mockAwsS3.S3({
-        params: {
-          Bucket: 'fake-public',
-        },
-      });
-      // emulate AWS's "promise" mode
-      const makeAwsFunc = fn => (...args) => ({
-        promise: () => fn.apply(mock, args),
-      });
+      let artifacts = [];
+      let corsRules = [];
+      const mock = mockClient(S3Client);
 
-      // mockAwsS3 does not cover CORS methods
-      let CORSRules = [];
-      mock.getBucketCors = makeAwsFunc(async () => ({
-        CORSRules,
-      }));
-      mock.putBucketCors = makeAwsFunc(async ({ CORSConfiguration }) => {
-        CORSRules = _.cloneDeep(CORSConfiguration.CORSRules);
-      });
-      mock.deleteObjects = makeAwsFunc(async () => {
-        throw new Error('InvalidArgument');
-      });
-      mock._origDeleteObject = mock.deleteObject;
-      mock.deleteObject = makeAwsFunc(async (...args) => {
-        // emulate GCS behaviour by throwing 404 if file is missing
-        // we call getObject first that is guaranteed to throw NoSuchKey
-        await mock.getObject.apply(mock, args).promise();
-        // and then do the actual delete
-        return await mock._origDeleteObject.apply(mock, args).promise();
-      });
+      mock
+        .on(PutObjectCommand)
+        .callsFake(async ({ Bucket, Key, Body }) => {
+          artifacts.push({ Bucket, Key, Body });
+          return {};
+        })
+        .on(ListObjectsCommand)
+        .callsFake(async ({ Bucket, Prefix }) => {
+          const Contents = artifacts.filter(a => a.Bucket === Bucket && a.Key.startsWith(Prefix));
+          return { Contents };
+        })
+        .on(GetObjectCommand)
+        .callsFake(async ({ Bucket, Key }) => {
+          const artifact = artifacts.find(a => a.Bucket === Bucket && a.Key === Key);
+          if (!artifact) {
+            throw new Error('NoSuchKey');
+          }
+          return { Body: artifact.Body };
+        })
+        .on(GetBucketCorsCommand)
+        .resolves({ CORSRules: corsRules })
+        .on(PutBucketCorsCommand)
+        .callsFake(async ({ CORSConfiguration }) => {
+          corsRules = _.cloneDeep(CORSConfiguration.CORSRules);
+          return { CORSRules: corsRules };
+        })
+        .on(DeleteObjectsCommand)
+        .rejects(new Error('InvalidArgument'))
+        .on(DeleteObjectCommand)
+        .callsFake(async ({ Key }) => {
+          const artifact = artifacts.find(a => a.Key === Key);
+          if (!artifact) {
+            throw new Error('NoSuchKey');
+          }
+          artifacts = artifacts.filter(a => a.Key !== Key);
+          return {};
+        });
 
       load.cfg('aws.mock', mock);
-    }
-  });
-
-  suiteTeardown('cleanup withGCS', function() {
-    if (tmpDir) {
-      rmSync(tmpDir, { recursive: true });
     }
   });
 };

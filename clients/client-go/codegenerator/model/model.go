@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v59/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -64,14 +64,14 @@ func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 	}
 
 	httpAPI := `<!--HTTP-API-start-->` +
-		amqpLinks +
+		httpLinks +
 		` <!--HTTP-API-end-->`
 
-	AmqpAPI := `<!--AMQP-API-start-->` +
-		httpLinks +
+	amqpAPI := `<!--AMQP-API-start-->` +
+		amqpLinks +
 		` <!--AMQP-API-end-->`
 
-	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
+	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(amqpAPI))
 	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
 	exitOnFail(os.WriteFile(path, formattedContent, 0644))
@@ -184,7 +184,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v59/"))
+	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v60/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
@@ -233,18 +233,31 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 		FormatSourceAndSave(typesSourceFile, result.SourceCode)
 
 		fmt.Printf("Generating functions and methods for %s\n", job.Package)
-		content := `
-// The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that ` + "`${GOPATH}/bin` is in your `PATH`" + `:
-//
-// go install && go generate
+		content := strings.Join(
+			[]string{
+				"// The following code is AUTO-GENERATED. Please DO NOT edit.",
+				"// To update this generated code, run `go generate` in the",
+				"// clients/client-go/codegenerator/model subdirectory of the",
+				"// taskcluster git repository.",
+				"",
+				"// This package was generated from the reference schema of",
+				"// the " + apiDefs[i].Data.Name() + " service, which is also published here:",
+				"//",
+				"//   * ${TASKCLUSTER_ROOT_URL}" + apiDefs[i].URL,
+				"//",
+				"// where ${TASKCLUSTER_ROOT_URL} points to the root URL of",
+				"// your taskcluster deployment.",
+				// This following blank line is intentional, so that the above
+				// comments are not included in the generated go docs. They are
+				// useful in the file so a developer can see not to modify the
+				// content, but consumers of the API are not concerned with the
+				// above information.
+				"",
+				apiDefs[i].generateAPICode(),
+			},
+			"\n",
+		)
 
-// This package was generated from the schema defined at
-// ` + apiDefs[i].URL + `
-`
-		content += apiDefs[i].generateAPICode()
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
 		FormatSourceAndSave(sourceFile, []byte(content))
 
@@ -255,10 +268,10 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v59/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v59/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/" + apiDefs[i].PackageName + "\n"
 
 		}
 	}

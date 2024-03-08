@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
@@ -85,5 +85,5 @@ func waitForPortToBeActive(port uint16) error {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
-	return fmt.Errorf("Timeout waiting for taskcluster-proxy port %v to be active", port)
+	return fmt.Errorf("timeout waiting for taskcluster-proxy port %v to be active", port)
 }

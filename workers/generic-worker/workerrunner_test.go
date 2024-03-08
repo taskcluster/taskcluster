@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v59/tools/workerproto"
-	wptesting "github.com/taskcluster/taskcluster/v59/tools/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	wptesting "github.com/taskcluster/taskcluster/v60/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
 )
 
 func setupWorkerRunnerTest(t *testing.T, runnerCapabilities ...string) *workerproto.Protocol {
@@ -87,7 +87,7 @@ func TestNewCredentials(t *testing.T) {
 			// messages are handled asynchronously, so poll until
 			// seeing the updated creds
 
-			for i := 0; i < 200; i++ {
+			for range 200 {
 				creds := config.Credentials()
 				if creds.ClientID != "old" {
 					require.Equal(t, clientID, creds.ClientID)

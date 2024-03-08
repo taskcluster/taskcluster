@@ -593,5 +593,6 @@ CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING 
 CREATE INDEX tasks_task_group_id_idx ON tasks USING btree (task_group_id);
 CREATE INDEX tasks_task_group_id_unresolved_idx ON tasks USING btree (task_group_id) WHERE (NOT ever_resolved);
 CREATE INDEX worker_pool_errors_reported_idx ON worker_pool_errors USING btree (reported);
+CREATE INDEX workers_created_idx ON workers USING btree (created);
 CREATE INDEX workers_state_idx ON workers USING btree (state);
 ```

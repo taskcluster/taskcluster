@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/internal/scopes"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/interactive"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/internal/scopes"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/interactive"
 )
 
 type InteractiveFeature struct {
@@ -64,9 +64,9 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
 	if !config.EnableInteractive {
-		workerPoolID := config.WorkerGroup + "/" + config.WorkerType
+		workerPoolID := config.ProvisionerID + "/" + config.WorkerType
 		workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
-		return MalformedPayloadError(fmt.Errorf(`This task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
+		return MalformedPayloadError(fmt.Errorf(`this task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
 If you do not require an interactive task, remove payload.features.interactive from the task definition.
 If you do require an interactive task, please do one of two things:
 	1. Contact the owner of the worker pool %s (see %s) and ask for interactive tasks to be enabled.
@@ -175,14 +175,13 @@ func (it *InteractiveTask) uploadInteractiveArtifact() error {
 			},
 			ContentType: "text/html; charset=utf-8",
 			URL:         url,
+			HideURL:     true,
 		},
 	)
 
 	if uploadErr != nil {
 		return uploadErr
 	}
-
-	it.task.Infof("[interactive] session available at %s", url)
 
 	return nil
 }

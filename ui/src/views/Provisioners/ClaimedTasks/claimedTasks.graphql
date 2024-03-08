@@ -1,0 +1,33 @@
+query WorkerPoolClaimedTasks($taskQueueId: String!, $connection: PageConnection) {
+  listClaimedTasks(taskQueueId: $taskQueueId, connection: $connection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        taskId
+        runId
+        workerGroup
+        workerId
+        task {
+          taskId
+          taskGroupId
+          requires
+          dependencies
+          priority
+          created
+          deadline
+          metadata {
+            name
+            owner
+          }
+        }
+        claimed
+      }
+    }
+  }
+}

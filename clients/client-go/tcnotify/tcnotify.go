@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/notify/v1/api.json
+// This package was generated from the reference schema of
+// the Notify service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/notify/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The notification service listens for tasks with associated notifications
 // and handles requests to send emails and post pulse messages.
 //
@@ -38,7 +42,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
 )
 
 type Notify tcclient.Client
@@ -128,6 +132,9 @@ func (notify *Notify) Version() error {
 // email. If a link is included, it will be rendered to a nice button in the
 // HTML version of the email
 //
+// In case when duplicate message has been detected and no email was sent,
+// this endpoint will return 204 status code.
+//
 // Required scopes:
 //
 //	notify:email:<address>
@@ -142,6 +149,8 @@ func (notify *Notify) Email(payload *SendEmailRequest) error {
 // Stability: *** EXPERIMENTAL ***
 //
 // Publish a message on pulse with the given `routingKey`.
+//
+// # Endpoint will return 204 when duplicate message has been detected
 //
 // Required scopes:
 //
@@ -164,6 +173,9 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 // Note that the matrix client used by taskcluster must be invited to a room before
 // it can post there!
 //
+// In case when duplicate message has been detected and no message was sent,
+// this endpoint will return 204 status code.
+//
 // Required scopes:
 //
 //	notify:matrix-room:<roomId>
@@ -183,6 +195,9 @@ func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
 //
 // The Slack app can post into public channels by default but will need to be added
 // to private channels before it can post messages there.
+//
+// In case when duplicate message has been detected and no message was sent,
+// this endpoint will return 204 status code.
 //
 // Required scopes:
 //

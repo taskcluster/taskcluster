@@ -3,6 +3,350 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v60.4.2
+
+### USERS
+
+▶ [patch]
+Fixes graphql validation rules for hooks groups query.
+
+▶ [patch] [#6864](https://github.com/taskcluster/taskcluster/issues/6864)
+D2G now passes `--privileged` flag to the generated `podman run` command when
+Docker Worker payload enables device capability `hostSharedMemory`.  Without
+this option, the podman container could not successfully access the shared
+memory, despite the inclusion of argument `--device=/dev/shm`. With both
+arguments present (`--privileged` and `--device=/dev/shm`), shared memory now
+appears to be available inside the podman container.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump mitt from 2.1.0 to 3.0.1 in /ui (280678fc9)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client-web (be7836a3c)
+* build(deps): bump markdown-it-link-attributes from 3.0.0 to 4.0.1 in /ui (008b3fe0a)
+
+</details>
+
+## v60.4.1
+
+### USERS
+
+▶ [patch]
+Fix docker worker interactive shell UI rows/cols settings.
+
+▶ [patch] [#6836](https://github.com/taskcluster/taskcluster/issues/6836)
+Upgrades graphql server and client libraries to graphql 16.8
+
+▶ [patch] [#6836](https://github.com/taskcluster/taskcluster/issues/6836)
+Upgrades graphql to 16.8.1 in ui
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump es5-ext from 0.10.62 to 0.10.64 (485a491c2)
+
+</details>
+
+## v60.4.0
+
+### USERS
+
+▶ [minor] [#6845](https://github.com/taskcluster/taskcluster/issues/6845)
+D2G now provides support for the (discontinued) disableSeccomp capability which was removed from Docker Worker, but was still used by the bugmon fuzzing project in the Community taskcluster environment. This was added to ease the migration path of this project from Docker Worker to Generic Worker.
+
+▶ [patch] [#6848](https://github.com/taskcluster/taskcluster/issues/6848)
+Fix an issue where an interactive session would close up when the shell would output invalid UTF-8.
+
+▶ [patch] [#6850](https://github.com/taskcluster/taskcluster/issues/6850)
+Add a proper TERM environment variable to interative sessions. This helps with some ncurses apps and tmux for example.
+
+### OTHER
+
+▶ Additional change not described here: [#6852](https://github.com/taskcluster/taskcluster/issues/6852).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump ip from 2.0.0 to 2.0.1 (34cb19df2)
+* build(deps): bump ip from 1.1.5 to 1.1.9 in /ui (98d1c2c37)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client-test (360fdb2af)
+* build(deps): bump ip from 2.0.0 to 2.0.1 in /clients/client (19094b0d6)
+
+</details>
+
+## v60.3.5
+
+### GENERAL
+
+▶ [patch]
+Switched to use `math/rand/v2` ([new in go1.22](https://tip.golang.org/doc/go1.22#math_rand_v2)), removed [deprecated](https://pkg.go.dev/golang.org/x/sys@v0.16.0/windows#OpenCurrentProcessToken) call to `windows.OpenCurrentProcessToken()`, fixed `staticcheck` errors, and added a `staticcheck` GitHub actions workflow for our repo.
+
+▶ [patch]
+Upgrades to node v18.19.1, which is a [security release](https://nodejs.org/en/blog/vulnerability/february-2024-security-releases/).
+
+### DEPLOYERS
+
+▶ [patch]
+Kubernetes lifecycle timeouts correctly set to avoid having 502s.
+
+### USERS
+
+▶ [patch] [#6795](https://github.com/taskcluster/taskcluster/issues/6795)
+Fixes "Raw Log" button in UI that can point to an expired artifact.
+
+## v60.3.4
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.22.0
+
+### USERS
+
+▶ [patch] [#6820](https://github.com/taskcluster/taskcluster/issues/6820)
+Fixes scope view in the UI. Search by scope shows roles and clients that use given scope.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump the deps group with 1 update (ecf946205)
+
+</details>
+
+## v60.3.3
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades to yarn v4.1.0
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps-dev): bump the deps group in /ui with 3 updates (319f484a6)
+* build(deps): bump taskcluster from 59.2.0 to 60.3.2 in /taskcluster (cde9bb384)
+* build(deps): bump the deps group in /taskcluster with 1 update (35e1bf6fb)
+* build(deps): bump the deps group with 4 updates (87b4265a4)
+* build(deps-dev): bump the deps group in /clients/client with 1 update (8944d3619)
+
+</details>
+
+## v60.3.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Worker Runner now checks for termination notice when starting the Google provider.
+
+When Worker Runner runs, the instance may already be scheduled to be shutdown. So on Google provider startup, we now check for this case.
+
+This functionality mimics what's already in place for AWS.
+
+This change also decreases the time Worker Runner checks to see if the instance is scheduled to be shutdown from 30 seconds to 15 seconds on the Google and Azure providers, as they each have a 30 second notice before a hard-shutdown Google: https://cloud.google.com/compute/docs/instances/spot#preemption-process Azure: https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms.
+
+### USERS
+
+▶ [patch] [#6801](https://github.com/taskcluster/taskcluster/issues/6801)
+Fixes a bug in notify service where multiple messages to the same channel were not sent.
+Adds `204` status code to the email, matrix, pulse, slack endoints when message was detected to be duplicate and was not sent.
+
+▶ [patch] [#6793](https://github.com/taskcluster/taskcluster/issues/6793)
+D2G will now ensure that tasks whose max run time is exceeded still have the chance to publish artifacts.
+This means that Docker Worker tasks definitions that are run under Generic Worker and are aborted due to
+hitting the max run time should still publish the artifacts from the aborted docker container they ran in.
+
+▶ [patch] [#6798](https://github.com/taskcluster/taskcluster/issues/6798)
+Generic Worker now includes the original Docker Worker task definition in the chain of trust certificate, if the task payload is a Docker Worker task payload. Previously, it was including the internal Generic Worker representation of the task definition.
+
+▶ [patch]
+The Task Creator now defaults to a task that only takes 1 minute to run instead of 10 mins, to redue resource consumption. Tutorials updated to reflect change.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump aiohttp from 3.9.0 to 3.9.2 in /taskcluster (c7f9d9250)
+
+</details>
+
+## v60.3.1
+
+### USERS
+
+▶ [patch] [#6789](https://github.com/taskcluster/taskcluster/issues/6789)
+Generic Worker no longer modifies task scopes passed to Taskcluster Proxy.
+Previously there was a bug where Taskcluster Proxy would be passed the
+d2g-modified scopes by Generic Worker rather than the original task scopes from
+the task definition of the `queue.claimWork` response body. If the task was not
+also explicitly assigned the required generic-worker scopes, this would result
+in HTTP 401 errors from Taskcluster Proxy calls.
+
+This has now been fixed, so that it is sufficient for tasks with a Docker
+Worker payload to contain only Docker Worker scopes, not have the associated
+generic-worker scopes, yet still work under Generic Worker and use the
+Taskcluster Proxy feature without causing HTTP 401 errors.
+
+## v60.3.0
+
+### GENERAL
+
+▶ [patch]
+Generic Worker now copies archives to the task user's directory before unarchiving.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#6785](https://github.com/taskcluster/taskcluster/issues/6785)
+Generic Worker now exits with exit code 82 if the chain of trust key is missing.
+
+## v60.2.0
+
+### GENERAL
+
+▶ [patch]
+Go upgrade to 1.21.6.
+
+>go1.21.6 (released 2024-01-09) includes fixes to the compiler, the runtime, and the crypto/tls, maps, and runtime/pprof packages. See the [Go 1.21.6 milestone](https://github.com/golang/go/issues?q=milestone%3AGo1.21.6+label%3ACherryPickApproved) on our issue tracker for details.
+
+### WORKER-DEPLOYERS
+
+▶ [minor]
+Generic Worker: adds `unarchive` subcommand to the `generic-worker` binary.
+
+### USERS
+
+▶ [minor] [#6720](https://github.com/taskcluster/taskcluster/issues/6720)
+The taskcluster UI now shows errors when an action's input does not match the `action.schema`
+
+## v60.1.3
+
+### GENERAL
+
+▶ [patch] [#6235](https://github.com/taskcluster/taskcluster/issues/6235)
+Migrates to aws sdk v3.
+
+## v60.1.2
+
+### USERS
+
+▶ [patch] [#6563](https://github.com/taskcluster/taskcluster/issues/6563)
+Ensure livelog and interactive tasks tunnels work after a websocktunnel restart.
+
+## v60.1.1
+
+### USERS
+
+▶ [patch] [#6775](https://github.com/taskcluster/taskcluster/issues/6775)
+Fixed error messages not being displayed on Pending/Claimed tasks pages in case scopes were missing.
+
+## v60.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6779](https://github.com/taskcluster/taskcluster/issues/6779)
+Interactive feature data race fixed, whereby an error could cause a concurrent read and write of process state in different go routines.
+
+### USERS
+
+▶ [minor] [bug 1874568](http://bugzil.la/1874568)
+Fixes token expiry issue for Auth0 login strategy that was not refetched.
+
+▶ [patch] [#6495](https://github.com/taskcluster/taskcluster/issues/6495)
+Improve changelog rendering in UI
+
+### DEVELOPERS
+
+▶ [patch]
+Added helper script to make it easier to run websocktunnel locally.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump jinja2 from 3.1.2 to 3.1.3 in /taskcluster (c97cf83aa)
+
+</details>
+
+## v60.0.1
+
+### GENERAL
+
+▶ [patch] [#6762](https://github.com/taskcluster/taskcluster/issues/6762)
+Generic Worker: Tasks internally translated by D2G will add exit code 128 to the retry exit status array for retrying on an intermittent docker image pull issue.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump follow-redirects from 1.14.8 to 1.15.4 in /ui (d0f85465b)
+* build(deps): bump follow-redirects in /clients/client (fdf26413e)
+* build(deps): bump follow-redirects from 1.15.3 to 1.15.4 (77c73c527)
+* build(deps): bump follow-redirects in /clients/client-test (1465e064d)
+* build(deps): bump follow-redirects in /clients/client-web (924ecbb91)
+
+</details>
+
+## v60.0.0
+
+### GENERAL
+
+▶ [patch]
+Generic Worker: No longer logs out the redirect URL for the interactive shell feature since they are signed.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#6759](https://github.com/taskcluster/taskcluster/issues/6759)
+Kubernetes pods use liveness probe instead of unconditionally killing containers daily.
+
+▶ [patch] [#6641](https://github.com/taskcluster/taskcluster/issues/6641)
+Worker-manager no longer counts "stopping" instances as part of the existing capacity when estimating the number of workers to start (although they are still counted towards maxCapacity).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump markdown-table from 2.0.0 to 3.0.3 (979bdebbe)
+* build(deps): bump the deps group in /ui with 5 updates (d1b5aedaf)
+* build(deps): bump taskcluster from 58.0.2 to 59.2.0 in /taskcluster (dcb3409ae)
+* build(deps): bump the deps group with 7 updates (3381ad533)
+* build(deps): bump the deps group with 1 update (497c11ff6)
+* build(deps): bump the deps group in /taskcluster with 1 update (156da5e47)
+* build(deps): bump github/codeql-action from 2 to 3 (1d9788a67)
+
+</details>
+
+## v59.2.0
+
+### USERS
+
+▶ [minor] [#6671](https://github.com/taskcluster/taskcluster/issues/6671)
+Several UI changes:
+- pending and claimed tasks can be seen in UI
+- worker manager errors center and overview
+- navigation improvements
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump golang.org/x/crypto from 0.16.0 to 0.17.0 (fac49b217)
+
+</details>
+
 ## v59.1.3
 
 No changes

@@ -21,9 +21,9 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -200,7 +200,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Log(resp)
 		t.Fatalf("bad status code on get request")
 	}
@@ -217,7 +217,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("bad status code on post request")
 	}
 	reply, err = io.ReadAll(resp.Body)
@@ -233,7 +233,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 504 {
+	if resp.StatusCode != http.StatusGatewayTimeout {
 		t.Fatalf("request should fail with 504")
 	}
 }
@@ -294,7 +294,7 @@ func TestProxyURIRewrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatal("bad status code")
 	}
 }
@@ -369,7 +369,7 @@ func TestProxyWebsocket(t *testing.T) {
 
 	// Generate 1M message
 	message := make([]byte, 0)
-	for i := 0; i < 1024*1024; i++ {
+	for i := range 1024 * 1024 {
 		message = append(message, byte(i%127))
 	}
 
@@ -752,7 +752,7 @@ func TestConcurrentConnections(t *testing.T) {
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
 	wg.Add(200)
-	for i := 0; i < 200; i++ {
+	for range 200 {
 		go func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
 			if err != nil {

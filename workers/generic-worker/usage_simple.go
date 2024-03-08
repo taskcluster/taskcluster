@@ -9,3 +9,7 @@ func runTasksAsCurrentUserUsage() string {
 func exitCode77() string {
 	return ""
 }
+
+func exitCode82() string {
+	return ""
+}

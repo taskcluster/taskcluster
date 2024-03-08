@@ -54,6 +54,8 @@ export default class Notify extends Client {
   // to HTML, but both the HTML and raw markdown text will be sent in the
   // email. If a link is included, it will be rendered to a nice button in the
   // HTML version of the email
+  // In case when duplicate message has been detected and no email was sent,
+  // this endpoint will return 204 status code.
   /* eslint-enable max-len */
   email(...args) {
     this.validate(this.email.entry, args);
@@ -62,6 +64,7 @@ export default class Notify extends Client {
   }
   /* eslint-disable max-len */
   // Publish a message on pulse with the given `routingKey`.
+  // Endpoint will return 204 when duplicate message has been detected
   /* eslint-enable max-len */
   pulse(...args) {
     this.validate(this.pulse.entry, args);
@@ -74,6 +77,8 @@ export default class Notify extends Client {
   // as `!foo:bar.com`.
   // Note that the matrix client used by taskcluster must be invited to a room before
   // it can post there!
+  // In case when duplicate message has been detected and no message was sent,
+  // this endpoint will return 204 status code.
   /* eslint-enable max-len */
   matrix(...args) {
     this.validate(this.matrix.entry, args);
@@ -85,6 +90,8 @@ export default class Notify extends Client {
   // The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
   // The Slack app can post into public channels by default but will need to be added
   // to private channels before it can post messages there.
+  // In case when duplicate message has been detected and no message was sent,
+  // this endpoint will return 204 status code.
   /* eslint-enable max-len */
   slack(...args) {
     this.validate(this.slack.entry, args);

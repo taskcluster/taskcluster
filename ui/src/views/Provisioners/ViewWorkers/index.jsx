@@ -7,6 +7,9 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import HammerIcon from 'mdi-react/HammerIcon';
+import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
+import HourglassIcon from 'mdi-react/HourglassIcon';
+import { Box, Chip } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import SpeedDial from '../../../components/SpeedDial';
@@ -56,6 +59,7 @@ const STATES = {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
+    gap: theme.spacing(2),
   },
   breadcrumbsPaper: {
     marginRight: theme.spacing(4),
@@ -63,6 +67,7 @@ const STATES = {
   },
   dropdown: {
     minWidth: 200,
+    marginTop: 0,
   },
   link: {
     ...theme.mixins.link,
@@ -248,22 +253,43 @@ export default class ViewWorkers extends Component {
                 {`${params.workerType}`}
               </Typography>
             </Breadcrumbs>
-            <TextField
-              disabled={loading}
-              className={classes.dropdown}
-              select
-              label="Filter By"
-              value={query.filterBy || ''}
-              onChange={this.handleFilterChange}>
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              <MenuItem value="quarantined">Quarantined</MenuItem>
-              <MenuItem value="requested">Requested</MenuItem>
-              <MenuItem value="running">Running</MenuItem>
-              <MenuItem value="stopping">Stopping</MenuItem>
-              <MenuItem value="stopped">Stopped</MenuItem>
-            </TextField>
+
+            <Chip
+              size="medium"
+              icon={<HourglassIcon />}
+              label="View Pending Tasks"
+              component={Link}
+              clickable
+              to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}/pending-tasks`}
+            />
+
+            <Chip
+              size="medium"
+              icon={<ProgressClockIcon />}
+              label="View Claimed Tasks"
+              component={Link}
+              clickable
+              to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}/claimed-tasks`}
+            />
+
+            <Box marginTop={-2}>
+              <TextField
+                disabled={loading}
+                className={classes.dropdown}
+                select
+                label="Filter By"
+                value={query.filterBy || ''}
+                onChange={this.handleFilterChange}>
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="quarantined">Quarantined</MenuItem>
+                <MenuItem value="requested">Requested</MenuItem>
+                <MenuItem value="running">Running</MenuItem>
+                <MenuItem value="stopping">Stopping</MenuItem>
+                <MenuItem value="stopped">Stopped</MenuItem>
+              </TextField>
+            </Box>
           </div>
           <br />
           <WorkersTable

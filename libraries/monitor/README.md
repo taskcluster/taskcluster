@@ -280,20 +280,6 @@ const consumer = libPulse.consume({..},
 
 Specifically, `timedHandler` takes a function and wraps it with timing logic, returning a function with the same signature.
 
-### Timing AWS SDK Calls
-
-Oftentimes a lot of a service's time will be spent interacting with AWS services. These interactions can be measured
-as in the following example:
-
-```js
-import aws from 'aws-sdk';
-const ec2 = new aws.EC2({region: 'us-west-2'});
-monitor.patchAWS(ec2);
-await ec2.describeAvailabilityZones().promise().catch(err => {
-  debug('Ignored ec2 error, we measure duration, not success, err: ', err);
-});
-```
-
 ### Timing Arbitary Steps
 
 If none of the above options are convenient for you, you can also just start and stop timers whenever you want.

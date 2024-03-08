@@ -16,9 +16,9 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/artifacts"
 )
 
 var (
@@ -304,7 +304,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 				// was artifact already uploaded ( => malformed payload)?
 				if rootCause.HttpResponseCode == 409 {
 					fullError := fmt.Errorf(
-						"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
+						"there was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
 							"Check the artifacts section of the task payload at %v\n"+
 							"%v",
 						artifact.Base().Name,
@@ -361,12 +361,12 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 func copyToTempFileAsTaskUser(filePath string) (tempFilePath string, err error) {
 	cmd, err := gwCopyToTempFile(filePath)
 	if err != nil {
-		return "", fmt.Errorf("Failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
+		return "", fmt.Errorf("failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
 	}
 
 	output, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("Failed to copy file %s to temporary location as task user: %v", filePath, err)
+		return "", fmt.Errorf("failed to copy file %s to temporary location as task user: %v", filePath, err)
 	}
 
 	tempFilePath = strings.TrimSpace(string(output))

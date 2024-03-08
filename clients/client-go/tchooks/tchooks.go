@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/hooks/v1/api.json
+// This package was generated from the reference schema of
+// the Hooks service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/hooks/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The hooks service provides a mechanism for creating tasks in response to events.
 //
 // See:
@@ -37,7 +41,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
 )
 
 type Hooks tcclient.Client

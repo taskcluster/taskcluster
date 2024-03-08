@@ -59,6 +59,12 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
       background: theme.palette.secondary.main,
       fontWeight: 'bold',
     },
+    '& summary': {
+      cursor: 'pointer',
+    },
+    '& summary::marker': {
+      color: theme.palette.secondary.main,
+    },
   },
   cbx: {
     marginTop: theme.spacing(2),
@@ -243,16 +249,18 @@ export default class Changelog extends Component {
                 onClick={() => onToggleFilter('version', section.version)}>
                 {section.version}
               </span>
-              <Chip
-                className={classes.chip}
-                size="small"
-                color="primary"
-                label={section.audience}
-                clickable
-                onClick={() => onToggleFilter('audience', section.audience)}
-              />
+              {section.audience && (
+                <Chip
+                  className={classes.chip}
+                  size="small"
+                  color="primary"
+                  label={section.audience}
+                  clickable
+                  onClick={() => onToggleFilter('audience', section.audience)}
+                />
+              )}
             </h1>
-            <Markdown className={classes.md}>
+            <Markdown allowHtml className={classes.md}>
               {maybeHighlight(section.html, this.state.q)}
             </Markdown>
           </Grid>

@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
 )
 
 func TestManyStreamEchoLarge(t *testing.T) {
@@ -27,7 +27,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	session := Client(conn, Config{Log: genLogger()})
 
 	buf := make([]byte, 0)
-	for i := 0; i < 1500; i++ {
+	for i := range 1500 {
 		buf = append(buf, byte(i%127))
 	}
 
@@ -66,7 +66,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 		}
 	}
 
-	for i := 0; i < maxTestStreams; i++ {
+	for i := range maxTestStreams {
 		wg.Add(1)
 		go sender(i)
 	}
@@ -269,7 +269,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 	}
 
 	buf := make([]byte, 0)
-	for i := 0; i < 1500; i++ {
+	for i := range 1500 {
 		buf = append(buf, byte(i%127))
 	}
 

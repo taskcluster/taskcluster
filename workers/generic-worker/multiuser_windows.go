@@ -13,11 +13,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
-	gwruntime "github.com/taskcluster/taskcluster/v59/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v60/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -124,7 +123,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	} else {
 		envFile, err := os.Open(env)
 		if err != nil {
-			panic(fmt.Errorf("Could not read from env file %v\n%v", env, err))
+			panic(fmt.Errorf("could not read from env file %v\n%v", env, err))
 		}
 		defer envFile.Close()
 		scanner := bufio.NewScanner(envFile)
@@ -140,7 +139,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		dirString := strings.SplitN(strings.Replace(string(dirBytes), "\r\n", "\n", -1), "\n", 2)[0]
 
 		if err != nil {
-			panic(fmt.Errorf("Could not read directory location from file %v\n%v", dir, err))
+			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
 		}
 
 		contents += "cd \"" + dirString + "\"\r\n"
@@ -393,7 +392,7 @@ func CreateRunGenericWorkerBatScript(batScriptFilePath string, extraOpts string)
 	}, "\r\n"))
 	err := os.WriteFile(batScriptFilePath, batScriptContents, 0755) // note 0755 is mostly ignored on windows
 	if err != nil {
-		return fmt.Errorf("Was not able to create file %q due to %s", batScriptFilePath, err)
+		return fmt.Errorf("was not able to create file %q due to %s", batScriptFilePath, err)
 	}
 	return nil
 }
@@ -518,7 +517,7 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 	return
 }
 
-func PreRebootSetup(nextTaskUser *runtime.OSUser) {
+func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	// set APPDATA
 	var loginInfo *process.LoginInfo
 	var err error

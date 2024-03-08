@@ -1,6 +1,6 @@
 import path from 'path';
 import cronstrue from 'cronstrue';
-import table from 'markdown-table';
+import { markdownTable } from 'markdown-table';
 import { listServices, modifyRepoFile } from '../../utils/index.js';
 
 const SERVICES = listServices();
@@ -44,6 +44,6 @@ tasks.push({
     await modifyRepoFile(docFile,
       content => content.replace(
         /(-- BEGIN MONITORING TABLE -->)(?:.|\n)*(<!-- END MONITORING TABLE --)/m,
-        `$1\n${table(res)}\n$2`));
+        `$1\n${markdownTable(res)}\n$2`));
   },
 });

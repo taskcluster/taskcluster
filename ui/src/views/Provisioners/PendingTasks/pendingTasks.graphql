@@ -1,0 +1,31 @@
+query WorkerPoolPendingTasks($taskQueueId: String!, $connection: PageConnection) {
+  listPendingTasks(taskQueueId: $taskQueueId, connection: $connection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        taskId
+        runId
+        task {
+          taskId
+          taskGroupId
+          requires
+          dependencies
+          priority
+          created
+          deadline
+          metadata {
+            name
+            owner
+          }
+        }
+        inserted
+      }
+    }
+  }
+}

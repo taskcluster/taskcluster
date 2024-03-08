@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/process"
 )
 
 const (
@@ -37,10 +37,13 @@ func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd,
 	var processCmd *process.Command
 	var err error
 
+	var envVars = task.EnvVars()
+	envVars = append(envVars, "TERM=hterm-256color")
+
 	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, task.EnvVars())
+		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, task.EnvVars())
+		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars)
 	}
 
 	return processCmd.Cmd, err
@@ -158,7 +161,7 @@ func (task *TaskRun) EnvVars() []string {
 		if !strings.HasPrefix(j, "TASKCLUSTER_ACCESS_TOKEN=") {
 			spl := strings.SplitN(j, "=", 2)
 			if len(spl) != 2 {
-				panic(fmt.Errorf("Could not interpret string %q as `key=value`", j))
+				panic(fmt.Errorf("could not interpret string %q as `key=value`", j))
 			}
 			taskEnv[spl[0]] = spl[1]
 		}
@@ -179,4 +182,8 @@ func (task *TaskRun) EnvVars() []string {
 	}
 	log.Printf("Environment: %#v", taskEnvArray)
 	return taskEnvArray
+}
+
+func featureInitFailure(err error) ExitCode {
+	panic(err)
 }

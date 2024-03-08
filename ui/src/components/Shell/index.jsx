@@ -5,7 +5,7 @@ import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
-const DECODER = new TextDecoder('utf-8');
+const DECODER = new TextDecoder('utf-8', { fatal: false });
 const defaultCommand = [
   'sh',
   '-c',
@@ -92,10 +92,12 @@ export default class Shell extends Component {
           });
 
           this.client.resize(
-            terminal.screenSize.width,
-            terminal.screenSize.height
+            terminal.screenSize.height,
+            terminal.screenSize.width
           );
-          io.onTerminalResize = (c, r) => this.client.resize(c, r);
+          // onTerminalResize provides width then height;
+          // DockerExecClient.resize needs height then width
+          io.onTerminalResize = (cols, rows) => this.client.resize(rows, cols);
           this.client.stdout.on('data', data =>
             io.writeUTF8(DECODER.decode(data))
           );
@@ -131,7 +133,15 @@ export default class Shell extends Component {
           };
 
           this.wsClient.onmessage = ({ data }) => {
-            io.writeUTF16(data);
+            if (typeof data === 'string') {
+              // Generic-worker 60.3.5 and previous were sending text on the
+              // websocket, this ended up being an issue for invalid UTF-8.
+              // We switched to binary after, but we keep this here for
+              // backwards compatibility
+              io.writeUTF16(data);
+            } else {
+              io.writeUTF8(DECODER.decode(data));
+            }
           };
 
           this.wsClient.onopen = () => {

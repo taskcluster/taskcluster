@@ -13,7 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
 )
 
 func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {
@@ -114,13 +114,16 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
 
-	// Note, sometimes 11 requests occur, presumably because the attempts occur
-	// when clock is 0ms, 200ms, 400ms, 600ms, 800ms, 1000ms, 1200ms, 1400ms,
-	// 1600ms, 1800ms, 2000ms, or there is a timeout go routine that isn't
-	// guaranteed to be immediately scheduled after 2 seconds. We may even
-	// want to bump the limit to 12, no need to be super strict here. Let's see
-	// how it is with 11 for now.
-	if count > 11 || count < 4 {
+	// Under load we have seen as many as 13 attempts before the timeout has
+	// taken effect, even though technically 13 attempts, which would includes
+	// 12x 200ms timeouts, should not be possible in 2s. But no need to be
+	// super strict here; websocktunnel doesn't run on a RTOS. Let's generously
+	// allow 15 retries.
+	//
+	// See:
+	//   * https://github.com/taskcluster/taskcluster/issues/6414
+	//   * https://github.com/taskcluster/taskcluster/issues/6852
+	if count > 15 || count < 4 {
 		t.Fatalf("wrong number of retries: %d", count)
 	}
 }

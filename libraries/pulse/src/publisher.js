@@ -283,7 +283,7 @@ export class PulsePublisher {
   }
 
   /**
-   * Declare the publishing methods based on the exchagnes.declare(..) calls
+   * Declare the publishing methods based on the exchanges.declare(..) calls
    * made earlier.
    */
   async _declareMethods() {

@@ -2,15 +2,17 @@ import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import assert from 'assert';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import depthLimit from 'graphql-depth-limit';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
+import queryLimit from 'graphql-query-count-limit';
 import loader from 'taskcluster-lib-loader';
 import config from 'taskcluster-lib-config';
 import libReferences from 'taskcluster-lib-references';
 import { createServer } from 'http';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import { ApolloServer } from 'apollo-server-express';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import taskcluster from 'taskcluster-client';
 import tcdb from 'taskcluster-db';
 import { MonitorManager } from 'taskcluster-lib-monitor';
@@ -96,7 +98,6 @@ const load = loader(
           resolverValidationOptions: {
             requireResolversForResolveType: false,
           },
-          validationRules: [depthLimit(10), createComplexityLimitRule(1000)],
         }),
     },
 
@@ -120,9 +121,9 @@ const load = loader(
 
     generateReferences: {
       requires: ['cfg'],
-      setup: ({ cfg }) => libReferences.fromService({
+      setup: async ({ cfg }) => libReferences.fromService({
         references: [MonitorManager.reference('web-server')],
-      }).generateReferences(),
+      }).then(ref => ref.generateReferences()),
     },
 
     app: {
@@ -137,21 +138,30 @@ const load = loader(
         const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
-          context,
           formatError,
           tracing: true,
+          status400ForVariableCoercionErrors: true, //https://www.apollographql.com/docs/apollo-server/migration#appropriate-400-status-codes
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,
-          // https://www.apollographql.com/docs/apollo-server/performance/cache-backends/#ensuring-a-bounded-cache
-          cache: 'bounded',
+          introspection: true,
+          parseOptions: {
+            maxTokens: 100000,
+          },
+          validationRules: [
+            queryLimit(1000),
+            depthLimit(10),
+            createComplexityLimitRule(4500),
+          ],
         });
         await server.start();
 
-        server.applyMiddleware({
-          app,
-          // Prevent apollo server to overwrite what we already have for cors
-          cors: false,
-        });
+        // https://www.apollographql.com/docs/apollo-server/migration
+        app.use(
+          '/graphql',
+          expressMiddleware(server, {
+            context,
+          }),
+        );
 
         createSubscriptionServer({
           server: httpServer, // this attaches itself directly to the server

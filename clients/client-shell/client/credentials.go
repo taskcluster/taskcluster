@@ -15,7 +15,7 @@ import (
 	"github.com/tent/hawk-go"
 
 	got "github.com/taskcluster/go-got"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
 )
 
 // Credentials for taskcluster and methods to sign requests.
@@ -77,7 +77,7 @@ func (c *Credentials) newAuth(method, url string, h hash.Hash) (*hawk.Auth, erro
 	if c.Certificate != "" {
 		err = json.Unmarshal([]byte(c.Certificate), &e.Certificate)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse certificate, error: %s", err)
+			return nil, fmt.Errorf("failed to parse certificate, error: %s", err)
 		}
 	}
 	if len(c.AuthorizedScopes) > 0 {

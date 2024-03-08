@@ -100,7 +100,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v59/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go/text"
 	"sigs.k8s.io/yaml"
 )
 
@@ -438,7 +438,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
-				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v59/clients/client-go\""] = true
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v60/clients/client-go\""] = true
 			}
 		}
 	}
@@ -800,7 +800,7 @@ func (items *Items) MergeIn(subSchema *JsonSubSchema, skipFields StringSet) {
 	}
 	p := reflect.ValueOf(subSchema).Elem()
 	// loop through all struct fields of Jsonsubschema
-	for i := 0; i < p.NumField(); i++ {
+	for i := range p.NumField() {
 		// don't copy fields that are blacklisted, or that aren't pointers
 		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Ptr {
 			continue

@@ -1,7 +1,5 @@
-import util from 'util';
 import path from 'path';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 import { REPO_ROOT, modifyRepoFile, execCommand } from '../../utils/index.js';
 
 export const tasks = [];

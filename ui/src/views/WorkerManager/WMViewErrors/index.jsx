@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
+import { Typography } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -8,6 +9,9 @@ import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../../utils/constants';
 import WorkerManagerErrorsTable from '../../../components/WMErrorsTable';
 import errorsQuery from './errors.graphql';
 import Search from '../../../components/Search';
+import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 
 @graphql(errorsQuery, {
   options: props => ({
@@ -64,13 +68,14 @@ export default class WMViewErrors extends Component {
     const { search } = this.state;
     const {
       data: { loading, error, WorkerManagerErrors },
+      match: {
+        params: { workerPoolId },
+      },
     } = this.props;
 
     return (
       <Dashboard
-        title={`Errors for "${decodeURIComponent(
-          this.props.match.params.workerPoolId
-        )}"`}
+        title={`Errors for "${decodeURIComponent(workerPoolId)}"`}
         disableTitleFormatting
         search={
           <Search
@@ -81,7 +86,25 @@ export default class WMViewErrors extends Component {
         }>
         <ErrorPanel fixed error={error} />
 
+        <div style={{ flexGrow: 1, marginRight: 8 }}>
+          <Breadcrumbs>
+            <Link to="/worker-manager">
+              <Typography variant="body2">Worker Manager</Typography>
+            </Link>
+            <Link to={`/worker-manager/${workerPoolId}`}>
+              <Typography variant="body2">
+                {decodeURIComponent(workerPoolId)}
+              </Typography>
+            </Link>
+            <Typography variant="body2" color="textSecondary">
+              Errors
+            </Typography>
+          </Breadcrumbs>
+        </div>
+
         {loading && <Spinner loading />}
+
+        {!loading && <WorkerManagerErrorsSummary data={this.props.data} />}
 
         {!error && !loading && (
           <WorkerManagerErrorsTable

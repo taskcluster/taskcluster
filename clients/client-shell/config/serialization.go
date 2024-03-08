@@ -143,7 +143,7 @@ func Save(config map[string]map[string]interface{}) error {
 				if err := option.Validate(value); err != nil {
 					val, _ := json.Marshal(value)
 					return fmt.Errorf(
-						"Invalid value '%s' for config key '%s.%s', error: %s",
+						"invalid value '%s' for config key '%s.%s', error: %s",
 						val, name, key, err,
 					)
 				}
@@ -170,7 +170,7 @@ func Save(config map[string]map[string]interface{}) error {
 	// Attempt to create config folder if it doesn't exist... (ignore errors)
 	_ = os.MkdirAll(filepath.Dir(configFile), 0664)
 	if err = os.WriteFile(configFile, data, 0664); err != nil {
-		return fmt.Errorf("Failed to write config file: %s, error: %s", configFile, err)
+		return fmt.Errorf("failed to write config file: %s, error: %s", configFile, err)
 	}
 
 	return nil

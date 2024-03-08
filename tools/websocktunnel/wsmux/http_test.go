@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
 )
 
 type wrapStream struct {
@@ -141,7 +141,7 @@ func TestMultiplePost(t *testing.T) {
 		}
 	}
 
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		wg.Add(1)
 		go sendAndWait()
 	}

@@ -6,14 +6,20 @@ import testing from 'taskcluster-lib-testing';
 suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();
 
-  const references = new References({
-    schemas: getCommonSchemas(),
-    references: [],
-  });
-  const ajv = references.asAbsolute(rootUrl).makeAjv();
+  let ajv;
+  const getAjv = async () => {
+    if (!ajv) {
+      const references = new References({
+        schemas: await getCommonSchemas(),
+        references: [],
+      });
+      ajv = references.asAbsolute(rootUrl).makeAjv();
+    }
+    return ajv;
+  };
 
-  const validate = content => {
-    ajv.validate(
+  const validate = async content => {
+    (await getAjv()).validate(
       'https://tc-tests.example.com/schemas/common/action-schema-v1.json#',
       content);
     if (ajv.errors) {
@@ -21,8 +27,8 @@ suite(testing.suiteName(), function() {
     }
   };
 
-  const validateFails = content => {
-    ajv.validate(
+  const validateFails = async content => {
+    (await getAjv()).validate(
       'https://tc-tests.example.com/schemas/common/action-schema-v1.json#',
       content);
     if (!ajv.errors) {
@@ -30,16 +36,16 @@ suite(testing.suiteName(), function() {
     }
   };
 
-  test('empty list is OK', function() {
-    validate({
+  test('empty list is OK', async function() {
+    await validate({
       version: 1,
       variables: {},
       actions: [],
     });
   });
 
-  test('action with bogus kind fails', function() {
-    validateFails({
+  test('action with bogus kind fails', async function() {
+    await validateFails({
       version: 1,
       variables: {},
       actions: [{
@@ -48,8 +54,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('task kind is OK', function() {
-    validate({
+  test('task kind is OK', async function() {
+    await validate({
       version: 1,
       variables: {},
       actions: [{
@@ -64,8 +70,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('hook kind is OK', function() {
-    validate({
+  test('hook kind is OK', async function() {
+    await validate({
       version: 1,
       variables: {},
       actions: [{
@@ -82,8 +88,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('action.extra is allowed', function() {
-    validate({
+  test('action.extra is allowed', async function() {
+    await validate({
       version: 1,
       variables: {},
       actions: [{

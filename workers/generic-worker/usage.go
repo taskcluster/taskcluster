@@ -21,6 +21,7 @@ const (
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 	CANT_CREATE_FILE            ExitCode = 79
 	CANT_CREATE_DIRECTORY       ExitCode = 80
+	CANT_UNARCHIVE              ExitCode = 81
 )
 
 func usage(versionName string) string {
@@ -40,6 +41,7 @@ and reports back results to the queue.
     generic-worker copy-to-temp-file        --copy-file COPY-FILE
     generic-worker create-file              --create-file CREATE-FILE
     generic-worker create-dir               --create-dir CREATE-DIR
+    generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
     generic-worker --help
     generic-worker --version
 
@@ -65,6 +67,9 @@ and reports back results to the queue.
     create-dir                              This will create a directory (including missing
                                             parent directories) at the specified path.
                                             Intended for internal use.
+    unarchive                               This will unarchive the specified archive file
+                                            to the specified destination directory.
+                                            Intended for internal use.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -86,6 +91,9 @@ and reports back results to the queue.
     --copy-file COPY-FILE                   The path to the file to copy.
     --create-file CREATE-FILE               The path to the file to create.
     --create-dir CREATE-DIR                 The path to the directory to create.
+    --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.
+    --archive-dst ARCHIVE-DST               The path to the directory to unarchive to.
+    --archive-fmt ARCHIVE-FMT               The format of the archive file to unarchive.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
@@ -311,5 +319,6 @@ and reports back results to the queue.
     78     Not able to connect to --worker-runner-protocol-pipe.
     79     Not able to create file at --create-file path.
     80     Not able to create directory at --create-dir path.
+    81     Not able to unarchive --archive-src to --archive-dst.` + exitCode82() + `
 `
 }

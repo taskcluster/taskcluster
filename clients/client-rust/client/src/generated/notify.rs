@@ -133,6 +133,9 @@ impl Notify {
     /// to HTML, but both the HTML and raw markdown text will be sent in the
     /// email. If a link is included, it will be rendered to a nice button in the
     /// HTML version of the email
+    ///
+    /// In case when duplicate message has been detected and no email was sent,
+    /// this endpoint will return 204 status code.
     pub async fn email(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::email_details();
@@ -153,6 +156,8 @@ impl Notify {
     /// Publish a Pulse Message
     ///
     /// Publish a message on pulse with the given `routingKey`.
+    ///
+    /// Endpoint will return 204 when duplicate message has been detected
     pub async fn pulse(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::pulse_details();
@@ -179,6 +184,9 @@ impl Notify {
     ///
     /// Note that the matrix client used by taskcluster must be invited to a room before
     /// it can post there!
+    ///
+    /// In case when duplicate message has been detected and no message was sent,
+    /// this endpoint will return 204 status code.
     pub async fn matrix(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::matrix_details();
@@ -204,6 +212,9 @@ impl Notify {
     ///
     /// The Slack app can post into public channels by default but will need to be added
     /// to private channels before it can post messages there.
+    ///
+    /// In case when duplicate message has been detected and no message was sent,
+    /// this endpoint will return 204 status code.
     pub async fn slack(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::slack_details();

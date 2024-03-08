@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
 )
 
 // runCancel cancels the runs of a given task.
@@ -67,7 +67,7 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 			return fmt.Errorf("could not get status of the task %s: %v", taskID, err)
 		}
 		if s.Status.State != "failed" && s.Status.State != "exception" {
-			return fmt.Errorf("Task %s is in state %s. Disallowing rerun of a non-failed and non-exception task without --force", taskID, s.Status.State)
+			return fmt.Errorf("task %s is in state %s. Disallowing rerun of a non-failed and non-exception task without --force", taskID, s.Status.State)
 		}
 	}
 

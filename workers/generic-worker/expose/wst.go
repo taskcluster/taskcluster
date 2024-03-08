@@ -1,7 +1,7 @@
 package expose
 
 // Expose local HTTP servers and ports via
-// [websocktunnel](https://github.com/taskcluster/taskcluster/v59/tools/websocktunnel).
+// [websocktunnel](https://github.com/taskcluster/taskcluster/v60/tools/websocktunnel).
 //
 // The strategy here is to create a distinct websocktunnel client for each
 // exposure.  The tunnel clientId is based on this worker's workerGroup,
@@ -14,8 +14,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v59/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v60/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/client"
 )
 
 type wstExposer struct {
@@ -82,26 +82,31 @@ func (exposure *wstExposure) start() error {
 			ID:         wstClientId,
 			TunnelAddr: exposure.exposer.serverURL,
 			Token:      tokenResponse.Token,
+			// The link between the websocktunnel and exposure is set-up in this hook to ensure that
+			// it is rebuilt if the websocktunnel client reconnects for any reason. Without this, the
+			// websocktunnel link does not work properly after a reconnect, causing things like live
+			// logs and interative tasks to stop working part way through tasks.
+			ConnectHook: func(cl *client.Client) {
+				if exposure.isHTTP {
+					// forward connections via the websocktunnel to the target port; these will all be
+					// HTTP connections
+					go forwardPort(cl, fmt.Sprintf("127.0.0.1:%d", exposure.targetPort))
+				} else {
+					// forward websocket connections at path / to the local port
+					server := http.Server{
+						Handler: websocketToTCPHandlerFunc(exposure.targetPort),
+					}
+					go func() {
+						_ = server.Serve(cl)
+					}()
+				}
+			},
 		}, nil
 	})
 	if err != nil {
 		return err
 	}
 	exposure.wstClient = wstClient
-
-	if exposure.isHTTP {
-		// forward connections via the websocktunnel to the target port; these will all be
-		// HTTP connections
-		go forwardPort(wstClient, fmt.Sprintf("127.0.0.1:%d", exposure.targetPort))
-	} else {
-		// forward websocket connections at path / to the local port
-		server := http.Server{
-			Handler: websocketToTCPHandlerFunc(exposure.targetPort),
-		}
-		go func() {
-			_ = server.Serve(wstClient)
-		}()
-	}
 
 	return nil
 }

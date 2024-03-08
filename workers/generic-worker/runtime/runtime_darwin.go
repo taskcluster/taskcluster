@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/kc"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/kc"
 )
 
 var cachedInteractiveUsername string = ""
@@ -50,7 +50,7 @@ func DeleteUser(username string) (err error) {
 	}
 	err = host.Run("/usr/bin/env", "bash", "-c", `/usr/bin/dscl . -delete '/Users/`+username+`'`)
 	if err != nil {
-		return fmt.Errorf("Error when trying to delete user account %v: %v", username, err)
+		return fmt.Errorf("error when trying to delete user account %v: %v", username, err)
 	}
 	return nil
 }
@@ -84,7 +84,7 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 		}
 		fi, err := os.Stat("/Library/Preferences/com.apple.loginwindow.plist")
 		if err != nil {
-			return fmt.Errorf("Could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
+			return fmt.Errorf("could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
 		}
 		modTime := fi.ModTime()
 		log.Printf("User %v logged in at %v", username, modTime)
@@ -104,7 +104,7 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 	} else {
 		log.Print(output)
 	}
-	return errors.New("No user logged in with console session")
+	return errors.New("no user logged in with console session")
 }
 
 func InteractiveUsername() (string, error) {
@@ -120,7 +120,7 @@ func InteractiveUsername() (string, error) {
 		return "", err
 	}
 	if !strings.Contains(output, "logged in") {
-		return "", fmt.Errorf("Could not parse username from %q", output)
+		return "", fmt.Errorf("could not parse username from %q", output)
 	}
 	cachedInteractiveUsername = output[:strings.Index(output, " ")]
 	return cachedInteractiveUsername, nil
@@ -130,7 +130,7 @@ func AutoLogonUser() (username string) {
 	var err error
 	username, err = kc.AutoLoginUsername()
 	if err != nil {
-		log.Print("Error fetching auto-logon username: " + err.Error())
+		log.Print("error fetching auto-logon username: " + err.Error())
 	}
 	return
 }

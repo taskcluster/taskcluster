@@ -1,12 +1,12 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "59.1.3",
+  "version": "60.4.2",
   "engine-strict": true,
   "engines": {
-    "node": "18.19.0"
+    "node": "18.19.1"
   },
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
   "description": "Docker task host for linux.",
   "bin": {
     "docker-worker": "bin/worker.js"

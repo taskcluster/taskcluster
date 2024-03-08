@@ -1,0 +1,12 @@
+query wWmPoolsErrorStats {
+  WorkerManagerErrorsStats {
+    totals {
+      total
+      hourly
+      daily
+      title
+      code
+      workerPool
+    }
+  }
+}

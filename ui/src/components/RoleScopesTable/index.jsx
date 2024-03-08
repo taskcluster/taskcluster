@@ -1,18 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import {
-  filter,
-  pipe,
-  map,
-  length,
-  contains,
-  prop,
-  toLower,
-  pluck,
-  includes,
-  sort as rSort,
-} from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
@@ -70,23 +59,23 @@ export default class RoleScopesTable extends Component {
   };
 
   createSortedRolesScopes = memoize(
-    (roles, selectedScope) => {
-      const extractRoles = pipe(
-        filter(
-          pipe(
-            prop('expandedScopes'),
-            filter(pipe(toLower, includes(selectedScope), length))
-          )
-        ),
-        pluck('roleId'),
-        rSort(sort)
-      );
+    (roles, selectedScope, searchTerm) => {
+      const items = (roles || [])
+        .filter(
+          role =>
+            role.expandedScopes.filter(
+              scope => scope.toLowerCase() === selectedScope.toLowerCase()
+            ).length > 0
+        )
+        .map(role => role.roleId);
 
-      return extractRoles(roles);
+      return searchTerm
+        ? items.filter(item => item.includes(searchTerm))
+        : items;
     },
     {
-      serializer: ([roles, selectedScope]) =>
-        `${sorted(roles).join('-')}-${selectedScope}`,
+      serializer: ([roles, selectedScope, searchTerm]) =>
+        `${sorted(roles).join('-')}-${selectedScope}-${searchTerm}`,
     }
   );
 
@@ -127,18 +116,19 @@ export default class RoleScopesTable extends Component {
       noItemsMessage,
       ...props
     } = this.props;
-    const items = this.createSortedRolesScopes(roles, selectedScope);
-    const filteredItems = searchTerm
-      ? filter(contains(searchTerm), items)
-      : items;
+    const filteredItems = this.createSortedRolesScopes(
+      roles,
+      selectedScope,
+      searchTerm
+    );
     const windowHeight = window.innerHeight;
-    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
+    const tableHeight = windowHeight > 400 ? 0.8 * windowHeight : 400;
     const itemCount = filteredItems.length;
 
     return itemCount ? (
       <List dense {...props}>
         <FixedSizeList height={tableHeight} itemCount={itemCount} itemSize={48}>
-          {this.renderItem(items)}
+          {this.renderItem(filteredItems)}
         </FixedSizeList>
       </List>
     ) : (

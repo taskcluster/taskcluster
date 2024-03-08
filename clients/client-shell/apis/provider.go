@@ -17,10 +17,10 @@ import (
 	got "github.com/taskcluster/go-got"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v59/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v59/clients/client-shell/client"
-	"github.com/taskcluster/taskcluster/v59/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v59/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v60/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v60/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v60/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v60/clients/client-shell/config"
 )
 
 var (
@@ -107,7 +107,7 @@ func buildExecutor(service definitions.Service, entry definitions.Entry) func(*c
 	return func(cmd *cobra.Command, args []string) error {
 		// validate that we have as much arguments as in the definition
 		if len(args) < len(entry.Args) {
-			return errors.New("Insufficient arguments given")
+			return errors.New("insufficient arguments given")
 		}
 
 		// Because cobra doesn't extract the args or map them to their
@@ -144,7 +144,7 @@ func buildExecutor(service definitions.Service, entry definitions.Entry) func(*c
 			filename := flag.Value.String()
 			f, err := os.Create(filename)
 			if err != nil {
-				return fmt.Errorf("Failed to open output file, error: %s", err)
+				return fmt.Errorf("failed to open output file, error: %s", err)
 			}
 			defer f.Close()
 			output = f
@@ -217,12 +217,12 @@ func execute(
 			h = client.PayloadHash("application/json")
 			_, err := h.Write(input)
 			if err != nil {
-				return fmt.Errorf("Failed to write hash, error: %s", err)
+				return fmt.Errorf("failed to write hash, error: %s", err)
 			}
 		}
 		err := config.Credentials.SignGotRequest(req, h)
 		if err != nil {
-			return fmt.Errorf("Failed to sign request, error: %s", err)
+			return fmt.Errorf("failed to sign request, error: %s", err)
 		}
 	}
 
@@ -244,7 +244,7 @@ func execute(
 	// Print the request to whatever output
 	_, err = output.Write(res.Body)
 	if err != nil {
-		return fmt.Errorf("Failed to print response: %s", err)
+		return fmt.Errorf("failed to print response: %s", err)
 	}
 
 	// Exit
@@ -266,7 +266,7 @@ func formatGotError(err error) error {
 			}
 		}
 	}
-	return fmt.Errorf("Request failed: %s", err)
+	return fmt.Errorf("request failed: %s", err)
 }
 
 // Read the input from the given reader; if nothing happens for a few seconds and the input is stdin, then
@@ -288,7 +288,7 @@ func readInput(payload io.Reader) ([]byte, error) {
 
 	data, err := io.ReadAll(payload)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read input, error: %s", err)
+		return nil, fmt.Errorf("failed to read input, error: %s", err)
 	}
 	return data, nil
 }

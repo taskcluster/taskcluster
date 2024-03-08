@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v59/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
 )
 
 // utils
@@ -58,7 +58,7 @@ func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
 	// write 4MB of data
 	size := 4 * 1024 * 1024
 	buf := make([]byte, size)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		buf[i] = byte(i % 127)
 	}
 
@@ -120,7 +120,7 @@ func genMultiTransferHandler(b *testing.B) http.Handler {
 		server := Server(conn, Config{StreamBufferSize: 4 * 1024})
 
 		wg := new(sync.WaitGroup)
-		for i := 0; i < maxTransferStreams; i++ {
+		for range maxTransferStreams {
 			wg.Add(1)
 			go echoFunc(b, server, wg)
 		}
@@ -152,7 +152,7 @@ func BenchmarkMultiTransfer(b *testing.B) {
 	}
 	client := Client(conn, Config{StreamBufferSize: 4 * 1024})
 	wg := new(sync.WaitGroup)
-	for i := 0; i < maxTransferStreams; i++ {
+	for range maxTransferStreams {
 		wg.Add(1)
 		go echoClientFunc(b, client, wg)
 	}

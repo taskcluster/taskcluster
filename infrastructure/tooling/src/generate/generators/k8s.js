@@ -1,12 +1,10 @@
 import _ from 'lodash';
 import path from 'path';
 import glob from 'glob';
-import util from 'util';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
 import mkdirp from 'mkdirp';
-import * as _rimraf from 'rimraf';
-const rimraf = util.promisify(_rimraf.default);
+import { rimraf } from 'rimraf';
 
 import {
   listServices,

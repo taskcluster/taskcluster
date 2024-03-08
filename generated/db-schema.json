@@ -7133,6 +7133,35 @@
         }
       },
       "version": 96
+    },
+    {
+      "description": "Worker pools extra stats",
+      "downgradeScript": "begin\n  drop index workers_created_idx;\nend",
+      "methods": {
+        "get_worker_manager_workers": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked\n  from workers\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state = state_in or state_in is null)\n  order by created desc\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get workers created by worker manager filtered by the optional arguments,\nordered by `created` timestamp.\nThis returns only worker manager view without queue data.\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, capacity integer, last_modified timestamptz, last_checked timestamptz)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_worker_pools": {
+          "args": "worker_pool_id_in text",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id;\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by worker pool\n",
+          "mode": "read",
+          "returns": "table (worker_pool text, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_workers_without_provider_data": {
+          "deprecated": true
+        }
+      },
+      "migrationScript": "begin\n  create index workers_created_idx on workers (created);\nend",
+      "version": 97
     }
   ]
 }

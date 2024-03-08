@@ -1,5 +1,5 @@
 import '../../prelude.js';
-import aws from 'aws-sdk';
+import { SESClient } from '@aws-sdk/client-ses';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { App } from 'taskcluster-lib-app';
 import loader from 'taskcluster-lib-loader';
@@ -71,10 +71,10 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify')],
-    }).generateReferences(),
+    }).then(ref => ref.generateReferences()),
   },
 
   pulseClient: {
@@ -122,7 +122,13 @@ const load = loader({
 
   ses: {
     requires: ['cfg'],
-    setup: ({ cfg }) => new aws.SES(cfg.aws),
+    setup: ({ cfg }) => new SESClient({
+      credentials: {
+        accessKeyId: cfg.aws.accessKeyId,
+        secretAccessKey: cfg.aws.secretAccessKey,
+      },
+      region: cfg.aws.region || 'us-east-1',
+    }),
   },
 
   denier: {

@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v59/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v60/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -1021,7 +1021,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "email",
 				Title:       "Send an Email",
-				Description: "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
+				Description: "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email\n\nIn case when duplicate message has been detected and no email was sent,\nthis endpoint will return 204 status code.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/email",
@@ -1032,7 +1032,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "pulse",
 				Title:       "Publish a Pulse Message",
-				Description: "Publish a message on pulse with the given `routingKey`.",
+				Description: "Publish a message on pulse with the given `routingKey`.\n\nEndpoint will return 204 when duplicate message has been detected",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/pulse",
@@ -1043,7 +1043,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "matrix",
 				Title:       "Post Matrix Message",
-				Description: "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+				Description: "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/matrix",
@@ -1054,7 +1054,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "slack",
 				Title:       "Post Slack Message",
-				Description: "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+				Description: "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/slack",
@@ -2334,6 +2334,7 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"state",
 				},
 				Input: "",
 			},

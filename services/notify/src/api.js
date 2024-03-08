@@ -33,6 +33,9 @@ builder.declare({
     'to HTML, but both the HTML and raw markdown text will be sent in the',
     'email. If a link is included, it will be rendered to a nice button in the',
     'HTML version of the email',
+    '',
+    'In case when duplicate message has been detected and no email was sent,',
+    'this endpoint will return 204 status code.',
   ].join('\n'),
 }, async function(req, res) {
   await req.authorize(req.body);
@@ -41,8 +44,8 @@ builder.declare({
     return res.reportError('DenylistedAddress', `Email ${req.body.address} is denylisted`, {});
   }
 
-  await this.notifier.email(req.body);
-  res.sendStatus(200);
+  const result = await this.notifier.email(req.body);
+  res.sendStatus(result ? 200 : 204);
 });
 
 builder.declare({
@@ -55,6 +58,8 @@ builder.declare({
   title: 'Publish a Pulse Message',
   description: [
     'Publish a message on pulse with the given `routingKey`.',
+    '',
+    'Endpoint will return 204 when duplicate message has been detected',
   ].join('\n'),
 }, async function(req, res) {
   await req.authorize({ routingKey: req.body.routingKey });
@@ -63,8 +68,8 @@ builder.declare({
     return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
   }
 
-  await this.notifier.pulse(req.body);
-  res.sendStatus(200);
+  const result = await this.notifier.pulse(req.body);
+  res.sendStatus(result ? 200 : 204);
 });
 
 builder.declare({
@@ -83,6 +88,9 @@ builder.declare({
     '',
     'Note that the matrix client used by taskcluster must be invited to a room before',
     'it can post there!',
+    '',
+    'In case when duplicate message has been detected and no message was sent,',
+    'this endpoint will return 204 status code.',
   ].join('\n'),
 }, async function(req, res) {
   await req.authorize({
@@ -94,8 +102,8 @@ builder.declare({
   }
 
   try {
-    await this.notifier.matrix(req.body);
-    res.sendStatus(200);
+    const result = await this.notifier.matrix(req.body);
+    res.sendStatus(result ? 200 : 204);
   } catch (err) {
     // This just means that we haven't been invited to the room yet
     if (err.errcode === 'M_FORBIDDEN') {
@@ -120,6 +128,9 @@ builder.declare({
     '',
     'The Slack app can post into public channels by default but will need to be added',
     'to private channels before it can post messages there.',
+    '',
+    'In case when duplicate message has been detected and no message was sent,',
+    'this endpoint will return 204 status code.',
   ].join('\n'),
 }, async function(req, res) {
   await req.authorize({
@@ -130,8 +141,8 @@ builder.declare({
     return res.reportError('DenylistedAddress', `Slack channel ${req.body.channelId} is denylisted`, {});
   }
 
-  await this.notifier.slack(req.body);
-  res.sendStatus(200);
+  const result = await this.notifier.slack(req.body);
+  res.sendStatus(result ? 200 : 204);
 });
 
 builder.declare({

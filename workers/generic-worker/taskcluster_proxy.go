@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 
-	tcclient "github.com/taskcluster/taskcluster/v59/clients/client-go"
-	"github.com/taskcluster/taskcluster/v59/internal/scopes"
-	"github.com/taskcluster/taskcluster/v59/workers/generic-worker/tcproxy"
+	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/internal/scopes"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/tcproxy"
 )
 
 type TaskclusterProxyFeature struct {
@@ -62,7 +62,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 
 	// include all scopes from task.scopes, as well as the scope to create artifacts on
 	// this task (which cannot be represented in task.scopes)
-	scopes := append(l.task.Definition.Scopes,
+	scopes := append(l.task.TaskClaimResponse.Task.Scopes,
 		fmt.Sprintf("queue:create-artifact:%s/%d", l.task.TaskID, l.task.RunID))
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
@@ -76,7 +76,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		},
 	)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("Could not start taskcluster proxy: %s", err))
+		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy: %s", err))
 	}
 	l.taskclusterProxy = taskclusterProxy
 	l.taskStatusChangeListener = &TaskStatusChangeListener{

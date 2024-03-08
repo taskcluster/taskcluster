@@ -1,7 +1,6 @@
 web:
   type: web
   command: node services/web-server/src/main.js server
-  readinessPath: .well-known/apollo/server-health
   paths:
     - '/login/*'
     - '/subscription'

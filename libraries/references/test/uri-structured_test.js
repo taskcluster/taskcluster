@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import assert from 'assert';
 import References from '../src/index.js';
 import { readUriStructured, writeUriStructured } from '../src/uri-structured.js';
@@ -10,14 +10,14 @@ suite(testing.suiteName(), function() {
     mockFs.restore();
   });
 
-  test('writes files', function() {
+  test('writes files', async function() {
     mockFs({});
 
     // write some data to check later that it's deleted
-    fs.mkdirSync('/refdata');
-    fs.writeFileSync('/refdata/foo', 'bar');
+    await fs.mkdir('/refdata');
+    await fs.writeFile('/refdata/foo', 'bar');
 
-    writeUriStructured({
+    await writeUriStructured({
       directory: '/refdata',
       serializable: [
         { filename: 'abc/def.json', content: { abc: 'def' } },
@@ -25,17 +25,22 @@ suite(testing.suiteName(), function() {
       ],
     });
 
-    assert(!fs.existsSync('/refdata/foo'));
-    assert.equal(fs.readFileSync('/refdata/abc/def.json'), '{\n  "abc": "def"\n}');
-    assert.equal(fs.readFileSync('/refdata/abc.json'), '"abc"');
+    try {
+      await fs.access('/refdata/foo', fs.constants.F_OK);
+      assert.fail('foo should have been deleted');
+    } catch (e) {
+      assert.equal(e.code, 'ENOENT');
+    }
+    assert.equal(await fs.readFile('/refdata/abc/def.json'), '{\n  "abc": "def"\n}');
+    assert.equal(await fs.readFile('/refdata/abc.json'), '"abc"');
   });
 
-  test('reads files', function() {
+  test('reads files', async function() {
     mockFs({
       '/data/schemas/common/foo.json': '{"foo": "true"}',
       '/data/references/something/bar.json': '{"bar": "true"}',
     });
-    const files = readUriStructured({ directory: '/data' });
+    const files = await readUriStructured({ directory: '/data' });
     assert.deepEqual(files.sort(), [{
       filename: 'references/something/bar.json',
       content: { bar: 'true' },
@@ -45,14 +50,14 @@ suite(testing.suiteName(), function() {
     }]);
   });
 
-  test('fromUriStructured', function() {
+  test('fromUriStructured', async function() {
     mockFs({
       '/data/schemas/common/foo.json':
         '{"foo": "true", "$id": "/schemas/common/foo.json", "$schema": "http://json-schema.org/draft-06/schema#"}',
       '/data/references/something/bar.json':
         '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
     });
-    const references = References.fromUriStructured({ directory: '/data' });
+    const references = await References.fromUriStructured({ directory: '/data' });
     assert.deepEqual(references.references, [{
       filename: 'references/something/bar.json',
       content: {

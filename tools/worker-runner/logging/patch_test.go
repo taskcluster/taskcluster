@@ -33,7 +33,7 @@ func TestPatchLogger(t *testing.T) {
 		defer logDest.Clear()
 		msg := "a line of text\n"
 		// 2**20 = 1M so the total length is 1M times line length
-		for i := 0; i < 20; i++ {
+		for range 20 {
 			msg += msg
 		}
 		msg = msg[:len(msg)-1] // remove trailing newline

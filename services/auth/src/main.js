@@ -76,10 +76,10 @@ const load = Loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
-    }).generateReferences(),
+    }).then(ref => ref.generateReferences()),
   },
 
   pulseClient: {
