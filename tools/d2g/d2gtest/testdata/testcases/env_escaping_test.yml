@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm
+              podman run -t --rm --privileged
               -e ' test123 --help  ; whoami ; '
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL

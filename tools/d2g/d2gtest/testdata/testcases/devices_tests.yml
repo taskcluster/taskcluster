@@ -48,7 +48,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm
+              podman run -t --rm --privileged
               --device=/dev/kvm
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
@@ -79,7 +79,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm
+              podman run -t --rm --privileged
               --device="${TASKCLUSTER_VIDEO_DEVICE}"
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
@@ -110,7 +110,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm
+              podman run -t --rm --privileged
               --device=/dev/snd
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
