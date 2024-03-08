@@ -66,6 +66,12 @@ func (ec2 *Metadata) RegisterService(r *mux.Router) {
 	r.HandleFunc("/latest/meta-data/spot/termination-time", ec2.TerminationTime).Methods("GET")
 	r.HandleFunc("/latest/user-data", JSONor400(ec2.UserData)).Methods("GET")
 	r.HandleFunc("/latest/dynamic/instance-identity/document", JSONor400(ec2.Document)).Methods("GET")
+
+	// IMDSv2 token endpoint
+	r.HandleFunc("/latest/api/token", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte("mock-imds-token"))
+	}).Methods("PUT")
 }
 
 func New(publicConfig *gwconfig.PublicConfig, providerID string, publicFiles map[string]any) *Metadata {

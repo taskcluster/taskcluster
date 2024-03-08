@@ -3809,6 +3809,27 @@
   },
   {
     "element": "h2",
+    "id": "acquire-taskcluster-credentials-for-running-tests",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Acquire taskcluster credentials for running tests",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "build-from-source",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Build from source",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "create-a-test-job",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Create a test job",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
     "id": "installation-on-worker-machines",
     "path": "/reference/workers/generic-worker/installing",
     "subtitle": "Installation on worker machines",
@@ -3816,9 +3837,9 @@
   },
   {
     "element": "h3",
-    "id": "linux---multiuserinsecure-build",
+    "id": "linux-insecuremultiuser-build",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Linux - multiuser/insecure build",
+    "subtitle": "Linux insecure/multiuser build",
     "title": "Installing Generic-Worker"
   },
   {
@@ -3830,16 +3851,37 @@
   },
   {
     "element": "h2",
-    "id": "option-1-obtain-prebuilt-release",
+    "id": "obtain-prebuilt-release",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Option 1: Obtain prebuilt release",
+    "subtitle": "Obtain prebuilt release",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-1",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 1",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h3",
+    "id": "option-2",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Option 2",
     "title": "Installing Generic-Worker"
   },
   {
     "element": "h2",
-    "id": "option-2-build-from-source",
+    "id": "set-up-your-env",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Option 2: Build from source",
+    "subtitle": "Set up your env",
+    "title": "Installing Generic-Worker"
+  },
+  {
+    "element": "h2",
+    "id": "start-the-generic-worker",
+    "path": "/reference/workers/generic-worker/installing",
+    "subtitle": "Start the generic worker",
     "title": "Installing Generic-Worker"
   },
   {

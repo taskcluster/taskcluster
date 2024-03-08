@@ -59,13 +59,45 @@ func (wm *WorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWorkerR
 			},
 		}
 	}
+	wp := wm.workerPools[payload.WorkerPoolID]
+	if wp == nil {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: "Unknown worker pool",
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 404,
+			},
+		}
+	}
+	var workerPoolConfig WorkerManagerConfig
+	err = json.Unmarshal(wp.Config, &workerPoolConfig)
+	if err != nil {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("Serious bug - cannot unmarshal config object %v into WorkerManagerConfig: %v", string(wp.Config), err),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 400,
+			},
+		}
+	}
 	return &tcworkermanager.RegisterWorkerResponse{
 		Credentials: tcworkermanager.Credentials{
 			ClientID:    "fake-client-id",
 			Certificate: "fake-cert",
 			AccessToken: slugid.Nice(),
 		},
+		WorkerConfig: workerPoolConfig.LaunchConfigs[0].WorkerConfig,
 	}, nil
+}
+
+type WorkerManagerLaunchConfig struct {
+	WorkerConfig json.RawMessage `json:"workerConfig"`
+}
+
+type WorkerManagerConfig struct {
+	LaunchConfigs []WorkerManagerLaunchConfig `json:"launchConfigs"`
 }
 
 func (wm *WorkerManager) WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error) {
@@ -101,5 +133,37 @@ func (wm *WorkerManager) ShouldWorkerTerminate(workerPoolId, workerGroup, worker
 	return &tcworkermanager.ShouldWorkerTerminateResponse{
 		Reason:    reason,
 		Terminate: terminate,
+	}, nil
+}
+
+func (wm *WorkerManager) ReregisterWorker(payload *tcworkermanager.ReregisterWorkerRequest) (*tcworkermanager.ReregisterWorkerResponse, error) {
+	return &tcworkermanager.ReregisterWorkerResponse{
+		Credentials: tcworkermanager.Credentials1{
+			ClientID:    "test-client-id-renewed",
+			AccessToken: "test-access-token-renewed",
+			Certificate: "",
+		},
+		Expires: tcclient.Time(time.Now().Add(6 * time.Hour)),
+		Secret:  "test-secret-renewed",
+	}, nil
+}
+
+func (wm *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
+	return nil
+}
+
+func (wm *WorkerManager) ReportWorkerError(workerPoolId string, payload *tcworkermanager.WorkerErrorReport) (*tcworkermanager.WorkerPoolError, error) {
+	return &tcworkermanager.WorkerPoolError{}, nil
+}
+
+func (wm *WorkerManager) ListProviders(continuationToken, limit string) (*tcworkermanager.ProviderList, error) {
+	return &tcworkermanager.ProviderList{
+		ContinuationToken: "",
+		Providers: []tcworkermanager.Var{
+			{
+				ProviderID:   "test-aws",
+				ProviderType: "aws",
+			},
+		},
 	}, nil
 }

@@ -35,9 +35,7 @@ import (
 	"github.com/taskcluster/taskcluster/v99/internal"
 	"github.com/taskcluster/taskcluster/v99/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/tools/workerproto"
 	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/errorreport"
 	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/expose"
 	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/graceful"
@@ -49,7 +47,6 @@ import (
 )
 
 var (
-	withWorkerRunner = false
 	// a horrible simple hack for testing reclaims
 	reclaimEvery5Seconds = false
 	// Current working directory of process
@@ -58,12 +55,22 @@ var (
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
+	// Whether we are running in AWS
+	configureForAWS bool
+	// Whether we are running in GCP
+	configureForGCP bool
+	// Whether we are running in Azure
+	configureForAzure bool
+	// Whether we are running as a static worker
+	configureForStatic bool
+	// Static secret for static provider registration
+	staticSecret string
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
-	configFile     *gwconfig.File
+	configProvider gwconfig.Provider
 	features       []Feature
 
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
@@ -140,38 +147,58 @@ func main() {
 		fmt.Println(string(statusBytes))
 
 	case arguments["run"]:
-		withWorkerRunner = arguments["--with-worker-runner"].(bool)
-		if withWorkerRunner {
-			// redirect stdio to the protocol pipe, if given; eventually this will
-			// include worker-runner protocol traffic, but for the moment it simply
-			// provides a way to channel generic-worker logging to worker-runner
-			if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
-				// Connect to input pipe (client->server) for writing
-				inputPipeName := protocolPipe + "-input"
-				fw, err := os.OpenFile(inputPipeName, os.O_WRONLY, 0)
-				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to input pipe %s: %s", inputPipeName, err)
-
-				// Connect to output pipe (server->client) for reading
-				outputPipeName := protocolPipe + "-output"
-				fr, err := os.OpenFile(outputPipeName, os.O_RDONLY, 0)
-				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to output pipe %s: %s", outputPipeName, err)
-
-				os.Stdin = fr  // Read from output pipe (server->client)
-				os.Stdout = fw // Write to input pipe (client->server)
-				os.Stderr = fw // Write to input pipe (client->server)
-			}
+		configureForAWS = arguments["--configure-for-aws"].(bool)
+		configureForGCP = arguments["--configure-for-gcp"].(bool)
+		configureForAzure = arguments["--configure-for-azure"].(bool)
+		configureForStatic = arguments["--configure-for-static"].(bool)
+		if s, ok := arguments["--static-secret"].(string); ok {
+			staticSecret = s
 		}
 
 		serviceFactory = &tc.ClientFactory{}
-		initializeWorkerRunnerProtocol(os.Stdin, os.Stdout, withWorkerRunner)
 
 		configFileAbs, err := filepath.Abs(arguments["--config"].(string))
 		exitOnError(CANT_LOAD_CONFIG, err, "Cannot determine absolute path location for generic-worker config file '%v'", arguments["--config"])
 
-		configFile = &gwconfig.File{
+		configFile := &gwconfig.File{
 			Path: configFileAbs,
 		}
-		err = loadConfig(configFile)
+
+		var provider Provider = NO_PROVIDER
+		switch {
+		case configureForAWS:
+			provider = AWS_PROVIDER
+		case configureForGCP:
+			provider = GCP_PROVIDER
+		case configureForAzure:
+			provider = AZURE_PROVIDER
+		case configureForStatic:
+			provider = STATIC_PROVIDER
+		}
+
+		serviceFactory = &tc.ClientFactory{}
+
+		configProvider, err = loadConfig(configFile, provider)
+
+		// We need to persist the generic-worker config file if we fetched it
+		// over the network, for example if the config is fetched from the AWS
+		// Provider (--configure-for-aws) or from the Google Cloud service
+		// (--configure-for-gcp).
+		//
+		// We persist the config _before_ checking for an error from the
+		// loadConfig function call, so that if there was an error, we can see
+		// what the processed config looked like before the error occurred.
+		//
+		// Note, we only persist the config file if the file doesn't already
+		// exist. We don't want to overwrite an existing user-provided config.
+		// The full config is logged (with secrets obfuscated) in the server
+		// logs, so this should provide a reliable way to inspect what config
+		// was in the case of an unexpected failure, including default values
+		// for config settings not provided in the user-supplied config file.
+		if configFile.DoesNotExist() {
+			errPersist := configFile.Persist(config)
+			exitOnError(CANT_SAVE_CONFIG, errPersist, "Not able to persist config file %v", configFile)
+		}
 		exitOnError(CANT_LOAD_CONFIG, err, "Error loading configuration")
 
 		// Config known to be loaded successfully at this point...
@@ -186,19 +213,16 @@ func main() {
 		secure(configFile.Path)
 
 		shutdownWorker := func(reason string) {
-			// If running with worker-runner, send shutdown message so it can
-			// unregister the worker before shutting down. Otherwise, shut down directly.
-			if WorkerRunnerProtocol.Capable("shutdown") {
-				WorkerRunnerProtocol.Send(workerproto.Message{
-					Type: "shutdown",
-				})
-			} else {
-				host.ImmediateShutdown(reason)
-			}
+			host.ImmediateShutdown(reason)
 		}
 
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
+
+		// Unregister from worker-manager so it knows we're gone immediately,
+		// rather than waiting for the worker to time out.
+		removeWorker()
+
 		switch exitCode {
 		case REBOOT_REQUIRED:
 			logEvent("instanceReboot", nil, time.Now())
@@ -246,8 +270,12 @@ func main() {
 	}
 }
 
-func loadConfig(configFile *gwconfig.File) error {
-	var err error
+func loadConfig(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
+
+	configProvider, err := ConfigProvider(configFile, provider)
+	if err != nil {
+		return nil, err
+	}
 
 	// first assign defaults
 
@@ -295,10 +323,16 @@ func loadConfig(configFile *gwconfig.File) error {
 		},
 	}
 
-	// apply values from config file
-	err = configFile.UpdateConfig(config)
+	if configFile.DoesNotExist() {
+		// apply values from provider
+		err = configProvider.UpdateConfig(config)
+	} else {
+		// apply values from config file
+		err = configFile.UpdateConfig(config)
+	}
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Add useful worker config to worker metadata
@@ -331,7 +365,25 @@ func loadConfig(configFile *gwconfig.File) error {
 	}
 	addEngineDebugInfo(debugInfo, config)
 	addEngineMetadata(gwMetadata, config)
-	return nil
+	return configProvider, nil
+}
+
+func ConfigProvider(configFile *gwconfig.File, provider Provider) (gwconfig.Provider, error) {
+	var configProvider gwconfig.Provider
+	switch provider {
+	case AWS_PROVIDER:
+		configProvider = &AWSConfigProvider{}
+	case GCP_PROVIDER:
+		configProvider = &GCPConfigProvider{}
+	case AZURE_PROVIDER:
+		configProvider = &AzureConfigProvider{}
+	case STATIC_PROVIDER:
+		configProvider = &StaticConfigProvider{}
+	default:
+		configProvider = configFile
+	}
+
+	return configProvider, nil
 }
 
 var exposer expose.Exposer
@@ -387,9 +439,6 @@ func HandleCrash(r any) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
-	if WorkerRunnerProtocol != nil {
-		errorreport.Send(WorkerRunnerProtocol, r, debugInfo)
-	}
 	ReportCrashToSentry(r)
 }
 
@@ -448,6 +497,19 @@ func RunWorker() (exitCode ExitCode) {
 	err = initialiseFeatures()
 	if err != nil {
 		return featureInitFailure(err)
+	}
+
+	// Start cloud provider termination polling if running on a cloud provider.
+	// This detects spot/preemption/maintenance events and triggers graceful
+	// termination so that tasks are resolved promptly rather than waiting for
+	// claim expiry.
+	if stopTerminationPolling := startTerminationPolling(); stopTerminationPolling != nil {
+		defer stopTerminationPolling()
+	}
+
+	// Start credential renewal for cloud-provisioned workers.
+	if stopCredRenewal := startCredentialRenewal(); stopCredRenewal != nil {
+		defer stopCredRenewal()
 	}
 
 	// loop, claiming and running tasks!
@@ -548,14 +610,19 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					if !withWorkerRunner || checkWhetherToTerminate() {
-						_ = purgeOldTasks()
-						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-						return IDLE_TIMEOUT
+					// For cloud-provisioned workers, check with Worker Manager
+					// before shutting down (it may say to stay alive for minCapacity).
+					// For standalone workers, just shut down immediately.
+					if configureForAWS || configureForGCP || configureForAzure || configureForStatic {
+						if !checkWhetherToTerminate() {
+							log.Printf("Idle timeout reached but Worker Manager says not to terminate. Resetting idle timer.")
+							lastActive = time.Now()
+							continue
+						}
 					}
-					// Worker Manager says don't terminate - reset idle timer
-					log.Printf("Idle timeout reached but Worker Manager says not to terminate. Resetting idle timer.")
-					lastActive = time.Now()
+					_ = purgeOldTasks()
+					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+					return IDLE_TIMEOUT
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,
@@ -587,21 +654,36 @@ func RunWorker() (exitCode ExitCode) {
 }
 
 func checkWhetherToTerminate() bool {
-	if withWorkerRunner {
-		workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
-		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
-		if err != nil {
-			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
-		} else {
-			if swtr.Terminate {
-				log.Print("Terminating, since Worker Manager told me to")
-			} else {
-				log.Print("Not terminating, worker manager loves me")
-			}
-		}
-		return swtr.Terminate
+	// Only consult Worker Manager for cloud-provisioned or static workers.
+	// Standalone workers (no --configure-for-* flag) don't check.
+	if !configureForAWS && !configureForGCP && !configureForAzure && !configureForStatic {
+		return false
 	}
-	log.Print("Not running with Worker Manager, not checking whether I need to terminate")
+	workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
+	swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
+	if err != nil {
+		log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+		return false
+	}
+	if swtr.Terminate {
+		log.Print("Terminating, since Worker Manager told me to")
+	} else {
+		log.Print("Not terminating, worker manager loves me")
+	}
+	return swtr.Terminate
+}
+
+func deploymentIDUpdated() bool {
+	latestDeploymentID, err := configProvider.NewestDeploymentID()
+	switch {
+	case err != nil:
+		log.Printf("%v", err)
+	case latestDeploymentID == config.DeploymentID:
+		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, latestDeploymentID)
+	default:
+		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, latestDeploymentID)
+		return true
+	}
 	return false
 }
 
@@ -1123,9 +1205,9 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
 	log.Printf(logMessage, args...)
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
-	combinedErr := fmt.Errorf("%s, args: %v, root cause: %v, exit code: %d", logMessage, args, err, exitCode)
-	if WorkerRunnerProtocol != nil {
-		errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
-	}
+	description := fmt.Sprintf(logMessage, args...) + ": " + err.Error()
+	reportWorkerError(description, "worker-error", map[string]string{
+		"exitCode": fmt.Sprintf("%d", exitCode),
+	})
 	os.Exit(int(exitCode))
 }

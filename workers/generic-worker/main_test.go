@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v99/internal/mocktc"
 )
@@ -62,14 +61,17 @@ func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
 	// sequence is:
 	//   call 1: loop-top (t≈0s)
 	//   call 2: loop-top (t≈5s)
-	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
-	//   call 4: loop-top (t≈10s)
-	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
-	mocktc.ShouldTerminateAfterNCalls = 5
+	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets, continue
+	//   call 4: loop-top (immediately after continue)
+	//   call 5: wait 5s, loop-top (t≈10s)
+	//   call 6: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
+	mocktc.ShouldTerminateAfterNCalls = 6
 	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
 
-	withWorkerRunner = true
-	t.Cleanup(func() { withWorkerRunner = false })
+	// Enable a provider flag so checkWhetherToTerminate() consults
+	// the mock worker-manager instead of returning immediately.
+	configureForStatic = true
+	t.Cleanup(func() { configureForStatic = false })
 
 	config.IdleTimeoutSecs = 3
 	start := time.Now()
@@ -285,35 +287,6 @@ func TestUsage(t *testing.T) {
 	if !strings.Contains(usage, "Exit Codes:") {
 		t.Fatal("Was expecting the usage text to include information about exit codes")
 	}
-}
-
-type FakeWriter struct {
-	written []byte
-}
-
-func (w *FakeWriter) Write(p []byte) (n int, err error) {
-	w.written = p
-	return len(p), nil
-}
-
-func TestProtocolStdio(t *testing.T) {
-	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
-	writer := &FakeWriter{}
-
-	initializeWorkerRunnerProtocol(reader, writer, true)
-	defer teardownWorkerRunnerProtocol()
-	// Capable waits until the protocol is initialized and capabilities are fully determined
-	require.True(t, WorkerRunnerProtocol.Capable("graceful-termination"))
-}
-
-func TestProtocolNull(t *testing.T) {
-	reader := bytes.NewBufferString(`~{"type":"welcome", "capabilities": ["graceful-termination"]}` + "\n")
-	writer := &FakeWriter{}
-
-	initializeWorkerRunnerProtocol(reader, writer, false)
-	defer teardownWorkerRunnerProtocol()
-	// withWorkerRunner is false, so we are using a NullTransport and the capability is not available
-	require.False(t, WorkerRunnerProtocol.Capable("graceful-termination"))
 }
 
 func TestAbortAfterMaxRunTime(t *testing.T) {

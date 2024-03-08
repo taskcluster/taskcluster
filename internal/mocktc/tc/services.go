@@ -27,9 +27,13 @@ type Index interface {
 
 type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
+	ReregisterWorker(payload *tcworkermanager.ReregisterWorkerRequest) (*tcworkermanager.ReregisterWorkerResponse, error)
+	RemoveWorker(workerPoolId, workerGroup, workerId string) error
+	ReportWorkerError(workerPoolId string, payload *tcworkermanager.WorkerErrorReport) (*tcworkermanager.WorkerPoolError, error)
 	WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error)
 	CreateWorkerPool(workerPoolId string, payload *tcworkermanager.WorkerPoolDefinition) (*tcworkermanager.WorkerPoolFullDefinition, error)
 	ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error)
+	ListProviders(continuationToken, limit string) (*tcworkermanager.ProviderList, error)
 }
 
 type PurgeCache interface {

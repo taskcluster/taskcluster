@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
 )
 
 type (
@@ -33,6 +34,7 @@ type (
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
+		DeploymentID                   string         `json:"deploymentId"`
 		DisableOOMProtection           bool           `json:"disableOOMProtection"`
 		DisableReboots                 bool           `json:"disableReboots"`
 		DownloadsDir                   string         `json:"downloadsDir"`
@@ -196,6 +198,18 @@ func (cf *File) UpdateConfig(c *Config) error {
 		return fmt.Errorf("Error overlaying config file %v on top of defaults: %v", cf.Path, err)
 	}
 	return nil
+}
+
+// NewestDeploymentID returns an empty string for file-based config,
+// since deployment IDs are only relevant for cloud providers.
+func (cf *File) NewestDeploymentID() (string, error) {
+	return "", nil
+}
+
+// Persist writes config to json file
+func (cf *File) Persist(c *Config) error {
+	log.Print("Creating file " + cf.Path + "...")
+	return fileutil.WriteToFileAsJSON(c, cf.Path)
 }
 
 func (cf *File) DoesNotExist() bool {

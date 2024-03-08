@@ -1,8 +1,11 @@
 package fileutil
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -16,6 +19,125 @@ import (
 	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
 )
+
+// File represents a static file to be written to the host environment
+// during worker bootstrap (e.g. from worker pool configuration).
+type File struct {
+	Description string `json:"description"`
+	Path        string `json:"path"`
+	Content     string `json:"content"`
+	Encoding    string `json:"encoding"`
+	Format      string `json:"format"`
+}
+
+// Extract writes the file content to the configured path. It supports:
+//   - format "zip" with encoding "base64": decodes base64 content and extracts the zip archive
+//   - format "file" with encoding "base64": decodes base64 content and writes a single file
+//   - no format/encoding: writes plain text content directly
+func (f *File) Extract() error {
+	switch f.Format {
+	case "zip":
+		return f.extractZip()
+	case "file":
+		return f.extractFile()
+	case "":
+		// Legacy/simple mode: plain text content
+		dir := filepath.Dir(f.Path)
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return fmt.Errorf("creating directory %v for file %v: %w", dir, f.Path, err)
+		}
+		return os.WriteFile(f.Path, []byte(f.Content), 0600)
+	default:
+		return fmt.Errorf("unknown file format %q", f.Format)
+	}
+}
+
+func (f *File) decodeContent() ([]byte, error) {
+	switch f.Encoding {
+	case "base64":
+		return base64.StdEncoding.DecodeString(f.Content)
+	case "":
+		return []byte(f.Content), nil
+	default:
+		return nil, fmt.Errorf("unsupported encoding %q for file %v", f.Encoding, f.Path)
+	}
+}
+
+func (f *File) extractFile() error {
+	data, err := f.decodeContent()
+	if err != nil {
+		return err
+	}
+	log.Printf("Writing %v to path %v", f.Description, f.Path)
+	dir := filepath.Dir(f.Path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(f.Path, data, 0777)
+}
+
+func (f *File) extractZip() error {
+	data, err := f.decodeContent()
+	if err != nil {
+		return err
+	}
+	log.Printf("Unzipping %v to path %v", f.Description, f.Path)
+	dir := filepath.Dir(f.Path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	return unzipBytes(data, f.Path)
+}
+
+func unzipBytes(b []byte, dest string) error {
+	br := bytes.NewReader(b)
+	r, err := zip.NewReader(br, int64(len(b)))
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(dest, 0755); err != nil {
+		return err
+	}
+
+	for _, zf := range r.File {
+		// Prevent Zip Slip (CWE-22): use filepath.Rel to verify the
+		// extracted path stays within the destination directory.
+		destPath := filepath.Join(dest, zf.Name)
+		relPath, err := filepath.Rel(dest, destPath)
+		if err != nil || strings.HasPrefix(relPath, "..") {
+			return fmt.Errorf("illegal file path in zip: %s", zf.Name)
+		}
+
+		if zf.FileInfo().IsDir() {
+			if err := os.MkdirAll(destPath, zf.Mode()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
+		}
+
+		rc, err := zf.Open()
+		if err != nil {
+			return err
+		}
+		outFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zf.Mode())
+		if err != nil {
+			rc.Close()
+			return err
+		}
+		_, err = io.Copy(outFile, rc)
+		rc.Close()
+		outFile.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func WriteToFileAsJSON(obj any, filename string) error {
 	jsonBytes, err := json.MarshalIndent(obj, "", "  ")

@@ -21,9 +21,13 @@ func NewWorkerManagerProvider(workerManager tc.WorkerManager) *WorkerManagerProv
 func (wp *WorkerManagerProvider) RegisterService(r *mux.Router) {
 	s := r.PathPrefix("/api/worker-manager/v1").Subrouter()
 	s.HandleFunc("/worker/register", wp.RegisterWorker).Methods("POST")
+	s.HandleFunc("/worker/reregister", wp.ReregisterWorker).Methods("POST")
+	s.HandleFunc("/workers/{workerPoolId}/{workerGroup}/{workerId}", wp.RemoveWorker).Methods("DELETE")
+	s.HandleFunc("/worker-pool-errors/{workerPoolId}", wp.ReportWorkerError).Methods("POST")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.WorkerPool).Methods("GET")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.CreateWorkerPool).Methods("PUT")
 	s.HandleFunc("/workers/{workerPoolId}/{workerGroup}/{workerId}/should-terminate", wp.ShouldWorkerTerminate).Methods("GET")
+	s.HandleFunc("/providers", wp.ListProviders).Methods("GET")
 }
 
 func (wp *WorkerManagerProvider) RegisterWorker(w http.ResponseWriter, r *http.Request) {
@@ -50,5 +54,32 @@ func (wp *WorkerManagerProvider) CreateWorkerPool(w http.ResponseWriter, r *http
 func (wp *WorkerManagerProvider) ShouldWorkerTerminate(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	out, err := wp.workerManager.ShouldWorkerTerminate(vars["workerPoolId"], vars["workerGroup"], vars["workerId"])
+	JSON(w, out, err)
+}
+
+func (wp *WorkerManagerProvider) ReregisterWorker(w http.ResponseWriter, r *http.Request) {
+	var payload tcworkermanager.ReregisterWorkerRequest
+	Marshal(r, &payload)
+	out, err := wp.workerManager.ReregisterWorker(&payload)
+	JSON(w, out, err)
+}
+
+func (wp *WorkerManagerProvider) RemoveWorker(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	err := wp.workerManager.RemoveWorker(vars["workerPoolId"], vars["workerGroup"], vars["workerId"])
+	JSON(w, nil, err)
+}
+
+func (wp *WorkerManagerProvider) ReportWorkerError(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	var payload tcworkermanager.WorkerErrorReport
+	Marshal(r, &payload)
+	out, err := wp.workerManager.ReportWorkerError(vars["workerPoolId"], &payload)
+	JSON(w, out, err)
+}
+
+func (wp *WorkerManagerProvider) ListProviders(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	out, err := wp.workerManager.ListProviders(vars["continuationToken"], vars["limit"])
 	JSON(w, out, err)
 }
