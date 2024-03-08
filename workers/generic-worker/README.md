@@ -17,8 +17,7 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
-                                            [--with-worker-runner]
-                                            [--worker-runner-protocol-pipe PIPE]
+                                            [--configure-for-aws | --configure-for-gcp | --configure-for-azure]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
     generic-worker copy-to-temp-file        --copy-file COPY-FILE
@@ -29,9 +28,7 @@ and reports back results to the queue.
     generic-worker --version
 
   Targets:
-    run                                     Runs the generic-worker.  Pass --with-worker-runner if
-                                            running under that service, otherwise generic-worker will
-                                            not communicate with worker-runner.
+    run                                     Runs the generic-worker.
     show-payload-schema                     Each taskcluster task defines a payload to be
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked
@@ -62,11 +59,19 @@ and reports back results to the queue.
                                             installation should use, rather than the config
                                             to use during install.
                                             [default: generic-worker.config]
-    --worker-runner-protocol-pipe PIPE      Use this option when running generic-worker under
-                                            worker-runner, passing the same value as given for
-                                            'worker.protocolPipe' in the runner configuration.
-                                            This specifies a named pipe that is used for
-                                            communication between the two processes.
+    --configure-for-aws                     Use this option when installing or running a worker
+                                            that is spawned by the AWS provisioner. It will cause
+                                            the worker to query the EC2 metadata service when it
+                                            is run, in order to retrieve data that will allow it
+                                            to self-configure, based on AWS metadata, information
+                                            from the provisioner, and the worker type definition
+                                            that the provisioner holds for the worker type.
+    --configure-for-azure                   This will create the CONFIG-FILE for an Azure
+                                            installation by querying the Azure environment
+                                            and setting appropriate values.
+    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
+                                            installation by querying the GCP environment
+                                            and setting appropriate values.
     --file PRIVATE-KEY-FILE                 The path to the file to write the private key
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
@@ -250,6 +255,16 @@ and reports back results to the queue.
           workerLocation                    If a non-empty string, task commands will have environment variable
                                             TASKCLUSTER_WORKER_LOCATION set to the value provided.
 
+                                            If an empty string, and --configure-for-aws is specified,
+                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
+                                            string containing the JSON object:
+                                            {"cloud":"aws","region":"<REGION>","availabilityZone":"<AZ>"}
+
+                                            If an empty string, and --configure-for-gcp is specified,
+                                            TASKCLUSTER_WORKER_LOCATION environment variable will be set to a
+                                            string containing the JSON object:
+                                            {"cloud":"google","region":"<REGION>","zone":"<ZONE>"}
+
                                             Otherwise TASKCLUSTER_WORKER_LOCATION environment
                                             variable will not be implicitly set in task commands.
                                             [default: ""]
@@ -308,6 +323,8 @@ and reports back results to the queue.
     80     Not able to create directory at --create-dir path.
     81     Not able to unarchive --archive-src to --archive-dst.
     82     Missing ed25519 private key. Did you run generic-worker new-ed25519-keypair?
+    83     Not able to save generic-worker config file after fetching it from AWS provisioner
+           or Google Cloud metadata.
 ```
 <!-- HELP END -->
 

@@ -26,11 +26,12 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
 	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
 	"github.com/taskcluster/taskcluster/v60/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v60/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v60/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/mockec2"
 )
 
 var (
@@ -207,6 +208,26 @@ func submitAndAssert[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](
 	return taskID
 }
 
+func checkSHA256OfFile(t *testing.T, path string, SHA256 string) {
+	t.Helper()
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatalf("Could not open file %v: %v", path, err)
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		t.Fatalf("Error reading from file %v: %v", path, err)
+	}
+	actualSHA256 := fmt.Sprintf("%x", h.Sum(nil))
+	if actualSHA256 != SHA256 {
+		t.Fatalf("Expected SHA256 of %v to be %v but was %v", path, SHA256, actualSHA256)
+	} else {
+		t.Logf("SHA256 of %v correct (%v = %v)", path, SHA256, actualSHA256)
+	}
+}
+
 func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 	t.Helper()
 	b, err := json.Marshal(x)
@@ -324,13 +345,32 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	return
 }
 
+func ExpectError(t *testing.T, errorText string, err error) {
+	t.Helper()
+	if err == nil || !strings.Contains(err.Error(), errorText) {
+		t.Fatalf("Was expecting error to include %q but got: %v", errorText, err)
+	}
+}
+
+func ExpectNoError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("Was expecting no error but got: %v", err)
+	}
+}
+
 type (
 	Test struct {
-		t                  *testing.T
-		Config             *gwconfig.Config
-		OldConfigureForGCP bool
-		srv                *http.Server
-		router             *mux.Router
+		t                          *testing.T
+		Config                     *gwconfig.Config
+		Provider                   Provider
+		PreviousEC2MetadataBaseURL string
+		PreviousConfigureForAWS    bool
+		PreviousConfigureForGCP    bool
+		PreviousConfigureForAzure  bool
+		PreviousServiceFactory     tc.ServiceFactory
+		srv                        *http.Server
+		router                     *mux.Router
 	}
 	ArtifactTraits struct {
 		Extracts         []string
@@ -483,27 +523,141 @@ func GWTest(t *testing.T) *Test {
 	}
 
 	return &Test{
-		t:      t,
-		Config: testConfig,
-		srv:    srv,
-		router: r,
+		t:                          t,
+		Config:                     testConfig,
+		Provider:                   NO_PROVIDER,
+		PreviousEC2MetadataBaseURL: EC2MetadataBaseURL,
+		PreviousConfigureForAWS:    configureForAWS,
+		PreviousConfigureForGCP:    configureForGCP,
+		PreviousConfigureForAzure:  configureForAzure,
+		PreviousServiceFactory:     serviceFactory,
+		srv:                        srv,
+		router:                     r,
 	}
+}
+
+func (gwtest *Test) MockEC2(bootstrapConfig interface{}) *mockec2.Metadata {
+
+	gwtest.t.Helper()
+
+	// Use mocks for these tests, regardless of env var
+	// GW_TESTS_USE_EXTERNAL_TASKCLUSTER otherwise Generic Worker can't call
+	// tcworkermanager.RegisterWorker(). serviceFactory is reset in test
+	// teardown back to previous value.
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		for _, s := range mocktc.ServiceProviders(gwtest.t, "http://localhost:13243") {
+			s.RegisterService(gwtest.router)
+		}
+		gwtest.Config.AccessToken = "test-access-token"
+		gwtest.Config.ClientID = "test-client-id"
+		gwtest.Config.Certificate = ""
+		serviceFactory = mocktc.NewServiceFactory(gwtest.t)
+	}
+
+	wm := serviceFactory.WorkerManager(gwtest.Config.Credentials(), gwtest.Config.RootURL)
+	continuationToken := ""
+	awsProvider := ""
+	var err error
+awsProviderSearch:
+	for {
+		var providers *tcworkermanager.ProviderList
+		providers, err = wm.ListProviders(continuationToken, "")
+		if err != nil {
+			gwtest.t.Fatalf("Error listing providers: %v", err)
+		}
+		for _, provider := range providers.Providers {
+			if provider.ProviderType == "aws" {
+				awsProvider = provider.ProviderID
+				break awsProviderSearch
+			}
+		}
+		continuationToken = providers.ContinuationToken
+		if continuationToken == "" {
+			break
+		}
+	}
+	if awsProvider == "" {
+		gwtest.t.Fatal("No AWS provider could be found")
+	}
+	if bootstrapConfig == nil {
+		bootstrapConfig = map[string]interface{}{
+			"genericWorker": map[string]interface{}{
+				"config": gwtest.Config.PublicConfig,
+			},
+		}
+	}
+	mockec2 := mockec2.New(&gwtest.Config.PublicConfig, awsProvider, nil)
+	mockec2.RegisterService(gwtest.router)
+	gwtest.Provider = AWS_PROVIDER
+	EC2MetadataBaseURL = "http://localhost:13243/latest"
+	configureForAWS = true
+	bootstrapConfigBytes, err := json.Marshal(bootstrapConfig)
+	if err != nil {
+		gwtest.t.Fatalf("Error marhsalling public host setup: %v", err)
+	}
+	var bootstrapConfigMap map[string]interface{}
+	err = json.Unmarshal(bootstrapConfigBytes, &bootstrapConfigMap)
+	if err != nil {
+		gwtest.t.Fatalf("Error unmarhsalling public host setup: %v", err)
+	}
+	mockec2.WorkerConfig = bootstrapConfigMap
+	workerPoolDefinition := map[string]interface{}{
+		"minCapacity": 0,
+		"maxCapacity": 0,
+		"launchConfigs": []map[string]interface{}{
+			{
+				"region": "us-pretend-1",
+				"launchConfig": map[string]string{
+					"not-really": "a-launch-config",
+					"ImageId":    "fake-image-id",
+				},
+				"capacityPerInstance": 1,
+				"workerConfig":        bootstrapConfigMap,
+			},
+		},
+	}
+	workerPoolDefinitionBytes, err := json.Marshal(workerPoolDefinition)
+	if err != nil {
+		gwtest.t.Fatalf("Error marhsalling worker pool definition: %v", err)
+	}
+
+	_, err = wm.CreateWorkerPool(
+		gwtest.Config.ProvisionerID+"/"+gwtest.Config.WorkerType,
+		&tcworkermanager.WorkerPoolDefinition{
+			Config:       json.RawMessage(workerPoolDefinitionBytes),
+			Description:  "test worker pool created by generic-worker test " + gwtest.t.Name(),
+			EmailOnError: false,
+			ProviderID:   awsProvider,
+			Owner:        "test.owner@foo.com",
+		},
+	)
+	if err != nil {
+		gwtest.t.Fatalf("Error creating worker pool: %v", err)
+	}
+	return mockec2
 }
 
 func (gwtest *Test) Setup() error {
-	configFile = &gwconfig.File{
+	configFile := &gwconfig.File{
 		Path: filepath.Join(testdataDir, gwtest.t.Name(), "generic-worker.config"),
 	}
-
-	err := fileutil.WriteToFileAsJSON(gwtest.Config, configFile.Path)
-	if err != nil {
-		gwtest.t.Fatalf("Could not write config file: %v", err)
+	if gwtest.Provider == NO_PROVIDER {
+		err := configFile.Persist(gwtest.Config)
+		if err != nil {
+			gwtest.t.Fatalf("Could not persist config file: %v", err)
+		}
 	}
-
-	return loadConfig(configFile)
+	var err error
+	configProvider, err = loadConfig(configFile, gwtest.Provider)
+	return err
 }
 
 func (gwtest *Test) Teardown() {
+	EC2MetadataBaseURL = gwtest.PreviousEC2MetadataBaseURL
+	configureForAWS = gwtest.PreviousConfigureForAWS
+	configureForGCP = gwtest.PreviousConfigureForGCP
+	configureForAzure = gwtest.PreviousConfigureForAzure
+	serviceFactory = gwtest.PreviousServiceFactory
 	gwtest.t.Logf("Removing test directory %v...", filepath.Join(testdataDir, gwtest.t.Name()))
 	err := os.RemoveAll(filepath.Join(testdataDir, gwtest.t.Name()))
 	if err != nil {

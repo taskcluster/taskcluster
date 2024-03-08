@@ -23,6 +23,7 @@ func (wp *WorkerManagerProvider) RegisterService(r *mux.Router) {
 	s.HandleFunc("/worker/register", wp.RegisterWorker).Methods("POST")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.WorkerPool).Methods("GET")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.CreateWorkerPool).Methods("PUT")
+	s.HandleFunc("/providers", wp.ListProviders).Methods("GET")
 }
 
 func (wp *WorkerManagerProvider) RegisterWorker(w http.ResponseWriter, r *http.Request) {
@@ -43,5 +44,11 @@ func (wp *WorkerManagerProvider) CreateWorkerPool(w http.ResponseWriter, r *http
 	var payload tcworkermanager.WorkerPoolDefinition
 	Marshal(r, &payload)
 	out, err := wp.workerManager.CreateWorkerPool(vars["workerPoolId"], &payload)
+	JSON(w, out, err)
+}
+
+func (wp *WorkerManagerProvider) ListProviders(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	out, err := wp.workerManager.ListProviders(vars["continuationToken"], vars["limit"])
 	JSON(w, out, err)
 }

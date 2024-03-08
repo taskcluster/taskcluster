@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
 )
 
 type (
@@ -201,6 +202,12 @@ func (cf *File) UpdateConfig(c *Config) error {
 		return fmt.Errorf("Error overlaying config file %v on top of defaults: %v", cf.Path, err)
 	}
 	return nil
+}
+
+// Persist writes config to json file
+func (cf *File) Persist(c *Config) error {
+	log.Print("Creating file " + cf.Path + "...")
+	return fileutil.WriteToFileAsJSON(c, cf.Path)
 }
 
 func (cf *File) DoesNotExist() bool {

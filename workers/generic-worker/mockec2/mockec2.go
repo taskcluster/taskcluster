@@ -50,7 +50,7 @@ func (ec2 *Metadata) RegisterService(r *mux.Router) {
 
 	Sprintf := func(data func() interface{}) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(fmt.Sprintf("%v", data())))
+			fmt.Fprintf(w, "%v", data())
 		}
 	}
 

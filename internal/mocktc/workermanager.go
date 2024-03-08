@@ -50,13 +50,45 @@ func (wm *WorkerManager) RegisterWorker(payload *tcworkermanager.RegisterWorkerR
 			},
 		}
 	}
+	wp := wm.workerPools[payload.WorkerPoolID]
+	if wp == nil {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: "Unknown worker pool",
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 404,
+			},
+		}
+	}
+	var workerPoolConfig WorkerManagerConfig
+	err = json.Unmarshal(wp.Config, &workerPoolConfig)
+	if err != nil {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("Serious bug - cannot unmarshal config object %v into WorkerManagerConfig: %v", string(wp.Config), err),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 400,
+			},
+		}
+	}
 	return &tcworkermanager.RegisterWorkerResponse{
 		Credentials: tcworkermanager.Credentials{
 			ClientID:    "fake-client-id",
 			Certificate: "fake-cert",
 			AccessToken: slugid.Nice(),
 		},
+		WorkerConfig: workerPoolConfig.LaunchConfigs[0].WorkerConfig,
 	}, nil
+}
+
+type WorkerManagerLaunchConfig struct {
+	WorkerConfig json.RawMessage `json:"workerConfig"`
+}
+
+type WorkerManagerConfig struct {
+	LaunchConfigs []WorkerManagerLaunchConfig `json:"launchConfigs"`
 }
 
 func (wm *WorkerManager) WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error) {
@@ -76,4 +108,16 @@ func (wm *WorkerManager) CreateWorkerPool(workerPoolId string, payload *tcworker
 	}
 	wm.workerPools[workerPoolId] = wpfd
 	return wpfd, nil
+}
+
+func (wm *WorkerManager) ListProviders(continuationToken, limit string) (*tcworkermanager.ProviderList, error) {
+	return &tcworkermanager.ProviderList{
+		ContinuationToken: "",
+		Providers: []tcworkermanager.Var{
+			{
+				ProviderID:   "test-aws",
+				ProviderType: "aws",
+			},
+		},
+	}, nil
 }
