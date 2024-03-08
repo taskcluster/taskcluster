@@ -292,9 +292,10 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	default:
 		command.WriteString(fmt.Sprintf("timeout %v podman run -t --name %v", dwPayload.MaxRunTime, containerName))
 	}
-	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
-		command.WriteString(" --privileged")
-	}
+	// Sometimes --privileged is needed, even where there are no capabilities
+	// defined. Therefore always add it, regardless. See e.g.
+	// https://github.com/taskcluster/taskcluster/issues/6888
+	command.WriteString(" --privileged")
 	if dwPayload.Capabilities.DisableSeccomp {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
