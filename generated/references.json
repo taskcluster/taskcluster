@@ -625,7 +625,7 @@
           "type": "integer"
         },
         "workerPoolId": {
-          "description": "The ID of this worker pool (of the form `providerId/workerType` for compatibility)\n",
+          "description": "The ID of this worker pool (of the form `provisionerId/workerType` for\ncompatibility). Worker Pool IDs beginning `test-provisioner-id/` are\nreserved for integration testing.\n",
           "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
           "title": "Worker Pool ID",
           "type": "string"
@@ -19787,7 +19787,7 @@
           "args": [
           ],
           "category": "Worker Interface",
-          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.\n\nThis method may also be called by integration tests by passing a `workerPoolId`\nbeginning with `test-provisioner-id/`. Such integration tests do not require\na valid `workerIdentityProof`, `workerId` or `workerGroup`. The response\nwill include fake `credentials`, `expires` and `secret`, but a valid `workerConfig`.",
           "input": "v1/register-worker-request.json#",
           "method": "post",
           "name": "registerWorker",

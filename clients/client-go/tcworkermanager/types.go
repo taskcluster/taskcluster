@@ -163,7 +163,9 @@ type (
 		//   * AzureProviderType
 		WorkerIdentityProof json.RawMessage `json:"workerIdentityProof"`
 
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		// The ID of this worker pool (of the form `provisionerId/workerType` for
+		// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+		// reserved for integration testing.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
@@ -227,7 +229,9 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		// The ID of this worker pool (of the form `provisionerId/workerType` for
+		// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+		// reserved for integration testing.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
@@ -827,7 +831,9 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId"`
 
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		// The ID of this worker pool (of the form `provisionerId/workerType` for
+		// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+		// reserved for integration testing.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
@@ -965,7 +971,9 @@ type (
 		// Max length: 128
 		Title string `json:"title"`
 
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		// The ID of this worker pool (of the form `provisionerId/workerType` for
+		// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+		// reserved for integration testing.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
@@ -1078,13 +1086,17 @@ type (
 		// Mininum:    0
 		StoppingCount int64 `json:"stoppingCount"`
 
-		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		// The ID of this worker pool (of the form `provisionerId/workerType` for
+		// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+		// reserved for integration testing.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
 
-	// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+	// The ID of this worker pool (of the form `provisionerId/workerType` for
+	// compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+	// reserved for integration testing.
 	//
 	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 	WorkerPoolID string

@@ -334,6 +334,11 @@ class WorkerManager(BaseClient):
         the worker will require to perform its work.  The worker must provide
         some proof of its identity, and that proof varies by provider type.
 
+        This method may also be called by integration tests by passing a `workerPoolId`
+        beginning with `test-provisioner-id/`. Such integration tests do not require
+        a valid `workerIdentityProof`, `workerId` or `workerGroup`. The response
+        will include fake `credentials`, `expires` and `secret`, but a valid `workerConfig`.
+
         This method is ``stable``
         """
 

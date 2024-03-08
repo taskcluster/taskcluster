@@ -262,6 +262,10 @@ export default class WorkerManager extends Client {
   // This call both marks the worker as running and returns the credentials
   // the worker will require to perform its work.  The worker must provide
   // some proof of its identity, and that proof varies by provider type.
+  // This method may also be called by integration tests by passing a `workerPoolId`
+  // beginning with `test-provisioner-id/`. Such integration tests do not require
+  // a valid `workerIdentityProof`, `workerId` or `workerGroup`. The response
+  // will include fake `credentials`, `expires` and `secret`, but a valid `workerConfig`.
   /* eslint-enable max-len */
   registerWorker(...args) {
     this.validate(this.registerWorker.entry, args);

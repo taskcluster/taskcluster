@@ -4641,7 +4641,7 @@ export default {
           "args": [
           ],
           "category": "Worker Interface",
-          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.",
+          "description": "Register a running worker.  Workers call this method on worker start-up.\n\nThis call both marks the worker as running and returns the credentials\nthe worker will require to perform its work.  The worker must provide\nsome proof of its identity, and that proof varies by provider type.\n\nThis method may also be called by integration tests by passing a `workerPoolId`\nbeginning with `test-provisioner-id/`. Such integration tests do not require\na valid `workerIdentityProof`, `workerId` or `workerGroup`. The response\nwill include fake `credentials`, `expires` and `secret`, but a valid `workerConfig`.",
           "input": "v1/register-worker-request.json#",
           "method": "post",
           "name": "registerWorker",
