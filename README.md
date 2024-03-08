@@ -93,8 +93,6 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [livelog](tools/livelog#readme)
     * [taskcluster-proxy](tools/taskcluster-proxy#readme)
     * [Websocktunnel](tools/websocktunnel#readme)
-    * [Worker Runner](tools/worker-runner#readme)
-    * [Runner / Worker Protocol](tools/workerproto#readme)
 * [Taskcluster UI](ui#readme)
     * [ui/src/components/CopyToClipboardListItem](ui/src/components/CopyToClipboardListItem#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)

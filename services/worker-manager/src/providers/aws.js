@@ -145,7 +145,6 @@ export class AwsProvider extends Provider {
         workerPoolId,
         providerId: this.providerId,
         workerGroup: config.region,
-        // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
         workerConfig: config.workerConfig || {},
       }));
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data

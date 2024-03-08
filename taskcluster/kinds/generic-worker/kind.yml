@@ -21,34 +21,6 @@ task-defaults:
     max-run-time: 1800
 
 tasks:
-  windows-worker-runner:
-    description: 'test worker-runner under windows as well'
-    worker-type: gw-windows-2022
-    worker:
-      mounts:
-        - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
-          directory: '{go_version}'
-          format: zip
-        - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-64-bit.zip'
-          directory: 'git'
-          format: zip
-    run:
-      command:
-        - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath%GO_RELEASE%
-        - set GOROOT=%CD%\go%GO_RELEASE%\go
-        - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
-        - git config --global core.autocrlf false
-        - go version
-        - go env
-        - git clone {head_repository} taskcluster
-        - cd taskcluster
-        - git config advice.detachedHead false
-        - git checkout {head_rev}
-        - cd tools/worker-runner
-        - go test -v ./...
   format-source:
     description: |
       This task performs three formatting steps against the codebase, and

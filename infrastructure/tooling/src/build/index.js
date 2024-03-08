@@ -124,7 +124,6 @@ class Build extends Base {
       'target-docker-worker',
       'target-generic-worker',
       'target-generic-worker-image',
-      'target-worker-runner',
       'target-taskcluster-proxy',
       'target-websocktunnel',
     ];

@@ -1,7 +1,0 @@
-{
-  "workerPoolId": "testing/azure-stuff",
-  "providerId": "azure",
-  "rootUrl": "https://taskcluster.imbstack.com",
-  "workerGroup": "azure",
-  "workerConfig": {}
-}
