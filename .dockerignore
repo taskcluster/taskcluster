@@ -39,8 +39,6 @@ dist
 workers/generic-worker/generic-worker-*
 workers/generic-worker/generic-worker
 workers/generic-worker/testdata/Test*
-tools/worker-runner/start-worker
-tools/worker-runner/start-worker-*-*
 tools/taskcluster-proxy/taskcluster-proxy
 tools/taskcluster-proxy/target
 tools/livelog/livelog

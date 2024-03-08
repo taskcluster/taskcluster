@@ -6,320 +6,194 @@ order: 40
 # Installing Generic-Worker
 
 The following instructions should be considered more as a guide rather than
-concrete requirements. They document _possible_ (and simple) ways to install
-and run generic-worker on various platforms. Real world production deployments
-may be performed differently.
+concrete requirements. In particular, they contain outdated references to
+the "legacy" deployment of Taskcluster at https://taskcluster.net.
 
-Generic-worker requires four binaries: `generic-worker` itself,
-`start-worker` (worker-runner), `livelog`, and `taskcluster-proxy`.
+They document _possible_ (and simple) ways to install and run generic-worker on
+various platforms. Real life production deployments may be integrated quite
+differently.
 
-## Option 1: Obtain prebuilt release
+Each installation guide provides a bootstrap script to runs the generic-worker
+binary. The bootstrapping script can be easily customised (for example, to deal
+with automatic quarantining of workers, waiting for custom events, etc).
 
-Download the latest releases of `generic-worker`, `taskcluster-proxy`,
-`livelog`, and `start-worker` for your platform from
-https://github.com/taskcluster/taskcluster/releases.
+## Obtain prebuilt release
 
-On darwin/linux, make the binaries executable:
+* Download the latest release for your platform from https://github.com/taskcluster/taskcluster/releases
+* Download the latest release of taskcluster-proxy for your platform from https://github.com/taskcluster/taskcluster/releases
+* Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster/releases
+* For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog,taskcluster-proxy}*`
 
-```
-chmod a+x generic-worker livelog taskcluster-proxy start-worker
-```
+## Build from source
 
-## Option 2: Build from source
+If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head, follow these instructions.
+Determine the major Taskcluster version `<MAJOR>` that you would like to build.  Then,
 
-If you prefer to build from source:
+* Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: The go version required is given in https://github.com/taskcluster/taskcluster/blob/main/dev-docs/development-process.md__.
+* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/livelog`
+* Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/taskcluster-proxy`
 
-* Download the required Go compiler from https://golang.org/dl/ and follow the
-  instructions for your platform. __NOTE: The required Go version is given in
-  https://github.com/taskcluster/taskcluster/blob/main/dev-docs/development-process.md#go__.
-* Clone the taskcluster monorepo: `git clone https://github.com/taskcluster/taskcluster`
-* Build livelog, taskcluster-proxy and start-worker from the `tools/` directory:
+Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags insecure github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin). This should also build binaries for your platform.
 
-  ```
-  cd taskcluster/tools
-  go install ./...
-  ```
+Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
-  This places the binaries in `$(go env GOPATH)/bin`.
+`./build.sh` takes optional arguments, `-a` to build all platforms, and `-t` to run tests. By default tests are not run and only the current platform is built.
 
-* Build generic-worker from its own directory. It uses a dedicated build script
-  because it requires platform-specific build tags and code generation:
-
-  ```
-  cd ../workers/generic-worker
-  ./build.sh
-  ```
-
-  `./build.sh` takes optional arguments: `-a` to build all platforms, and `-t`
-  to run tests. By default, only the current platform is built and tests are
-  not run. The resulting binary/binaries are placed in the current directory.
+All being well, the binaries will be built in the directory you executed the `build.sh` script from.
 
 ## Installation on worker machines
 
-There are two main deployment models:
-
-* __Cloud worker image__: You are building a machine image (AMI, GCP image,
-  Azure VM image) that worker-manager will launch on demand. The runner
-  configuration is minimal — just the `providerType` and binary paths. At boot,
-  worker-runner contacts worker-manager to obtain temporary credentials and
-  generic-worker configuration from the worker pool definition.
-
-* __Static or standalone worker__: You are setting up a specific machine
-  (datacenter hardware, a Mac mini, etc.) that runs continuously. With the
-  `static` provider, the runner configuration includes the worker's identity and a
-  shared secret; worker-manager still provides credentials and can provide
-  worker config at registration time. With the `standalone` provider (not
-  recommended, since it requires permanent credentials stored on disk), all
-  credentials and configuration must be provided locally.
-
-Worker-runner assembles the generic-worker configuration file automatically
-from multiple sources, in order of increasing precedence: the `workerConfig`
-section of the local runner config file, the worker-manager registration
-response, and the secrets service. Do not create the generic-worker config
-file manually. See the
-[worker-runner providers](/docs/reference/workers/worker-runner/providers) and
-[worker configuration](/docs/reference/workers/worker-runner/worker-configuration)
-documentation for full details.
-
-All platform installations follow the same general pattern:
-
-1. Install the four binaries
-2. Generate an ed25519 signing key
-3. Create a worker-runner configuration file
-4. Configure the system to run worker-runner on boot
-
-__Important__: The generic-worker binary must be readable and executable by the
-task user, not only root. If it is not, the worker will exit with exit code 69
-(internal error).
-
 ### Windows - multiuser build
 
-On Windows, generic-worker is managed by worker-runner (`start-worker.exe`),
-with both installed as NSSM services. Worker-runner is set to auto-start and
-launches generic-worker (set to demand-start) when work is available.
+1. Build or download a `generic-worker.exe` windows multiuser binary.
 
- 1. Install the four binaries (see above):
+1. Ensure that the Generic Worker binary is readable and executable by _all_
+   users, _not_ only `LocalSystem`. Failure to do this will cause exit code 69
+   (internal error).
 
-    | Binary | Location |
-    |--------|----------|
-    | `generic-worker.exe` | `C:\generic-worker\` |
-    | `livelog.exe` | `C:\generic-worker\` |
-    | `taskcluster-proxy.exe` | `C:\generic-worker\` |
-    | `start-worker.exe` | `C:\worker-runner\` |
+1. Run the following command to generate an ed25519 private key for signing
+   artifacts:
 
- 2. Generate an ed25519 private key for signing artifacts:
+   * `generic-worker.exe new-ed25519-keypair --file C:\generic-worker\ed25519_key`
 
-    ```
-    C:\generic-worker\generic-worker.exe new-ed25519-keypair --file C:\generic-worker\ed25519_key
-    ```
+   The private key will be written to the file `C:\generic-worker\ed25519_key`,
+   and the public key will be written to standard out. Keep a copy of the
+   public key if you wish to validate artifact signatures.
 
-    The public key will be written to standard out. Keep a copy if you wish to
-    validate artifact signatures.
+1. Download NSSM 2.24 from https://nssm.cc/release/nssm-2.24.zip and extract it
+   under `C:\`.
 
- 3. Install [NSSM](https://nssm.cc) (the Non-Sucking Service Manager). The
-    easiest way is via [Chocolatey](https://chocolatey.org/):
+1. Install generic-worker as a Windows service running under the `LocalSystem`
+   account, by running the following command as an `Administrator`:
 
-    ```
-    choco install -y nssm
-    ```
+   * `generic-worker.exe install service` (see `generic-worker.exe --help` to
+     apply non-default configuration settings)
 
- 4. Install generic-worker as an NSSM service with demand start:
+1. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
+   place it in `C:\generic-worker\livelog.exe`.
 
-    ```
-    nssm install "Generic Worker" C:\generic-worker\generic-worker.exe
-    nssm set "Generic Worker" AppParameters ^
-        run ^
-        --config C:\generic-worker\generic-worker-config.yml ^
-        --worker-runner-protocol-pipe \\.\pipe\generic-worker ^
-        --with-worker-runner
-    nssm set "Generic Worker" Start SERVICE_DEMAND_START
-    nssm set "Generic Worker" Type SERVICE_WIN32_OWN_PROCESS
-    ```
+1. Download taskcluster proxy from
+   https://github.com/taskcluster/taskcluster/releases/ and place it in
+   `C:\generic-worker\taskcluster-proxy.exe`.
 
- 5. Install worker-runner as an NSSM service with auto start:
+1. Create `C:\generic-worker\generic-worker.config` with appopriate values.
 
-    ```
-    nssm install "worker-runner" C:\worker-runner\start-worker.exe
-    nssm set "worker-runner" AppParameters C:\worker-runner\runner.yml
-    nssm set "worker-runner" Start SERVICE_AUTO_START
-    nssm set "worker-runner" Type SERVICE_WIN32_OWN_PROCESS
-    ```
+1. Edit file `C:\generic-worker\generic-worker.config` with appropriate
+   settings (see `generic-worker.exe --help` for information).
 
- 6. Create the worker-runner configuration file `C:\worker-runner\runner.yml`.
-
-    For a __cloud worker image__ (launched by worker-manager), the config is
-    minimal — worker-manager provides credentials and generic-worker config
-    at boot:
-
-    ```yaml
-    provider:
-        providerType: azure  # or: aws, google
-    worker:
-        implementation: generic-worker
-        service: "Generic Worker"
-        configPath: C:\generic-worker\generic-worker-config.yml
-        protocolPipe: \\.\pipe\generic-worker
-    cacheOverRestarts: C:\generic-worker\start-worker-cache.json
-    ```
-
-    For a __static worker__ (pre-provisioned machine registered with
-    worker-manager):
-
-    ```yaml
-    provider:
-        providerType: static
-        rootURL: "https://your-taskcluster-root-url"
-        providerID: your-provider-id
-        workerPoolID: your-worker-pool/id
-        workerGroup: your-worker-group
-        workerID: your-worker-id
-        staticSecret: "secret-from-worker-pool-definition"
-    worker:
-        implementation: generic-worker
-        service: "Generic Worker"
-        configPath: C:\generic-worker\generic-worker-config.yml
-        protocolPipe: \\.\pipe\generic-worker
-    cacheOverRestarts: C:\generic-worker\start-worker-cache.json
-    workerConfig:
-        ed25519SigningKeyLocation: "C:\\generic-worker\\ed25519_key"
-        livelogExecutable: "C:\\generic-worker\\livelog.exe"
-        taskclusterProxyExecutable: "C:\\generic-worker\\taskcluster-proxy.exe"
-        taskclusterProxyPort: 8080
-    ```
-
-    The `workerConfig` section is where generic-worker settings go. Worker-runner
-    assembles the final generic-worker config file automatically — do not create
-    it manually. Local `workerConfig` values have the lowest precedence and can
-    be overridden by the worker pool definition in worker-manager.
-
- 7. Ensure host 'taskcluster' resolves to localhost by adding the following
-    line to `C:\Windows\System32\drivers\etc\hosts`:
-
-    ```
-    127.0.0.1 taskcluster
-    ```
-
- 8. Reboot the machine. The worker-runner service will start automatically
-    and launch generic-worker when work is available.
+1. Reboot the machine, and the worker should be running. Check logs under
+   `C:\generic-worker\generic-worker.log`.
 
 
 ### macOS - multiuser/insecure build
 
-On macOS, worker-runner is launched by a launchd daemon via a small wrapper
-script. The wrapper performs cleanup of stale temporary directories before
-starting worker-runner.
+__These instructions require macOS Mojave version 10.14.x__
 
- 1. Log into the target user account:
+ 1. Log into target user account:
 
-    * __Insecure build__: Create a user account `genericworker` and log in as
-      that user in a shell.
-    * __Multiuser build__: Log in as _root_ (`sudo su -`).
+    __Simple build__: Create user account `genericworker` to run the worker
+    under, and log in as `genericworker` in a shell.
 
- 2. __Multiuser build only__: Disable wizards and warning pop-ups on
-    first-login to user accounts:
+    __Multiuser build__: Log in as _root_ (`sudo su -`) in a shell.
+
+ 1. __Multiuser build only__
+
+    Disable wizards/warning pop ups on first-login to user accounts:
 
     * `git clone https://github.com/mozilla-platform-ops/macos-configuration-profiles.git`
-    * For macOS versions prior to macOS 11:
+    * For versions of macOS prior to macOS11:
       * `profiles install -path=profiles/Skip\ Setup\ Assistant.mobileconfig`
-    * For macOS 11 and higher, Apple requires installing the profile via the GUI.
+    * For macOS11 and higher, Apple requires installing the profile via the GUI.
 
- 3. Install the four binaries (see above) to `/usr/local/bin/` and make them
-    executable:
+ 1. Download `generic-worker` from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `/usr/local/bin/generic-worker`.
+
+ 1. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
+    place it in `/usr/local/bin/livelog`.
+
+ 1. Download taskcluster proxy from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `/usr/local/bin/taskcluster-proxy`.
+
+ 1. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable by _all_ users:
+
+    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}`
+
+ 1. Generate a key for signing artifacts:
+
+    * `sudo mkdir /etc/generic-worker`
+
+    * __Insecure build only__: `sudo chown genericworker:staff /etc/generic-worker`
+
+    * `/usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key`
+
+    The private key will be written to the file
+    `/etc/generic-worker/ed25519_key`, and the public key will be written to
+    standard out. Keep a copy of the public key if you wish to validate artifact
+    signatures.
+
+ 1. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
 
     ```
-    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog,start-worker}
-    ```
-
- 4. Generate an ed25519 private key for signing artifacts:
-
-    ```
-    sudo mkdir -p /etc/generic-worker
-    ```
-
-    __Insecure build only__: `sudo chown genericworker:staff /etc/generic-worker`
-
-    ```
-    /usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key
-    ```
-
-    The public key will be written to standard out. Keep a copy if you wish to
-    validate artifact signatures.
-
- 5. Create the file `/usr/local/bin/run-generic-worker.sh` with the following
-    content. The `find` command cleans up temporary directories left behind by
-    previous task users that no longer exist on the system:
-
-    ```bash
     #!/usr/bin/env bash
 
     find /private/var/folders/ -nouser -delete
 
     cd ~
 
-    /usr/local/bin/start-worker /etc/generic-worker/runner.yml
+    /usr/local/bin/generic-worker run --config /etc/generic-worker/config
     ```
 
-    Make it executable:
+ 1. Run the following to make the `run-generic-worker.sh` script executable:
+
+   * `chmod a+x /usr/local/bin/run-generic-worker.sh`
+
+ 1. Create `/etc/generic-worker/config` with appropriate configuration settings
+    (see `generic-worker --help` for details). Something like this:
+
+   ```
+   getSecrets: false
+   provider:
+     clientID: project/releng/generic-worker/datacenter-gecko-t-osx-1400-m2-staging
+     providerType: standalone
+     rootURL: "https://firefox-ci-tc.services.mozilla.com"
+     providerID: standalone
+     accessToken: "********************************************"
+     workerPoolID: releng-hardware/gecko-t-osx-1400-m2-staging
+     workerGroup: macstadium-vegas
+     workerID: moz-runner-multi-1
+     workerLocation:
+       host: macstadium
+   worker:
+     implementation: generic-worker
+     path: /usr/local/bin/generic-worker
+     configPath: /etc/generic-worker/config
+   workerConfig:
+     cachesDir: "/Library/Caches/generic-worker/caches"
+     cleanUpTaskDirs: true
+     disableReboots: false
+     downloadsDir: "/Library/Caches/generic-worker/downloads"
+     ed25519SigningKeyLocation: "/etc/generic-worker/ed25519_key"
+     livelogExecutable: "/usr/local/bin/livelog"
+     publicIP: "192.168.5.174"
+     requiredDiskSpaceMegabytes: 20480
+     sentryProject: "generic-worker"
+     shutdownMachineOnIdle: false
+     shutdownMachineOnInternalError: false
+     taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
+     taskclusterProxyPort: 8080
+     tasksDir: "/Users"
+     wstAudience: "firefoxcitc"
+     wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
+   ```
+
+ 1. Create launch daemon:
+
+    Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
+    with the following content:
 
     ```
-    chmod a+x /usr/local/bin/run-generic-worker.sh
-    ```
-
- 6. Create `/etc/generic-worker/runner.yml`.
-
-    For a __cloud worker image__, the config is minimal:
-
-    ```yaml
-    provider:
-        providerType: google  # or: aws, azure
-    worker:
-        implementation: generic-worker
-        path: /usr/local/bin/generic-worker
-        configPath: /etc/generic-worker/config
-    ```
-
-    For a __static worker__ (such as datacenter hardware), worker-manager
-    provides credentials and can also provide generic-worker config from the
-    worker pool definition. Local `workerConfig` values serve as defaults
-    that the pool definition can override:
-
-    ```yaml
-    provider:
-        providerType: static
-        rootURL: "https://your-taskcluster-root-url"
-        providerID: your-provider-id
-        workerPoolID: your-worker-pool/id
-        workerGroup: your-worker-group
-        workerID: your-worker-id
-        staticSecret: "secret-from-worker-pool-definition"
-        workerLocation:
-            host: your-datacenter
-    worker:
-        implementation: generic-worker
-        path: /usr/local/bin/generic-worker
-        configPath: /etc/generic-worker/config
-    workerConfig:
-        cachesDir: "/Library/Caches/generic-worker/caches"
-        cleanUpTaskDirs: true
-        downloadsDir: "/Library/Caches/generic-worker/downloads"
-        ed25519SigningKeyLocation: "/etc/generic-worker/ed25519_key"
-        livelogExecutable: "/usr/local/bin/livelog"
-        taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
-        taskclusterProxyPort: 8080
-        tasksDir: "/Users"
-    ```
-
-    The `workerConfig` section is where generic-worker settings go. Worker-runner
-    assembles the final generic-worker config file automatically — do not create
-    it manually. Local `workerConfig` values have the lowest precedence and can
-    be overridden by the worker pool definition in worker-manager.
-
- 7. Create the launch daemon plist at
-    `/Library/LaunchDaemons/com.mozilla.genericworker.plist`.
-
-    For a __multiuser__ build (runs as root):
-
-    ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -337,181 +211,202 @@ starting worker-runner.
             <key>NetworkState</key>
             <true/>
             <key>UserName</key>
-            <string>root</string>
+            <string>root</string> <----------- (for multiuser build)
+            <string>genericworker</string> <----------- (for insecure build)
         </dict>
     </plist>
     ```
 
-    For an __insecure__ build, change the `UserName` value from `root` to
-    `genericworker`.
+ 1. Install launch daemon:
 
- 8. Install the launch daemon and start it:
+    * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
 
-    ```
-    sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist
-    ```
-
-    Check logs in `/var/log/genericworker/`.
+ 1. Watch for logs in `/var/log/generic-worker/`.
 
 
-### Linux - multiuser/insecure build
+### Linux insecure/multiuser build
 
-On Linux, worker-runner is run as a systemd service that starts on boot and
-manages the generic-worker process.
-
- 1. Make sure your system is up-to-date. For example, on Ubuntu:
+ 1. Make sure your system is up-to-date. For example, on ubuntu:
 
     ```
     apt update
     DEBIAN_FRONTEND=noninteractive apt upgrade -yq
     ```
 
- 2. Install curl:
+ 1. Install curl (needed for later). For example, on ubuntu:
 
     ```
     apt install -y curl
     ```
 
- 3. For _multiuser_, ensure a desktop environment is installed:
+ 1. For _multiuser_ ensure Gnome Desktop 3 is installed:
 
     ```
     apt install -y ubuntu-desktop ubuntu-gnome-desktop
     ```
 
- 4. If tasks require Docker, install it. For example, on Ubuntu:
+ 1. If tasks require Docker, install it. For example,
+    on ubuntu bionic:
 
     ```
     apt install -y apt-transport-https ca-certificates software-properties-common
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
     apt update
+    apt-cache policy docker-ce | grep -qF download.docker.com
     apt install -y docker-ce
-    systemctl enable docker
+    sleep 5
+    systemctl status docker | grep "Started Docker Application Container Engine"
+    usermod -aG docker ubuntu
     ```
 
- 5. Install the four binaries to `/usr/local/bin/`. Replace the version number
-    with the desired release:
+ 1. Download `generic-worker`, `taskcluster-proxy` and `livelog` to `/usr/local/bin`:
 
     ```
     cd /usr/local/bin
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v99.0.0/generic-worker-multiuser-linux-amd64" > generic-worker
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v99.0.0/livelog-linux-amd64" > livelog
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v99.0.0/taskcluster-proxy-linux-amd64" > taskcluster-proxy
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v99.0.0/start-worker-linux-amd64" > start-worker
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/generic-worker-multiuser-linux-amd64" > generic-worker
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/livelog-linux-amd64" > livelog
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v<VERSION>/taskcluster-proxy-linux-amd64" > taskcluster-proxy
     ```
 
- 6. Make binaries executable:
+ 1. Make binaries executable:
 
     ```
-    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog,start-worker}
+    chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}
     ```
 
- 7. Create directories required by generic-worker:
+ 1. Create directories required by generic-worker:
 
     ```
     mkdir -p /etc/generic-worker /var/local/generic-worker
     ```
 
- 8. Verify generic-worker runs and shows the expected version:
+ 1. Check generic-worker works and has correct version:
 
     ```
     /usr/local/bin/generic-worker --version
     ```
 
- 9. Generate an ed25519 private key for signing artifacts:
+ 1. Generate a key for signing artifacts:
 
     ```
     /usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key
     ```
 
-    The public key will be written to standard out. Keep a copy if you wish to
-    validate artifact signatures.
+    The private key will be written to the file
+    `/etc/generic-worker/ed25519_key`, and the public key will be written to
+    standard out. Keep a copy of the public key if you wish to validate artifact
+    signatures.
 
-10. Ensure host 'taskcluster' resolves to localhost:
+ 1. Ensure host 'taskcluster' resolves to localhost:
 
     ```
     echo 127.0.1.1 taskcluster >> /etc/hosts
     ```
 
-11. Create the worker-runner configuration file `/etc/start-worker.yml`.
-
-    For a __cloud worker image__ (launched by worker-manager), the config is
-    minimal — worker-manager provides credentials and generic-worker config
-    at boot:
-
-    ```yaml
-    provider:
-        providerType: google  # or: aws, azure
-    worker:
-        implementation: generic-worker
-        path: /usr/local/bin/generic-worker
-        configPath: /etc/generic-worker/config
-    cacheOverRestarts: /etc/start-worker-cache.json
-    ```
-
-    For a __static worker__ (pre-provisioned machine registered with
-    worker-manager):
-
-    ```yaml
-    provider:
-        providerType: static
-        rootURL: "https://your-taskcluster-root-url"
-        providerID: your-provider-id
-        workerPoolID: your-worker-pool/id
-        workerGroup: your-worker-group
-        workerID: your-worker-id
-        staticSecret: "secret-from-worker-pool-definition"
-    worker:
-        implementation: generic-worker
-        path: /usr/local/bin/generic-worker
-        configPath: /etc/generic-worker/config
-    cacheOverRestarts: /etc/start-worker-cache.json
-    workerConfig:
-        ed25519SigningKeyLocation: "/etc/generic-worker/ed25519_key"
-        livelogExecutable: "/usr/local/bin/livelog"
-        taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
-        taskclusterProxyPort: 8080
-        tasksDir: "/home"
-    ```
-
-    The `workerConfig` section is where generic-worker settings go. Worker-runner
-    assembles the final generic-worker config file automatically — do not create
-    it manually. Local `workerConfig` values have the lowest precedence and can
-    be overridden by the worker pool definition in worker-manager.
-
-12. Create a systemd service file at `/lib/systemd/system/worker.service`:
-
-    ```ini
-    [Unit]
-    Description=Start TC worker
-    Wants=network-online.target
-    After=network-online.target
-
-    [Service]
-    Type=simple
-    ExecStart=/usr/local/bin/start-worker /etc/start-worker.yml
-    StandardOutput=journal+console
-    StandardError=journal+console
-    User=root
-
-    [Install]
-    RequiredBy=graphical.target
-    ```
-
-13. Enable the service so it starts on boot:
+ 1. __AWS workers only__: configure generic-worker to run on boot with
+    dynamically provided config from AWS Provisioner:
 
     ```
-    systemctl enable worker
+    echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --configure-for-aws --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
     ```
 
-14. Reboot the machine, or start the service immediately:
+    Make sure netplan network renderer takes precendence over eni network
+    renderer. See [bug 1499054 comment
+    12](https://bugzilla.mozilla.org/show_bug.cgi?id=1499054#c12) for an
+    explanation.
 
     ```
-    systemctl start worker
+    cat > /etc/cloud/cloud.cfg.d/01_network_renderer_policy.cfg << EOF
+    system_info:
+        network:
+          renderers: [ 'netplan', 'eni', 'sysconfig' ]
+    EOF
     ```
 
-    Check logs with:
+ 1. __Non-AWS workers only__: configure generic-worker to run on boot with
+    a static local config file:
 
     ```
-    journalctl -u worker -f
+    echo '@reboot cd /var/local/generic-worker && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/local/bin/generic-worker run --config /etc/generic-worker/config >> /var/log/generic-worker.log 2>&1' | crontab -
     ```
+
+    Create `/etc/generic-worker/config` with appropriate configuration settings
+    (see `generic-worker --help` for details).
+
+
+## Acquire taskcluster credentials for running tests
+
+There are two alternative mechanisms to acquire the scopes you need.
+
+### Option 1
+
+This method works if you log into Taskcluster via mozillians, *or* you log into
+taskcluster via LDAP *using the same email address as your mozillians account*,
+*or* if you do not currently have a mozillians account but would like to create
+one.
+
+* Sign up for a [Mozillians account](https://mozillians.org/en-US/) (if you do not already have one)
+* Request membership of the [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/) mozillians group
+
+### Option 2
+
+This method is for those who wish not to create a mozillians account, but
+already authenticate into taskcluster via some other means, or have a
+mozillians account but it is registered to a different email address than the
+one they use to log into Taskcluster with (e.g. via LDAP integration).
+
+* Request the scope `assume:project:taskcluster:generic-worker-tester` to be
+  granted to you via a [bugzilla
+  request](https://bugzilla.mozilla.org/enter_bug.cgi?product=Taskcluster&component=Service%20Request),
+  including your [currently active `ClientId`](https://tools.taskcluster.net/credentials/)
+  in the bug description. From the ClientId, we will be able to work out which role to assign the scope
+  to, in order that you acquire the scope with the client you log into Taskcluster tools site with.
+
+Once you have been granted the above scope:
+
+* If you are signed into tools.taskcluster.net already, **sign out**
+* Sign into [tools.taskcluster.net](https://tools.taskcluster.net/) using either your new Mozillians account, _or_ your LDAP account **if it uses the same email address as your Mozillians account**
+* Check that a role or client of yours appears in [this list](https://tools.taskcluster.net/auth/scopes/assume%3Aproject%3Ataskcluster%3Ageneric-worker-tester)
+* Create a permanent client (taskcluster credentials) for yourself in the [Client Manager](https://tools.taskcluster.net/auth/clients/) granting it the single scope `assume:project:taskcluster:generic-worker-tester`
+
+## Set up your env
+
+* Generate an ed25519 key pair with `generic-worker new-ed25519-keypair --file <file>` where `file` is where you want the generated ed25519 private key to be written to
+* Create a generic worker configuration file somewhere, with the following content:
+
+```
+{
+    "accessToken":                "<access token of your permanent credentials>",
+    "certificate":                "",
+    "clientId":                   "<client ID of your permanent credentials>",
+    "ed25519SigningKeyLocation":  "<file location you wrote ed25519 private key to>",
+    "livelogSecret":              "<anything you like>",
+    "workerPoolId":               "test/worker-pool",
+    "publicIP":                   "<ideally an IP address of one of your network interfaces>",
+    "workerGroup":                "test-worker-group",
+    "workerId":                   "test-worker-id",
+}
+```
+
+To see a full description of all the config options available to you, run `generic-worker --help`.
+
+## Start the generic worker
+
+Simply run:
+
+```
+generic-worker run --config <config file>
+```
+
+where `<config file>` is the generic worker config file you created above.
+
+## Create a test job
+
+Go to https://tools.taskcluster.net/task-creator/ and create a task to run on your generic worker.
+
+Use [this example](worker_types/win2012r2/task-definition.json) as a template, but make sure to edit `taskQueueId` values so that they match what you set in your config file.
+
+Don't forget to submit the task by clicking the *Create Task* icon.
+
+If all is well, your local generic worker should pick up the job you submit, run it, and report back status.
