@@ -57,7 +57,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				continue
 			}
-			walkFn := func(path string, info os.FileInfo, incomingErr error) error {
+			walkFn := func(path string, d os.DirEntry, incomingErr error) error {
 				subPath, err := filepath.Rel(taskContext.TaskDir, path)
 				if err != nil {
 					// this indicates a bug in the code
@@ -93,7 +93,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 							Path:         subPath,
 						},
 					)
-				case info.IsDir():
+				case d.IsDir():
 					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
@@ -104,7 +104,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.WalkDir(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
 	return payloadArtifacts

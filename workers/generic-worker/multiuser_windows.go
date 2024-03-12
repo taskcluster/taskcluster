@@ -294,7 +294,7 @@ func RenameCrossDevice(oldpath, newpath string) (err error) {
 
 func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
 	// recursively move files
-	moveFile := func(path string, info os.FileInfo, inErr error) (outErr error) {
+	moveFile := func(path string, d os.DirEntry, inErr error) (outErr error) {
 		if inErr != nil {
 			return inErr
 		}
@@ -304,14 +304,19 @@ func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
 			return
 		}
 		targetPath := filepath.Join(newpath, relPath)
-		if info.IsDir() {
+		if d.IsDir() {
+			var info os.FileInfo
+			info, outErr = d.Info()
+			if outErr != nil {
+				return
+			}
 			outErr = os.Mkdir(targetPath, info.Mode())
 		} else {
 			outErr = RenameCrossDevice(path, targetPath)
 		}
 		return
 	}
-	err = filepath.Walk(oldpath, moveFile)
+	err = filepath.WalkDir(oldpath, moveFile)
 	if err != nil {
 		return
 	}
