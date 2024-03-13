@@ -3421,7 +3421,3 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
-
-### deprecated methods
-
-* `get_workers_without_provider_data(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v61.0.0)

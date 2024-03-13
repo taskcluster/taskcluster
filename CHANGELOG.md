@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v61.0.0
+
+### GENERAL
+
+▶ [patch]
+Generic Worker now utilizes `filepath.WalkDir` instead of `filepath.Walk`.
+
+`filepath.WalkDir` was introduced in go1.16 and is more performant and efficient over `filepath.Walk`.
+
+This _may_ help with race conditions during artifact uploads, where a file was initially seen, but then became unavailable at upload time.
+
+▶ [patch]
+Upgrades to go1.22.1 which is a [security release](https://go.dev/doc/devel/release#go1.22.1).
+
+### USERS
+
+▶ [MAJOR] [#6881](https://github.com/taskcluster/taskcluster/issues/6881)
+Google cloud workers spawned by Worker Manager now have `workerGroup` set to
+the Google Cloud _Zone_ (e.g. `us-east1-d`) rather than the Google Cloud
+_Region_ (e.g. `us-east1`). This makes it easier to issue api requests against
+an instance, e.g. `gcloud compute instances delete <workerId>
+--zone=<workerGroup>`.
+
+▶ [patch] [#6890](https://github.com/taskcluster/taskcluster/issues/6890)
+D2G now always passes `--privileged` to the generated `podman run` command.
+Without this option, some tasks that ran successfully under Docker Worker,
+including tasks without Docker Worker capabilities, would not run correctly
+under Generic Worker. Please note, this only elevates the privileges inside the
+podman container, which runs as the task user on the host. The privileges
+inside the container are still limited to the host privileges of the task user.
+
+▶ [patch]
+Generic Worker now correctly reports the Worker Pool ID when an interactive task is attempted on a worker pool with the interactive feature disabled. Previously the task log would report the Worker Pool ID in the `exception/malformed-payload` task run as `<workerGroup>/<workerType>`; now it correctly reports it as `<provisionerId>/<workerType>`. The Interactive feature is considered disabled when Generic Worker config setting `enableInteractive` is either absent or explicitly set to `false` in the Generic Worker config.
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrades internal references library to use async fs operations to make upcoming node20 upgrade easier.
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps): bump jose from 2.0.6 to 2.0.7 (f2bd071dc)
+* build(deps): bump the deps group in /ui with 6 updates (ac2bb66ba)
+* build(deps-dev): bump the deps group in /clients/client with 2 updates (36fac2a12)
+* build(deps): bump taskcluster-client-web from 44.21.0 to 60.4.2 in /ui (7b79a3eb1)
+* build(deps): bump the deps group with 6 updates (ee709aab4)
+* build(deps): bump the deps group in /taskcluster with 2 updates (c02ca5469)
+* build(deps): bump the deps group with 25 updates (0cd5033f5)
+
+</details>
+
 ## v60.4.2
 
 ### USERS

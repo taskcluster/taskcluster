@@ -6,11 +6,11 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	taskcluster "github.com/taskcluster/taskcluster/v60/clients/client-go"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v61/clients/client-go"
+	"github.com/taskcluster/taskcluster/v61/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v61/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v61/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v61/tools/workerproto"
 )
 
 type ErrorReporter struct {

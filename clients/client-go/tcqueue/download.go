@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/orcaman/writerseeker"
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/internal"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v61/clients/client-go"
+	"github.com/taskcluster/taskcluster/v61/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v61/clients/client-go/tcobject"
 )
 
 type HTTPRetryError = internal.HTTPRetryError
