@@ -35,19 +35,19 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 
 	var taskDirs uint = 0
 	visitedRootDir := false
-	err := filepath.Walk(config.TasksDir, func(path string, info os.FileInfo, err error) error {
-		// filepath.Walk guarantees lexical ordering and therefore, first entry is root directory
+	err := filepath.WalkDir(config.TasksDir, func(path string, d os.DirEntry, err error) error {
+		// filepath.WalkDir guarantees lexical ordering and therefore, first entry is root directory
 		if !visitedRootDir {
 			visitedRootDir = true
 			return nil
 		}
-		if !info.IsDir() {
+		if !d.IsDir() {
 			t.Logf("Found file %v", path)
 			return nil
 		}
 		t.Logf("Found directory %v", path)
-		if !strings.HasPrefix(info.Name(), "task_") && info.Name() != "generic-worker" {
-			return fmt.Errorf("Discovered directory with name %q but was expecting it to start with `task_`", info.Name())
+		if !strings.HasPrefix(d.Name(), "task_") && d.Name() != "generic-worker" {
+			return fmt.Errorf("Discovered directory with name %q but was expecting it to start with `task_`", d.Name())
 		}
 		taskDirs++
 		return nil
