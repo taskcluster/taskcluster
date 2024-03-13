@@ -188,10 +188,9 @@ type (
 		Secret string `json:"secret"`
 
 		// This value is supplied unchanged to the worker from the worker-pool configuration.
-		// The expectation is that the worker will merge this information with configuration from other sources,
-		// and this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.
+		// The expectation is that the worker will merge this information with configuration from other sources.
 		// This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
-		// Instead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).
+		// Instead, put secret configuration in the secrets service.
 		//
 		// Additional properties allowed
 		WorkerConfig json.RawMessage `json:"workerConfig"`

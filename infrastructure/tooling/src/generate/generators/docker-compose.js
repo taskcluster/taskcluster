@@ -431,7 +431,6 @@ tasks.push({
         restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
         volumes: [
           './docker/generic-worker-config.json:/etc/generic-worker/config.json',
-          './docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json',
         ],
         command: type,
         environment: {

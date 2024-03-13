@@ -329,14 +329,12 @@ export class AzureProvider extends Provider {
       const workerGroup = cfg.location;
       assert(workerGroup, 'cfg.location is not set');
 
-      // Note: worker-runner 1.0.3 and higher ignore customData due to
       // https://github.com/MicrosoftDocs/azure-docs/issues/30370
       const customData = Buffer.from(JSON.stringify({
         workerPoolId,
         providerId: this.providerId,
         workerGroup,
         rootUrl: this.rootUrl,
-        // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
         workerConfig: cfg.workerConfig || {},
       })).toString('base64');
 

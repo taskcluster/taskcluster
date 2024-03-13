@@ -192,8 +192,6 @@ The worker-manager defines the following secrets:
   `worker-pool:<workerPoolId>` -
   Workers are given scopes to read these secrets at startup, allowing them to be configured with secret values.
   The format of such secrets is `{"config": .., "files": ..}`.
-  See [worker-runner](/docs/reference/workers/worker-runner) for more on how this is interpreted.
-  The second form is preferred, but scopes are provided for both forms.
 
 The following convention is recommended for repository-specific secrets:
 

@@ -165,7 +165,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
-      - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
     command: standalone
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
@@ -191,7 +190,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
-      - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
     command: static
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
