@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"sync"
 
-	stream "github.com/taskcluster/taskcluster/v61/tools/livelog/writer"
+	stream "github.com/taskcluster/taskcluster/v62/tools/livelog/writer"
 )
 
 const (

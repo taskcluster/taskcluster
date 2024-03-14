@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v61/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v62/clients/client-go"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.

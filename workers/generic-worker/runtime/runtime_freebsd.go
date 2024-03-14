@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"github.com/taskcluster/taskcluster/v61/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v62/workers/generic-worker/host"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {

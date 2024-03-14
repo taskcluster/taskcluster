@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v61/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v62/workers/generic-worker/host"
 )
 
 func addUserToGroup(user, group string) error {
