@@ -26,8 +26,8 @@ jobs:
         install-go: false
         version: ${{ env.STATICCHECK_VERSION }}
 
-  staticcheck-gw-simple:
-    name: Simple Engine
+  staticcheck-gw-insecure:
+    name: Insecure Engine
     strategy:
       fail-fast: false
       matrix:
@@ -43,7 +43,7 @@ jobs:
     - uses: dominikh/staticcheck-action@v1.3.0
       with:
         working-directory: workers/generic-worker
-        build-tags: simple
+        build-tags: insecure
         install-go: false
         version: ${{ env.STATICCHECK_VERSION }}
 

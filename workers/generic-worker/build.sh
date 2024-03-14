@@ -95,29 +95,29 @@ if ${ALL_PLATFORMS}; then
 
   install multiuser darwin  amd64
   install multiuser darwin  arm64
-  install simple    darwin  amd64
-  install simple    darwin  arm64
+  install insecure  darwin  amd64
+  install insecure  darwin  arm64
 
   install multiuser linux   amd64
   install multiuser linux   arm64
-  install simple    linux   amd64
-  install simple    linux   arm64
+  install insecure  linux   amd64
+  install insecure  linux   arm64
 
   install multiuser freebsd amd64
   install multiuser freebsd arm64
-  install simple    freebsd amd64
-  install simple    freebsd arm64
+  install insecure  freebsd amd64
+  install insecure  freebsd arm64
 else
   MY_GOHOSTOS="$(go env GOHOSTOS)"
   MY_GOHOSTARCH="$(go env GOHOSTARCH)"
   case "${MY_GOHOSTOS}" in
-      linux) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+      linux) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
-     darwin) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+     darwin) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
-    freebsd) install simple    "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
+    freebsd) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
              ;;
     windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
@@ -141,7 +141,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags simple -failfast -ldflags "-X github.com/taskcluster/taskcluster/v61/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v61/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
   goimports -w .

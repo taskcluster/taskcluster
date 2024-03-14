@@ -3382,16 +3382,16 @@
   },
   {
     "element": "h2",
-    "id": "multiuser-engine",
+    "id": "insecure-engine",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Multiuser engine",
+    "subtitle": "Insecure engine",
     "title": "Engines"
   },
   {
     "element": "h2",
-    "id": "simple-engine",
+    "id": "multiuser-engine",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Simple engine",
+    "subtitle": "Multiuser engine",
     "title": "Engines"
   },
   {
@@ -3480,16 +3480,16 @@
   },
   {
     "element": "h3",
-    "id": "linux-simplemultiuser-build",
+    "id": "linux-insecuremultiuser-build",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Linux simple/multiuser build",
+    "subtitle": "Linux insecure/multiuser build",
     "title": "Installing Generic-Worker"
   },
   {
     "element": "h3",
-    "id": "macos---multiusersimple-build",
+    "id": "macos---multiuserinsecure-build",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "macOS - multiuser/simple build",
+    "subtitle": "macOS - multiuser/insecure build",
     "title": "Installing Generic-Worker"
   },
   {

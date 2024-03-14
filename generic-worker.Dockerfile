@@ -1,4 +1,4 @@
-# Simple generic worker
+# Insecure generic worker
 
 FROM golang:1.22.1-alpine AS build
 
@@ -26,7 +26,7 @@ RUN go build -o /taskcluster
 WORKDIR /app/workers/generic-worker
 RUN ./build.sh && \
   mv generic-worker-multiuser-* /generic-worker-multiuser && \
-  mv generic-worker-simple-* /generic-worker
+  mv generic-worker-insecure-* /generic-worker
 
 FROM ubuntu:jammy
 

@@ -1,4 +1,4 @@
-//go:build simple
+//go:build insecure
 
 package main
 
@@ -13,7 +13,7 @@ import (
 )
 
 // Note we don't want to set config.NumberOfTasksToRun on multiuser engine
-// since new OS users would get created, so we limit this test to the simple
+// since new OS users would get created, so we limit this test to the insecure
 // engine.
 func TestNewTaskDirectoryForEachTask(t *testing.T) {
 	setup(t)

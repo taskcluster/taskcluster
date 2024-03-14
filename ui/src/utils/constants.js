@@ -312,10 +312,10 @@ export const TASK_PAYLOAD_SCHEMAS = {
       maxRunTime: 60 + 30,
     },
   },
-  'generic-simple-posix': {
-    label: 'Generic worker simple posix',
+  'generic-insecure-posix': {
+    label: 'Generic worker insecure posix',
     type: 'generic-worker',
-    schema: 'simple_posix.json',
+    schema: 'insecure_posix.json',
     samplePayload: {
       command: [payloadCommand],
       maxRunTime: 60 + 30,

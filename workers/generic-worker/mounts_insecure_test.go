@@ -1,4 +1,4 @@
-//go:build simple
+//go:build insecure
 
 package main
 
