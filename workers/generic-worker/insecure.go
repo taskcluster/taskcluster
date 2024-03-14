@@ -1,4 +1,4 @@
-//go:build simple
+//go:build insecure
 
 package main
 
@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	engine = "simple"
+	engine = "insecure"
 )
 
 func platformFeatures() []Feature {

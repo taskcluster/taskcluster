@@ -1,6 +1,6 @@
 ---
 $schema: "/schemas/common/metaschema.json#"
-$id: "/schemas/generic-worker/simple_posix.json#"
+$id: "/schemas/generic-worker/insecure_posix.json#"
 title: Generic worker payload
 description: |-
   This schema defines the structure of the `payload` property referred to in a

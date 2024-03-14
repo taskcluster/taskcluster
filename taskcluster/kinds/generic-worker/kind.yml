@@ -202,8 +202,8 @@ tasks:
           Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
           to help ensure that mock implementations remain consistent with real services.
     copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
-  build/test-simple-ubuntu-22.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (simple engine) on Ubuntu 22.04
+  build/test-insecure-ubuntu-22.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 22.04
     worker-type: gw-ci-ubuntu-22-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
@@ -224,7 +224,7 @@ tasks:
           directory: golangci-lint
           format: tar.gz
       env:
-        ENGINE: simple
+        ENGINE: insecure
     copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
   build/test-multiuser-macos-13-arm64:
     description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13

@@ -39,7 +39,7 @@ Determine the major Taskcluster version `<MAJOR>` that you would like to build. 
 * Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/livelog`
 * Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/taskcluster-proxy`
 
-Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags simple github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin). This should also build binaries for your platform.
+Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags insecure github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin). This should also build binaries for your platform.
 
 Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
@@ -87,13 +87,13 @@ All being well, the binaries will be built in the directory you executed the `bu
    `C:\generic-worker\generic-worker.log`.
 
 
-### macOS - multiuser/simple build
+### macOS - multiuser/insecure build
 
 __These instructions require macOS Mojave version 10.14.x__
 
  1. Log into target user account:
 
-    __Simple build__: Create user account `genericworker` to run the worker
+    __Insecure build__: Create user account `genericworker` to run the worker
 	under, and log in as `genericworker` in a shell.
 
     __Multiuser build__: Log in as _root_ (`sudo su -`) in a shell.
@@ -129,7 +129,7 @@ __These instructions require macOS Mojave version 10.14.x__
 
     * `sudo mkdir /etc/generic-worker`
 
-    * __Simple build only__: `sudo chown genericworker:staff /etc/generic-worker`
+    * __Insecure build only__: `sudo chown genericworker:staff /etc/generic-worker`
 
     * `/usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key`
 
@@ -212,7 +212,7 @@ __These instructions require macOS Mojave version 10.14.x__
             <true/>
             <key>UserName</key>
             <string>root</string> <----------- (for multiuser build)
-            <string>genericworker</string> <----------- (for simple build)
+            <string>genericworker</string> <----------- (for insecure build)
         </dict>
     </plist>
     ```
@@ -224,7 +224,7 @@ __These instructions require macOS Mojave version 10.14.x__
 13. Watch for logs in `/var/log/generic-worker/`.
 
 
-### Linux simple/multiuser build
+### Linux insecure/multiuser build
 
  1. Make sure your system is up-to-date. For example, on ubuntu:
 

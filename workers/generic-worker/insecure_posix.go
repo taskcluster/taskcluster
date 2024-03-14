@@ -1,4 +1,4 @@
-//go:build simple && (darwin || linux || freebsd)
+//go:build insecure && (darwin || linux || freebsd)
 
 package main
 
