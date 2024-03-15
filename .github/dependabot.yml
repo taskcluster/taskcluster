@@ -13,7 +13,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      node-deps:
         patterns:
           - "*"
         update-types:
@@ -28,7 +28,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      client-node-deps:
         patterns:
           - "*"
         update-types:
@@ -43,7 +43,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      client-web-node-deps:
         patterns:
           - "*"
         update-types:
@@ -58,7 +58,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      client-rust-deps:
         patterns:
           - "*"
         update-types:
@@ -73,7 +73,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      ui-node-deps:
         patterns:
           - "*"
         update-types:
@@ -88,7 +88,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      e2e-ui-test-node-deps:
         patterns:
           - "*"
         update-types:
@@ -103,7 +103,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      go-deps:
         patterns:
           - "*"
         update-types:
@@ -118,7 +118,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      gh-actions-deps:
         patterns:
           - "*"
         update-types:
@@ -133,7 +133,7 @@ updates:
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
-      deps:
+      python-deps:
         patterns:
           - "*"
         update-types:
