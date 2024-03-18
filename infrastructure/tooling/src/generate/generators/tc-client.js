@@ -9,7 +9,7 @@ export const tasks = [{
     const apis = requirements['apis'];
 
     await writeRepoFile('clients/client/src/apis.js',
-      '/* eslint-disable */\nmodule.exports = ' + stringify(apis, { space: 2 }) + ';\n');
+      '/* eslint-disable */\nexport default ' + stringify(apis, { space: 2 }) + ';\n');
 
     // update client tests to include all exposed apis
     const clientsTest = `// This file is auto-generated, don't edit
