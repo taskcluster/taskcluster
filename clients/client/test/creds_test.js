@@ -1,8 +1,8 @@
-const taskcluster = require('../');
-const assert = require('assert');
-const request = require('superagent');
-const _ = require('lodash');
-const testing = require('./helper');
+import taskcluster from '../src/index.js';
+import assert from 'assert';
+import request from 'superagent';
+import _ from 'lodash';
+import testing from './helper.js';
 
 suite(testing.suiteName(), function() {
   testing.withRestoredEnvVars();

@@ -1,8 +1,7 @@
-const got = require('got');
-const util = require('util');
-const pipeline = util.promisify(require('stream').pipeline);
-const retry = require('./retry');
-const { HashStream, ACCEPTABLE_HASHES } = require('./hashstream');
+import got from 'got';
+import { pipeline } from 'node:stream/promises';
+import retry from './retry.js';
+import { HashStream, ACCEPTABLE_HASHES } from './hashstream.js';
 
 // apply default retry config
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({
@@ -149,4 +148,4 @@ const downloadArtifact = async ({
   }
 };
 
-module.exports = { download, downloadArtifact };
+export default { download, downloadArtifact };

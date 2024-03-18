@@ -1,9 +1,9 @@
-const taskcluster = require('../');
-const assert = require('assert');
-const path = require('path');
-const nock = require('nock');
-const net = require('net');
-const testing = require('./helper');
+import taskcluster from '../src/index.js';
+import assert from 'assert';
+import path from 'path';
+import nock from 'nock';
+import net from 'net';
+import testing from './helper.js';
 
 suite(testing.suiteName(), function() {
   testing.withRestoredEnvVars();

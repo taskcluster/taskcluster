@@ -1,5 +1,5 @@
 /* eslint-disable */
-module.exports = {
+export default {
   "Auth": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
