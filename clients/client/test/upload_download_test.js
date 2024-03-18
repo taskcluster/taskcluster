@@ -1,9 +1,9 @@
-const taskcluster = require('../');
-const nock = require('nock');
-const crypto = require('crypto');
-const assert = require('assert').strict;
-const { WritableStreamBuffer, ReadableStreamBuffer } = require('stream-buffers');
-const testing = require('./helper');
+import taskcluster from '../src/index.js';
+import nock from 'nock';
+import crypto from 'crypto';
+import { strict as assert } from 'assert';
+import { WritableStreamBuffer, ReadableStreamBuffer } from 'stream-buffers';
+import testing from './helper.js';
 
 suite(testing.suiteName(), function() {
   testing.withRestoredEnvVars();
@@ -320,6 +320,7 @@ suite(testing.suiteName(), function() {
     let artifact;
 
     suiteSetup(function() {
+      nock.cleanAll();
       // for testing artifact downloads, we use a fake queue but a real object service.
       queue = new taskcluster.Queue({
         ...taskcluster.fromEnvVars(),
