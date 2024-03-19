@@ -466,6 +466,7 @@ export const createClient = function(reference, name) {
             routingKeyPattern === null) {
           routingKeyPattern = {};
         }
+
         // Check that the routing key pattern is an object
         assert(routingKeyPattern instanceof Object,
           'routingKeyPattern must be an object');
@@ -664,22 +665,24 @@ export const createClient = function(reference, name) {
 // Load data from apis.js
 import apis from './apis.js';
 
-export const Auth = createClient(apis.Auth.reference, "Auth");
-export const AuthEvents = createClient(apis.AuthEvents.reference, "AuthEvents");
-export const Github = createClient(apis.Github.reference, "Github");
-export const GithubEvents = createClient(apis.GithubEvents.reference, "GithubEvents");
-export const Hooks = createClient(apis.Hooks.reference, "Hooks");
-export const HooksEvents = createClient(apis.HooksEvents.reference, "HooksEvents");
-export const Index = createClient(apis.Index.reference, "Index");
-export const Notify = createClient(apis.Notify.reference, "Notify");
-export const NotifyEvents = createClient(apis.NotifyEvents.reference, "NotifyEvents");
-export const Object = createClient(apis.Object.reference, "Object");
-export const PurgeCache = createClient(apis.PurgeCache.reference, "PurgeCache");
-export const Queue = createClient(apis.Queue.reference, "Queue");
-export const QueueEvents = createClient(apis.QueueEvents.reference, "QueueEvents");
-export const Secrets = createClient(apis.Secrets.reference, "Secrets");
-export const WorkerManager = createClient(apis.WorkerManager.reference, "WorkerManager");
-export const WorkerManagerEvents = createClient(apis.WorkerManagerEvents.reference, "WorkerManagerEvents");
+export const clients = {
+  Auth: createClient(apis.Auth.reference, "Auth"),
+  AuthEvents: createClient(apis.AuthEvents.reference, "AuthEvents"),
+  Github: createClient(apis.Github.reference, "Github"),
+  GithubEvents: createClient(apis.GithubEvents.reference, "GithubEvents"),
+  Hooks: createClient(apis.Hooks.reference, "Hooks"),
+  HooksEvents: createClient(apis.HooksEvents.reference, "HooksEvents"),
+  Index: createClient(apis.Index.reference, "Index"),
+  Notify: createClient(apis.Notify.reference, "Notify"),
+  NotifyEvents: createClient(apis.NotifyEvents.reference, "NotifyEvents"),
+  Object: createClient(apis.Object.reference, "Object"),
+  PurgeCache: createClient(apis.PurgeCache.reference, "PurgeCache"),
+  Queue: createClient(apis.Queue.reference, "Queue"),
+  QueueEvents: createClient(apis.QueueEvents.reference, "QueueEvents"),
+  Secrets: createClient(apis.Secrets.reference, "Secrets"),
+  WorkerManager: createClient(apis.WorkerManager.reference, "WorkerManager"),
+  WorkerManagerEvents: createClient(apis.WorkerManagerEvents.reference, "WorkerManagerEvents"),
+};
 
 /**
  * Update default configuration
@@ -860,7 +863,7 @@ export const credentialInformation = function(rootUrl, credentials) {
     result.type = 'permanent';
   }
 
-  let anonClient = new Auth({ rootUrl });
+  let anonClient = new clients.Auth({ rootUrl });
   let clientLookup = anonClient.client(issuer).then(function(client) {
     let expires = new Date(client.expires);
     if (!result.expiry || result.expiry > expires) {
@@ -871,7 +874,7 @@ export const credentialInformation = function(rootUrl, credentials) {
     }
   });
 
-  let credClient = new Auth({ rootUrl, credentials });
+  let credClient = new clients.Auth({ rootUrl, credentials });
   let scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });
