@@ -65,9 +65,7 @@ let _defaultOptions = {
   // Request time out (defaults to 30 seconds)
   timeout: 30 * 1000,
   // Max number of request retries
-  retries: {
-    limit: 5,
-  },
+  retries: 5,
   // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
   // 100 ms is solid for servers, and 500ms - 1s is suitable for background
   // processes
