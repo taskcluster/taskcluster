@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import got from 'got';
+import got, { TimeoutError } from 'got';
 
 import debugFactory from 'debug';
 const debug = debugFactory('taskcluster-client');
@@ -65,7 +65,9 @@ let _defaultOptions = {
   // Request time out (defaults to 30 seconds)
   timeout: 30 * 1000,
   // Max number of request retries
-  retries: 5,
+  retries: {
+    limit: 5,
+  },
   // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
   // 100 ms is solid for servers, and 500ms - 1s is suitable for background
   // processes
@@ -106,10 +108,14 @@ export const makeRequest = async function(client, method, url, payload, query) {
     method: method.toUpperCase(),
     agent: client._httpAgent,
     followRedirect: false,
-    timeout: client._timeout,
+    timeout: {
+      request: client._timeout,
+    },
     headers: {},
     responseType: 'text',
-    retry: 0,
+    retry: {
+      limit: 0,
+    },
     hooks: {
       afterResponse: [res => {
         // parse the body, if one was given (Got's `responseType: json` fails to check content-type)
@@ -151,7 +157,7 @@ export const makeRequest = async function(client, method, url, payload, query) {
     res = await got(url, options);
   } catch (err) {
     // translate errors as users expect them, for compatibility
-    if (err instanceof got.TimeoutError) {
+    if (err instanceof TimeoutError) {
       err.code = 'ECONNABORTED';
     }
     throw err;
