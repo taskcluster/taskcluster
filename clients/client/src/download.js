@@ -2,6 +2,7 @@ import got, { HTTPError } from 'got';
 import { pipeline } from 'node:stream/promises';
 import retry from './retry.js';
 import { HashStream, ACCEPTABLE_HASHES } from './hashstream.js';
+import { clients } from './client.js';
 
 // apply default retry config
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({
@@ -128,10 +129,7 @@ export const downloadArtifact = async ({
     }
 
     case "object": {
-      // `taskcluster.Object` is created at runtime, so we cannot require this
-      // at the top level.
-      const taskcluster = await import('./index.js');
-      const object = new taskcluster.Object({
+      const object = new clients.Object({
         rootUrl: queue._options._trueRootUrl,
         credentials: artifact.credentials,
       });
