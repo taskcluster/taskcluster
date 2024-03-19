@@ -237,7 +237,7 @@ suite(testing.suiteName(), function() {
         .reply(500, 'uhoh!'); // fail the first time
       nock('http://testing.example.com')
         .get('/download')
-        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' }); // succed the second time
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' }); // succeed the second time
 
       await taskcluster.download({
         name: 'some-object',
