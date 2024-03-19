@@ -62,7 +62,7 @@ export const upload = async ({
   const retryCfg = {
     retries: retries === undefined ? 5 : retries,
     delayFactor: delayFactor === undefined ? 100 : delayFactor,
-    randomizationFactor: randomizationFactor === undefined ? randomizationFactor : 0.25,
+    randomizationFactor: randomizationFactor === undefined ? 0.25 : randomizationFactor,
     maxDelay: maxDelay === undefined ? 30 * 1000 : maxDelay,
   };
 
