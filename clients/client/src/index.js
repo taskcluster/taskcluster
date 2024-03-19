@@ -14,6 +14,7 @@ import * as download from './download.js';
 
 export default {
   ...client,
+  ...client.clients,
   ...utils,
   ...upload,
   ...download,
