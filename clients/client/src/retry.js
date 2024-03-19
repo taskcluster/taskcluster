@@ -9,6 +9,7 @@
  */
 export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, func) => {
   let attempt = 0;
+  const totalRetries = Number.isInteger(retries) ? retries : retries?.limit;
 
   while (true) {
     attempt += 1;
@@ -21,7 +22,7 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
       return rv;
     }
 
-    if (attempt > retries) {
+    if (attempt > totalRetries) {
       throw retriableError;
     }
 
