@@ -1,4 +1,4 @@
-import got from 'got';
+import got, { HTTPError } from 'got';
 import { slugid } from './utils.js';
 import retry from './retry.js';
 import { HashStream } from './hashstream.js';
@@ -11,12 +11,12 @@ const putUrl = async ({ streamFactory, contentLength, uploadMethod, retryCfg }) 
     try {
       await got.put(url, {
         headers,
-        retry: false, // use our own retry logic
+        retry: { limit: 0 }, // use our own retry logic
         body: await streamFactory(),
       });
     } catch (err) {
       // treat non-500 HTTP responses as fatal errors, and retry everything else
-      if (err instanceof got.HTTPError && err.response.statusCode < 500) {
+      if (err instanceof HTTPError && err.response.statusCode < 500) {
         throw err;
       }
       return retriableError(err);
