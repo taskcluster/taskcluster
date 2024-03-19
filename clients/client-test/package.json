@@ -11,7 +11,6 @@
     "http-proxy": "^1.18.0",
     "mocha": "^10.2.0",
     "nock": "^13.0.0",
-    "stream-buffers": "^3.0.2",
     "taskcluster-client": "link:../client",
     "taskcluster-db": "link:db",
     "taskcluster-lib-api": "link:../libraries/api",
