@@ -1,9 +1,29 @@
 import taskcluster from '../src/index.js';
 import nock from 'nock';
+import { Readable, Writable } from 'node:stream';
 import crypto from 'crypto';
 import { strict as assert } from 'assert';
-import { WritableStreamBuffer, ReadableStreamBuffer } from 'stream-buffers';
 import testing from './helper.js';
+
+class WritableStream extends Writable {
+  constructor() {
+    super();
+    this.contents = null;
+  }
+
+  getContents() {
+    return this.contents;
+  }
+
+  write(chunk, encoding, callback) {
+    if (!this.contents) {
+      this.contents = chunk;
+    } else {
+      this.contents = Buffer.concat([this.contents, chunk]);
+    }
+    callback?.();
+  }
+}
 
 suite(testing.suiteName(), function() {
   testing.withRestoredEnvVars();
@@ -45,9 +65,9 @@ suite(testing.suiteName(), function() {
       expires,
       object,
       streamFactory: async () => {
-        const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-        stream.put(data);
-        stream.stop();
+        const stream = new Readable();
+        stream.push(data);
+        stream.push(null);
         return stream;
       },
     });
@@ -57,7 +77,7 @@ suite(testing.suiteName(), function() {
       name,
       object,
       streamFactory: async () => {
-        stream = new WritableStreamBuffer();
+        stream = new WritableStream();
         return stream;
       },
     });
@@ -122,9 +142,9 @@ suite(testing.suiteName(), function() {
       expires: taskcluster.fromNow('1 hour'),
       object,
       streamFactory: async () => {
-        const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-        stream.put(data);
-        stream.stop();
+        const stream = new Readable();
+        stream.push(data);
+        stream.push(null);
         return stream;
       },
       ...overrides,
@@ -147,7 +167,7 @@ suite(testing.suiteName(), function() {
       await taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       });
     } finally {
       nock.cleanAll();
@@ -164,7 +184,7 @@ suite(testing.suiteName(), function() {
       await assert.rejects(() => taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       }));
     } finally {
       nock.cleanAll();
@@ -184,7 +204,7 @@ suite(testing.suiteName(), function() {
       await assert.rejects(() => taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       }));
     } finally {
       nock.cleanAll();
@@ -203,7 +223,7 @@ suite(testing.suiteName(), function() {
       await taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       });
     } finally {
       nock.cleanAll();
@@ -242,7 +262,7 @@ suite(testing.suiteName(), function() {
       await taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       });
     } finally {
       nock.cleanAll();
@@ -259,7 +279,7 @@ suite(testing.suiteName(), function() {
       await assert.rejects(() => taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       }),
       /403/);
     } finally {
@@ -354,9 +374,9 @@ suite(testing.suiteName(), function() {
         expires,
         object,
         streamFactory: async () => {
-          const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-          stream.put(data);
-          stream.stop();
+          const stream = new Readable();
+          stream.push(data);
+          stream.push(null);
           return stream;
         },
       });
@@ -371,7 +391,7 @@ suite(testing.suiteName(), function() {
         name: "public/test.file",
         queue,
         streamFactory: async () => {
-          stream = new WritableStreamBuffer();
+          stream = new WritableStream();
           return stream;
         },
         retries: 0,
