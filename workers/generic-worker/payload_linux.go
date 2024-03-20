@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v62/tools/d2g"
-	"github.com/taskcluster/taskcluster/v62/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v62/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v63/tools/d2g"
+	"github.com/taskcluster/taskcluster/v63/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v63/tools/jsonschema2go/text"
 
 	"sigs.k8s.io/yaml"
 )

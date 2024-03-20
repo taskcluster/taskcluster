@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v62/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v63/workers/generic-worker/host"
 )
 
 func (lat *LoopbackAudioTask) setupAudioDevice() *CommandExecutionError {

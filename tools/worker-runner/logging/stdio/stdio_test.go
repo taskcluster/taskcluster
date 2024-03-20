@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v62/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/logging/logging"
 )
 
 func makeLogger() (logging.Logger, *bytes.Buffer) {

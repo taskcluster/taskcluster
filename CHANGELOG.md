@@ -3,6 +3,37 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v63.0.0
+
+### GENERAL
+
+▶ [minor]
+Upgrades to Node.js LTS v20.
+
+### DEVELOPERS
+
+▶ [MAJOR]
+Upgrades client-node library to ESModules and upgrades `got` library
+
+▶ [patch]
+Upgrades to yarn v4.1.1
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-node-deps group (ba901ba05)
+* build(deps-dev): bump qlobber from 5.0.3 to 8.0.1 (28f2869aa)
+* build(deps): bump follow-redirects from 1.15.4 to 1.15.6 in /ui (e39d63567)
+* build(deps): bump follow-redirects from 1.15.4 to 1.15.6 (a7c78f0f8)
+* build(deps): bump follow-redirects in /clients/client-web (103febfe8)
+* build(deps): bump follow-redirects in /clients/client-test (d2b3288b2)
+* build(deps): bump follow-redirects in /clients/client (c903e7de6)
+* build(deps): bump taskcluster from 60.4.2 to 62.0.0 in /taskcluster (04df8aedd)
+
+</details>
+
 ## v62.0.0
 
 ### WORKER-DEPLOYERS
