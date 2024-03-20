@@ -215,7 +215,9 @@ export class AzureProvider extends Provider {
     return await got(url, {
       responseType: 'buffer',
       resolveBodyOnly: true,
-      timeout: this.downloadTimeout,
+      timeout: {
+        request: this.downloadTimeout,
+      },
       followRedirect: false,
     });
   }

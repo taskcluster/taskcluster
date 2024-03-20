@@ -1,13 +1,21 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-let _ = require('lodash');
+export * from './client.js';
+export * from './utils.js';
+export * from './upload.js';
+export * from './download.js';
 
-// Export methods and classes from other files
-_.defaults(exports,
-  require('./client'),
-  require('./utils'),
-  require('./upload'),
-  require('./download'),
-);
+import * as client from './client.js';
+import * as utils from './utils.js';
+import * as upload from './upload.js';
+import * as download from './download.js';
+
+export default {
+  ...client,
+  ...client.clients,
+  ...utils,
+  ...upload,
+  ...download,
+};
