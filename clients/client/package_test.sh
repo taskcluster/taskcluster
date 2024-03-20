@@ -11,9 +11,10 @@ trap "cd /; rm -rf $tmpdir" EXIT
 
 yarn pack --filename $tmpdir/client.tgz
 cd $tmpdir
+echo '{"type": "module"}' > package.json
 yarn add ./client.tgz
-node <<'EOF'
-const taskcluster = require('taskcluster-client');
+cat <<'EOF' > index.js
+import taskcluster from 'taskcluster-client';
 
 const main = async () => {
     if (process.env.TASKCLUSTER_ROOT_URL) {
@@ -25,3 +26,4 @@ const main = async () => {
 };
 main().then(console.log('Test OK!'), err => console.error(err));
 EOF
+node index.js

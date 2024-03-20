@@ -22,8 +22,6 @@ required, and it's unusual to configure any other options aside from
 `credentials`.
 
 ```js
-const taskcluster = require('taskcluster-client');
-// or
 import taskcluster from 'taskcluster-client';
 
 // Instantiate the Queue Client class
@@ -348,7 +346,7 @@ need it in `taskcluster-client` and expose the preferred slugid generation
 function as `taskcluster.slugid()`.
 
 ```js
-const taskcluster = require('taskcluster-client');
+import taskcluster from 'taskcluster-client';
 
 // Generate new taskId
 const taskId = taskcluster.slugid();
@@ -482,7 +480,7 @@ create an `..Events` instance, call the apprporiate methods on it to construct
 a binding, and pass that to `pulse.consume`:
 
 ```js
-const taskcluster = require('taskcluster-client');
+import taskcluster from 'taskcluster-client';
 
 // Instantiate the QueueEvents Client class
 const queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
