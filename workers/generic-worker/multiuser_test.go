@@ -12,9 +12,9 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v63/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v63/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v63/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v64/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v64/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v64/workers/generic-worker/host"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting

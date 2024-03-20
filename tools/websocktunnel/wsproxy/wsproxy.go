@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v63/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v64/tools/websocktunnel/wsmux"
 )
 
 func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string, path string) error {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v63/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v64/tools/workerproto"
 )
 
 type standaloneProviderConfig struct {

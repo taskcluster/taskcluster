@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v63/clients/client-go"
-	"github.com/taskcluster/taskcluster/v63/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v63/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v63/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v64/clients/client-go"
+	"github.com/taskcluster/taskcluster/v64/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v64/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v64/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/instance/preempted"

@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+The Docker Worker binary is no longer built during releases. The most recent Docker Worker binary can be found [here](https://github.com/taskcluster/taskcluster/releases/download/v62.0.0/docker-worker-x64.tgz).
+
 ## v63.0.0
 
 ### GENERAL

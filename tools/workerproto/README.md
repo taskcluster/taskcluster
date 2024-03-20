@@ -25,7 +25,7 @@ Note that stderr is not included in the protocol.
 
 ## Go Package
 
-The `github.com/taskcluster/taskcluster/v63/tools/workerproto` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
+The `github.com/taskcluster/taskcluster/v64/tools/workerproto` package contains an implementation of this protocol suitable for use by `start-worker` and by a worker.
 
 ## Initialization and Capability Negotiation
 
