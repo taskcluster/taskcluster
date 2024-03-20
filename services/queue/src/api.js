@@ -192,6 +192,84 @@ builder.declare({
   return res.reply(definition);
 });
 
+/** Get task batched */
+builder.declare({
+  method: 'post',
+  route: '/tasks',
+  query: paginateResults.query,
+  name: 'tasks',
+  scopes: { AllOf: [{
+    for: 'taskId',
+    in: 'taskIds',
+    each: 'queue:get-task:<taskId>',
+  }] },
+  input: 'tasks-request.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  idempotent: true,
+  output: 'tasks-response.yml',
+  title: 'Get multiple task definitions',
+  description: [
+    'This end-point will return the task definition for each input task id.',
+    'Notice that the task definitions may have been modified by queue.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskIds = req.body.taskIds;
+
+  await req.authorize({ taskIds });
+
+  const { tasks, continuationToken } = await Task.getMultiple(
+    this.db,
+    { taskIds },
+    { query: req.query },
+  );
+  const definitions = [];
+  for (const task of tasks) {
+    definitions.push({ taskId: task.taskId, task: task.definition() });
+  }
+  return res.reply({ tasks: definitions, continuationToken });
+});
+
+/** Get task status batched */
+builder.declare({
+  method: 'post',
+  route: '/tasks/status',
+  query: paginateResults.query,
+  name: 'statuses',
+  scopes: { AllOf: [{
+    for: 'taskId',
+    in: 'taskIds',
+    each: 'queue:status:<taskId>',
+  }] },
+  input: 'tasks-request.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  idempotent: true,
+  output: 'tasks-statuses-response.yml',
+  title: 'Get multiple task definitions',
+  description: [
+    'This end-point will return the task statuses for each input task id.',
+    'If a given taskId does not match a task, it will be ignored,',
+    'and callers will need to handle the difference.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskIds = req.body.taskIds;
+
+  await req.authorize({ taskIds });
+
+  const { tasks, continuationToken } = await Task.getMultiple(
+    this.db,
+    { taskIds },
+    { query: req.query },
+  );
+  const statuses = [];
+  for (const task of tasks) {
+    statuses.push({ taskId: task.taskId, status: task.status() });
+  }
+
+  return res.reply({ statuses: statuses, continuationToken });
+});
+
 /** Get task status */
 builder.declare({
   method: 'get',

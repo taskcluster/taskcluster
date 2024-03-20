@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Tasks Statuses Response"
+description: |
+  Status of multiple tasks
+type:               object
+properties:
+  statuses:
+    # Go generation doesn't understand `patternProperties`, which would allow
+    # us to build a mapping `taskID -> status`. So build an array.
+    type:           array
+    items:
+      type:         object
+      properties:
+        taskId:
+          type: string
+        status: { $ref: "task-status.json#" }
+      additionalProperties: false
+      required:
+        - taskId
+        - status
+    uniqueItems: true
+    default: []
+  continuationToken:
+    title:                "Continuation Token"
+    type:                 string
+    description: |
+      A continuation token is returned if there are more results than listed
+      here. You can optionally provide the token in the request payload to
+      load the additional results.
+additionalProperties: false
+required:
+  - statuses

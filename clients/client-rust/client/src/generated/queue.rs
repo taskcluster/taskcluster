@@ -203,6 +203,59 @@ impl Queue {
         (path, query)
     }
 
+    /// Get multiple task definitions
+    ///
+    /// This end-point will return the task definition for each input task id.
+    /// Notice that the task definitions may have been modified by queue.
+    pub async fn tasks(&self, payload: &Value, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::tasks_details(continuationToken, limit);
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for tasks
+    fn tasks_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "tasks";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
+    /// Get multiple task definitions
+    ///
+    /// This end-point will return the task statuses for each input task id.
+    /// If a given taskId does not match a task, it will be ignored,
+    /// and callers will need to handle the difference.
+    pub async fn statuses(&self, payload: &Value, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::statuses_details(continuationToken, limit);
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for statuses
+    fn statuses_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "tasks/status";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Get task status
     ///
     /// Get task status structure from `taskId`

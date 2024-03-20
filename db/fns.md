@@ -92,6 +92,7 @@
    * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+   * [`get_multiple_tasks`](#get_multiple_tasks)
    * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
    * [`get_queue_artifact`](#get_queue_artifact)
    * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
@@ -1339,6 +1340,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+* [`get_multiple_tasks`](#get_multiple_tasks)
 * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
 * [`get_queue_artifact`](#get_queue_artifact)
 * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
@@ -1737,6 +1739,41 @@ complex and expensive table scans.
 As table is very big doing a sequential scan without ordering is faster.
 Expired entities are expected to be deleted right after as this function
 doesn't support pagination with offsets.
+
+### get_multiple_tasks
+
+* *Mode*: read
+* *Arguments*:
+  * `tasks_in jsonb`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz `
+* *Last defined on version*: 99
+
+Get tasks matching the given taskIds.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
 
 ### get_pending_tasks_by_task_queue_id
 

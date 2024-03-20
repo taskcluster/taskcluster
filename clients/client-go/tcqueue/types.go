@@ -420,7 +420,7 @@ type (
 		// as they might be currently resolved by a worker or claim-resolver.
 		//
 		// Tasks are returned by claimed time, with the oldest claimed tasks first.
-		Tasks []Var1 `json:"tasks"`
+		Tasks []Var3 `json:"tasks"`
 	}
 
 	// Response from a `listDependentTasks` request.
@@ -461,7 +461,7 @@ type (
 		// as they might be actively claimed by a worker.
 		//
 		// Tasks are returned in inserted order.
-		Tasks []Var `json:"tasks"`
+		Tasks []Var2 `json:"tasks"`
 	}
 
 	ListProvisionersResponse struct {
@@ -1562,6 +1562,28 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Definitions of multiple tasks
+	TaskDefinitionResponse1 struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// Default:    []
+		Tasks []Var `json:"tasks"`
+	}
+
+	// Request to list definitions of multiple tasks.
+	TaskDefinitionsResponse struct {
+
+		// Default:    []
+		//
+		// Array items:
+		// ID of a task to list
+		TaskIds []string `json:"taskIds,omitempty"`
+	}
+
 	// Request for a run of a task to be resolved with an exception
 	TaskExceptionRequest struct {
 
@@ -1912,7 +1934,35 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Status of multiple tasks
+	TasksStatusesResponse struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// Default:    []
+		Statuses []Var1 `json:"statuses"`
+	}
+
 	Var struct {
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		TaskID string `json:"taskId"`
+	}
+
+	Var1 struct {
+
+		// A representation of **task status** as known by the queue
+		Status TaskStatusStructure `json:"status"`
+
+		TaskID string `json:"taskId"`
+	}
+
+	Var2 struct {
 		Inserted tcclient.Time `json:"inserted"`
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.
@@ -1932,7 +1982,7 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	Var1 struct {
+	Var3 struct {
 		Claimed tcclient.Time `json:"claimed"`
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.

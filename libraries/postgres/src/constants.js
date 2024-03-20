@@ -4,6 +4,7 @@ export const WRITE = 'write';
 // = see https://www.postgresql.org/docs/15/errcodes-appendix.htm;
 export const DUPLICATE_OBJECT = '42710';
 export const DUPLICATE_TABLE = '42P07';
+export const INVALID_PARAMETER_VALUE = '22023';
 export const NUMERIC_VALUE_OUT_OF_RANGE = '22003';
 export const QUERY_CANCELED = '57014';
 export const READ_ONLY_SQL_TRANSACTION = '25006';
