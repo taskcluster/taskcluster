@@ -121,7 +121,6 @@ class Build extends Base {
       'target-monoimage-devel',
       'target-livelog',
       'target-client-shell',
-      'target-docker-worker',
       'target-generic-worker',
       'target-generic-worker-image',
       'target-worker-runner',
