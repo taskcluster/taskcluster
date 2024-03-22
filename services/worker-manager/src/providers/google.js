@@ -3,7 +3,8 @@ import slugid from 'slugid';
 import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import * as uuid from 'uuid';
-import { google } from 'googleapis';
+import gcpCompute from '@googleapis/compute';
+import gcpIam from '@googleapis/iam';
 import { ApiError, Provider } from './provider.js';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
@@ -64,20 +65,20 @@ export class GoogleProvider extends Provider {
     }
 
     this.ownClientEmail = creds.client_email;
-    const client = google.auth.fromJSON(creds);
+    const client = gcpCompute.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
       'https://www.googleapis.com/auth/iam', // For fetching service account name
     ];
-    this.compute = google.compute({
+    this.compute = gcpCompute.compute({
       version: 'v1',
       auth: client,
     });
-    this.iam = google.iam({
+    this.iam = gcpIam.iam({
       version: 'v1',
       auth: client,
     });
-    this.oauth2 = new google.auth.OAuth2();
+    this.oauth2 = new gcpCompute.auth.OAuth2();
   }
 
   async setup() {
