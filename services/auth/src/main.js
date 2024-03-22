@@ -15,7 +15,8 @@ import createSignatureValidator from './signaturevalidator.js';
 import taskcluster from 'taskcluster-client';
 import makeSentryManager from './sentrymanager.js';
 import * as libPulse from 'taskcluster-lib-pulse';
-import { google as googleapis } from 'googleapis';
+import * as googleapis from 'google-auth-library';
+import { IAMCredentialsClient } from '@google-cloud/iam-credentials';
 import assert from 'assert';
 import { fileURLToPath } from 'url';
 import { syncStaticClients } from './static-clients.js';
@@ -191,6 +192,8 @@ const load = Loader({
         'https://www.googleapis.com/auth/iam',
       ];
 
+      const iamCredentialsClient = new IAMCredentialsClient({ credentials: auth });
+
       // return an object with..
       return {
         // the googleapis module (useful for dependency injection in tests)
@@ -201,6 +204,8 @@ const load = Loader({
         credentials,
         // service accounts we allow to generate temporary credentials from
         allowedServiceAccounts,
+        // IAM Credentials client
+        iamCredentialsClient,
       };
     },
   },
