@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v64/clients/client-go"
 	"github.com/taskcluster/taskcluster/v64/clients/client-go/tcworkermanager"
@@ -24,7 +23,7 @@ type GoogleProvider struct {
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
 	workerIdentityProof        map[string]interface{}
-	terminationTicker          *time.Ticker
+	terminationMsgSent         bool
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
@@ -111,11 +110,11 @@ func (p *GoogleProvider) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (p *GoogleProvider) checkTerminationTime() bool {
-	value, err := p.metadataService.queryMetadata(TERMINATION_PATH)
+	value, err := p.metadataService.queryMetadata(TERMINATION_PATH + "?wait_for_change=true")
 	// if the file exists and contains TRUE, it's time to go away
 	if err == nil && value == "TRUE" {
 		log.Println("GCP Metadata Service says termination is imminent")
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
+		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]interface{}{
@@ -123,6 +122,7 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 					"finish-tasks": false,
 				},
 			})
+			p.terminationMsgSent = true
 		}
 		return true
 	}
@@ -130,13 +130,10 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 }
 
 func (p *GoogleProvider) WorkerStarted(state *run.State) error {
-	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(15 * time.Second)
 	p.proto.AddCapability("graceful-termination")
 
 	go func() {
 		for {
-			<-p.terminationTicker.C
 			log.Println("polling for termination-time")
 			p.checkTerminationTime()
 		}
