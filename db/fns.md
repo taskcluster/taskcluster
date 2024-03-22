@@ -50,6 +50,7 @@
    * [`get_index_namespaces`](#get_index_namespaces)
    * [`get_indexed_task`](#get_indexed_task)
    * [`get_indexed_tasks`](#get_indexed_tasks)
+   * [`get_tasks_from_indexes`](#get_tasks_from_indexes)
    * [`update_index_namespace`](#update_index_namespace)
    * [`update_indexed_task`](#update_indexed_task)
  * [notify functions](#notify)
@@ -876,6 +877,7 @@ the return value is an empty set.
 * [`get_index_namespaces`](#get_index_namespaces)
 * [`get_indexed_task`](#get_indexed_task)
 * [`get_indexed_tasks`](#get_indexed_tasks)
+* [`get_tasks_from_indexes`](#get_tasks_from_indexes)
 * [`update_index_namespace`](#update_index_namespace)
 * [`update_indexed_task`](#update_indexed_task)
 
@@ -1018,6 +1020,26 @@ Get an indexed task. The returned table will have one or zero rows.
 
 Get existing indexed tasks filtered by the optional arguments,
 ordered by the `namespace` and `name`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
+### get_tasks_from_indexes
+
+* *Mode*: read
+* *Arguments*:
+  * `indexes_in jsonb`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `namespace text`
+  * `name text`
+  * `rank integer`
+  * `task_id text`
+  * `data jsonb`
+  * `expires timestamptz`
+* *Last defined on version*: 98
+
+Get tasks matching the given indexes, 0 or 1 per input index.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 

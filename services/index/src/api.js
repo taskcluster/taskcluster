@@ -66,6 +66,46 @@ builder.declare({
   return res.reply(helpers.taskUtils.serialize(task));
 });
 
+/** List tasks from given task labels */
+builder.declare({
+  method: 'post',
+  route: '/tasks/indexes',
+  query: paginateResults.query,
+  name: 'findTasksAtIndex',
+  scopes: { AllOf: [{
+    for: 'indexPath',
+    in: 'indexPaths',
+    each: 'index:find-task:<indexPath>',
+  }] },
+  input: 'list-tasks-at-index.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Index Service',
+  output: 'list-tasks-response.yml',
+  title: 'Find tasks at indexes',
+  description: [
+    'List the tasks given their labels',
+    '',
+    'This endpoint',
+    'lists up to 1000 tasks. If more tasks are present, a',
+    '`continuationToken` will be returned, which can be given in the next',
+    'request, along with the same input data. If the input data is different',
+    'the continuationToken will have no effect.',
+  ].join('\n'),
+}, async function (req, res) {
+  const indexes = req.body.indexes;
+  await req.authorize({ indexPaths: indexes });
+  const { continuationToken, tasks } = await helpers.taskUtils.findTasksAtIndexes(
+    this.db,
+    { indexes },
+    { query: req.query },
+  );
+
+  res.reply({
+    tasks: tasks.map(helpers.taskUtils.serialize),
+    continuationToken,
+  });
+});
+
 /** GET List namespaces inside another namespace */
 builder.declare({
   method: 'get',

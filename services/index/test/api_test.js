@@ -216,7 +216,98 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert(err.statusCode === 404, 'Should have returned 404');
         return;
       }
+      assert(false, "should have caught");
     });
+
+    test('findTasksAtIndexes finds tasks', async function() {
+      const myns = slugid.v4();
+
+      let date = new Date();
+      date.setDate(date.getDate() + 20);
+      const not_expired = date.toJSON();
+
+      date = new Date();
+      date.setDate(date.getDate() - 1);
+      const expired = date.toJSON();
+
+      // shouldn't be matched: lower rank than the next
+      await helper.index.insertTask(myns + '.my-task', {
+        taskId: slugid.v4(),
+        rank: 40,
+        data: { hello: 'world' },
+        expires: not_expired,
+      });
+
+      // should be matched
+      const task1 = await helper.index.insertTask(myns + '.my-task', {
+        taskId: slugid.v4(),
+        rank: 41,
+        data: { hello: 'world' },
+        expires: not_expired,
+      });
+
+      // shouldn't be matched because of its name
+      await helper.index.insertTask(myns + '.my-task2', {
+        taskId: slugid.v4(),
+        rank: 42,
+        data: { hello: 'world' },
+        expires: not_expired,
+      });
+
+      // shouldn't be matched because it's expired
+      await helper.index.insertTask(myns + '.my-task3', {
+        taskId: slugid.v4(),
+        rank: 44,
+        data: { hello: 'world' },
+        expires: expired,
+      });
+
+      // Should be matched
+      const task3 = await helper.index.insertTask(myns + '.my-task3', {
+        taskId: slugid.v4(),
+        rank: 43,
+        data: { hello: 'world' },
+        expires: not_expired,
+      });
+
+      let results = await helper.index.findTasksAtIndex({
+        indexes: [myns + '.my-task', myns + '.my-task3'],
+      });
+
+      assert.deepEqual(results, { tasks: [task1, task3] });
+
+      // Continuation tokens are returned if the limit is exceeded
+      results = await helper.index.findTasksAtIndex({
+        indexes: [myns + '.my-task', myns + '.my-task3'],
+      }, { limit: 1 });
+
+      assert.deepEqual(results.tasks, [task1]);
+      const continuationToken = results.continuationToken;
+
+      // No input indexes: empty response
+      results = await helper.index.findTasksAtIndex({
+        indexes: [],
+      }, { limit: 1, continuationToken });
+
+      assert.deepEqual(results, { tasks: [] });
+
+      // Different input indexes: empty response
+      results = await helper.index.findTasksAtIndex({
+        indexes: [myns + '.my-task3', myns + '.whatever'],
+      }, { limit: 1, continuationToken });
+
+      assert.deepEqual(results, { tasks: [] });
+
+      // You need to re-send the same input indexes along with the token
+      // for it to work
+      results = await helper.index.findTasksAtIndex({
+        indexes: [myns + '.my-task', myns + '.my-task3'],
+      }, { limit: 1, continuationToken });
+
+      assert.deepEqual(results, { tasks: [task3] });
+
+    });
+
   });
 
   test('access artifact using anonymous scopes', async function() {

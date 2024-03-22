@@ -6238,6 +6238,32 @@
   },
   {
     "content": {
+      "$id": "/schemas/index/v1/list-tasks-at-index.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to list tasks at the given indexes.\n",
+      "properties": {
+        "indexes": {
+          "default": [
+          ],
+          "items": {
+            "description": "Index of a task to list\n",
+            "title": "Task Index",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": false
+        }
+      },
+      "required": [
+      ],
+      "title": "List Tasks At Index Request",
+      "type": "object"
+    },
+    "filename": "schemas/index/v1/list-tasks-at-index.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/index/v1/list-namespaces-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -18765,6 +18791,33 @@
           "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Index Service",
+          "description": "List the tasks given their labels\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest, along with the same input data. If the input data is different\nthe continuationToken will have no effect.",
+          "input": "v1/list-tasks-at-index.json#",
+          "method": "post",
+          "name": "findTasksAtIndex",
+          "output": "v1/list-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/indexes",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "index:find-task:<indexPath>",
+                "for": "indexPath",
+                "in": "indexPaths"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Find tasks at indexes",
           "type": "function"
         },
         {

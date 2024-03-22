@@ -75,6 +75,23 @@ class Index(BaseClient):
 
         return self._makeApiCall(self.funcinfo["findTask"], *args, **kwargs)
 
+    def findTasksAtIndex(self, *args, **kwargs):
+        """
+        Find tasks at indexes
+
+        List the tasks given their labels
+
+        This endpoint
+        lists up to 1000 tasks. If more tasks are present, a
+        `continuationToken` will be returned, which can be given in the next
+        request, along with the same input data. If the input data is different
+        the continuationToken will have no effect.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["findTasksAtIndex"], *args, **kwargs)
+
     def listNamespaces(self, *args, **kwargs):
         """
         List Namespaces
@@ -201,6 +218,16 @@ class Index(BaseClient):
             'output': 'v1/indexed-task-response.json#',
             'route': '/task/<indexPath>',
             'stability': 'stable',
+        },
+        "findTasksAtIndex": {
+            'args': [],
+            'input': 'v1/list-tasks-at-index.json#',
+            'method': 'post',
+            'name': 'findTasksAtIndex',
+            'output': 'v1/list-tasks-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/tasks/indexes',
+            'stability': 'experimental',
         },
         "heartbeat": {
             'args': [],

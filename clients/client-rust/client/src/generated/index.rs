@@ -164,6 +164,37 @@ impl Index {
         (path, query)
     }
 
+    /// Find tasks at indexes
+    ///
+    /// List the tasks given their labels
+    ///
+    /// This endpoint
+    /// lists up to 1000 tasks. If more tasks are present, a
+    /// `continuationToken` will be returned, which can be given in the next
+    /// request, along with the same input data. If the input data is different
+    /// the continuationToken will have no effect.
+    pub async fn findTasksAtIndex(&self, payload: &Value, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::findTasksAtIndex_details(continuationToken, limit);
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for findTasksAtIndex
+    fn findTasksAtIndex_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "tasks/indexes";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// List Namespaces
     ///
     /// List the namespaces immediately under a given namespace.

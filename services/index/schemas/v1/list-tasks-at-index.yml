@@ -1,0 +1,17 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "List Tasks At Index Request"
+description: |
+  Request to list tasks at the given indexes.
+type:               object
+properties:
+  indexes:
+      type:           array
+      default:        []
+      uniqueItems: false
+      items:
+          title:              "Task Index"
+          description: |
+            Index of a task to list
+          type:               string
+additionalProperties: false
+required: []

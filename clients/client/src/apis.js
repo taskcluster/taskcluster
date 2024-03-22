@@ -1563,6 +1563,33 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Index Service",
+          "description": "List the tasks given their labels\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest, along with the same input data. If the input data is different\nthe continuationToken will have no effect.",
+          "input": "v1/list-tasks-at-index.json#",
+          "method": "post",
+          "name": "findTasksAtIndex",
+          "output": "v1/list-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/indexes",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "index:find-task:<indexPath>",
+                "for": "indexPath",
+                "in": "indexPaths"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Find tasks at indexes",
+          "type": "function"
+        },
+        {
+          "args": [
             "namespace"
           ],
           "category": "Index Service",
