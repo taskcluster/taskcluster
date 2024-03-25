@@ -14,6 +14,8 @@ export default class Queue extends Client {
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.tasks.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"tasks","output":true,"query":["continuationToken","limit"],"route":"/tasks","scopes":{"AllOf":[{"each":"queue:get-task:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.statuses.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"statuses","output":true,"query":["continuationToken","limit"],"route":"/tasks/status","scopes":{"AllOf":[{"each":"queue:status:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"post","name":"cancelTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/cancel","scopes":"queue:cancel-task-group:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -93,6 +95,25 @@ export default class Queue extends Client {
     this.validate(this.task.entry, args);
 
     return this.request(this.task.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This end-point will return the task definition for each input task id.
+  // Notice that the task definitions may have been modified by queue.
+  /* eslint-enable max-len */
+  tasks(...args) {
+    this.validate(this.tasks.entry, args);
+
+    return this.request(this.tasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This end-point will return the task statuses for each input task id.
+  // If a given taskId does not match a task, it will be ignored,
+  // and callers will need to handle the difference.
+  /* eslint-enable max-len */
+  statuses(...args) {
+    this.validate(this.statuses.entry, args);
+
+    return this.request(this.statuses.entry, args);
   }
   /* eslint-disable max-len */
   // Get task status structure from `taskId`

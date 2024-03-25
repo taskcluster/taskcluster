@@ -2257,6 +2257,60 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task definition for each input task id.\nNotice that the task definitions may have been modified by queue.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "tasks",
+          "output": "v1/tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-task:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task statuses for each input task id.\nIf a given taskId does not match a task, it will be ignored,\nand callers will need to handle the difference.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "statuses",
+          "output": "v1/tasks-statuses-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/status",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:status:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskId"
           ],
           "category": "Tasks",

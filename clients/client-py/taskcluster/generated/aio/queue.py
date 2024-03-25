@@ -114,6 +114,31 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["task"], *args, **kwargs)
 
+    async def tasks(self, *args, **kwargs):
+        """
+        Get multiple task definitions
+
+        This end-point will return the task definition for each input task id.
+        Notice that the task definitions may have been modified by queue.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["tasks"], *args, **kwargs)
+
+    async def statuses(self, *args, **kwargs):
+        """
+        Get multiple task definitions
+
+        This end-point will return the task statuses for each input task id.
+        If a given taskId does not match a task, it will be ignored,
+        and callers will need to handle the difference.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["statuses"], *args, **kwargs)
+
     async def status(self, *args, **kwargs):
         """
         Get task status
@@ -1280,6 +1305,16 @@ class Queue(AsyncBaseClient):
             'route': '/task/<taskId>/status',
             'stability': 'stable',
         },
+        "statuses": {
+            'args': [],
+            'input': 'v1/tasks-request.json#',
+            'method': 'post',
+            'name': 'statuses',
+            'output': 'v1/tasks-statuses-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/tasks/status',
+            'stability': 'experimental',
+        },
         "task": {
             'args': ['taskId'],
             'method': 'get',
@@ -1287,6 +1322,16 @@ class Queue(AsyncBaseClient):
             'output': 'v1/task.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
+        },
+        "tasks": {
+            'args': [],
+            'input': 'v1/tasks-request.json#',
+            'method': 'post',
+            'name': 'tasks',
+            'output': 'v1/tasks-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/tasks',
+            'stability': 'experimental',
         },
         "version": {
             'args': [],

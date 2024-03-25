@@ -2523,6 +2523,118 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/tasks-statuses-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Status of multiple tasks\n",
+      "properties": {
+        "continuationToken": {
+          "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "statuses": {
+          "default": [
+          ],
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "$ref": "task-status.json#"
+              },
+              "taskId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskId",
+              "status"
+            ],
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "statuses"
+      ],
+      "title": "Tasks Statuses Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/tasks-statuses-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/tasks-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Definitions of multiple tasks\n",
+      "properties": {
+        "continuationToken": {
+          "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "tasks": {
+          "default": [
+          ],
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "task": {
+                "$ref": "task.json#"
+              },
+              "taskId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "taskId",
+              "task"
+            ],
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "tasks"
+      ],
+      "title": "Task Definition Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/tasks-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/tasks-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Request to list definitions of multiple tasks.\n",
+      "properties": {
+        "taskIds": {
+          "default": [
+          ],
+          "items": {
+            "description": "ID of a task to list\n",
+            "title": "Task ID",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": false
+        }
+      },
+      "required": [
+      ],
+      "title": "Task definitions response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/tasks-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/taskqueue-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -16403,6 +16515,60 @@
           "scopes": "queue:get-task:<taskId>",
           "stability": "stable",
           "title": "Get Task Definition",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task definition for each input task id.\nNotice that the task definitions may have been modified by queue.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "tasks",
+          "output": "v1/tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-task:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task statuses for each input task id.\nIf a given taskId does not match a task, it will be ignored,\nand callers will need to handle the difference.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "statuses",
+          "output": "v1/tasks-statuses-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/status",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:status:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
           "type": "function"
         },
         {

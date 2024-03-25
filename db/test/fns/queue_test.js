@@ -6,7 +6,7 @@ import tc from 'taskcluster-client';
 const { fromNow } = tc;
 import helper from '../helper.js';
 import testing from 'taskcluster-lib-testing';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { INVALID_PARAMETER_VALUE, UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import taskcluster from 'taskcluster-client';
 
 suite(testing.suiteName(), function() {
@@ -697,6 +697,86 @@ suite(testing.suiteName(), function() {
     helper.dbTest('get_task with no such task', async function(db) {
       const res = await db.fns.get_task_projid('hOTDAv0gRfW6YA2hm4n5FQ');
       assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_multiple_tasks with empty tasks', async function(db) {
+      const res = await db.fns.get_multiple_tasks(JSON.stringify([]), 1000, 0);
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_multiple_tasks with no such tasks', async function(db) {
+      const res = await db.fns.get_multiple_tasks(
+        JSON.stringify(["these", "do", "not", "exist"]),
+        1000,
+        0,
+      );
+      assert.deepEqual(res, []);
+    });
+
+    helper.dbTest('get_multiple_tasks not an array', async function(db) {
+      await create(db, { taskId: `tid-1` });
+
+      assert.rejects(
+        db.fns.get_multiple_tasks(JSON.stringify("tid-1"), 1000, 0),
+        err => err.code === INVALID_PARAMETER_VALUE,
+      );
+
+      assert.rejects(
+        db.fns.get_multiple_tasks(
+          JSON.stringify({ "tid-1": "not an array" }),
+          1000,
+          0,
+        ),
+        err => err.code === INVALID_PARAMETER_VALUE,
+      );
+    });
+
+    helper.dbTest('get_multiple_tasks works', async function(db) {
+      for (let i = 1; i <= 5; i++) {
+        await create(db, {
+          taskId: `tid-${i}`,
+        });
+      }
+
+      // One duplicated, one that doesn't exist, out of order
+      let res = await db.fns.get_multiple_tasks(
+        JSON.stringify(["tid-5", "tid-2", "doesnotexist", "tid-5", "tid-1"]),
+        1000,
+        0,
+      );
+      assert.equal(res.length, 3);
+      let expectedTasks = [
+        (await db.fns.get_task_projid("tid-1"))[0],
+        (await db.fns.get_task_projid("tid-2"))[0],
+        (await db.fns.get_task_projid("tid-5"))[0],
+      ];
+      assert.deepEqual(res, expectedTasks);
+
+      // Limit to 2 results
+      res = await db.fns.get_multiple_tasks(
+        JSON.stringify(["tid-1", "tid-2", "doesnotexist", "tid-5"]),
+        2,
+        0,
+      );
+      assert.equal(res.length, 2);
+      expectedTasks = [
+        (await db.fns.get_task_projid("tid-1"))[0],
+        (await db.fns.get_task_projid("tid-2"))[0],
+      ];
+      assert.deepEqual(res, expectedTasks);
+
+      // Same limit, but with an offset
+      res = await db.fns.get_multiple_tasks(
+        JSON.stringify(["tid-1", "tid-2", "doesnotexist", "tid-5"]),
+        2,
+        2,
+      );
+      assert.equal(res.length, 1);
+      expectedTasks = [
+        (await db.fns.get_task_projid("tid-5"))[0],
+      ];
+      assert.deepEqual(res, expectedTasks);
+
     });
 
     helper.dbTest('remove_task', async function(db) {

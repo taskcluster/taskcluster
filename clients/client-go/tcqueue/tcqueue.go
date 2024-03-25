@@ -195,6 +195,53 @@ func (queue *Queue) Task_SignedURL(taskId string, duration time.Duration) (*url.
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId), nil, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// This end-point will return the task definition for each input task id.
+// Notice that the task definitions may have been modified by queue.
+//
+// Required scopes:
+//
+//	For taskId in taskIds each queue:get-task:<taskId>
+//
+// See #tasks
+func (queue *Queue) Tasks(continuationToken, limit string, payload *TaskDefinitionsResponse) (*TaskDefinitionResponse1, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks", new(TaskDefinitionResponse1), v)
+	return responseObject.(*TaskDefinitionResponse1), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This end-point will return the task statuses for each input task id.
+// If a given taskId does not match a task, it will be ignored,
+// and callers will need to handle the difference.
+//
+// Required scopes:
+//
+//	For taskId in taskIds each queue:status:<taskId>
+//
+// See #statuses
+func (queue *Queue) Statuses(continuationToken, limit string, payload *TaskDefinitionsResponse) (*TasksStatusesResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/status", new(TasksStatusesResponse), v)
+	return responseObject.(*TasksStatusesResponse), err
+}
+
 // Get task status structure from `taskId`
 //
 // Required scopes:
