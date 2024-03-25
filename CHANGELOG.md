@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.1.2
+
+### USERS
+
+▶ [patch] [#6928](https://github.com/taskcluster/taskcluster/issues/6928)
+D2G no longer adds `--cap-add=SYS_PTRACE` for the docker worker `allowPtrace` feature since all capabilities are already added with the `--privileged` flag being passed to all D2G commands as of #6890.
+
 ## v64.1.1
 
 No changes
