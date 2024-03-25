@@ -299,9 +299,6 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if dwPayload.Capabilities.DisableSeccomp {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
-	if dwPayload.Features.AllowPtrace {
-		command.WriteString(" --cap-add=SYS_PTRACE")
-	}
 	command.WriteString(createVolumeMountsString(dwPayload, wdcs))
 	if dwPayload.Features.TaskclusterProxy {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
