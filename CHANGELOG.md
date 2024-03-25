@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.1.0
+
+### USERS
+
+▶ [minor]
+The index now exposes a `findTasksAtIndexes` endpoint to batch task index requests
+
+▶ [minor]
+The queue now exposes `tasks` and `statuses` to batch task requests
+
+▶ [patch]
+Action tasks now work correctly for task groups created by another action task.
+
 ## v64.0.0
 
 ### WORKER-DEPLOYERS
