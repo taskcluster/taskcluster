@@ -87,7 +87,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
+	test := func(t *testing.T, proto *workerproto.Protocol) {
 		t.Helper()
 
 		userData := &UserData{
@@ -114,7 +114,7 @@ func TestCheckTerminationTime(t *testing.T) {
 			workerManagerClientFactory: nil,
 			metadataService:            mds,
 			proto:                      proto,
-			terminationTicker:          nil,
+			terminationMsgSent:         false,
 		}
 
 		proto.AddCapability("graceful-termination")
@@ -123,7 +123,7 @@ func TestCheckTerminationTime(t *testing.T) {
 		// not time yet..
 		require.False(t, p.checkTerminationTime())
 
-		metaData["/instance/preempted"] = "TRUE"
+		metaData["/instance/preempted?wait_for_change=true"] = "TRUE"
 		require.True(t, p.checkTerminationTime())
 	}
 
@@ -133,7 +133,7 @@ func TestCheckTerminationTime(t *testing.T) {
 
 		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-		test(t, wkr.RunnerProtocol, false)
+		test(t, wkr.RunnerProtocol)
 
 		require.False(t, gotTerm())
 	})
@@ -144,7 +144,7 @@ func TestCheckTerminationTime(t *testing.T) {
 
 		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-		test(t, wkr.RunnerProtocol, false)
+		test(t, wkr.RunnerProtocol)
 
 		require.True(t, gotTerm())
 	})
