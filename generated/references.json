@@ -9157,7 +9157,6 @@
             },
             "maxRunTime": {
               "description": "Maximum time the task container can run in seconds.",
-              "maximum": 86400,
               "minimum": 1,
               "multipleOf": 1,
               "title": "Maximum run time in seconds",
@@ -9944,7 +9943,6 @@
         },
         "maxRunTime": {
           "description": "Maximum time the task container can run in seconds.",
-          "maximum": 86400,
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
