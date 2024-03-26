@@ -283,7 +283,6 @@ type (
 		// Maximum time the task container can run in seconds.
 		//
 		// Mininum:    1
-		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
@@ -1472,7 +1471,6 @@ func JSONSchema() string {
         },
         "maxRunTime": {
           "description": "Maximum time the task container can run in seconds.",
-          "maximum": 86400,
           "minimum": 1,
           "multipleOf": 1,
           "title": "Maximum run time in seconds",
