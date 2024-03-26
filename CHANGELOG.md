@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6802](https://github.com/taskcluster/taskcluster/issues/6802)
+Worker Runner no longer polls the metadata service for the Google provider. Instead, we've added `?wait_for_change=true` to the endpoint to perform a hanging GET request that'll return as soon as the metadata has changed and the VM has been preempted.
+
+### USERS
+
+▶ [minor]
+Remove maxRunTime limitations for docker payloads in generic worker (d2g)
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump express from 4.18.2 to 4.19.2 in /ui (25af6aa6b)
+* build(deps): bump express from 4.18.3 to 4.19.2 (ccf689497)
+
+</details>
+
 ## v64.1.2
 
 ### USERS
