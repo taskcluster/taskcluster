@@ -40,13 +40,8 @@ export const gcpBuilder = builder => builder.declare({
     );
   }
 
-  const iamcredentials = this.gcp.googleapis.iamcredentials({
-    version: 'v1',
-    auth: this.gcp.auth,
-  });
-
   try {
-    const response = await iamcredentials.projects.serviceAccounts.generateAccessToken({
+    const response = await this.gcp.iamCredentialsClient.generateAccessToken({
       // NOTE: the `-` here represents the projectId, and uses the projectId
       // from this.gcp.auth, which is why we verified those match above.
       name: `projects/-/serviceAccounts/${serviceAccount}`,
