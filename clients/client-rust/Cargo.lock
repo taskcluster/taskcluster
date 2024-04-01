@@ -1225,7 +1225,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster"
-version = "64.2.0"
+version = "64.2.1"
 dependencies = [
  "anyhow",
  "backoff",
@@ -1245,7 +1245,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-download"
-version = "64.2.0"
+version = "64.2.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1264,7 +1264,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-integration-tests"
-version = "64.2.0"
+version = "64.2.1"
 dependencies = [
  "anyhow",
  "httptest",
@@ -1281,7 +1281,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-upload"
-version = "64.2.0"
+version = "64.2.1"
 dependencies = [
  "anyhow",
  "async-trait",

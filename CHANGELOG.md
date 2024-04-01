@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades rust version to 1.77.1 and ran `cargo audit fix` to fix insecure crates.
+
+▶ [patch]
+Upgrades to Node.js v20.12.0
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump github-slugger from 1.5.0 to 2.0.0 (775124f00)
+* build(deps): bump the node-deps group with 17 updates (fa332f0e2)
+* build(deps): bump the gh-actions-deps group with 1 update (14f6bb0fd)
+* build(deps): bump taskcluster from 62.0.0 to 64.2.0 in /taskcluster (b751b1dd3)
+* build(deps): bump the python-deps group in /taskcluster with 1 update (c0ae44ba8)
+* build(deps-dev): bump the client-node-deps group (bed1c9ac1)
+* build(deps-dev): bump the client-web-node-deps group (ad42d82be)
+
+</details>
+
 ## v64.2.0
 
 ### WORKER-DEPLOYERS
