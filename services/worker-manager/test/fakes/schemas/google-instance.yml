@@ -41,7 +41,12 @@ properties:
         items:
           type: object
           properties:
-            labels: {$ref: "#/definitions/labels"}
+            initializeParams:
+              type: object
+              properties:
+                labels: {$ref: "#/definitions/labels"}
+              additionalProperties: false
+              required: []
             testProperty: {}
           additionalProperties: false
           required: []
