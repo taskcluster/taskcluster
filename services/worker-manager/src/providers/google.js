@@ -245,7 +245,16 @@ export class GoogleProvider extends Provider {
         ...(cfg.disks || {}),
       ];
       for (let disk of disks) {
-        disk.labels = { ...disk.labels, ...labels };
+        const initializeParams = disk.initializeParams || {};
+        disk.initializeParams = {
+          ...initializeParams,
+          labels: {
+            ...initializeParams.labels,
+            ...disk.labels,
+            ...labels,
+          },
+        };
+        delete disk.labels;
       }
 
       try {
