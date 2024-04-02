@@ -27,6 +27,9 @@ import PageMeta from './PageMeta';
   theme => ({
     documentation: {
       fontFamily: theme.typography.fontFamily,
+      '& a': {
+        ...theme.mixins.link,
+      },
     },
   }),
   { withTheme: true }
