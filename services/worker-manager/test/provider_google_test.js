@@ -231,12 +231,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    provisionTest('disks', {
+    provisionTest('disks (persistent)', {
       config: {
         ...config,
         launchConfigs: [{
           ...defaultLaunchConfig,
-          disks: [{ testProperty: 'bar', labels: { color: 'purple' } }],
+          disks: [{
+            testProperty: 'bar',
+            type: 'PERSISTENT',
+            labels: { color: 'purple' },
+          }],
         }],
       },
       expectedWorkers: 1,
@@ -245,6 +249,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(parameters.requestBody.disks, [
         {
           testProperty: 'bar',
+          type: 'PERSISTENT',
           initializeParams: {
             labels: {
               'created-by': 'taskcluster-wm-' + providerId,
@@ -258,12 +263,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       ]);
     });
 
-    provisionTest('disk labels preserved', {
+    provisionTest('disks (scratch)', {
       config: {
         ...config,
         launchConfigs: [{
           ...defaultLaunchConfig,
-          disks: [{ testProperty: 'bar', initializeParams: { labels: { color: 'purple' } } }],
+          disks: [{
+            testProperty: 'bar',
+            type: 'SCRATCH',
+            labels: { color: 'purple' },
+          }],
         }],
       },
       expectedWorkers: 1,
@@ -272,6 +281,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(parameters.requestBody.disks, [
         {
           testProperty: 'bar',
+          type: 'SCRATCH',
+        },
+      ]);
+    });
+
+    provisionTest('disk labels preserved', {
+      config: {
+        ...config,
+        launchConfigs: [{
+          ...defaultLaunchConfig,
+          disks: [{
+            testProperty: 'bar',
+            type: 'PERSISTENT',
+            initializeParams: { labels: { color: 'purple' } },
+          }],
+        }],
+      },
+      expectedWorkers: 1,
+    }, async workers => {
+      const parameters = fake.compute.instances.insertCalls[0];
+      assert.deepEqual(parameters.requestBody.disks, [
+        {
+          testProperty: 'bar',
+          type: 'PERSISTENT',
           initializeParams: {
             labels: {
               'created-by': 'taskcluster-wm-' + providerId,
