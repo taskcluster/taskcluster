@@ -3,6 +3,15 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.3
+
+### GENERAL
+
+▶ [patch] [#6958](https://github.com/taskcluster/taskcluster/issues/6958)
+Worker Manager now only applies GCP disk labels to `PERSISTENT` disk types.
+
+This fixes an issue in v64.2.2 where `initializeParams.labels` was being set on all disk types and caused GCP to error on local SSDs (`SCRATCH` type disks).
+
 ## v64.2.2
 
 ### GENERAL
