@@ -245,6 +245,10 @@ export class GoogleProvider extends Provider {
         ...(cfg.disks || {}),
       ];
       for (let disk of disks) {
+        if (disk.type !== 'PERSISTENT') {
+          delete disk.labels;
+          continue;
+        }
         const initializeParams = disk.initializeParams || {};
         disk.initializeParams = {
           ...initializeParams,
