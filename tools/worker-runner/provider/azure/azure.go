@@ -115,29 +115,36 @@ func (p *AzureProvider) checkTerminationTime() bool {
 		return false
 	}
 
-	// if there are any events, let's consider that a signal we should go away
-	if evts != nil && len(evts.Events) != 0 {
-		log.Println("Azure Metadata Service says a maintenance event is imminent")
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			p.proto.Send(workerproto.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// termination generally doesn't leave time to finish
-					// tasks. We prefer to have the worker exit cleanly
-					// immediately, resolving tasks as
-					// exception/worker-shutdown, than to allow Azure to
-					// terminate the worker mid-tasks, which leaves the task
-					// still "running" on the queue until the claim expires, at
-					// which time it is completed as exception/claim-expired.
-					// Either one results in a retry, but the first option is
-					// faster and gives the user more context as to what
-					// happened.
-					"finish-tasks": false,
-				},
-			})
-		}
+	// if there are any events aside from Freeze,
+	// let's consider that a signal we should go away
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#event-properties
+	if evts != nil {
+		for _, evt := range evts.Events {
+			if evt.EventType == "Freeze" {
+				continue
+			}
+			log.Printf("Azure Metadata Service says a %s maintenance event is imminent\n", evt.EventType)
+			if p.proto != nil && p.proto.Capable("graceful-termination") {
+				p.proto.Send(workerproto.Message{
+					Type: "graceful-termination",
+					Properties: map[string]interface{}{
+						// termination generally doesn't leave time to finish
+						// tasks. We prefer to have the worker exit cleanly
+						// immediately, resolving tasks as
+						// exception/worker-shutdown, than to allow Azure to
+						// terminate the worker mid-tasks, which leaves the task
+						// still "running" on the queue until the claim expires, at
+						// which time it is completed as exception/claim-expired.
+						// Either one results in a retry, but the first option is
+						// faster and gives the user more context as to what
+						// happened.
+						"finish-tasks": false,
+					},
+				})
+			}
 
-		return true
+			return true
+		}
 	}
 
 	return false

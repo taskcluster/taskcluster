@@ -311,7 +311,7 @@ and reports back results to the queue.
            this worker environment is no longer up-to-date. Typcially workers should
            terminate.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
-    72     The worker is running on spot infrastructure in AWS EC2 and has been served a
+    72     The worker is running on spot infrastructure and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.` + exitCode74() + `
     75     Not able to create an ed25519 key pair.
