@@ -184,7 +184,7 @@ export const taskUtils = {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_tasks_from_indexes(
+        fetch: (size, offset) => db.fns.get_tasks_from_indexes_and_namespaces(
           JSON.stringify(indexes),
           size,
           offset,

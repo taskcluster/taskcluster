@@ -50,7 +50,7 @@
    * [`get_index_namespaces`](#get_index_namespaces)
    * [`get_indexed_task`](#get_indexed_task)
    * [`get_indexed_tasks`](#get_indexed_tasks)
-   * [`get_tasks_from_indexes`](#get_tasks_from_indexes)
+   * [`get_tasks_from_indexes_and_namespaces`](#get_tasks_from_indexes_and_namespaces)
    * [`update_index_namespace`](#update_index_namespace)
    * [`update_indexed_task`](#update_indexed_task)
  * [notify functions](#notify)
@@ -878,7 +878,7 @@ the return value is an empty set.
 * [`get_index_namespaces`](#get_index_namespaces)
 * [`get_indexed_task`](#get_indexed_task)
 * [`get_indexed_tasks`](#get_indexed_tasks)
-* [`get_tasks_from_indexes`](#get_tasks_from_indexes)
+* [`get_tasks_from_indexes_and_namespaces`](#get_tasks_from_indexes_and_namespaces)
 * [`update_index_namespace`](#update_index_namespace)
 * [`update_indexed_task`](#update_indexed_task)
 
@@ -1024,7 +1024,7 @@ ordered by the `namespace` and `name`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_tasks_from_indexes
+### get_tasks_from_indexes_and_namespaces
 
 * *Mode*: read
 * *Arguments*:
@@ -1038,9 +1038,13 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `task_id text`
   * `data jsonb`
   * `expires timestamptz`
-* *Last defined on version*: 98
+* *Last defined on version*: 100
 
 Get tasks matching the given indexes, 0 or 1 per input index.
+
+Indexes are expected to be a JSON array of "namespace.name" values:
+'["ns.one.name1", "ns.two.name2"]'
+
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
@@ -1082,6 +1086,10 @@ If the row is not found then an exception with code 'P0002' is thrown.
 
 Update an indexed task.
 Returns the up-to-date indexed task row that have the same namespace and name.
+
+### deprecated methods
+
+* `get_tasks_from_indexes(indexes_in jsonb, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v66.0.0)
 
 ## notify
 

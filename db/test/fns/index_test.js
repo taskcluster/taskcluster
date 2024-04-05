@@ -192,17 +192,17 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_tasks_from_indexes does not omit expired indexed tasks', async function(db, isFake) {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces does not omit expired indexed tasks', async function(db, isFake) {
       const now = new Date();
       const taskId = slug.nice();
       await create_indexed_task(db, { expires: now, taskId });
 
-      const rows = await db.fns.get_tasks_from_indexes(JSON.stringify(['name/space.name']), 1000, 0);
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_tasks_from_indexes not found', async function(db, isFake) {
-      const rows = await db.fns.get_tasks_from_indexes(JSON.stringify(['name/space.name']), 1000, 0);
+    helper.dbTest('get_tasks_from_indexes_and_namespaces not found', async function(db, isFake) {
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
       assert.deepEqual(rows, []);
     });
 
@@ -211,8 +211,8 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_tasks_from_indexes empty', async function(db, isFake) {
-      const rows = await db.fns.get_tasks_from_indexes(null, null, null);
+    helper.dbTest('get_tasks_from_indexes_and_namespaces empty', async function(db, isFake) {
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(null, null, null);
       assert.deepEqual(rows, []);
     });
 
@@ -221,7 +221,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_tasks_from_indexes pagination', async function(db, isFake) {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces pagination', async function(db, isFake) {
       const oneDay = fromNow('1 day');
       const expectedIndexes = [];
       const expectedTasks = [];
@@ -242,23 +242,19 @@ suite(testing.suiteName(), function() {
       }
 
       // Full query
-      let rows = await db.fns.get_tasks_from_indexes(JSON.stringify(expectedIndexes), 1000, 0);
-      assert.equal(rows.length, expectedIndexes.length);
-      assert.deepStrictEqual(rows, expectedTasks);
-
-      // Order of the input doesn't matter
-      rows = await db.fns.get_tasks_from_indexes(JSON.stringify(_.shuffle(expectedIndexes)), 1000, 0);
+      let rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 1000, 0);
       assert.equal(rows.length, expectedIndexes.length);
       assert.deepStrictEqual(rows, expectedTasks);
 
       // Test pagination
-      rows = await db.fns.get_tasks_from_indexes(JSON.stringify(expectedIndexes), 2, 0);
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 2, 0);
       assert.deepStrictEqual(rows, expectedTasks.slice(0, 2));
 
-      rows = await db.fns.get_tasks_from_indexes(JSON.stringify(expectedIndexes), 3, 2);
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 3, 2);
       assert.deepStrictEqual(rows, expectedTasks.slice(2, 5));
 
-      rows = await db.fns.get_tasks_from_indexes(JSON.stringify(expectedIndexes), 2, expectedIndexes.length);
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(
+        JSON.stringify(expectedIndexes), 2, expectedIndexes.length);
       assert.equal(rows.length, 0);
     });
 

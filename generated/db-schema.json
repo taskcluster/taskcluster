@@ -7192,6 +7192,24 @@
         }
       },
       "version": 99
+    },
+    {
+      "description": "Improves speed for batched tasks fetching",
+      "methods": {
+        "get_tasks_from_indexes": {
+          "deprecated": true
+        },
+        "get_tasks_from_indexes_and_namespaces": {
+          "args": "indexes_in jsonb, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query select\n    indexed_tasks.namespace,\n    indexed_tasks.name,\n    indexed_tasks.rank,\n    uuid_to_slugid(indexed_tasks.task_id) as task_id,\n    indexed_tasks.data,\n    indexed_tasks.expires\n  from indexed_tasks\n  cross join jsonb_array_elements_text(indexes_in) as index_pairs\n  where\n    -- use regexp to extract namespace part of index\n    indexed_tasks.namespace = (select (regexp_matches(index_pairs, '(.+)\\.[^.]+'))[1])\n    and\n    -- use regexp to extract name part of index\n    indexed_tasks.name = (select (regexp_matches(index_pairs, '.+\\.([^.]+)'))[1])\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get tasks matching the given indexes, 0 or 1 per input index.\n\nIndexes are expected to be a JSON array of \"namespace.name\" values:\n'[\"ns.one.name1\", \"ns.two.name2\"]'\n\nIf the pagination arguments are both NULL, all rows are returned.\nOtherwise, page_size rows are returned at offset page_offset.",
+          "mode": "read",
+          "returns": "table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)",
+          "serviceName": "index"
+        }
+      },
+      "version": 100
     }
   ]
 }
