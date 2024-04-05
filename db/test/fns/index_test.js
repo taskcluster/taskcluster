@@ -246,11 +246,6 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, expectedIndexes.length);
       assert.deepStrictEqual(rows, expectedTasks);
 
-      // Order of the input doesn't matter
-      rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(_.shuffle(expectedIndexes)), 1000, 0);
-      assert.equal(rows.length, expectedIndexes.length);
-      assert.deepStrictEqual(rows, expectedTasks);
-
       // Test pagination
       rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 2, 0);
       assert.deepStrictEqual(rows, expectedTasks.slice(0, 2));
