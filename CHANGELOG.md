@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.4
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6900](https://github.com/taskcluster/taskcluster/issues/6900)
+Worker Runner on Azure no longer sends a `graceful-termination` message if the scheduled event type is `Freeze`. It will continue to send the message for all other event types: `Reboot`, `Redeploy`, `Preempt`, and `Terminate`.
+
+### USERS
+
+▶ [patch] [#6957](https://github.com/taskcluster/taskcluster/issues/6957)
+Improves performance of the `findTasksAtIndex` call (introduced in #6915)
+that returns multiple tasks for a given list of namespaces and indexes.
+
 ## v64.2.3
 
 ### GENERAL
