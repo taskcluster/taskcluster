@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.5
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v20.12.2 which is a [security release](https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2/).
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump idna from 3.4 to 3.7 in /taskcluster (2cd73d93a)
+* build(deps): bump tar from 6.2.0 to 6.2.1 in /ui (254af1652)
+* build(deps): bump tar from 6.2.0 to 6.2.1 in /clients/client (f8ddfbeb7)
+* build(deps): bump tar from 6.2.0 to 6.2.1 (e1ff1fb14)
+* build(deps): bump tar from 6.2.0 to 6.2.1 in /clients/client-test (3b9ec5c1a)
+* build(deps): bump tar from 6.2.0 to 6.2.1 in /clients/client-web (f69bea143)
+
+</details>
+
 ## v64.2.4
 
 ### WORKER-DEPLOYERS
