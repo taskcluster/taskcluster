@@ -279,7 +279,9 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
+	task.artifactsMux.Lock()
 	task.Artifacts[artifact.Base().Name] = artifact
+	task.artifactsMux.Unlock()
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
 		panic(err)
@@ -359,17 +361,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 }
 
 func copyToTempFileAsTaskUser(filePath string) (tempFilePath string, err error) {
-	cmd, err := gwCopyToTempFile(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
-	}
-
-	output, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("failed to copy file %s to temporary location as task user: %v", filePath, err)
-	}
-
-	tempFilePath = strings.TrimSpace(string(output))
+	tempFilePath, err = gwCopyToTempFile(filePath)
 
 	if runtime.GOOS == "windows" {
 		// Windows syscall logs are sent to stdout, even though the code appears

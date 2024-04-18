@@ -23,9 +23,10 @@ type (
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
 		Payload             GenericWorkerPayload           `json:"-"`
 		// Artifacts is a map from artifact name to artifact
-		Artifacts map[string]artifacts.TaskArtifact `json:"-"`
-		Status    TaskStatus                        `json:"-"`
-		Commands  []*process.Command                `json:"-"`
+		Artifacts    map[string]artifacts.TaskArtifact `json:"-"`
+		artifactsMux sync.RWMutex
+		Status       TaskStatus         `json:"-"`
+		Commands     []*process.Command `json:"-"`
 		// not exported
 		logMux         sync.RWMutex
 		logWriter      io.Writer
