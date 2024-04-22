@@ -9,7 +9,9 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
+	"runtime"
 
+	"github.com/gofrs/flock"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/taskcluster/v64/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v64/internal/mocktc/tc"
@@ -29,11 +31,29 @@ type S3Artifact struct {
 	ContentType     string
 }
 
-// createTempFileForPUTBody gzip-compresses the file at Path and
-// writes it to a temporary file in the same directory. The file path of the
-// generated temporary file is returned.  It is the responsibility of the
-// caller to delete the temporary file.
-func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
+// createTempFileForPUTBody first tries to put a file lock on
+// the artifact to prevent further writes to it (posix only).
+// The file path of the locked file is returned. If this is unsuccessful,
+// it will fall back to copying to a temporary file.
+// This method will also gzip-compress the file at Path and writes
+// it to a temporary file in the same directory. The file path of the
+// generated temporary file is returned.
+// A callback function is also returned that should be used to
+// cleanup the resources (e.g. unlock the file lock or delete the
+// temp file). It is the responsibility of the caller to
+// use this cleanup function.
+func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, func()) {
+	var fileLock *flock.Flock
+	if runtime.GOOS != "windows" {
+		fileLock = flock.New(s3Artifact.ContentPath)
+		locked, _ := fileLock.TryLock()
+		if locked && s3Artifact.ContentEncoding != "gzip" {
+			return s3Artifact.ContentPath, func() {
+				_ = fileLock.Unlock()
+			}
+		}
+	}
+
 	baseName := filepath.Base(s3Artifact.Path)
 	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
@@ -53,7 +73,12 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 	}
 	defer source.Close()
 	_, _ = io.Copy(target, source)
-	return tmpFile.Name()
+	return tmpFile.Name(), func() {
+		if runtime.GOOS != "windows" {
+			_ = fileLock.Unlock()
+		}
+		os.Remove(tmpFile.Name())
+	}
 }
 
 func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
@@ -61,8 +86,8 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
 
-	transferContentFile := s3Artifact.createTempFileForPUTBody()
-	defer os.Remove(transferContentFile)
+	transferContentFile, cleanup := s3Artifact.createTempFileForPUTBody()
+	defer cleanup()
 
 	defer func() {
 		if s3Artifact.Path != s3Artifact.ContentPath {

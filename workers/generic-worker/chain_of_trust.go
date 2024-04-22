@@ -147,6 +147,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	}
 	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath)))
 	artifactHashes := map[string]ArtifactHash{}
+	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
 		// make sure SHA256 is calculated
 		switch a := artifact.(type) {
@@ -168,6 +169,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 			}
 		}
 	}
+	feature.task.artifactsMux.RUnlock()
 
 	cotCert := &ChainOfTrustData{
 		Version:     1,

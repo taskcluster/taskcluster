@@ -21,6 +21,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
@@ -1072,27 +1073,50 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	}
 
 	defer func() {
-		for _, artifact := range task.PayloadArtifacts() {
-			// Any attempt to upload a feature artifact should be skipped
-			// but not cause a failure, since e.g. a directory artifact
-			// could include one, non-maliciously, such as a top level
-			// public/ directory artifact that includes
-			// public/logs/live_backing.log inadvertently.
-			if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
-				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
-				continue
-			}
-			err.add(task.uploadArtifact(artifact))
-			// Note - the above error only covers not being able to upload an
-			// artifact, but doesn't cover case that an artifact could not be
-			// found, and so an error artifact was uploaded. So we do that
-			// here:
-			switch a := artifact.(type) {
-			case *artifacts.ErrorArtifact:
-				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
-				err.add(fail)
-				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
-			}
+		taskArtifacts := task.PayloadArtifacts()
+		var wg sync.WaitGroup
+		uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
+		failChan := make(chan *CommandExecutionError, len(taskArtifacts))
+		for _, artifact := range taskArtifacts {
+			wg.Add(1)
+			go func(artifact artifacts.TaskArtifact) {
+				defer wg.Done()
+
+				// Any attempt to upload a feature artifact should be skipped
+				// but not cause a failure, since e.g. a directory artifact
+				// could include one, non-maliciously, such as a top level
+				// public/ directory artifact that includes
+				// public/logs/live_backing.log inadvertently.
+				if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
+					task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
+					return
+				}
+				err := task.uploadArtifact(artifact)
+				if err != nil {
+					uploadErrChan <- err
+				}
+				// Note - the above error only covers not being able to upload an
+				// artifact, but doesn't cover case that an artifact could not be
+				// found, and so an error artifact was uploaded. So we do that
+				// here:
+				switch a := artifact.(type) {
+				case *artifacts.ErrorArtifact:
+					fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
+					failChan <- fail
+					task.Errorf("TASK FAILURE during artifact upload: %v", fail)
+				}
+			}(artifact)
+		}
+
+		wg.Wait()
+		close(uploadErrChan)
+		close(failChan)
+
+		for executionErr := range uploadErrChan {
+			err.add(executionErr)
+		}
+		for executionErr := range failChan {
+			err.add(executionErr)
 		}
 	}()
 
