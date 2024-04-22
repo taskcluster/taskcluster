@@ -1,7 +1,7 @@
 {
   "name": "taskcluster-lib-references",
   "private": true,
-  "version": "64.2.5",
+  "version": "64.2.6",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
