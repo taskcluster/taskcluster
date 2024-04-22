@@ -162,6 +162,7 @@ properties:
             * gz
             * jpeg
             * jpg
+            * npz
             * png
             * swf
             * tbz
