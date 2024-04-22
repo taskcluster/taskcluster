@@ -201,6 +201,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 			".gz":    true,
 			".jpeg":  true,
 			".jpg":   true,
+			".npz":   true,
 			".png":   true,
 			".swf":   true,
 			".tbz":   true,

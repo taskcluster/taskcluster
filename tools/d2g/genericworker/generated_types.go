@@ -25,6 +25,7 @@ type (
 		// * gz
 		// * jpeg
 		// * jpg
+		// * npz
 		// * png
 		// * swf
 		// * tbz
@@ -1026,7 +1027,7 @@ func JSONSchema() string {
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
