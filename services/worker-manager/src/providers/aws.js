@@ -375,7 +375,7 @@ export class AwsProvider extends Provider {
         await this.removeWorker({ worker, reason });
       }
     } catch (e) {
-      if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+      if (![e.code, e.Code].includes('InvalidInstanceID.NotFound')) { // aws throws this error for instances that had been terminated, too
         throw e;
       }
       monitor.debug('instance status not found');
