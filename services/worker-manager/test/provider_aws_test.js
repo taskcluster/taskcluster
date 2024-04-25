@@ -485,6 +485,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });
 
+    test('no such instance error should be handled', async function() {
+      fake.rgn('us-west-2').instanceStatuses['i-amgone'] = 'srsly';
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-amgone',
+        state: Worker.states.REQUESTED,
+      });
+      await worker.create(helper.db);
+
+      provider.seen = {};
+      await provider.checkWorker({ worker: worker });
+      assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+      // should be marked as stopped because it was missing
+      const workers = await helper.getWorkers();
+      assert.notStrictEqual(workers.length, 0);
+      workers.forEach(w =>
+        assert.strictEqual(w.state, Worker.states.STOPPED));
+    });
+
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'terminated';
       const worker = Worker.fromApi({
