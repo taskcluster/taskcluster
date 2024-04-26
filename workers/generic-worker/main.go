@@ -441,6 +441,10 @@ func RunWorker() (exitCode ExitCode) {
 			panic(err)
 		}
 
+		if graceful.TerminationRequested() {
+			return WORKER_SHUTDOWN
+		}
+
 		task := ClaimWork()
 
 		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
@@ -516,10 +520,6 @@ func RunWorker() (exitCode ExitCode) {
 				}
 				log.Printf("No task claimed. Idle for %v%v.%v", idleTime, remainingIdleTimeText, remainingTaskCountText)
 			}
-		}
-
-		if graceful.TerminationRequested() {
-			return WORKER_SHUTDOWN
 		}
 
 		// To avoid hammering queue, make sure there is at least 5 seconds
