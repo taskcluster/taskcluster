@@ -15,7 +15,7 @@ import createSignatureValidator from './signaturevalidator.js';
 import taskcluster from 'taskcluster-client';
 import makeSentryManager from './sentrymanager.js';
 import * as libPulse from 'taskcluster-lib-pulse';
-import { google as googleapis } from 'googleapis';
+import googleapis from '@googleapis/iamcredentials';
 import assert from 'assert';
 import { fileURLToPath } from 'url';
 import { syncStaticClients } from './static-clients.js';
