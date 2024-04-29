@@ -52,7 +52,7 @@ export const tasks = [{
     await modifyRepoFile('go.mod',
       contents => contents.replace(
         /^go [0-9.]+$/m,
-        `go ${goVersionMajor}.${goVersionMinor}`));
+        `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`));
 
     utils.status({ message: 'workers/generic-worker/build.sh' });
     await modifyRepoFile('workers/generic-worker/build.sh',
