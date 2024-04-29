@@ -340,7 +340,54 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message.includes('sealTaskGroup error: missing scopes'),
       ));
       monitor.manager.reset();
+    });
 
+    test('non-existent task groups queue.sealTask/cancelTaskGroup group are ignored', async function () {
+      const err = new Error('ResourceNotFound');
+      err.errorCode = 'ResourceNotFound';
+      err.statusCode = 404;
+      handlers.queueClient = new taskcluster.Queue({
+        rootUrl: 'https://tc.example.com',
+        fake: {
+          sealTaskGroup: async (taskGroupId) => {
+            err.method = 'sealTaskGroup';
+            throw err;
+          },
+          cancelTaskGroup: async (taskGroupId) => {
+            err.method = 'cancelTaskGroup';
+            throw err;
+          },
+        },
+      });
+
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+
+      const instGithub = github.inst(5828);
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub,
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, organization: 'TaskclusterRobot', repository: 'hooks-testing',
+          pull_number: 1, event_type: 'pull_request.synchronize',
+        },
+      });
+      assert(instGithub.issues.createComment.notCalled);
+
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(
+        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message.includes('Task group not found in queue'),
+      ));
+      monitor.manager.reset();
+
+      // builds should still be cancelled in db
+      const [[buildA], [buildB]] = await Promise.all([
+        helper.db.fns.get_github_build_pr('aa'),
+        helper.db.fns.get_github_build_pr('bb'),
+      ]);
+      assert.equal(buildA.state, 'cancelled');
+      assert.equal(buildB.state, 'cancelled');
     });
 
     test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {

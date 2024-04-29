@@ -308,8 +308,17 @@ class Handlers {
         const limitedQueueClient = this.queueClient.use({ authorizedScopes: scopes });
 
         debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
-        await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
-        await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+        try {
+          await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
+          await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+        } catch (queueErr) {
+          if (queueErr.errorCode !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
+            throw queueErr;
+          }
+          // we can ignore task groups that were not yet created on queue side, and simply mark as cancelled in the db
+          this.monitor.reportError(`Task group not found in queue: ${queueErr.message} while canceling`);
+        }
+
         await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(
           taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
         )));
