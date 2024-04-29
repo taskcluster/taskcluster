@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.7
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6983](https://github.com/taskcluster/taskcluster/issues/6983)
+AWS provider correctly detects `InvalidInstanceID.NotFound` error and marks worker as stopped.
+
+### USERS
+
+▶ [patch] [#6987](https://github.com/taskcluster/taskcluster/issues/6987)
+Generic Worker now checks if a graceful termination was requested from worker runner _before_ calling `queue.claimWork()`.
+
+This helps fix a race condition where a preemption occurs right after Generic Worker starts up, but before the graceful termination handler to abort the task has been initialized.
+
+### DEVELOPERS
+
+▶ [patch] [#6984](https://github.com/taskcluster/taskcluster/issues/6984)
+Github auto-cancel gracefully ignores missing task groups and doesn't log errors in github comments.
+This can happen when decision task failed on previous runs.
+
+▶ [patch] [#6761](https://github.com/taskcluster/taskcluster/issues/6761)
+Switching from `googleapis` package to a smaller `@googleapis/*` libraries to reduce startup time and avoid loading APIs we don't use.
+
 ## v64.2.6
 
 ### WORKER-DEPLOYERS
