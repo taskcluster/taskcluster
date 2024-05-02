@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.2.8
+
+
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group across 1 directory with 17 updates (7664993bf)
+* build(deps): bump hawk in /clients/client in the client-node-deps group (676d3a034)
+* build(deps): bump the client-web-node-deps group (1724b094a)
+* build(deps): bump taskcluster in /taskcluster in the python-deps group (435162d2c)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (7e8f35dc2)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (1d2a4cae0)
+* build(deps): bump the go-deps group with 5 updates (45dbb1230)
+* build(deps): bump ejs from 3.1.9 to 3.1.10 (d320208b2)
+
+</details>
+
 ## v64.2.7
 
 ### WORKER-DEPLOYERS
