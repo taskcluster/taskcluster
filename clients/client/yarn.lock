@@ -659,14 +659,14 @@ __metadata:
   linkType: hard
 
 "hawk@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "hawk@npm:9.0.1"
+  version: 9.0.2
+  resolution: "hawk@npm:9.0.2"
   dependencies:
     "@hapi/b64": "npm:5.x.x"
     "@hapi/boom": "npm:9.x.x"
     "@hapi/cryptiles": "npm:5.x.x"
     "@hapi/hoek": "npm:9.x.x"
-  checksum: 10c0/e9b76ab5f5d7c7b8ae24bc50ff10ba31de219c0a40a7f10304c127eb393ef3d321f315d8cbf96d62a5bb95165d6a042f36c5d9d50c2064b1da890ab98f5a92ba
+  checksum: 10c0/1ba68811c37568c74df5039efd41ea45bc2ce811754cb533586af831bfcde13df3ea057edd951917558839530e13b05a579d9c02acbb030bd6c5359011960e0c
   languageName: node
   linkType: hard
 
