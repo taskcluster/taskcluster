@@ -102,13 +102,15 @@ __These instructions require macOS Mojave version 10.14.x__
 
     Disable wizards/warning pop ups on first-login to user accounts:
 
-    * `git clone git@github.com:rtrouton/profiles.git`
+    * `git clone https://github.com/rtrouton/profiles.git`
     * `git -C profiles checkout f23bc6146ca570108dbaa9e3cb8da954ce325002` (just because this is the version I tested, later versions may also be fine)
-    * `profiles install -path=profiles/SkipSiriSetup/SkipSiriSetup.mobileconfig`
-    * `profiles install -path=profiles/SkipDarkorLightAppearance/SkipDarkorLightAppearance.mobileconfig`
-    * `profiles install -path=profiles/Disable32BitApplicationWarning/10.14/Disable32BitApplicationWarning.mobileconfig`
-    * `profiles install -path=profiles/SkipDataAndPrivacy/SkipDataAndPrivacy.mobileconfig`
-    * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
+    * For versions of macOS prior to macOS11:
+      * `profiles install -path=profiles/SkipSiriSetup/SkipSiriSetup.mobileconfig`
+      * `profiles install -path=profiles/SkipDarkorLightAppearance/SkipDarkorLightAppearance.mobileconfig`
+      * `profiles install -path=profiles/Disable32BitApplicationWarning/10.14/Disable32BitApplicationWarning.mobileconfig`
+      * `profiles install -path=profiles/SkipDataAndPrivacy/SkipDataAndPrivacy.mobileconfig`
+      * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
+    * For macOS11 and higher, Apple requires installing each profile in the GUI.
 
  3. Download `generic-worker` from
     https://github.com/taskcluster/taskcluster/releases/ and place it in
