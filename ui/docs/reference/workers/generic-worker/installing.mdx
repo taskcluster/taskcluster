@@ -103,14 +103,9 @@ __These instructions require macOS Mojave version 10.14.x__
     Disable wizards/warning pop ups on first-login to user accounts:
 
     * `git clone https://github.com/rcurranmoz/profiles.git`
-    * `git -C profiles checkout f23bc6146ca570108dbaa9e3cb8da954ce325002` (just because this is the version I tested, later versions may also be fine)
     * For versions of macOS prior to macOS11:
-      * `profiles install -path=profiles/SkipSiriSetup/SkipSiriSetup.mobileconfig`
-      * `profiles install -path=profiles/SkipDarkorLightAppearance/SkipDarkorLightAppearance.mobileconfig`
-      * `profiles install -path=profiles/Disable32BitApplicationWarning/10.14/Disable32BitApplicationWarning.mobileconfig`
-      * `profiles install -path=profiles/SkipDataAndPrivacy/SkipDataAndPrivacy.mobileconfig`
-      * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
-    * For macOS11 and higher, Apple requires installing each profile in the GUI.
+      * `profiles install -path=profiles/Skip\ Setup\ Assistant.mobileconfig`
+    * For macOS11 and higher, Apple requires installing the profile via the GUI.
 
  3. Download `generic-worker` from
     https://github.com/taskcluster/taskcluster/releases/ and place it in
@@ -162,47 +157,14 @@ __These instructions require macOS Mojave version 10.14.x__
 
     cd ~
 
-    /usr/local/bin/generic-worker run --config /etc/generic-worker/config
+    /usr/local/bin/start-worker /etc/generic-worker/runner.yml
     ```
 
  10. Run the following to make the `run-generic-worker.sh` script executable:
 
     * `chmod a+x /usr/local/bin/run-generic-worker.sh`
 
-11. Create `/etc/generic-worker/config` with appropriate configuration settings
-    (see `generic-worker --help` for details). Something like this:
-
-    ```
-    {
-     "accessToken": "********************************************",
-     "cachesDir": "/Library/Caches/generic-worker/caches",
-     "cleanUpTaskDirs": true,
-     "clientId": "project/releng/generic-worker/datacenter-gecko-t-osx-1400-m2-staging",
-     "disableReboots": false,
-     "downloadsDir": "/Library/Caches/generic-worker/downloads",
-     "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
-     "livelogExecutable": "/usr/local/bin/livelog",
-     "provisionerId": "releng-hardware",
-     "publicIP": "192.168.5.174",
-     "requiredDiskSpaceMegabytes": 20480,
-     "rootURL": "https://firefox-ci-tc.services.mozilla.com",
-     "runTasksAsCurrentUser": true,
-     "sentryProject": "generic-worker",
-     "shutdownMachineOnIdle": false,
-     "shutdownMachineOnInternalError": false,
-     "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
-     "taskclusterProxyPort": 8080,
-     "tasksDir": "/Users",
-     "workerGroup": "macstadium-vegas",
-     "workerId": "moz-runner-multi-1",
-     "workerLocation": "{\"cloud\":\"standalone\",\"host\":\"macstadium\"}",
-     "workerType": "gecko-t-osx-1400-m2-staging",
-     "workerTypeMetadata": {},
-     "wstAudience": "firefoxcitc",
-     "wstServerURL": "https://firefoxci-websocktunnel.services.mozilla.com/"
-  }
-    ```
-12. Create `/etc/generic-worker/runner.yml` with appropriate configuration settings. Something like this:
+ 11. Create `/etc/generic-worker/runner.yml` with appropriate configuration settings. Something like this:
 
    ```
    getSecrets: false
@@ -241,7 +203,7 @@ __These instructions require macOS Mojave version 10.14.x__
      wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
    ```
 
-13. Create launch daemon:
+12. Create launch daemon:
 
     Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
     with the following content:
@@ -268,11 +230,11 @@ __These instructions require macOS Mojave version 10.14.x__
     </plist>
     ```
 
-14. Install launch daemon:
+13. Install launch daemon:
 
     * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
 
-15. Watch for logs in `/var/log/generic-worker/`.
+14. Watch for logs in `/var/log/generic-worker/`.
 
 
 ### Linux insecure/multiuser build
