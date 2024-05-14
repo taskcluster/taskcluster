@@ -102,32 +102,31 @@ __These instructions require macOS Mojave version 10.14.x__
 
     Disable wizards/warning pop ups on first-login to user accounts:
 
-    * `git clone https://github.com/rtrouton/profiles.git`
-    * `git -C profiles checkout f23bc6146ca570108dbaa9e3cb8da954ce325002` (just because this is the version I tested, later versions may also be fine)
+    * `git clone https://github.com/rcurranmoz/profiles.git`
     * For versions of macOS prior to macOS11:
-      * `profiles install -path=profiles/SkipSiriSetup/SkipSiriSetup.mobileconfig`
-      * `profiles install -path=profiles/SkipDarkorLightAppearance/SkipDarkorLightAppearance.mobileconfig`
-      * `profiles install -path=profiles/Disable32BitApplicationWarning/10.14/Disable32BitApplicationWarning.mobileconfig`
-      * `profiles install -path=profiles/SkipDataAndPrivacy/SkipDataAndPrivacy.mobileconfig`
-      * `profiles install -path=profiles/SkipiCloudSetup/SkipiCloudSetup.mobileconfig`
-    * For macOS11 and higher, Apple requires installing each profile in the GUI.
+      * `profiles install -path=profiles/Skip\ Setup\ Assistant.mobileconfig`
+    * For macOS11 and higher, Apple requires installing the profile via the GUI.
 
  3. Download `generic-worker` from
     https://github.com/taskcluster/taskcluster/releases/ and place it in
     `/usr/local/bin/generic-worker`.
 
- 4. Download livelog from https://github.com/taskcluster/taskcluster/releases/ and
+ 4. Download `livelog` from https://github.com/taskcluster/taskcluster/releases/ and
     place it in `/usr/local/bin/livelog`.
 
- 5. Download taskcluster proxy from
+ 5. Download `taskcluster-proxy` from
     https://github.com/taskcluster/taskcluster/releases/ and place it in
     `/usr/local/bin/taskcluster-proxy`.
 
- 6. Make `generic-worker`, `taskcluster-proxy`, `livelog` binaries executable:
+ 6. Download `start-worker` from
+    https://github.com/taskcluster/taskcluster/releases/ and place it in
+    `/usr/local/bin/start-worker`.
 
-    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog}`
+ 7. Make `generic-worker`, `taskcluster-proxy`, `livelog`, and `start-worker` binaries executable:
 
- 7. Generate a key for signing artifacts:
+    * `chmod a+x /usr/local/bin/{generic-worker,taskcluster-proxy,livelog,start-worker}`
+
+ 8. Generate a key for signing artifacts:
 
     * `sudo mkdir /etc/generic-worker`
 
@@ -140,7 +139,7 @@ __These instructions require macOS Mojave version 10.14.x__
     standard out. Keep a copy of the public key if you wish to validate artifact
     signatures.
 
- 8. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
+ 9. Create the file `/usr/local/bin/run-generic-worker.sh` with the following content:
 
     ```
     #!/bin/bash
@@ -156,43 +155,55 @@ __These instructions require macOS Mojave version 10.14.x__
       CheckForNetwork
     done
 
-    /usr/local/bin/generic-worker run --config /etc/generic-worker/config
+    cd ~
+
+    /usr/local/bin/start-worker /etc/generic-worker/runner.yml
     ```
 
- 9. Run the following to make the `run-generic-worker.sh` script executable:
+ 10. Run the following to make the `run-generic-worker.sh` script executable:
 
     * `chmod a+x /usr/local/bin/run-generic-worker.sh`
 
-10. Create `/etc/generic-worker/config` with appropriate configuration settings
-    (see `generic-worker --help` for details). Something like this:
+ 11. Create `/etc/generic-worker/runner.yml` with appropriate configuration settings. (see `generic-worker --help` for details on filling out the `workerConfig` field) Something like this:
 
-    ```
-    {
-      "accessToken": "********************************************",
-      "cachesDir": "/Library/Caches/generic-worker/caches",
-      "cleanUpTaskDirs": true,
-      "clientId": "project/foo/bar/my/client",
-      "disableReboots": false,
-      "downloadsDir": "/Library/Caches/generic-worker/downloads",
-      "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
-      "workerPoolId": "my/worker-pool",
-      "publicIP": "1.2.3.4",
-      "requiredDiskSpaceMegabytes": 2048,
-      "rootURL": "https://my-root-url.com",
-      "sentryProject": "generic-worker",
-      "shutdownMachineOnIdle": false,
-      "shutdownMachineOnInternalError": false,
-      "subdomain": "taskcluster-worker.net",
-      "taskclusterProxyPort": 8080,
-      "tasksDir": "/Users",
-      "workerGroup": "my-worker-group",
-      "workerId": "my-lovely-computer",
-      "wstAudience": "taskcluster-net",
-      "wstServerURL": "https://websocktunnel.tasks.build"
-    }
-    ```
+   ```
+   getSecrets: false
+   provider:
+     clientID: project/releng/generic-worker/datacenter-gecko-t-osx-1400-m2-staging
+     providerType: standalone
+     rootURL: "https://firefox-ci-tc.services.mozilla.com"
+     providerID: standalone
+     accessToken: "********************************************"
+     workerPoolID: releng-hardware/gecko-t-osx-1400-m2-staging
+     workerGroup: macstadium-vegas
+     workerID: moz-runner-multi-1
+     workerLocation:
+       host: macstadium
+   worker:
+     implementation: generic-worker
+     path: /usr/local/bin/generic-worker
+     configPath: /etc/generic-worker/config
+   workerConfig:
+     cachesDir: "/Library/Caches/generic-worker/caches"
+     cleanUpTaskDirs: true
+     disableReboots: false
+     downloadsDir: "/Library/Caches/generic-worker/downloads"
+     ed25519SigningKeyLocation: "/etc/generic-worker/ed25519_key"
+     livelogExecutable: "/usr/local/bin/livelog"
+     publicIP: "192.168.5.174"
+     requiredDiskSpaceMegabytes: 20480
+     runTasksAsCurrentUser: true
+     sentryProject: "generic-worker"
+     shutdownMachineOnIdle: false
+     shutdownMachineOnInternalError: false
+     taskclusterProxyExecutable: "/usr/local/bin/taskcluster-proxy"
+     taskclusterProxyPort: 8080
+     tasksDir: "/Users"
+     wstAudience: "firefoxcitc"
+     wstServerURL: "https://firefoxci-websocktunnel.services.mozilla.com/"
+   ```
 
-11. Create launch daemon:
+12. Create launch daemon:
 
     Create the file `/Library/LaunchDaemons/com.mozilla.genericworker.plist`
     with the following content:
@@ -219,11 +230,11 @@ __These instructions require macOS Mojave version 10.14.x__
     </plist>
     ```
 
-12. Install launch daemon:
+13. Install launch daemon:
 
     * `sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist`
 
-13. Watch for logs in `/var/log/generic-worker/`.
+14. Watch for logs in `/var/log/generic-worker/`.
 
 
 ### Linux insecure/multiuser build
