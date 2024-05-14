@@ -17,5 +17,6 @@ query IndexEntry($taskId: ID!, $entryConnection: PageConnection, $skip: Boolean!
 
   task(taskId: $taskId) @skip(if: $skip) {
     created
+    taskGroupId
   }
 }

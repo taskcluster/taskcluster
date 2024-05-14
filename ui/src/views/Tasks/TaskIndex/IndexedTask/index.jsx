@@ -167,13 +167,12 @@ export default class IndexedTask extends Component {
                 )
               )}
             </Breadcrumbs>
-            <br />
-            <br />
             <IndexedEntry
               onArtifactsPageChange={this.handleArtifactsPageChange}
               latestArtifactsConnection={latestArtifacts}
               indexedTask={indexedTask}
               created={task.created}
+              taskGroupId={task.taskGroupId}
             />
           </Fragment>
         )}

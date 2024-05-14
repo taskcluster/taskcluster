@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, func, shape } from 'prop-types';
+import { arrayOf, func, shape, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
@@ -78,6 +78,7 @@ export default class IndexedEntry extends Component {
       pageInfo,
     }).isRequired,
     onArtifactsPageChange: func.isRequired,
+    taskGroupId: string,
   };
 
   handleHeaderClick = sortBy => {
@@ -160,7 +161,7 @@ export default class IndexedEntry extends Component {
   }
 
   render() {
-    const { classes, created, indexedTask } = this.props;
+    const { classes, created, indexedTask, taskGroupId } = this.props;
 
     return (
       <List>
@@ -179,10 +180,18 @@ export default class IndexedEntry extends Component {
         </ListItem>
         <Link to={`/tasks/${indexedTask.taskId}`}>
           <ListItem button className={classes.listItemButton}>
-            <ListItemText primary="View task" />
+            <ListItemText primary="View task" secondary={indexedTask.taskId} />
             <LinkIcon />
           </ListItem>
         </Link>
+        {taskGroupId && (
+          <Link to={`/tasks/groups/${taskGroupId}`}>
+            <ListItem button className={classes.listItemButton}>
+              <ListItemText primary="View task group" secondary={taskGroupId} />
+              <LinkIcon />
+            </ListItem>
+          </Link>
+        )}
         <ListItem component="div">
           <ListItemText
             primary="Data"
