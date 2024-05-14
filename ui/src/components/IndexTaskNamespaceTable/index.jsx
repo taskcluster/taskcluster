@@ -102,7 +102,7 @@ export default class IndexTaskNamespaceTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Name']}
+        headers={['Name', 'Task Group']}
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell>
@@ -115,6 +115,20 @@ export default class IndexTaskNamespaceTable extends Component {
                 )}/${this.taskFromNamespace(namespace)}`}>
                 <TableCellItem button>
                   {this.taskFromNamespace(namespace)}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
+            </TableCell>
+            <TableCell size="medium">
+              <Link
+                to={`/tasks/index/${encodeURIComponent(
+                  namespace
+                    .split('.')
+                    .slice(0, -1)
+                    .join('.')
+                )}/${this.taskFromNamespace(namespace)}/task-group`}>
+                <TableCellItem button>
+                  Task Group
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               </Link>
