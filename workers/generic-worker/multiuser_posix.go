@@ -151,6 +151,9 @@ func (task *TaskRun) EnvVars() []string {
 	}
 	if runtime.GOOS == "linux" {
 		taskEnv["DISPLAY"] = ":0"
+		if !config.RunTasksAsCurrentUser {
+			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))
+		}
 	}
 	if config.WorkerLocation != "" {
 		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
