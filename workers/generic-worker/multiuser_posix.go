@@ -101,12 +101,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func defaultTasksDir() string {
-	// assume all user home directories are all in same folder, i.e. the parent
-	// folder of the current user's home folder
-	return filepath.Dir(os.Getenv("HOME"))
-}
-
 func rebootBetweenTasks() bool {
 	return true
 }
