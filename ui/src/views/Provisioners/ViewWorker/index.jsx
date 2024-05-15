@@ -24,6 +24,7 @@ import { terminateDisabled } from '../../../utils/terminate';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
 
 @withApollo
 @withAuth
@@ -32,7 +33,10 @@ import quarantineWorkerQuery from './quarantineWorker.graphql';
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     errorPolicy: 'all',
-    variables: params,
+    variables: {
+      workerPoolId: joinWorkerPoolId(params.provisionerId, params.workerType),
+      ...params,
+    },
   }),
 })
 @withStyles(theme => ({
@@ -209,11 +213,43 @@ export default class ViewWorker extends Component {
     });
   };
 
-  render() {
+  renderBreadcrumbs() {
     const {
       classes,
-      data: { loading, error, worker },
       match: { params },
+    } = this.props;
+
+    return (
+      <Breadcrumbs>
+        <Link to="/provisioners">
+          <Typography variant="body2" className={classes.link}>
+            Workers
+          </Typography>
+        </Link>
+        <Link to={`/provisioners/${params.provisionerId}`}>
+          <Typography variant="body2" className={classes.link}>
+            {params.provisionerId}
+          </Typography>
+        </Link>
+        <Link
+          to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}`}>
+          <Typography variant="body2" className={classes.link}>
+            {params.workerType}
+          </Typography>
+        </Link>
+        <Typography variant="body2" color="textSecondary">
+          {`${params.workerGroup}`}
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          {`${params.workerId}`}
+        </Typography>
+      </Breadcrumbs>
+    );
+  }
+
+  renderMenu(includeQueueActions = true) {
+    const {
+      data: { worker, WorkerManagerWorker },
     } = this.props;
     const {
       dialogOpen,
@@ -228,168 +264,183 @@ export default class ViewWorker extends Component {
       terminateDialogBody,
       terminateDialogConfirmText,
     } = this.state;
-    const graphqlError = this.getError(error);
+    const terminateWorker = worker ?? WorkerManagerWorker;
+
+    return (
+      <Fragment>
+        <SpeedDial>
+          {includeQueueActions && (
+            <SpeedDialAction
+              tooltipOpen
+              requiresAuth
+              icon={
+                isAfter(worker.quarantineUntil || new Date(), new Date()) ? (
+                  <HomeLockOpenIcon />
+                ) : (
+                  <HomeLockIcon />
+                )
+              }
+              tooltipTitle={
+                worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'
+              }
+              onClick={this.handleDialogOpen}
+              FabProps={{
+                disabled: actionLoading,
+              }}
+            />
+          )}
+          {terminateWorker && terminateWorker.providerId !== NULL_PROVIDER && (
+            <SpeedDialAction
+              tooltipOpen
+              requiresAuth
+              icon={<DeleteIcon />}
+              tooltipTitle="Terminate Worker"
+              onClick={() =>
+                this.handleTerminateDialogActionOpen(
+                  terminateWorker.workerId,
+                  terminateWorker.workerGroup,
+                  terminateWorker.workerPoolId
+                )
+              }
+              FabProps={{
+                disabled: terminateDisabled(
+                  terminateWorker.state,
+                  terminateWorker.providerId
+                ),
+              }}
+            />
+          )}
+          {includeQueueActions &&
+            worker.actions.map(action => (
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                key={action.title}
+                icon={<HammerIcon />}
+                onClick={() => this.handleActionDialogOpen(action)}
+                FabProps={{
+                  disabled: actionLoading,
+                }}
+                tooltipTitle={action.title}
+              />
+            ))}
+        </SpeedDial>
+        {dialogOpen &&
+          (selectedAction ? (
+            <DialogAction
+              error={dialogError}
+              open={dialogOpen}
+              title={`${selectedAction.title}?`}
+              body={selectedAction.description}
+              confirmText={selectedAction.title}
+              onSubmit={this.handleWorkerContextActionSubmit}
+              onError={this.handleActionError}
+              onClose={this.handleDialogClose}
+            />
+          ) : (
+            <DialogAction
+              error={dialogError}
+              open={dialogOpen}
+              title="Quarantine?"
+              body={
+                <Fragment>
+                  <Fragment>
+                    Quarantining a worker allows the machine to remain alive but
+                    not accept jobs. Note that a quarantine can be lifted by
+                    setting &quot;Quarantine Until&quot; to the present time or
+                    somewhere in the past.
+                  </Fragment>
+                  <br />
+                  <br />
+                  <TextField
+                    id="date"
+                    label="Quarantine Until"
+                    type="date"
+                    value={format(quarantineUntilInput, 'yyyy-MM-dd')}
+                    onChange={this.handleQuarantineChange}
+                  />
+                  <br />
+                  <TextField
+                    id="info"
+                    label="Quarantine comment"
+                    type="text"
+                    fullWidth
+                    value={quarantineInfo}
+                    onChange={this.handleQuarantineInfoChange}
+                  />
+                </Fragment>
+              }
+              confirmText={worker.quarantineUntil ? 'Update' : 'Quarantine'}
+              onSubmit={this.handleQuarantineDialogSubmit}
+              onError={this.handleActionError}
+              onComplete={this.handleDialogClose}
+              onClose={this.handleDialogClose}
+            />
+          ))}
+        {terminateDialogOpen && (
+          <DialogAction
+            error={terminateDialogError}
+            open={terminateDialogOpen}
+            title={terminateDialogTitle}
+            body={terminateDialogBody}
+            confirmText={terminateDialogConfirmText}
+            onSubmit={this.handleTerminateDeleteClick}
+            onError={this.handleTerminateDialogActionError}
+            onClose={this.handleTerminateDialogActionClose}
+          />
+        )}
+      </Fragment>
+    );
+  }
+
+  renderQueueWorker() {
+    const {
+      data: { worker },
+    } = this.props;
+
+    return (
+      <Fragment>
+        {this.renderBreadcrumbs()}
+        <br />
+        <WorkerDetailsCard worker={worker} />
+        <br />
+        <WorkerTable worker={worker} />
+        {this.renderMenu(true)}
+      </Fragment>
+    );
+  }
+
+  renderWorkerManagerWorker() {
+    const {
+      data: { WorkerManagerWorker },
+    } = this.props;
+
+    return (
+      <Fragment>
+        {this.renderBreadcrumbs()}
+        <br />
+        <WorkerDetailsCard worker={WorkerManagerWorker} />
+        <br />
+        <WorkerTable worker={{ recentTasks: [] }} />
+        {this.renderMenu(false)}
+      </Fragment>
+    );
+  }
+
+  render() {
+    const {
+      data: { loading, error, worker, WorkerManagerWorker },
+    } = this.props;
+    // we hide graphql errors if we have worker-manager worker data
+    const graphqlError = !WorkerManagerWorker && this.getError(error);
 
     return (
       <Dashboard title="Worker">
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={graphqlError} />
-          {worker && (
-            <Fragment>
-              <Breadcrumbs>
-                <Link to="/provisioners">
-                  <Typography variant="body2" className={classes.link}>
-                    Workers
-                  </Typography>
-                </Link>
-                <Link to={`/provisioners/${params.provisionerId}`}>
-                  <Typography variant="body2" className={classes.link}>
-                    {params.provisionerId}
-                  </Typography>
-                </Link>
-                <Link
-                  to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}`}>
-                  <Typography variant="body2" className={classes.link}>
-                    {params.workerType}
-                  </Typography>
-                </Link>
-                <Typography variant="body2" color="textSecondary">
-                  {`${params.workerGroup}`}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {`${params.workerId}`}
-                </Typography>
-              </Breadcrumbs>
-              <br />
-              <WorkerDetailsCard worker={worker} />
-              <br />
-              <WorkerTable worker={worker} />
-              <SpeedDial>
-                <SpeedDialAction
-                  tooltipOpen
-                  requiresAuth
-                  icon={
-                    isAfter(
-                      worker.quarantineUntil || new Date(),
-                      new Date()
-                    ) ? (
-                      <HomeLockOpenIcon />
-                    ) : (
-                      <HomeLockIcon />
-                    )
-                  }
-                  tooltipTitle={
-                    worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'
-                  }
-                  onClick={this.handleDialogOpen}
-                  FabProps={{
-                    disabled: actionLoading,
-                  }}
-                />
-                {worker.providerId !== NULL_PROVIDER && (
-                  <SpeedDialAction
-                    tooltipOpen
-                    requiresAuth
-                    icon={<DeleteIcon />}
-                    tooltipTitle="Terminate Worker"
-                    onClick={() =>
-                      this.handleTerminateDialogActionOpen(
-                        worker.workerId,
-                        worker.workerGroup,
-                        worker.workerPoolId
-                      )
-                    }
-                    FabProps={{
-                      disabled: terminateDisabled(
-                        worker.state,
-                        worker.providerId
-                      ),
-                    }}
-                  />
-                )}
-                {worker.actions.map(action => (
-                  <SpeedDialAction
-                    requiresAuth
-                    tooltipOpen
-                    key={action.title}
-                    icon={<HammerIcon />}
-                    onClick={() => this.handleActionDialogOpen(action)}
-                    FabProps={{
-                      disabled: actionLoading,
-                    }}
-                    tooltipTitle={action.title}
-                  />
-                ))}
-              </SpeedDial>
-              {dialogOpen &&
-                (selectedAction ? (
-                  <DialogAction
-                    error={dialogError}
-                    open={dialogOpen}
-                    title={`${selectedAction.title}?`}
-                    body={selectedAction.description}
-                    confirmText={selectedAction.title}
-                    onSubmit={this.handleWorkerContextActionSubmit}
-                    onError={this.handleActionError}
-                    onClose={this.handleDialogClose}
-                  />
-                ) : (
-                  <DialogAction
-                    error={dialogError}
-                    open={dialogOpen}
-                    title="Quarantine?"
-                    body={
-                      <Fragment>
-                        <Fragment>
-                          Quarantining a worker allows the machine to remain
-                          alive but not accept jobs. Note that a quarantine can
-                          be lifted by setting &quot;Quarantine Until&quot; to
-                          the present time or somewhere in the past.
-                        </Fragment>
-                        <br />
-                        <br />
-                        <TextField
-                          id="date"
-                          label="Quarantine Until"
-                          type="date"
-                          value={format(quarantineUntilInput, 'yyyy-MM-dd')}
-                          onChange={this.handleQuarantineChange}
-                        />
-                        <br />
-                        <TextField
-                          id="info"
-                          label="Quarantine comment"
-                          type="text"
-                          fullWidth
-                          value={quarantineInfo}
-                          onChange={this.handleQuarantineInfoChange}
-                        />
-                      </Fragment>
-                    }
-                    confirmText={
-                      worker.quarantineUntil ? 'Update' : 'Quarantine'
-                    }
-                    onSubmit={this.handleQuarantineDialogSubmit}
-                    onError={this.handleActionError}
-                    onComplete={this.handleDialogClose}
-                    onClose={this.handleDialogClose}
-                  />
-                ))}
-              {terminateDialogOpen && (
-                <DialogAction
-                  error={terminateDialogError}
-                  open={terminateDialogOpen}
-                  title={terminateDialogTitle}
-                  body={terminateDialogBody}
-                  confirmText={terminateDialogConfirmText}
-                  onSubmit={this.handleTerminateDeleteClick}
-                  onError={this.handleTerminateDialogActionError}
-                  onClose={this.handleTerminateDialogActionClose}
-                />
-              )}
-            </Fragment>
-          )}
+          {worker && this.renderQueueWorker()}
+          {!worker && WorkerManagerWorker && this.renderWorkerManagerWorker()}
         </Fragment>
       </Dashboard>
     );

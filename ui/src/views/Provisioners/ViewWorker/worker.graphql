@@ -1,4 +1,4 @@
-query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerTypesConnection: PageConnection) {
+query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerPoolId: String!, $workerTypesConnection: PageConnection) {
   worker(provisionerId: $provisionerId, workerType: $workerType, workerGroup: $workerGroup, workerId: $workerId) {
     provisionerId
     workerType
@@ -44,6 +44,19 @@ query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: St
       url
       description
     }
+  }
+
+  WorkerManagerWorker(workerPoolId: $workerPoolId, workerGroup: $workerGroup, workerId: $workerId) {
+    workerPoolId
+    workerGroup
+    workerId
+    providerId
+    state
+    created
+    expires
+    capacity
+    lastModified
+    lastChecked
   }
 
   workerTypes(provisionerId: $provisionerId, connection: $workerTypesConnection) {
