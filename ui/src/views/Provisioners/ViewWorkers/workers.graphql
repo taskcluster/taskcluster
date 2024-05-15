@@ -1,4 +1,4 @@
-query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean, $workerState: String) {
+query ViewWorkers($provisionerId: String!, $workerType: String!, $workerPoolId: String!, $workersConnection: PageConnection, $quarantined: Boolean, $workerState: String) {
   workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined, workerState: $workerState) {
     pageInfo {
       hasNextPage
@@ -29,6 +29,10 @@ query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnect
         workerPoolId
       }
     }
+  }
+
+  WorkerPool(workerPoolId: $workerPoolId) {
+    workerPoolId
   }
 
   workerType(provisionerId: $provisionerId, workerType: $workerType) {
