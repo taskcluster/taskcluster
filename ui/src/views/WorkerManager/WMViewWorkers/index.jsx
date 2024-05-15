@@ -169,7 +169,8 @@ export default class WMViewWorkers extends Component {
 
     return (
       <Dashboard
-        title={`Workers for ${decodeURIComponent(params.workerPoolId)}`}>
+        disableTitleFormatting
+        title={`Workers for "${decodeURIComponent(params.workerPoolId)}"`}>
         <ErrorPanel fixed error={this.state.error || error} />
 
         <div>

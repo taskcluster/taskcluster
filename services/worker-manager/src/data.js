@@ -454,7 +454,7 @@ export class Worker {
       lastModified: this.lastModified?.toJSON(),
       lastChecked: this.lastChecked?.toJSON(),
       firstClaim: this.firstClaim?.toJSON(),
-      recentTasks: _.cloneDeep(this.recentTasks),
+      recentTasks: _.cloneDeep(this.recentTasks) || [],
       lastDateActive: this.lastDateActive?.toJSON(),
       quarantineUntil: this.quarantineUntil?.toJSON(),
       quarantineDetails: this.quarantineDetails || [],

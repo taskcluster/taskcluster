@@ -124,6 +124,8 @@ extend type Query {
     WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 
     WorkerManagerWorkers(workerPoolId: String!, state: String, connection: PageConnection): WorkerManagerWorkerConnection!
+
+    WorkerManagerWorker(workerPoolId: String!, workerGroup: String!, workerId: ID!): WMWorker
 }
 
 extend type Mutation {
