@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v64.3.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to node v20.13.0 and go1.22.3 (SECURITY release).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#6979](https://github.com/taskcluster/taskcluster/issues/6979)
+Generic Worker multiuser engine on Linux now sets environment variable`XDG_RUNTIME_DIR` to `/run/user/<UID>` in task command processes (unless Generic Worker config setting `runTasksAsCurrentUser` is set to `true`).
+
+### USERS
+
+▶ [patch] [bug 1768667](http://bugzil.la/1768667)
+Adds Task Group link in UI for indexed tasks.
+Introduces new route to redirect to the Task Group view: `/tasks/index/:namespace/:indexTask/task-group`
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump jinja2 from 3.1.3 to 3.1.4 in /taskcluster (8433f4b6e)
+
+</details>
+
 ## v64.2.8
 
 
