@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import { TableRow, TableCell, Chip, Box, Typography } from '@material-ui/core';
+import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
-import WorkerIcon from 'mdi-react/WorkerIcon';
-import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE } from '../../../utils/constants';
@@ -16,11 +14,16 @@ import DateDistance from '../../../components/DateDistance';
 import Label from '../../../components/Label';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 @graphql(pendingTasks, {
   options: props => ({
     variables: {
-      taskQueueId: `${props.match.params.provisionerId}/${props.match.params.workerType}`,
+      taskQueueId: joinWorkerPoolId(
+        props.match.params.provisionerId,
+        props.match.params.workerType
+      ),
       connection: {
         limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
       },
@@ -88,7 +91,7 @@ export default class WMViewPendingTasks extends Component {
 
   render() {
     const {
-      data: { loading, error, listPendingTasks },
+      data: { loading, error, listPendingTasks, WorkerPool },
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
 
@@ -115,29 +118,12 @@ export default class WMViewPendingTasks extends Component {
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
                 <Typography variant="body2">{workerType}</Typography>
               </Link>
-              <Typography variant="body2" color="textSecondary">
-                Pending Tasks
-              </Typography>
+              <WorkersNavbar
+                provisionerId={provisionerId}
+                workerType={workerType}
+                hasWorkerPool={!!WorkerPool?.workerPoolId}
+              />
             </Breadcrumbs>
-          </div>
-          <div>
-            <Chip
-              size="medium"
-              icon={<ProgressClockIcon />}
-              label="View Claimed Tasks"
-              component={Link}
-              clickable
-              to={`${this.workersLink}/claimed-tasks`}
-              style={{ marginRight: 4 }}
-            />
-            <Chip
-              size="medium"
-              icon={<WorkerIcon />}
-              label="Workers (Queue View)"
-              component={Link}
-              clickable
-              to={this.workersLink}
-            />
           </div>
         </Box>
 

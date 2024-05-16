@@ -7,10 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import HammerIcon from 'mdi-react/HammerIcon';
-import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
-import HourglassIcon from 'mdi-react/HourglassIcon';
-import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
-import { Box, Chip } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import SpeedDial from '../../../components/SpeedDial';
@@ -25,6 +22,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workersQuery from './workers.graphql';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 const STATES = {
   requested: 'requested',
@@ -240,7 +238,7 @@ export default class ViewWorkers extends Component {
           {shouldIgnoreGraphqlError && this.state.error && (
             <ErrorPanel fixed error={this.state.error} />
           )}
-          <div className={classes.bar}>
+          <Box className={classes.bar}>
             <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
               <Link to="/provisioners">
                 <Typography variant="body2" className={classes.link}>
@@ -255,38 +253,12 @@ export default class ViewWorkers extends Component {
               <Typography variant="body2" color="textSecondary">
                 {`${params.workerType}`}
               </Typography>
-            </Breadcrumbs>
-
-            {WorkerPool && (
-              <Chip
-                size="medium"
-                icon={<HexagonSlice4 />}
-                label="Worker Pool"
-                component={Link}
-                clickable
-                to={`/worker-manager/${encodeURIComponent(
-                  WorkerPool.workerPoolId
-                )}`}
+              <WorkersNavbar
+                provisionerId={params.provisionerId}
+                workerType={params.workerType}
+                hasWorkerPool={!!WorkerPool?.workerPoolId}
               />
-            )}
-
-            <Chip
-              size="medium"
-              icon={<HourglassIcon />}
-              label="View Pending Tasks"
-              component={Link}
-              clickable
-              to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}/pending-tasks`}
-            />
-
-            <Chip
-              size="medium"
-              icon={<ProgressClockIcon />}
-              label="View Claimed Tasks"
-              component={Link}
-              clickable
-              to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}/claimed-tasks`}
-            />
+            </Breadcrumbs>
 
             <Box marginTop={-2}>
               <TextField
@@ -306,7 +278,7 @@ export default class ViewWorkers extends Component {
                 <MenuItem value="stopped">Stopped</MenuItem>
               </TextField>
             </Box>
-          </div>
+          </Box>
           <br />
           <WorkersTable
             workersConnection={workers}

@@ -10,7 +10,6 @@ import {
   FormControlLabel,
   MenuItem,
   Typography,
-  Chip,
   ListItemText,
   ListItem,
   ListSubheader,
@@ -25,7 +24,6 @@ import purple from '@material-ui/core/colors/purple';
 import red from '@material-ui/core/colors/red';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
-import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -35,7 +33,6 @@ import MarkdownTextArea from '../MarkdownTextArea';
 import DialogAction from '../DialogAction';
 import Button from '../Button';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
-import Link from '../../utils/Link';
 import {
   WorkerManagerWorkerPoolSummary,
   WorkerManagerWorkerPoolErrorStats,
@@ -90,9 +87,6 @@ import SpeedDial from '../SpeedDial';
   },
   ownerEmailListItem: {
     display: 'block',
-  },
-  metadata: {
-    marginRight: theme.spacing(1),
   },
   overviewList: {
     alignItems: 'center',
@@ -159,9 +153,6 @@ import SpeedDial from '../SpeedDial';
     '&:hover': {
       backgroundColor: red[600],
     },
-  },
-  extraLinks: {
-    marginLeft: theme.spacing(3),
   },
 }))
 export default class WMWorkerPoolEditor extends Component {
@@ -501,26 +492,6 @@ export default class WMWorkerPoolEditor extends Component {
                 }
               )}
             </Paper>
-            <div className={classes.extraLinks}>
-              <Chip
-                size="medium"
-                className={classes.metadata}
-                icon={<WorkerIcon />}
-                label="Workers (Queue View)"
-                component={Link}
-                clickable
-                to={workerTypeUrl}
-              />
-              <Chip
-                size="medium"
-                className={classes.metadata}
-                icon={<WorkerIcon />}
-                label="Workers (Worker Manager View)"
-                component={Link}
-                clickable
-                to={`${workerPoolUrl}/workers`}
-              />
-            </div>
           </Fragment>
         )}
         <List>

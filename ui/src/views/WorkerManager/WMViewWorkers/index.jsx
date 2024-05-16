@@ -4,7 +4,13 @@ import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';
 import Tab from '@material-ui/core/Tab/Tab';
 import Tabs from '@material-ui/core/Tabs/Tabs';
-import { TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
+import {
+  TableCell,
+  TableRow,
+  Tooltip,
+  Typography,
+  Box,
+} from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
@@ -17,6 +23,7 @@ import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import Label from '../../../components/Label';
 import DateDistance from '../../../components/DateDistance';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 const stateToLabel = {
   requested: 'default',
@@ -173,21 +180,30 @@ export default class WMViewWorkers extends Component {
         title={`Workers for "${decodeURIComponent(params.workerPoolId)}"`}>
         <ErrorPanel fixed error={this.state.error || error} />
 
-        <div>
-          <Breadcrumbs>
-            <Link to="/worker-manager">
-              <Typography variant="body2">Worker Manager</Typography>
-            </Link>
-            <Link to={`/worker-manager/${params.workerPoolId}`}>
-              <Typography variant="body2">
-                {decodeURIComponent(params.workerPoolId)}
-              </Typography>
-            </Link>
-            <Typography variant="body2" color="textSecondary">
-              Workers
-            </Typography>
-          </Breadcrumbs>
-        </div>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            width: '100%',
+          }}>
+          <div style={{ flexGrow: 1, marginRight: 8 }}>
+            <Breadcrumbs>
+              <Link to="/worker-manager">
+                <Typography variant="body2">Worker Manager</Typography>
+              </Link>
+              <Link to={`/worker-manager/${params.workerPoolId}`}>
+                <Typography variant="body2">
+                  {decodeURIComponent(params.workerPoolId)}
+                </Typography>
+              </Link>
+              <WorkersNavbar
+                workerPoolId={decodeURIComponent(params.workerPoolId)}
+                hasWorkerPool
+              />
+            </Breadcrumbs>
+          </div>
+        </Box>
 
         <Tabs value={currentTab} onChange={this.handleTabChange}>
           {this.tabs.map(tab => (
