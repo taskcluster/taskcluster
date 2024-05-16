@@ -10,7 +10,7 @@ import (
 	"os"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster/v64/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v65/tools/jsonschema2go"
 )
 
 func readStringStrip(reader *bufio.Reader, delimeter byte) (string, error) {

@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7017](https://github.com/taskcluster/taskcluster/issues/7017)
+Generic Worker multiuser engine now places task directories under `/home`
+(Linux and FreeBSD) and `/Users` on macOS. Previously it was placing them under
+`/` by default on all three platforms, unless either `HOME` was set to a
+non-standard value in the process launching Generic Worker multiuser engine, or
+if `tasksDir` was explicitly set in Generic Worker config.
+
+This is a bug fix, but due to being a significant change in behaviour, is being
+released as a major change to trigger a major version bump.
+
+### USERS
+
+▶ [patch] [#6117](https://github.com/taskcluster/taskcluster/issues/6117)
+Fixes Worker page when queue information was missing and error was displayed.
+If worker-manager data exists for this worker, it would be displayed instead.
+
+▶ [patch] [#6117](https://github.com/taskcluster/taskcluster/issues/6117)
+Workers in UI use consistent navigation element that allows to switch between worker pool definition,
+workers, pending and claimed tasks.
+
+▶ [patch] [#6117](https://github.com/taskcluster/taskcluster/issues/6117)
+Workers list page in UI shows "Worker Pool" link when it is available to improve navigation.
+
 ## v64.3.0
 
 ### GENERAL

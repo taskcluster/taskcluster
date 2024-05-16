@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	tc "github.com/taskcluster/taskcluster/v64/tools/taskcluster-proxy/taskcluster"
+	tc "github.com/taskcluster/taskcluster/v65/tools/taskcluster-proxy/taskcluster"
 )
 
 var urlConversions = []struct {
