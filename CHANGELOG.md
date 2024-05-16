@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.0.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.22.3 (SECURITY release). Was supposed to be handled in PR #7006, but was accidentally left out.
+
 ## v65.0.0
 
 ### WORKER-DEPLOYERS
