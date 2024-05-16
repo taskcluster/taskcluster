@@ -9,6 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import HammerIcon from 'mdi-react/HammerIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';
+import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import { Box, Chip } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
@@ -19,6 +20,7 @@ import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
@@ -37,6 +39,7 @@ const STATES = {
   options: ({ location, match: { params } }) => ({
     errorPolicy: 'all',
     variables: {
+      workerPoolId: joinWorkerPoolId(params.provisionerId, params.workerType),
       provisionerId: params.provisionerId,
       workerType: params.workerType,
       workersConnection: {
@@ -62,7 +65,7 @@ const STATES = {
     gap: theme.spacing(2),
   },
   breadcrumbsPaper: {
-    marginRight: theme.spacing(4),
+    marginRight: theme.spacing(2),
     flex: 1,
   },
   dropdown: {
@@ -223,7 +226,7 @@ export default class ViewWorkers extends Component {
       location,
       classes,
       match: { params },
-      data: { loading, error, workers, workerType },
+      data: { loading, error, workers, workerType, WorkerPool },
     } = this.props;
     const query = parse(location.search.slice(1));
     const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
@@ -253,6 +256,19 @@ export default class ViewWorkers extends Component {
                 {`${params.workerType}`}
               </Typography>
             </Breadcrumbs>
+
+            {WorkerPool && (
+              <Chip
+                size="medium"
+                icon={<HexagonSlice4 />}
+                label="Worker Pool"
+                component={Link}
+                clickable
+                to={`/worker-manager/${encodeURIComponent(
+                  WorkerPool.workerPoolId
+                )}`}
+              />
+            )}
 
             <Chip
               size="medium"

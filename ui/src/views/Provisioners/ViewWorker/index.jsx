@@ -395,14 +395,19 @@ export default class ViewWorker extends Component {
 
   renderQueueWorker() {
     const {
-      data: { worker },
+      data: { worker, WorkerManagerWorker },
     } = this.props;
+    // Merged view to include both queue and worker-manager data
+    const mergedView = {
+      ...WorkerManagerWorker,
+      ...worker,
+    };
 
     return (
       <Fragment>
         {this.renderBreadcrumbs()}
         <br />
-        <WorkerDetailsCard worker={worker} />
+        <WorkerDetailsCard worker={mergedView} />
         <br />
         <WorkerTable worker={worker} />
         {this.renderMenu(true)}
