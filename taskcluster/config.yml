@@ -31,13 +31,13 @@ workers:
       os: macosx
       implementation: generic-worker
       worker-type: gw-ci-macos-13
-    gw-windows-2022:
+    gw-windows-2022-azure:
       provisioner: proj-taskcluster
       os: windows
       implementation: generic-worker
-      worker-type: gw-windows-2022
-    gw-ci-windows-2022:
+      worker-type: gw-windows-2022-azure
+    gw-ci-windows-2022-azure:
       provisioner: proj-taskcluster
       os: windows
       implementation: generic-worker
-      worker-type: gw-ci-windows-2022
+      worker-type: gw-ci-windows-2022-azure
