@@ -25,7 +25,7 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     variables: {
-      workerPoolId: decodeURIComponent(params.workerPoolId),
+      workerPoolId: decodeURIComponent(params?.workerPoolId),
     },
   }),
 })
@@ -121,8 +121,7 @@ export default class WMEditWorkerPool extends Component {
       (!isNewWorkerPool && (!data || !data.WorkerPool || data.loading));
     const error =
       (providersData && providersData.error) || (data && data.error);
-    const workerPoolId = decodeURIComponent(match.params.workerPoolId);
-    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+    const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
 
     return (
       <Dashboard
@@ -130,7 +129,7 @@ export default class WMEditWorkerPool extends Component {
         title={
           isNewWorkerPool
             ? 'Create Worker Pool'
-            : `Worker Pool "${decodeURIComponent(match.params.workerPoolId)}"`
+            : `Worker Pool "${workerPoolId}"`
         }>
         <Box
           marginBottom={2}
@@ -146,13 +145,15 @@ export default class WMEditWorkerPool extends Component {
                 <Typography variant="body2">Worker Manager</Typography>
               </Link>
               <Typography variant="body2" color="textSecondary">
-                {decodeURIComponent(match.params.workerPoolId)}
+                {workerPoolId}
               </Typography>
-              <WorkersNavbar
-                provisionerId={provisionerId}
-                workerType={workerType}
-                hasWorkerPool
-              />
+              {workerPoolId && (
+                <WorkersNavbar
+                  provisionerId={splitWorkerPoolId(workerPoolId).provisionerId}
+                  workerType={splitWorkerPoolId(workerPoolId).workerType}
+                  hasWorkerPool
+                />
+              )}
             </Breadcrumbs>
           </div>
         </Box>

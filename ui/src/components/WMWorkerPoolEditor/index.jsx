@@ -169,7 +169,7 @@ export default class WMWorkerPoolEditor extends Component {
 
   static propTypes = {
     workerPool: WorkerManagerWorkerPoolSummary.isRequired,
-    errorStats: WorkerManagerWorkerPoolErrorStats.isRequired,
+    errorStats: WorkerManagerWorkerPoolErrorStats,
     providers: providersArray.isRequired,
     saveRequest: func.isRequired,
     isNewWorkerPool: bool,
