@@ -12,6 +12,7 @@ import Search from '../../../components/Search';
 import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 @graphql(errorsQuery, {
   options: props => ({
@@ -96,9 +97,11 @@ export default class WMViewErrors extends Component {
                 {decodeURIComponent(workerPoolId)}
               </Typography>
             </Link>
-            <Typography variant="body2" color="textSecondary">
-              Errors
-            </Typography>
+
+            <WorkersNavbar
+              workerPoolId={decodeURIComponent(workerPoolId)}
+              hasWorkerPool
+            />
           </Breadcrumbs>
         </div>
 

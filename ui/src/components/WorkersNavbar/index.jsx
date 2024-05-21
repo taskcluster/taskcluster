@@ -6,6 +6,7 @@ import WorkerIcon from 'mdi-react/WorkerIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import Link from '../../utils/Link';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 
@@ -17,6 +18,16 @@ import { splitWorkerPoolId } from '../../utils/workerPool';
 
     [theme.breakpoints.down('sm')]: {
       marginTop: theme.spacing(1),
+    },
+
+    '& .MuiChip-root': {
+      paddingLeft: theme.spacing(0.5),
+      paddingRight: theme.spacing(0.5),
+
+      [theme.breakpoints.up('lg')]: {
+        paddingLeft: theme.spacing(1),
+        paddingRight: theme.spacing(1),
+      },
     },
 
     '& .MuiChip-label': {
@@ -131,10 +142,17 @@ export default class WorkersNavbar extends Component {
         to: `/worker-manager/${encodeURIComponent(workerPoolId)}`,
         hint: 'Show worker pool definition',
       },
+      {
+        icon: MessageAlertIcon,
+        label: 'Errors',
+        to: `/worker-manager/${encodeURIComponent(workerPoolId)}/errors`,
+        hint: 'Worker-manager errors',
+      },
     ];
 
     if (!this.props.hasWorkerPool) {
       // worker pool definition and worker-manager view would be empty otherwise
+      items.pop();
       items.pop();
       items.splice(1, 1);
     }
