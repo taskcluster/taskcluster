@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.0.2
+
+### USERS
+
+▶ [patch] [#7025](https://github.com/taskcluster/taskcluster/issues/7025)
+Fixes JavaScript error in "Create Worker Pool" page that was introduced in the last release.
+Adds link to "Errors" in workers navigation bar.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* --- updated-dependencies: - dependency-name: requests   dependency-type: indirect ... (42569ccb7)
+* build(deps-dev): bump eslint from 8.57.0 to 9.3.0 in /clients/client-web (2bccd8b63)
+
+</details>
+
 ## v65.0.1
 
 ### GENERAL
