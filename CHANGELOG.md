@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.1.0
+
+### USERS
+
+▶ [minor] [#5967](https://github.com/taskcluster/taskcluster/issues/5967)
+Allows Docker Worker payloads to be used on the `insecure` Generic Worker engine, translated by `d2g`.
+
 ## v65.0.2
 
 ### USERS
