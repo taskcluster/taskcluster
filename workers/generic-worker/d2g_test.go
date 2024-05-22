@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"runtime"
 	"testing"
 
@@ -28,8 +27,8 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	switch fmt.Sprintf("%s:%s", runtime.GOOS, engine) {
-	case "linux:multiuser":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -74,8 +73,8 @@ func TestIssue6789(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "docker-worker:cache:d2g-test")
 
-	switch fmt.Sprintf("%s:%s", runtime.GOOS, engine) {
-	case "linux:multiuser":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
