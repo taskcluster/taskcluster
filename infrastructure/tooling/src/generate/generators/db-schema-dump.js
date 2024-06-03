@@ -31,23 +31,38 @@ export const tasks = [{
     // now dump the schema of the DB
     utils.step({ title: 'Dump Test Database' });
     const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
-    const pgdump = await execCommand({
-      dir: REPO_ROOT,
-      command: [
-        'pg_dump',
-        '--schema-only',
-        '-h', host,
-        '-p', (port || 5432).toString(),
-        '-U', user,
-        '-d', database,
-      ],
-      keepAllOutput: true,
-      env: {
-        ...process.env,
-        PGPASSWORD: password,
-      },
-      utils,
-    });
+
+    const runPgDump = async (commandPrefix = []) => {
+      return await execCommand({
+        dir: REPO_ROOT,
+        command: [
+          ...commandPrefix,
+          'pg_dump',
+          '--schema-only',
+          '-h', host,
+          '-p', (port || 5432).toString(),
+          '-U', user,
+          '-d', database,
+        ],
+        keepAllOutput: true,
+        env: {
+          ...process.env,
+          PGPASSWORD: password,
+        },
+        utils,
+      });
+    };
+
+    let pgdump;
+    try {
+      pgdump = await runPgDump();
+    } catch (e) {
+      utils.step({
+        title: 'Failed to dump schema using native pg_dump, trying to run inside docker container',
+      });
+      const dockerExec = ['docker', 'compose', 'exec', '-T', 'postgres'];
+      pgdump = await runPgDump(dockerExec);
+    }
 
     /* Parse the output as separated by comments of the form:
      *
