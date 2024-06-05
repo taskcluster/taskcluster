@@ -1,6 +1,9 @@
 import fs from 'fs';
+import { promisify } from 'util';
 import child_process from 'child_process';
 import { Transform } from 'stream';
+
+const execCommandNative = promisify(child_process.exec);
 
 /**
  * Run a command and display its output.
@@ -65,4 +68,14 @@ export const execCommand = async ({
     });
     cp.once('error', reject);
   });
+};
+
+export const checkExecutableExists = async (executable) => {
+  const command = process.platform === 'win32' ? 'where' : 'which';
+  try {
+    await execCommandNative(`${command} ${executable}`);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
