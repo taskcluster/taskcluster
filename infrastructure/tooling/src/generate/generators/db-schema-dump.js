@@ -2,7 +2,7 @@ import * as tcpg from 'taskcluster-lib-postgres';
 import testing from 'taskcluster-lib-testing';
 import pgConnectionString from 'pg-connection-string';
 const { parse: parseDbURL } = pgConnectionString;
-import { REPO_ROOT, writeRepoFile, execCommand } from '../../utils/index.js';
+import { REPO_ROOT, writeRepoFile, execCommand, checkExecutableExists } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
 export const tasks = [{
@@ -12,6 +12,13 @@ export const tasks = [{
   run: async (requirements, utils) => {
     if (!process.env.TEST_DB_URL) {
       throw new Error("'yarn generate' requires $TEST_DB_URL to be set");
+    }
+
+    const hasNativePgDump = await checkExecutableExists('pg_dump');
+    const hasDocker = await checkExecutableExists('docker');
+
+    if (!hasNativePgDump && !hasDocker) {
+      throw new Error('Cannot find pg_dump or docker in PATH, cannot dump schema');
     }
 
     // reset the DB back to its empty state..
@@ -32,37 +39,41 @@ export const tasks = [{
     utils.step({ title: 'Dump Test Database' });
     const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
 
-    const runPgDump = async (commandPrefix = []) => {
-      return await execCommand({
+    let commandPrefix = [];
+    // running in docker would be preferred, since it will have same version of pg_dump
+    if (hasDocker) {
+      // check if docker process is running
+      const dockerProcessId = await execCommand({
         dir: REPO_ROOT,
-        command: [
-          ...commandPrefix,
-          'pg_dump',
-          '--schema-only',
-          '-h', host,
-          '-p', (port || 5432).toString(),
-          '-U', user,
-          '-d', database,
-        ],
+        command: ['docker', 'ps', '-q', '--filter', 'name=postgres'],
         keepAllOutput: true,
-        env: {
-          ...process.env,
-          PGPASSWORD: password,
-        },
         utils,
       });
-    };
 
-    let pgdump;
-    try {
-      pgdump = await runPgDump();
-    } catch (e) {
-      utils.step({
-        title: 'Failed to dump schema using native pg_dump, trying to run inside docker container',
-      });
-      const dockerExec = ['docker', 'compose', 'exec', '-T', 'postgres'];
-      pgdump = await runPgDump(dockerExec);
+      // having newline in the output means there are multiple docker processes running
+      if (dockerProcessId && !dockerProcessId.trim().includes('\n')) {
+        commandPrefix = ['docker', 'exec', dockerProcessId.trim()];
+      }
     }
+
+    const pgdump = await execCommand({
+      dir: REPO_ROOT,
+      command: [
+        ...commandPrefix,
+        'pg_dump',
+        '--schema-only',
+        '-h', host,
+        '-p', (port || 5432).toString(),
+        '-U', user,
+        '-d', database,
+      ],
+      keepAllOutput: true,
+      env: {
+        ...process.env,
+        PGPASSWORD: password,
+      },
+      utils,
+    });
 
     /* Parse the output as separated by comments of the form:
      *
