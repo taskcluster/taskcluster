@@ -28,7 +28,7 @@ func TestTcProxy(t *testing.T) {
 		Certificate:      certificate,
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, 34569, rootURL, creds)
+	ll, err := New(executable, 34570, rootURL, creds)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {
@@ -40,7 +40,7 @@ func TestTcProxy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not initiate taskcluster-proxy process:\n%s", err)
 	}
-	res, err := http.Get("http://localhost:34569/auth/v1/scopes/current")
+	res, err := http.Get("http://localhost:34570/auth/v1/scopes/current")
 	if err != nil {
 		t.Fatalf("Could not hit url to download artifact using taskcluster-proxy: %v", err)
 	}
