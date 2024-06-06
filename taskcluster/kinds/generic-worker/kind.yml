@@ -23,7 +23,7 @@ task-defaults:
 tasks:
   windows-worker-runner:
     description: 'test worker-runner under windows as well'
-    worker-type: gw-windows-2022-azure
+    worker-type: gw-windows-2022
     worker:
       mounts:
         - content:
@@ -278,7 +278,7 @@ tasks:
     copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
   build/test-multiuser-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
-    worker-type: gw-ci-windows-2022-azure
+    worker-type: gw-ci-windows-2022
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -377,7 +377,7 @@ tasks:
           )
   build/test-multiuser-current-user-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022 as the current user
-    worker-type: gw-ci-windows-2022-azure
+    worker-type: gw-ci-windows-2022
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
