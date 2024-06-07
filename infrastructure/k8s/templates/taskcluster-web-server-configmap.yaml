@@ -1,0 +1,24 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-web-server
+  labels:
+    app.kubernetes.io/name: taskcluster-web-server
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-web-server-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  PUBLIC_URL: '{{ if typeIs "<nil>" .Values.web_server.public_url }}{{ else }}{{ if typeIs "string" .Values.web_server.public_url }}{{ .Values.web_server.public_url }}{{ else }}{{ .Values.web_server.public_url | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.web_server.level }}{{ else }}{{ if typeIs "string" .Values.web_server.level }}{{ .Values.web_server.level }}{{ else }}{{ .Values.web_server.level | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.web_server.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.web_server.keep_alive_timeout_seconds }}{{ .Values.web_server.keep_alive_timeout_seconds }}{{ else }}{{ .Values.web_server.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  ADDITIONAL_ALLOWED_CORS_ORIGIN: '{{ if typeIs "<nil>" .Values.web_server.additional_allowed_cors_origin }}{{ else }}{{ if typeIs "string" .Values.web_server.additional_allowed_cors_origin }}{{ .Values.web_server.additional_allowed_cors_origin }}{{ else }}{{ .Values.web_server.additional_allowed_cors_origin | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.web_server.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.web_server.taskcluster_client_id }}{{ .Values.web_server.taskcluster_client_id }}{{ else }}{{ .Values.web_server.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  REGISTERED_CLIENTS: '{{ if typeIs "<nil>" .Values.web_server.registered_clients }}{{ else }}{{ if typeIs "string" .Values.web_server.registered_clients }}{{ .Values.web_server.registered_clients }}{{ else }}{{ .Values.web_server.registered_clients | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.web_server.debug }}{{ else }}{{ if typeIs "string" .Values.web_server.debug }}{{ .Values.web_server.debug }}{{ else }}{{ .Values.web_server.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

@@ -1,0 +1,35 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-queue
+  labels:
+    app.kubernetes.io/name: taskcluster-queue
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-queue-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  TASK_CLAIM_TIMEOUT: '{{ if typeIs "<nil>" .Values.queue.task_claim_timeout }}{{ else }}{{ if typeIs "string" .Values.queue.task_claim_timeout }}{{ .Values.queue.task_claim_timeout }}{{ else }}{{ .Values.queue.task_claim_timeout | toJson }}{{ end }}{{ end }}'
+  MAX_TASK_DEADLINE_DAYS: '{{ if typeIs "<nil>" .Values.queue.max_task_deadline_days }}{{ else }}{{ if typeIs "string" .Values.queue.max_task_deadline_days }}{{ .Values.queue.max_task_deadline_days }}{{ else }}{{ .Values.queue.max_task_deadline_days | toJson }}{{ end }}{{ end }}'
+  PUBLIC_ARTIFACT_BUCKET: '{{ if typeIs "<nil>" .Values.queue.public_artifact_bucket }}{{ else }}{{ if typeIs "string" .Values.queue.public_artifact_bucket }}{{ .Values.queue.public_artifact_bucket }}{{ else }}{{ .Values.queue.public_artifact_bucket | toJson }}{{ end }}{{ end }}'
+  PRIVATE_ARTIFACT_BUCKET: '{{ if typeIs "<nil>" .Values.queue.private_artifact_bucket }}{{ else }}{{ if typeIs "string" .Values.queue.private_artifact_bucket }}{{ .Values.queue.private_artifact_bucket }}{{ else }}{{ .Values.queue.private_artifact_bucket | toJson }}{{ end }}{{ end }}'
+  SIGN_PUBLIC_ARTIFACT_URLS: '{{ if typeIs "<nil>" .Values.queue.sign_public_artifact_urls }}{{ else }}{{ if typeIs "string" .Values.queue.sign_public_artifact_urls }}{{ .Values.queue.sign_public_artifact_urls }}{{ else }}{{ .Values.queue.sign_public_artifact_urls | toJson }}{{ end }}{{ end }}'
+  WORKER_INFO_UPDATE_FREQUENCY: '{{ if typeIs "<nil>" .Values.queue.worker_info_update_frequency }}{{ else }}{{ if typeIs "string" .Values.queue.worker_info_update_frequency }}{{ .Values.queue.worker_info_update_frequency }}{{ else }}{{ .Values.queue.worker_info_update_frequency | toJson }}{{ end }}{{ end }}'
+  PUBLIC_ARTIFACT_BUCKET_CDN: '{{ if typeIs "<nil>" .Values.queue.public_artifact_bucket_cdn }}{{ else }}{{ if typeIs "string" .Values.queue.public_artifact_bucket_cdn }}{{ .Values.queue.public_artifact_bucket_cdn }}{{ else }}{{ .Values.queue.public_artifact_bucket_cdn | toJson }}{{ end }}{{ end }}'
+  TASK_CACHE_MAX_SIZE: '{{ if typeIs "<nil>" .Values.queue.task_cache_max_size }}{{ else }}{{ if typeIs "string" .Values.queue.task_cache_max_size }}{{ .Values.queue.task_cache_max_size }}{{ else }}{{ .Values.queue.task_cache_max_size | toJson }}{{ end }}{{ end }}'
+  EXPIRE_ARTIFACTS_BATCH_SIZE: '{{ if typeIs "<nil>" .Values.queue.expire_artifacts_batch_size }}{{ else }}{{ if typeIs "string" .Values.queue.expire_artifacts_batch_size }}{{ .Values.queue.expire_artifacts_batch_size }}{{ else }}{{ .Values.queue.expire_artifacts_batch_size | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.queue.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.queue.taskcluster_client_id }}{{ .Values.queue.taskcluster_client_id }}{{ else }}{{ .Values.queue.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.queue.level }}{{ else }}{{ if typeIs "string" .Values.queue.level }}{{ .Values.queue.level }}{{ else }}{{ .Values.queue.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.queue.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.queue.keep_alive_timeout_seconds }}{{ .Values.queue.keep_alive_timeout_seconds }}{{ else }}{{ .Values.queue.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  ARTIFACT_REGION: '{{ if typeIs "<nil>" .Values.queue.artifact_region }}{{ else }}{{ if typeIs "string" .Values.queue.artifact_region }}{{ .Values.queue.artifact_region }}{{ else }}{{ .Values.queue.artifact_region | toJson }}{{ end }}{{ end }}'
+  AWS_ENDPOINT: '{{ if typeIs "<nil>" .Values.queue.aws_endpoint }}{{ else }}{{ if typeIs "string" .Values.queue.aws_endpoint }}{{ .Values.queue.aws_endpoint }}{{ else }}{{ .Values.queue.aws_endpoint | toJson }}{{ end }}{{ end }}'
+  AWS_FORCE_PATH_STYLE: '{{ if typeIs "<nil>" .Values.queue.aws_force_path_style }}{{ else }}{{ if typeIs "string" .Values.queue.aws_force_path_style }}{{ .Values.queue.aws_force_path_style }}{{ else }}{{ .Values.queue.aws_force_path_style | toJson }}{{ end }}{{ end }}'
+  AWS_SKIP_CORS_CONFIGURATION: '{{ if typeIs "<nil>" .Values.queue.aws_skip_cors_configuration }}{{ else }}{{ if typeIs "string" .Values.queue.aws_skip_cors_configuration }}{{ .Values.queue.aws_skip_cors_configuration }}{{ else }}{{ .Values.queue.aws_skip_cors_configuration | toJson }}{{ end }}{{ end }}'
+  AWS_USE_BULK_DELETE: '{{ if typeIs "<nil>" .Values.queue.aws_use_bulk_delete }}{{ else }}{{ if typeIs "string" .Values.queue.aws_use_bulk_delete }}{{ .Values.queue.aws_use_bulk_delete }}{{ else }}{{ .Values.queue.aws_use_bulk_delete | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.queue.debug }}{{ else }}{{ if typeIs "string" .Values.queue.debug }}{{ .Values.queue.debug }}{{ else }}{{ .Values.queue.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

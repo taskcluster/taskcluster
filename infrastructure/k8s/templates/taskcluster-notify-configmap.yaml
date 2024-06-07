@@ -1,0 +1,28 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-notify
+  labels:
+    app.kubernetes.io/name: taskcluster-notify
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-notify-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  EMAIL_SOURCE_ADDRESS: '{{ if typeIs "<nil>" .Values.notify.email_source_address }}{{ else }}{{ if typeIs "string" .Values.notify.email_source_address }}{{ .Values.notify.email_source_address }}{{ else }}{{ .Values.notify.email_source_address | toJson }}{{ end }}{{ end }}'
+  EMAIL_BLACKLIST: '{{ if typeIs "<nil>" .Values.notify.email_blacklist }}{{ else }}{{ if typeIs "string" .Values.notify.email_blacklist }}{{ .Values.notify.email_blacklist }}{{ else }}{{ .Values.notify.email_blacklist | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.notify.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.notify.taskcluster_client_id }}{{ .Values.notify.taskcluster_client_id }}{{ else }}{{ .Values.notify.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.notify.level }}{{ else }}{{ if typeIs "string" .Values.notify.level }}{{ .Values.notify.level }}{{ else }}{{ .Values.notify.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.notify.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.notify.keep_alive_timeout_seconds }}{{ .Values.notify.keep_alive_timeout_seconds }}{{ else }}{{ .Values.notify.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  AWS_REGION: '{{ if typeIs "<nil>" .Values.notify.aws_region }}{{ else }}{{ if typeIs "string" .Values.notify.aws_region }}{{ .Values.notify.aws_region }}{{ else }}{{ .Values.notify.aws_region | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  MATRIX_BASE_URL: '{{ if typeIs "<nil>" .Values.notify.matrix_base_url }}{{ else }}{{ if typeIs "string" .Values.notify.matrix_base_url }}{{ .Values.notify.matrix_base_url }}{{ else }}{{ .Values.notify.matrix_base_url | toJson }}{{ end }}{{ end }}'
+  MATRIX_USER_ID: '{{ if typeIs "<nil>" .Values.notify.matrix_user_id }}{{ else }}{{ if typeIs "string" .Values.notify.matrix_user_id }}{{ .Values.notify.matrix_user_id }}{{ else }}{{ .Values.notify.matrix_user_id | toJson }}{{ end }}{{ end }}'
+  SLACK_API_URL: '{{ if typeIs "<nil>" .Values.notify.slack_api_url }}{{ else }}{{ if typeIs "string" .Values.notify.slack_api_url }}{{ .Values.notify.slack_api_url }}{{ else }}{{ .Values.notify.slack_api_url | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.notify.debug }}{{ else }}{{ if typeIs "string" .Values.notify.debug }}{{ .Values.notify.debug }}{{ else }}{{ .Values.notify.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

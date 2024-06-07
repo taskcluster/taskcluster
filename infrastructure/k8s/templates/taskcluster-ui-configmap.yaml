@@ -1,0 +1,18 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-ui
+  labels:
+    app.kubernetes.io/name: taskcluster-ui
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-ui-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  APPLICATION_NAME: '{{ if typeIs "<nil>" .Values.applicationName }}{{ else }}{{ if typeIs "string" .Values.applicationName }}{{ .Values.applicationName }}{{ else }}{{ .Values.applicationName | toJson }}{{ end }}{{ end }}'
+  GRAPHQL_SUBSCRIPTION_ENDPOINT: '{{ if typeIs "<nil>" .Values.ui.graphql_subscription_endpoint }}{{ else }}{{ if typeIs "string" .Values.ui.graphql_subscription_endpoint }}{{ .Values.ui.graphql_subscription_endpoint }}{{ else }}{{ .Values.ui.graphql_subscription_endpoint | toJson }}{{ end }}{{ end }}'
+  GRAPHQL_ENDPOINT: '{{ if typeIs "<nil>" .Values.ui.graphql_endpoint }}{{ else }}{{ if typeIs "string" .Values.ui.graphql_endpoint }}{{ .Values.ui.graphql_endpoint }}{{ else }}{{ .Values.ui.graphql_endpoint | toJson }}{{ end }}{{ end }}'
+  UI_LOGIN_STRATEGY_NAMES: '{{ if typeIs "<nil>" .Values.ui.ui_login_strategy_names }}{{ else }}{{ if typeIs "string" .Values.ui.ui_login_strategy_names }}{{ .Values.ui.ui_login_strategy_names }}{{ else }}{{ .Values.ui.ui_login_strategy_names | toJson }}{{ end }}{{ end }}'
+  BANNER_MESSAGE: '{{ if typeIs "<nil>" .Values.ui.banner_message }}{{ else }}{{ if typeIs "string" .Values.ui.banner_message }}{{ .Values.ui.banner_message }}{{ else }}{{ .Values.ui.banner_message | toJson }}{{ end }}{{ end }}'
+  SITE_SPECIFIC: '{{ if typeIs "<nil>" .Values.ui.site_specific }}{{ else }}{{ if typeIs "string" .Values.ui.site_specific }}{{ .Values.ui.site_specific }}{{ else }}{{ .Values.ui.site_specific | toJson }}{{ end }}{{ end }}'
+{{- end }}

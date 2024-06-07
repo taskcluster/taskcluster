@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-github
+            - configMapRef:
+                name: taskcluster-github
           ports:
             - containerPort: 80
           readinessProbe:

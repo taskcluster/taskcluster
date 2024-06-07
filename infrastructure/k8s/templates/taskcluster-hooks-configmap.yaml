@@ -1,0 +1,22 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-hooks
+  labels:
+    app.kubernetes.io/name: taskcluster-hooks
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-hooks-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.hooks.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.hooks.taskcluster_client_id }}{{ .Values.hooks.taskcluster_client_id }}{{ else }}{{ .Values.hooks.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.hooks.level }}{{ else }}{{ if typeIs "string" .Values.hooks.level }}{{ .Values.hooks.level }}{{ else }}{{ .Values.hooks.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.hooks.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.hooks.keep_alive_timeout_seconds }}{{ .Values.hooks.keep_alive_timeout_seconds }}{{ else }}{{ .Values.hooks.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.hooks.debug }}{{ else }}{{ if typeIs "string" .Values.hooks.debug }}{{ .Values.hooks.debug }}{{ else }}{{ .Values.hooks.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

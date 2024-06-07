@@ -176,16 +176,37 @@ suite(testing.suiteName(), function() {
     });
 
     assume(vars).deep.equals([
-      { type: '!env', var: 'ENV_VARIABLE', optional: false },
-      { type: '!env:string', var: 'ENV_VARIABLE', optional: false },
-      { type: '!env:number', var: 'ENV_NUMBER', optional: false },
-      { type: '!env:bool', var: 'ENV_TRUE', optional: false },
-      { type: '!env:bool', var: 'ENV_FALSE', optional: false },
-      { type: '!env:bool', var: 'ENV_NOT_SET', optional: false },
-      { type: '!env', var: 'ENV_EMPTY', optional: false },
-      { type: '!env', var: 'ENV_OPTIONAL', optional: true },
-      { type: '!env:json', var: 'ENV_JSON', optional: false },
-      { type: '!env:list', var: 'ENV_LIST', optional: false },
+      { type: '!env', var: 'ENV_VARIABLE', optional: false, secret: false },
+      { type: '!env:string', var: 'ENV_VARIABLE', optional: false, secret: false },
+      { type: '!env:number', var: 'ENV_NUMBER', optional: false, secret: false },
+      { type: '!env:bool', var: 'ENV_TRUE', optional: false, secret: false },
+      { type: '!env:bool', var: 'ENV_FALSE', optional: false, secret: false },
+      { type: '!env:bool', var: 'ENV_NOT_SET', optional: false, secret: false },
+      { type: '!env', var: 'ENV_EMPTY', optional: false, secret: false },
+      { type: '!env', var: 'ENV_OPTIONAL', optional: true, secret: false },
+      { type: '!env:json', var: 'ENV_JSON', optional: false, secret: false },
+      { type: '!env:list', var: 'ENV_LIST', optional: false, secret: false },
+    ]);
+  });
+
+  test('load !env listing with secrets', () => {
+    const vars = config({
+      serviceName: 'test',
+      files: [
+        { path: path.join(__dirname, 'test-env-secrets.yml'), required: true },
+      ],
+      env: {}, // Notice they do not need to be in the env to do this
+      getEnvVars: true,
+    });
+
+    assume(vars).deep.equals([
+      { type: '!env:string', var: 'ENV_VARIABLE', optional: false, secret: true },
+      { type: '!env:number', var: 'ENV_NUMBER', optional: false, secret: true },
+      { type: '!env:bool', var: 'ENV_TRUE', optional: false, secret: true },
+      { type: '!env', var: 'ENV_EMPTY', optional: false, secret: true },
+      { type: '!env', var: 'ENV_OPTIONAL', optional: true, secret: true },
+      { type: '!env:json', var: 'ENV_JSON', optional: false, secret: true },
+      { type: '!env:list', var: 'ENV_LIST', optional: false, secret: true },
     ]);
   });
 });
