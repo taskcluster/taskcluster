@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-worker-manager
+            - configMapRef:
+                name: taskcluster-worker-manager
           ports:
             - containerPort: 80
           readinessProbe:

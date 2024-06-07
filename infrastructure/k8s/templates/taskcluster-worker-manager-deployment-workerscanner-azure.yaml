@@ -40,6 +40,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-worker-manager
+            - configMapRef:
+                name: taskcluster-worker-manager
           ports: []
           livenessProbe:
             exec:

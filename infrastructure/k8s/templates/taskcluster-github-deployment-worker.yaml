@@ -40,6 +40,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-github
+            - configMapRef:
+                name: taskcluster-github
           ports: []
           livenessProbe:
             exec:

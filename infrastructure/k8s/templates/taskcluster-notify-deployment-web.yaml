@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-notify
+            - configMapRef:
+                name: taskcluster-notify
           ports:
             - containerPort: 80
           readinessProbe:
