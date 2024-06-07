@@ -3,6 +3,7 @@ trustProxy: true
 forceSSL: false
 nodeEnv: production
 useKubernetesDnsServiceDiscovery: true
+skipResourceTypes: []
 auth:
   procs:
     web:

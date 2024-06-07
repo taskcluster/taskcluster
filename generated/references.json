@@ -11805,6 +11805,19 @@
           "title": "Configuration options for secrets",
           "type": "object"
         },
+        "skipResourceTypes": {
+          "description": "A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.",
+          "items": {
+            "enum": [
+              "configmap",
+              "secret",
+              "ingress",
+              "serviceaccount"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
         "trustProxy": {
           "description": "If true, only the external ingress needs to use ssl. connections to services are allowed however.",
           "type": "boolean"
