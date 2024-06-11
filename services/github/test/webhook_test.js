@@ -70,6 +70,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Tag', 'webhook.tag_push.json', 204);
   statusTest('CheckRun rerun', 'webhook.check_run.rerequested.json', 204);
   statusTest('CheckRun rerun by bot', 'webhook.check_run.rerequested-bot.json', 200);
+  statusTest('Issue Comment edited', 'webhook.issue_comment.edited.json', 204, TC_DEV_INSTALLATION_ID);
+
+  // skipped events
+  statusTest('Issue Comment created', 'webhook.issue_comment.created.json', 200, TC_DEV_INSTALLATION_ID);
+  statusTest('Issue Comment deleted', 'webhook.issue_comment.deleted.json', 200, TC_DEV_INSTALLATION_ID);
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {

@@ -31,3 +31,16 @@ or limit tasks to pull requests created by repository collaborators.
 With a little extra care in setting up the `repo:github.com/<org>/<repo>`
 scopes, it is possible to provide scopes for branches (containing trusted,
 reviewed code) that differ from the scopes given to pull requests.
+
+## Features (TODO)
+
+The Github integration provides the following features:
+
+(draft)
+- running tasks on commit pushes and pull requests
+- re-running failed tasks from github ui
+- creating check-runs with extended information
+- updating build statuses on commits and pull requests
+- policy check if contributor or not
+- allow comments in prs to trigger tasks
+- run tasks on release event

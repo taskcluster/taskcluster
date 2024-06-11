@@ -7103,6 +7103,13 @@
       "additionalProperties": false,
       "description": "Description of a taskcluster.yml file v1, which may be used to generate a taskgraph\nand tasks.\n",
       "properties": {
+        "allowComments": {
+          "description": "Allow to trigger tasks from github comments. When set, collaborators would be able to trigger taskcluster bot\nby adding a comment that starts with `/taskcluster` and followed by command.\nDetails can be found in [RFC 168](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0168-Trigger-Tests-Based-on-PR-Comments.md)\n",
+          "enum": [
+            "collaborators"
+          ],
+          "type": "string"
+        },
         "autoCancelPreviousChecks": {
           "default": true,
           "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",

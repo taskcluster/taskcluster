@@ -174,6 +174,25 @@ export class GithubCheck {
   }
 }
 
+export const isCollaborator = async (instGithub, organization, repository, login) => {
+  return Boolean(await instGithub.repos.checkCollaborator({
+    owner: organization,
+    repo: repository,
+    username: login,
+    // avoid "default" retry strategy on 404 errors
+    request: {
+      retries: 1,
+      retryAfter: 1,
+      doNotRetry: [400, 401, 403],
+    },
+  }).catch(e => {
+    if (e.status !== 404) {
+      throw e;
+    }
+    return false; // 404 -> false
+  }));
+};
+
 export default {
   taskUI,
   taskGroupUI,
@@ -181,4 +200,5 @@ export default {
   makeDebug,
   GithubCheckOutput,
   GithubCheck,
+  isCollaborator,
 };

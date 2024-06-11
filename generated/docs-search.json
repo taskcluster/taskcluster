@@ -1492,6 +1492,13 @@
   },
   {
     "element": "h2",
+    "id": "features-todo",
+    "path": "/manual/using/github",
+    "subtitle": "Features (TODO)",
+    "title": "Integrating with Github"
+  },
+  {
+    "element": "h2",
     "id": "task-security",
     "path": "/manual/using/github",
     "subtitle": "Task Security",

@@ -2,7 +2,7 @@ import assert from 'assert';
 import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { makeDebug } from './utils.js';
+import { makeDebug, isCollaborator } from './utils.js';
 import { POLICIES } from './policies.js';
 import { GITHUB_TASKS_FOR } from '../constants.js';
 
@@ -113,24 +113,12 @@ export async function jobHandler(message) {
     // The "public_restricted" policy uses the same criteria as above, but will assume a separate role
     // for a PR associated with a collaborator or one that is public.
 
-    const isCollaborator = async login => {
-      return Boolean(await instGithub.repos.checkCollaborator({
-        owner: organization,
-        repo: repository,
-        username: login,
-      }).catch(e => {
-        if (e.status !== 404) {
-          throw e;
-        }
-        return false; // 404 -> false
-      }));
-    };
-
     const evt = message.payload.body;
     const opener = evt.pull_request.user.login;
-    const openerIsCollaborator = await isCollaborator(opener);
+    const openerIsCollaborator = await isCollaborator(instGithub, organization, repository, opener);
     const head = evt.pull_request.head.user.login;
-    const headIsCollaborator = head === opener ? openerIsCollaborator : await isCollaborator(head);
+    const headIsCollaborator = head === opener ? openerIsCollaborator :
+      await isCollaborator(instGithub, organization, repository, head);
     const headIsBase = evt.pull_request.head.user.login === evt.pull_request.base.user.login;
     const isPullRequestTrusted = openerIsCollaborator && (headIsCollaborator || headIsBase);
 

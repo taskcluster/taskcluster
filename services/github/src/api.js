@@ -15,7 +15,7 @@ import {
   GITHUB_BUILD_STATES,
 } from './constants.js';
 
-import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils.js';
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand } from './utils.js';
 import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -317,6 +317,26 @@ builder.declare({
         publisherKey = PUBLISHERS.PUSH;
         msg.tasks_for = GITHUB_TASKS_FOR.PUSH;
         msg.branch = body.ref.split('/').slice(2).join('/');
+        break;
+
+      case EVENT_TYPES.ISSUE_COMMENT:
+        if (shouldSkipComment(body)) {
+          debugMonitor.debug({
+            message: 'Skipping issue_comment event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping issue_comment event');
+        }
+
+        publisherKey = PUBLISHERS.PULL_REQUEST;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.installationId = installationId;
+        msg.tasks_for = GITHUB_TASKS_FOR.ISSUE_COMMENT;
+        msg.action = body.action; // not a PR action, but a comment action
+        msg.branch = 'unknown'; // not yet available at this point
+        msg.details = {
+          'event.head.user.login': body.sender.login,
+        };
         break;
 
       case EVENT_TYPES.PING:
