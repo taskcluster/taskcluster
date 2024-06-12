@@ -431,6 +431,23 @@ class Handlers {
   }
 
   /**
+   * Checks if the repository allows comments to trigger builds on Pull Requests.
+   * Only v1 of `.taskcluster.yml` supports this feature.
+   * Top level `allowComments` needs to be set to `"collaborators"` to enable this feature.
+   * (Currently the only option allowed)
+   *
+   * @param {object} taskclusterYml
+   * @returns string | null
+   */
+  getRepoAllowCommentsPolicy(taskclusterYml) {
+    if (taskclusterYml.version === 1) {
+      return taskclusterYml.allowComments || null;
+    }
+
+    return null;
+  }
+
+  /**
    * Try to get `.taskcluster.yml` from a certain ref.
    *
    * @param instGithub - authenticated installation object

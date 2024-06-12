@@ -14,6 +14,7 @@ class FakeGithub {
     this._repo_collaborators = {};
     this._github_users = [];
     this._repo_info = {};
+    this._pulls_info = {};
     this._repositories = {};
     this._statuses = {};
     this._checks = {};
@@ -180,6 +181,14 @@ class FakeGithub {
 
         return { data: { check_runs: info } };
       },
+      'pulls.get': async ({ owner, repo, pull_number }) => {
+        const key = `${owner}/${repo}/${pull_number}`;
+        if (this._pulls_info[key]) {
+          return { data: this._pulls_info[key] };
+        } else {
+          throwError(404);
+        }
+      },
     };
 
     const debug = Debug('FakeGithub');
@@ -237,6 +246,11 @@ class FakeGithub {
   setRepoInfo({ owner, repo, info }) {
     const key = `${owner}/${repo}`;
     this._repo_info[key] = info;
+  }
+
+  setPullInfo({ owner, repo, pull_number, info }) {
+    const key = `${owner}/${repo}/${pull_number}`;
+    this._pulls_info[key] = info;
   }
 
   setUser({ id, email, username }) {

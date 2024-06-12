@@ -320,6 +320,13 @@ builder.declare({
         break;
 
       case EVENT_TYPES.ISSUE_COMMENT:
+        // Comments on PRs can trigger tasks, too
+        // For this to work, there should be a `/taskcluster cmd` in the comment
+        // Plus repository should have a `.taskcluster.yml` in default branch with
+        // "allowComments: collaborators" in it
+        // Message is being processed in the same way as PULL_REQUEST
+        // and missing data would be fetched from the PR
+
         if (shouldSkipComment(body)) {
           debugMonitor.debug({
             message: 'Skipping issue_comment event',
@@ -335,7 +342,10 @@ builder.declare({
         msg.action = body.action; // not a PR action, but a comment action
         msg.branch = 'unknown'; // not yet available at this point
         msg.details = {
+          'event.type': `issue_comment.${body.action}`,
           'event.head.user.login': body.sender.login,
+          'taskcluster_comment': getTaskclusterCommand(body.comment),
+          // rest of the details would be fetched in the handler
         };
         break;
 

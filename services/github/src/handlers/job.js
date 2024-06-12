@@ -3,7 +3,7 @@ import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { makeDebug, isCollaborator } from './utils.js';
-import { POLICIES } from './policies.js';
+import { POLICIES, ALLOW_COMMENT_POLICIES } from './policies.js';
 import { GITHUB_TASKS_FOR } from '../constants.js';
 
 /**
@@ -33,22 +33,39 @@ export async function jobHandler(message) {
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
 
   if (!sha) {
-    // only releases lack event.head.sha
-    if (message.payload.details['event.type'] !== 'release') {
+    // only releases and issue_comment lack event.head.sha
+    if (message.payload.details['event.type'] === 'release') {
+      debug('Trying to get release commit info in job handler...');
+      let commitInfo = await instGithub.repos.getCommit({
+        headers: { accept: 'application/vnd.github.3.sha' },
+        owner: organization,
+        repo: repository,
+        // fetch the target_commitish for the release, as the tag may not
+        // yet have been created
+        ref: message.payload.body.release.target_commitish,
+      });
+      sha = commitInfo.data;
+    } else if (message.payload.details['event.type'].startsWith('issue_comment')) {
+      debug.refine({ comment: JSON.stringify(message.payload.body.comment.body) })(
+        `Trying to pull request details for comment: ${message.payload.details.taskcluster_comment}`,
+      );
+      const pr = await instGithub.pulls.get({
+        owner: organization,
+        repo: repository,
+        pull_number: message.payload.body.issue.number,
+      });
+      pullNumber = pr.data.number;
+      sha = pr.data.head.sha;
+
+      // extend details body with pull request details for .taskcluster.yml
+      message.payload.body.pull_request = pr.data;
+
+      debug = debug.refine({ sha });
+      debug(`Got sha ${sha} for pull request ${pullNumber}`);
+    } else {
       debug(`Ignoring ${message.payload.details['event.type']} event with no sha`);
       return;
     }
-
-    debug('Trying to get release commit info in job handler...');
-    let commitInfo = await instGithub.repos.getCommit({
-      headers: { accept: 'application/vnd.github.3.sha' },
-      owner: organization,
-      repo: repository,
-      // fetch the target_commitish for the release, as the tag may not
-      // yet have been created
-      ref: message.payload.body.release.target_commitish,
-    });
-    sha = commitInfo.data;
   }
 
   let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
@@ -148,6 +165,46 @@ export async function jobHandler(message) {
         message.payload.tasks_for = GITHUB_TASKS_FOR.PULL_REQUEST_UNTRUSTED;
       }
     }
+  }
+
+  // checking comment permissions
+  if (message.payload.details['event.type'].startsWith('issue_comment')) {
+    debug(`Checking comment permission for ${organization}/${repository}@${sha}...`);
+
+    let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
+    if (!defaultBranchYml) {
+      debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}. Skipping.`);
+      return;
+    }
+    const allowCommentsPolicy = this.getRepoAllowCommentsPolicy(defaultBranchYml);
+
+    const validCommentPolicies = Object.values(ALLOW_COMMENT_POLICIES);
+    if (!validCommentPolicies.includes(allowCommentsPolicy)) {
+      debug(`allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${allowCommentsPolicy}. Skipping.`);
+      await instGithub.issues.createComment({
+        owner: organization,
+        repo: repository,
+        issue_number: pullNumber,
+        body: '`.taskcluster.yml` does not allow tasks being created from comments.',
+      });
+      return;
+    }
+
+    const commenterName = message.payload.body.comment.user.login;
+    const commenterIsCollaborator = await isCollaborator(instGithub, organization, repository, commenterName);
+
+    if (!commenterIsCollaborator) {
+      debug(`User ${commenterName} is not a collaborator on ${organization}/${repository}. Skipping.`);
+      await instGithub.issues.createComment({
+        owner: organization,
+        repo: repository,
+        issue_number: pullNumber,
+        body: `Cannot create tasks from comments. User "${commenterName}" is not a collaborator.`,
+      });
+      return;
+    }
+    // expose command as "event.taskcluster_comment"
+    message.payload.body.taskcluster_comment = message.payload.details.taskcluster_comment;
   }
 
   let groupState = 'pending';
