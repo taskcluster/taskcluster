@@ -20,7 +20,7 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm --privileged
-              --device=/dev/shm
+              -v /dev/shm:/dev/shm
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
@@ -49,7 +49,7 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm --privileged
-              --device=/dev/kvm
+              -v /dev/kvm:/dev/kvm
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
@@ -81,7 +81,7 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm --privileged
-              --device="${TASKCLUSTER_VIDEO_DEVICE}"
+              -v "${TASKCLUSTER_VIDEO_DEVICE}:${TASKCLUSTER_VIDEO_DEVICE}"
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
@@ -112,7 +112,7 @@ testSuite:
             - '-cx'
             - >-
               podman run -t --rm --privileged
-              --device=/dev/snd
+              -v /dev/snd:/dev/snd
               -e RUN_ID
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION

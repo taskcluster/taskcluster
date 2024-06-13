@@ -56,7 +56,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --privileged --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+            - podman run -t --rm --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep
               1; done'
           features:
@@ -141,7 +141,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --privileged --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+            - podman run -t --rm --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep
               1; done'
           features:
@@ -228,7 +228,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --privileged --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+            - podman run -t --rm --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep
               1; done'
           features:
