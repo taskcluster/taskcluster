@@ -72,7 +72,7 @@ testSuite:
             - 128
           osGroups:
             - kvm
-            - libvirtd
+            - libvirt
         priority: lowest
         projectId: none
         provisionerId: proj-taskcluster
@@ -83,7 +83,7 @@ testSuite:
         scopes:
           - generic-worker:apples
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirtd
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04
@@ -157,7 +157,7 @@ testSuite:
             - 128
           osGroups:
             - kvm
-            - libvirtd
+            - libvirt
         priority: lowest
         projectId: none
         provisionerId: proj-taskcluster
@@ -168,7 +168,7 @@ testSuite:
         scopes:
           - generic-worker:apples
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirtd
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         workerType: gw-ubuntu-22-04
@@ -244,7 +244,7 @@ testSuite:
             - 128
           osGroups:
             - kvm
-            - libvirtd
+            - libvirt
         priority: lowest
         projectId: none
         provisionerId: proj-taskcluster
@@ -255,7 +255,7 @@ testSuite:
         scopes:
           - generic-worker:apples
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirtd
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04

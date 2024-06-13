@@ -62,7 +62,7 @@ testSuite:
             - 128
         osGroups:
           - kvm
-          - libvirtd
+          - libvirt
 
     - name: Video Loopback
       description: >-
