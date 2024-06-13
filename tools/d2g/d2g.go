@@ -116,7 +116,9 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 	}
 
 	if dwPayload != nil && dwPayload.Capabilities.Devices.KVM {
-		gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/kvm", taskQueueID))
+		for _, osGroup := range []string{"kvm", "libvirtd"} {
+			gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/%s", taskQueueID, osGroup))
+		}
 	}
 
 	return
@@ -407,9 +409,9 @@ func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *ge
 
 func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	if dwPayload.Capabilities.Devices.KVM {
-		// task user needs to be in the kvm group for KVM to work
+		// task user needs to be in kvm and libvirtd groups for KVM to work:
 		// https://help.ubuntu.com/community/KVM/Installation
-		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm")
+		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirtd")
 	}
 }
 
