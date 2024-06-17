@@ -146,7 +146,12 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   let statuses;
 
   try {
-    statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
+    statuses = (await github.repos.listCommitStatusesForRef({
+      owner,
+      repo,
+      ref: branch,
+      request: { retries: 1 },
+    })).data;
   } catch (e) {
     // github sends 422 when branch doesn't exist
     if (e.code === 404 || e.code === 422) {
@@ -165,7 +170,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
   let checks;
 
   try {
-    checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
+    checks = (await github.checks.listForRef({ owner, repo, ref: branch, request: { retries: 1 } })).data.check_runs;
   } catch (e) {
     if (e.code === 404 || e.code === 422) {
       return [];
