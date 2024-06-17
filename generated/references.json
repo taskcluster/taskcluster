@@ -13131,7 +13131,7 @@
                     "$ref": "#/definitions/schema"
                   },
                   "task": {
-                    "description": "Task template for triggering the action.\n\nWhen an action have been selected in the appropriate context and\ninput satisfying the `schema` (if any) has been collected. The\naction is triggered by parameterizing the task template given in\nthis property, and creating the resulting task.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/taskcluster/json-e), with the context\ndescribed in the documentation.\n",
+                    "description": "Task template for triggering the action.\n\nWhen an action have been selected in the appropriate context and\ninput satisfying the `schema` (if any) has been collected. The\naction is triggered by parameterizing the task template given in\nthis property, and creating the resulting task.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/json-e/json-e), with the context\ndescribed in the documentation.\n",
                     "title": "Task Template",
                     "type": "object"
                   },
@@ -13170,7 +13170,7 @@
                     "type": "string"
                   },
                   "hookPayload": {
-                    "description": "JSON-e template that renders to the payload for `hooks.triggerHook`.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/taskcluster/json-e), with the\ncontext described in the documentation. The output of this\nrendering is provided as the payload to `hooks.triggerHook`\n(where it becomes the context for another JSON-e rendering\nstep - don't get the two confused!)\n",
+                    "description": "JSON-e template that renders to the payload for `hooks.triggerHook`.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/json-e/json-e), with the\ncontext described in the documentation. The output of this\nrendering is provided as the payload to `hooks.triggerHook`\n(where it becomes the context for another JSON-e rendering\nstep - don't get the two confused!)\n",
                     "title": "Hook Payload Template",
                     "type": "object"
                   },

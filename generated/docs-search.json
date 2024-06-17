@@ -1492,13 +1492,6 @@
   },
   {
     "element": "h2",
-    "id": "features-todo",
-    "path": "/manual/using/github",
-    "subtitle": "Features (TODO)",
-    "title": "Integrating with Github"
-  },
-  {
-    "element": "h2",
     "id": "task-security",
     "path": "/manual/using/github",
     "subtitle": "Task Security",
@@ -2685,6 +2678,13 @@
     "id": "transitioning-from-v0",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Transitioning from v0",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "id": "trigger-builds-on-comments",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Trigger builds on comments",
     "title": "Taskcluster Yml Version 1"
   },
   {

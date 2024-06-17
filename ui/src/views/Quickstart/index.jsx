@@ -40,6 +40,7 @@ const baseCmd = [
 const getMatchCondition = events => {
   const condition = [];
   const prActions = [];
+  const commentActions = [];
 
   events.forEach(event => {
     if (event.startsWith('pull_request.')) {
@@ -48,6 +49,8 @@ const getMatchCondition = events => {
       condition.push('(tasks_for == "github-push")');
     } else if (event === 'release') {
       condition.push('(tasks_for == "github-release")');
+    } else if (event.startsWith('issue_comment.')) {
+      commentActions.push(event.split('.')[1]);
     }
   });
 
@@ -55,6 +58,13 @@ const getMatchCondition = events => {
     condition.push(
       `(tasks_for == "github-pull-request" ` +
         `&& event["action"] in ${JSON.stringify(prActions.sort())})`
+    );
+  }
+
+  if (commentActions.length > 0) {
+    condition.push(
+      `(tasks_for == "github-issue-comment" ` +
+        `&& event["action"] in ${JSON.stringify(commentActions.sort())})`
     );
   }
 
@@ -542,6 +552,28 @@ export default class QuickStart extends Component {
                         />
                       }
                       label="Release or tag created"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('issue_comment.created')}
+                          onChange={this.handleEventsSelection}
+                          value="issue_comment.created"
+                        />
+                      }
+                      label="New comment on pull request"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('issue_comment.edited')}
+                          onChange={this.handleEventsSelection}
+                          value="issue_comment.edited"
+                        />
+                      }
+                      label="Comment was edited on pull request"
                     />
                   </FormGroup>
                 </div>

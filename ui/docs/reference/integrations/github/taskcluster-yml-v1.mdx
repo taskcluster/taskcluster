@@ -15,6 +15,7 @@ version: 1
 policy:
   pullRequests: ..
 autoCancelPreviousChecks: true
+allowComments: collaborators
 reporting: checks-v1
 tasks:
   - (task definition)
@@ -55,25 +56,38 @@ The `pullRequests` policy controls this behavior:
 
 Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
-
 Example:
+
 ```yaml
 policy:
   pullRequests: public
 tasks: ...
 ```
 
+## Trigger builds on comments
+
+The `allowComments` policy controls whether tasks can be triggered by comments on pull requests.
+The value needs to be set to `collaborators` to allow collaborators to trigger tasks by commenting on pull requests.
+
+Github service will listen to all pull request comments and will trigger a build if it contains a specific command.
+The command should be in the format `/taskcluster param` where `param` is the command that will be passed in the *context*
+of the JSON-e rendering.
+
+Tasks will be generated with `tasks_for = "github-issue-comment"`, `event.taskcluster_comment = param`, `event.comment`
+and `event.pull_request` details.
+
 ## JSON-e Rendering
 
-The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/taskcluster/json-e). You can view it as a *template*. The following *context* variables are provided:
+The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/json-e/json-e). You can view it as a *template*. The following *context* variables are provided:
 
 * `tasks_for` - defines the type of event, one of `github-push`,
-  `github-pull-request` or `github-release`.
+  `github-pull-request`, `github-release` or `github-issue-comment`.
 
 * `event` - the raw Github Webhook event; see
   * [PushEvent](https://developer.github.com/v3/activity/events/types/#pushevent)
   * [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent)
   * [ReleaseEvent](https://developer.github.com/v3/activity/events/types/#releaseevent)
+  * [IssueCommentEvent](https://developer.github.com/v3/activity/events/types/#issue_comment)
 
 * `now` - the current time, as a string; this is useful for reproducible `$fromNow` invocations (see JSON-e documentation)
 
@@ -186,7 +200,7 @@ Note that it is wise to always check `tasks_for` first in a conditional like thi
 Other event types do not have `event.ref`, which would lead to a template error if not for the `tasks_for` check.
 
 <Warning>
-Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
+Once JSON-e supports [short-circuit boolean operators](https://github.com/json-e/json-e/issues/244), these conditionals can be collapsed into one.
 </Warning>
 
 #### Tags
