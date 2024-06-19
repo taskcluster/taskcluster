@@ -189,6 +189,12 @@ class FakeGithub {
           throwError(404);
         }
       },
+      'reactions.createForIssueComment': async ({ owner, repo, commentId, body }) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+        return {};
+      },
     };
 
     const debug = Debug('FakeGithub');

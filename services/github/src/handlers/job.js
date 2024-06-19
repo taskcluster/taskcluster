@@ -142,20 +142,16 @@ export async function jobHandler(message) {
     if (!isPullRequestTrusted) {
       if (repoPolicy.startsWith(POLICIES.COLLABORATORS)) {
         if (message.payload.details['event.type'].startsWith('pull_request.opened') && (repoPolicy !== POLICIES.COLLABORATORS_QUIET)) {
-          let body = [
-            '<details>\n',
-            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
-            '```js\n',
-            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
-            'default branch) does not allow starting tasks for this pull request.',
-            '```\n',
-            '</details>',
-          ].join('\n');
-          await instGithub.issues.createComment({
-            owner: organization,
-            repo: repository,
-            issue_number: pullNumber,
-            body,
+          await this.createComment({
+            instGithub, organization, repository, pullNumber, sha, debug,
+            body: {
+              summary: 'No Taskcluster jobs started for this pull request',
+              details: [
+                'The `allowPullRequests` configuration for this repository ',
+                '(in `.taskcluster.yml` on the default branch) does not allow ',
+                'starting tasks for this pull request.',
+              ].join(''),
+            },
           });
         }
 
@@ -181,11 +177,21 @@ export async function jobHandler(message) {
     const validCommentPolicies = Object.values(ALLOW_COMMENT_POLICIES);
     if (!validCommentPolicies.includes(allowCommentsPolicy)) {
       debug(`allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${allowCommentsPolicy}. Skipping.`);
-      await instGithub.issues.createComment({
-        owner: organization,
-        repo: repository,
-        issue_number: pullNumber,
-        body: '`.taskcluster.yml` does not allow tasks being created from comments.',
+      await this.createComment({
+        instGithub, organization, repository, pullNumber, sha, debug,
+        body: {
+          summary: 'No Taskcluster jobs started for comment',
+          details: [
+            'The `allowComments` configuration for this repository ',
+            '(in `.taskcluster.yml` on the default branch) does not allow ',
+            'starting tasks from comments.',
+          ].join(''),
+        },
+      });
+      await this.addCommentReaction({
+        instGithub, organization, repository,
+        commentId: message.payload.body.comment.id,
+        reaction: 'confused',
       });
       return;
     }
@@ -195,11 +201,17 @@ export async function jobHandler(message) {
 
     if (!commenterIsCollaborator) {
       debug(`User ${commenterName} is not a collaborator on ${organization}/${repository}. Skipping.`);
-      await instGithub.issues.createComment({
-        owner: organization,
-        repo: repository,
-        issue_number: pullNumber,
-        body: `Cannot create tasks from comments. User "${commenterName}" is not a collaborator.`,
+      await this.createComment({
+        instGithub, organization, repository, pullNumber, sha, debug,
+        body: {
+          summary: 'No Taskcluster jobs started for this pull request',
+          details: `Cannot create tasks from comments. User "${commenterName}" is not a collaborator.`,
+        },
+      });
+      await this.addCommentReaction({
+        instGithub, organization, repository,
+        commentId: message.payload.body.comment.id,
+        reaction: 'eyes',
       });
       return;
     }
@@ -311,6 +323,17 @@ export async function jobHandler(message) {
     debug(`Stack: ${e.stack}`);
     return debug(`Failed to publish to taskGroupCreationRequested exchange
     for ${organization}/${repository}@${sha} with the error: ${stringify(e, null, 2)}`);
+  }
+
+  if (message.payload.details['event.type'].startsWith('issue_comment')) {
+    // let them know we are doing something
+    await this.addCommentReaction({
+      instGithub,
+      organization,
+      repository,
+      commentId: message.payload.body.comment.id,
+      reaction: '+1',
+    });
   }
 
   debug(`Job handling for ${organization}/${repository}@${sha} completed.`);

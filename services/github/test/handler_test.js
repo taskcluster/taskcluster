@@ -981,7 +981,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert.equal(args[0][0].owner, 'taskcluster');
         assert.equal(args[0][0].repo, 'tc-dev-integration-test');
         assert.equal(args[0][0].issue_number, 15);
-        assert(args[0][0].body.indexOf('does not allow tasks being created from comments') !== -1);
+        assert(args[0][0].body.indexOf('does not allow starting tasks from comments') !== -1);
+        assert(instGithub.reactions.createForIssueComment.calledOnce);
       });
     });
 
