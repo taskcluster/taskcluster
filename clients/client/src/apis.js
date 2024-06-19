@@ -1899,9 +1899,9 @@ export default {
             },
             {
               "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+              "name": "topic",
+              "required": true,
+              "summary": "Custom topic. This is the <topic> portion of the `notify.pulse.<topic>.on-<event>` routes."
             }
           ],
           "schema": "v1/notification-message.json#",
