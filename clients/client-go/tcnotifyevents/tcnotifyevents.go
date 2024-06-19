@@ -57,7 +57,7 @@ import (
 // See #notify
 type Notify struct {
 	RoutingKeyKind string `mwords:"*"`
-	Reserved       string `mwords:"#"`
+	Topic          string `mwords:"#"`
 }
 
 func (binding Notify) RoutingKey() string {
