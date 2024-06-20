@@ -39,6 +39,15 @@ in a shell environment.
 `TASKCLUSTER_CLIENT_ID`, and is only present if the client is a temporary
 client.  This variable is handled just like `TASKCLUSTER_CLIENT_ID`.
 
+## TASKCLUSTER_INSTANCE_TYPE
+
+`TASKCLUSTER_INSTANCE_TYPE` is typically set during task execution by worker
+implementations, and is the name of the (cloud-specific) instance type
+that the worker is running on. For example, this could be something like
+`c4.2xlarge` for an AWS worker, `n2-standard-4` for a Google Cloud worker, or
+`Standard_F32s_v2` for an Azure worker. Typically tasks that run on non-cloud
+workers will not have this environment variable set.
+
 ## TASKCLUSTER_PROXY_URL
 
 `TASKCLUSTER_PROXY_URL` defines the URL of a local
