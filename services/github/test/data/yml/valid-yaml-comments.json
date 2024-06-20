@@ -1,6 +1,8 @@
 {
   "version": 1,
-  "allowComments": "collaborators",
+  "policy": {
+    "allowComments": "collaborators"
+  },
   "tasks": [
     {
       "provisionerId": "dummy-provisioner",

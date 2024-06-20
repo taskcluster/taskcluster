@@ -323,7 +323,7 @@ builder.declare({
         // Comments on PRs can trigger tasks, too
         // For this to work, there should be a `/taskcluster cmd` in the comment
         // Plus repository should have a `.taskcluster.yml` in default branch with
-        // "allowComments: collaborators" in it
+        // "policy.allowComments: collaborators" in it
         // Message is being processed in the same way as PULL_REQUEST
         // and missing data would be fetched from the PR
 

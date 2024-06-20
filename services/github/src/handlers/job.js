@@ -176,13 +176,13 @@ export async function jobHandler(message) {
 
     const validCommentPolicies = Object.values(ALLOW_COMMENT_POLICIES);
     if (!validCommentPolicies.includes(allowCommentsPolicy)) {
-      debug(`allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${allowCommentsPolicy}. Skipping.`);
+      debug(`allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${validCommentPolicies}. Skipping.`);
       await this.createComment({
         instGithub, organization, repository, pullNumber, sha, debug,
         body: {
           summary: 'No Taskcluster jobs started for comment',
           details: [
-            'The `allowComments` configuration for this repository ',
+            'The `policy.allowComments` configuration for this repository ',
             '(in `.taskcluster.yml` on the default branch) does not allow ',
             'starting tasks from comments.',
           ].join(''),

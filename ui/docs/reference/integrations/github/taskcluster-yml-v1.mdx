@@ -14,8 +14,8 @@ The format of the file is shown below:
 version: 1
 policy:
   pullRequests: ..
+  allowComments: collaborators
 autoCancelPreviousChecks: true
-allowComments: collaborators
 reporting: checks-v1
 tasks:
   - (task definition)
@@ -24,12 +24,6 @@ tasks:
 
 The core of Taskcluster-Github's operation is this: when an event occurs on Github, such as a push or a pull request, it loads `.taskcluster.yml` from the commit specified in the event, renders it with JSON-e, and then calls `Queue.createTask` for each of the specified tasks.
 
-## Policies
-
-The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch of the repository, as configured in the repository settings on GitHub. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
-
-Policies are not rendered as a part of a task.
-
 ## Automatically cancel running builds
 
 The `autoCancelPreviousChecks` property controls whether or not to automatically cancel previous builds when a new build is triggered.
@@ -37,6 +31,12 @@ This is useful for example when a new commit is pushed to a pull request, and yo
 This only works on pull requests.
 
 It is set to `true` by default.
+
+## Policies
+
+The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch of the repository, as configured in the repository settings on GitHub. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
+
+Policies are not rendered as a part of a task.
 
 ### Pull Requests
 
@@ -64,7 +64,7 @@ policy:
 tasks: ...
 ```
 
-## Trigger builds on comments
+### Trigger builds on comments
 
 The `allowComments` policy controls whether tasks can be triggered by comments on pull requests.
 The value needs to be set to `collaborators` to allow collaborators to trigger tasks by commenting on pull requests.
@@ -97,6 +97,14 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
   This can be useful in cases where multiple Taskcluster deployments are configured for the same repository, or for generating URLs to other Taskcluster resources.
 
 Although the Github documentation does not make it clear, each ref that is updated in a `git push` operation triggers a distinct event.
+
+Example:
+
+```yaml
+policy:
+  allowComments: collaborators
+tasks: ...
+```
 
 ### Result
 

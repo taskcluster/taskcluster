@@ -1184,6 +1184,13 @@
   },
   {
     "element": "h2",
+    "id": "taskcluster_instance_type",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASKCLUSTER_INSTANCE_TYPE",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
     "id": "taskcluster_proxy_url",
     "path": "/manual/design/env-vars",
     "subtitle": "TASKCLUSTER_PROXY_URL",
@@ -2681,7 +2688,7 @@
     "title": "Taskcluster Yml Version 1"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "trigger-builds-on-comments",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Trigger builds on comments",
