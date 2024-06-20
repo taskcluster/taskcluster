@@ -45,7 +45,7 @@ export const tasks = [{
       // check if docker process is running
       const dockerProcessId = await execCommand({
         dir: REPO_ROOT,
-        command: ['docker', 'ps', '-q', '--filter', 'name=postgres'],
+        command: ['docker', 'ps', '-q', '--filter', 'ancestor=postgres:15'],
         keepAllOutput: true,
         utils,
       });
