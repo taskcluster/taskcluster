@@ -3,6 +3,48 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.2.0
+
+### USERS
+
+▶ [minor] [#7070](https://github.com/taskcluster/taskcluster/issues/7070)
+Generic Worker now sets the environment variable TASKCLUSTER_INSTANCE_TYPE in task commands to the instance type of the worker, if configured. This matches the (undocumented) behaviour of Docker Worker. D2G also passes this environment variable through to podman, to emulate Docker Worker's behaviour.
+
+▶ [patch]
+Fixes UI issue in worker view where error was shown despite worker being found.
+
+▶ [patch] [#7059](https://github.com/taskcluster/taskcluster/issues/7059)
+D2G now includes `libvirt` OS group in generated Generic Worker task payloads that use Docker Worker KVM device.
+
+▶ [patch] [#6954](https://github.com/taskcluster/taskcluster/issues/6954)
+Fixes an issue with github badges that timed out on non-existing branches.
+
+▶ [patch]
+Tasks using `notify.pulse.<topic>.on-<event>` routes now send out messages
+using the specified topic. This means it's now possible to subscribe to
+specific topics.
+
+### DEVELOPERS
+
+▶ [minor] [#5073](https://github.com/taskcluster/taskcluster/issues/5073)
+Github service supports `issue_comment` events to trigger jobs through `/tasckluster param` comments in open Pull Requests.
+`.taskcluster.yml` in default branch should allow this with `policy.allowComments: collaborators` value.
+Tasks would be rendered with `tasks_for = "github-issue-comment"` and `event.taskcluster_comment = param`
+This is an implementation of [RFC 168](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0168-Trigger-Tests-Based-on-PR-Comments.md)
+
+▶ [patch] [#6567](https://github.com/taskcluster/taskcluster/issues/6567)
+`yarn generate` commands will attempt to run `pg_dump` inside the docker container if local binary is missing or its version is different from the server version.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump taskcluster-taskgraph (8daf19d4c)
+* build(deps): bump the go-deps group with 4 updates (60ca4228f)
+
+</details>
+
 ## v65.1.0
 
 ### USERS
