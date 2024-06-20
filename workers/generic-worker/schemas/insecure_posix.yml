@@ -50,6 +50,7 @@ oneOf:
           * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
             taskcluster authentication proxy for making unauthenticated taskcluster
             API calls
+          * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
           * `TASKCLUSTER_WORKER_LOCATION`. See
             [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
             for details.

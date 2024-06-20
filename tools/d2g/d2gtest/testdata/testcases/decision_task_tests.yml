@@ -94,6 +94,7 @@ testSuite:
               -e PYTHONDONTWRITEBYTECODE
               -e RUN_ID
               -e TASKCLUSTER_CACHES
+              -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_PROXY_URL
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION

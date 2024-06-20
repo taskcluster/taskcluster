@@ -117,6 +117,12 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			// ending, i.e. no string escaping required!
 			contents += setEnvVarCommand("TASKCLUSTER_WORKER_LOCATION", config.WorkerLocation)
 		}
+		if config.InstanceType != "" {
+			// Note, in contrast to other shells, the cmd shell set command
+			// expects literal bytes between the `=` character and the line
+			// ending, i.e. no string escaping required!
+			contents += setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType)
+		}
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
