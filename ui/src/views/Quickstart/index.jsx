@@ -74,6 +74,7 @@ const getMatchCondition = events => {
 const getTaskDefinition = state => {
   const {
     access,
+    allowComments,
     commands,
     condition,
     image,
@@ -89,6 +90,7 @@ const getTaskDefinition = state => {
     reporting: 'checks-v1',
     policy: {
       pullRequests: access,
+      ...(allowComments && { allowComments: 'collaborators' }),
     },
     autoCancelPreviousChecks: true,
     tasks: {
@@ -222,6 +224,7 @@ export default class QuickStart extends Component {
     owner: '',
     repo: '',
     access: 'collaborators',
+    allowComments: false,
     language: 'node',
     image: 'node',
     commands: commandForLanguage.node,
@@ -271,9 +274,12 @@ export default class QuickStart extends Component {
     // Note: this should be called after `events` has been modified
     // in the above line
     const condition = getMatchCondition(events);
+    const allowComments =
+      events.has('issue_comment.created') || events.has('issue_comment.edited');
 
     this.setState({
       events,
+      allowComments,
       condition,
       editorValue: null,
     });
