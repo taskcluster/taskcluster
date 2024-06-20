@@ -507,6 +507,7 @@ func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 		"RUN_ID",
 		"TASKCLUSTER_ROOT_URL",
 		"TASK_ID",
+		"TASKCLUSTER_INSTANCE_TYPE",
 		"TASKCLUSTER_WORKER_LOCATION",
 	}
 

@@ -40,10 +40,10 @@ testSuite:
           - "-cx"
           - "timeout 14400 podman run -t --name taskcontainer --privileged --security-opt=seccomp=unconfined
             -v /dev/shm:/dev/shm -v /dev/snd:/dev/snd --add-host=taskcluster:127.0.0.1 --net=host
-            -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_PROXY_URL
-            -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID docker-archive:dockerimage
-            \nexit_code=$?\npodman cp taskcontainer:/bugmon-artifacts/ artifact0\npodman rm
-            taskcontainer\nexit \"${exit_code}\""
+            -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+            -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID
+            docker-archive:dockerimage \nexit_code=$?\npodman cp taskcontainer:/bugmon-artifacts/
+            artifact0\npodman rm taskcontainer\nexit \"${exit_code}\""
         env:
           BUG_ACTION: process
           MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json

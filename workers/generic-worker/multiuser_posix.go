@@ -152,6 +152,9 @@ func (task *TaskRun) EnvVars() []string {
 	if config.WorkerLocation != "" {
 		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
 	}
+	if config.InstanceType != "" {
+		taskEnv["TASKCLUSTER_INSTANCE_TYPE"] = config.InstanceType
+	}
 
 	for i, j := range taskEnv {
 		taskEnvArray = append(taskEnvArray, i+"="+j)
