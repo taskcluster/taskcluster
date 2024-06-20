@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import request from 'superagent';
 import util from 'util';
 
+import { ISSUE_COMMENT_ACTIONS } from './constants.js';
+
 const setTimeoutPromise = util.promisify(setTimeout);
 
 /**
@@ -85,6 +87,56 @@ export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
 export const shouldSkipPullRequest = ({ pull_request }) => {
   return pull_request !== undefined &&
     (ciSkipRegexp.test(pull_request.title) || ciSkipRegexp.test(pull_request.body));
+};
+
+export const taskclusterCommandRegExp = new RegExp('^\\s*/taskcluster\\s+(.+)$', 'm');
+
+/**
+ * Check if comment event should be skipped.
+ *
+ * We only process comments that:
+ *  - have `created` or `edited` action
+ *  - issue is open and belongs to a PR
+ *  - comment contains keyword `/taskcluster cmd` in the body
+ *
+ * @param {body} object event body
+ * @param {body.action} string
+ * @param {body.comment} object
+ * @param {body.issue} object
+ * @returns boolean
+ */
+export const shouldSkipComment = ({ action, comment, issue }) => {
+  if ([ISSUE_COMMENT_ACTIONS.CREATED, ISSUE_COMMENT_ACTIONS.EDITED].includes(action) === false) {
+    return true;
+  }
+
+  if (!issue || !issue.pull_request || issue.state !== 'open') {
+    return true;
+  }
+
+  if (!comment || !comment.body || !taskclusterCommandRegExp.test(comment.body)) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Extract taskcluster command from the comment body
+ *
+ * Command is anything after `/taskcluster` keyword and before the next whitespace
+ *
+ * @param {comment} object
+ * @param {comment.body} string
+ * @returns string
+ * @throws {Error} if no command is found
+ */
+export const getTaskclusterCommand = (comment) => {
+  const match = taskclusterCommandRegExp.exec(comment.body);
+  if (!match) {
+    throw new Error('No taskcluster command found');
+  }
+  return match[1].trim();
 };
 
 /**

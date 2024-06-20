@@ -14,6 +14,7 @@ The format of the file is shown below:
 version: 1
 policy:
   pullRequests: ..
+  allowComments: collaborators
 autoCancelPreviousChecks: true
 reporting: checks-v1
 tasks:
@@ -23,12 +24,6 @@ tasks:
 
 The core of Taskcluster-Github's operation is this: when an event occurs on Github, such as a push or a pull request, it loads `.taskcluster.yml` from the commit specified in the event, renders it with JSON-e, and then calls `Queue.createTask` for each of the specified tasks.
 
-## Policies
-
-The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch of the repository, as configured in the repository settings on GitHub. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
-
-Policies are not rendered as a part of a task.
-
 ## Automatically cancel running builds
 
 The `autoCancelPreviousChecks` property controls whether or not to automatically cancel previous builds when a new build is triggered.
@@ -36,6 +31,12 @@ This is useful for example when a new commit is pushed to a pull request, and yo
 This only works on pull requests.
 
 It is set to `true` by default.
+
+## Policies
+
+The `policy` property defines policies for what is allowed on the repository. Policies are always read from the default branch of the repository, as configured in the repository settings on GitHub. This prevents a malicious contributor from changing the policy applied to a pull request in the pull request itself.
+
+Policies are not rendered as a part of a task.
 
 ### Pull Requests
 
@@ -55,25 +56,38 @@ The `pullRequests` policy controls this behavior:
 
 Github [defines collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators) as "outside collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners."
 
-
 Example:
+
 ```yaml
 policy:
   pullRequests: public
 tasks: ...
 ```
 
+### Trigger builds on comments
+
+The `allowComments` policy controls whether tasks can be triggered by comments on pull requests.
+The value needs to be set to `collaborators` to allow collaborators to trigger tasks by commenting on pull requests.
+
+Github service will listen to all pull request comments and will trigger a build if it contains a specific command.
+The command should be in the format `/taskcluster param` where `param` is the command that will be passed in the *context*
+of the JSON-e rendering.
+
+Tasks will be generated with `tasks_for = "github-issue-comment"`, `event.taskcluster_comment = param`, `event.comment`
+and `event.pull_request` details.
+
 ## JSON-e Rendering
 
-The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/taskcluster/json-e). You can view it as a *template*. The following *context* variables are provided:
+The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/json-e/json-e). You can view it as a *template*. The following *context* variables are provided:
 
 * `tasks_for` - defines the type of event, one of `github-push`,
-  `github-pull-request` or `github-release`.
+  `github-pull-request`, `github-release` or `github-issue-comment`.
 
 * `event` - the raw Github Webhook event; see
   * [PushEvent](https://developer.github.com/v3/activity/events/types/#pushevent)
   * [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent)
   * [ReleaseEvent](https://developer.github.com/v3/activity/events/types/#releaseevent)
+  * [IssueCommentEvent](https://developer.github.com/v3/activity/events/types/#issue_comment)
 
 * `now` - the current time, as a string; this is useful for reproducible `$fromNow` invocations (see JSON-e documentation)
 
@@ -83,6 +97,14 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
   This can be useful in cases where multiple Taskcluster deployments are configured for the same repository, or for generating URLs to other Taskcluster resources.
 
 Although the Github documentation does not make it clear, each ref that is updated in a `git push` operation triggers a distinct event.
+
+Example:
+
+```yaml
+policy:
+  allowComments: collaborators
+tasks: ...
+```
 
 ### Result
 
@@ -186,7 +208,7 @@ Note that it is wise to always check `tasks_for` first in a conditional like thi
 Other event types do not have `event.ref`, which would lead to a template error if not for the `tasks_for` check.
 
 <Warning>
-Once JSON-e supports [short-circuit boolean operators](https://github.com/taskcluster/json-e/issues/244), these conditionals can be collapsed into one.
+Once JSON-e supports [short-circuit boolean operators](https://github.com/json-e/json-e/issues/244), these conditionals can be collapsed into one.
 </Warning>
 
 #### Tags

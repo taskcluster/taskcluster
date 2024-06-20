@@ -15,7 +15,7 @@ import {
   GITHUB_BUILD_STATES,
 } from './constants.js';
 
-import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils.js';
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand } from './utils.js';
 import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -317,6 +317,36 @@ builder.declare({
         publisherKey = PUBLISHERS.PUSH;
         msg.tasks_for = GITHUB_TASKS_FOR.PUSH;
         msg.branch = body.ref.split('/').slice(2).join('/');
+        break;
+
+      case EVENT_TYPES.ISSUE_COMMENT:
+        // Comments on PRs can trigger tasks, too
+        // For this to work, there should be a `/taskcluster cmd` in the comment
+        // Plus repository should have a `.taskcluster.yml` in default branch with
+        // "policy.allowComments: collaborators" in it
+        // Message is being processed in the same way as PULL_REQUEST
+        // and missing data would be fetched from the PR
+
+        if (shouldSkipComment(body)) {
+          debugMonitor.debug({
+            message: 'Skipping issue_comment event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping issue_comment event');
+        }
+
+        publisherKey = PUBLISHERS.PULL_REQUEST;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.installationId = installationId;
+        msg.tasks_for = GITHUB_TASKS_FOR.ISSUE_COMMENT;
+        msg.action = body.action; // not a PR action, but a comment action
+        msg.branch = 'unknown'; // not yet available at this point
+        msg.details = {
+          'event.type': `issue_comment.${body.action}`,
+          'event.head.user.login': body.sender.login,
+          'taskcluster_comment': getTaskclusterCommand(body.comment),
+          // rest of the details would be fetched in the handler
+        };
         break;
 
       case EVENT_TYPES.PING:

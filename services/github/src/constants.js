@@ -16,6 +16,7 @@ export const GITHUB_TASKS_FOR = {
   RELEASE: 'github-release',
   PULL_REQUEST: 'github-pull-request',
   PULL_REQUEST_UNTRUSTED: 'github-pull-request-untrusted',
+  ISSUE_COMMENT: 'github-issue-comment',
 };
 
 export const GITHUB_BUILD_STATES = {
@@ -58,6 +59,7 @@ export const EVENT_TYPES = {
   INSTALLATION: 'installation',
   CHECK_SUITE: 'check_suite',
   CHECK_RUN: 'check_run',
+  ISSUE_COMMENT: 'issue_comment',
 };
 
 export const CHECK_RUN_ACTIONS = {
@@ -65,6 +67,12 @@ export const CHECK_RUN_ACTIONS = {
   COMPLETED: 'completed',
   REREQUESTED: 'rerequested',
   REQUESTED_ACTION: 'requested_action',
+};
+
+export const ISSUE_COMMENT_ACTIONS = {
+  CREATED: 'created',
+  DELETED: 'deleted',
+  EDITED: 'edited',
 };
 
 export const PUBLISHERS = {

@@ -5,6 +5,8 @@ import {
   throttleRequest,
   shouldSkipCommit,
   shouldSkipPullRequest,
+  shouldSkipComment,
+  getTaskclusterCommand,
   tailLog,
   ansi2txt,
   generateXHubSignature,
@@ -174,6 +176,91 @@ suite(testing.suiteName(), function() {
       skipMessages.forEach(body => assert.equal(true, shouldSkipPullRequest({
         pull_request: { title: 'regular title', body },
       })));
+    });
+  });
+
+  suite('shouldSkipComment', function() {
+    test('should not skip comment', function() {
+      assert.equal(false, shouldSkipComment({
+        action: 'created',
+        comment: {
+          body: ' /taskcluster cmd1 ',
+        },
+        issue: {
+          state: 'open',
+          pull_request: {},
+        },
+      }));
+      assert.equal(false, shouldSkipComment({
+        action: 'edited',
+        comment: {
+          body: `multi-line
+          comment
+          with
+          /taskcluster cmd2
+          inside`,
+        },
+        issue: {
+          state: 'open',
+          pull_request: {},
+        },
+      }));
+    });
+    test('should skip comment', function() {
+      assert.equal(true, shouldSkipComment({
+        action: 'deleted',
+        comment: {},
+        issue: { pull_request: {} },
+      }));
+      assert.equal(true, shouldSkipComment({
+        action: 'created',
+        comment: {
+          body: `
+          just a regular comment with link:
+          taskcluster/taskcluster #4123
+          `,
+        },
+        issue: { pull_request: {} },
+      }));
+      assert.equal(true, shouldSkipComment({
+        action: 'created',
+        comment: {},
+        issue: { no_pull_request_info: {} },
+      }));
+      assert.equal(true, shouldSkipComment({
+        action: 'created',
+        comment: {
+          body: '/taksluster valid-cmd',
+        },
+        issue: {
+          state: 'closed', // issue is closed
+          pull_request: {},
+        },
+      }));
+      assert.equal(true, shouldSkipComment({
+        action: 'edited',
+        comment: {},
+      }));
+    });
+  });
+
+  suite('getTaskclusterCommand', function() {
+    test('should return taskcluster command', function() {
+      assert.equal('cmd-with-dashes1', getTaskclusterCommand({
+        body: ' /taskcluster cmd-with-dashes1 ',
+      }));
+      assert.equal('cmd2', getTaskclusterCommand({
+        body: `multi-line
+        comment
+        with
+        /taskcluster cmd2
+        inside`,
+      }));
+      assert.throws(() => {
+        getTaskclusterCommand({
+          body: 'no taskcluster command here',
+        });
+      }, /No taskcluster command found/);
     });
   });
 

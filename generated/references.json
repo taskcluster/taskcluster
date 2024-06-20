@@ -7111,6 +7111,13 @@
         "policy": {
           "additionalProperties": false,
           "properties": {
+            "allowComments": {
+              "description": "Allow to trigger tasks from github comments. When set, collaborators would be able to trigger taskcluster bot\nby adding a comment that starts with `/taskcluster` and followed by command.\nDetails can be found in [RFC 168](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0168-Trigger-Tests-Based-on-PR-Comments.md)\n",
+              "enum": [
+                "collaborators"
+              ],
+              "type": "string"
+            },
             "pullRequests": {
               "description": "Policy for creating tasks for pull requests.  The effective policy is found in this property\nin the `.taskcluster.yml` file in the repository's default branch.  See the documentation for\ndetailed definition of the options.\n",
               "enum": [
@@ -7122,9 +7129,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "pullRequests"
-          ],
           "type": "object"
         },
         "reporting": {
@@ -13124,7 +13128,7 @@
                     "$ref": "#/definitions/schema"
                   },
                   "task": {
-                    "description": "Task template for triggering the action.\n\nWhen an action have been selected in the appropriate context and\ninput satisfying the `schema` (if any) has been collected. The\naction is triggered by parameterizing the task template given in\nthis property, and creating the resulting task.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/taskcluster/json-e), with the context\ndescribed in the documentation.\n",
+                    "description": "Task template for triggering the action.\n\nWhen an action have been selected in the appropriate context and\ninput satisfying the `schema` (if any) has been collected. The\naction is triggered by parameterizing the task template given in\nthis property, and creating the resulting task.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/json-e/json-e), with the context\ndescribed in the documentation.\n",
                     "title": "Task Template",
                     "type": "object"
                   },
@@ -13163,7 +13167,7 @@
                     "type": "string"
                   },
                   "hookPayload": {
-                    "description": "JSON-e template that renders to the payload for `hooks.triggerHook`.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/taskcluster/json-e), with the\ncontext described in the documentation. The output of this\nrendering is provided as the payload to `hooks.triggerHook`\n(where it becomes the context for another JSON-e rendering\nstep - don't get the two confused!)\n",
+                    "description": "JSON-e template that renders to the payload for `hooks.triggerHook`.\n\nThe template is an object that is parameterized using\n[JSON-e](https://github.com/json-e/json-e), with the\ncontext described in the documentation. The output of this\nrendering is provided as the payload to `hooks.triggerHook`\n(where it becomes the context for another JSON-e rendering\nstep - don't get the two confused!)\n",
                     "title": "Hook Payload Template",
                     "type": "object"
                   },

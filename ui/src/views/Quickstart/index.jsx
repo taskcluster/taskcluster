@@ -40,6 +40,7 @@ const baseCmd = [
 const getMatchCondition = events => {
   const condition = [];
   const prActions = [];
+  const commentActions = [];
 
   events.forEach(event => {
     if (event.startsWith('pull_request.')) {
@@ -48,6 +49,8 @@ const getMatchCondition = events => {
       condition.push('(tasks_for == "github-push")');
     } else if (event === 'release') {
       condition.push('(tasks_for == "github-release")');
+    } else if (event.startsWith('issue_comment.')) {
+      commentActions.push(event.split('.')[1]);
     }
   });
 
@@ -58,12 +61,20 @@ const getMatchCondition = events => {
     );
   }
 
+  if (commentActions.length > 0) {
+    condition.push(
+      `(tasks_for == "github-issue-comment" ` +
+        `&& event["action"] in ${JSON.stringify(commentActions.sort())})`
+    );
+  }
+
   return condition.length > 0 ? condition.join(' || ') : 'false';
 };
 
 const getTaskDefinition = state => {
   const {
     access,
+    allowComments,
     commands,
     condition,
     image,
@@ -79,6 +90,7 @@ const getTaskDefinition = state => {
     reporting: 'checks-v1',
     policy: {
       pullRequests: access,
+      ...(allowComments && { allowComments: 'collaborators' }),
     },
     autoCancelPreviousChecks: true,
     tasks: {
@@ -212,6 +224,7 @@ export default class QuickStart extends Component {
     owner: '',
     repo: '',
     access: 'collaborators',
+    allowComments: false,
     language: 'node',
     image: 'node',
     commands: commandForLanguage.node,
@@ -261,9 +274,12 @@ export default class QuickStart extends Component {
     // Note: this should be called after `events` has been modified
     // in the above line
     const condition = getMatchCondition(events);
+    const allowComments =
+      events.has('issue_comment.created') || events.has('issue_comment.edited');
 
     this.setState({
       events,
+      allowComments,
       condition,
       editorValue: null,
     });
@@ -542,6 +558,28 @@ export default class QuickStart extends Component {
                         />
                       }
                       label="Release or tag created"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('issue_comment.created')}
+                          onChange={this.handleEventsSelection}
+                          value="issue_comment.created"
+                        />
+                      }
+                      label="New comment on pull request"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={events.has('issue_comment.edited')}
+                          onChange={this.handleEventsSelection}
+                          value="issue_comment.edited"
+                        />
+                      }
+                      label="Comment was edited on pull request"
                     />
                   </FormGroup>
                 </div>
