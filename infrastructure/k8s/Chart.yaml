@@ -1,7 +1,7 @@
 name: taskcluster
 appVersion: '65.2.0'
 description:  Framework that supports Mozilla's continuous integration and release processes.
-version: 0.1.0
+version: 0.2.0
 keywords:
   - ci
   - ci-framework

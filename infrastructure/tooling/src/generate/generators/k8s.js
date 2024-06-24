@@ -111,6 +111,20 @@ const labels = (projectName, component) => ({
   'app.kubernetes.io/part-of': 'taskcluster',
 });
 
+// json-e can't create a "naked" string for go templates to use to render an integer.
+// we have to do some post-processing to use "advanced" go template features
+const postJsoneProcessing = (rendered, replacements) => {
+  return yaml.dump(rendered, { lineWidth: -1 })
+    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+};
+
+const wrapConditionalResource = (rendered, resourceName) => {
+  return `{{- if not (has "${resourceName}" .Values.skipResourceTypes) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
 const renderTemplates = async (name, vars, procs, templates) => {
   for (const resource of ['serviceaccount', 'secret']) {
     const rendered = jsone(templates[resource], {
@@ -127,8 +141,9 @@ const renderTemplates = async (name, vars, procs, templates) => {
         };
       }).filter(x => x !== null),
     });
+
     const file = `taskcluster-${name}-${resource}.yaml`;
-    await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
+    await writeRepoFile(path.join(TMPL_DIR, file), wrapConditionalResource(rendered, resource));
   }
 
   const ingresses = [];
@@ -171,14 +186,10 @@ const renderTemplates = async (name, vars, procs, templates) => {
     }
     const rendered = jsone(templates[tmpl], context);
 
-    // json-e can't create a "naked" string for go templates to use to render an integer.
-    // we have to do some post-processing to use "advanced" go template features
-    const replacements = {
+    const processed = postJsoneProcessing(rendered, {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
       IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
-    };
-    const processed = yaml.dump(rendered, { lineWidth: -1 })
-      .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+    });
 
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
@@ -304,7 +315,8 @@ tasks.push({
       ingresses,
       labels: labels(`taskcluster-ingress`, 'ingress'),
     });
-    await writeRepoYAML(path.join(TMPL_DIR, 'ingress.yaml'), rendered);
+    const processed = wrapConditionalResource(rendered, 'ingress');
+    await writeRepoFile(path.join(TMPL_DIR, 'ingress.yaml'), processed);
   },
 });
 
@@ -359,6 +371,14 @@ tasks.push({
         pulseVhost: {
           type: 'string',
           description: 'The vhost this deployment will use on the rabbitmq cluster',
+        },
+        skipResourceTypes: {
+          type: 'array',
+          description: 'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
+          items: {
+            type: 'string',
+            enum: ['configmap', 'secret', 'ingress', 'serviceaccount'],
+          },
         },
 
         useKubernetesDnsServiceDiscovery: {
@@ -438,6 +458,7 @@ tasks.push({
       applicationName: 'My Taskcluster',
       rootUrl: '...',
       dockerImage: '...',
+      skipResourceTypes: [],
       ingressStaticIpName: '...',
       ingressCertName: '...',
       ingressType: '...',
@@ -460,6 +481,7 @@ tasks.push({
       forceSSL: false,
       nodeEnv: 'production',
       useKubernetesDnsServiceDiscovery: true,
+      skipResourceTypes: [],
     };
 
     let configs = SERVICES.map(name => ({
