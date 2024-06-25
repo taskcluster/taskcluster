@@ -49,21 +49,32 @@ func (mds *fakeMetadataService) queryInstanceIdentityDocument() (string, *Instan
 }
 
 func TestQueryMetadata(t *testing.T) {
+
+	// Preserve original values and restore at end of test, as this test will modify them
+	origEC2MetadataBaseURL := EC2MetadataBaseURL
+	origTokenURL := TokenURL
+	defer func() {
+		EC2MetadataBaseURL = origEC2MetadataBaseURL
+		TokenURL = origTokenURL
+	}()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/latest/meta-data/some-data" {
+		switch r.Method + ":" + r.URL.Path {
+		case "PUT:/api/token":
+			w.WriteHeader(200)
+			fmt.Fprint(w, "secret-token")
+		case "GET:/latest/meta-data/some-data":
 			w.WriteHeader(200)
 			fmt.Fprintln(w, "42")
-		} else {
+		default:
 			w.WriteHeader(404)
-			fmt.Fprintln(w, "Not Found")
+			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
 		}
 	}))
 	defer ts.Close()
 
 	EC2MetadataBaseURL = ts.URL + "/latest"
-	defer func() {
-		EC2MetadataBaseURL = "http://169.254.169.254/latest"
-	}()
+	TokenURL = ts.URL + "/api/token"
 
 	ms := realMetadataService{}
 
@@ -80,11 +91,24 @@ func TestQueryMetadata(t *testing.T) {
 }
 
 func TestQueryUserData(t *testing.T) {
+
+	// Preserve original values and restore at end of test, as this test will modify them
+	origEC2MetadataBaseURL := EC2MetadataBaseURL
+	origTokenURL := TokenURL
+	defer func() {
+		EC2MetadataBaseURL = origEC2MetadataBaseURL
+		TokenURL = origTokenURL
+	}()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/latest/user-data" {
+		switch r.Method + ":" + r.URL.Path {
+		case "PUT:/api/token":
+			w.WriteHeader(200)
+			fmt.Fprint(w, "secret-token")
+		case "GET:/latest/user-data":
 			w.WriteHeader(200)
 			fmt.Fprintln(w, `{"rootUrl": "taskcluster-dev.net", "workerPoolId": "banana"}`)
-		} else {
+		default:
 			w.WriteHeader(404)
 			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
 		}
@@ -92,9 +116,7 @@ func TestQueryUserData(t *testing.T) {
 	defer ts.Close()
 
 	EC2MetadataBaseURL = ts.URL + "/latest"
-	defer func() {
-		EC2MetadataBaseURL = "http://169.254.169.254/latest"
-	}()
+	TokenURL = ts.URL + "/api/token"
 
 	ms := realMetadataService{}
 
@@ -105,21 +127,32 @@ func TestQueryUserData(t *testing.T) {
 }
 
 func TestQueryInstanceIdentityDocument(t *testing.T) {
+
+	// Preserve original values and restore at end of test, as this test will modify them
+	origEC2MetadataBaseURL := EC2MetadataBaseURL
+	origTokenURL := TokenURL
+	defer func() {
+		EC2MetadataBaseURL = origEC2MetadataBaseURL
+		TokenURL = origTokenURL
+	}()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/latest/dynamic/instance-identity/document" {
+		switch r.Method + ":" + r.URL.Path {
+		case "PUT:/api/token":
+			w.WriteHeader(200)
+			fmt.Fprint(w, "secret-token")
+		case "GET:/latest/dynamic/instance-identity/document":
 			w.WriteHeader(200)
 			fmt.Fprintf(w, "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}")
-		} else {
+		default:
 			w.WriteHeader(404)
-			fmt.Fprintln(w, "Not Found")
+			fmt.Fprintf(w, "Not Found: %s", r.URL.Path)
 		}
 	}))
 	defer ts.Close()
 
 	EC2MetadataBaseURL = ts.URL + "/latest"
-	defer func() {
-		EC2MetadataBaseURL = "http://169.254.169.254/latest"
-	}()
+	TokenURL = ts.URL + "/api/token"
 
 	ms := realMetadataService{}
 
