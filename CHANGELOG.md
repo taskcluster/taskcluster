@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.3.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to node v20.14.0 and go1.22.4 (SECURITY release).
+
+### DEPLOYERS
+
+▶ [minor] [#7035](https://github.com/taskcluster/taskcluster/issues/7035)
+Helm chart allows conditional deployment of several resource types:
+- Secret
+- ConfigMap
+- Ingress
+- ServiceAccount
+
+This might be useful in the deployments that use custom Ingress or manage secrets and configs externally.
+Example usage: `helm template --values .. --set "skipResourceTypes[0]"=ingress --set "skipResourceTypes[0]"=secert .`
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7076](https://github.com/taskcluster/taskcluster/issues/7076)
+Worker Runner now uses IMDSv2 instead of IMDSv1 in EC2. IMDSv1 is being phased out by Amazon.
+
+### DEVELOPERS
+
+▶ [patch] [#7080](https://github.com/taskcluster/taskcluster/issues/7080)
+Fixes github service issue during cancellation of the previous runs that were not created.
+Response code was not checked properly which resulted in sending same error for each new build.
+
+▶ [patch] [#6668](https://github.com/taskcluster/taskcluster/issues/6668)
+Fixes an issue to support yarn run for dev:start and dev:stop scripts
+
 ## v65.2.0
 
 ### USERS
