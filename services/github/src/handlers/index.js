@@ -312,7 +312,7 @@ class Handlers {
           await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
           await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
         } catch (queueErr) {
-          if (queueErr.errorCode !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
+          if (queueErr.code !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
             throw queueErr;
           }
           // we can ignore task groups that were not yet created on queue side, and simply mark as cancelled in the db
@@ -324,7 +324,7 @@ class Handlers {
         )));
       }
     } catch (err) {
-      debug(`Error while canceling previous task groups: ${err.message} scopes used: ${scopes.join(', ')}`);
+      debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
       err.message = [
         'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
         '',

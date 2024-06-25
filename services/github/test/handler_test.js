@@ -349,7 +349,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     test('non-existent task groups queue.sealTask/cancelTaskGroup group are ignored', async function () {
       const err = new Error('ResourceNotFound');
-      err.errorCode = 'ResourceNotFound';
+      err.code = 'ResourceNotFound';
       err.statusCode = 404;
       handlers.queueClient = new taskcluster.Queue({
         rootUrl: 'https://tc.example.com',
