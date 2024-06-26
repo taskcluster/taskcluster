@@ -1,5 +1,6 @@
 import assert from 'assert';
 import Hashids from 'hashids';
+import { ErrorReply } from './error-reply.js';
 
 export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
   assert(query, "req.query must be provided");
@@ -76,7 +77,19 @@ const encodeAfter = (indexColumns, row) => {
 };
 
 const decodeOffset = token => {
-  const decodedToken = hashids.decode(token);
+  let decodedToken;
+
+  try {
+    decodedToken = hashids.decode(token);
+  } catch (err) {
+    // hashids.decode will throw an error if token contains invalid characters
+    // this will return 400 to the client
+    throw new ErrorReply({
+      code: 'InputError',
+      message: 'Invalid continuation token',
+      details: { token, error: err.message },
+    });
+  }
 
   if (!decodedToken.length) {
     return 0;

@@ -47,6 +47,13 @@ suite(testing.suiteName(), function() {
         await paginateResults({ query: { limit: 2, continuationToken }, fetch: fetcher(7) }),
         { rows: _.range(3, 5), continuationToken: hashids.encode(5) });
     });
+
+    test('paginate with invalid continuationToken throws error', async function() {
+      const continuationToken = 'this-is-rubbish';
+      await assert.rejects(
+        () => paginateResults({ query: { limit: 2, continuationToken }, fetch: fetcher(7) }),
+        /Invalid continuation token/);
+    });
   });
 
   suite('index-based', function() {
