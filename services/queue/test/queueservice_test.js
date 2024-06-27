@@ -116,17 +116,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
 
-    // when task is resolved, existing claim message should be removed
+    // when task is resolved, existing claim and pending message should be removed
     const futureDate = new Date(new Date().getTime() + 24 * 60 * 1000);
     await queueService.putClaimMessage(taskId, 0, futureDate, 'tq/id', 'wg', 'wi');
     await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, futureDate);
+    await queueService.putPendingMessage({ taskId, taskGroupId, deadline: futureDate, taskQueueId: 't/q' }, 0);
 
     // messages are fetched directly because queueservice. pollXX() methods return by visibility
     await helper.withDbClient(async client => {
       const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
       const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
       assert(deadlineMessages.length === 1, 'Expected one deadline message');
       assert(claimMessages.length === 1, 'Expected one claim message');
+      assert(pendingMessages.length === 1, 'Expected one pending message');
     });
 
     // Put message
@@ -135,8 +138,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.withDbClient(async client => {
       const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
       const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
       assert(deadlineMessages.length === 1, 'Expected one deadline message');
       assert(claimMessages.length === 0, 'Expected zero claim message');
+      assert(pendingMessages.length === 0, 'Expected zero pending message');
     });
 
     // Poll for message

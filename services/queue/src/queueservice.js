@@ -130,6 +130,7 @@ export class QueueService {
    *
    * At this moment we can also drop record from the claim queue,
    * since the task was resolved.
+   * If task was cancelled while being scheduled, we can also drop it from the pending queue.
    * But we should leave the message in deadline queue, since task could get new run
    * which might not be resolved before deadline.
    */
@@ -151,6 +152,8 @@ export class QueueService {
       // we no longer need existing claimed queue message
       // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
+      // if task was cancelled while being scheduled, we can drop it from pending queue
+      this.db.fns.queue_pending_task_delete(taskId, runId),
     ]);
   }
 

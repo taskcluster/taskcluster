@@ -163,6 +163,19 @@ suite(testing.suiteName(), function() {
       });
     });
 
+    helper.dbTest('deleting tasks from pending queue', async function (db) {
+      await db.fns.queue_pending_tasks_add('tq1', 0, 't1', 0, 'hint1', fromNow('50 second'));
+      await db.fns.queue_pending_tasks_add('tq1', 0, 't1', 1, 'hint2', fromNow('50 second'));
+
+      await db.fns.queue_pending_task_delete('t1', 0);
+      await helper.withDbClient(async client => {
+        const res = await client.query('select * from queue_pending_tasks');
+        assert.deepEqual(res.rows.length, 1);
+        assert.equal(res.rows[0].task_id, 't1');
+        assert.equal(res.rows[0].run_id, 1);
+      });
+    });
+
     helper.dbTest('listing pending tasks', async function (db) {
       const res = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', null, null, null);
       assert.deepEqual(res, []);
