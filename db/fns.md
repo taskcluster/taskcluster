@@ -1088,10 +1088,6 @@ If the row is not found then an exception with code 'P0002' is thrown.
 Update an indexed task.
 Returns the up-to-date indexed task row that have the same namespace and name.
 
-### deprecated methods
-
-* `get_tasks_from_indexes(indexes_in jsonb, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v66.0.0)
-
 ## notify
 
 * [`add_denylist_address`](#add_denylist_address)

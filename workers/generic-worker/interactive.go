@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/internal/scopes"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/interactive"
+	tcclient "github.com/taskcluster/taskcluster/v66/clients/client-go"
+	"github.com/taskcluster/taskcluster/v66/internal/scopes"
+	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/interactive"
 )
 
 type InteractiveFeature struct {

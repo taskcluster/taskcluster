@@ -5,9 +5,9 @@ package main
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v66/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/process"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {

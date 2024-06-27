@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-built-in-workers",
-  "version": "65.4.0",
+  "version": "66.0.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

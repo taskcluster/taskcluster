@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v66/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
 )
