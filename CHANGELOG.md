@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v65.4.0
+
+### USERS
+
+▶ [patch] [#7083](https://github.com/taskcluster/taskcluster/issues/7083)
+Fixes query validation in pagination queries that were throwing `500 InternalServerError` instead of `400 InputError`
+
+### DEVELOPERS
+
+▶ [minor] [#7089](https://github.com/taskcluster/taskcluster/issues/7089)
+Fixes an issue when cancelling a task didn't remove it from the pending queue.
+This made worker-manager think there are more pending tasks than there actually were, and create more workers.
+
 ## v65.3.0
 
 ### GENERAL
