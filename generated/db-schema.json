@@ -7210,6 +7210,21 @@
         }
       },
       "version": 100
+    },
+    {
+      "description": "remove tasks from pending queue",
+      "methods": {
+        "queue_pending_task_delete": {
+          "args": "task_id_in text, run_id_in integer",
+          "body": "begin\n  delete from queue_pending_tasks\n  where task_id = task_id_in\n    and run_id = run_id_in\n    and pop_receipt IS NULL;\nend",
+          "deprecated": false,
+          "description": "Delete single pending task run from the queue.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "version": 101
     }
   ]
 }
