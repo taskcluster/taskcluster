@@ -81,7 +81,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              timeout 3600 podman run -t --name taskcontainer --privileged -v
+              timeout 3600 docker run -t --name taskcontainer --privileged -v
               "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host
               -e GECKO_BASE_REPOSITORY
@@ -118,17 +118,17 @@ testSuite:
 
               exit_code=$?
 
-              podman cp taskcontainer:/builds/worker/artifacts artifact0
+              docker cp taskcontainer:/builds/worker/artifacts artifact0
 
-              podman cp
+              docker cp
               taskcontainer:/builds/worker/checkouts/gecko/docker-contexts
               artifact1
 
-              podman commit taskcontainer taskcontainer
+              docker commit taskcontainer taskcontainer
 
-              podman save taskcontainer | gzip > image.tar.gz
+              docker save taskcontainer | gzip > image.tar.gz
 
-              podman rm taskcontainer
+              docker rm taskcontainer
 
               exit "${exit_code}"
         env:
@@ -159,4 +159,6 @@ testSuite:
           purgeCaches:
             - 123
             - 456
+        osGroups:
+            - docker
   taskDefTests: []

@@ -30,6 +30,22 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 	}, nil
 }
 
-func (dia *DockerImageArtifact) String() (string, error) {
-	return "docker-archive:dockerimage", nil
+func (dia *DockerImageArtifact) String(tool string) (string, error) {
+	switch tool {
+	case "docker":
+		return `"${IMAGE_ID}"`, nil
+	default:
+		return "docker-archive:dockerimage", nil
+	}
+}
+
+func (dia *DockerImageArtifact) LoadCommands(tool string) []string {
+	switch tool {
+	case "docker":
+		return []string{
+			`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
+		}
+	default:
+		return []string{}
+	}
 }

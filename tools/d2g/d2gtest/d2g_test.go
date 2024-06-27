@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
@@ -39,17 +40,17 @@ func ExampleScopes_mixture() {
 	}
 
 	// Output:
-	// 	"foo"
 	// 	"bar:dog"
 	// 	"cat:docker-worker:feet"
 	// 	"docker-worker"
+	// 	"foo"
+	// 	"generic-worker:capability:device:kvm:x/y/z"
+	// 	"generic-worker:docker-worker:potato"
+	// 	"generic-worker:loopback-video:"
+	// 	"generic-worker:loopback-video:*"
+	// 	"generic-worker:loopback-video:x/y/z"
 	// 	"generic-worker:monkey"
 	// 	"generic-worker:teapot"
-	// 	"generic-worker:docker-worker:potato"
-	// 	"generic-worker:loopback-video:*"
-	// 	"generic-worker:loopback-video:"
-	// 	"generic-worker:loopback-video:x/y/z"
-	// 	"generic-worker:capability:device:kvm:x/y/z"
 }
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.
@@ -139,7 +140,9 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 			t.Fatalf("Cannot convert Generic Worker payload %#v to JSON: %s", gwPayload, err)
 		}
 		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
-			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload))
+			dmp := diffmatchpatch.New()
+			diff := dmp.DiffMain(string(formattedExpectedGWPayload), string(formattedActualGWPayload), false)
+			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v\nDiff:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload), dmp.DiffPrettyText(diff))
 		}
 	}
 }
@@ -164,7 +167,9 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		}
 
 		if string(formattedExpectedGWTaskDef) != string(formattedActualGWTaskDef) {
-			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v", string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef))
+			dmp := diffmatchpatch.New()
+			diff := dmp.DiffMain(string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef), false)
+			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v\nDiff:%v", string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef), dmp.DiffPrettyText(diff))
 		}
 	}
 }

@@ -25,7 +25,8 @@ type (
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
 		FileMounts() ([]genericworker.FileMount, error)
-		String() (string, error)
+		String(tool string) (string, error)
+		LoadCommands(tool string) []string
 	}
 )
 
@@ -97,29 +98,36 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
 func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID string) (gwScopes []string) {
-	gwScopes = make([]string, len(dwScopes))
-	for i, s := range dwScopes {
+	gwScopes = []string{}
+	for _, s := range dwScopes {
 		switch true {
+		case s == "docker-worker:capability:device:kvm":
+			gwScopes = append(
+				gwScopes,
+				"generic-worker:os-group:"+taskQueueID+"/kvm",
+				"generic-worker:os-group:"+taskQueueID+"/libvirt",
+			)
+		case s == "docker-worker:capability:privileged":
+			gwScopes = append(
+				gwScopes,
+				"generic-worker:os-group:"+taskQueueID+"/docker",
+			)
 		case s == "docker-worker:capability:device:loopbackVideo":
-			gwScopes[i] = "generic-worker:loopback-video:*"
+			gwScopes = append(gwScopes, "generic-worker:loopback-video:*")
 		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackVideo:"):
-			gwScopes[i] = "generic-worker:loopback-video:" + s[len("docker-worker:capability:device:loopbackVideo:"):]
+			gwScopes = append(gwScopes, "generic-worker:loopback-video:"+s[len("docker-worker:capability:device:loopbackVideo:"):])
 		case s == "docker-worker:capability:device:loopbackAudio":
-			gwScopes[i] = "generic-worker:loopback-audio:*"
+			gwScopes = append(gwScopes, "generic-worker:loopback-audio:*")
 		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackAudio:"):
-			gwScopes[i] = "generic-worker:loopback-audio:" + s[len("docker-worker:capability:device:loopbackAudio:"):]
+			gwScopes = append(gwScopes, "generic-worker:loopback-audio:"+s[len("docker-worker:capability:device:loopbackAudio:"):])
 		case strings.HasPrefix(s, "docker-worker:"):
-			gwScopes[i] = "generic-worker:" + s[len("docker-worker:"):]
+			gwScopes = append(gwScopes, "generic-worker:"+s[len("docker-worker:"):])
 		default:
-			gwScopes[i] = s
+			gwScopes = append(gwScopes, s)
 		}
 	}
 
-	if dwPayload != nil && dwPayload.Capabilities.Devices.KVM {
-		for _, osGroup := range []string{"kvm", "libvirt"} {
-			gwScopes = append(gwScopes, fmt.Sprintf("generic-worker:os-group:%s/%s", taskQueueID, osGroup))
-		}
-	}
+	sort.Strings(gwScopes)
 
 	return
 }
@@ -231,21 +239,25 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 }
 
 func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
+	tool := "podman"
+	if dwPayload.Capabilities.Privileged {
+		tool = "docker"
+	}
 	containerName := ""
 	if len(gwArtifacts) > 0 {
 		containerName = "taskcontainer"
 	}
 
 	commands := []string{}
-
-	podmanRunString, err := podmanRunCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches)
+	commands = append(commands, dwImage.LoadCommands(tool)...)
+	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, tool)
 	if err != nil {
-		return nil, fmt.Errorf("could not form podman run command: %w", err)
+		return nil, fmt.Errorf("could not form %v run command: %w", tool, err)
 	}
 
 	commands = append(
 		commands,
-		podmanRunString,
+		runString,
 	)
 
 	if containerName != "" {
@@ -257,20 +269,20 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 
 	commands = append(
 		commands,
-		podmanCopyArtifacts(containerName, dwPayload, gwArtifacts)...,
+		copyArtifacts(containerName, dwPayload, gwArtifacts, tool)...,
 	)
 	if dwPayload.Features.DockerSave {
 		commands = append(
 			commands,
-			"podman commit "+containerName+" "+containerName,
-			"podman save "+containerName+" | gzip > image.tar.gz",
+			tool+" commit "+containerName+" "+containerName,
+			tool+" save "+containerName+" | gzip > image.tar.gz",
 		)
 	}
 
 	if containerName != "" {
 		commands = append(
 			commands,
-			"podman rm "+containerName,
+			tool+" rm "+containerName,
 			`exit "${exit_code}"`,
 		)
 	}
@@ -284,20 +296,22 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}, nil
 }
 
-func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache) (string, error) {
+func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, tool string) (string, error) {
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
 	switch containerName {
 	case "":
-		command.WriteString("podman run -t --rm")
+		command.WriteString(tool + " run -t --rm")
 	default:
-		command.WriteString(fmt.Sprintf("timeout %v podman run -t --name %v", dwPayload.MaxRunTime, containerName))
+		command.WriteString(fmt.Sprintf("timeout %v %v run -t --name %v", dwPayload.MaxRunTime, tool, containerName))
 	}
-	// Sometimes --privileged is needed, even where there are no capabilities
-	// defined. Therefore always add it, regardless. See e.g.
-	// https://github.com/taskcluster/taskcluster/issues/6888
-	command.WriteString(" --privileged")
+	// Sometimes --privileged is needed under podman, even where there are no
+	// capabilities defined. Therefore always add it under podman, regardless.
+	// See e.g.  https://github.com/taskcluster/taskcluster/issues/6888
+	if tool == "podman" || dwPayload.Capabilities.Privileged {
+		command.WriteString(" --privileged")
+	}
 	if dwPayload.Capabilities.DisableSeccomp {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
@@ -305,8 +319,8 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	if dwPayload.Features.TaskclusterProxy {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
-	command.WriteString(podmanEnvMappings(dwPayload))
-	dockerImageString, err := dwImage.String()
+	command.WriteString(envMappings(dwPayload))
+	dockerImageString, err := dwImage.String(tool)
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
 	}
@@ -316,20 +330,18 @@ func podmanRunCommand(containerName string, dwPayload *dockerworker.DockerWorker
 	return command.String(), nil
 }
 
-func podmanCopyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []string {
+func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact, tool string) []string {
 	commands := []string{}
 	for i := range gwArtifacts {
-		// An image artifact will be in the generic worker payload
-		// when dockerSave is enabled. That artifact will not be
-		// found in either the docker worker payload or the container
-		// after the podman run command is complete, so no podman cp
-		// command is needed for it.
-		// The image artifact is created after the podman run
-		// command is complete.
+		// An image artifact will be in the generic worker payload when
+		// dockerSave is enabled. That artifact will not be found in either the
+		// docker worker payload or the container after the run command is
+		// complete, so no cp command is needed for it. The image artifact is
+		// created after the run command is complete.
 		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
 			continue
 		}
-		commands = append(commands, fmt.Sprintf("podman cp %s:%s %s", containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
+		commands = append(commands, fmt.Sprintf("%v cp %s:%s %s", tool, containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
 	}
 	return commands
 }
@@ -413,6 +425,9 @@ func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 		// https://help.ubuntu.com/community/KVM/Installation
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
 	}
+	if dwPayload.Capabilities.Privileged {
+		gwPayload.OSGroups = append(gwPayload.OSGroups, "docker")
+	}
 }
 
 func writableDirectoryCaches(caches map[string]string) []genericworker.WritableDirectoryCache {
@@ -464,7 +479,7 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 	return volumeMounts.String()
 }
 
-func podmanEnvSetting(envVarName string) string {
+func envSetting(envVarName string) string {
 	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
 }
 
@@ -500,7 +515,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 	envStrBuilder := strings.Builder{}
 
 	dwManagedEnvVars := []string{
@@ -522,7 +537,7 @@ func podmanEnvMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 	envVarNames = append(envVarNames, dwManagedEnvVars...)
 	sort.Strings(envVarNames)
 	for _, envVarName := range envVarNames {
-		envStrBuilder.WriteString(podmanEnvSetting(envVarName))
+		envStrBuilder.WriteString(envSetting(envVarName))
 	}
 	return envStrBuilder.String()
 }
