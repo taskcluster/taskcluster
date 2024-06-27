@@ -9,6 +9,10 @@ func (ndi *NamedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{}, nil
 }
 
-func (ndi *NamedDockerImage) String() (string, error) {
+func (ndi *NamedDockerImage) String(tool string) (string, error) {
 	return shell.Escape(ndi.Name), nil
+}
+
+func (ndi *NamedDockerImage) LoadCommands(tool string) []string {
+	return []string{}
 }

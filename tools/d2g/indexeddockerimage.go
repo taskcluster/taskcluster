@@ -31,8 +31,24 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	}, nil
 }
 
-func (idi *IndexedDockerImage) String() (string, error) {
-	return "docker-archive:dockerimage", nil
+func (idi *IndexedDockerImage) LoadCommands(tool string) []string {
+	switch tool {
+	case "docker":
+		return []string{
+			`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
+		}
+	default:
+		return []string{}
+	}
+}
+
+func (idi *IndexedDockerImage) String(tool string) (string, error) {
+	switch tool {
+	case "docker":
+		return `"${IMAGE_ID}"`, nil
+	default:
+		return "docker-archive:dockerimage", nil
+	}
 }
 
 func fileExtension(path string) string {

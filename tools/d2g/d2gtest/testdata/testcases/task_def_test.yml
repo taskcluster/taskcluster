@@ -82,8 +82,6 @@ testSuite:
         schedulerId: taskcluster-ui
         scopes:
           - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04
@@ -109,6 +107,7 @@ testSuite:
         expires: '2024-10-26T17:06:09.867Z'
         scopes:
           - docker-worker:apples
+          - docker-worker:capability:device:kvm
         payload:
           image: ubuntu:latest
           command:
@@ -254,8 +253,6 @@ testSuite:
         schedulerId: taskcluster-ui
         scopes:
           - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-22-04
