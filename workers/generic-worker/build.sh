@@ -128,9 +128,9 @@ fi
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
 proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
-CGO_ENABLED=0 go install "${proj_root}/tools/livelog@latest"
-CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy@latest"
-CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask@latest"
+CGO_ENABLED=0 go install "${proj_root}/tools/livelog"
+CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy"
+CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask"
 CGO_ENABLED=0 go install golang.org/x/lint/golint@latest
 CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@latest
 CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@latest
