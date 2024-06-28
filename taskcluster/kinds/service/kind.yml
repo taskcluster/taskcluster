@@ -11,7 +11,7 @@ transforms:
 workspace: services
 
 task-defaults:
-  worker-type: gw-ubuntu-22-04
+  worker-type: gw-ubuntu-24-04
   run:
     using: bare
   scopes:
