@@ -84,14 +84,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = '6C:3A:F0:2E:7F:26:9A:A7:3A:FD:0E:FF:2A:88:A4:A1:F0:4E:D1:E5';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure TLS Issuing CA 05';
+  const intermediateCertFingerprint = '33:82:51:70:58:A0:C2:02:28:D5:98:EE:75:01:B6:12:56:A7:64:42';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 07';
   const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_tls_issuing_ca_05_xsign.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20TLS%20Issuing%20CA%2005%20-%20xsign.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_07_xsign.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2007%20-%20xsign.crt';
   // this id should match the id of the instance where azure_signature_good cert was fetched from
-  const testVmId = 'df7ec0d4-7840-410a-b948-6caa69700034';
+  const testVmId = 'ce9941b4-3c5a-4e2a-93a9-846375218157';
 
   suite('helpers', function() {
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath));
@@ -1319,7 +1319,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
-          assert(monitor.manager.messages[0].Fields.message.includes('Expired message'));
+          assert(monitor.manager.messages.filter(
+            row => row.Type === 'registration-error-warning',
+          )[0].Fields.message.includes('Expired message'));
         });
 
         test('fail to download cert', async function() {
