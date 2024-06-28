@@ -164,7 +164,7 @@
     "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
-    "ws": "^7.4.6",
+    "ws": "^7.5.10",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.10.0",
     "zurvan": "^0.8.0"
