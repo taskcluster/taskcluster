@@ -17,6 +17,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.4.0"
+    "mocha": "^10.5.2"
   }
 }
