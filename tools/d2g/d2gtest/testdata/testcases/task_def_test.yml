@@ -9,8 +9,8 @@ testSuite:
         into a valid Generic Worker task definition
       dockerWorkerTaskDefinition:
         provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+        workerType: gw-ubuntu-22-04
+        taskQueueId: proj-taskcluster/gw-ubuntu-22-04
         schedulerId: taskcluster-ui
         projectId: none
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
@@ -84,8 +84,8 @@ testSuite:
           - generic-worker:apples
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        workerType: gw-ubuntu-24-04
+        taskQueueId: proj-taskcluster/gw-ubuntu-22-04
+        workerType: gw-ubuntu-22-04
     - name: Task definition test without taskQueueId set
       description: >-
         d2g should properly translate this Docker Worker task definition
@@ -93,7 +93,7 @@ testSuite:
         is not set
       dockerWorkerTaskDefinition:
         provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
+        workerType: gw-ubuntu-22-04
         schedulerId: taskcluster-ui
         projectId: none
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
@@ -166,11 +166,11 @@ testSuite:
         schedulerId: taskcluster-ui
         scopes:
           - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/kvm
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-22-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        workerType: gw-ubuntu-24-04
+        workerType: gw-ubuntu-22-04
     - name: Task definition test with a new, fake field set, foo
       description: >-
         d2g should properly translate this Docker Worker task definition
@@ -179,8 +179,8 @@ testSuite:
       dockerWorkerTaskDefinition:
         foo: bar
         provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+        workerType: gw-ubuntu-22-04
+        taskQueueId: proj-taskcluster/gw-ubuntu-22-04
         schedulerId: taskcluster-ui
         projectId: none
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
@@ -255,6 +255,6 @@ testSuite:
           - generic-worker:apples
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        workerType: gw-ubuntu-24-04
+        taskQueueId: proj-taskcluster/gw-ubuntu-22-04
+        workerType: gw-ubuntu-22-04
   payloadTests: []

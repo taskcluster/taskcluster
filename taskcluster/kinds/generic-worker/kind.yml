@@ -58,7 +58,7 @@ tasks:
         for more information)
       * `go fmt` to ensure that go source code is formatted
       * `goimports` to ensure that imports are specified in their canonical form
-    worker-type: gw-ubuntu-24-04
+    worker-type: gw-ubuntu-22-04
     worker:
       max-run-time: 300
       mounts:
