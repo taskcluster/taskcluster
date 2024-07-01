@@ -25,6 +25,7 @@ tasks:
         yarn lint
   golang:
     description: go lint
+    priority: very-high
     docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
     run:
       command: >-
