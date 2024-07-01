@@ -124,7 +124,7 @@
     "apollo-client-mock": "^0.0.9",
     "babel-jest": "^27.5.1",
     "babel-loader": "^8.0.5",
-    "chai": "^4.3.10",
+    "chai": "^5.1.1",
     "cross-env": "^7.0.0",
     "dotenv-cli": "^6.0.0",
     "eslint": "^7.0.0",
