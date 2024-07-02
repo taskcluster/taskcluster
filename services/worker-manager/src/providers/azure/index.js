@@ -432,13 +432,6 @@ export class AzureProvider extends Provider {
         ignoreFailedProvisioningStates: cfg.ignoreFailedProvisioningStates,
       };
 
-      this.monitor.log.workerRequested({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        workerId: virtualMachineName,
-        terminateAfter,
-      });
       const worker = Worker.fromApi({
         workerPoolId,
         providerId: this.providerId,
@@ -453,6 +446,7 @@ export class AzureProvider extends Provider {
         },
       });
       await worker.create(this.db);
+      await this.onWorkerRequested({ worker, terminateAfter });
 
       // Start requesting resources immediately
       // it will only provision at most one resource, as they are done async
@@ -716,12 +710,6 @@ export class AzureProvider extends Provider {
       expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
     }
 
-    this.monitor.log.workerRunning({
-      workerPoolId: workerPool.workerPoolId,
-      providerId: this.providerId,
-      workerId: worker.workerId,
-    });
-
     monitor.debug('setting state to RUNNING if currently REQUESTED');
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
@@ -730,6 +718,8 @@ export class AzureProvider extends Provider {
       }
       worker.providerData.terminateAfter = expires.getTime();
     });
+    await this.onWorkerRunning({ worker });
+
     const workerConfig = worker.providerData.workerConfig || {};
     return {
       expires,
@@ -1030,6 +1020,7 @@ export class AzureProvider extends Provider {
           description: err.message,
           extra: {
             workerId: worker.workerId,
+            workerGroup: worker.workerGroup,
             config: worker.providerData,
           },
         });

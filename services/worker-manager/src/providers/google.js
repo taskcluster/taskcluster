@@ -142,18 +142,13 @@ export class GoogleProvider extends Provider {
       expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
     }
 
-    this.monitor.log.workerRunning({
-      workerPoolId: workerPool.workerPoolId,
-      providerId: this.providerId,
-      workerId: worker.workerId,
-    });
     monitor.debug('setting state to RUNNING');
-
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
     });
+    await this.onWorkerRunning({ worker });
 
     // assume for the moment that workers self-terminate before 96 hours
     const workerConfig = worker.providerData.workerConfig || {};
@@ -333,13 +328,6 @@ export class GoogleProvider extends Provider {
         return;
       }
 
-      this.monitor.log.workerRequested({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        workerId: op.targetId,
-        terminateAfter,
-      });
       const worker = Worker.fromApi({
         workerPoolId,
         providerId: this.providerId,
@@ -362,6 +350,7 @@ export class GoogleProvider extends Provider {
         },
       });
       await worker.create(this.db);
+      await this.onWorkerRequested({ worker, terminateAfter });
     }));
   }
 
@@ -413,11 +402,7 @@ export class GoogleProvider extends Provider {
           zone: worker.providerData.zone,
           instance: worker.workerId,
         }));
-        this.monitor.log.workerStopped({
-          workerPoolId: worker.workerPoolId,
-          providerId: this.providerId,
-          workerId: worker.workerId,
-        });
+        await this.onWorkerStopped({ worker });
         state = states.STOPPED;
       }
     } catch (err) {
@@ -438,11 +423,7 @@ export class GoogleProvider extends Provider {
           return;
         }
       }
-      this.monitor.log.workerStopped({
-        workerPoolId: worker.workerPoolId,
-        providerId: this.providerId,
-        workerId: worker.workerId,
-      });
+      await this.onWorkerStopped();
       state = states.STOPPED;
     }
     monitor.debug(`setting state to ${state}`);

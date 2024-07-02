@@ -15,7 +15,7 @@ export default class WorkerManagerEvents extends Client {
   // Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
   /* eslint-enable max-len */
   workerPoolCreated(pattern) {
-    const entry = {"exchange":"worker-pool-created","name":"workerPoolCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-pool-created","name":"workerPoolCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -23,7 +23,39 @@ export default class WorkerManagerEvents extends Client {
   // Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
   /* eslint-enable max-len */
   workerPoolUpdated(pattern) {
-    const entry = {"exchange":"worker-pool-updated","name":"workerPoolUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-pool-updated","name":"workerPoolUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a worker reports an erroror provisioner encounters an error whileprovisioning a worker pool, a message is posted to thisexchange.
+  /* eslint-enable max-len */
+  workerPoolError(pattern) {
+    const entry = {"exchange":"worker-pool-error","name":"workerPoolError","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-error-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a worker is requested, a message is postedto this exchange.
+  /* eslint-enable max-len */
+  workerRequested(pattern) {
+    const entry = {"exchange":"worker-requested","name":"workerRequested","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a worker has registered, a message is postedto this exchange. This means that worker startedsuccessfully and is ready to claim work.
+  /* eslint-enable max-len */
+  workerRunning(pattern) {
+    const entry = {"exchange":"worker-running","name":"workerRunning","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a worker has stopped, a message is postedto this exchange. This means that worker wasterminated or shutdown gracefully.
+  /* eslint-enable max-len */
+  workerStopped(pattern) {
+    const entry = {"exchange":"worker-stopped","name":"workerStopped","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

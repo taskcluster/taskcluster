@@ -4382,6 +4382,24 @@ export default {
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
             },
             {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4405,6 +4423,24 @@ export default {
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
             },
             {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4413,6 +4449,170 @@ export default {
           ],
           "schema": "v1/pulse-worker-pool-message.json#",
           "title": "Worker Pool Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker reports an erroror provisioner encounters an error whileprovisioning a worker pool, a message is posted to thisexchange.",
+          "exchange": "worker-pool-error",
+          "name": "workerPoolError",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-pool-error-message.json#",
+          "title": "Worker Pool Provisioning Error Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker is requested, a message is postedto this exchange.",
+          "exchange": "worker-requested",
+          "name": "workerRequested",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Requested Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker has registered, a message is postedto this exchange. This means that worker startedsuccessfully and is ready to claim work.",
+          "exchange": "worker-running",
+          "name": "workerRunning",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Running Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker has stopped, a message is postedto this exchange. This means that worker wasterminated or shutdown gracefully.",
+          "exchange": "worker-stopped",
+          "name": "workerStopped",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Stopped Messages",
           "type": "topic-exchange"
         }
       ],
