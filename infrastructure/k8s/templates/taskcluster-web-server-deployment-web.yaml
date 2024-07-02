@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-web-server
+            - configMapRef:
+                name: taskcluster-web-server
           ports:
             - containerPort: 80
           readinessProbe:

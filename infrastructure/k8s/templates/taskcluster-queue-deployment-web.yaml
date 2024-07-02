@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-queue
+            - configMapRef:
+                name: taskcluster-queue
           ports:
             - containerPort: 80
           readinessProbe:

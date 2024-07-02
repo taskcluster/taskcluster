@@ -42,3 +42,5 @@ spec:
             envFrom:
               - secretRef:
                   name: ${projectName}
+              - configMapRef:
+                  name: ${projectName}
