@@ -3,6 +3,7 @@ import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
 import yaml from 'js-yaml';
 import { Worker, WorkerPoolError } from '../data.js';
+import { splitWorkerPoolId } from '../util.js';
 
 /**
  * The parent class for all providers.
@@ -20,6 +21,7 @@ export class Provider {
     validator,
     providerConfig,
     providerType,
+    publisher,
   }) {
     this.providerId = providerId;
     this.monitor = monitor;
@@ -31,6 +33,7 @@ export class Provider {
     this.Worker = Worker;
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
+    this.publisher = publisher;
   }
 
   async setup() {
@@ -82,6 +85,68 @@ export class Provider {
 
   async removeWorker({ worker, reason }) {
     throw new ApiError('not supported for this provider');
+  }
+
+  async onWorkerRequested({ worker, terminateAfter }) {
+    this.monitor.log.workerRequested({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerGroup: worker.workerGroup,
+      workerId: worker.workerId,
+      terminateAfter,
+    });
+
+    const { provisionerId, workerType } = splitWorkerPoolId(worker.workerPoolId);
+    await this.publisher.workerRequested({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+      workerGroup: worker.workerGroup,
+      provisionerId,
+      workerType,
+      state: Worker.states.REQUESTED,
+      capacity: worker.capacity,
+    });
+  }
+
+  async onWorkerRunning({ worker }) {
+    this.monitor.log.workerRunning({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+    });
+
+    const { provisionerId, workerType } = splitWorkerPoolId(worker.workerPoolId);
+    await this.publisher.workerRunning({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+      workerGroup: worker.workerGroup,
+      provisionerId,
+      workerType,
+      state: Worker.states.RUNNING,
+      capacity: worker.capacity,
+    });
+  }
+
+  async onWorkerStopped({ worker }) {
+    this.monitor.log.workerStopped({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+    });
+
+    const { provisionerId, workerType } = splitWorkerPoolId(worker.workerPoolId);
+    await this.publisher.workerStopped({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+      workerGroup: worker.workerGroup,
+      provisionerId,
+      workerType,
+      state: Worker.states.STOPPED,
+      capacity: worker.capacity,
+    });
   }
 
   /**
@@ -187,6 +252,18 @@ export class Provider {
         kind,
         title,
         description,
+      });
+      const { provisionerId, workerType } = splitWorkerPoolId(workerPool.workerPoolId);
+      await this.publisher.workerPoolError({
+        workerPoolId: workerPool.workerPoolId,
+        providerId: this.providerId,
+        errorId,
+        kind,
+        title,
+        provisionerId,
+        workerType,
+        workerId: extra?.workerId,
+        workerGroup: extra?.workerGroup,
       });
 
       try {

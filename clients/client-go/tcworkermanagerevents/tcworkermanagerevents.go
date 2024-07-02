@@ -49,6 +49,9 @@ import (
 // See #workerPoolCreated
 type WorkerPoolCreated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -69,6 +72,9 @@ func (binding WorkerPoolCreated) NewPayloadObject() interface{} {
 // See #workerPoolUpdated
 type WorkerPoolUpdated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -82,6 +88,98 @@ func (binding WorkerPoolUpdated) ExchangeName() string {
 
 func (binding WorkerPoolUpdated) NewPayloadObject() interface{} {
 	return new(WorkerTypePulseMessage)
+}
+
+// Whenever a worker reports an erroror provisioner encounters an error whileprovisioning a worker pool, a message is posted to thisexchange.
+//
+// See #workerPoolError
+type WorkerPoolError struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerPoolError) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerPoolError) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-pool-error"
+}
+
+func (binding WorkerPoolError) NewPayloadObject() interface{} {
+	return new(WorkerTypePulseMessage1)
+}
+
+// Whenever a worker is requested, a message is postedto this exchange.
+//
+// See #workerRequested
+type WorkerRequested struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRequested) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRequested) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-requested"
+}
+
+func (binding WorkerRequested) NewPayloadObject() interface{} {
+	return new(WorkerTypePulseMessage2)
+}
+
+// Whenever a worker has registered, a message is postedto this exchange. This means that worker startedsuccessfully and is ready to claim work.
+//
+// See #workerRunning
+type WorkerRunning struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRunning) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRunning) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-running"
+}
+
+func (binding WorkerRunning) NewPayloadObject() interface{} {
+	return new(WorkerTypePulseMessage2)
+}
+
+// Whenever a worker has stopped, a message is postedto this exchange. This means that worker wasterminated or shutdown gracefully.
+//
+// See #workerStopped
+type WorkerStopped struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerStopped) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerStopped) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-stopped"
+}
+
+func (binding WorkerStopped) NewPayloadObject() interface{} {
+	return new(WorkerTypePulseMessage2)
 }
 
 func generateRoutingKey(x interface{}) string {

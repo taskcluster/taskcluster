@@ -31,4 +31,106 @@ type (
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 		WorkerPoolID string `json:"workerPoolId"`
 	}
+
+	// The message that is emitted when worker pools are created/changed/deleted.
+	WorkerTypePulseMessage1 struct {
+
+		// An arbitary unique identifier for this error
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		ErrorID string `json:"errorId"`
+
+		// A general machine-readable way to identify this sort of error.
+		//
+		// Syntax:     [-a-z0-9]+
+		// Max length: 128
+		Kind string `json:"kind"`
+
+		// The provider responsible for managing this worker pool.
+		//
+		// If this value is `"null-provider"`, then the worker pool is pending deletion
+		// once all existing workers have terminated.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// A human-readable version of `kind`.
+		//
+		// Max length: 128
+		Title string `json:"title"`
+
+		// Worker group to which this worker belongs
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup,omitempty"`
+
+		// Worker ID
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId,omitempty"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	// The message that is emitted when worker pools are created/changed/deleted.
+	WorkerTypePulseMessage2 struct {
+
+		// Number of tasks this worker can handle at once
+		//
+		// Mininum:    1
+		Capacity int64 `json:"capacity"`
+
+		// The provider responsible for managing this worker pool.
+		//
+		// If this value is `"null-provider"`, then the worker pool is pending deletion
+		// once all existing workers have terminated.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ProviderID string `json:"providerId"`
+
+		// A string specifying the state this worker is in so far as worker-manager knows.
+		// A "requested" worker is in the process of starting up, and if successful will enter
+		// the "running" state once it has registered with the `registerWorker` API method.  A
+		// "stopping" worker is in the process of shutting down and deleting resources, while
+		// a "stopped" worker is completely stopped.  Stopped workers are kept for historical
+		// purposes and are purged when they expire.  Note that some providers transition workers
+		// directly from "running" to "stopped".
+		//
+		// Possible values:
+		//   * "requested"
+		//   * "running"
+		//   * "stopping"
+		//   * "stopped"
+		State string `json:"state"`
+
+		// Worker group to which this worker belongs
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerGroup string `json:"workerGroup"`
+
+		// Worker ID
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		WorkerID string `json:"workerId"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
 )
