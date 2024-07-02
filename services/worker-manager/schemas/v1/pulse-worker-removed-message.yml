@@ -1,0 +1,28 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Removed Pulse Message
+description: The message that is emitted when workers are being removed.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  capacity: {$ref: "worker-full.json#/properties/capacity"}
+  reason:
+    title: Reason
+    type: string
+    description: |
+      The reason the worker was removed. It can be one of the following:
+
+      - workerManager.removeWorker API call
+      - terminateAfter time exceeded
+      - operation expired
+      - any other error encountered
+additionalProperties: false
+required:
+  - workerPoolId
+  - providerId
+  - workerId
+  - workerGroup
+  - capacity
+  - reason

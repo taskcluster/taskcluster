@@ -148,7 +148,8 @@ export class Instances {
     }
     return {
       data: {
-        targetId: `instance-${parameters.requestBody.name}`,
+        // workerIds have a max length of 38
+        targetId: `i-${parameters.requestBody.name}`.substring(0, 38),
         ...this.fake.compute.zoneOperations.fakeOperation({
           zone: parameters.zone,
           status: 'RUNNING',

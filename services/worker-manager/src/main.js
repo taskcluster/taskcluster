@@ -178,13 +178,15 @@ let load = loader({
     }),
   },
 
+  validator: {
+    requires: ['cfg', 'schemaset'],
+    setup: async ({ cfg, schemaset }) => await schemaset.validator(cfg.taskcluster.rootUrl),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset'],
-    setup: async ({ cfg, monitor, notify, db, estimator, schemaset }) =>
-      new Providers().setup({
-        cfg, monitor, notify, db, estimator,
-        validator: await schemaset.validator(cfg.taskcluster.rootUrl),
-      }),
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator'],
+    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator }) =>
+      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator }),
   },
 
   azureProviderIds: {

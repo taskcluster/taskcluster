@@ -8,6 +8,7 @@ import { LEVELS } from 'taskcluster-lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -162,7 +163,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         db: helper.db,
         monitor,
         WorkerPoolError: WorkerPoolError,
-        // other stuff omitted..
+        estimator: await helper.load('estimator'),
+        validator: await helper.load('validator'),
+        publisher: await helper.load('publisher'),
       });
     });
 

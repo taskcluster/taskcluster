@@ -44,11 +44,18 @@ import (
 	"strings"
 )
 
-// Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to create a
+// worker pool, a message is posted to this exchange and
+// a provider can act upon it.
 //
 // See #workerPoolCreated
 type WorkerPoolCreated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -64,11 +71,18 @@ func (binding WorkerPoolCreated) NewPayloadObject() interface{} {
 	return new(WorkerTypePulseMessage)
 }
 
-// Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to update a
+// worker pool, a message is posted to this exchange and
+// a provider can act upon it.
 //
 // See #workerPoolUpdated
 type WorkerPoolUpdated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -82,6 +96,142 @@ func (binding WorkerPoolUpdated) ExchangeName() string {
 
 func (binding WorkerPoolUpdated) NewPayloadObject() interface{} {
 	return new(WorkerTypePulseMessage)
+}
+
+// Whenever a worker reports an error
+// or provisioner encounters an error while
+// provisioning a worker pool, a message is posted to this
+// exchange.
+//
+// See #workerPoolError
+type WorkerPoolError struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerPoolError) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerPoolError) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-pool-error"
+}
+
+func (binding WorkerPoolError) NewPayloadObject() interface{} {
+	return new(WorkerTypePulseMessage1)
+}
+
+// Whenever a worker is requested, a message is posted
+// to this exchange.
+//
+// See #workerRequested
+type WorkerRequested struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRequested) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRequested) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-requested"
+}
+
+func (binding WorkerRequested) NewPayloadObject() interface{} {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker has registered, a message is posted
+// to this exchange. This means that worker started
+// successfully and is ready to claim work.
+//
+// See #workerRunning
+type WorkerRunning struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRunning) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRunning) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-running"
+}
+
+func (binding WorkerRunning) NewPayloadObject() interface{} {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker has stopped, a message is posted
+// to this exchange. This means that instance was
+// either terminated or stopped gracefully.
+//
+// See #workerStopped
+type WorkerStopped struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerStopped) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerStopped) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-stopped"
+}
+
+func (binding WorkerStopped) NewPayloadObject() interface{} {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker is removed, a message is posted to this exchange.
+// This occurs when a worker is requested to be removed via an API call
+// or when a worker is terminated by the worker manager.
+// The reason for the removal is included in the message.
+//
+// See #workerRemoved
+type WorkerRemoved struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRemoved) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRemoved) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-removed"
+}
+
+func (binding WorkerRemoved) NewPayloadObject() interface{} {
+	return new(WorkerRemovedPulseMessage)
 }
 
 func generateRoutingKey(x interface{}) string {

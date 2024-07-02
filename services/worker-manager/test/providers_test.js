@@ -5,6 +5,7 @@ import { setSetupRetryInterval } from '../src/providers/index.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.withProviders(mock, skipping);
   helper.resetTables(mock, skipping);

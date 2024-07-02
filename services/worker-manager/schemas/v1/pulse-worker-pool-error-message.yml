@@ -1,0 +1,20 @@
+$schema: "/schemas/common/metaschema.json#"
+title: WorkerType Pulse Message
+description: The message that is emitted when worker pools are created/changed/deleted.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
+  # workerId can be null if error happened at provision time
+  workerId: {$ref: "worker-full.json#/properties/workerId"}
+  workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
+  errorId: {$ref: "worker-pool-error.json#/properties/errorId"}
+  kind: {$ref: "worker-pool-error.json#/properties/kind"}
+  title: {$ref: "worker-pool-error.json#/properties/title"}
+additionalProperties: false
+required:
+  - workerPoolId
+  - providerId
+  - errorId
+  - kind
+  - title

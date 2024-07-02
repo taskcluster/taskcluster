@@ -28,6 +28,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
+      publisher: await helper.load('publisher'),
+      validator: await helper.load('validator'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: WorkerPoolError,
       providerConfig: {
@@ -98,6 +100,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         db: helper.db,
         monitor: (await helper.load('monitor')).childMonitor('google'),
         estimator: await helper.load('estimator'),
+        validator: await helper.load('validator'),
+        publisher: await helper.load('publisher'),
         rootUrl: helper.rootUrl,
         WorkerPoolError: helper.WorkerPoolError,
         providerConfig: {
@@ -123,6 +127,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
+        helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
+        helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
       });
     };
 
@@ -177,7 +183,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const instanceName = parameters.requestBody.name;
       assert(fake.compute.zoneOperations.fakeOperationExists(
         worker.providerData.operation));
-      assert.equal(worker.workerId, `instance-${instanceName}`);
+      assert.equal(worker.workerId, `i-${instanceName}`);
     });
 
     provisionTest('registrationTimeout', {
@@ -453,6 +459,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     await provider.removeWorker({ worker });
     assert(fake.compute.instances.delete_called);
+    helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId);
   });
 
   suite('checkWorker', function() {
@@ -512,6 +519,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'TERMINATED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('for a stopped instance', async function() {
@@ -522,6 +530,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'STOPPED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('for a nonexistent instance', async function() {
@@ -529,6 +538,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({ state: 'requested' });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('for a nonexistent instance with a running operation', async function() {
@@ -537,6 +547,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation } });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.REQUESTED);
+      helper.assertNoPulseMessage('worker-stopped');
     });
 
     test('for a nonexistent instance with a failed operation', async function() {
@@ -555,6 +566,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       assert.equal(errors[0].title, 'Operation Error');
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('remove unregistered workers after terminateAfter', async function() {
@@ -568,8 +580,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // the worker isn't marked as stopped until we see it disappear
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason === 'terminateAfter time exceeded');
+
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('don\'t remove unregistered before terminateAfter', async function() {
@@ -584,6 +601,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
     });
     test('do not remove registered workers with stale terminateAfter', async function () {
       const terminateAfter = Date.now() - 1000;
@@ -615,9 +633,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason.includes('never claimed work'));
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
     test('remove zombie worker that was active long ago', async function () {
       const queueInactivityTimeout = 120;
@@ -633,9 +655,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason.includes('worker inactive'));
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
     test('don\'t remove zombie worker that was recently active', async function () {
       const queueInactivityTimeout = 60 * 60 * 4 * 1000; // 4 hours
@@ -651,6 +677,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertNoPulseMessage('worker-removed');
     });
   });
 
@@ -737,6 +765,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assert.rejects(() =>
         provider.registerWorker({ workerPool, worker, workerIdentityProof }),
       /Token validation error/);
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('sweet success', async function() {
@@ -755,6 +784,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
     });
 
     test('sweet success (different reregister)', async function() {
@@ -774,6 +804,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
     });
   });
 });
