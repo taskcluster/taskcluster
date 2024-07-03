@@ -39,7 +39,8 @@ testSuite:
         - - bash
           - "-cx"
           - "IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image:
-            //p')\ntimeout 14400 docker run -t --name taskcontainer --privileged --security-opt=seccomp=unconfined
+            //p')\ntimeout 14400 docker run -t --name taskcontainer
+            --memory-swap -1 --pids-limit -1 --privileged --security-opt=seccomp=unconfined
             -v /dev/shm:/dev/shm -v /dev/snd:/dev/snd --add-host=taskcluster:127.0.0.1 --net=host
             -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
             -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID

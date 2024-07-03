@@ -33,7 +33,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              timeout 3600 podman run -t --name taskcontainer --privileged
+              timeout 3600 podman run -t --name taskcontainer
+              --memory-swap -1 --pids-limit -1 --ulimit host --privileged
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL

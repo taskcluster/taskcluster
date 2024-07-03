@@ -306,6 +306,15 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	default:
 		command.WriteString(fmt.Sprintf("timeout %v %v run -t --name %v", dwPayload.MaxRunTime, tool, containerName))
 	}
+	// Do not limit resource usage by the containerName. See
+	// https://docs.podman.io/en/latest/markdown/podman-run.1.html
+	// and https://docs.docker.com/reference/cli/docker/container/run/
+	command.WriteString(" --memory-swap -1 --pids-limit -1")
+	// Only podman supports inheriting host ulimits. `docker` uses docker
+	// daemon settings by default.
+	if tool == "podman" {
+		command.WriteString(" --ulimit host")
+	}
 	// Sometimes --privileged is needed under podman, even where there are no
 	// capabilities defined. Therefore always add it under podman, regardless.
 	// See e.g.  https://github.com/taskcluster/taskcluster/issues/6888
