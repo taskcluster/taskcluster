@@ -81,8 +81,9 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              timeout 3600 docker run -t --name taskcontainer --privileged -v
-              "$(pwd)/cache0:/builds/worker/checkouts"
+              timeout 3600 docker run -t --name taskcontainer
+              --memory-swap -1 --pids-limit -1 --privileged
+              -v "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host
               -e GECKO_BASE_REPOSITORY
               -e GECKO_BASE_REV
