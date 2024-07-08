@@ -28,6 +28,7 @@ export class AwsProvider extends Provider {
     notify,
     db,
     providerConfig,
+    publisher,
   }) {
     super({
       providerId,
@@ -40,6 +41,7 @@ export class AwsProvider extends Provider {
       notify,
       db,
       providerConfig,
+      publisher,
     });
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
@@ -240,14 +242,7 @@ export class AwsProvider extends Provider {
       // greater than toSpawnPerConfig due to rounding)
       toSpawnCounter -= instanceCount * config.capacityPerInstance;
 
-      await Promise.all(spawned.Instances.map(i => {
-        this.monitor.log.workerRequested({
-          workerPoolId,
-          providerId: this.providerId,
-          workerGroup: config.region,
-          workerId: i.InstanceId,
-          terminateAfter,
-        });
+      await Promise.all(spawned.Instances.map(async (i) => {
         const worker = Worker.fromApi({
           workerPoolId,
           providerId: this.providerId,
@@ -274,6 +269,7 @@ export class AwsProvider extends Provider {
             workerConfig: config.workerConfig || {},
           },
         });
+        await this.onWorkerRequested({ worker, terminateAfter });
         return worker.create(this.db);
       }));
     }
@@ -309,17 +305,13 @@ export class AwsProvider extends Provider {
     }
 
     // mark it as running
-    this.monitor.log.workerRunning({
-      workerPoolId: workerPool.workerPoolId,
-      providerId: this.providerId,
-      workerId: worker.workerId,
-    });
     monitor.debug('setting state to RUNNING');
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
     });
+    await this.onWorkerRunning({ worker });
 
     const workerConfig = worker.providerData.workerConfig || {};
     return {
@@ -351,11 +343,7 @@ export class AwsProvider extends Provider {
 
           case 'terminated':
           case 'stopped':
-            this.monitor.log.workerStopped({
-              workerPoolId: worker.workerPoolId,
-              providerId: this.providerId,
-              workerId: worker.workerId,
-            });
+            await this.onWorkerStopped({ worker });
             state = Worker.states.STOPPED;
             break;
 
@@ -379,11 +367,7 @@ export class AwsProvider extends Provider {
         throw e;
       }
       monitor.debug('instance status not found');
-      this.monitor.log.workerStopped({
-        workerPoolId: worker.workerPoolId,
-        providerId: this.providerId,
-        workerId: worker.workerId,
-      });
+      await this.onWorkerStopped({ worker });
       state = Worker.states.STOPPED;
     }
 
@@ -399,13 +383,7 @@ export class AwsProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
-    this.monitor.log.workerRemoved({
-      workerPoolId: worker.workerPoolId,
-      providerId: worker.providerId,
-      workerId: worker.workerId,
-      reason,
-    });
-
+    await this.onWorkerRemoved({ worker, reason });
     let result;
     try {
       const region = worker.providerData.region;

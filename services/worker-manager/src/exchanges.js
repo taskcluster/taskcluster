@@ -1,4 +1,5 @@
 import { Exchanges } from 'taskcluster-lib-pulse';
+import { splitWorkerPoolId } from './util.js';
 
 const exchanges = new Exchanges({
   title: 'Worker Manager Exchanges',
@@ -25,6 +26,31 @@ let buildCommonRoutingKey = (options) => {
       constant: 'primary',
       required: true,
     }, {
+      name: 'providerId',
+      summary: 'Provider.',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
+      name: 'provisionerId',
+      summary: 'First part of the workerPoolId.',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
+      name: 'workerType',
+      summary: 'Second part of the workerPoolId.',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
+      name: 'workerGroup',
+      summary: 'Worker group of the worker (region or location)',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
+      name: 'workerId',
+      summary: 'Worker ID',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
       name: 'reserved',
       summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
@@ -39,6 +65,25 @@ let commonMessageBuilder = function(message) {
   return message;
 };
 
+let commonRoutingKeyBuilder = function(message, routing) {
+  const mapping = {
+    workerGroup: message.workerGroup,
+    providerId: message.providerId,
+    workerId: message.workerId,
+  };
+
+  if (message.provisionerId && message.workerType) {
+    mapping.provisionerId = message.provisionerId;
+    mapping.workerType = message.workerType;
+  } else if (message.workerPoolId) {
+    const { provisionerId, workerType } = splitWorkerPoolId(message.workerPoolId);
+    mapping.provisionerId = provisionerId;
+    mapping.workerType = workerType;
+  }
+
+  return mapping;
+};
+
 exchanges.declare({
   exchange: 'worker-pool-created',
   name: 'workerPoolCreated',
@@ -47,7 +92,7 @@ exchanges.declare({
     'Whenever the api receives a request to create a',
     'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
-  ].join(''),
+  ].join('\n'),
   schema: 'pulse-worker-pool-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
@@ -63,10 +108,92 @@ exchanges.declare({
     'Whenever the api receives a request to update a',
     'worker pool, a message is posted to this exchange and',
     'a provider can act upon it.',
-  ].join(''),
+  ].join('\n'),
   schema: 'pulse-worker-pool-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: () => '',
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'worker-pool-error',
+  name: 'workerPoolError',
+  title: 'Worker Pool Provisioning Error Messages',
+  description: [
+    'Whenever a worker reports an error',
+    'or provisioner encounters an error while',
+    'provisioning a worker pool, a message is posted to this',
+    'exchange.',
+  ].join('\n'),
+  schema: 'pulse-worker-pool-error-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey(),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+// worker related events
+exchanges.declare({
+  exchange: 'worker-requested',
+  name: 'workerRequested',
+  title: 'Worker Requested Messages',
+  description: [
+    'Whenever a worker is requested, a message is posted',
+    'to this exchange.',
+  ].join('\n'),
+  schema: 'pulse-worker-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey({ hasWorker: true }),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'worker-running',
+  name: 'workerRunning',
+  title: 'Worker Running Messages',
+  description: [
+    'Whenever a worker has registered, a message is posted',
+    'to this exchange. This means that worker started',
+    'successfully and is ready to claim work.',
+  ].join('\n'),
+  schema: 'pulse-worker-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey({ hasWorker: true }),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'worker-stopped',
+  name: 'workerStopped',
+  title: 'Worker Stopped Messages',
+  description: [
+    'Whenever a worker has stopped, a message is posted',
+    'to this exchange. This means that instance was',
+    'either terminated or stopped gracefully.',
+  ].join('\n'),
+  schema: 'pulse-worker-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey({ hasWorker: true }),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'worker-removed',
+  name: 'workerRemoved',
+  title: 'Worker Removed Messages',
+  description: [
+    'Whenever a worker is removed, a message is posted to this exchange.',
+    'This occurs when a worker is requested to be removed via an API call',
+    'or when a worker is terminated by the worker manager.',
+    'The reason for the removal is included in the message.',
+  ].join('\n'),
+  schema: 'pulse-worker-removed-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey({ hasWorker: true }),
+  routingKeyBuilder: commonRoutingKeyBuilder,
   CCBuilder: () => [],
 });

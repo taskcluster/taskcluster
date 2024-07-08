@@ -20,7 +20,15 @@ export class Provider {
     validator,
     providerConfig,
     providerType,
+    publisher,
   }) {
+    assert(db, 'db is required');
+    assert(estimator, 'estimator is required');
+    assert(monitor, 'monitor is required');
+    assert(notify, 'notify is required');
+    assert(validator, 'validator is required');
+    assert(publisher, 'publisher is required');
+
     this.providerId = providerId;
     this.monitor = monitor;
     this.validator = validator;
@@ -31,6 +39,7 @@ export class Provider {
     this.Worker = Worker;
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
+    this.publisher = publisher;
   }
 
   async setup() {
@@ -82,6 +91,57 @@ export class Provider {
 
   async removeWorker({ worker, reason }) {
     throw new ApiError('not supported for this provider');
+  }
+
+  async onWorkerRequested({ worker, terminateAfter }) {
+    return this._onWorkerEvent({
+      worker,
+      event: 'workerRequested',
+      extraLog: { terminateAfter },
+    });
+  }
+
+  async onWorkerRunning({ worker }) {
+    return this._onWorkerEvent({
+      worker,
+      event: 'workerRunning',
+    });
+  }
+
+  async onWorkerStopped({ worker }) {
+    return this._onWorkerEvent({
+      worker,
+      event: 'workerStopped',
+    });
+  }
+
+  async onWorkerRemoved({ worker, reason = 'unknown' }) {
+    return this._onWorkerEvent({
+      worker,
+      event: 'workerRemoved',
+      extraLog: { reason },
+      extraPublish: { reason },
+    });
+  }
+
+  async _onWorkerEvent({ worker, event, extraLog = {}, extraPublish = {} }) {
+    assert(['workerRequested', 'workerRunning', 'workerStopped', 'workerRemoved'].includes(event), 'unknown event');
+    this.monitor.log[event]({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+      workerGroup: worker.workerGroup,
+      ...extraLog,
+    });
+
+    await this.publisher[event]({
+      workerPoolId: worker.workerPoolId,
+      providerId: this.providerId,
+      workerId: worker.workerId,
+      workerGroup: worker.workerGroup,
+      capacity: worker.capacity,
+      ...extraPublish,
+    });
   }
 
   /**
@@ -189,6 +249,16 @@ export class Provider {
         description,
       });
 
+      await this.publisher.workerPoolError({
+        workerPoolId: workerPool.workerPoolId,
+        providerId: workerPool.providerId,
+        errorId,
+        kind,
+        title,
+        workerId: extra?.workerId,
+        workerGroup: extra?.workerGroup,
+      });
+
       try {
         await error.create(this.db);
       } catch (err) {
@@ -201,6 +271,8 @@ export class Provider {
         }
         error = existing;
       }
+    } catch (err) {
+      this.monitor.reportError(err, { workerPool, kind, title });
     } finally {
       // eslint-disable-next-line no-unsafe-finally
       return error;

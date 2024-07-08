@@ -130,6 +130,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('azure'),
       estimator: await helper.load('estimator'),
+      publisher: await helper.load('publisher'),
+      validator: await helper.load('validator'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
@@ -318,6 +320,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(customData.workerGroup, 'westus');
       assert.equal(customData.rootUrl, helper.rootUrl);
       assert.deepEqual(customData.workerConfig, {});
+      helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
     test('provision with custom tags', async function() {
@@ -325,6 +328,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         tags: { mytag: 'myvalue' },
       });
       assert.equal(worker.providerData.tags['mytag'], 'myvalue');
+      helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
     test('provision with lifecycle', async function() {
@@ -336,6 +340,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       assert(worker.providerData.terminateAfter - Date.now() - 6000 < 5000);
       assert.equal(worker.providerData.reregistrationTimeout, 6000);
+      helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
     test('provision with custom tags named after built-in tags', async function() {
@@ -343,6 +348,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         tags: { 'created-by': 'me!' },
       });
       assert.equal(worker.providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
     test('provision with workerConfig', async function() {
@@ -813,6 +819,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       debug('removeWorker');
       await provider.removeWorker({ worker, reason: 'test' });
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'allocated' });
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
+      helper.assertNoPulseMessage('worker-stopped');
 
       debug('first call');
       await provider.deprovisionResources({ worker, monitor });
@@ -869,6 +877,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.deprovisionResources({ worker, monitor });
       await assertRemovalState({ ip: 'none', nic: 'none', disks: ['none', 'none'], vm: 'none' });
       assert.equal(worker.state, 'stopped');
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });
 
     test('vm removal fails (keeps waiting)', async function() {
@@ -1237,6 +1246,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           assert(monitor.manager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('document is empty', async function() {
@@ -1251,6 +1261,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           assert(monitor.manager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('message does not match signature', async function() {
@@ -1266,6 +1277,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           assert(monitor.manager.messages[0].Fields.message.includes('Error extracting PKCS#7 message'));
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('malformed signature', async function() {
@@ -1281,6 +1293,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           assert(monitor.manager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('wrong signer subject', async function() {
@@ -1411,6 +1424,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // Restore test fixture
           provider.caStore.addCertificate(deletedCert);
           provider.downloadTimeout = oldDownloadTimeout;
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('download is not binary cert', async function() {
@@ -1492,6 +1506,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // Restore test fixture
           provider.caStore.addCertificate(deletedRoot);
           provider.caStore.addCertificate(deletedCert);
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('wrong worker state (duplicate call to registerWorker)', async function() {
@@ -1531,6 +1546,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(monitor.manager.messages[0].Fields.vmId, vmId);
           assert.equal(monitor.manager.messages[0].Fields.expectedVmId, 'wrongeba3-807b-46dd-aef5-78aaf9193f71');
           assert.equal(monitor.manager.messages[0].Fields.workerId, 'some-vm');
+          helper.assertNoPulseMessage('worker-running');
         });
 
         test('sweet success', async function() {
@@ -1577,6 +1593,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
           assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
+          helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
         });
 
         test('success after downloading missing intermediate', async function() {
@@ -1615,6 +1632,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(log0.Fields.issuer, intermediateCertIssuer);
           assert.equal(log0.Fields.subject, intermediateCertSubject);
           assert.equal(log0.Fields.url, intermediateCertUrl);
+          helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
         });
       });
     }

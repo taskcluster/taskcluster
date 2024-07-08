@@ -856,6 +856,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     };
     await helper.workerManager.createWorkerPool(workerPoolId, input);
 
+    const messages = [];
+    helper.onPulsePublish((exchange, routingKey, data) => {
+      messages.push({
+        exchange,
+        routingKey,
+        data: JSON.parse(Buffer.from(data).toString()),
+      });
+    });
+
     await helper.workerManager.reportWorkerError(workerPoolId, {
       workerGroup: 'wg',
       workerId: 'wi',
@@ -887,6 +896,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         },
       },
     ]);
+
+    assert.equal(messages.length, 1);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-error');
+    assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi._');
+    let { errorId, ...msgData } = messages[0].data;
+    assert.deepEqual(msgData, {
+      workerPoolId,
+      providerId: 'testing1',
+      kind: 'worker-error',
+      title: 'Something is Wrong',
+      workerId: 'wi',
+      workerGroup: 'wg',
+    });
   });
 
   test('Report a worker error, no such pool', async function () {

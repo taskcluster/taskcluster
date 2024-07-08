@@ -41,6 +41,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       notify: await helper.load('notify'),
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
+      validator: await helper.load('validator'),
+      publisher: await helper.load('publisher'),
       fakeCloudApis: {},
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,
