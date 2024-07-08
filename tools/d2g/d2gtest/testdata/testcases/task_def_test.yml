@@ -56,7 +56,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID ubuntu:latest /bin/bash -c
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
@@ -140,7 +140,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID ubuntu:latest /bin/bash -c
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
@@ -227,7 +227,7 @@ testSuite:
           command:
           - - bash
             - -cx
-            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+            - podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host -v /dev/kvm:/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_ID ubuntu:latest /bin/bash -c
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:

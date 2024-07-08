@@ -315,11 +315,10 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	if tool == "podman" {
 		command.WriteString(" --ulimit host")
 	}
-	// Sometimes --privileged is needed under podman, even where there are no
-	// capabilities defined. Therefore always add it under podman, regardless.
-	// See e.g.  https://github.com/taskcluster/taskcluster/issues/6888
-	if tool == "podman" || dwPayload.Capabilities.Privileged {
+	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
 		command.WriteString(" --privileged")
+	} else if dwPayload.Features.AllowPtrace {
+		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
 	if dwPayload.Capabilities.DisableSeccomp {
 		command.WriteString(" --security-opt=seccomp=unconfined")

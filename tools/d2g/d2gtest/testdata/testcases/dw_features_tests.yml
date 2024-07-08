@@ -1,38 +1,30 @@
 ---
 testSuite:
-  name: No artifacts test
-  description: Test that no artifacts will be created if disabled in the docker worker payload.
+  name: Docker Worker feature tests
+  description: Tests for docker-worker features
   payloadTests:
-    - name: No artifacts test
+    - name: Allow ptrace
       description: >-
-        If artifacts are disabled in the docker worker payload, no artifacts should be created
-        in the resulting generic worker task payload.
+        Test when ptrace feature is enabled
       dockerWorkerTaskPayload:
-        artifacts:
-          public/fred:
-            type: directory
-            path: /home/worker/artifacts/fred
         command:
           - echo "Hello world"
         features:
-          artifacts: false
+          allowPtrace: true
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
         command:
           - - bash
-            - '-cx'
+            - "-cx"
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --cap-add=SYS_PTRACE
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_ID
               ubuntu 'echo "Hello world"'
-        features:
-          backingLog: false
-          liveLog: false
         maxRunTime: 3600
         onExitStatus:
           retry:

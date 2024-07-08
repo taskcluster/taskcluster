@@ -15,7 +15,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -42,7 +42,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -70,7 +70,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -105,7 +105,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -141,7 +141,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -177,7 +177,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -210,7 +210,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -244,7 +244,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL

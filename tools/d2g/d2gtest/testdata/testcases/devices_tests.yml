@@ -49,7 +49,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -v /dev/kvm:/dev/kvm
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -82,7 +82,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -v "${TASKCLUSTER_VIDEO_DEVICE}:${TASKCLUSTER_VIDEO_DEVICE}"
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -114,7 +114,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --privileged
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -v /dev/snd:/dev/snd
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
