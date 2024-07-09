@@ -8,6 +8,12 @@ properties:
   workerId: {$ref: "worker-full.json#/properties/workerId"}
   workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
   capacity: {$ref: "worker-full.json#/properties/capacity"}
+  timestamp:
+    title: Event timestamp
+    description: Date and time when this event occurred
+    type: string
+    format: date-time
+
 additionalProperties: false
 required:
   - workerPoolId
@@ -15,3 +21,4 @@ required:
   - workerId
   - workerGroup
   - capacity
+  - timestamp

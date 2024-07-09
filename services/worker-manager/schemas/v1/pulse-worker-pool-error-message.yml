@@ -11,6 +11,11 @@ properties:
   errorId: {$ref: "worker-pool-error.json#/properties/errorId"}
   kind: {$ref: "worker-pool-error.json#/properties/kind"}
   title: {$ref: "worker-pool-error.json#/properties/title"}
+  timestamp:
+    title: Event timestamp
+    description: Date and time when this event occurred
+    type: string
+    format: date-time
 additionalProperties: false
 required:
   - workerPoolId
@@ -18,3 +23,4 @@ required:
   - errorId
   - kind
   - title
+  - timestamp
