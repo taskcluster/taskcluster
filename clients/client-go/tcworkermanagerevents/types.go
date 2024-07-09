@@ -2,6 +2,10 @@
 
 package tcworkermanagerevents
 
+import (
+	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+)
+
 type (
 	// The message that is emitted when workers requested/running/stopped.
 	WorkerPulseMessage struct {
@@ -20,6 +24,9 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
+
+		// Date and time when this event occurred
+		Timestamp tcclient.Time `json:"timestamp"`
 
 		// Worker group to which this worker belongs
 		//
@@ -66,6 +73,9 @@ type (
 		// - operation expired
 		// - any other error encountered
 		Reason string `json:"reason"`
+
+		// Date and time when this event occurred
+		Timestamp tcclient.Time `json:"timestamp"`
 
 		// Worker group to which this worker belongs
 		//
@@ -139,6 +149,9 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
+
+		// Date and time when this event occurred
+		Timestamp tcclient.Time `json:"timestamp"`
 
 		// A human-readable version of `kind`.
 		//

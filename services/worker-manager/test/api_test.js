@@ -865,6 +865,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
     });
 
+    const beforeTime = new Date();
     await helper.workerManager.reportWorkerError(workerPoolId, {
       workerGroup: 'wg',
       workerId: 'wi',
@@ -901,6 +902,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-error');
     assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi._');
     let { errorId, ...msgData } = messages[0].data;
+    assert(new Date(msgData.timestamp) > beforeTime.getTime() - 1);
+
+    msgData.timestamp = 'xx';
     assert.deepEqual(msgData, {
       workerPoolId,
       providerId: 'testing1',
@@ -908,6 +912,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       title: 'Something is Wrong',
       workerId: 'wi',
       workerGroup: 'wg',
+      timestamp: 'xx',
     });
   });
 

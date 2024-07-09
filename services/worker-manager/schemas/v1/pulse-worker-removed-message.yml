@@ -18,6 +18,11 @@ properties:
       - terminateAfter time exceeded
       - operation expired
       - any other error encountered
+  timestamp:
+    title: Event timestamp
+    description: Date and time when this event occurred
+    type: string
+    format: date-time
 additionalProperties: false
 required:
   - workerPoolId
@@ -26,3 +31,4 @@ required:
   - workerGroup
   - capacity
   - reason
+  - timestamp

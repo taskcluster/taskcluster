@@ -1321,6 +1321,12 @@
           "title": "Reason",
           "type": "string"
         },
+        "timestamp": {
+          "description": "Date and time when this event occurred",
+          "format": "date-time",
+          "title": "Event timestamp",
+          "type": "string"
+        },
         "workerGroup": {
           "$ref": "worker-full.json#/properties/workerGroup"
         },
@@ -1337,7 +1343,8 @@
         "workerId",
         "workerGroup",
         "capacity",
-        "reason"
+        "reason",
+        "timestamp"
       ],
       "title": "Worker Removed Pulse Message",
       "type": "object"
@@ -1391,6 +1398,12 @@
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
         },
+        "timestamp": {
+          "description": "Date and time when this event occurred",
+          "format": "date-time",
+          "title": "Event timestamp",
+          "type": "string"
+        },
         "title": {
           "$ref": "worker-pool-error.json#/properties/title"
         },
@@ -1409,7 +1422,8 @@
         "providerId",
         "errorId",
         "kind",
-        "title"
+        "title",
+        "timestamp"
       ],
       "title": "WorkerType Pulse Message",
       "type": "object"
@@ -1429,6 +1443,12 @@
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
         },
+        "timestamp": {
+          "description": "Date and time when this event occurred",
+          "format": "date-time",
+          "title": "Event timestamp",
+          "type": "string"
+        },
         "workerGroup": {
           "$ref": "worker-full.json#/properties/workerGroup"
         },
@@ -1444,7 +1464,8 @@
         "providerId",
         "workerId",
         "workerGroup",
-        "capacity"
+        "capacity",
+        "timestamp"
       ],
       "title": "Worker Pulse Message",
       "type": "object"

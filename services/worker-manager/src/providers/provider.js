@@ -140,6 +140,7 @@ export class Provider {
       workerId: worker.workerId,
       workerGroup: worker.workerGroup,
       capacity: worker.capacity,
+      timestamp: new Date().toJSON(),
       ...extraPublish,
     });
   }
@@ -255,6 +256,7 @@ export class Provider {
         errorId,
         kind,
         title,
+        timestamp: new Date().toJSON(),
         workerId: extra?.workerId,
         workerGroup: extra?.workerGroup,
       });
