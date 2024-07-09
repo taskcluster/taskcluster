@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v67.0.0
+
+### USERS
+
+▶ [MAJOR] [#7126](https://github.com/taskcluster/taskcluster/issues/7126)
+d2g no longer includes `--privileged` in all generated `podman run` commands. This was previously introduced as a breaking change in release 61.0.0 (PR #6891) but has broken some tasks. The original reason for adding it (#6890) seems to no longer apply, as the original bug report is no longer reproducible. This therefore reverts the d2g treatment of the --privileged flag to how it was before release 61.0.0.
+
+▶ [minor] [#7085](https://github.com/taskcluster/taskcluster/issues/7085)
+Worker-manager publishes more events to new exchanges in Pulse:
+- `worker-pool-error`
+- `worker-requested`
+- `worker-running`
+- `worker-stopped`
+
+▶ [patch] [#7120](https://github.com/taskcluster/taskcluster/issues/7120)
+Removed memory, pid, and ulimits for d2g payloads.
+
+### DEVELOPERS
+
+▶ [patch]
+Updated azure test certificates.
+
+### OTHER
+
+▶ Additional change not described here: [#7095](https://github.com/taskcluster/taskcluster/issues/7095).
+
+### Automated Package Updates
+
+<details>
+<summary>20 Dependabot updates</summary>
+
+* build(deps): bump the ui-node-deps group across 1 directory with 10 updates (b83e7dbe2)
+* build(deps): bump markdown-it from 12.3.2 to 14.1.0 in /ui (99770261c)
+* build(deps): bump react-codemirror2 from 7.3.0 to 8.0.0 in /ui (967f5f1fe)
+* build(deps): bump the go-deps group with 7 updates (fdb61b7a4)
+* build(deps): bump taskcluster from 65.1.0 to 66.0.0 in /taskcluster (15fe4fa58)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (e92ef7929)
+* build(deps): bump ws from 8.5.0 to 8.17.1 in /workers/docker-worker (9604329d4)
+* build(deps): bump the client-node-deps group across 1 directory with 3 updates (d614b4b68)
+* build(deps): bump pug from 3.0.2 to 3.0.3 (f53a74456)
+* build(deps): bump @octokit/plugin-retry from 3.0.9 to 7.1.1 (6ff6da85c)
+* build(deps-dev): bump @testing-library/jest-dom in /ui (b5c00189f)
+* build(deps): bump the node-deps group across 1 directory with 22 updates (0f93c1e59)
+* build(deps-dev): bump the client-web-node-deps group across 1 directory with 2 updates (3ca58010d)
+* build(deps): bump @grpc/grpc-js from 1.9.8 to 1.10.10 (ef3a2daa7)
+* build(deps): bump braces from 3.0.2 to 3.0.3 (f2386f545)
+* build(deps): bump urllib3 from 2.0.7 to 2.2.2 in /taskcluster (ad955c802)
+* build(deps): bump braces from 3.0.2 to 3.0.3 in /clients/client (c918170cd)
+* build(deps): bump braces from 3.0.2 to 3.0.3 in /workers/docker-worker (ae3cf638a)
+* build(deps-dev): bump ws from 7.5.9 to 7.5.10 (6fea20c51)
+* build(deps): bump taskcluster from 64.2.7 to 65.1.0 in /taskcluster (68fdee7ce)
+
+</details>
+
 ## v66.0.0
 
 ### USERS

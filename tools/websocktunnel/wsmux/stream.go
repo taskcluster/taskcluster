@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v66/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v67/tools/websocktunnel/util"
 )
 
 const (

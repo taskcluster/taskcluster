@@ -3,7 +3,7 @@ package d2g
 import (
 	"github.com/taskcluster/shell"
 
-	"github.com/taskcluster/taskcluster/v66/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v67/tools/d2g/genericworker"
 )
 
 func (din *DockerImageName) FileMounts() ([]genericworker.FileMount, error) {

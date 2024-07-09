@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v66/clients/client-go"
-	"github.com/taskcluster/taskcluster/v66/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+	"github.com/taskcluster/taskcluster/v67/clients/client-go/tcobject"
 )
 
 type (

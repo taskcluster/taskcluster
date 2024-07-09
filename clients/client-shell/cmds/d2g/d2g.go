@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v66/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v66/tools/d2g"
-	"github.com/taskcluster/taskcluster/v66/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v66/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v67/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v67/tools/d2g"
+	"github.com/taskcluster/taskcluster/v67/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v67/tools/d2g/genericworker"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/spf13/cobra"

@@ -11,12 +11,12 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tcclient "github.com/taskcluster/taskcluster/v66/clients/client-go"
-	"github.com/taskcluster/taskcluster/v66/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v66/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v66/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v66/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v66/tools/workerproto/testing"
+	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v67/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v67/tools/workerproto/testing"
 )
 
 func TestRegisterWorker(t *testing.T) {

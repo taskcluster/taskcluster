@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
 )
 
 // SecureFiles makes the current user/group the owner of all files in

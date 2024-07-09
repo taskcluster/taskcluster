@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/fileutil"
 )
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {

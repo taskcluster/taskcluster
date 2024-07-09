@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v66/internal/scopes"
+	"github.com/taskcluster/taskcluster/v67/internal/scopes"
 )
 
 type LoopbackVideoFeature struct {

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v66/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v67/clients/client-shell/cmds/root"
 	js "github.com/xeipuuv/gojsonschema"
 )
 

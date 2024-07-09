@@ -15,10 +15,10 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v66/clients/client-go"
-	"github.com/taskcluster/taskcluster/v66/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v66/internal/scopes"
-	"github.com/taskcluster/taskcluster/v66/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+	"github.com/taskcluster/taskcluster/v67/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v67/internal/scopes"
+	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/fileutil"
 )
 
 var (
