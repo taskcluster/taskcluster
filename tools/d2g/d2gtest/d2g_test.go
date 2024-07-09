@@ -142,7 +142,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
 			dmp := diffmatchpatch.New()
 			diff := dmp.DiffMain(string(formattedExpectedGWPayload), string(formattedActualGWPayload), false)
-			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v\nDiff:%v", string(formattedExpectedGWPayload), string(formattedActualGWPayload), dmp.DiffPrettyText(diff))
+			t.Fatalf("Converted task does not match expected value.\nDiff:%v", dmp.DiffPrettyText(diff))
 		}
 	}
 }
@@ -169,7 +169,7 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		if string(formattedExpectedGWTaskDef) != string(formattedActualGWTaskDef) {
 			dmp := diffmatchpatch.New()
 			diff := dmp.DiffMain(string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef), false)
-			t.Fatalf("Converted task does not match expected value.\nExpected:%v\nActual:%v\nDiff:%v", string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef), dmp.DiffPrettyText(diff))
+			t.Fatalf("Converted task does not match expected value.\nDiff:%v", dmp.DiffPrettyText(diff))
 		}
 	}
 }
