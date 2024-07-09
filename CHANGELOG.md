@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v67.0.1
+
+### USERS
+
+▶ [patch] [#7085](https://github.com/taskcluster/taskcluster/issues/7085)
+Adds `timestamp` to the worker related pulse events that were added in #7085.
+
+### DEVELOPERS
+
+▶ [patch]
+Switch CI to use Ubuntu 24.04
+
 ## v67.0.0
 
 ### USERS
