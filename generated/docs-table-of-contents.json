@@ -329,6 +329,29 @@
             "children": [
             ],
             "data": {
+              "filename": "task-execution/definitions.mdx",
+              "order": 5,
+              "title": "Definitions"
+            },
+            "name": "definitions",
+            "next": {
+              "path": "manual/task-execution/queues",
+              "title": "Queues"
+            },
+            "path": "manual/task-execution/definitions",
+            "prev": {
+              "path": "manual/task-execution",
+              "title": "Task Execution"
+            },
+            "up": {
+              "path": "manual/task-execution",
+              "title": "Task Execution"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
               "filename": "task-execution/queues.mdx",
               "order": 10,
               "title": "Queues"
@@ -340,8 +363,8 @@
             },
             "path": "manual/task-execution/queues",
             "prev": {
-              "path": "manual/task-execution",
-              "title": "Task Execution"
+              "path": "manual/task-execution/definitions",
+              "title": "Definitions"
             },
             "up": {
               "path": "manual/task-execution",
@@ -424,8 +447,8 @@
         },
         "name": "task-execution",
         "next": {
-          "path": "manual/task-execution/queues",
-          "title": "Queues"
+          "path": "manual/task-execution/definitions",
+          "title": "Definitions"
         },
         "path": "manual/task-execution",
         "prev": {
