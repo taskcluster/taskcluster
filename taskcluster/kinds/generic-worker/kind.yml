@@ -93,9 +93,9 @@ tasks:
         - '"$(go env GOPATH)/bin/goimports" -w .'
         - git diff
         - test $(git status --porcelain | wc -l) == 0
-  build/test-multiuser-ubuntu-22.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 22.04
-    worker-type: gw-ci-ubuntu-22-04
+  build/test-multiuser-ubuntu-24.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04
+    worker-type: gw-ci-ubuntu-24-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -174,9 +174,9 @@ tasks:
             GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v67/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
           fi
           ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
-  build/test-multiuser-current-user-ubuntu-22.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 22.04 as the current user
-    worker-type: gw-ci-ubuntu-22-04
+  build/test-multiuser-current-user-ubuntu-24.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04 as the current user
+    worker-type: gw-ci-ubuntu-24-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -201,10 +201,10 @@ tasks:
         GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
           Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
           to help ensure that mock implementations remain consistent with real services.
-    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
-  build/test-insecure-ubuntu-22.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 22.04
-    worker-type: gw-ci-ubuntu-22-04
+    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
+  build/test-insecure-ubuntu-24.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 24.04
+    worker-type: gw-ci-ubuntu-24-04
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -225,7 +225,7 @@ tasks:
           format: tar.gz
       env:
         ENGINE: insecure
-    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
   build/test-multiuser-macos-13-arm64:
     description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13
     worker-type: gw-ci-macos-13
@@ -250,7 +250,7 @@ tasks:
       env:
         ENGINE: multiuser
         GW_TESTS_RUN_AS_CURRENT_USER: ''
-    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
   build/test-multiuser-current-user-macos-13-arm64:
     description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13 as the current user
     worker-type: gw-ci-macos-13
@@ -275,7 +275,7 @@ tasks:
       env:
         ENGINE: multiuser
         GW_TESTS_RUN_AS_CURRENT_USER: 'true'
-    copy-command-from: build/test-multiuser-ubuntu-22.04-amd64
+    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
   build/test-multiuser-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
     worker-type: gw-ci-windows-2022
