@@ -10247,17 +10247,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlight.js@npm:^11.10.0":
+  version: 11.10.0
+  resolution: "highlight.js@npm:11.10.0"
+  checksum: 10c0/cd8bf7ef06cbd72ddb83580ecabe769f08f062be8bb82d2eb492d31c17f7480d1f8d14a66fc81deee0601645435f19f04c470510563f847242a41ccff0ab873e
+  languageName: node
+  linkType: hard
+
 "highlight.js@npm:^11.3.1":
   version: 11.4.0
   resolution: "highlight.js@npm:11.4.0"
   checksum: 10c0/7df44965b5e1976fbe0147304d7be3e35c3fddd457b1c616088c2cb4511dfc4ff102dd8dad195593a1146027ce4cba89ccd5e33fb41d54dd1c5f11ab9e0e32ed
-  languageName: node
-  linkType: hard
-
-"highlight.js@npm:^11.9.0":
-  version: 11.9.0
-  resolution: "highlight.js@npm:11.9.0"
-  checksum: 10c0/27cfa8717dc9d200aecbdb383eb122d5f45ce715d2f468583785d36fbfe5076ce033abb02486dc13b407171721cda6f474ed3f3a5a8e8c3d91367fa5f51ee374
   languageName: node
   linkType: hard
 
@@ -12100,12 +12100,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-e@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "json-e@npm:4.7.0"
+"json-e@npm:^4.7.1":
+  version: 4.7.1
+  resolution: "json-e@npm:4.7.1"
   dependencies:
     json-stable-stringify-without-jsonify: "npm:^1.0.1"
-  checksum: 10c0/a2ed0dd0cc6bdaba3a3a888f1c54f16f28dc7293350cc9d6fd96a9d6948a61f43add840ce808abf17c4cc67db1a8b99cd7b4ea4086ff82ef4e35f62abbbeca41
+  checksum: 10c0/b338aae43610b6b27ce6b0d4662371a2af7e96faea6d1464f294ddda78fb757fd6b6010fe048ebc54ad4fd334d5cae97ae94998a17ecbbb998cc3a59951cf594
   languageName: node
   linkType: hard
 
@@ -14935,12 +14935,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.12.2":
-  version: 6.12.2
-  resolution: "qs@npm:6.12.2"
+"qs@npm:^6.12.3":
+  version: 6.12.3
+  resolution: "qs@npm:6.12.3"
   dependencies:
     side-channel: "npm:^1.0.6"
-  checksum: 10c0/d431fe6914aea026794c047b9c5ac5d29e96cc13dc14f3ca838f5f3061b0f1ed435d3f616508bc0e8a64fc29d13359f08bfe723aabc5f80f36d11057b2de6ebf
+  checksum: 10c0/243ddcc8f49dab78fc51041f7f64c500b47c671c45a101a8aca565d8537cb562921da7ef1a831b4a7051596ec88bb35a0d5e25a240025e8b32c6bfb69f00bf2f
   languageName: node
   linkType: hard
 
@@ -17308,13 +17308,13 @@ __metadata:
     fast-memoize: "npm:^2.5.1"
     graphql: "npm:^16.9.0"
     graphql-tag: "npm:^2.8.0"
-    highlight.js: "npm:^11.9.0"
+    highlight.js: "npm:^11.10.0"
     hterm-umdjs: "npm:^1.4.1"
     is-absolute-url: "npm:^4.0.1"
     jest: "npm:^26.6.3"
     jest-transform-graphql: "npm:^2.1.0"
     js-yaml: "npm:^4.0.0"
-    json-e: "npm:^4.7.0"
+    json-e: "npm:^4.7.1"
     json-loader: "npm:^0.5.7"
     json-schema-defaults: "npm:^0.4.0"
     jsonlint-mod: "npm:^1.7.6"
@@ -17335,7 +17335,7 @@ __metadata:
     prism-themes: "npm:^1.0.1"
     prismjs: "npm:^1.29.0"
     prop-types: "npm:^15.6.2"
-    qs: "npm:^6.12.2"
+    qs: "npm:^6.12.3"
     ramda: "npm:^0.30.1"
     raw-loader: "npm:^4.0.2"
     react: "npm:^16.8.6"
