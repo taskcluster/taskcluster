@@ -17,7 +17,7 @@ func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
 		gids[i] = uint32(gid)
 	}
 	for _, command := range osGroups.Task.Commands {
-		command.SysProcAttr.Credential.Groups = gids
+		command.SysProcAttr.Credential.Groups = append(command.SysProcAttr.Credential.Groups, gids...)
 	}
 	return
 }

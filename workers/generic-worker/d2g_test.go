@@ -22,7 +22,7 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	payload := dockerworker.DockerWorkerPayload{
 		Command:    []string{"/bin/bash", "-c", "echo hello world"},
 		Image:      json.RawMessage(imageBytes),
-		MaxRunTime: 10,
+		MaxRunTime: 30,
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)

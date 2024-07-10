@@ -7,11 +7,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"strconv"
-	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
@@ -27,39 +26,61 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	return TaskUserPlatformData()
 }
 
+// Function to get GIDs for a user
+func getUserGroupIDs(username string) ([]uint32, error) {
+	usr, err := user.Lookup(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to lookup user: %w", err)
+	}
+
+	groupIDs, err := usr.GroupIds()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get group IDs: %w", err)
+	}
+
+	var gids []uint32
+	for _, gidStr := range groupIDs {
+		gid, err := strconv.Atoi(gidStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert GID to int: %w", err)
+		}
+		gids = append(gids, uint32(gid))
+	}
+	return gids, nil
+}
+
 func TaskUserPlatformData() (pd *PlatformData, err error) {
-	user, err := runtime.InteractiveUsername()
+	username, err := runtime.InteractiveUsername()
 	if err != nil {
-		return nil, fmt.Errorf("could not determine interactive username: %v", err)
+		return nil, fmt.Errorf("could not determine interactive username: %w", err)
 	}
 
-	id := func(description string, command string, args ...string) (uint32, error) {
-		out, err := host.CombinedOutput(command, args...)
-		if err != nil {
-			return 0, fmt.Errorf("Failed to run command to determine %v of user %v: %v", description, user, err)
-		}
-		idString := strings.TrimSpace(out)
-		id, err := strconv.ParseUint(idString, 10, 32)
-		if err != nil {
-			return 0, fmt.Errorf("Failed to convert %v %q from a string to an int: %v", description, idString, err)
-		}
-		return uint32(id), nil
+	usr, err := user.Lookup(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to lookup user: %w", err)
 	}
 
-	uid, err := id("UID", "id", "-ur", user)
+	uid, err := strconv.Atoi(usr.Uid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to convert UID to int: %w", err)
 	}
-	gid, err := id("GID", "id", "-gr", user)
+
+	gid, err := strconv.Atoi(usr.Gid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to convert GID to int: %w", err)
+	}
+
+	gids, err := getUserGroupIDs(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user group IDs: %w", err)
 	}
 
 	return &PlatformData{
 		SysProcAttr: &syscall.SysProcAttr{
 			Credential: &syscall.Credential{
-				Uid: uid,
-				Gid: gid,
+				Uid:    uint32(uid),
+				Gid:    uint32(gid),
+				Groups: gids,
 			},
 		},
 	}, nil
