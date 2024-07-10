@@ -26,29 +26,6 @@ func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
 	return TaskUserPlatformData()
 }
 
-// Function to get GIDs for a user
-func getUserGroupIDs(username string) ([]uint32, error) {
-	usr, err := user.Lookup(username)
-	if err != nil {
-		return nil, fmt.Errorf("failed to lookup user: %w", err)
-	}
-
-	groupIDs, err := usr.GroupIds()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get group IDs: %w", err)
-	}
-
-	var gids []uint32
-	for _, gidStr := range groupIDs {
-		gid, err := strconv.Atoi(gidStr)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert GID to int: %w", err)
-		}
-		gids = append(gids, uint32(gid))
-	}
-	return gids, nil
-}
-
 func TaskUserPlatformData() (pd *PlatformData, err error) {
 	username, err := runtime.InteractiveUsername()
 	if err != nil {
@@ -70,9 +47,18 @@ func TaskUserPlatformData() (pd *PlatformData, err error) {
 		return nil, fmt.Errorf("failed to convert GID to int: %w", err)
 	}
 
-	gids, err := getUserGroupIDs(username)
+	groupIDs, err := usr.GroupIds()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user group IDs: %w", err)
+		return nil, fmt.Errorf("failed to get group IDs: %w", err)
+	}
+
+	var gids []uint32
+	for _, gidStr := range groupIDs {
+		gid, err := strconv.Atoi(gidStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert GID to int: %w", err)
+		}
+		gids = append(gids, uint32(gid))
 	}
 
 	return &PlatformData{
