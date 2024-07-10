@@ -9,6 +9,21 @@ Taskcluster defines several environment variables, with the following meanings.
 Each section also describes the conditions where a Taskcluster component sets
 the variable, and those where a component expects the variable to be set.
 
+## TASK_ID
+
+`TASK_ID` is set in the environment of Generic Worker and Docker Worker tasks
+to the `taskId` of the current task.
+
+## RUN_ID
+
+`RUN_ID` is set in the environment of Generic Worker and Docker Worker tasks
+to the `runId` of the current task run.
+
+## TASK_GROUP_ID
+
+`TASK_GROUP_ID` is set in the environment of Generic Worker (but *not* Docker
+Worker) tasks to the `taskGroupId` of the current task.
+
 ## TASKCLUSTER_ROOT_URL
 
 `TASKCLUSTER_ROOT_URL` is the [root URL](/docs/manual/using/root-urls) for the current Taskcluster deployment.

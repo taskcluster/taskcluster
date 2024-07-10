@@ -526,23 +526,24 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 	envStrBuilder := strings.Builder{}
 
-	dwManagedEnvVars := []string{
+	additionalEnvVars := []string{
 		"RUN_ID",
-		"TASKCLUSTER_ROOT_URL",
-		"TASK_ID",
 		"TASKCLUSTER_INSTANCE_TYPE",
+		"TASKCLUSTER_ROOT_URL",
 		"TASKCLUSTER_WORKER_LOCATION",
+		"TASK_GROUP_ID", // note, docker-worker didn't set this, but decision tasks may in future choose to use it if it is set
+		"TASK_ID",
 	}
 
 	if dwPayload.Features.TaskclusterProxy {
-		dwManagedEnvVars = append(dwManagedEnvVars, "TASKCLUSTER_PROXY_URL")
+		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
 	envVarNames := []string{}
 	for envVarName := range dwPayload.Env {
 		envVarNames = append(envVarNames, envVarName)
 	}
-	envVarNames = append(envVarNames, dwManagedEnvVars...)
+	envVarNames = append(envVarNames, additionalEnvVars...)
 	sort.Strings(envVarNames)
 	for _, envVarName := range envVarNames {
 		envStrBuilder.WriteString(envSetting(envVarName))

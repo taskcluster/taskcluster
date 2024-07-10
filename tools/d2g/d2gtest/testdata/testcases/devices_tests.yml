@@ -25,6 +25,7 @@ testSuite:
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
@@ -55,6 +56,7 @@ testSuite:
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
@@ -88,6 +90,7 @@ testSuite:
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
         features:
@@ -120,6 +123,7 @@ testSuite:
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
         features:

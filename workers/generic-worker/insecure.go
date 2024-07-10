@@ -171,6 +171,7 @@ func (task *TaskRun) EnvVars() []string {
 	}
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
+	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 
 	if config.WorkerLocation != "" {

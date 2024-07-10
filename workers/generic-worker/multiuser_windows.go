@@ -107,6 +107,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		contents += setEnvVarCommand("TASK_ID", task.TaskID)
 		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
+		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
 		if config.RunTasksAsCurrentUser {
 			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
