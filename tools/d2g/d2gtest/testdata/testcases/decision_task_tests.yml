@@ -99,6 +99,7 @@ testSuite:
               -e TASKCLUSTER_PROXY_URL
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
               -e TASK_ID
               'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06'
               /builds/worker/bin/run-task

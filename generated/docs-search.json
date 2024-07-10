@@ -1163,6 +1163,27 @@
   },
   {
     "element": "h2",
+    "id": "run_id",
+    "path": "/manual/design/env-vars",
+    "subtitle": "RUN_ID",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "id": "task_group_id",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASK_GROUP_ID",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
+    "id": "task_id",
+    "path": "/manual/design/env-vars",
+    "subtitle": "TASK_ID",
+    "title": "Standard Environment Variables"
+  },
+  {
+    "element": "h2",
     "id": "taskcluster_access_token",
     "path": "/manual/design/env-vars",
     "subtitle": "TASKCLUSTER_ACCESS_TOKEN",

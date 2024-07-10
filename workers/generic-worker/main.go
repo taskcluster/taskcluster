@@ -594,6 +594,7 @@ func ClaimWork() *TaskRun {
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
+			TaskGroupID:       taskResponse.Status.TaskGroupID,
 			Status:            claimed,
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,

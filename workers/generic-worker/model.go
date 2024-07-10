@@ -13,11 +13,10 @@ import (
 )
 
 type (
-
-	// TaskId and RunId are taken from the json encoding of
 	TaskRun struct {
 		TaskID              string                         `json:"taskId"`
 		RunID               uint                           `json:"runId"`
+		TaskGroupID         string                         `json:"taskGroupId"`
 		TaskClaimResponse   tcqueue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse tcqueue.TaskReclaimResponse    `json:"-"`
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`
