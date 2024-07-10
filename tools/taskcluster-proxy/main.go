@@ -26,10 +26,12 @@ task id.
     taskcluster-proxy [options] [<scope>...]
     taskcluster-proxy -h|--help
     taskcluster-proxy --version
+    taskcluster-proxy --short-version
 
   Options:
     -h --help                       Show this help screen.
     --version                       Show the taskcluster-proxy version number.
+    --short-version                 Show only the semantic version.
     -p --port <port>                Port to bind the proxy server to [default: 8080].
     -i --ip-address <address>       IPv4 or IPv6 address of network interface to bind listener to.
                                     If not provided, will bind listener to all available network
@@ -82,6 +84,11 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	arguments, err = docopt.ParseArgs(usage, argv, fullversion)
 	if err != nil {
 		return
+	}
+
+	if arguments["--short-version"].(bool) {
+		fmt.Println(version)
+		os.Exit(0)
 	}
 
 	log.Printf("Version: %v", fullversion)

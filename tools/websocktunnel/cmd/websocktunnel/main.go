@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/base64"
+	"fmt"
 	"log/syslog"
 	"net/http"
 	"os"
@@ -18,7 +19,7 @@ import (
 
 const usage = `Websocketunnel Server
 
-Usage: websocktunnel [-h | --help]
+Usage: websocktunnel [-h | --help | --short-version | --version]
 
 Environment:
  URL_PREFIX (required)								URL prefix (http(s)://hostname(:port)) at which
@@ -32,10 +33,16 @@ Environment:
  AUDIENCE											JWT 'audience' claim
 
 Options:
--h --help       Show help`
+-h --help       Show help
+--short-version Show only the semantic version`
 
 func main() {
-	_, _ = docopt.ParseArgs(usage, nil, "websocktunnel "+internal.Version)
+	opts, _ := docopt.ParseArgs(usage, nil, "websocktunnel "+internal.Version)
+
+	if opts["--short-version"].(bool) {
+		fmt.Printf("%s\n", internal.Version)
+		os.Exit(0)
+	}
 
 	urlPrefix := os.Getenv("URL_PREFIX")
 	if urlPrefix == "" {

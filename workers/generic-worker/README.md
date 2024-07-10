@@ -27,6 +27,7 @@ and reports back results to the queue.
     generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
     generic-worker --help
     generic-worker --version
+    generic-worker --short-version
 
   Targets:
     run                                     Runs the generic-worker.  Pass --with-worker-runner if
@@ -79,6 +80,7 @@ and reports back results to the queue.
     --archive-fmt ARCHIVE-FMT               The format of the archive file to unarchive.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
+    --short-version                         Only the semantic version of generic-worker.
 
 
   Configuring the generic worker:
