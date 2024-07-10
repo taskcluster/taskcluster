@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"sync"
 
+	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/taskcluster/v67/internal"
 	stream "github.com/taskcluster/taskcluster/v67/tools/livelog/writer"
 )
 
@@ -17,6 +19,21 @@ const (
 	DEFAULT_PUT_PORT = 60022
 	DEFAULT_GET_PORT = 60023
 )
+
+const usage = `Livelog
+
+Usage: livelog [-h | --help | --short-version | --version]
+
+Environment:
+ LIVELOG_GET_PORT (required)	port on which to listen for GET requests to serve logs
+ LIVELOG_PUT_PORT (required)	port on which to listen for PUT requests to receive logs
+ ACCESS_TOKEN			an arbitrary url-safe string
+ SERVER_CRT_FILE		path to a file containing a certificate, if not provided, the server will run without TLS
+ SERVER_KEY_FILE		path to a file containing a key, if not provided, the server will run without TLS
+
+Options:
+-h --help       Show help
+--short-version Show only the semantic version`
 
 // Run an http.Server.  In production this is just `ListenAndServe`, but
 // is overridden in testing to use ephemeral ports and ensure servers are
@@ -136,6 +153,13 @@ func attachProfiler(router *http.ServeMux) {
 }
 
 func main() {
+	opts, _ := docopt.ParseArgs(usage, nil, "livelog "+internal.Version)
+
+	if opts["--short-version"].(bool) {
+		fmt.Println(internal.Version)
+		os.Exit(0)
+	}
+
 	// TODO: Right now this is a collection of hacks until we build out something
 	// nice which can handle multiple log connections. Right now the intent is to
 	// use this as a process per task (which has overhead) but should be fairly

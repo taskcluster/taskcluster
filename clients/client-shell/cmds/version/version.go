@@ -47,14 +47,24 @@ var (
 	VersionNumber = "67.0.1"
 )
 
+var (
+	// short version flag
+	shortVersion bool
+)
+
 var log = root.Logger
 
 func init() {
 	root.Command.AddCommand(Command)
 	root.Command.AddCommand(Updcommand)
+	Command.Flags().BoolVarP(&shortVersion, "short-version", "s", false, "Prints the version number only")
 }
 
 func printVersion(cmd *cobra.Command, _ []string) {
+	if shortVersion {
+		fmt.Fprintf(cmd.OutOrStdout(), "%s\n", VersionNumber)
+		return
+	}
 	fmt.Fprintf(cmd.OutOrStdout(), "taskcluster version %s\n", VersionNumber)
 }
 

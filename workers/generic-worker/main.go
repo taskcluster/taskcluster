@@ -117,6 +117,8 @@ func main() {
 	switch {
 	case arguments["show-payload-schema"]:
 		fmt.Println(JSONSchema())
+	case arguments["--short-version"]:
+		fmt.Println(version)
 
 	case arguments["run"]:
 		withWorkerRunner := arguments["--with-worker-runner"].(bool)

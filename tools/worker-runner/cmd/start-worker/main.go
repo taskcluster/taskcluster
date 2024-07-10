@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -19,6 +20,8 @@ deployment for details on how to use this tool.
 
 Usage:
 	start-worker <runnerConfig>
+	start-worker --version
+	start-worker --short-version
 `
 }
 
@@ -33,6 +36,11 @@ func main() {
 	if err != nil {
 		log.Printf("Error parsing command-line arguments: %s", err)
 		os.Exit(1)
+	}
+
+	if opts["--short-version"].(bool) {
+		fmt.Println(internal.Version)
+		os.Exit(0)
 	}
 
 	filename := opts["<runnerConfig>"].(string)
