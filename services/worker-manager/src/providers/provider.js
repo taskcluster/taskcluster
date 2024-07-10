@@ -1,4 +1,6 @@
 import assert from 'assert';
+import crypto from 'crypto';
+import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
 import yaml from 'js-yaml';
@@ -40,6 +42,8 @@ export class Provider {
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
     this.publisher = publisher;
+
+    this.emailCache = [];
   }
 
   async setup() {
@@ -234,11 +238,16 @@ export class Provider {
 
     try {
       if (workerPool.emailOnError) {
-        await this.notify.email({
-          address: workerPool.owner,
-          subject: `Taskcluster Worker Manager Error: ${title}`,
-          content: getExtraInfo({ extra, description, workerPoolId: workerPool.workerPoolId, errorId }),
-        });
+        if (!this.isDuplicate(extra, description, workerPool.workerPoolId)) {
+          await this.notify.email({
+            address: workerPool.owner,
+            subject: `Taskcluster Worker Manager Error: ${title}`,
+            content: getExtraInfo({ extra, description, workerPoolId: workerPool.workerPoolId, errorId }),
+          });
+          this.markSent(extra, description, workerPool.workerPoolId);
+        } else {
+          this.monitor.debug('Duplicate error email detected. Not attempting resend.');
+        }
       }
 
       await this.monitor.log.workerError({
@@ -292,6 +301,22 @@ export class Provider {
       workerId: worker.workerId,
       ...extra,
     });
+  }
+
+  hashKey(idents) {
+    return crypto
+      .createHash('md5')
+      .update(JSON.stringify(idents))
+      .digest('hex');
+  }
+
+  isDuplicate(...idents) {
+    return _.indexOf(this.emailCache, this.hashKey(idents)) !== -1;
+  }
+
+  markSent(...idents) {
+    this.emailCache.unshift(this.hashKey(idents));
+    this.emailCache = _.take(this.emailCache, 1000);
   }
 
   static calcSeenTotal(seen = {}) {

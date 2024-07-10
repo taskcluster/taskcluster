@@ -208,6 +208,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
     });
 
+    test('report errors (no duplicate emails)', async function() {
+      const workerPool = await createWP({ emailOnError: true });
+      const errorDetails = {
+        workerPool,
+        kind: 'duplicate-email-error',
+        title: 'I want only one copy of this please',
+        description: 'availability bla-bla',
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+      };
+      await provider.reportError(errorDetails);
+
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].worker_pool_id, 'ww/tt');
+
+      assert.equal(helper.notify.emails.length, 1);
+      assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
+
+      await provider.reportError(errorDetails);
+      await provider.reportError(errorDetails);
+
+      const errors2 = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      assert.equal(errors2.length, 3);
+      assert.equal(helper.notify.emails.length, 1);
+    });
+
     test('report errors (w/ email and extraInfo)', async function() {
       const workerPool = await createWP({ emailOnError: true });
 
