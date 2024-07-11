@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v67.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7073](https://github.com/taskcluster/taskcluster/issues/7073)
+CLI tools and generic-worker now returns short-version string if executed with `--short-version` argument:
+
+- `generic-worker --short-version`
+- `livelog --short-version`
+- `websocktunnel --short-version`
+- `start-worker --short-version`
+- `taskcluster version --short-version`
+
+▶ [patch] [#7129](https://github.com/taskcluster/taskcluster/issues/7129)
+Worker-manager would avoid sending emails with duplicate error messages, as long as error message and information are the same.
+
+### USERS
+
+▶ [minor] [#7139](https://github.com/taskcluster/taskcluster/issues/7139)
+Generic Worker now sets environment variable `TASK_GROUP_ID` to the `taskGroupId` of the currently running task.
+
+▶ [patch] [#7132](https://github.com/taskcluster/taskcluster/issues/7132)
+Bug fix: Generic Worker multiuser on Linux/macOS was previously executing task
+commands as processes that did not include the supplementary groups of the task
+user, only its primary group. Until upgrading from Ubuntu 22.04 to Ubuntu 24.04
+task users did not have supplementary groups, so this had no negative
+consequences. However, `/usr/sbin/adduser` on Ubuntu 24.04 by default gives
+newly generated users the supplementary group `users`, which introduced a
+discrepency between the groups that the task command process was in, and the
+groups that the user was in.  Generic Worker multiuser on Linux and macOS now
+ensures that the launched processes of task commands are given not only the
+primary group of the task user, but also any supplementary groups that it has.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump the ui-node-deps group across 1 directory with 3 updates (b55fb4d50)
+* build(deps-dev): bump chai-as-promised in /clients/client-web (0809b9ea8)
+* build(deps): bump certifi from 2023.7.22 to 2024.7.4 in /taskcluster (c0fa41ae2)
+
+</details>
+
 ## v67.0.1
 
 ### USERS
