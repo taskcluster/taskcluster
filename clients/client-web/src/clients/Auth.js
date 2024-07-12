@@ -98,8 +98,8 @@ export default class Auth extends Client {
   // Create a new client and get the `accessToken` for this client.
   // You should store the `accessToken` from this API call as there is no
   // other way to retrieve it.
-  // If you loose the `accessToken` you can call `resetAccessToken` to reset
-  // it, and a new `accessToken` will be returned, but you cannot retrieve the
+  // If you lose the `accessToken` you can call `resetAccessToken` to reset
+  // it, and a new `accessToken` will be returned. You cannot retrieve the
   // current `accessToken`.
   // If a client with the same `clientId` already exists this operation will
   // fail. Use `updateClient` if you wish to update an existing client.
@@ -114,7 +114,7 @@ export default class Auth extends Client {
   // Reset a clients `accessToken`, this will revoke the existing
   // `accessToken`, generate a new `accessToken` and return it from this
   // call.
-  // There is no way to retrieve an existing `accessToken`, so if you loose it
+  // There is no way to retrieve an existing `accessToken`, so if you lose it
   // you must reset the accessToken to acquire it again.
   /* eslint-enable max-len */
   resetAccessToken(...args) {
