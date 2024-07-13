@@ -34,6 +34,7 @@ type (
 		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
+		DisableGui                     bool                   `json:"disableGui"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
 		EnableInteractive              bool                   `json:"enableInteractive"`

@@ -3,6 +3,7 @@
 package process
 
 import (
+    "encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
@@ -19,18 +21,38 @@ type PlatformData struct {
 	SysProcAttr *syscall.SysProcAttr
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
-	if currentUser {
+func NewPlatformData(config *gwconfig.Config) (pd *PlatformData, err error) {
+	if config.RunTasksAsCurrentUser {
 		return &PlatformData{}, nil
 	}
-	return TaskUserPlatformData()
+	return TaskUserPlatformData(config)
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
-	username, err := runtime.InteractiveUsername()
-	if err != nil {
-		return nil, fmt.Errorf("could not determine interactive username: %w", err)
-	}
+func TaskUserPlatformData(config *gwconfig.Config) (pd *PlatformData, err error) {
+    var username string
+    if !config.DisableGui {
+        username, err = runtime.InteractiveUsername()
+        if err != nil {
+            return nil, fmt.Errorf("could not determine interactive username: %v", err)
+        }
+    } else {
+        // TODO: Dedupe this block, it's also in gdm3/freebsd
+        credsFile, err := os.Open("current-task-user.json")
+        if err != nil {
+            return nil, err
+        }
+        defer func() {
+            credsFile.Close()
+        }()
+        decoder := json.NewDecoder(credsFile)
+        decoder.DisallowUnknownFields()
+        decodedUser := map[string]string{}
+        err = decoder.Decode(&decodedUser)
+        if err != nil {
+            return nil, err
+        }
+	    username = decodedUser["name"]
+    }
 
 	usr, err := user.Lookup(username)
 	if err != nil {
