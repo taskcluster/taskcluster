@@ -1813,7 +1813,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `  taken_until timestamptz`
   * `  run_id integer`
   * `  inserted timestamptz `
-* *Last defined on version*: 94
+* *Last defined on version*: 102
 
 Get all tasks that are currently pending in a given task queue.
 Records would be returned by insert time, or when tasks were scheduled.
