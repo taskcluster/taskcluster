@@ -76,7 +76,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createClient",
 				Title:       "Create Client",
-				Description: "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
+				Description: "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you lose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned. You cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
 				Stability:   "stable",
 				Method:      "put",
 				Route:       "/clients/<clientId>",
@@ -89,7 +89,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "resetAccessToken",
 				Title:       "Reset `accessToken`",
-				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
+				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/clients/<clientId>/reset",
