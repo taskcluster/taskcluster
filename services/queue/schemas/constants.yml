@@ -124,7 +124,7 @@ scope:
 source-pattern: "^(https?:\/\/|ssh:\/\/|git@)"
 
 # Maximum number of dependencies a single task can have
-max-task-dependencies: 100
+max-task-dependencies: 10000
 
 # Possible dependencies relations for task.requires
 dependency-relation:
