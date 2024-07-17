@@ -497,9 +497,14 @@ tasks.push({
       ...cfg,
     })));
 
+    const serviceSecrets = {};
+    const serviceNonSecrets = {};
+
     configs.forEach(cfg => {
       const confName = cfg.name.replace(/-/g, '_');
       exampleConfig[confName] = {};
+      serviceSecrets[confName] = cfg.vars.filter(v => v.secret).map(v => v.var.toLowerCase());
+      serviceNonSecrets[confName] = cfg.vars.filter(v => !v.secret).map(v => v.var.toLowerCase());
       valuesYAML[confName] = {
         procs: {},
         debug: '',
@@ -605,6 +610,28 @@ tasks.push({
         }
       });
     });
+
+    // since resources could be excluded with skipResourceTypes, we need to make those values optional
+    schema.allOf = [{
+      if: {
+        properties: {
+          skipResourceTypes: {
+            contains: { const: 'secret' },
+          },
+        },
+      },
+      then: {
+        properties: configs.map(cfg => {
+          const confName = cfg.name.replace(/-/g, '_');
+          return {
+            [confName]: {
+              required: schema.properties[confName].required.filter(x => !serviceSecrets[confName].includes(x)),
+            },
+          };
+        }),
+      },
+    }];
+    console.log(schema.allOf);
 
     // omit scopes and add a placeholder accessToken to each client
     exampleConfig.auth.static_clients = requirements['static-clients']

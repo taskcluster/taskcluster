@@ -2013,5 +2013,143 @@
     "references"
   ],
   "title": "Taskcluster Configuration Values",
-  "type": "object"
+  "type": "object",
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "skipResourceTypes": {
+              "contains": {
+                "const": "secret"
+              }
+            }
+          }
+        },
+        "then": {
+          "properties": [
+            {
+              "auth": {
+                "required": [
+                  "procs"
+                ]
+              }
+            },
+            {
+              "built_in_workers": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "github": {
+                "required": [
+                  "procs",
+                  "bot_username",
+                  "taskcluster_client_id",
+                  "github_app_id"
+                ]
+              }
+            },
+            {
+              "hooks": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "index": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "notify": {
+                "required": [
+                  "procs",
+                  "email_source_address",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "object": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "purge_cache": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "queue": {
+                "required": [
+                  "procs",
+                  "public_artifact_bucket",
+                  "private_artifact_bucket",
+                  "taskcluster_client_id",
+                  "artifact_region"
+                ]
+              }
+            },
+            {
+              "secrets": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "web_server": {
+                "required": [
+                  "procs",
+                  "public_url",
+                  "additional_allowed_cors_origin",
+                  "taskcluster_client_id",
+                  "registered_clients"
+                ]
+              }
+            },
+            {
+              "worker_manager": {
+                "required": [
+                  "procs",
+                  "taskcluster_client_id"
+                ]
+              }
+            },
+            {
+              "ui": {
+                "required": [
+                  "procs",
+                  "graphql_subscription_endpoint",
+                  "graphql_endpoint",
+                  "ui_login_strategy_names"
+                ]
+              }
+            },
+            {
+              "references": {
+                "required": [
+                  "procs"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
 }
