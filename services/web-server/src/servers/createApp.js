@@ -168,12 +168,17 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.use((err, req, res, next) => {
     // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
     const error = { code: err.code, name: err.name };
+    let statusCode = 500;
 
     if (err.name === 'InputError') {
       Object.assign(error, { message: err.message });
     }
+    if (err.name === 'PayloadTooLargeError') {
+      Object.assign(error, { code: 413, message: 'Payload too large' });
+      statusCode = 413;
+    }
 
-    res.status(500).json(error);
+    res.status(statusCode).json(error);
   });
 
   return app;

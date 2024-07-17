@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         });
       } catch (err) {
         assert.equal('PayloadTooLargeError', err.networkError.result.name);
-        assert.ok(err.networkError.statusCode >= 400);
+        assert.ok(err.networkError.statusCode === 413);
       }
     });
     test('max queries in request', async function() {
