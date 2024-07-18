@@ -336,7 +336,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
-    test('non-numeric statementTimeout is not alloewd', async function() {
+    test('non-numeric statementTimeout is not allowed', async function() {
       await assert.rejects(() => Database.setup({
         schema,
         readDbUrl: helper.dbUrl,
