@@ -26,11 +26,5 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 }
 
 func DeleteUser(username string) (err error) {
-	// We used to use `--remove-all-files` here instead of `--remove-home`.
-	// This caused issues with multiuser generic-worker, and ended up
-	// deleting mounts stored outside of the home directory which were
-	// meant to be preserved across tasks.
-	// See https://github.com/taskcluster/taskcluster/issues/7128 for
-	// additional background.
-	return host.Run("/usr/sbin/deluser", "--force", "--remove-home", username)
+	return host.Run("/usr/sbin/userdel", "--force", "-r", username)
 }
