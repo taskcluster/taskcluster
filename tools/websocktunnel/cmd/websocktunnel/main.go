@@ -24,7 +24,7 @@ Usage: websocktunnel [-h | --help | --short-version | --version]
 Environment:
  URL_PREFIX (required)								URL prefix (http(s)://hostname(:port)) at which
 													this service is publicly exposed
- PORT (optional; defaults to 80 or 443)				port on which to listent
+ PORT (optional; defaults to 80 or 443)				port on which to listen
  TLS_CERTIFICATE (optional; no TLS if not provided) base64-encoded TLS certificate
  TLS_KEY											corresponding base64-encoded TLS key
  TASKCLUSTER_PROXY_SECRET_A							JWT secret
