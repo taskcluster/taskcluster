@@ -28,7 +28,7 @@ The second is the service account for which credentials will be generated, calle
 It does not need any specific roles, but the IAM UI will not display it without a role, so pick a random role for it.
 
 Get the "key" for the credsgranter.
-Then set `gcpCredentials.alloewdProjects` in `user-config.yml` as follows (including the `invalid` account, which should not exist):
+Then set `gcpCredentials.allowedProjects` in `user-config.yml` as follows (including the `invalid` account, which should not exist):
 
 ```yaml
 gcpCredentials:
