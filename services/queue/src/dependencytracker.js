@@ -35,38 +35,46 @@ class DependencyTracker {
    * This will return {message, details} if there is an error.
    */
   async trackDependencies(task) {
-    for (let requiredTaskId of task.dependencies) {
-      await this.db.fns.add_task_dependency(task.taskId, requiredTaskId, task.requires, task.expires);
-    }
+    await this.db.fns.add_task_dependencies(
+      task.taskId,
+      JSON.stringify(task.dependencies),
+      task.requires,
+      task.expires,
+    );
 
     // Load all task dependencies to see if they have been resolved.
     // We will also check for missing and expiring dependencies.
-    let missing = []; // Dependencies that doesn't exist
     let expiring = []; // Dependencies that expire before deadline
     let anySatisfied = false; // Track if any dependencies were satisfied
-    await Promise.all(task.dependencies.map(async (requiredTaskId) => {
-      let requiredTask = await Task.get(this.db, requiredTaskId);
 
-      // If task is missing, we should report and error
-      if (!requiredTask) {
-        return missing.push(requiredTaskId);
-      }
+    // Load all dependencies (tasks can have aup to max-task-dependencies)
+    let rows = await this.db.fns.get_multiple_tasks(JSON.stringify(task.dependencies), null, null);
+    let requiredTasks = rows.map(row => Task.fromDb(row));
+    let loadedTasksIds = requiredTasks.map(task => task.taskId);
+    const missing = task.dependencies.filter(taskId => !loadedTasksIds.includes(taskId));
 
-      // Check if requiredTask expires before the deadline
-      if (task.deadline.getTime() > requiredTask.expires.getTime()) {
-        return expiring.push(requiredTaskId);
-      }
+    if (missing.length === 0) {
+      await Promise.all(requiredTasks.map(async (requiredTask) => {
+        // Check if requiredTask expires before the deadline
+        if (task.deadline.getTime() > requiredTask.expires.getTime()) {
+          return expiring.push(requiredTask.taskId);
+        }
 
-      // Check if requiredTask is satisfied
-      let state = requiredTask.state();
-      if (state === 'completed' || task.requires === 'all-resolved' &&
-          (state === 'exception' || state === 'failed')) {
-        await this.db.fns.satisfy_task_dependency(task.taskId, requiredTaskId);
-        // Track that we've deleted something, now we must check if any are left
-        // afterward (using isBlocked)
-        anySatisfied = true;
-      }
-    }));
+        // Check if requiredTask is satisfied
+        let state = requiredTask.state();
+        if (state === 'completed' || task.requires === 'all-resolved' &&
+            (state === 'exception' || state === 'failed')) {
+          await this.db.fns.satisfy_task_dependency(task.taskId, requiredTask.taskId);
+          // Track that we've deleted something, now we must check if any are left
+          // afterward (using isBlocked)
+          anySatisfied = true;
+        }
+      }));
+    }
+    // free up memory
+    rows = null;
+    requiredTasks = null;
+    loadedTasksIds = null;
 
     // If we found some missing dependencies we're done, createTask should
     // clearly return an error
@@ -128,10 +136,9 @@ class DependencyTracker {
       // First remove task
       await this.db.fns.remove_task(task.taskId);
 
-      // Then remove depdencies, because removing these makes it
+      // Then remove dependencies, because removing these makes it
       // easier to trigger the task. So we remove them after removing the task.
-      await Promise.all(task.dependencies.map(requiredTaskId =>
-        this.db.fns.remove_task_dependency(task.taskId, requiredTaskId)));
+      await this.db.fns.remove_task_dependencies(task.taskId, JSON.stringify(task.dependencies));
 
       return {
         message: msg,

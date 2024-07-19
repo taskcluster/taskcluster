@@ -2850,7 +2850,7 @@
             "title": "Task Dependency",
             "type": "string"
           },
-          "maxItems": 100,
+          "maxItems": 10000,
           "title": "Task Dependencies",
           "type": "array",
           "uniqueItems": true
