@@ -197,6 +197,26 @@ suite(testing.suiteName(), function() {
       const res4 = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
       assert.equal(res4.length, 2);
     });
+
+    helper.dbTest('listing pending tasks excludes expired', async function (db) {
+      const tq = 'task/queue-maybe-expired';
+      const res = await db.fns.get_pending_tasks_by_task_queue_id(tq, null, null, null);
+      assert.deepEqual(res, []);
+
+      for (let i = 0; i <= 5; i++) {
+        const taskId = `expTaskId${i}`;
+        const expires = i > 2 ? fromNow('-10 second') : fromNow('20 seconds');
+        await db.fns.queue_pending_tasks_add(tq, 0, taskId, 0, 'hint1', expires);
+        await create(db, { taskId });
+      }
+
+      const res2 = await db.fns.get_pending_tasks_by_task_queue_id(tq, null, null, null);
+      assert.equal(res2.length, 3);
+      assert.equal(res2[0].task_id, 'expTaskId0');
+      assert.equal(res2[1].task_id, 'expTaskId1');
+      assert.equal(res2[2].task_id, 'expTaskId2');
+    });
+
   });
 
   suite('tests for claimed tasks', function() {

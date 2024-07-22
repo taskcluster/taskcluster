@@ -111,6 +111,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Validate task status');
     const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status.state).deep.equals('exception');
+
+    debug('### Expect task is no longer pending');
+    const r3 = await helper.queue.pendingTasks(task.taskQueueId);
+    assume(r3.pendingTasks).equals(0);
   });
 
   test('Resolve running task deadline', async () => {

@@ -150,6 +150,9 @@ class DeadlineResolver {
         runId,
       }, task.routes);
       this.monitor.log.taskException({ taskId, runId });
+
+      // Task should no longer be available in the pending queue
+      await this.queueService.removePendingMessage(taskId, runId);
     }
 
     return remove();

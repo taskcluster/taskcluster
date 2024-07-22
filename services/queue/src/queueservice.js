@@ -301,6 +301,14 @@ export class QueueService {
     );
   }
 
+  // Remove single pending task run from the queue
+  async removePendingMessage(taskId, runId) {
+    assert(typeof taskId === 'string', 'Expected taskId as string');
+    assert(typeof runId === 'number', 'Expected runId as number');
+
+    return this.db.fns.queue_pending_task_delete(taskId, runId);
+  }
+
   /**
    * Return tasks for a given task queue id in order of priority.
    *
