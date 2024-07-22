@@ -144,7 +144,7 @@ func (task *TaskRun) EnvVars() []string {
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
 	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && !config.DisableGui {
 		taskEnv["DISPLAY"] = ":0"
 		if !config.RunTasksAsCurrentUser {
 			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))

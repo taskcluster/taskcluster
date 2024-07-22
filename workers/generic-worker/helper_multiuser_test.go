@@ -35,7 +35,7 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 }
 
 func newPlatformData(conf *gwconfig.Config) (pd *process.PlatformData) {
-	pd, err := process.NewPlatformData(conf.RunTasksAsCurrentUser)
+	pd, err := process.NewPlatformData(conf)
 	if err != nil {
 		panic(err)
 	}

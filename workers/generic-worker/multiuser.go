@@ -14,6 +14,7 @@ import (
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v67/workers/generic-worker/runtime"
 )
@@ -52,30 +53,33 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		taskUserCredentials, err := StoredUserCredentials()
+		taskUserCredentials, err := StoredUserCredentials(ctuPath)
 		if err != nil {
 			panic(err)
 		}
-		err = gwruntime.WaitForLoginCompletion(5 * time.Minute)
-		if err != nil {
-			panic(err)
-		}
-		interactiveUsername, err := gwruntime.InteractiveUsername()
-		if err != nil {
-			panic(err)
-		}
-		if taskUserCredentials.Name != interactiveUsername {
-			panic(fmt.Errorf("interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
+		// Only wait for the user to login when GUI mode is enabled, otherwise there's no point.
+		if !config.DisableGui {
+			err = gwruntime.WaitForLoginCompletion(5 * time.Minute)
+			if err != nil {
+				panic(err)
+			}
+			interactiveUsername, err := gwruntime.InteractiveUsername()
+			if err != nil {
+				panic(err)
+			}
+			if taskUserCredentials.Name != interactiveUsername {
+				panic(fmt.Errorf("interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
+			}
 		}
 		reboot = false
-		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
+		pd, err := process.NewPlatformData(config)
 		if err != nil {
 			panic(err)
 		}
 
 		taskContext = &TaskContext{
 			User:    taskUserCredentials,
-			TaskDir: filepath.Join(config.TasksDir, interactiveUsername),
+			TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
 			pd:      pd,
 		}
 
@@ -100,7 +104,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			// See https://bugzil.la/1559210
 			// Regardless of whether we are running tasks as current user or
 			// not, task initialisation steps should be run as task user.
-			pdTaskUser, err := process.TaskUserPlatformData()
+			pdTaskUser, err := process.TaskUserPlatformData(config)
 			if err != nil {
 				panic(err)
 			}
@@ -160,9 +164,11 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	}
 	PreRebootSetup(nextTaskUser)
 	// configure worker to auto-login to this newly generated user account
-	err = gwruntime.SetAutoLogin(nextTaskUser)
-	if err != nil {
-		panic(err)
+	if !config.DisableGui {
+		err = gwruntime.SetAutoLogin(nextTaskUser)
+		if err != nil {
+			panic(err)
+		}
 	}
 	err = fileutil.WriteToFileAsJSON(nextTaskUser, ntuPath)
 	if err != nil {
@@ -181,10 +187,15 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name, gwruntime.AutoLogonUser())
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, gwruntime.AutoLogonUser())
+	nextUser, err := NextUsername(config)
+	if err != nil {
+		log.Printf("Could not get username for next task")
+		return err
+	}
+	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name, nextUser)
+	deleteTaskDirs(config.TasksDir, taskContext.User.Name, nextUser)
 	// regardless of whether we are running as current user or not, we should purge old task users
-	err := deleteExistingOSUsers()
+	err = deleteExistingOSUsers()
 	if err != nil {
 		log.Printf("Could not delete old task users:\n%v", err)
 	}
@@ -199,7 +210,13 @@ func deleteExistingOSUsers() (err error) {
 	}
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != gwruntime.AutoLogonUser() {
+		nextUser, err := NextUsername(config)
+		if err != nil {
+			allErrors = append(allErrors, fmt.Sprintf("Could not remove user account %v: %v", username, err))
+			continue
+		}
+
+		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != nextUser {
 			log.Print("Attempting to remove user " + username + "...")
 			err2 := gwruntime.DeleteUser(username)
 			if err2 != nil {
@@ -213,8 +230,8 @@ func deleteExistingOSUsers() (err error) {
 	return
 }
 
-func StoredUserCredentials() (*gwruntime.OSUser, error) {
-	credsFile, err := os.Open(ctuPath)
+func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
+	credsFile, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -229,6 +246,19 @@ func StoredUserCredentials() (*gwruntime.OSUser, error) {
 		panic(err)
 	}
 	return &user, nil
+}
+
+func NextUsername(config *gwconfig.Config) (string, error) {
+	if config.DisableGui {
+		nextUser, err := StoredUserCredentials(ntuPath)
+		if err != nil {
+			log.Printf("Unable to get the username for the next task: %v", err)
+			return "", err
+		}
+		return nextUser.Name, nil
+	}
+
+	return gwruntime.AutoLogonUser(), nil
 }
 
 func MkdirAllTaskUser(dir string) error {
