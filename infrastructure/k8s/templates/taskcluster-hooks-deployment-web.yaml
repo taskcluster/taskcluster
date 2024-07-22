@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-hooks
+            - configMapRef:
+                name: taskcluster-hooks
           ports:
             - containerPort: 80
           readinessProbe:

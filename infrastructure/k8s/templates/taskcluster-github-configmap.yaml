@@ -1,0 +1,27 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-github
+  labels:
+    app.kubernetes.io/name: taskcluster-github
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-github-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  APPLICATION_NAME: '{{ if typeIs "<nil>" .Values.applicationName }}{{ else }}{{ if typeIs "string" .Values.applicationName }}{{ .Values.applicationName }}{{ else }}{{ .Values.applicationName | toJson }}{{ end }}{{ end }}'
+  BOT_USERNAME: '{{ if typeIs "<nil>" .Values.github.bot_username }}{{ else }}{{ if typeIs "string" .Values.github.bot_username }}{{ .Values.github.bot_username }}{{ else }}{{ .Values.github.bot_username | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.github.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.github.taskcluster_client_id }}{{ .Values.github.taskcluster_client_id }}{{ else }}{{ .Values.github.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  GITHUB_APP_ID: '{{ if typeIs "<nil>" .Values.github.github_app_id }}{{ else }}{{ if typeIs "string" .Values.github.github_app_id }}{{ .Values.github.github_app_id }}{{ else }}{{ .Values.github.github_app_id | toJson }}{{ end }}{{ end }}'
+  PROVISIONER_ID: '{{ if typeIs "<nil>" .Values.github.provisioner_id }}{{ else }}{{ if typeIs "string" .Values.github.provisioner_id }}{{ .Values.github.provisioner_id }}{{ else }}{{ .Values.github.provisioner_id | toJson }}{{ end }}{{ end }}'
+  WORKER_TYPE: '{{ if typeIs "<nil>" .Values.github.worker_type }}{{ else }}{{ if typeIs "string" .Values.github.worker_type }}{{ .Values.github.worker_type }}{{ else }}{{ .Values.github.worker_type | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.github.level }}{{ else }}{{ if typeIs "string" .Values.github.level }}{{ .Values.github.level }}{{ else }}{{ .Values.github.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.github.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.github.keep_alive_timeout_seconds }}{{ .Values.github.keep_alive_timeout_seconds }}{{ else }}{{ .Values.github.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.github.debug }}{{ else }}{{ if typeIs "string" .Values.github.debug }}{{ .Values.github.debug }}{{ else }}{{ .Values.github.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

@@ -5,24 +5,24 @@ defaults:
     scheduler:
       pollingDelay:   60000
   influx:
-    connectionString: !env:optional INFLUX_CONNECTION
+    connectionString: !env:secret:optional INFLUX_CONNECTION
     maxDelay:         300
     maxPendingPoints: 300
   azure:
     # deprecated way of specifying a crypto key
-    cryptoKey:        !env:optional AZURE_CRYPTO_KEY
+    cryptoKey:        !env:secret:optional AZURE_CRYPTO_KEY
   postgres:
-    readDbUrl:        !env READ_DB_URL
-    writeDbUrl:       !env WRITE_DB_URL
-    dbCryptoKeys:     !env:json:optional DB_CRYPTO_KEYS
+    readDbUrl:        !env:secret READ_DB_URL
+    writeDbUrl:       !env:secret WRITE_DB_URL
+    dbCryptoKeys:     !env:json:secret:optional DB_CRYPTO_KEYS
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
-      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+      accessToken:    !env:secret TASKCLUSTER_ACCESS_TOKEN
   monitoring:
     level: !env:optional LEVEL
-    errorConfig: !env:json:optional ERROR_CONFIG
+    errorConfig: !env:json:secret:optional ERROR_CONFIG
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV
@@ -31,8 +31,8 @@ defaults:
     # This is required to be larger than the downstream proxy timeout, default: 90s
     keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
   pulse:
-    username:       !env PULSE_USERNAME
-    password:       !env PULSE_PASSWORD
+    username:       !env:secret PULSE_USERNAME
+    password:       !env:secret PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
     vhost:          !env PULSE_VHOST
     amqps:          !env:bool:optional PULSE_AMQPS
@@ -45,7 +45,7 @@ defaults:
      - exchange/taskcluster-hooks/.*
 
   # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:optional NEW_RELIC
+  newRelic: !env:json:secret:optional NEW_RELIC
 
 test:
   # See user-config-example.yml for secrets credentials required for tests

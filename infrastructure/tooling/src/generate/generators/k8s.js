@@ -126,20 +126,23 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 };
 
 const renderTemplates = async (name, vars, procs, templates) => {
-  for (const resource of ['serviceaccount', 'secret']) {
+  const processVar = (v) => {
+    const val = v.var.toLowerCase();
+    if (NON_CONFIGURABLE.includes(val)) {
+      return null;
+    }
+    return {
+      key: v.var,
+      val: SHARED_CONFIG[val] || `.Values.${name.replace(/-/g, '_')}.${val}`,
+    };
+  };
+
+  for (const resource of ['serviceaccount', 'secret', 'configmap']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       labels: labels(`taskcluster-${name}`, 'secrets'),
-      secrets: vars.map(v => {
-        const val = v.toLowerCase();
-        if (NON_CONFIGURABLE.includes(val)) {
-          return null;
-        }
-        return {
-          key: v,
-          val: SHARED_CONFIG[val] || `.Values.${name.replace(/-/g, '_')}.${val}`,
-        };
-      }).filter(x => x !== null),
+      secrets: vars.filter(v => v.secret).map(processVar).filter(x => x !== null),
+      configValues: vars.filter(v => !v.secret).map(processVar).filter(x => x !== null),
     });
 
     const file = `taskcluster-${name}-${resource}.yaml`;
@@ -234,8 +237,8 @@ SERVICES.forEach(name => {
     run: async (requirements, utils) => {
       const procs = requirements[`procslist-${name}`];
       const templates = requirements['k8s-templates'];
-      const vars = requirements[`configs-${name}`].map(v => v.var);
-      vars.push('debug');
+      const vars = requirements[`configs-${name}`];
+      vars.push({ var: 'debug', type: '!env' });
       return {
         [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
       };
@@ -286,7 +289,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
     run: async (requirements, utils) => {
       const templates = requirements['k8s-templates'];
       return {
-        [`ingresses-${name}`]: await renderTemplates(name, vars.map(v => v.var), procs, templates),
+        [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
       };
     },
   });

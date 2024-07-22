@@ -1,0 +1,28 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-auth
+  labels:
+    app.kubernetes.io/name: taskcluster-auth
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-auth-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  SENTRY_ORGANIZATION: '{{ if typeIs "<nil>" .Values.auth.sentry_organization }}{{ else }}{{ if typeIs "string" .Values.auth.sentry_organization }}{{ .Values.auth.sentry_organization }}{{ else }}{{ .Values.auth.sentry_organization | toJson }}{{ end }}{{ end }}'
+  SENTRY_HOST: '{{ if typeIs "<nil>" .Values.auth.sentry_host }}{{ else }}{{ if typeIs "string" .Values.auth.sentry_host }}{{ .Values.auth.sentry_host }}{{ else }}{{ .Values.auth.sentry_host | toJson }}{{ end }}{{ end }}'
+  SENTRY_TEAM: '{{ if typeIs "<nil>" .Values.auth.sentry_team }}{{ else }}{{ if typeIs "string" .Values.auth.sentry_team }}{{ .Values.auth.sentry_team }}{{ else }}{{ .Values.auth.sentry_team | toJson }}{{ end }}{{ end }}'
+  SENTRY_KEY_PREFIX: '{{ if typeIs "<nil>" .Values.auth.sentry_key_prefix }}{{ else }}{{ if typeIs "string" .Values.auth.sentry_key_prefix }}{{ .Values.auth.sentry_key_prefix }}{{ else }}{{ .Values.auth.sentry_key_prefix | toJson }}{{ end }}{{ end }}'
+  DOCS_BUCKET: '{{ if typeIs "<nil>" .Values.auth.docs_bucket }}{{ else }}{{ if typeIs "string" .Values.auth.docs_bucket }}{{ .Values.auth.docs_bucket }}{{ else }}{{ .Values.auth.docs_bucket | toJson }}{{ end }}{{ end }}'
+  SCHEMAS_BUCKET: '{{ if typeIs "<nil>" .Values.auth.schemas_bucket }}{{ else }}{{ if typeIs "string" .Values.auth.schemas_bucket }}{{ .Values.auth.schemas_bucket }}{{ else }}{{ .Values.auth.schemas_bucket | toJson }}{{ end }}{{ end }}'
+  REFS_BUCKET: '{{ if typeIs "<nil>" .Values.auth.refs_bucket }}{{ else }}{{ if typeIs "string" .Values.auth.refs_bucket }}{{ .Values.auth.refs_bucket }}{{ else }}{{ .Values.auth.refs_bucket | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.auth.level }}{{ else }}{{ if typeIs "string" .Values.auth.level }}{{ .Values.auth.level }}{{ else }}{{ .Values.auth.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.auth.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.auth.keep_alive_timeout_seconds }}{{ .Values.auth.keep_alive_timeout_seconds }}{{ else }}{{ .Values.auth.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
+  PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
+  PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.auth.debug }}{{ else }}{{ if typeIs "string" .Values.auth.debug }}{{ .Values.auth.debug }}{{ else }}{{ .Values.auth.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

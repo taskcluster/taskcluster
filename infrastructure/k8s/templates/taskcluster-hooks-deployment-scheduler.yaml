@@ -40,6 +40,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-hooks
+            - configMapRef:
+                name: taskcluster-hooks
           ports: []
           livenessProbe:
             exec:

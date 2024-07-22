@@ -11,7 +11,7 @@ defaults:
     # Each entry must have: clientId, accessToken, description, scopes
     # where clientId MUST start with 'static/', by convention these namespaced:
     #    static/<project>/<name>
-    staticClients: !env:json STATIC_CLIENTS
+    staticClients: !env:json:secret STATIC_CLIENTS
 
     # Maximum before updating lastUsed, MUST be negative
     # A sane value is something like 6 hours as all nodes will race to update
@@ -23,7 +23,7 @@ defaults:
     sentry:
       organization:             !env:optional SENTRY_ORGANIZATION
       hostname:                 !env:optional SENTRY_HOST
-      authToken:                !env:optional SENTRY_AUTH_TOKEN
+      authToken:                !env:secret:optional SENTRY_AUTH_TOKEN
       initialTeam:              !env:optional SENTRY_TEAM
       keyPrefix:                !env:optional SENTRY_KEY_PREFIX
 
@@ -34,7 +34,7 @@ defaults:
     clientExpirationDelay:      '-1 hour'
 
     websocktunnel:
-      secret:                   !env:optional WEBSOCKTUNNEL_SECRET
+      secret:                   !env:secret:optional WEBSOCKTUNNEL_SECRET
 
     # Overrides of s3 buckets for redeployability
     # Leave unset if running inside Heroku
@@ -45,7 +45,7 @@ defaults:
 
   monitoring:
     level:                      !env:optional LEVEL
-    errorConfig:                !env:json:optional ERROR_CONFIG
+    errorConfig:                !env:json:secret:optional ERROR_CONFIG
 
   server:
 
@@ -67,22 +67,22 @@ defaults:
 
   azure:
     # deprecated way of specifying an encryption key
-    cryptoKey:               !env:optional AZURE_CRYPTO_KEY
+    cryptoKey:               !env:secret:optional AZURE_CRYPTO_KEY
 
   postgres:
-    readDbUrl:               !env READ_DB_URL
-    writeDbUrl:              !env WRITE_DB_URL
-    dbCryptoKeys:            !env:json:optional DB_CRYPTO_KEYS
+    readDbUrl:               !env:secret READ_DB_URL
+    writeDbUrl:              !env:secret WRITE_DB_URL
+    dbCryptoKeys:            !env:json:secret:optional DB_CRYPTO_KEYS
 
   pulse:
-    username:                 !env PULSE_USERNAME
-    password:                 !env PULSE_PASSWORD
+    username:                 !env:secret PULSE_USERNAME
+    password:                 !env:secret PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
     amqps:                    !env:bool:optional PULSE_AMQPS
 
   # Accounts that auth can delegate access to, as JSON
-  azureAccounts:            !env:json:optional AZURE_ACCOUNTS
+  azureAccounts:            !env:json:secret:optional AZURE_ACCOUNTS
 
   awsCredentials:
     # Configuration for the AWS credentials used for the awsS3Credentials.  The
@@ -91,7 +91,7 @@ defaults:
     # - accessKeyId: ..
     #   secretAccessKey: ..
     #   buckets: [bucket1, bucket2, ..]
-    allowedBuckets:            !env:json:optional AWS_CREDENTIALS_ALLOWED_BUCKETS
+    allowedBuckets:            !env:json:secret:optional AWS_CREDENTIALS_ALLOWED_BUCKETS
 
   # Configuration for the GCP serviceAccounts to which the `gcpCredentials`
   # endpoint can grant access.
@@ -110,10 +110,10 @@ defaults:
     #   }, ..
     # }
     # If omitted, it defaults to {}
-    allowedProjects:          !env:json:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
+    allowedProjects:          !env:json:secret:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
 
   # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:optional NEW_RELIC
+  newRelic: !env:json:secret:optional NEW_RELIC
 
 test:
   app:

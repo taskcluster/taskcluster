@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${projectName}
+  labels: {$eval: labels}
+data:
+  $merge:
+    $map: {$eval: configValues}
+    each(s):
+      ${uppercase(s.key)}: '{{ if typeIs "<nil>" ${s.val} }}{{ else }}{{ if typeIs "string" ${s.val} }}{{ ${s.val} }}{{ else }}{{ ${s.val} | toJson }}{{ end }}{{ end }}'

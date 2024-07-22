@@ -1,0 +1,19 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-purge-cache
+  labels:
+    app.kubernetes.io/name: taskcluster-purge-cache
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-purge-cache-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  LEVEL: '{{ if typeIs "<nil>" .Values.purge_cache.level }}{{ else }}{{ if typeIs "string" .Values.purge_cache.level }}{{ .Values.purge_cache.level }}{{ else }}{{ .Values.purge_cache.level | toJson }}{{ end }}{{ end }}'
+  FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
+  TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
+  KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.purge_cache.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.purge_cache.keep_alive_timeout_seconds }}{{ .Values.purge_cache.keep_alive_timeout_seconds }}{{ else }}{{ .Values.purge_cache.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.purge_cache.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.purge_cache.taskcluster_client_id }}{{ .Values.purge_cache.taskcluster_client_id }}{{ else }}{{ .Values.purge_cache.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.purge_cache.debug }}{{ else }}{{ if typeIs "string" .Values.purge_cache.debug }}{{ .Values.purge_cache.debug }}{{ else }}{{ .Values.purge_cache.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}
