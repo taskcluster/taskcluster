@@ -18,7 +18,7 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		password="${1}"
 		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
 		/usr/sbin/useradd -m -d "${homedir}" "${username}"
-		/usr/sbin/chfn -f "${username}"
+		/usr/bin/chfn -f "${username}"
 		echo "${username}:${password}" | /usr/sbin/chpasswd
 	`
 
