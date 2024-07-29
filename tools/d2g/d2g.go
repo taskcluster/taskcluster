@@ -312,8 +312,42 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	command.WriteString(" --memory-swap -1 --pids-limit -1")
 	// Only podman supports inheriting host ulimits. `docker` uses docker
 	// daemon settings by default.
+	// Also, only podman supports mapping uids
 	if tool == "podman" {
 		command.WriteString(" --ulimit host")
+
+		if len(dwPayload.Cache) > 0 {
+			// We map uids and gids to help avoid issues with permissions within the container
+			// on mounted volumes.
+			// Cribbed from https://stackoverflow.com/questions/70770437/mapping-of-user-ids
+			// and https://github.com/containers/podman/blob/main/troubleshooting.md#solution-36
+			// This _should_ be able to be simplified to `--userns=keep-id:uid=1000,gid=1000`
+			// when we can assume podman 4.3.0 or above. See:
+			// https://docs.podman.io/en/v4.4/markdown/options/userns.container.html
+
+			// We start mapping at the non-reserved UIDs and GIDs
+			uid_start := 1000
+			gid_start := 1000
+			// The number of UIDs and GIDs we map. Ideally this would come from running
+			// `podman info` (see details in the above links), but this only works when
+			// running as a non-root user, which is not possible here. This value was
+			// found experimentally on an Ubuntu 22.04 worker and may not work
+			// universally.
+			mapping_range := 64536
+			// Map `uid_start` in the container to your normal UID on the host.
+			command.WriteString(fmt.Sprintf(" --uidmap %v:0:1", uid_start))
+			// Map the UIDs between 0 and `uid_start` - 1 in the container to the
+			// lower part of the subuids.
+			command.WriteString(fmt.Sprintf(" --uidmap 0:1:%v", uid_start))
+			// Map the UIDs between $uid+1 and 64536 in the container to the remaining subuids.
+			// Ideally 64536 would be pulled from `podman info` running as a task user,
+			// but we're running as root here, so we can't do that.
+			command.WriteString(fmt.Sprintf(" --uidmap %v:%v:%v", uid_start+1, uid_start+1, mapping_range))
+			// Same thing for GIDs
+			command.WriteString(fmt.Sprintf(" --gidmap %v:0:1", gid_start))
+			command.WriteString(fmt.Sprintf(" --gidmap 0:1:%v", gid_start))
+			command.WriteString(fmt.Sprintf(" --gidmap %v:%v:%v", gid_start+1, gid_start+1, mapping_range))
+		}
 	}
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
 		command.WriteString(" --privileged")

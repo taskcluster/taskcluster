@@ -270,4 +270,46 @@ testSuite:
           retry:
             - 125
             - 128
+
+    - name: DockerImage with cache
+      description: Test DockerImage with cache
+      dockerWorkerTaskPayload:
+        cache:
+          gecko-level-3-checkouts-sparse-v3: /builds/worker/checkouts
+        command:
+          - echo "Hello world"
+        image:
+          path: public/test/path.zst
+          taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+          type: task-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              --uidmap 1000:0:1 --uidmap 0:1:1000 --uidmap 1001:1001:64536
+              --gidmap 1000:0:1 --gidmap 0:1:1000 --gidmap 1001:1001:64536
+              -v "$(pwd)/cache0:/builds/worker/checkouts"
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              docker-archive:dockerimage 'echo "Hello world"'
+        mounts:
+          - cacheName: gecko-level-3-checkouts-sparse-v3
+            directory: cache0
+          - content:
+              artifact: public/test/path.zst
+              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+            file: dockerimage
+            format: zst
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
   taskDefTests: []
