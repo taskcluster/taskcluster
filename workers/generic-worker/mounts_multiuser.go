@@ -13,8 +13,25 @@ func makeFileReadWritableForTaskUser(taskMount *TaskMount, file string) error {
 	return makeReadWritableForTaskUser(taskMount, file, "file", false)
 }
 
-func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
-	return makeReadWritableForTaskUser(taskMount, dir, "directory", true)
+func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
+	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
+	// because files inside task directory should be owned/managed by task user
+	newOwnerUsername := taskContext.User.Name
+	newOwnerUID, err := taskContext.User.ID()
+	taskMount.Infof("Updating ownership of files inside directory '%v' from %v to %v", dir, cache.OwnerUsername, newOwnerUsername)
+	if err != nil {
+		panic(fmt.Errorf("[mounts] Not able to look up UID for user %v: %w", taskContext.User.Name, err))
+	}
+	err = changeOwnershipInDir(dir, cache.OwnerUID, newOwnerUsername)
+	if err != nil {
+		return fmt.Errorf("[mounts] Not able to update ownership of directory %v from %v (UID %v) to %v (UID %v): %w", dir, cache.OwnerUsername, cache.OwnerUID, newOwnerUsername, newOwnerUID, err)
+	}
+	// now set the OwnerUID to the current task user UID, so that the next
+	// time this cache is mounted, the UID find/replace will replace the
+	// current task user with the next task user that uses it
+	cache.OwnerUsername = newOwnerUsername
+	cache.OwnerUID = newOwnerUID
+	return nil
 }
 
 func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, filetype string, recurse bool) error {
@@ -26,17 +43,6 @@ func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, f
 	err := makeFileOrDirReadWritableForUser(recurse, fileOrDirectory, taskContext.User)
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to make %v %v writable for %v: %v", filetype, fileOrDirectory, taskContext.User.Name, err)
-	}
-	return nil
-}
-
-func makeDirUnreadableForTaskUser(taskMount *TaskMount, dir string) error {
-	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
-	// because files inside task directory should be owned/managed by task user
-	taskMount.Infof("Denying %v access to '%v'", taskContext.User.Name, dir)
-	err := makeDirUnreadableForUser(dir, taskContext.User)
-	if err != nil {
-		return fmt.Errorf("[mounts] Not able to make root-owned directory %v have permissions 0700 in order to make it unreadable for %v: %v", dir, taskContext.User.Name, err)
 	}
 	return nil
 }
