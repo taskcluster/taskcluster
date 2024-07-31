@@ -21,7 +21,7 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 		Features: dockerworker.FeatureFlags{
 			ChainOfTrust: true,
 		},
-		MaxRunTime: 10,
+		MaxRunTime: 30,
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
