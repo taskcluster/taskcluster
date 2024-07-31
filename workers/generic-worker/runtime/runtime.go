@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -37,4 +38,12 @@ func GenericWorkerBinary() string {
 	}
 
 	return exe
+}
+
+func (usr *OSUser) ID() (string, error) {
+	u, err := user.Lookup(usr.Name)
+	if err != nil {
+		return "", err
+	}
+	return u.Uid, nil
 }

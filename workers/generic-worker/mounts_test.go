@@ -340,9 +340,6 @@ func TestValidSHA256(t *testing.T) {
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
 	)
-	pass1 = append(pass1,
-		grantingDir...,
-	)
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
