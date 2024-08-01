@@ -38,11 +38,20 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		slug := slugid.V4()
 		pathRegExp = strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
 	}
-	return []string{
-			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
-		}, []string{
-			`Denying task_[0-9]* access to '.*'`,
+	denying = []string{
+		`Denying task_[0-9]* access to '.*'`,
+	}
+	switch filetype {
+	case "file":
+		granting = []string{
+			`Granting task_[0-9]* full control of file '` + pathRegExp + `'`,
 		}
+	case "directory":
+		granting = []string{
+			`Updating ownership of files inside directory '` + pathRegExp + `' from .* to .*`,
+		}
+	}
+	return
 }
 
 func setConfigRunTasksAsCurrentUser(conf *gwconfig.Config) {

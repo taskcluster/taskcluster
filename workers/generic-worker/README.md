@@ -78,6 +78,14 @@ and reports back results to the queue.
     --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.
     --archive-dst ARCHIVE-DST               The path to the directory to unarchive to.
     --archive-fmt ARCHIVE-FMT               The format of the archive file to unarchive.
+                                            One of:
+                                              * rar
+                                              * tar.bz2
+                                              * tar.gz
+                                              * tar.lz4
+                                              * tar.xz
+                                              * tar.zst
+                                              * zip
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
     --short-version                         Only the semantic version of generic-worker.
