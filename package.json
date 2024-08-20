@@ -80,7 +80,7 @@
     "lodash": "4.17.21",
     "loglevel": "^1.9.1",
     "marked": "^4.1.1",
-    "matrix-js-sdk": "^25.1.1",
+    "matrix-js-sdk": "^34.3.1",
     "memorystore": "^1.6.1",
     "mkdirp": "^1.0.0",
     "netmask": "^2.0.0",
