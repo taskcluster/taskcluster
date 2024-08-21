@@ -37,7 +37,7 @@ func TestPatchLogger(t *testing.T) {
 			msg += msg
 		}
 		msg = msg[:len(msg)-1] // remove trailing newline
-		stdLog.Printf(msg)
+		stdLog.Print(msg)
 		require.Equal(t, logDest.Messages(), []map[string]interface{}{map[string]interface{}{"textPayload": msg}})
 	})
 }

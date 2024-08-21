@@ -934,7 +934,7 @@ func TestResponseStream(t *testing.T) {
 	if string(buf) != "world" {
 		t.Fatal("bad message")
 	}
-	logger.Printf(string(buf))
+	logger.Print(string(buf))
 }
 
 func TestWebSocketStreamClient(t *testing.T) {

@@ -28,7 +28,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 		return err
 	}
 	if !okIfExists && userExisted {
-		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
+		return fmt.Errorf("user %s already existed - cannot create", user.Name)
 	}
 	log.Print("Created new OS user!")
 	err = host.RunBatch(

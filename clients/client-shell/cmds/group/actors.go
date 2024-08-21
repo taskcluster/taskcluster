@@ -208,7 +208,7 @@ func confirmCancellation(ids []string, names []string, out io.Writer) bool {
 		fmt.Fprint(out, "Are you sure you want to cancel these tasks? [y/n] ")
 
 		var c string
-		fmt.Scanf("%s", &c)
+		_, _ = fmt.Scanf("%s", &c)
 
 		if c == "y" || c == "Y" {
 			return true

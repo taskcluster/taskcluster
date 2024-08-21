@@ -9,9 +9,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.22 or higher.
+# Support go 1.23 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=22
+MIN_GO_MINOR_VERSION=23
 
 unset CGO_ENABLED
 unset GOOS

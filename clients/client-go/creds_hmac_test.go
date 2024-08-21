@@ -36,7 +36,7 @@ func Test_StaticTempCreds(t *testing.T) {
 
 func testCreds(t *testing.T, tc *TempCredsTestCase) {
 	t.Helper()
-	t.Logf("Testing " + tc.Description)
+	t.Log("Testing " + tc.Description)
 	start, _ := time.Parse(time.RFC3339, tc.Start)
 	expiry, _ := time.Parse(time.RFC3339, tc.Expiry)
 
