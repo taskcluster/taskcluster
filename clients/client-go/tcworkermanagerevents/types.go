@@ -3,7 +3,7 @@
 package tcworkermanagerevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v68/clients/client-go"
 )
 
 type (

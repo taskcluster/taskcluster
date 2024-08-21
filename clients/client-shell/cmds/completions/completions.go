@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v67/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v68/clients/client-shell/cmds/root"
 )
 
 var (

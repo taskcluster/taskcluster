@@ -3,6 +3,80 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v68.0.0
+
+### GENERAL
+
+▶ [patch] [#7202](https://github.com/taskcluster/taskcluster/issues/7202)
+Fixes `github.renderTaskclusterYml` rendering error for the payloads including invalid params
+
+▶ [patch] [#7195](https://github.com/taskcluster/taskcluster/issues/7195)
+Fixes worker-manager intermittent test failure
+
+▶ [patch] [bug 1907075](http://bugzil.la/1907075)
+Web server graphql endpoints return 413 instead of 500 error.
+
+▶ [patch]
+Upgrades to Node.js v20.16.0, go v1.23.0, and yarn v4.4.0.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#7036](https://github.com/taskcluster/taskcluster/issues/7036)
+Secrets are being introduced in services configuration. All sensitive values that are marked as secrets would be deployed in kubernetes as Secrets (as they used to be).
+All non-sensitive values would be stored inside ConfigMap resources.
+Deployments and CronJobs would fetch values from both secrets and configuration maps.
+
+▶ [patch] [#7167](https://github.com/taskcluster/taskcluster/issues/7167)
+Change the polling period for EC2 spot instance interruption notices to 5 seconds, as recommended by AWS documentation.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7073](https://github.com/taskcluster/taskcluster/issues/7073)
+Generic Worker now logs to standard error instead of standard out. This is a bug fix, it seems it has always been logging to standard out.
+
+▶ [minor]
+Change `adduser` usage to `useradd`
+
+`adduser` is a debian specific wrapper around `useradd` and friends. By
+changing to `useradd`, we allow workers to be deployed on non debian
+derivative distributions.
+
+Generic Worker multiuser engine on Linux/FreeBSD now depends on:
+
+  * /usr/bin/chfn
+  * /usr/sbin/useradd
+  * /usr/sbin/userdel
+
+and no longer depends on:
+
+  * /usr/sbin/adduser
+  * /usr/sbin/deluser
+
+### USERS
+
+▶ [minor] [#7145](https://github.com/taskcluster/taskcluster/issues/7145)
+Fixes inconsistency in the internal queue implementation that could lead to tasks being visible as pending in the UI
+after they were resolved with `deadline-exceeded`.
+
+▶ [patch] [#7128](https://github.com/taskcluster/taskcluster/issues/7128)
+Generic Worker / D2G partial bug fix: support has been improved for running Docker Worker tasks with caches under Generic Worker. Previously, caches from a Docker Worker task running under Generic Worker containing files owned by a user other than root would not be owned by the same (container) user when the cache was mounted in a future task. D2G now consistently maps container uids and gids to host subuids and subgids (when caches are used) in order that cache file ownership, as seen from inside the container, is maintained across task runs. However, this fix does not apply when the privileged capability is enabled in the Docker Worker payload, since privileged tasks are executed under docker rather than podman. This fix only applies when podman is used.
+
+▶ [patch] [#7128](https://github.com/taskcluster/taskcluster/issues/7128)
+Generic Worker multiuser engine on Linux now uses `/usr/sbin/deluser --remove-home` instead of `/usr/sbin/deluser --remove-all-files` when deleting previous task users. This ensures that caches that may still be owned (in whole or in part) by the task user are not deleted.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump elliptic from 6.5.4 to 6.5.7 in /ui (d3d895095)
+* build(deps): bump braces from 3.0.2 to 3.0.3 in /clients/client-test (7fc112e28)
+* build(deps): bump aiohttp from 3.9.5 to 3.10.2 in /taskcluster (84db9103c)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (f57c0aa4d)
+* build(deps): bump the node-deps group with 18 updates (5af31a687)
+
+</details>
+
 ## v67.1.0
 
 ### WORKER-DEPLOYERS
