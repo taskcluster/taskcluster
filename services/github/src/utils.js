@@ -75,7 +75,7 @@ export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
 
 /**
  * Check if pull_request event should be skipped.
- * It can happen when pull request contains keywords in title or description:
+ * It can happen when pull request contains keywords in title:
  * "[skip ci]" or "[ci skip]"
  *
  * @param {body} object event body
@@ -85,8 +85,7 @@ export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
  * @returns boolean
  */
 export const shouldSkipPullRequest = ({ pull_request }) => {
-  return pull_request !== undefined &&
-    (ciSkipRegexp.test(pull_request.title) || ciSkipRegexp.test(pull_request.body));
+  return pull_request !== undefined && ciSkipRegexp.test(pull_request.title);
 };
 
 export const taskclusterCommandRegExp = new RegExp('^\\s*/taskcluster\\s+(.+)$', 'm');
