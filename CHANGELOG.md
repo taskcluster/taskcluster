@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v68.0.1
+
+### GENERAL
+
+▶ [patch] [#7172](https://github.com/taskcluster/taskcluster/issues/7172)
+Fixes UI js error on dashboard on some deployments
+
+### USERS
+
+▶ [patch] [#6304](https://github.com/taskcluster/taskcluster/issues/6304)
+GitHub service no longer skips CI based on PR description. It will only skip CI based on the PR title or the commit message, [as GitHub does](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-node-deps group across 1 directory with 3 updates (74c56a294)
+* build(deps): bump the client-node-deps group across 1 directory with 4 updates (2f9e3602b)
+* build(deps): bump the ui-node-deps group across 1 directory with 7 updates (e21bc7c47)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (65efa87a0)
+* build(deps): bump pyyaml (74e680c54)
+* build(deps): bump the go-deps group across 1 directory with 7 updates (c02a2eec9)
+* build(deps): bump elliptic from 6.5.4 to 6.5.7 in /clients/client-web (00e31a477)
+
+</details>
+
 ## v68.0.0
 
 ### GENERAL
