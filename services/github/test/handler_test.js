@@ -7,7 +7,7 @@ import libUrls from 'taskcluster-lib-urls';
 import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
 import { LEVELS } from 'taskcluster-lib-monitor';
-import { CHECKLOGS_TEXT, CHECKRUN_TEXT } from '../src/constants.js';
+import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
 import fs from 'fs';
 import path from 'path';
@@ -48,6 +48,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   let github = null;
   let handlers = null;
 
+  function buildArtifactLinks(limit, taskId){
+
+    const artifactLinks = [];
+
+    for(let i = 0;i < limit;i++) {
+      artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+    }
+
+    return artifactLinks.join('\n');
+  }
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
@@ -78,7 +88,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   async function simulateExchangeMessage({
     taskGroupId, exchange, routingKey,
     taskId, state, reasonResolved,
-    runId = 0,
+    runId = 0, started,
+    resolved,
   }) {
     // set up to resolve when the handler has finished (even if it finishes with error)
     const handlerComplete = new Promise((resolve, reject) => {
@@ -96,7 +107,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           taskGroupId,
           taskId,
           state,
-          runs: Array.from({ length: runId + 1 }).map(() => ({ reasonResolved })),
+          runs: Array.from({ length: runId + 1 }).map(() => ({
+            reasonResolved,
+            state: 'completed',
+            started: started,
+            resolved: resolved,
+          })),
         },
         taskGroupId,
         runId,
@@ -160,6 +176,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         }
       },
       listTaskGroup: async () => ({ tasks: [] }),
+      listArtifacts: async (taskId, runId, options) => {
+
+        const artifacts = [];
+
+        for(let i = 0;i < options.limit;i++) {
+          artifacts.push({
+            name: `artifact-${i}`,
+          });
+        }
+        return Promise.resolve({ artifacts });
+      },
       use: () => ({
         getArtifact: async () => CUSTOM_CHECKRUN_TEXT,
         buildSignedUrl: async () => 'http://example.com',
@@ -1418,6 +1445,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       'internal-error': 'failure',
       'intermittent-task': 'neutral', // means: will be retried
     };
+    const STARTED = '2024-07-16T18:23:18.118Z';
+    const RESOLVED = '2024-07-17T18:23:18.118Z';
 
     async function assertChecksUpdate(state) {
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1535,6 +1564,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_CHECKRUN_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1542,7 +1573,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log)\n${CUSTOM_CHECKRUN_TEXT}\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: completed\nReason Resolved: completed\nRunId: 0\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n${CUSTOM_CHECKRUN_TEXT}\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1566,6 +1597,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_CHECKRUN_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1573,7 +1606,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: completed\nReason Resolved: completed\nRunId: 0\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1597,6 +1630,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_LIVELOG_NAME_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1604,7 +1639,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: completed\nReason Resolved: completed\nRunId: 0\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1722,6 +1757,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       assert.equal(false, github.inst(9988).checks.update.called);
       assert.equal(false, github.inst(9988).checks.create.called);
+    });
+
+    test('undefined started and resolved timestamps in check run output', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
+        .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
+        .returns({ status: 404 });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_LIVELOG_NAME_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+        started: undefined,
+        resolved: undefined,
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: n/a\nResolved: n/a\nTask Execution Time: n/a\nTask Status: completed\nReason Resolved: completed\nRunId: 0\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+      );
+      /* eslint-enable comma-dangle */
+      sinon.restore();
     });
   });
 

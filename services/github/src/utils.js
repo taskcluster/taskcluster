@@ -173,6 +173,85 @@ export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
     .join('\n');
 };
 
+/**
+ *
+ * @param {string} logString
+ * @param {number} maxPayloadLength
+ * @param {number} tailLines
+ * @returns string or null
+ */
+export const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) => {
+
+  if (tailLines === 0) {
+    return null;
+  }
+
+  const tailLog = logString.split("\n").slice(-tailLines).join("\n");
+
+  if (logString.length <= maxPayloadLength) {
+    return tailLog;
+  }
+
+  let tailLogMaxPayload = logString.slice(-maxPayloadLength);
+  const newLinePosition = tailLogMaxPayload.indexOf('\n');
+  tailLogMaxPayload = tailLogMaxPayload.slice(newLinePosition + 1);
+
+  return tailLog.length <= tailLogMaxPayload.length ? tailLog : tailLogMaxPayload;
+};
+
+/**
+ *
+ * @param {string} logString
+ * @param {number} maxPayloadLength
+ * @returns string
+ */
+export const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
+
+  if (logString.length <= maxPayloadLength) {
+    return logString;
+  }
+
+  const headLog = logString.slice(0, maxPayloadLength);
+  const lastNewLinePosition = headLog.lastIndexOf('\n');
+  return headLog.substring(0, lastNewLinePosition);
+};
+
+/**
+ * Github checks API call is limited to 64kb
+ * @param {string} log
+ * @param {number} headLines
+ * @param {number} tailLines
+ * @param {number} maxPayloadLength
+ * @returns string
+ */
+export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
+
+  const logString = ansi2txt(log);
+  const lines = logString.split('\n');
+  const LOG_BUFFER = 42;
+
+  if(lines.length <= headLines + tailLines) {
+    return logString;
+  }
+
+  const headLogArray = lines.slice(0, headLines);
+  const headLog = headLogArray.join('\n');
+
+  if (maxPayloadLength <= headLog.length) {
+    return extractHeadLinesFromLog(logString, maxPayloadLength);
+  }
+
+  const tailLog = extractTailLinesFromLog(logString, maxPayloadLength - headLog.length - LOG_BUFFER, tailLines);
+
+  if(!tailLog) {
+    return `${headLog}\n\n...(${lines.length - headLogArray.length} lines hidden)...\n\n`;
+  }
+
+  const availableTailLines = tailLog.split('\n').length;
+
+  return `${headLog}\n\n...(${lines.length - headLines - availableTailLines} lines hidden)...\n\n${tailLog}`;
+};
+
 export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
 export const markdownAnchor = (name, url) => `[${name}](${url})`;
 
@@ -218,6 +297,7 @@ export default {
   shouldSkipPullRequest,
   ansi2txt,
   tailLog,
+  extractLog,
   markdownLog,
   markdownAnchor,
   checkGithubSignature,
