@@ -98,13 +98,8 @@ func UserHomeDirectoriesParent() string {
 	return win32.ProfilesDirectory()
 }
 
-func WaitForLoginCompletion(timeout time.Duration) error {
-	_, err := win32.InteractiveUserToken(timeout)
-	return err
-}
-
-func InteractiveUsername() (string, error) {
-	userToken, err := win32.InteractiveUserToken(time.Minute * 3)
+func WaitForLoginCompletion(timeout time.Duration) (string, error) {
+	userToken, err := win32.InteractiveUserToken(timeout)
 	if err != nil {
 		return "", err
 	}

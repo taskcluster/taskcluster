@@ -37,20 +37,20 @@ func UserHomeDirectoriesParent() string {
 	return "/home"
 }
 
-func WaitForLoginCompletion(timeout time.Duration) error {
+func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, err error) {
 	deadline := time.Now().Add(timeout)
 	log.Print("Checking if user is logged in...")
 	for time.Now().Before(deadline) {
-		_, err := InteractiveUsername()
+		interactiveUsername, err = InteractiveUsername()
 		if err != nil {
 			log.Printf("WARNING: Error checking for interactive user: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
-		return nil
+		return
 	}
 	log.Print("Timed out waiting for user login")
-	return errors.New("no user logged in with console session")
+	return "", errors.New("no user logged in with console session")
 }
 
 func InteractiveUsername() (string, error) {
