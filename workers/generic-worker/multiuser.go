@@ -56,11 +56,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		err = gwruntime.WaitForLoginCompletion(5 * time.Minute)
-		if err != nil {
-			panic(err)
-		}
-		interactiveUsername, err := gwruntime.InteractiveUsername()
+		interactiveUsername, err := gwruntime.WaitForLoginCompletion(5 * time.Minute)
 		if err != nil {
 			panic(err)
 		}
