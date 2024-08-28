@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v68.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7012](https://github.com/taskcluster/taskcluster/issues/7012)
+Generic Worker retains the interactive username it determines inside WaitForLoginCompletion (by returning it) to avoid needing to re-determine it later. The intention is to reduce intermittent errors caused by the underlying method to determine the interactive username itself intermittently failing. So long as the interactive username can be determined just once during the specidied timeout period, the value can be retained and used when required.
+
 ## v68.0.1
 
 ### GENERAL
