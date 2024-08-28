@@ -17,6 +17,10 @@ const (
 	gdm3CustomConfFile = "/etc/gdm3/custom.conf"
 )
 
+var (
+	cachedInteractiveUsername string = ""
+)
+
 func ListUserAccounts() (usernames []string, err error) {
 	var passwd []byte
 	passwd, err = os.ReadFile("/etc/passwd")
@@ -53,8 +57,20 @@ func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, 
 	return "", errors.New("no user logged in with console session")
 }
 
-func InteractiveUsername() (string, error) {
-	return gdm3.InteractiveUsername()
+func InteractiveUsername() (interactiveUsername string, err error) {
+	// Cache the result if successful, for both reliability and efficiency.
+	// Caller is responsible for retries.  The logged in user does not
+	// change during lifetime of generic-worker process, so we can cache
+	// result. See
+	//  https://github.com/taskcluster/taskcluster/issues/7012
+	if cachedInteractiveUsername != "" {
+		return cachedInteractiveUsername, nil
+	}
+	interactiveUsername, err = gdm3.InteractiveUsername()
+	if err == nil {
+		cachedInteractiveUsername = interactiveUsername
+	}
+	return
 }
 
 func SetAutoLogin(user *OSUser) error {
