@@ -98,10 +98,10 @@ func UserHomeDirectoriesParent() string {
 	return win32.ProfilesDirectory()
 }
 
-func WaitForLoginCompletion(timeout time.Duration) (string, error) {
+func WaitForLoginCompletion(timeout time.Duration, username string) error {
 	userToken, err := win32.InteractiveUserToken(timeout)
 	if err != nil {
-		return "", err
+		return err
 	}
 	tokenUser, err := userToken.GetTokenUser()
 	if err != nil {
@@ -111,7 +111,10 @@ func WaitForLoginCompletion(timeout time.Duration) (string, error) {
 	if err != nil {
 		panic(err)
 	}
-	return account, nil
+	if account != username {
+		return fmt.Errorf("interactive username %v does not match task user %v", account, username)
+	}
+	return nil
 }
 
 func AutoLogonUser() (username string) {

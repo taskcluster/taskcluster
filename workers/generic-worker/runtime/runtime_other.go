@@ -41,9 +41,10 @@ func UserHomeDirectoriesParent() string {
 	return "/home"
 }
 
-func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, err error) {
+func WaitForLoginCompletion(timeout time.Duration, username string) (err error) {
 	deadline := time.Now().Add(timeout)
 	log.Print("Checking if user is logged in...")
+	var interactiveUsername string
 	for time.Now().Before(deadline) {
 		interactiveUsername, err = InteractiveUsername()
 		if err != nil {
@@ -51,10 +52,19 @@ func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, 
 			time.Sleep(time.Second)
 			continue
 		}
+		if interactiveUsername != username {
+			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			time.Sleep(time.Second)
+			continue
+		}
 		return
 	}
 	log.Print("Timed out waiting for user login")
-	return "", errors.New("no user logged in with console session")
+	if interactiveUsername == "" {
+		return errors.New("no user logged in with console session")
+	}
+	return fmt.Errorf("interactive username %v does not match task user %v", interactiveUsername, username)
+
 }
 
 func InteractiveUsername() (interactiveUsername string, err error) {
