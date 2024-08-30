@@ -72,9 +72,10 @@ func UserHomeDirectoriesParent() string {
 	return "/Users"
 }
 
-func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, err error) {
+func WaitForLoginCompletion(timeout time.Duration, username string) (err error) {
 	deadline := time.Now().Add(timeout)
 	log.Print("Checking if user is logged in...")
+	var interactiveUsername string
 	for time.Now().Before(deadline) {
 		interactiveUsername, err = InteractiveUsername()
 		if err != nil {
@@ -82,10 +83,15 @@ func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, 
 			time.Sleep(time.Second)
 			continue
 		}
+		if interactiveUsername != username {
+			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			time.Sleep(time.Second)
+			continue
+		}
 		var fi os.FileInfo
 		fi, err = os.Stat("/Library/Preferences/com.apple.loginwindow.plist")
 		if err != nil {
-			return "", fmt.Errorf("could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
+			return fmt.Errorf("could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
 		}
 		modTime := fi.ModTime()
 		log.Printf("User %v logged in at %v", interactiveUsername, modTime)
@@ -106,7 +112,10 @@ func WaitForLoginCompletion(timeout time.Duration) (interactiveUsername string, 
 	} else {
 		log.Print(output)
 	}
-	return "", errors.New("no user logged in with console session")
+	if interactiveUsername == "" {
+		return errors.New("no user logged in with console session")
+	}
+	return fmt.Errorf("interactive username %v does not match task user %v", interactiveUsername, username)
 }
 
 func InteractiveUsername() (string, error) {

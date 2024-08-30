@@ -56,12 +56,9 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		interactiveUsername, err := gwruntime.WaitForLoginCompletion(5 * time.Minute)
+		err = gwruntime.WaitForLoginCompletion(5*time.Minute, taskUserCredentials.Name)
 		if err != nil {
 			panic(err)
-		}
-		if taskUserCredentials.Name != interactiveUsername {
-			panic(fmt.Errorf("interactive username %v does not match task user %v from file %q", interactiveUsername, taskUserCredentials.Name, ntuPath))
 		}
 		reboot = false
 		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
@@ -71,7 +68,7 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 
 		taskContext = &TaskContext{
 			User:    taskUserCredentials,
-			TaskDir: filepath.Join(config.TasksDir, interactiveUsername),
+			TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
 			pd:      pd,
 		}
 
