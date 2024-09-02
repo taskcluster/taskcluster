@@ -9,6 +9,9 @@ import (
 )
 
 func TestLoopbackAudio(t *testing.T) {
+
+	t.Skip("Skipping since audio loopback not working in AWS...")
+
 	setup(t)
 
 	devicePaths := []string{
@@ -44,6 +47,9 @@ func TestLoopbackAudio(t *testing.T) {
 }
 
 func TestIncorrectLoopbackAudioScopes(t *testing.T) {
+
+	t.Skip("Skipping since audio loopback not working in AWS...")
+
 	setup(t)
 
 	payload := GenericWorkerPayload{
@@ -66,6 +72,9 @@ func TestIncorrectLoopbackAudioScopes(t *testing.T) {
 }
 
 func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
+
+	t.Skip("Skipping since audio loopback not working in AWS...")
+
 	setup(t)
 
 	devicePaths := []string{
@@ -118,6 +127,9 @@ func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
 }
 
 func TestLoopbackAudioInvalidDeviceNumber(t *testing.T) {
+
+	t.Skip("Skipping since audio loopback not working in AWS...")
+
 	setup(t)
 
 	config.LoopbackAudioDeviceNumber = 32

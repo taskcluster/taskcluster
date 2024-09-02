@@ -7,6 +7,9 @@ import (
 )
 
 func TestLoopbackAudioReturnsMalformedPayload(t *testing.T) {
+
+	t.Skip("Skipping since audio loopback not working in AWS...")
+
 	setup(t)
 
 	payload := GenericWorkerPayload{
