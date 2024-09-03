@@ -17578,7 +17578,7 @@ __metadata:
     title-case: "npm:^3.0.2"
     upper-case: "npm:^2.0.1"
     utf-8-validate: "npm:^5.0.0"
-    webpack: "npm:^4.42.1"
+    webpack: "npm:^4.47.0"
     webpack-cli: "npm:^3.2.3"
     webpack-dev-server: "npm:^3.10.3"
   dependenciesMeta:
@@ -18931,9 +18931,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^4.42.1":
-  version: 4.46.0
-  resolution: "webpack@npm:4.46.0"
+"webpack@npm:^4.47.0":
+  version: 4.47.0
+  resolution: "webpack@npm:4.47.0"
   dependencies:
     "@webassemblyjs/ast": "npm:1.9.0"
     "@webassemblyjs/helper-module-context": "npm:1.9.0"
@@ -18965,7 +18965,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/3451b48b926d7c295a4eba65bb7ff9a7d2d49a848014ea0945f446ebf4c1ca5bdd15681b444f5dfd8bbc4856afda55211d30a173ae721b8108f229792e6fb509
+  checksum: 10c0/bc90202110a341359c11ead60ea09bd5cfa51e2c93004d7e40b7c2f76208cc6717e39c9d9544825cc44958046ada762c78a8cf9848619ea450315bce98228701
   languageName: node
   linkType: hard
 
