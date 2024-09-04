@@ -1,0 +1,14 @@
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.docker_image:transforms
+  - taskgraph.transforms.cached_tasks:transforms
+  - taskgraph.transforms.task:transforms
+
+tasks:
+  browser-test:
+    symbol: I(browser-test)
+  ci:
+    symbol: I(ci)
+  rabbit-test:
+    symbol: I(rabbit-test)
