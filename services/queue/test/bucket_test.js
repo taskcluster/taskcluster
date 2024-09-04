@@ -100,6 +100,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
     const url = await bucket.createGetUrl('test');
     assert(url === 'https://example.com/test');
+    const urlWithSpaces = await bucket.createGetUrl('test with spaces');
+    assert(urlWithSpaces === 'https://example.com/test%20with%20spaces');
   });
 
   test('default endpoint', async function() {
