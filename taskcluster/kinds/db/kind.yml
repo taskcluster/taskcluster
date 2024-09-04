@@ -2,35 +2,31 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_image_versions
-  - src.transforms:podman_run
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
-  worker-type: gw-ubuntu-24-04
+  worker-type: ubuntu-24-04
   run:
     using: bare
   worker:
+    docker-image: {in-tree: ci}
     max-run-time: 600
-  docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
 
 tasks:
   library:
     description: db library tests
     run:
       command: >-
-        corepack enable &&
-        yarn --immutable &&
+        corepack yarn --immutable &&
         ./db/test-setup.sh &&
-        cd db && yarn test
+        cd db && corepack yarn test
   upgrade:
-    description: yarn db:upgrade tests
+    description: corepack yarn db:upgrade tests
     run:
       command: >-
-        corepack enable &&
-        yarn --immutable &&
+        corepack yarn --immutable &&
         ./db/test-setup.sh --users &&
         export ADMIN_DB_URL="$TEST_DB_URL" &&
         export USERNAME_PREFIX="test" &&
-        yarn db:upgrade
+        corepack yarn db:upgrade

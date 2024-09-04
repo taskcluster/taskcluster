@@ -13,8 +13,8 @@ def services_and_libraries_loader(kind, path, config, parameters, loaded_tasks):
             "name": package.name,
             "description": "package tests for {}".format(package.name),
             "run": {
-                "command": "corepack enable && yarn --immutable && " +
-                "./db/test-setup.sh && yarn workspace taskcluster-{}{} coverage:report".format(
+                "command": "corepack yarn --immutable && " +
+                "./db/test-setup.sh && corepack yarn workspace taskcluster-{}{} coverage:report".format(
                     config.get("prefix", ''),
                     package.name)
                 }

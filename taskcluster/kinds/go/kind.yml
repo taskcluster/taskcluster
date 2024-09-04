@@ -5,8 +5,8 @@ transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
   - src.transforms:parameterize_artifacts
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
   worker-type: gw-ubuntu-24-04

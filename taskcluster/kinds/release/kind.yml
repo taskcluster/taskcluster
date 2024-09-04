@@ -4,8 +4,8 @@ loader: taskgraph.loader.transform:loader
 transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
   worker-type: release
