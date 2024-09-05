@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v68.0.4
+
+### USERS
+
+▶ [patch] [#7233](https://github.com/taskcluster/taskcluster/issues/7233)
+getArtifact now encodes artifact names to return valid URLs even when
+the name contains unsafe characters.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps-dev): bump webpack in /ui in the ui-node-deps group (b70132394)
+* build(deps): bump taskcluster from 67.0.1 to 68.0.3 in /taskcluster (9ad8b9965)
+* build(deps): bump golang.org/x/sys in the go-deps group (2d8e970a0)
+
+</details>
+
 ## v68.0.3
 
 ### WORKER-DEPLOYERS
