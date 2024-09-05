@@ -102,7 +102,7 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
 Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
   if (this.bucketCDN && !forceS3) {
-    return `${this.bucketCDN}/${prefix}`;
+    return `${this.bucketCDN}/${encodeURI(prefix)}`;
   }
   const command = new GetObjectCommand({
     Bucket: this.bucket,
