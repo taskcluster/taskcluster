@@ -7240,6 +7240,30 @@
         }
       },
       "version": 102
+    },
+    {
+      "description": "batch insert task dependencies",
+      "methods": {
+        "add_task_dependencies": {
+          "args": "dependent_task_id_in text, required_task_ids_in jsonb, requires_in task_requires, expires_in timestamptz",
+          "body": "begin\n  INSERT INTO task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)\n  SELECT\n      dependent_task_id_in,\n      required_task_id_in::text,\n      requires_in,\n      false,\n      expires_in\n  FROM jsonb_array_elements_text(required_task_ids_in) AS r(required_task_id_in)\n  ON CONFLICT DO NOTHING;\nend",
+          "deprecated": false,
+          "description": "Create multiple un-satisfied task dependencies between the two tasks, with the given\nrequirement style and expiration. If the dependency already exists, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "remove_task_dependencies": {
+          "args": "dependent_task_id_in text, required_task_ids_in jsonb",
+          "body": "begin\n  delete from task_dependencies\n  where\n    dependent_task_id = dependent_task_id_in and\n    required_task_id in (SELECT jsonb_array_elements_text(required_task_ids_in));\nend",
+          "deprecated": false,
+          "description": "Mark all task dependencies as satisfied.  If the dependency does not exist, nothing\nhappens.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "version": 103
     }
   ]
 }

@@ -10410,15 +10410,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hawk@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "hawk@npm:9.0.1"
+"hawk@npm:^9.0.2":
+  version: 9.0.2
+  resolution: "hawk@npm:9.0.2"
   dependencies:
     "@hapi/b64": "npm:5.x.x"
     "@hapi/boom": "npm:9.x.x"
     "@hapi/cryptiles": "npm:5.x.x"
     "@hapi/hoek": "npm:9.x.x"
-  checksum: 10c0/e9b76ab5f5d7c7b8ae24bc50ff10ba31de219c0a40a7f10304c127eb393ef3d321f315d8cbf96d62a5bb95165d6a042f36c5d9d50c2064b1da890ab98f5a92ba
+  checksum: 10c0/1ba68811c37568c74df5039efd41ea45bc2ce811754cb533586af831bfcde13df3ea057edd951917558839530e13b05a579d9c02acbb030bd6c5359011960e0c
   languageName: node
   linkType: hard
 
@@ -17430,15 +17430,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"taskcluster-client-web@npm:^60.4.2":
-  version: 60.4.2
-  resolution: "taskcluster-client-web@npm:60.4.2"
+"taskcluster-client-web@npm:^68.0.4":
+  version: 68.0.4
+  resolution: "taskcluster-client-web@npm:68.0.4"
   dependencies:
     crypto-js: "npm:^4.2.0"
-    hawk: "npm:^9.0.1"
+    hawk: "npm:^9.0.2"
     query-string: "npm:^7.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
-  checksum: 10c0/a65f75ce02c4d11ee85069b74c23cabc1473b35fe9de90a2f3ea7cc1499e306248b7407f56c76a19962398835cc443645b1aaa19a6538723fa7e00b3beb30a88
+  checksum: 10c0/522e4d4dd917f8058b2d8a4898749784de60dde6079a68083760c8fc185ef24a525717a10cc22bba8769a47ffcc84113cb36461cdacb26c3cdddba9516be7c9f
   languageName: node
   linkType: hard
 
@@ -17572,7 +17572,7 @@ __metadata:
     shebang-loader: "npm:^0.0.1"
     snake-case: "npm:^3.0.3"
     subscriptions-transport-ws: "npm:^0.11.0"
-    taskcluster-client-web: "npm:^60.4.2"
+    taskcluster-client-web: "npm:^68.0.4"
     taskcluster-lib-scopes: "npm:^11.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
     title-case: "npm:^3.0.2"

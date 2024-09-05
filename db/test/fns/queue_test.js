@@ -1516,6 +1516,25 @@ suite(testing.suiteName(), function() {
           }
         }
       });
+
+      helper.dbTest('bulk insert task dependencies', async function (db) {
+        const totalDeps = 9999;
+        const halfDeps = 5000;
+        const taskId = slugid.v4();
+        const deps = range(totalDeps).map(() => slugid.v4());
+
+        await db.fns.add_task_dependencies(taskId, JSON.stringify(deps), 'all-completed', taskcluster.fromNow('1 day'));
+
+        await helper.withDbClient(async (client) => {
+          const r = await client.query(`SELECT COUNT(*) as cnt FROM task_dependencies`);
+          assert.equal(parseInt(r.rows[0].cnt, 10), totalDeps);
+
+          await db.fns.remove_task_dependencies(taskId, JSON.stringify(deps.slice(0, halfDeps)));
+          const r2 = await client.query(`SELECT COUNT(*) as cnt FROM task_dependencies`);
+          assert.equal(parseInt(r2.rows[0].cnt, 10), totalDeps - halfDeps);
+        });
+
+      });
     });
 
     suite('expire_tasks', function() {
