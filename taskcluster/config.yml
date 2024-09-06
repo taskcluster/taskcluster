@@ -3,10 +3,6 @@ trust-domain: taskcluster
 # this is lower priority than the decision task
 task-priority: high
 
-treeherder:
-  group-names:
-    'I': 'Docker Image Builds'
-
 taskgraph:
   register: src:register
   repositories:

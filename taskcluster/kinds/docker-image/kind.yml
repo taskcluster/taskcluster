@@ -6,9 +6,6 @@ transforms:
   - taskgraph.transforms.task:transforms
 
 tasks:
-  browser-test:
-    symbol: I(browser-test)
-  ci:
-    symbol: I(ci)
-  rabbit-test:
-    symbol: I(rabbit-test)
+  browser-test: {}
+  ci: {}
+  rabbit-test: {}
