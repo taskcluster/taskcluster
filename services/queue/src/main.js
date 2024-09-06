@@ -230,7 +230,7 @@ let load = loader({
         LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
         objectService: ctx.objectService,
         taskMaxDependencies: Math.min(
-          ctx.cfg.app.taskMaxDependencies || DEFAULT_MAX_TASK_DEPENDENCIES,
+          ctx.cfg.app.taskMaxDependencies ?? DEFAULT_MAX_TASK_DEPENDENCIES,
           DEFAULT_MAX_TASK_DEPENDENCIES,
         ),
       },
