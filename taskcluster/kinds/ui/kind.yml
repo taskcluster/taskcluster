@@ -2,29 +2,26 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
-  - src.transforms:podman_run
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
-  worker-type: gw-ubuntu-24-04
+  worker-type: ubuntu-24-04
   run:
     using: bare
   worker:
+    docker-image: {in-tree: browser-test}
     max-run-time: 600
-  docker-image: taskcluster/browser-test:{node_version}
 
 tasks:
   browser-test:
     description: UI Browser Tests
     run:
       command: >-
-        corepack enable &&
-        {{ yarn --immutable || exit 99; }} &&
+        {{ corepack yarn --immutable || exit 99; }} &&
         cd ui &&
-        {{ yarn --immutable || exit 99; }} &&
-        yarn lint &&
-        yarn test --coverage &&
-        yarn build
+        {{ corepack yarn --immutable || exit 99; }} &&
+        corepack yarn lint &&
+        corepack yarn test --coverage &&
+        corepack yarn build
