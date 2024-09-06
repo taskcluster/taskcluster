@@ -39,6 +39,9 @@ const MAX_BULK_DELETE_SIZE = 1000;
 // this is to limit total amount of concurrent updates to DB
 const NUMBER_OF_RECORDS_TO_PROCESS = 32;
 
+// maximum number of task dependencies to track
+const DEFAULT_MAX_TASK_DEPENDENCIES = 10000;
+
 import './monitor.js';
 
 // Create component loader
@@ -226,6 +229,10 @@ let load = loader({
         workerInfo: ctx.workerInfo,
         LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
         objectService: ctx.objectService,
+        taskMaxDependencies: Math.min(
+          ctx.cfg.app.taskMaxDependencies || DEFAULT_MAX_TASK_DEPENDENCIES,
+          DEFAULT_MAX_TASK_DEPENDENCIES,
+        ),
       },
       rootUrl: ctx.cfg.taskcluster.rootUrl,
       schemaset: ctx.schemaset,

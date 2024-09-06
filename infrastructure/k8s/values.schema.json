@@ -1312,6 +1312,9 @@
         "task_claim_timeout": {
           "type": "number"
         },
+        "task_max_dependencies": {
+          "type": "number"
+        },
         "taskcluster_access_token": {
           "type": "string"
         },

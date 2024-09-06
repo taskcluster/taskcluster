@@ -641,4 +641,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     await helper.stopPollingService();
   });
+
+  test('max task dependencies limits are observed', async () => {
+    const MAX_DEPS = (await helper.load('cfg')).app.taskMaxDependencies;
+    const TOO_MANY_DEPS = MAX_DEPS + 1;
+    const reqTaskId = slugid.v4();
+    const task = _.defaults({
+      dependencies: _.range(TOO_MANY_DEPS).map(() => slugid.v4()),
+    }, taskDef());
+
+    await helper.queue.createTask(reqTaskId, task).then(
+      () => assert(false, 'Expected an error!'),
+      err => {
+        if (err.code !== 'InputError') {
+          throw err;
+        }
+      },
+    );
+  });
 });

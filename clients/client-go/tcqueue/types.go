@@ -1190,6 +1190,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//
@@ -1383,6 +1385,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//

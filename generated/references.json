@@ -2843,7 +2843,7 @@
         "dependencies": {
           "default": [
           ],
-          "description": "List of dependent tasks. These must either be _completed_ or _resolved_\nbefore this task is scheduled. See `requires` for semantics.\n",
+          "description": "List of dependent tasks. These must either be _completed_ or _resolved_\nbefore this task is scheduled. See `requires` for semantics.\nThere can be up to `max-task-dependencies` dependencies, but this value can be\noverridden per-deployment to allow lower values.\n",
           "items": {
             "description": "The `taskId` of a task that must be resolved before this task is\nscheduled.\n",
             "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
@@ -11765,6 +11765,9 @@
               "type": "number"
             },
             "task_claim_timeout": {
+              "type": "number"
+            },
+            "task_max_dependencies": {
               "type": "number"
             },
             "taskcluster_access_token": {
