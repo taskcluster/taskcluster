@@ -61,6 +61,7 @@ import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
+import { AuthContext } from '../../../utils/Auth';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -866,7 +867,7 @@ export default class ViewTask extends Component {
     const {
       classes,
       description,
-      data: { loading, error, task, dependentTasks, dependents },
+      data: { loading, error, task, dependents },
       match,
     } = this.props;
     const {
@@ -949,12 +950,16 @@ export default class ViewTask extends Component {
             <br />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <TaskDetailsCard
-                  task={task}
-                  dependentTasks={dependentTasks}
-                  dependents={dependents}
-                  onDependentsPageChange={this.handleDependentsPageChange}
-                />
+                <AuthContext.Consumer>
+                  {auth => (
+                    <TaskDetailsCard
+                      task={task}
+                      user={auth.user}
+                      dependents={dependents}
+                      onDependentsPageChange={this.handleDependentsPageChange}
+                    />
+                  )}
+                </AuthContext.Consumer>
               </Grid>
 
               <Grid item xs={12} md={6}>
