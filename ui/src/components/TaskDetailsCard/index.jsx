@@ -132,7 +132,7 @@ export default class TaskDetailsCard extends Component {
 
     this.setState({ loading: true });
 
-    if (task.dependencies.length > 0) {
+    if (task?.dependencies?.length > 0) {
       const definitions = await getTaskDefinitions({
         taskIds: task.dependencies,
         user,
