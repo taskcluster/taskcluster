@@ -94,6 +94,7 @@ export default class WorkerManager extends Client {
   // Mark a worker pool for deletion.  This is the same as updating the pool to
   // set its providerId to `"null-provider"`, but does not require scope
   // `worker-manager:provider:null-provider`.
+  // This will also mark all launch configurations as archived.
   /* eslint-enable max-len */
   deleteWorkerPool(...args) {
     this.validate(this.deleteWorkerPool.entry, args);
