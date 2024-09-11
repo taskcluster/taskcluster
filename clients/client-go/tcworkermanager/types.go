@@ -772,6 +772,11 @@ type (
 		// Max length: 128
 		Kind string `json:"kind"`
 
+		// The launch config ID that was used when the error occurred.
+		//
+		// Syntax:     ^lc-[a-zA-Z0-9-_]{1,20}$
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// Date and time when this error was reported
 		Reported tcclient.Time `json:"reported"`
 
