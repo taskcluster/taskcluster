@@ -8,17 +8,11 @@ properties:
   minCapacity:
     title: Minimum Capacity
     type: integer
-    minimum: 0
-    description: |
-      The minimum amount of capacity that worker-manager should make
-      available at any given time.
+    description: Minimum capacity necessary to maintain at any given time for the entire workerpool
   maxCapacity:
     title: Maximum Capacity
     type: integer
-    minimum: 0
-    description: |
-      The maximum amount of capacity that worker-manager should make
-      available at any given time.
+    description: Maximum capacity that should not be exceeded at any given time for the entire workerpool
   scalingRatio:
     title: Scaling Ratio
     type: number

@@ -36,6 +36,12 @@ properties:
     description: Any extra structured information about this error
     type: object
     additionalProperties: true
+  launchConfigId:
+    title: Launch Config ID
+    description: |
+      The launch config ID that was used when the error occurred.
+    type: string
+    pattern: {$const: launchconfigid-pattern}
 additionalProperties: false
 required:
   - workerPoolId
@@ -45,3 +51,4 @@ required:
   - title
   - description
   - extra
+  # - launchConfigId

@@ -21,7 +21,7 @@ suite(testing.suiteName(), function() {
   // worker-manager entities functions are tested by entities_test.js and by the worker-manager service tests
 
   const create_worker_pool = async (db, wp = {}) => {
-    await db.fns.create_worker_pool(
+    await db.fns.create_worker_pool_with_launch_configs(
       wp.worker_pool_id || 'wp/id',
       wp.provider_id || 'provider',
       wp.previous_provider_ids || '[]', // N.B. JSON-encoded
@@ -44,7 +44,7 @@ suite(testing.suiteName(), function() {
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
     ];
-    const with_cap = await db.fns.update_worker_pool_with_capacity_and_counts_by_state(...input);
+    const with_cap = await db.deprecatedFns.update_worker_pool_with_capacity_and_counts_by_state(...input);
     for (const wp of with_cap) {
       assert(wp.requested_count === 0);
       assert(wp.running_count === 0);
@@ -93,7 +93,8 @@ suite(testing.suiteName(), function() {
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
-    ))[0].create_worker;
+      w.launch_config_id || null,
+    ))[0].create_worker_with_lc;
   };
   const update_worker = async (db, w = {}, etag) => {
     return await db.deprecatedFns.update_worker(

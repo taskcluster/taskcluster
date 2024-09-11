@@ -401,6 +401,12 @@
           "title": "Kind",
           "type": "string"
         },
+        "launchConfigId": {
+          "description": "The launch config ID that was used when the error occurred.\n",
+          "pattern": "^lc-[a-zA-Z0-9-_]{1,20}$",
+          "title": "Launch Config ID",
+          "type": "string"
+        },
         "reported": {
           "description": "Date and time when this error was reported",
           "format": "date-time",
@@ -1839,19 +1845,19 @@
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -2068,14 +2074,12 @@
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
-          "minimum": 0,
+          "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
-          "minimum": 0,
+          "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
           "title": "Minimum Capacity",
           "type": "integer"
         },
@@ -2192,17 +2196,19 @@
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -15451,7 +15457,7 @@
             "workerPoolId"
           ],
           "category": "Worker Pools",
-          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
           "method": "delete",
           "name": "deleteWorkerPool",
           "output": "v1/worker-pool-full.json#",
