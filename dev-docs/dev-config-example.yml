@@ -272,6 +272,8 @@ worker_manager:
       cpu: 10m
     expire_worker_pools:
       cpu: 10m
+    expire_launch_configs:
+      cpu: 10m
     expire_errors:
       cpu: 10m
 ui:

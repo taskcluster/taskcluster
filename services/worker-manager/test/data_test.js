@@ -32,12 +32,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       providerId: 'testing',
       capacity: 1,
       providerData: { terminateAfter: origTerminateAfter }, // use a "normal" registrationTimeout value
+      launchConfigId: null,
     });
     w = await w.create(helper.db);
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_scanner(
+    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner(
       null, null, null, null, null, 10, 0));
 
     // remove properties that come from queue_workers table

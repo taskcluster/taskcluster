@@ -27,7 +27,9 @@
           "InstanceType": "m5.xlarge"
         },
         "region": "us-west-2",
-        "capacityPerInstance": 1
+        "workerManager": {
+          "capacityPerInstance": 1
+        }
       },
       {
         "launchConfig": {
@@ -39,7 +41,9 @@
           "InstanceType": "m5.xlarge"
         },
         "region": "us-east-1",
-        "capacityPerInstance": 1
+        "workerManager": {
+          "capacityPerInstance": 1
+        }
       }
     ],
     "minCapacity": 1,

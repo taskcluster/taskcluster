@@ -23,6 +23,11 @@ expire-worker-pools:
   schedule: '1 0 * * *'
   deadline: 86400
   command: node services/worker-manager/src/main.js expireWorkerPools
+expire-launch-configs:
+  type: cron
+  schedule: '0 1 * * *'
+  deadline: 86400
+  command: node services/worker-manager/src/main.js expireLaunchConfigs
 expire-errors:
   type: cron
   schedule: '10 0 * * *'
