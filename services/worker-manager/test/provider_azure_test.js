@@ -170,7 +170,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
         launchConfigs: [
           {
-            capacityPerInstance: 1,
+            workerManager: {
+              capacityPerInstance: 1,
+            },
             subnetId: 'some/subnet',
             location: 'westus',
             hardwareProfile: {
@@ -247,7 +249,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           maxCapacity: 1,
           scalingRatio: 1,
           launchConfigs: [{
-            capacityPerInstance: 1,
+            workerManager: {
+              capacityPerInstance: 1,
+            },
             subnetId: 'some/subnet',
             location: 'westus',
             hardwareProfile: { vmSize: 'Basic_A2' },
@@ -446,6 +450,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const workerPool = await makeWorkerPool({}, {
         workerManager: {
           publicIp: true,
+          capacityPerInstance: 1,
         },
       });
       const workerInfo = {
