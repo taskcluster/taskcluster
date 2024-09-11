@@ -1242,7 +1242,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       scalingRatio: 1,
       launchConfigs: [
         {
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           machineType: 'n1-standard-2',
           region: 'us-east1',
           zone: 'us-east1-a',
