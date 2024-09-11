@@ -8,17 +8,11 @@ properties:
   minCapacity:
     title: Minimum Capacity
     type: integer
-    minimum: 0
-    description: |
-      The minimum amount of capacity that worker-manager should make
-      available at any given time.
+    description: Minimum capacity necessary to maintain at any given time for the entire workerpool
   maxCapacity:
     title: Maximum Capacity
     type: integer
-    minimum: 0
-    description: |
-      The maximum amount of capacity that worker-manager should make
-      available at any given time.
+    description: Maximum capacity that should not be exceeded at any given time for the entire workerpool
   scalingRatio:
     title: Scaling Ratio
     type: number
@@ -45,7 +39,7 @@ properties:
           title: Capacity Per Instance
           type: integer
           minimum: 1
-          description: The number of tasks a single worker of this type can run at any given time.
+          description: Deprecated - please use `workerManager.capacityPerInstance` instead
         workerManager:
           title: Worker Manager Config
           type: object
@@ -61,6 +55,28 @@ properties:
                 If `true`, Worker Manager will request a public IPv4 address for the worker.
                 This is set to `false` by default. It is typically only needed for Windows
                 workers that should allow incoming RDP connections from the public internet.
+            capacityPerInstance:
+              title: Capacity Per Instance
+              type: integer
+              minimum: 1
+              description: The number of tasks a single worker of this type can run at any given time.
+            ignoreFailedProvisioningStates:
+              title: "Ignore failed provisioningStates"
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+              description: |
+                A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
+                should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
+                to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
+            maxCapacity:
+              title: Max Capacity
+              type: integer
+              minimum: 0
+              description: |-
+                The maximum capacity of workers of this type that can be running at any given time.
+                This cannot exceed worker pool's `maxCapacity`.
           additionalProperties: false
         workerConfig:
           title: Worker Config
@@ -78,10 +94,7 @@ properties:
           uniqueItems: true
           items:
             type: string
-          description: |
-            A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
-            should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
-            to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
+          description: Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead
         location:
           title: Location
           type: string
@@ -195,7 +208,6 @@ properties:
                   primary:
                     type: boolean
       required:
-        - capacityPerInstance
         - workerConfig
         - location
         - subnetId

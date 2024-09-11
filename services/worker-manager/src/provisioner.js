@@ -112,7 +112,7 @@ export class Provisioner {
 
       // Check the state of workers (state is updated by worker-scanner)
       const fetch =
-        async (size, offset) => await this.db.fns.get_non_stopped_workers_scanner(
+        async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
           null, null, null, null, null, size, offset);
       for await (let row of paginatedIterator({ fetch })) {
         const worker = Worker.fromDb(row);
@@ -126,7 +126,7 @@ export class Provisioner {
       const poolsByProvider = new Map();
 
       // Now for each worker pool we ask the providers to do stuff
-      const workerPools = (await this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(null, null))
+      const workerPools = (await this.db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(null, null))
         .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
         const start = process.hrtime.bigint();

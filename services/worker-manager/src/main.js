@@ -14,7 +14,7 @@ import tcdb from 'taskcluster-db';
 import { Provisioner } from './provisioner.js';
 import { Providers } from './providers/index.js';
 import { WorkerScanner } from './worker-scanner.js';
-import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -56,6 +56,18 @@ let load = loader({
         const expired = await WorkerPool.expire({ db, monitor });
         for (let workerPoolId of expired) {
           monitor.info(`deleted expired worker pool ${workerPoolId}`);
+        }
+      });
+    },
+  },
+
+  expireLaunchConfigs: {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({ cfg, monitor, db }, ownName) => {
+      return monitor.childMonitor('expireLaunchConfigs').oneShot(ownName, async () => {
+        const expired = await WorkerPoolLaunchConfig.expire({ db, monitor });
+        for (let launchConfigId of expired) {
+          monitor.info(`deleted expired worker pool launch config ${launchConfigId}`);
         }
       });
     },
