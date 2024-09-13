@@ -17,7 +17,7 @@ taskcluster-upload = { path = "../upload" }
 taskcluster-download = { path = "../download" }
 httptest = "0.16"
 tempfile = "3"
-ring = "*"
+ring = "0.17"
 tokio = { version = "1.26", features = ["macros", "fs"] }
 anyhow = "1.0"
 slugid = "1.0.0"

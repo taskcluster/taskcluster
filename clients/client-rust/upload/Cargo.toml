@@ -23,4 +23,4 @@ sha2 = "0.10.2"
 [dev-dependencies]
 httptest = "0.16"
 tempfile = "3"
-ring = "0.16"
+ring = "0.17"
