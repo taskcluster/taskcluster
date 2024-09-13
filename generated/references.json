@@ -2035,6 +2035,19 @@
                 "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
                 "title": "Worker Config",
                 "type": "object"
+              },
+              "workerManager": {
+                "additionalProperties": false,
+                "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nAzure APIs, whereas this section is interpreted directly by Worker Manager.",
+                "properties": {
+                  "publicIp": {
+                    "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n",
+                    "title": "Public IP",
+                    "type": "boolean"
+                  }
+                },
+                "title": "Worker Manager Config",
+                "type": "object"
               }
             },
             "required": [
