@@ -500,15 +500,15 @@ checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
 
 [[package]]
 name = "hawk"
-version = "4.0.0"
+version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f42afdd0e58859aa7b944db9125bdddb5437233161726c20578fbb73c776f440"
+checksum = "ab302457b3e28e621daab18932d67a67328f29240bfaa5f604b7627ece1eacda"
 dependencies = [
  "anyhow",
- "base64 0.13.1",
+ "base64 0.22.1",
  "log",
  "once_cell",
- "ring 0.16.20",
+ "ring 0.17.8",
  "thiserror",
  "url",
 ]
