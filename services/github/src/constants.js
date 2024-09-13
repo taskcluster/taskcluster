@@ -84,6 +84,7 @@ export const PUBLISHERS = {
 
 export const CHECKLOGS_TEXT = 'View logs in Taskcluster';
 export const CHECKRUN_TEXT = 'View task in Taskcluster';
+export const CHECK_TASK_GROUP_TEXT = 'View task group in Taskcluster';
 export const LIVE_BACKING_LOG_ARTIFACT_NAME = 'public/logs/live_backing.log';
 export const CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME = 'public/github/customCheckRunText.md';
 export const CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME = 'public/github/customCheckRunAnnotations.json';
@@ -100,6 +101,7 @@ export default {
   GITHUB_RELEASE_ACTION,
   CHECKLOGS_TEXT,
   CHECKRUN_TEXT,
+  CHECK_TASK_GROUP_TEXT,
   LIVE_BACKING_LOG_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,

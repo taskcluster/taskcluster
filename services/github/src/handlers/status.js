@@ -7,12 +7,13 @@ import {
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
   CHECK_RUN_STATES,
   TASK_STATE_TO_CHECK_RUN_STATE,
+  CHECK_TASK_GROUP_TEXT,
 } from '../constants.js';
 
 import QueueLock from '../queue-lock.js';
-import { tailLog, markdownLog, markdownAnchor } from '../utils.js';
+import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
 import { requestArtifact } from './requestArtifact.js';
-import { taskUI, makeDebug, taskLogUI, GithubCheck } from './utils.js';
+import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl } from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -164,9 +165,20 @@ export async function statusHandler(message) {
       output_summary: outputSummary || taskDefinition.metadata.description,
       output_annotations: customCheckRunAnnotations,
     });
+
+    const artifactList = await this.queueClient.listArtifacts(taskId, runId, { limit: 50 });
+
     const output = githubCheck.output;
-    output.addText(markdownAnchor(CHECKRUN_TEXT, taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)));
-    output.addText(markdownAnchor(
+
+    const CHECK_RUN_TEXT_OUTPUT = markdownAnchor(
+      CHECKRUN_TEXT,
+      taskUI(
+        this.context.cfg.taskcluster.rootUrl,
+        taskGroupId,
+        taskId,
+      ),
+    );
+    const CHECK_LOGS_TEXT_OUTPUT = markdownAnchor(
       CHECKLOGS_TEXT,
       taskLogUI(
         this.context.cfg.taskcluster.rootUrl,
@@ -176,12 +188,43 @@ export async function statusHandler(message) {
         // generic worker uses `task.payload.logs.live`
         taskDefinition.payload?.logs?.live || taskDefinition.payload?.log,
       ),
-    ));
+    );
+    const CHECK_TASK_GROUP_TEXT_OUTPUT = markdownAnchor(
+      CHECK_TASK_GROUP_TEXT,
+      taskGroupUI(
+        this.context.cfg.taskcluster.rootUrl,
+        taskGroupId,
+      ),
+    );
+
+    output.addText(`${CHECK_RUN_TEXT_OUTPUT} | ${CHECK_LOGS_TEXT_OUTPUT} | ${CHECK_TASK_GROUP_TEXT_OUTPUT}`);
+    output.addText(`### Task Status`);
+
+    if(runs.length > 0) {
+      const taskExecutionTime = getTimeDifference(runs[runId]?.started, runs[runId]?.resolved);
+
+      output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);
+      output.addText(`Resolved: ${runs[runId]?.resolved ?? "n/a"}`);
+      output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
+      output.addText(`Task Status: ${runs[runId]?.state ?? "n/a"}`);
+      output.addText(`Reason Resolved: ${runs[runId]?.reasonResolved ?? "n/a"}`);
+      output.addText(`RunId: ${runId}`);
+    }
+
+    output.addText(`### Artifacts`);
+    artifactList.artifacts.forEach(element => {
+      const ARTIFACT_LINK = markdownAnchor(
+        element.name,
+        buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name),
+      );
+      output.addText(`\\- ${ARTIFACT_LINK}`);
+    });
+
     if (customCheckRunText) {
       output.addText(customCheckRunText);
     }
     if (liveLogText) {
-      output.addText(markdownLog(tailLog(liveLogText, 250, githubCheck.output.getRemainingMaxSize())));
+      output.addText(markdownLog(extractLog(liveLogText, 20, 200, githubCheck.output.getRemainingMaxSize())));
     }
 
     let [checkRun] = await this.context.db.fns.get_github_check_by_task_group_and_task_id(taskGroupId, taskId);

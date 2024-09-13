@@ -8,6 +8,9 @@ import {
   shouldSkipComment,
   getTaskclusterCommand,
   tailLog,
+  extractLog,
+  extractHeadLinesFromLog,
+  extractTailLinesFromLog,
   ansi2txt,
   generateXHubSignature,
   checkGithubSignature,
@@ -291,6 +294,37 @@ suite(testing.suiteName(), function() {
       const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
       assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
       assert.equal('line', tailLog(payloadLong, 10, 4));
+    });
+  });
+
+  suite('extractLog', function() {
+    test('extract log', function () {
+      const payload = Array.from({ length: 100 }).map(line => `line: ${line}`).join('\n');
+      assert.equal(100, extractLog(payload, 20, 200).split('\n').length);
+      assert.equal(100, extractLog(payload).split('\n').length);
+
+      const payloadLong = Array.from({ length: 500 }).map(line => 'line'.repeat(10)).join('\n');
+      assert.equal(223, extractLog(payloadLong, 20, 200).split('\n').length);
+    });
+  });
+
+  suite('extractHeadLinesFromLog', function() {
+    test('should get the complete head lines corresponding to the max payload length', function() {
+      const payload = Array.from({ length: 4 }, (_, i) => Array(i + 1).fill(`line ${i + 1}`).join(' ')).join('\n');
+      const payloadWithIncompleteLine = `${payload}\nline 5 line 5 line`;
+
+      assert.equal(payload, extractHeadLinesFromLog(payloadWithIncompleteLine, 80));
+      assert.equal(payload, extractHeadLinesFromLog(payload, 72));
+    });
+  });
+
+  suite('extractTailLinesFromLog', function() {
+    test('should get complete tail lines corresponding to may payload length or taiLines whichever is minimum', function() {
+      const payload = Array.from({ length: 4 }, (_, i) => Array(i + 1).fill(`line ${i + 1}`).join(' ')).join('\n');
+
+      assert.equal(null, extractTailLinesFromLog(payload, 100, 0));
+      assert.equal('line 4 line 4 line 4 line 4', extractTailLinesFromLog(payload, 100, 1));
+      assert.equal(payload, extractTailLinesFromLog(payload, 100, 4));
     });
   });
 
