@@ -235,6 +235,10 @@ export const buildUrl = (rootUrl, taskId, runId, artifactName) => {
   return `${rootUrl}/tasks/${taskId}/runs/${runId}/${artifactName}`;
 };
 
+export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
+  return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${artifactName}`;
+};
+
 export default {
   taskUI,
   taskGroupUI,
@@ -245,4 +249,5 @@ export default {
   isCollaborator,
   getTimeDifference,
   buildUrl,
+  buildLogUrl,
 };
