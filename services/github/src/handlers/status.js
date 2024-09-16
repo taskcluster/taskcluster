@@ -13,7 +13,7 @@ import {
 import QueueLock from '../queue-lock.js';
 import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
 import { requestArtifact } from './requestArtifact.js';
-import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl } from './utils.js';
+import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl, buildLogUrl } from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -166,8 +166,6 @@ export async function statusHandler(message) {
       output_annotations: customCheckRunAnnotations,
     });
 
-    const artifactList = await this.queueClient.listArtifacts(taskId, runId, { limit: 50 });
-
     const output = githubCheck.output;
 
     const CHECK_RUN_TEXT_OUTPUT = markdownAnchor(
@@ -198,11 +196,10 @@ export async function statusHandler(message) {
     );
 
     output.addText(`${CHECK_RUN_TEXT_OUTPUT} | ${CHECK_LOGS_TEXT_OUTPUT} | ${CHECK_TASK_GROUP_TEXT_OUTPUT}`);
-    output.addText(`### Task Status`);
 
     if(runs.length > 0) {
       const taskExecutionTime = getTimeDifference(runs[runId]?.started, runs[runId]?.resolved);
-
+      output.addText(`### Task Status`);
       output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);
       output.addText(`Resolved: ${runs[runId]?.resolved ?? "n/a"}`);
       output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
@@ -211,14 +208,32 @@ export async function statusHandler(message) {
       output.addText(`RunId: ${runId}`);
     }
 
-    output.addText(`### Artifacts`);
-    artifactList.artifacts.forEach(element => {
-      const ARTIFACT_LINK = markdownAnchor(
-        element.name,
-        buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name),
-      );
-      output.addText(`\\- ${ARTIFACT_LINK}`);
-    });
+    try {
+      const artifactList = await this.queueClient.listArtifacts(taskId, runId, { limit: 50 });
+
+      if (artifactList.artifacts.length > 0) {
+        output.addText(`### Artifacts`);
+      }
+
+      artifactList.artifacts.forEach(element => {
+
+        let artifactUrl;
+
+        if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
+          artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+        } else {
+          artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+        }
+
+        const ARTIFACT_LINK = markdownAnchor(
+          element.name,
+          artifactUrl,
+        );
+        output.addText(`\\- ${ARTIFACT_LINK}`);
+      });
+    } catch (e) {
+      await createExceptionComment(e);
+    }
 
     if (customCheckRunText) {
       output.addText(customCheckRunText);
