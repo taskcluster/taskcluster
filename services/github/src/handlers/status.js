@@ -203,9 +203,9 @@ export async function statusHandler(message) {
       output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);
       output.addText(`Resolved: ${runs[runId]?.resolved ?? "n/a"}`);
       output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
-      output.addText(`Task Status: ${runs[runId]?.state ?? "n/a"}`);
-      output.addText(`Reason Resolved: ${runs[runId]?.reasonResolved ?? "n/a"}`);
-      output.addText(`RunId: ${runId}`);
+      output.addText(`Task Status: **${runs[runId]?.state ?? "n/a"}**`);
+      output.addText(`Reason Resolved: **${runs[runId]?.reasonResolved ?? "n/a"}**`);
+      output.addText(`RunId: **${runId}**`);
     }
 
     try {
@@ -232,7 +232,9 @@ export async function statusHandler(message) {
         output.addText(`\\- ${ARTIFACT_LINK}`);
       });
     } catch (e) {
-      await createExceptionComment(e);
+      if (e.statusCode !== 404) {
+        await createExceptionComment(e);
+      }
     }
 
     if (customCheckRunText) {
