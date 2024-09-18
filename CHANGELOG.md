@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v69.0.1
+
+### USERS
+
+▶ [patch] [#7263](https://github.com/taskcluster/taskcluster/issues/7263)
+Improve github checks output - handle 404 cases for empty artifact list.
+Adds artifact redirect page in UI to redirect user to the actual artifact.
+
 ## v69.0.0
 
 ### GENERAL
