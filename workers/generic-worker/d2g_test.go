@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v68/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v69/tools/d2g/dockerworker"
 )
 
 func TestWithValidDockerWorkerPayload(t *testing.T) {

@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v69.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v20.17.0 and go1.23.1 (security release).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7257](https://github.com/taskcluster/taskcluster/issues/7257)
+Worker-manager provides an option to request public IP for generic-worker in Azure that is skipped by default.
+Passing `publicIp = true` in the launch configuration will enable the public IP request.
+
+```json
+{
+  "workerManager": {
+    "publicIp": true
+  }
+}
+```
+
+### USERS
+
+▶ [minor] [#7151](https://github.com/taskcluster/taskcluster/issues/7151)
+Queue service supports up to 10.000 dependencies for a single task.
+
+### DEVELOPERS
+
+▶ [MAJOR]
+Update dependencies in the rust client
+
+▶ [patch] [#5669](https://github.com/taskcluster/taskcluster/issues/5669)
+Enhanced github integration with information: task runtime, head of logs, status information, link of task group, list of 50 artifacts.
+
+▶ [patch] [#5669](https://github.com/taskcluster/taskcluster/issues/5669)
+Fix incorrect artifact url generation
+Fix artifact fetch with listArtifact due to permission issues
+
+### OTHER
+
+▶ Additional change not described here: [#5669](https://github.com/taskcluster/taskcluster/issues/5669).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump express from 4.19.2 to 4.21.0 in /ui (b72d4e5ce)
+* build(deps): bump express from 4.19.2 to 4.20.0 (8156c765c)
+* build(deps): bump body-parser from 1.20.2 to 1.20.3 (0f97eb560)
+* build(deps): bump dset from 3.1.3 to 3.1.4 (9c896b41c)
+
+</details>
+
 ## v68.0.4
 
 ### USERS

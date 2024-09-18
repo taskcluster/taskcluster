@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-queue",
-  "version": "68.0.4",
+  "version": "69.0.0",
   "private": true,
   "type": "module",
   "scripts": {
