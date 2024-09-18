@@ -46,6 +46,22 @@ properties:
           type: integer
           minimum: 1
           description: The number of tasks a single worker of this type can run at any given time.
+        workerManager:
+          title: Worker Manager Config
+          type: object
+          description: |-
+            Worker Manager's own configuration settings per launch configuration.
+            The other properties of the launch configuration section are passed directly through to
+            Azure APIs, whereas this section is interpreted directly by Worker Manager.
+          properties:
+            publicIp:
+              title: Public IP
+              type: boolean
+              description: |
+                If `true`, Worker Manager will request a public IPv4 address for the worker.
+                This is set to `false` by default. It is typically only needed for Windows
+                workers that should allow incoming RDP connections from the public internet.
+          additionalProperties: false
         workerConfig:
           title: Worker Config
           type: object
