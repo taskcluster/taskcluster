@@ -29,6 +29,7 @@ To convert a task definition (JSON), you must use the task definition flag (-t, 
   cat /path/to/input/task-definition.json | taskcluster d2g -t
   echo '{"image": "ubuntu", "command": ["bash", "-c", "echo hello world"], "maxRunTime": 300}' | taskcluster d2g`,
 	}
+	cmd.Flags().StringP("engine", "e", "docker", "The container engine to use between docker and podman.")
 	cmd.Flags().StringP("file", "f", "", "Path to a .json file containing a docker-worker payload or task definition.")
 	cmd.Flags().BoolP("task-def", "t", false, "Must use if the input is a docker-worker task definition.")
 	root.Command.AddCommand(cmd)

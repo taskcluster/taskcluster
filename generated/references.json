@@ -9096,6 +9096,16 @@
               "additionalProperties": false,
               "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
               "properties": {
+                "containerEngine": {
+                  "default": "docker",
+                  "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+                  "enum": [
+                    "docker",
+                    "podman"
+                  ],
+                  "title": "Container engine",
+                  "type": "string"
+                },
                 "devices": {
                   "additionalProperties": false,
                   "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker.",
@@ -9836,7 +9846,6 @@
               "items": {
                 "type": "string"
               },
-              "maxItems": 0,
               "title": "OS Groups",
               "type": "array",
               "uniqueItems": true
@@ -9878,6 +9887,16 @@
               "additionalProperties": false,
               "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
               "properties": {
+                "containerEngine": {
+                  "default": "docker",
+                  "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+                  "enum": [
+                    "docker",
+                    "podman"
+                  ],
+                  "title": "Container engine",
+                  "type": "string"
+                },
                 "devices": {
                   "additionalProperties": false,
                   "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker.",
@@ -10201,6 +10220,16 @@
           "additionalProperties": false,
           "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
           "properties": {
+            "containerEngine": {
+              "default": "docker",
+              "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+              "enum": [
+                "docker",
+                "podman"
+              ],
+              "title": "Container engine",
+              "type": "string"
+            },
             "devices": {
               "additionalProperties": false,
               "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker.",

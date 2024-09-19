@@ -98,7 +98,8 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
 func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID string) (gwScopes []string) {
-	gwScopes = []string{}
+	// scopes to use docker, by default, should just come "for free"
+	gwScopes = []string{"generic-worker:os-group:" + taskQueueID + "/docker"}
 	for _, s := range dwScopes {
 		switch true {
 		case s == "docker-worker:capability:device:kvm":
@@ -106,11 +107,6 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 				gwScopes,
 				"generic-worker:os-group:"+taskQueueID+"/kvm",
 				"generic-worker:os-group:"+taskQueueID+"/libvirt",
-			)
-		case s == "docker-worker:capability:privileged":
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:os-group:"+taskQueueID+"/docker",
 			)
 		case s == "docker-worker:capability:device:loopbackVideo":
 			gwScopes = append(gwScopes, "generic-worker:loopback-video:*")
@@ -136,7 +132,7 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 
 // Convert transforms a Docker Worker task payload into an equivalent Generic
 // Worker Multiuser POSIX task payload. The resulting Generic Worker payload is
-// a BASH script which uses Podman to contain the Docker Worker payload. Since
+// a BASH script which uses Podman (by default) to contain the Docker Worker payload. Since
 // scopes fall outside of the payload in a task definition, scopes need to be
 // converted separately (see d2g.Scopes function).
 func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericworker.GenericWorkerPayload, err error) {
@@ -239,10 +235,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 }
 
 func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
-	tool := "podman"
-	if dwPayload.Capabilities.Privileged {
-		tool = "docker"
-	}
+	tool := dwPayload.Capabilities.ContainerEngine
 	containerName := ""
 	if len(gwArtifacts) > 0 {
 		containerName = "taskcontainer"
@@ -467,7 +460,7 @@ func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 		// https://help.ubuntu.com/community/KVM/Installation
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
 	}
-	if dwPayload.Capabilities.Privileged {
+	if dwPayload.Capabilities.ContainerEngine == "docker" {
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "docker")
 	}
 }
