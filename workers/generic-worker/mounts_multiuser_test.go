@@ -6,12 +6,43 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/fileutil"
 )
+
+// grantingDenying returns regexp strings that match the log lines for granting
+// and denying a task user access to a file/folder (specified by taskPath).
+// filetype should be 'directory' or 'file'.
+func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...string) (granting, denying []string) {
+	t.Helper()
+	// We need to escape file path that is contained in final regexp, e.g. due
+	// to '\' path separator on Windows. However, the path also includes an
+	// unknown task user (task_[0-9]*) which we don't want to escape. The
+	// simplest way to properly escape the expression but without escaping this
+	// one part of it, is to swap out the task user expression with a randomly
+	// generated slugid (122 bits of randomness) which doesn't contain
+	// characters that need escaping, then to escape the full expression, and
+	// finally to replace the swapped in slug with the desired regexp that we
+	// couldn't include before escaping.
+	var pathRegExp string
+	if cacheFile {
+		pathRegExp = ".*"
+	} else {
+		slug := slugid.V4()
+		pathRegExp = strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
+	}
+	return []string{
+			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
+		}, []string{
+			`Denying task_[0-9]* access to '.*'`,
+		}
+}
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	setup(t)
