@@ -302,9 +302,9 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
 	switch containerName {
 	case "":
-		command.WriteString(tool + " run -t --rm")
+		command.WriteString(tool + " run --init -t --rm")
 	default:
-		command.WriteString(fmt.Sprintf("timeout %v %v run -t --name %v", dwPayload.MaxRunTime, tool, containerName))
+		command.WriteString(fmt.Sprintf("timeout %v %v run --init -t --name %v", dwPayload.MaxRunTime, tool, containerName))
 	}
 	// Do not limit resource usage by the containerName. See
 	// https://docs.podman.io/en/latest/markdown/podman-run.1.html

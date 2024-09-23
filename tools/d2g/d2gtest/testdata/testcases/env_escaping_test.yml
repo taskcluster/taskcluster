@@ -6,7 +6,7 @@ testSuite:
     - name: Env escaping test
       description: >-
         If an environment variable contains spaces or special characters,
-        it should be escaped before passing to the podman run command.
+        it should be escaped before passing to the podman run --init command.
       dockerWorkerTaskPayload:
         command:
           - echo "Hello world"
@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e ' test123 --help  ; whoami ; '
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
