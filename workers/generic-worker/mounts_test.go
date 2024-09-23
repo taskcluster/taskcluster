@@ -57,7 +57,8 @@ func TestMissingScopes(t *testing.T) {
 	}
 }
 
-// TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
+// TestMissingMountsDependency tests that if artifact content is mounted, it
+// must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
 	setup(t)
 	pretendTaskID := slugid.Nice()
