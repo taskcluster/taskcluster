@@ -34,7 +34,9 @@ func ExampleScopes_mixture() {
 		"docker-worker:capability:device:loopbackVideo:x/y/z",
 		"docker-worker:capability:device:kvm:x/y/z",
 	}
-	gwScopes := d2g.Scopes(dwScopes, nil, "proj-misc/tutorial")
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	gwScopes := d2g.Scopes(dwScopes, &dwPayload, "proj-misc/tutorial")
 	for _, s := range gwScopes {
 		fmt.Printf("\t%#v\n", s)
 	}
@@ -50,6 +52,7 @@ func ExampleScopes_mixture() {
 	// 	"generic-worker:loopback-video:*"
 	// 	"generic-worker:loopback-video:x/y/z"
 	// 	"generic-worker:monkey"
+	//	"generic-worker:os-group:proj-misc/tutorial/docker"
 	// 	"generic-worker:teapot"
 }
 

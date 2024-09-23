@@ -18,7 +18,7 @@ testSuite:
           - - bash
             - "-cx"
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host --cap-add=SYS_PTRACE
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -31,4 +31,6 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
   taskDefTests: []

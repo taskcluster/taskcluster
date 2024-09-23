@@ -33,8 +33,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              timeout 3600 podman run --init -t --name taskcontainer
-              --memory-swap -1 --pids-limit -1 --ulimit host
+              timeout 3600 docker run --init -t --name taskcontainer
+              --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -45,11 +45,11 @@ testSuite:
 
               exit_code=$?
 
-              podman cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
+              docker cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
 
-              podman cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
+              docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
 
-              podman rm taskcontainer
+              docker rm taskcontainer
 
               exit "${exit_code}"
         maxRunTime: 4500
@@ -57,4 +57,6 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
   taskDefTests: []

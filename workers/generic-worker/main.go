@@ -11,6 +11,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -222,6 +223,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			CleanUpTaskDirs:                true,
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
+			EnableD2G:                      false,
 			EnableInteractive:              false,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
@@ -623,6 +625,12 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		panic(err)
 	}
 	if _, exists := payload["image"]; exists {
+		if !config.EnableD2G {
+			return MalformedPayloadError(errors.New(`docker worker payload detected, but D2G is not enabled on this worker pool.
+If you need D2G to translate your Docker Worker payload so Generic Worker can process it, please do one of two things:
+	1. Contact the owner of the worker pool and ask for D2G to be enabled.
+	2. Use a worker pool that already allows docker worker payloads (search for "enableD2G": "true" in the worker pool definition)`))
+		}
 		err := task.convertDockerWorkerPayload()
 		if err != nil {
 			return err

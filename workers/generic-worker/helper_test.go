@@ -362,6 +362,7 @@ func GWTest(t *testing.T) *Test {
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
+			EnableD2G:                 true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",

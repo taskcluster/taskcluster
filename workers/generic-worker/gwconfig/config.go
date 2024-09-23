@@ -36,6 +36,7 @@ type (
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
+		EnableD2G                      bool                   `json:"enableD2G"`
 		EnableInteractive              bool                   `json:"enableInteractive"`
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`

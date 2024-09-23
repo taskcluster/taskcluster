@@ -152,6 +152,9 @@ and reports back results to the queue.
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
+          enableD2G                         Enables D2G (Docker Worker to Generic Worker payload
+                                            transformation). This allows for Docker Worker payloads
+                                            to be submitted to Generic Worker. [default: false]
           enableInteractive                 Enables interactive mode. This allows an
                                             interactive shell session to run on the worker.
                                             [default: false]

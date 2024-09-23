@@ -5,7 +5,7 @@ testSuite:
   payloadTests:
     - name: Default container engine test
       description: >-
-        Tests that podman should be set as the default container engine in the resulting generic worker task payload.
+        Tests that docker should be set as the default container engine in the resulting generic worker task payload.
       dockerWorkerTaskPayload:
         command:
           - echo "Hello world"
@@ -16,37 +16,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-
-    - name: Container engine test with privileged set
-      description: >-
-        Tests that container engine user passes is not changed when privileged is set to true in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          privileged: true
-          containerEngine: docker
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker run -t --rm --memory-swap -1 --pids-limit -1 --privileged
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -62,41 +32,14 @@ testSuite:
         osGroups:
           - docker
 
-    - name: Default container engine test
+    - name: Set to podman container engine test
       description: >-
-        Tests that container engine is set to worker config when not specified in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-
-    - name: Set to docker container engine test
-      description: >-
-        Tests that docker should be set as the container engine in the resulting generic worker task payload.
+        Tests that podman should be set as the container engine in the resulting generic worker task payload.
       dockerWorkerTaskPayload:
         command:
           - echo "Hello world"
         capabilities:
-          containerEngine: docker
+          containerEngine: podman
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
@@ -104,7 +47,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -117,6 +60,4 @@ testSuite:
           retry:
             - 125
             - 128
-        osGroups:
-          - docker
   taskDefTests: []
