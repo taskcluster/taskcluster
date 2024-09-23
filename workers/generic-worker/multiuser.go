@@ -36,6 +36,59 @@ func secure(configFile string) {
 	}
 }
 
+func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) {
+	pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
+	if err != nil {
+		panic(err)
+	}
+
+	taskContext = &TaskContext{
+		User:    taskUserCredentials,
+		TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
+		pd:      pd,
+	}
+
+	// At this point, we know we have already booted into the new task user, and the user
+	// is logged in.
+	// Note we don't create task directory before logging in, since
+	// if the task directory is also the user profile home, this
+	// would mess up the windows logon process.
+	err = os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
+	if err != nil {
+		panic(err)
+	}
+	// Make sure task user has full control of task directory. Due to
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
+	// assume previous MkdirAll has granted this permission.
+	log.Printf("Granting %v control of %v", taskContext.User.Name, taskContext.TaskDir)
+	err = makeFileOrDirReadWritableForUser(false, taskContext.TaskDir, taskContext.User)
+	if err != nil {
+		panic(err)
+	}
+	if script := config.RunAfterUserCreation; script != "" {
+		// See https://bugzil.la/1559210
+		// Regardless of whether we are running tasks as current user or
+		// not, task initialisation steps should be run as task user.
+		pdTaskUser, err := process.TaskUserPlatformData()
+		if err != nil {
+			panic(err)
+		}
+		command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, pdTaskUser)
+		if err != nil {
+			panic(err)
+		}
+		command.DirectOutput(os.Stdout)
+		result := command.Execute()
+		log.Printf("%v", result)
+		switch {
+		case result.Failed():
+			panic(result.FailureCause())
+		case result.Crashed():
+			panic(result.CrashCause())
+		}
+	}
+}
+
 func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	ctuPath = filepath.Join(cwd, "current-task-user.json")
 	ntuPath = filepath.Join(cwd, "next-task-user.json")
@@ -61,56 +114,8 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 			panic(err)
 		}
 		reboot = false
-		pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser)
-		if err != nil {
-			panic(err)
-		}
 
-		taskContext = &TaskContext{
-			User:    taskUserCredentials,
-			TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
-			pd:      pd,
-		}
-
-		// At this point, we know we have already booted into the new task user, and the user
-		// is logged in.
-		// Note we don't create task directory before logging in, since
-		// if the task directory is also the user profile home, this
-		// would mess up the windows logon process.
-		err = os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
-		if err != nil {
-			panic(err)
-		}
-		// Make sure task user has full control of task directory. Due to
-		// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
-		// assume previous MkdirAll has granted this permission.
-		log.Printf("Granting %v control of %v", taskContext.User.Name, taskContext.TaskDir)
-		err = makeFileOrDirReadWritableForUser(false, taskContext.TaskDir, taskContext.User)
-		if err != nil {
-			panic(err)
-		}
-		if script := config.RunAfterUserCreation; script != "" {
-			// See https://bugzil.la/1559210
-			// Regardless of whether we are running tasks as current user or
-			// not, task initialisation steps should be run as task user.
-			pdTaskUser, err := process.TaskUserPlatformData()
-			if err != nil {
-				panic(err)
-			}
-			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, pdTaskUser)
-			if err != nil {
-				panic(err)
-			}
-			command.DirectOutput(os.Stdout)
-			result := command.Execute()
-			log.Printf("%v", result)
-			switch {
-			case result.Failed():
-				panic(result.FailureCause())
-			case result.Crashed():
-				panic(result.CrashCause())
-			}
-		}
+		PostRebootSetup(taskUserCredentials)
 
 		// If there is precisely one more task to run, no need to create a
 		// future task user, as we already have a task user created for the
