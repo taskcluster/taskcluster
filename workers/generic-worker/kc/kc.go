@@ -80,7 +80,7 @@ func AutoLoginPassword() (password []byte, err error) {
 }
 
 func LoginWindowPList() (data map[string]interface{}, err error) {
-	loginWindowPListString, err := host.CombinedOutput("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
+	loginWindowPListString, err := host.CombinedOutput("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
 	if err != nil {
 		return data, err
 	}
