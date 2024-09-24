@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/process"
 )
 
 const (

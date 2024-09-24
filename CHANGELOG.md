@@ -3,6 +3,57 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v70.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+Generic Worker: Adds `containerEngine` worker config option to select between `docker` and `podman` to be used during D2G payload translations.
+
+Default is `docker` and this value will be overridden by `task.payload.capabilities.containerEngine`, if specified.
+
+▶ [MAJOR]
+Generic Worker: Adds `enableD2G` worker config option to internally process Docker Worker payloads using D2G. Defaults to `false` and will return a `malformed-payload` if a Docker Worker payload is detected and this config isn't set to `true`.
+
+### USERS
+
+▶ [minor]
+D2G: Adds `capabilities.containerEngine` to the Docker Worker payload schema strictly to use as a `docker`/`podman` toggle for the d2g-translated payload.
+
+▶ [minor] [#4595](https://github.com/taskcluster/taskcluster/issues/4595)
+Generic Worker can now be run in headless mode, meaning tasks do not have a
+dedicated graphical user environment. To do this, the Generic Worker config
+setting `headlessTasks` should be set to true. This can only be enabled or
+disabled at the Worker level, tasks cannot choose if they run in a headless
+environment or not, it depends on the worker settings (i.e. the Worker Pool
+configuration).
+
+There are no reboots in headless mode, and multiple worker instances can
+be run concurrently on the same host (e.g. Worker Pool definitions may have
+`capacity` greater than one).
+
+Furthermore, on Linux, Gnome Desktop is no longer required.
+
+▶ [patch] [#7151](https://github.com/taskcluster/taskcluster/issues/7151)
+Fixes a bug in UI where task dependencies were not having colours.
+
+▶ [patch] [#7255](https://github.com/taskcluster/taskcluster/issues/7255)
+D2G now passes `--init` to the `podman run`/`docker run` command it generates,
+in order that signals are properly received and processed by the container.
+
+### OTHER
+
+▶ Additional change not described here: [#7269](https://github.com/taskcluster/taskcluster/issues/7269).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump body-parser in /clients/client-web (7f33c0332)
+
+</details>
+
 ## v69.0.1
 
 ### USERS

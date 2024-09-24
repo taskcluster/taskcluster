@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v69/internal/scopes"
+	"github.com/taskcluster/taskcluster/v70/internal/scopes"
 )
 
 // one instance overall - represents feature

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v69/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v69/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v70/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v70/internal/mocktc/tc"
 )
 
 type QueueProvider struct {
