@@ -483,14 +483,12 @@ oneOf:
         containerEngine:
           title: Container engine
           description: >-
-            The container engine to use, between `docker` and `podman`.
-            This property is only used during Generic Worker's internal
-            payload translation (d2g). [default: docker]
+            The container engine to use when executing tasks
+            with Docker Worker formatted task payloads.
           type: string
           enum:
             - docker
             - podman
-          default: docker
         devices:
           title: Devices to be attached to task containers
           description: >-

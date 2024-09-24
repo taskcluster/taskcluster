@@ -133,14 +133,12 @@ type (
 	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
 	Capabilities struct {
 
-		// The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]
+		// The container engine to use when executing tasks with Docker Worker formatted task payloads.
 		//
 		// Possible values:
 		//   * "docker"
 		//   * "podman"
-		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
+		ContainerEngine string `json:"containerEngine,omitempty"`
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
 		Devices Devices `json:"devices,omitempty"`
@@ -1274,8 +1272,7 @@ func JSONSchema() string {
           "description": "Set of capabilities that must be enabled or made available to the task container Example: ` + "`" + `` + "`" + `` + "`" + `{ \"capabilities\": { \"privileged\": true }` + "`" + `` + "`" + `` + "`" + `",
           "properties": {
             "containerEngine": {
-              "default": "docker",
-              "description": "The container engine to use, between ` + "`" + `docker` + "`" + ` and ` + "`" + `podman` + "`" + `. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+              "description": "The container engine to use when executing tasks with Docker Worker formatted task payloads.",
               "enum": [
                 "docker",
                 "podman"

@@ -23,7 +23,7 @@ func init() {
 		Short: `Converts a docker-worker payload (JSON) to a generic-worker payload (JSON).
 To convert a task definition (JSON), you must use the task definition flag (-t, --task-def).`,
 		RunE: convert,
-		Example: `  taskcluster d2g -f /path/to/input/payload.json
+		Example: `  taskcluster d2g -f -e podman /path/to/input/payload.json
   taskcluster d2g -t -f /path/to/input/task-definition.json
   cat /path/to/input/payload.json | taskcluster d2g
   cat /path/to/input/task-definition.json | taskcluster d2g -t
@@ -38,6 +38,7 @@ To convert a task definition (JSON), you must use the task definition flag (-t, 
 func convert(cmd *cobra.Command, args []string) (err error) {
 	isTaskDef, _ := cmd.Flags().GetBool("task-def")
 	filePath, _ := cmd.Flags().GetString("file")
+	engine, _ := cmd.Flags().GetString("engine")
 
 	input, err := userInput(filePath)
 	if err != nil {
@@ -84,7 +85,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		// Convert dwTaskDef to gwTaskDef
-		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON)
+		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, engine)
 		if err != nil {
 			return fmt.Errorf("failed to convert docker worker task definition to a generic worker task definition: %v", err)
 		}
@@ -108,7 +109,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, err := d2g.Convert(dwPayload)
+		gwPayload, err := d2g.Convert(dwPayload, engine)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}

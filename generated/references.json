@@ -9097,8 +9097,7 @@
               "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
               "properties": {
                 "containerEngine": {
-                  "default": "docker",
-                  "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+                  "description": "The container engine to use when executing tasks with Docker Worker formatted task payloads.",
                   "enum": [
                     "docker",
                     "podman"
@@ -9888,8 +9887,7 @@
               "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
               "properties": {
                 "containerEngine": {
-                  "default": "docker",
-                  "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+                  "description": "The container engine to use when executing tasks with Docker Worker formatted task payloads.",
                   "enum": [
                     "docker",
                     "podman"
@@ -10221,8 +10219,7 @@
           "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
           "properties": {
             "containerEngine": {
-              "default": "docker",
-              "description": "The container engine to use, between `docker` and `podman`. This property is only used during Generic Worker's internal payload translation (d2g). [default: docker]",
+              "description": "The container engine to use when executing tasks with Docker Worker formatted task payloads.",
               "enum": [
                 "docker",
                 "podman"

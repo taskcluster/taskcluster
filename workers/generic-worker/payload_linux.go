@@ -24,7 +24,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	}
 
 	// Convert dwPayload to gwPayload
-	gwPayload, err := d2g.Convert(dwPayload)
+	gwPayload, err := d2g.Convert(dwPayload, config.ContainerEngine)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}
@@ -35,7 +35,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	if taskQueueID == "" {
 		return executionError(malformedPayload, errored, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required"))
 	}
-	task.Definition.Scopes = d2g.Scopes(task.Definition.Scopes, dwPayload, taskQueueID)
+	task.Definition.Scopes = d2g.Scopes(task.Definition.Scopes, dwPayload, taskQueueID, config.ContainerEngine)
 
 	// Convert gwPayload to JSON
 	d2gConvertedPayloadJSON, err := json.MarshalIndent(*gwPayload, "", "  ")

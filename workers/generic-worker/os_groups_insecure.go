@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os/user"
-	"strings"
 )
 
 // one instance per task
@@ -27,7 +26,12 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 
 	notInGroups := checkUserGroupsInList(groupNames, userGroups)
 	if len(notInGroups) > 0 {
-		return MalformedPayloadError(fmt.Errorf("task definition contains unsupported osGroups: %v\nallowed values (on this worker pool): %v", notInGroups, userGroups))
+		// convert to slice for a nicely formatted log
+		userGroupsSlice := make([]string, 0, len(userGroups))
+		for userGroup := range userGroups {
+			userGroupsSlice = append(userGroupsSlice, userGroup)
+		}
+		return MalformedPayloadError(fmt.Errorf("task payload contains unsupported osGroups: %v\nallowed values (on this worker pool): %v", notInGroups, userGroupsSlice))
 	}
 
 	return nil
@@ -47,18 +51,19 @@ func currentUserGroups() (map[string]bool, error) {
 		return nil, fmt.Errorf("failed to get current user's group ids: %v", err)
 	}
 
-	primaryGID := currentUser.Gid
 	userGroups := make(map[string]bool)
 	for _, gid := range groupIDs {
-		if gid == primaryGID {
-			continue
-		}
 		group, err := user.LookupGroupId(gid)
 		if err != nil {
 			log.Printf("failed to lookup group: %v", err)
 			continue
 		}
-		userGroups[strings.ToLower(group.Name)] = true
+		// when the group name matches the task username,
+		// it is non-predictable and thus, not useful
+		if group.Name == currentUser.Username {
+			continue
+		}
+		userGroups[group.Name] = true
 	}
 
 	return userGroups, nil
@@ -67,7 +72,7 @@ func currentUserGroups() (map[string]bool, error) {
 func checkUserGroupsInList(groupsToCheck []string, userGroups map[string]bool) []string {
 	notMemberOf := []string{}
 	for _, group := range groupsToCheck {
-		if !userGroups[strings.ToLower(group)] {
+		if !userGroups[group] {
 			notMemberOf = append(notMemberOf, group)
 		}
 	}

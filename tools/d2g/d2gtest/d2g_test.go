@@ -36,7 +36,7 @@ func ExampleScopes_mixture() {
 	}
 	dwPayload := dockerworker.DockerWorkerPayload{}
 	defaults.SetDefaults(&dwPayload)
-	gwScopes := d2g.Scopes(dwScopes, &dwPayload, "proj-misc/tutorial")
+	gwScopes := d2g.Scopes(dwScopes, &dwPayload, "proj-misc/tutorial", "docker")
 	for _, s := range gwScopes {
 		fmt.Printf("\t%#v\n", s)
 	}
@@ -124,7 +124,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
 		}
-		actualGWPayload, err := d2g.Convert(&dwPayload)
+		actualGWPayload, err := d2g.Convert(&dwPayload, tc.ContainerEngine)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
@@ -154,7 +154,7 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tc.Validate(t)
-		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition)
+		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, tc.ContainerEngine)
 		if err != nil {
 			t.Fatalf("cannot convert task definition: %v", err)
 		}

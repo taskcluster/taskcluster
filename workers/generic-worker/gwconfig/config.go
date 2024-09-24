@@ -31,6 +31,7 @@ type (
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
+		ContainerEngine                string                 `json:"containerEngine"`
 		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`

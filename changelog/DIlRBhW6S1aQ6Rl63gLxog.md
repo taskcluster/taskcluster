@@ -1,4 +1,4 @@
 audience: users
-level: major
+level: minor
 ---
-D2G: Adds `capabilities.containerEngine` to the Docker Worker payload schema strictly to use as a `docker`/`podman` toggle for the d2g-translated payload. Defaults to `docker`.
+D2G: Adds `capabilities.containerEngine` to the Docker Worker payload schema strictly to use as a `docker`/`podman` toggle for the d2g-translated payload.
