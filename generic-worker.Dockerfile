@@ -25,8 +25,8 @@ RUN go build -o /taskcluster
 
 WORKDIR /app/workers/generic-worker
 RUN ./build.sh && \
-  mv generic-worker-multiuser-* /generic-worker-multiuser && \
-  mv generic-worker-insecure-* /generic-worker
+  mv generic-worker-multiuser-* /generic-worker && \
+  mv generic-worker-insecure-* /generic-worker-insecure
 
 FROM ubuntu:jammy
 
@@ -53,7 +53,7 @@ else \
     echo \{\"version\": \"69.0.1\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
 fi
 
-VOLUME /etc/generic-worker/config.json
+VOLUME /etc/generic-worker
 VOLUME /var/local/generic-worker
 
 COPY workers/entrypoint.sh /entrypoint.sh

@@ -2,13 +2,15 @@
   "accessToken": "j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA",
   "clientId": "static/generic-worker-compose-client",
   "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",
-  "rootURL": "http://taskcluster",
-  "workerId": "generic-worker",
-  "provisionerId": "docker-compose",
-  "workerType": "generic-worker",
+  "headlessTasks": true,
   "livelogExecutable": "/usr/local/bin/livelog",
-  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
-  "publicIP": "127.0.0.1",
+  "livelogExposePort": 59999,
   "livelogPortBase": 60000,
-  "livelogExposePort": 59999
+  "provisionerId": "docker-compose",
+  "publicIP": "127.0.0.1",
+  "requiredDiskSpaceMegabytes": 512,
+  "rootURL": "http://taskcluster",
+  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",
+  "workerId": "generic-worker",
+  "workerType": "generic-worker"
 }
