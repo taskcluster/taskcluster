@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/taskcluster/v69/clients/client-go/tcqueue"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
@@ -105,24 +106,39 @@ func TestDesktopResizeAndMovePointer(t *testing.T) {
 	if os.Getenv("GW_SKIP_PYTHON_TESTS") != "" {
 		t.Skip("Skipping since GW_SKIP_PYTHON_TESTS env var is set")
 	}
-	setup(t)
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
-	}
-	commands := copyTestdataFile("mouse_and_screen_resolution.py")
-	commands = append(commands, copyTestdataFile("machine-configuration.json")...)
-	commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")
-	payload := GenericWorkerPayload{
-		Command:    commands,
-		MaxRunTime: 90,
-		// Don't assume python 2 is in the default system PATH, but rather
-		// require that python 2 is in the PATH of the test process.
-		Env: map[string]string{
-			"PATH": os.Getenv("PATH"),
-		},
-	}
-	defaults.SetDefaults(&payload)
-	td := testTask(t)
 
+	// We run the same test under both headless and non-headless mode, but
+	// expect different results. So pull it out into its own function...
+	f := func(t *testing.T, headless bool) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+		t.Helper()
+		setup(t)
+		config.HeadlessTasks = headless
+		if config.RunTasksAsCurrentUser {
+			t.Skip("Skipping since running as current user...")
+		}
+		commands := copyTestdataFile("mouse_and_screen_resolution.py")
+		commands = append(commands, copyTestdataFile("machine-configuration.json")...)
+		commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")
+		payload = GenericWorkerPayload{
+			Command:    commands,
+			MaxRunTime: 90,
+			// Don't assume python 2 is in the default system PATH, but rather
+			// require that python 2 is in the PATH of the test process.
+			Env: map[string]string{
+				"PATH": os.Getenv("PATH"),
+			},
+		}
+		defaults.SetDefaults(&payload)
+		td = testTask(t)
+		return
+	}
+
+	// Not headless test
+	td, payload := f(t, false)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+
+	// Headless test
+	td, payload = f(t, true)
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
 }

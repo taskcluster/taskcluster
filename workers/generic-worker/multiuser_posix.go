@@ -101,10 +101,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func rebootBetweenTasks() bool {
-	return true
-}
-
 func platformTargets(arguments map[string]interface{}) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
@@ -144,7 +140,7 @@ func (task *TaskRun) EnvVars() []string {
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
 	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
 		if !config.RunTasksAsCurrentUser {
 			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))

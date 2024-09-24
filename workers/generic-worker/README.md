@@ -155,6 +155,10 @@ and reports back results to the queue.
           enableInteractive                 Enables interactive mode. This allows an
                                             interactive shell session to run on the worker.
                                             [default: false]
+          headlessTasks                     If true, no dedicated graphical session will be available to tasks.
+                                            There will also be no reboots between tasks and multiple workers
+                                            can be run on the same host. Useful for tasks that don't require
+                                            a graphical session, such as software builds. [default: false]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach

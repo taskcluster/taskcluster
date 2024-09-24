@@ -23,22 +23,26 @@ type PlatformData struct {
 	LoginInfo          *LoginInfo
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
+func NewPlatformData(currentUser bool, headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
 	if currentUser {
 		return &PlatformData{
 			LoginInfo: &LoginInfo{},
 		}, nil
 	}
-	pd, err = TaskUserPlatformData()
+	pd, err = TaskUserPlatformData(user, headlessTasks)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
+func TaskUserPlatformData(user *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
 	pd = &PlatformData{}
-	pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	if headlessTasks {
+		pd.LoginInfo, err = NewLoginInfo(user.Name, user.Password)
+	} else {
+		pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	}
 	if err != nil {
 		return
 	}
@@ -141,24 +145,28 @@ func (c *Command) Kill() (killOutput string, err error) {
 	return host.CombinedOutput("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t")
 }
 
-func (pd *PlatformData) RefreshLoginSession(user, pass string) {
+func (pd *PlatformData) RefreshLoginSession(user, pass string, winstaAccess bool) {
 	err := pd.LoginInfo.Release()
 	if err != nil {
 		panic(err)
 	}
-	// This is the SID of "Everyone" group
-	// TODO: we should probably change this to the logon SID of the user
-	sid := "S-1-1-0"
-	GrantSIDWinstaAccess(sid, pd)
+	if winstaAccess {
+		// This is the SID of "Everyone" group
+		// TODO: we should probably change this to the logon SID of the user
+		sid := "S-1-1-0"
+		GrantSIDWinstaAccess(sid, pd)
+	}
 	pd.LoginInfo, err = NewLoginInfo(user, pass)
 	if err != nil {
 		// implies a serious bug
 		panic(err)
 	}
-	err = pd.LoginInfo.SetActiveConsoleSessionId()
-	if err != nil {
-		// implies a serious bug
-		panic(fmt.Sprintf("could not set token session information: %v", err))
+	if winstaAccess {
+		err = pd.LoginInfo.SetActiveConsoleSessionId()
+		if err != nil {
+			// implies a serious bug
+			panic(fmt.Sprintf("could not set token session information: %v", err))
+		}
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
 	win32.DumpTokenInfo(pd.LoginInfo.AccessToken())
@@ -172,11 +180,11 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		log.Printf("SID %v NOT found in %#v - granting access...", sid, sidsThatCanControlDesktopAndWindowsStation)
 
 		cmd, err := NewCommand([]string{gwruntime.GenericWorkerBinary(), "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
-		cmd.DirectOutput(os.Stdout)
-		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		if err != nil {
 			panic(err)
 		}
+		cmd.DirectOutput(os.Stdout)
+		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		result := cmd.Execute()
 		if !result.Succeeded() {
 			panic(fmt.Sprintf("failed to grant everyone access to windows station and desktop:\n%v", result))

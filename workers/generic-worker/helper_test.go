@@ -414,7 +414,6 @@ func GWTest(t *testing.T) *Test {
 		}
 		testConfig.RootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
 	}
-	setConfigRunTasksAsCurrentUser(testConfig)
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
 		cachesDir,
@@ -440,12 +439,7 @@ func GWTest(t *testing.T) *Test {
 		}
 	}
 
-	// Needed for tests that don't call RunWorker()
-	// but test methods/functions directly
-	taskContext = &TaskContext{
-		TaskDir: testdataDir,
-		pd:      newPlatformData(testConfig),
-	}
+	engineTestSetup(t, testConfig)
 
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
