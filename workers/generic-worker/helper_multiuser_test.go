@@ -3,6 +3,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v69/clients/client-go/tcqueue"
@@ -34,10 +36,24 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 	expectedArtifacts.Validate(t, taskID, 0)
 }
 
-func newPlatformData(conf *gwconfig.Config) (pd *process.PlatformData) {
-	pd, err := process.NewPlatformData(conf.RunTasksAsCurrentUser)
+func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
+	t.Helper()
+	runningTests = true
+	testConfig.HeadlessTasks = true
+	testConfig.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
+	// Needed for tests that don't call RunWorker()
+	// but test methods/functions directly
+	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
 	if err != nil {
-		panic(err)
+		t.Fatalf("Could not fetch task user credentials: %v", err)
 	}
-	return
+	pd, err := process.NewPlatformData(testConfig.RunTasksAsCurrentUser, testConfig.HeadlessTasks, taskUserCredentials)
+	if err != nil {
+		t.Fatalf("Could not create platform data: %v", err)
+	}
+	taskContext = &TaskContext{
+		User:    taskUserCredentials,
+		pd:      pd,
+		TaskDir: testdataDir,
+	}
 }

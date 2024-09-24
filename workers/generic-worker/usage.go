@@ -171,7 +171,7 @@ and reports back results to the queue.
                                             an absolute path. [default: "downloads"]
           enableInteractive                 Enables interactive mode. This allows an
                                             interactive shell session to run on the worker.
-                                            [default: false]
+                                            [default: false]` + headlessTasksUsage() + `
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach

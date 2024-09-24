@@ -3,20 +3,14 @@
 package main
 
 import (
-	"os"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/host"
 )
-
-func setConfigRunTasksAsCurrentUser(conf *gwconfig.Config) {
-	conf.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
-}
 
 // TestWhoAmI tests that the correct user is running the task, based on value of config setting RunTasksAsCurrentUser
 func TestWhoAmI(t *testing.T) {

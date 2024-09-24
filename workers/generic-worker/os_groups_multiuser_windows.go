@@ -15,7 +15,7 @@ func removeUserFromGroup(user, group string) error {
 }
 
 func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
-	taskContext.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password)
+	taskContext.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password, !config.HeadlessTasks)
 	for _, command := range osGroups.Task.Commands {
 		command.SysProcAttr.Token = taskContext.pd.LoginInfo.AccessToken()
 	}

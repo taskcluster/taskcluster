@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v69/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v69/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
 
@@ -19,20 +19,15 @@ type PlatformData struct {
 	SysProcAttr *syscall.SysProcAttr
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
+func NewPlatformData(currentUser bool, headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
 	if currentUser {
 		return &PlatformData{}, nil
 	}
-	return TaskUserPlatformData()
+	return TaskUserPlatformData(user, headlessTasks)
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
-	username, err := runtime.InteractiveUsername()
-	if err != nil {
-		return nil, fmt.Errorf("could not determine interactive username: %w", err)
-	}
-
-	usr, err := user.Lookup(username)
+func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
+	usr, err := user.Lookup(u.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", err)
 	}
