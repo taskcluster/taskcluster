@@ -123,6 +123,15 @@ properties:
           still includes feature in order for d2g to work with it.
         type: boolean
         default: false
+      containerEngine:
+        title: Container engine
+        description: >-
+          The container engine to use when executing tasks
+          with Docker Worker formatted task payloads.
+        type: string
+        enum:
+          - docker
+          - podman
       devices:
         title: Devices to be attached to task containers
         description: >-

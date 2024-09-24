@@ -1,0 +1,63 @@
+---
+testSuite:
+  name: Container engine tests
+  description: Test that the container engine should be set properly in the resulting generic worker task payload.
+  payloadTests:
+    - name: Default container engine test
+      description: >-
+        Tests that docker should be set as the default container engine in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+
+    - name: Set to podman container engine test
+      description: >-
+        Tests that podman should be set as the container engine in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          containerEngine: podman
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+  taskDefTests: []

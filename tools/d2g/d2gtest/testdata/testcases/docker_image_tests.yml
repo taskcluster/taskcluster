@@ -15,7 +15,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -28,6 +28,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: NamedDockerImage
       description: Test NamedDockerImage
@@ -43,7 +45,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -56,6 +58,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: IndexedDockerImage
       description: Test IndexedDockerImage
@@ -72,14 +76,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
@@ -92,6 +98,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: IndexedDockerImage with .lz4 extension
       description: Test IndexedDockerImage with .lz4 extension
@@ -108,14 +116,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
@@ -129,6 +139,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: IndexedDockerImage with .zst extension
       description: Test IndexedDockerImage with .zst extension
@@ -145,14 +157,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         maxRunTime: 3600
         mounts:
           - content:
@@ -166,6 +180,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: DockerImageArtifact
       description: Test DockerImageArtifact
@@ -182,14 +198,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path
@@ -200,6 +218,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: DockerImageArtifact with .lz4 extension
       description: Test DockerImageArtifact with .lz4 extension
@@ -216,14 +236,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.lz4
@@ -235,6 +257,8 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
     - name: DockerImageArtifact with .zst extension
       description: Test DockerImageArtifact with .zst extension
@@ -251,14 +275,16 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
               -e TASK_ID
-              docker-archive:dockerimage 'echo "Hello world"'
+              "${IMAGE_ID}" 'echo "Hello world"'
         mounts:
           - content:
               artifact: public/test/path.zst
@@ -270,12 +296,16 @@ testSuite:
           retry:
             - 125
             - 128
+        osGroups:
+          - docker
 
-    - name: DockerImage with cache
-      description: Test DockerImage with cache
+    - name: DockerImage with cache using podman
+      description: Test DockerImage with cache using podman
       dockerWorkerTaskPayload:
         cache:
           gecko-level-3-checkouts-sparse-v3: /builds/worker/checkouts
+        capabilities:
+          containerEngine: podman
         command:
           - echo "Hello world"
         image:
@@ -312,4 +342,48 @@ testSuite:
           retry:
             - 125
             - 128
+
+    - name: DockerImage with cache
+      description: Test DockerImage with cache
+      dockerWorkerTaskPayload:
+        cache:
+          gecko-level-3-checkouts-sparse-v3: /builds/worker/checkouts
+        command:
+          - echo "Hello world"
+        image:
+          path: public/test/path.zst
+          taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+          type: task-image
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+
+              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              -v "$(pwd)/cache0:/builds/worker/checkouts"
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              "${IMAGE_ID}" 'echo "Hello world"'
+        mounts:
+          - cacheName: gecko-level-3-checkouts-sparse-v3
+            directory: cache0
+          - content:
+              artifact: public/test/path.zst
+              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+            file: dockerimage
+            format: zst
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
   taskDefTests: []

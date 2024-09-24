@@ -133,6 +133,13 @@ type (
 	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
 	Capabilities struct {
 
+		// The container engine to use when executing tasks with Docker Worker formatted task payloads.
+		//
+		// Possible values:
+		//   * "docker"
+		//   * "podman"
+		ContainerEngine string `json:"containerEngine,omitempty"`
+
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
 		Devices Devices `json:"devices,omitempty"`
 
@@ -1199,7 +1206,6 @@ func JSONSchema() string {
           "items": {
             "type": "string"
           },
-          "maxItems": 0,
           "title": "OS Groups",
           "type": "array",
           "uniqueItems": true
@@ -1241,6 +1247,15 @@ func JSONSchema() string {
           "additionalProperties": false,
           "description": "Set of capabilities that must be enabled or made available to the task container Example: ` + "`" + `` + "`" + `` + "`" + `{ \"capabilities\": { \"privileged\": true }` + "`" + `` + "`" + `` + "`" + `",
           "properties": {
+            "containerEngine": {
+              "description": "The container engine to use when executing tasks with Docker Worker formatted task payloads.",
+              "enum": [
+                "docker",
+                "podman"
+              ],
+              "title": "Container engine",
+              "type": "string"
+            },
             "devices": {
               "additionalProperties": false,
               "description": "Allows devices from the host system to be attached to a task container similar to using ` + "`" + `--device` + "`" + ` in docker.",

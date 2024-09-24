@@ -30,7 +30,7 @@ type (
 	}
 )
 
-func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
+func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
 	var parsedTaskDef map[string]interface{}
 	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
@@ -53,7 +53,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
 	}
 
-	gwPayload, err := Convert(dwPayload)
+	gwPayload, err := Convert(dwPayload, containerEngine)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
@@ -75,7 +75,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 		if taskQueueID == "" {
 			return nil, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required")
 		}
-		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, taskQueueID)
+		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, taskQueueID, containerEngine)
 	}
 
 	d2gConvertedPayloadJSON, err := json.Marshal(*gwPayload)
@@ -97,8 +97,13 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage) (json.RawMessage, error) {
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
-func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID string) (gwScopes []string) {
+func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID, containerEngine string) (gwScopes []string) {
+	tool := getContainerEngine(dwPayload, containerEngine)
 	gwScopes = []string{}
+	if tool == "docker" {
+		// scopes to use docker, by default, should just come "for free"
+		gwScopes = append(gwScopes, "generic-worker:os-group:"+taskQueueID+"/docker")
+	}
 	for _, s := range dwScopes {
 		switch true {
 		case s == "docker-worker:capability:device:kvm":
@@ -106,11 +111,6 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 				gwScopes,
 				"generic-worker:os-group:"+taskQueueID+"/kvm",
 				"generic-worker:os-group:"+taskQueueID+"/libvirt",
-			)
-		case s == "docker-worker:capability:privileged":
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:os-group:"+taskQueueID+"/docker",
 			)
 		case s == "docker-worker:capability:device:loopbackVideo":
 			gwScopes = append(gwScopes, "generic-worker:loopback-video:*")
@@ -136,10 +136,10 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 
 // Convert transforms a Docker Worker task payload into an equivalent Generic
 // Worker Multiuser POSIX task payload. The resulting Generic Worker payload is
-// a BASH script which uses Podman to contain the Docker Worker payload. Since
+// a BASH script which uses Docker (by default) to contain the Docker Worker payload. Since
 // scopes fall outside of the payload in a task definition, scopes need to be
 // converted separately (see d2g.Scopes function).
-func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericworker.GenericWorkerPayload, err error) {
+func Convert(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string) (gwPayload *genericworker.GenericWorkerPayload, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
 
@@ -158,7 +158,8 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	err = setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches)
+	tool := getContainerEngine(dwPayload, containerEngine)
+	err = setCommand(dwPayload, gwPayload, dwImage, tool, gwWritableDirectoryCaches)
 	if err != nil {
 		return
 	}
@@ -177,7 +178,7 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload) (gwPayload *genericwor
 	setMaxRunTime(dwPayload, gwPayload)
 	setOnExitStatus(dwPayload, gwPayload)
 	setSupersederURL(dwPayload, gwPayload)
-	setOSGroups(dwPayload, gwPayload)
+	setOSGroups(dwPayload, gwPayload, tool)
 
 	return
 }
@@ -238,11 +239,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 	return gwArtifacts
 }
 
-func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
-	tool := "podman"
-	if dwPayload.Capabilities.Privileged {
-		tool = "docker"
-	}
+func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool string, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
 	containerName := ""
 	if len(gwArtifacts) > 0 {
 		containerName = "taskcontainer"
@@ -416,8 +413,8 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 	}
 }
 
-func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
-	gwPayload.Command, err = command(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches)
+func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, tool string, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
+	gwPayload.Command, err = command(dwPayload, dwImage, tool, gwPayload.Artifacts, gwWritableDirectoryCaches)
 	return
 }
 
@@ -461,13 +458,13 @@ func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *ge
 	gwPayload.SupersederURL = dwPayload.SupersederURL
 }
 
-func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
+func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, tool string) {
 	if dwPayload.Capabilities.Devices.KVM {
 		// task user needs to be in kvm and libvirt groups for KVM to work:
 		// https://help.ubuntu.com/community/KVM/Installation
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
 	}
-	if dwPayload.Capabilities.Privileged {
+	if tool == "docker" {
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "docker")
 	}
 }
@@ -583,4 +580,12 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 		envStrBuilder.WriteString(envSetting(envVarName))
 	}
 	return envStrBuilder.String()
+}
+
+func getContainerEngine(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string) string {
+	tool := containerEngine
+	if dwPayload.Capabilities.ContainerEngine != "" {
+		tool = dwPayload.Capabilities.ContainerEngine
+	}
+	return tool
 }

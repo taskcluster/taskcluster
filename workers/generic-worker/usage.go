@@ -142,6 +142,12 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
+          containerEngine                   The default container engine to use for translated
+                                            Docker Worker tasks when not specified in the
+                                            Docker Worker task payload (property
+                                            capabilities.containerEngine).
+                                            Accepted values: "docker" or "podman".
+                                            [default: "docker"]
           createObjectArtifacts             If true, use artifact type 'object' for artifacts
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
@@ -169,6 +175,9 @@ and reports back results to the queue.
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
+          enableD2G                         Enables D2G (Docker Worker to Generic Worker payload
+                                            transformation). This allows for Docker Worker payloads
+                                            to be submitted to Generic Worker. [default: false]
           enableInteractive                 Enables interactive mode. This allows an
                                             interactive shell session to run on the worker.
                                             [default: false]` + headlessTasksUsage() + `

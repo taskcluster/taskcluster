@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
@@ -27,9 +29,15 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	switch runtime.GOOS {
-	case "linux":
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]")
+		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -73,9 +81,15 @@ func TestIssue6789(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "docker-worker:cache:d2g-test")
 
-	switch runtime.GOOS {
-	case "linux":
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]")
+		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}

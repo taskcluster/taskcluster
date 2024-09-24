@@ -31,11 +31,13 @@ type (
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
+		ContainerEngine                string                 `json:"containerEngine"`
 		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
+		EnableD2G                      bool                   `json:"enableD2G"`
 		EnableInteractive              bool                   `json:"enableInteractive"`
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
