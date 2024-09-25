@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-notify",
-  "version": "67.1.0",
+  "version": "70.0.0",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
@@ -13,10 +13,10 @@
     "lint": "eslint src/*.js test/*.js"
   },
   "devDependencies": {
-    "@aws-sdk/client-sns": "^3.606.0",
-    "@aws-sdk/client-sqs": "^3.606.0",
+    "@aws-sdk/client-sns": "^3.621.0",
+    "@aws-sdk/client-sqs": "^3.621.0",
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.5.2"
+    "mocha": "^10.7.0"
   }
 }

@@ -67,6 +67,9 @@ defaults:
     expireArtifactsBatchSize:     !env:number:optional EXPIRE_ARTIFACTS_BATCH_SIZE
 
 
+    # Maximum number of dependencies a task can have (default 10000)
+    taskMaxDependencies:          !env:number:optional TASK_MAX_DEPENDENCIES
+
   taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -137,7 +140,8 @@ test:
       parallelism:                1
     dependencyResolver:
       pollingDelay:               250
-    taskCacheMaxSize: 10
+    taskCacheMaxSize:             10
+    taskMaxDependencies:          100
   server:
     port:             60401
     env:              development

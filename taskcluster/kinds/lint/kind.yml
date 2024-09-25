@@ -3,12 +3,11 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
   - src.transforms:taskcluster_image_versions
-  - src.transforms:podman_run
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
-  worker-type: gw-ubuntu-24-04
+  worker-type: ubuntu-24-04
   run:
     using: bare
   worker:
@@ -17,24 +16,25 @@ task-defaults:
 tasks:
   nodejs:
     description: nodejs lint
-    docker-image: node:{node_version}
+    worker:
+      docker-image: node:{node_version}
     run:
       command: >-
-        corepack enable &&
-        yarn &&
-        yarn lint
+        corepack yarn &&
+        corepack yarn lint
   golang:
     description: go lint
     priority: very-high
-    docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
+    worker:
+      docker-image: {in-tree: ci}
     run:
       command: >-
-        corepack enable &&
-        yarn &&
-        yarn lint:go
+        corepack yarn &&
+        corepack yarn lint:go
   python:
     description: python flake8
-    docker-image: python:3.11
+    worker:
+      docker-image: python:3.11
     run:
       command: >-
         pip install flake8 &&

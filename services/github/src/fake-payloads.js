@@ -745,7 +745,7 @@ export const getEventPayload = function getEventPayload(type, action, organizati
     mapping[type]
       .replaceAll('$ORGANIZATION', organization)
       .replaceAll('$REPOSITORY', repository)
-      .replaceAll('$BRANCH', branch)
+      .replaceAll('$BRANCH', encodeURI(branch))
   );
 
   return { ...event, action, ...overrides };

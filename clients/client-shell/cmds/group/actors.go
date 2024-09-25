@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
-	"github.com/taskcluster/taskcluster/v67/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v67/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v70/clients/client-go"
+	"github.com/taskcluster/taskcluster/v70/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v70/clients/client-shell/config"
 )
 
 var listFormat string
@@ -208,7 +208,7 @@ func confirmCancellation(ids []string, names []string, out io.Writer) bool {
 		fmt.Fprint(out, "Are you sure you want to cancel these tasks? [y/n] ")
 
 		var c string
-		fmt.Scanf("%s", &c)
+		_, _ = fmt.Scanf("%s", &c)
 
 		if c == "y" || c == "Y" {
 			return true

@@ -9,9 +9,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.22 or higher.
+# Support go 1.23 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=22
+MIN_GO_MINOR_VERSION=23
 
 unset CGO_ENABLED
 unset GOOS
@@ -141,7 +141,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v67/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v70/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
   golint $(go list ./...) | sed "s*${PWD}/**"
   ineffassign .
   goimports -w .

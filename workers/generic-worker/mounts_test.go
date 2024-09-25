@@ -11,7 +11,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -57,7 +57,8 @@ func TestMissingScopes(t *testing.T) {
 	}
 }
 
-// TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
+// TestMissingMountsDependency tests that if artifact content is mounted, it
+// must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
 	setup(t)
 	pretendTaskID := slugid.Nice()

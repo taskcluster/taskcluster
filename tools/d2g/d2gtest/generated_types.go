@@ -22,6 +22,13 @@ type (
 	// Worker task definition in the test case.
 	TaskDefinitionTestCase struct {
 
+		// Possible values:
+		//   * "docker"
+		//   * "podman"
+		//
+		// Default:    "docker"
+		ContainerEngine string `json:"containerEngine" default:"docker"`
+
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
 
@@ -41,6 +48,13 @@ type (
 	// if the generated Generic Worker task payload exactly matches the Generic
 	// Worker task payload in the test case.
 	TaskPayloadTestCase struct {
+
+		// Possible values:
+		//   * "docker"
+		//   * "podman"
+		//
+		// Default:    "docker"
+		ContainerEngine string `json:"containerEngine" default:"docker"`
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -129,6 +143,14 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task payload, and an\nexpected Generic Worker task payload output. The Docker Worker task payload\nis converted by d2g to a Generic Worker task payload. The test is successful\nif the generated Generic Worker task payload exactly matches the Generic\nWorker task payload in the test case.",
             "properties": {
+              "containerEngine": {
+                "default": "docker",
+                "enum": [
+                  "docker",
+                  "podman"
+                ],
+                "type": "string"
+              },
               "description": {
                 "$ref": "#/definitions/caseDescription"
               },
@@ -160,6 +182,14 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task definition, and an\nexpected Generic Worker task definition output. The Docker Worker task definition\nis converted by d2g to a Generic Worker task definition. The test is successful\nif the generated Generic Worker task definition exactly matches the Generic\nWorker task definition in the test case.",
             "properties": {
+              "containerEngine": {
+                "default": "docker",
+                "enum": [
+                  "docker",
+                  "podman"
+                ],
+                "type": "string"
+              },
               "description": {
                 "$ref": "#/definitions/caseDescription"
               },

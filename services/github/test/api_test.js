@@ -747,5 +747,18 @@ tasks:
         ]);
       }),
     );
+    test('invalid branch name is properly escaped', async function () {
+      const tcYaml = `version: 1
+reporting: checks-v1
+tasks: []
+`;
+      const { tasks } = await helper.apiClient.renderTaskclusterYml({
+        body: tcYaml,
+        fakeEvent: { type: 'github-push', overrides: { branch: 'lol", "this"' } },
+        repository: 'repo',
+        organization: 'org',
+      });
+      assert.deepEqual(tasks, []);
+    });
   });
 });

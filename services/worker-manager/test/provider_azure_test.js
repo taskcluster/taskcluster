@@ -442,8 +442,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     let worker, ipName, nicName, vmName;
     const sandbox = sinon.createSandbox({});
 
-    setup('create un-provisioned worker', async function() {
-      const workerPool = await makeWorkerPool();
+    setup('create un-provisioned worker', async function () {
+      const workerPool = await makeWorkerPool({}, {
+        workerManager: {
+          publicIp: true,
+        },
+      });
       const workerInfo = {
         existingCapacity: 0,
         requestedCapacity: 0,
@@ -640,18 +644,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('provisionResources without public IP', function() {
-    let worker, nicName, vmName;
+  suite('provisionResources with or without public IP', function () {
+    let worker, nicName, vmName, ipName;
     const sandbox = sinon.createSandbox({});
 
-    setup('create un-provisioned worker', async function() {
-      const workerPool = await makeWorkerPool({}, {
-        workerConfig: {
-          genericWorker: {
-            description: 'this should skip IP provisioning',
-          },
-        },
-      });
+    const prepareProvision = async (cfg) => {
+      const workerPool = await makeWorkerPool({}, cfg);
       const workerInfo = {
         existingCapacity: 0,
         requestedCapacity: 0,
@@ -663,6 +661,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       nicName = worker.providerData.nic.name;
       vmName = worker.providerData.vm.name;
+      ipName = worker.providerData.ip.name;
 
       // stub for removeWorker, for failure cases
       sandbox.stub(provider, 'removeWorker').returns('stopped');
@@ -671,13 +670,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // scanning-related methods
       await provider.scanPrepare();
       provider.errors[workerPoolId] = [];
-    });
+    };
 
     teardown(function() {
       sandbox.restore();
     });
 
     test('successful provisioning of VM without public ip', async function() {
+      await prepareProvision({
+        workerConfig: {
+          workerManager: {
+            publicIp: false,
+          },
+        },
+      });
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ nic: 'inprogress' });
 
@@ -689,6 +695,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ vm: 'allocated', ip: 'none', nic: 'allocated' });
+
+      assert(!provider.removeWorker.called);
+    });
+
+    test('successful provision of VM with public ip', async function () {
+      await prepareProvision({
+        workerConfig: {
+          genericWorker: {
+            description: 'this should not skip IP provisioning',
+          },
+        },
+        workerManager: {
+          publicIp: true, // override
+        },
+      });
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ ip: 'inprogress' });
+
+      fake.networkClient.publicIPAddresses.fakeFinishRequest('rgrp', ipName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ ip: 'allocated' });
+
+      fake.networkClient.networkInterfaces.fakeFinishRequest('rgrp', nicName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ nic: 'allocated' });
+
+      fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
+      await provider.provisionResources({ worker, monitor });
+      await assertProvisioningState({ vm: 'allocated', ip: 'allocated', nic: 'allocated' });
 
       assert(!provider.removeWorker.called);
     });

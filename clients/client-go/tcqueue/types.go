@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v70/clients/client-go"
 )
 
 type (
@@ -1190,6 +1190,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//
@@ -1383,6 +1385,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//

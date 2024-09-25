@@ -370,7 +370,7 @@ export class AzureProvider extends Provider {
       }
 
       const config = {
-        ..._.omit(cfg, ['capacityPerInstance', 'workerConfig']),
+        ..._.omit(cfg, ['capacityPerInstance', 'workerConfig', 'workerManager']),
         osProfile: {
           ...cfg.osProfile,
           // adminUsername and adminPassword will be added later
@@ -391,12 +391,15 @@ export class AzureProvider extends Provider {
         },
       };
 
+      // #7257 Public IP will only be provisioned if requested (see #4987)
+      const needPublicIp = cfg?.workerManager?.publicIp ?? false;
+      const skipPublicIp = !needPublicIp;
+
       let providerData = {
         location: cfg.location,
         resourceGroupName: this.providerConfig.resourceGroupName,
         workerConfig: cfg.workerConfig,
-        // #4987: Generic worker instances do not need public IP/NIC
-        skipPublicIp: typeof cfg?.workerConfig?.genericWorker !== 'undefined',
+        skipPublicIp,
         tags: {
           ...(cfg.tags || {}),
           'created-by': `taskcluster-wm-${this.providerId}`,
@@ -911,7 +914,7 @@ export class AzureProvider extends Provider {
 
     let titleString = "";
 
-    // #4987: generic workers do not need Public IP,
+    // #4987: workers do not need Public IP unless explicitly requested #7257
     // so we can skip creating those resources
     const skipPublicIp = worker.providerData.skipPublicIp === true;
     if (skipPublicIp) {

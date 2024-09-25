@@ -54,7 +54,6 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Database Versions](db/versions#readme)
 * [Development Documentation](dev-docs#readme)
 * [Infrastructure](infrastructure#readme)
-    * [Docker Images](infrastructure/docker-images#readme)
     * [References](infrastructure/references#readme)
     * [Taskcluster Builder](infrastructure/tooling#readme)
 * [Internal Go Packages](internal#readme)

@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
-	"github.com/taskcluster/taskcluster/v67/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v67/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v67/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v70/clients/client-go"
+	"github.com/taskcluster/taskcluster/v70/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v70/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v70/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v70/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v70/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v70/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/meta-data/spot/termination-time"
@@ -121,7 +121,7 @@ func (p *AWSProvider) checkTerminationTime() bool {
 
 func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(30 * time.Second)
+	p.terminationTicker = time.NewTicker(5 * time.Second)
 	p.proto.AddCapability("graceful-termination")
 
 	go func() {

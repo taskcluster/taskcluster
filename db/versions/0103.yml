@@ -1,0 +1,39 @@
+version: 103
+description: batch insert task dependencies
+methods:
+  add_task_dependencies:
+    description: |-
+      Create multiple un-satisfied task dependencies between the two tasks, with the given
+      requirement style and expiration. If the dependency already exists, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_ids_in jsonb, requires_in task_requires, expires_in timestamptz
+    returns: void
+    body: |-
+      begin
+        INSERT INTO task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)
+        SELECT
+            dependent_task_id_in,
+            required_task_id_in::text,
+            requires_in,
+            false,
+            expires_in
+        FROM jsonb_array_elements_text(required_task_ids_in) AS r(required_task_id_in)
+        ON CONFLICT DO NOTHING;
+      end
+  remove_task_dependencies:
+    description: |-
+      Mark all task dependencies as satisfied.  If the dependency does not exist, nothing
+      happens.
+    mode: write
+    serviceName: queue
+    args: dependent_task_id_in text, required_task_ids_in jsonb
+    returns: void
+    body: |-
+      begin
+        delete from task_dependencies
+        where
+          dependent_task_id = dependent_task_id_in and
+          required_task_id in (SELECT jsonb_array_elements_text(required_task_ids_in));
+      end

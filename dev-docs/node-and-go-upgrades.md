@@ -24,8 +24,8 @@ To update the node version:
 
 To update the go version:
 
-* Install the new go version: `gvm install go1.22.4`
-* Use the new go version (--default to set permanently): `gvm use go1.22.4`
+* Install the new go version: `gvm install go1.23.1`
+* Use the new go version (--default to set permanently): `gvm use go1.23.1`
 * Download modules with `go mod download`
 * Update `.go-version`
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
@@ -37,17 +37,6 @@ To update the go version:
 * Create a changelog file and commit
 * Build and push new images (see below)
 
-# Build and push new images
-When updating either npm or go, there are new Docker images that need to be
-built and deployed to pass CI.
-
-* Run `docker login` with credentials found on the [passwordstore](https://github.com/taskcluster/passwordstore-readme)
-* Change to the `infrastructure/docker-images` folder
-* (Optional) Run each builder:
-  - `./build-browser-test.sh` - Uses node and Firefox ESR
-  - `./build-ci-image.sh` - Uses node, go, and PostgreSQL
-  - `./build-rabbit-test.sh` - Uses node
-  - `./build-worker-ci.sh` - Uses node
-* Push the images with `./push-all.sh`. This will also (re)build any images.
+# Test
 * Push the branch that updates Node.js and/or Go to GitHub, open a PR, and see
   if the tests pass.

@@ -143,6 +143,7 @@ let builder = new APIBuilder({
     'LRUcache', // LRU cache for tasks
     'objectService', // Object service API client
     'maxTaskDeadlineDays', // maximum value allowed for task deadlines in days
+    'taskMaxDependencies', // maximum number of dependencies allowed for a task
   ],
 });
 
@@ -857,6 +858,13 @@ builder.declare({
     return res.reportError('InputError',
       'at least a provisionerId and a workerType or a taskQueueId must be provided"',
       {});
+  }
+
+  // schema defines 10.000 maximum dependencies but deployment can specify lower values
+  if (taskDef.dependencies && taskDef.dependencies.length > this.maxDependencies) {
+    return res.reportError('InputError',
+      'task.dependencies exceeds the maximum allowed number of dependencies',
+      { maxDependencies: this.taskMaxDependencies });
   }
 
   // fill in the default `none` projectId if none was given

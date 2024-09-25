@@ -1,9 +1,7 @@
-//go:build linux || freebsd
-
 package runtime
 
 import (
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {

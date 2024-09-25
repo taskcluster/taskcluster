@@ -3,6 +3,267 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v70.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+Generic Worker: Adds `containerEngine` worker config option to select between `docker` and `podman` to be used during D2G payload translations.
+
+Default is `docker` and this value will be overridden by `task.payload.capabilities.containerEngine`, if specified.
+
+▶ [MAJOR]
+Generic Worker: Adds `enableD2G` worker config option to internally process Docker Worker payloads using D2G. Defaults to `false` and will return a `malformed-payload` if a Docker Worker payload is detected and this config isn't set to `true`.
+
+### USERS
+
+▶ [minor]
+D2G: Adds `capabilities.containerEngine` to the Docker Worker payload schema strictly to use as a `docker`/`podman` toggle for the d2g-translated payload.
+
+▶ [minor] [#4595](https://github.com/taskcluster/taskcluster/issues/4595)
+Generic Worker can now be run in headless mode, meaning tasks do not have a
+dedicated graphical user environment. To do this, the Generic Worker config
+setting `headlessTasks` should be set to true. This can only be enabled or
+disabled at the Worker level, tasks cannot choose if they run in a headless
+environment or not, it depends on the worker settings (i.e. the Worker Pool
+configuration).
+
+There are no reboots in headless mode, and multiple worker instances can
+be run concurrently on the same host (e.g. Worker Pool definitions may have
+`capacity` greater than one).
+
+Furthermore, on Linux, Gnome Desktop is no longer required.
+
+▶ [patch] [#7151](https://github.com/taskcluster/taskcluster/issues/7151)
+Fixes a bug in UI where task dependencies were not having colours.
+
+▶ [patch] [#7255](https://github.com/taskcluster/taskcluster/issues/7255)
+D2G now passes `--init` to the `podman run`/`docker run` command it generates,
+in order that signals are properly received and processed by the container.
+
+### OTHER
+
+▶ Additional change not described here: [#7269](https://github.com/taskcluster/taskcluster/issues/7269).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump body-parser in /clients/client-web (7f33c0332)
+
+</details>
+
+## v69.0.1
+
+### USERS
+
+▶ [patch] [#7263](https://github.com/taskcluster/taskcluster/issues/7263)
+Improve github checks output - handle 404 cases for empty artifact list.
+Adds artifact redirect page in UI to redirect user to the actual artifact.
+
+## v69.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v20.17.0 and go1.23.1 (security release).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7257](https://github.com/taskcluster/taskcluster/issues/7257)
+Worker-manager provides an option to request public IP for generic-worker in Azure that is skipped by default.
+Passing `publicIp = true` in the launch configuration will enable the public IP request.
+
+```json
+{
+  "workerManager": {
+    "publicIp": true
+  }
+}
+```
+
+### USERS
+
+▶ [minor] [#7151](https://github.com/taskcluster/taskcluster/issues/7151)
+Queue service supports up to 10.000 dependencies for a single task.
+
+### DEVELOPERS
+
+▶ [MAJOR]
+Update dependencies in the rust client
+
+▶ [patch] [#5669](https://github.com/taskcluster/taskcluster/issues/5669)
+Enhanced github integration with information: task runtime, head of logs, status information, link of task group, list of 50 artifacts.
+
+▶ [patch] [#5669](https://github.com/taskcluster/taskcluster/issues/5669)
+Fix incorrect artifact url generation
+Fix artifact fetch with listArtifact due to permission issues
+
+### OTHER
+
+▶ Additional change not described here: [#5669](https://github.com/taskcluster/taskcluster/issues/5669).
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump express from 4.19.2 to 4.21.0 in /ui (b72d4e5ce)
+* build(deps): bump express from 4.19.2 to 4.20.0 (8156c765c)
+* build(deps): bump body-parser from 1.20.2 to 1.20.3 (0f97eb560)
+* build(deps): bump dset from 3.1.3 to 3.1.4 (9c896b41c)
+
+</details>
+
+## v68.0.4
+
+### USERS
+
+▶ [patch] [#7233](https://github.com/taskcluster/taskcluster/issues/7233)
+getArtifact now encodes artifact names to return valid URLs even when
+the name contains unsafe characters.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps-dev): bump webpack in /ui in the ui-node-deps group (b70132394)
+* build(deps): bump taskcluster from 67.0.1 to 68.0.3 in /taskcluster (9ad8b9965)
+* build(deps): bump golang.org/x/sys in the go-deps group (2d8e970a0)
+
+</details>
+
+## v68.0.3
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7218](https://github.com/taskcluster/taskcluster/issues/7218)
+Generic Worker Multiuser engine on Linux, macOS and FreeBSD now waits for the
+required task user to be logged in to the console session, rather than waiting
+for any user to be logged in, and then checking whether it is the anticipated
+user. This subtle change in behaviour means that temporarily a different user
+may be (or appear to be) logged into the console session without causing
+Generic Worker to panic. It is hoped that this will reduce intermittent issues
+where a different user appears to be logged in (such as gdm user on Linux)
+since it is suspected that this might just be a fleeting login that passes due
+to some race condition in the start up of the Gnome Desktop.
+
+If this doesn't resolve the issue, and under certain circumstances, the gdm
+user instead remains logged in, i.e. it is not a fleeting login, we may need to
+restore the previous behaviour, since otherwise when the issue does occur, it
+would take a full 5 minutes before timing out, adding to costs unnecessarily.
+However, we hope that that will not be the case.
+
+## v68.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7012](https://github.com/taskcluster/taskcluster/issues/7012)
+Generic Worker retains the interactive username it determines inside WaitForLoginCompletion (by returning it) to avoid needing to re-determine it later. The intention is to reduce intermittent errors caused by the underlying method to determine the interactive username itself intermittently failing. So long as the interactive username can be determined just once during the specidied timeout period, the value can be retained and used when required.
+
+## v68.0.1
+
+### GENERAL
+
+▶ [patch] [#7172](https://github.com/taskcluster/taskcluster/issues/7172)
+Fixes UI js error on dashboard on some deployments
+
+### USERS
+
+▶ [patch] [#6304](https://github.com/taskcluster/taskcluster/issues/6304)
+GitHub service no longer skips CI based on PR description. It will only skip CI based on the PR title or the commit message, [as GitHub does](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs).
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-node-deps group across 1 directory with 3 updates (74c56a294)
+* build(deps): bump the client-node-deps group across 1 directory with 4 updates (2f9e3602b)
+* build(deps): bump the ui-node-deps group across 1 directory with 7 updates (e21bc7c47)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (65efa87a0)
+* build(deps): bump pyyaml (74e680c54)
+* build(deps): bump the go-deps group across 1 directory with 7 updates (c02a2eec9)
+* build(deps): bump elliptic from 6.5.4 to 6.5.7 in /clients/client-web (00e31a477)
+
+</details>
+
+## v68.0.0
+
+### GENERAL
+
+▶ [patch] [#7202](https://github.com/taskcluster/taskcluster/issues/7202)
+Fixes `github.renderTaskclusterYml` rendering error for the payloads including invalid params
+
+▶ [patch] [#7195](https://github.com/taskcluster/taskcluster/issues/7195)
+Fixes worker-manager intermittent test failure
+
+▶ [patch] [bug 1907075](http://bugzil.la/1907075)
+Web server graphql endpoints return 413 instead of 500 error.
+
+▶ [patch]
+Upgrades to Node.js v20.16.0, go v1.23.0, and yarn v4.4.0.
+
+### DEPLOYERS
+
+▶ [MAJOR] [#7036](https://github.com/taskcluster/taskcluster/issues/7036)
+Secrets are being introduced in services configuration. All sensitive values that are marked as secrets would be deployed in kubernetes as Secrets (as they used to be).
+All non-sensitive values would be stored inside ConfigMap resources.
+Deployments and CronJobs would fetch values from both secrets and configuration maps.
+
+▶ [patch] [#7167](https://github.com/taskcluster/taskcluster/issues/7167)
+Change the polling period for EC2 spot instance interruption notices to 5 seconds, as recommended by AWS documentation.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7073](https://github.com/taskcluster/taskcluster/issues/7073)
+Generic Worker now logs to standard error instead of standard out. This is a bug fix, it seems it has always been logging to standard out.
+
+▶ [minor]
+Change `adduser` usage to `useradd`
+
+`adduser` is a debian specific wrapper around `useradd` and friends. By
+changing to `useradd`, we allow workers to be deployed on non debian
+derivative distributions.
+
+Generic Worker multiuser engine on Linux/FreeBSD now depends on:
+
+  * /usr/bin/chfn
+  * /usr/sbin/useradd
+  * /usr/sbin/userdel
+
+and no longer depends on:
+
+  * /usr/sbin/adduser
+  * /usr/sbin/deluser
+
+### USERS
+
+▶ [minor] [#7145](https://github.com/taskcluster/taskcluster/issues/7145)
+Fixes inconsistency in the internal queue implementation that could lead to tasks being visible as pending in the UI
+after they were resolved with `deadline-exceeded`.
+
+▶ [patch] [#7128](https://github.com/taskcluster/taskcluster/issues/7128)
+Generic Worker / D2G partial bug fix: support has been improved for running Docker Worker tasks with caches under Generic Worker. Previously, caches from a Docker Worker task running under Generic Worker containing files owned by a user other than root would not be owned by the same (container) user when the cache was mounted in a future task. D2G now consistently maps container uids and gids to host subuids and subgids (when caches are used) in order that cache file ownership, as seen from inside the container, is maintained across task runs. However, this fix does not apply when the privileged capability is enabled in the Docker Worker payload, since privileged tasks are executed under docker rather than podman. This fix only applies when podman is used.
+
+▶ [patch] [#7128](https://github.com/taskcluster/taskcluster/issues/7128)
+Generic Worker multiuser engine on Linux now uses `/usr/sbin/deluser --remove-home` instead of `/usr/sbin/deluser --remove-all-files` when deleting previous task users. This ensures that caches that may still be owned (in whole or in part) by the task user are not deleted.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump elliptic from 6.5.4 to 6.5.7 in /ui (d3d895095)
+* build(deps): bump braces from 3.0.2 to 3.0.3 in /clients/client-test (7fc112e28)
+* build(deps): bump aiohttp from 3.9.5 to 3.10.2 in /taskcluster (84db9103c)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (f57c0aa4d)
+* build(deps): bump the node-deps group with 18 updates (5af31a687)
+
+</details>
+
 ## v67.1.0
 
 ### WORKER-DEPLOYERS

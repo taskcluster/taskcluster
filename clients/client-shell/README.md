@@ -27,15 +27,15 @@ platform, run `chmod +x` and run it!
 
 MacOS users run the following command:
 ```bash
-curl -L https://github.com/taskcluster/taskcluster/releases/download/v67.1.0/taskcluster-darwin-amd64.tar.gz --output taskcluster.tar.gz && tar -xvf taskcluster.tar.gz && rm taskcluster.tar.gz && chmod +x taskcluster
+curl -L https://github.com/taskcluster/taskcluster/releases/download/v70.0.0/taskcluster-darwin-amd64.tar.gz --output taskcluster.tar.gz && tar -xvf taskcluster.tar.gz && rm taskcluster.tar.gz && chmod +x taskcluster
 ```
 This is to ensure the binary is not quarantined by MacOS.
 You will need to `chmod +x` of
 course.
 
- * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v67.1.0/taskcluster-linux-amd64.tar.gz)
- * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v67.1.0/taskcluster-darwin-amd64.tar.gz)
- * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v67.1.0/taskcluster-darwin-arm64.tar.gz)
+ * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v70.0.0/taskcluster-linux-amd64.tar.gz)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v70.0.0/taskcluster-darwin-amd64.tar.gz)
+ * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v70.0.0/taskcluster-darwin-arm64.tar.gz)
 
 ## Usage
 
@@ -119,11 +119,12 @@ taskcluster slugid generate -n
 ### Translating Docker Worker Task Definition/Payload to Generic Worker Task Definition/Payload
 
 The `taskcluster d2g` subcommand can be used to translate a Docker Worker task definition or payload to a Generic Worker task definition or payload.
-Both the input and output are JSON. You can either pass the input as a file or pipe it in to the command.
+Both the input and output are JSON. You can either pass the input as a file or pipe it in to the command. To specify the container engine to use
+for the translation, use the `(-e, --engine)` flag to select between `docker` (default) and `podman`.
 You must use the `(-t, --task-def)` flag to specify that your input is a task definition, otherwise it will be treated as a task payload and you'll get an error message like: `Error: input validation failed: validation failed:`.
 
 ```shell
-taskcluster d2g -f /path/to/input/payload.json
+taskcluster d2g -f -e podman /path/to/input/payload.json
 ```
 
 _OR_

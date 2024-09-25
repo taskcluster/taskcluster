@@ -28,23 +28,20 @@ tasks.push({
         /^( *node: ')[0-9.]+(')$/m,
         `$1${nodeVersion}$2`));
 
-    utils.status({ message: 'Dockerfile' });
-    await modifyRepoFile('Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
-
-    utils.status({ message: 'workers/docker-worker/test/images/test/Dockerfile' });
-    await modifyRepoFile('workers/docker-worker/test/images/test/Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
-
-    utils.status({ message: 'ui/Dockerfile' });
-    await modifyRepoFile('ui/Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
+    [
+      'Dockerfile',
+      'workers/docker-worker/test/images/test/Dockerfile',
+      'ui/Dockerfile',
+      'taskcluster/docker/browser-test/Dockerfile',
+      'taskcluster/docker/ci/Dockerfile',
+      'taskcluster/docker/rabbit-test/Dockerfile',
+    ].forEach(async file => {
+      utils.status({ message: file });
+      await modifyRepoFile(file,
+        contents => contents.replace(
+          /^FROM node:[0-9.]+(.*)$/gm,
+          `FROM node:${nodeVersion}$1`));
+    });
 
     utils.status({ message: '.nvmrc' });
     await writeRepoFile('.nvmrc', nodeVersion + '\n');
@@ -66,9 +63,9 @@ tasks.push({
       'workers/docker-worker/package.json',
       'clients/client/package.json',
       'clients/client-test/package.json',
-    ].forEach(file => {
+    ].forEach(async file => {
       utils.status({ message: file });
-      modifyRepoJSON(file,
+      await modifyRepoJSON(file,
         contents => {
           contents.engines.node = nodeVersion;
           return contents;

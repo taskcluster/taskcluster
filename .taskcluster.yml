@@ -211,6 +211,7 @@ tasks:
                                   '
                               exit_code=$?
                               podman cp 'taskcontainer:/builds/worker/artifacts' artifact0
+                              podman cp 'taskcontainer:/builds/worker/checkouts/src/docker-contexts' artifact1
                               podman rm taskcontainer
                               exit "$${exit_code}"
                   artifacts:
@@ -218,3 +219,11 @@ tasks:
                         type: 'directory'
                         path: 'artifact0'
                         expires: {$fromNow: '1 year'}
+                      - name: 'public/docker-contexts'
+                        type: 'directory'
+                        path: 'artifact1'
+                        # This needs to be at least the deadline of the
+                        # decision task + the docker-image task deadlines.
+                        # It is set to a week to allow for some time for
+                        # debugging, but they are not useful long-term.
+                        expires: {$fromNow: '7 day'}

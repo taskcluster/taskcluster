@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -28,7 +28,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 		return err
 	}
 	if !okIfExists && userExisted {
-		return fmt.Errorf("User " + user.Name + " already existed - cannot create")
+		return fmt.Errorf("user %s already existed - cannot create", user.Name)
 	}
 	log.Print("Created new OS user!")
 	err = host.RunBatch(
@@ -98,15 +98,10 @@ func UserHomeDirectoriesParent() string {
 	return win32.ProfilesDirectory()
 }
 
-func WaitForLoginCompletion(timeout time.Duration) error {
-	_, err := win32.InteractiveUserToken(timeout)
-	return err
-}
-
-func InteractiveUsername() (string, error) {
-	userToken, err := win32.InteractiveUserToken(time.Minute * 3)
+func WaitForLoginCompletion(timeout time.Duration, username string) error {
+	userToken, err := win32.InteractiveUserToken(timeout)
 	if err != nil {
-		return "", err
+		return err
 	}
 	tokenUser, err := userToken.GetTokenUser()
 	if err != nil {
@@ -116,7 +111,10 @@ func InteractiveUsername() (string, error) {
 	if err != nil {
 		panic(err)
 	}
-	return account, nil
+	if account != username {
+		return fmt.Errorf("interactive username %v does not match task user %v", account, username)
+	}
+	return nil
 }
 
 func AutoLogonUser() (username string) {

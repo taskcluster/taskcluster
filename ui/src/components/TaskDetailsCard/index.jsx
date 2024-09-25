@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
-import { arrayOf, func, shape, string } from 'prop-types';
+import { arrayOf, func, shape, object } from 'prop-types';
 import deepSortObject from 'deep-sort-object';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -16,6 +16,7 @@ import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import { LinearProgress } from '@material-ui/core';
 import Label from '../Label';
 import JsonDisplay from '../JsonDisplay';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -26,6 +27,7 @@ import { DEPENDENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, task } from '../../utils/prop-types';
 import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
+import { getTaskDefinitions, getTaskStatuses } from '../../utils/queueTask';
 
 @withStyles(theme => ({
   headline: {
@@ -84,6 +86,10 @@ import Link from '../../utils/Link';
     justifyContent: 'space-between',
     verticalAlign: 'middle',
   },
+  dependenciesList: {
+    maxHeight: 400,
+    overflowY: 'auto',
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -99,45 +105,63 @@ export default class TaskDetailsCard extends Component {
      * A GraphQL task response.
      */
     task: task.isRequired,
-    /**
-     * A collection of GraphQL task responses associated with the given task.
-     */
-    dependentTasks: arrayOf(
-      shape({
-        taskId: string.isRequired,
-        // note that status and metadata may be missing
-        status: shape({
-          state: string,
-        }),
-        metadata: shape({
-          name: string,
-        }),
-      })
-    ),
     dependents: shape({
       edges: arrayOf(task),
       pageInfo,
     }),
     onDependentsPageChange: func.isRequired,
+    user: object,
   };
 
   state = {
     showPayload: false,
+    dependentTasks: null,
+    loading: false,
   };
 
   handleTogglePayload = () => {
     this.setState({ showPayload: !this.state.showPayload });
   };
 
+  componentDidMount() {
+    this.fetchDependentTasks();
+  }
+
+  async fetchDependentTasks() {
+    const { task, user } = this.props;
+
+    this.setState({ loading: true });
+
+    if (task?.dependencies?.length > 0) {
+      const definitions = await getTaskDefinitions({
+        taskIds: task.dependencies,
+        user,
+      });
+      const statuses = await getTaskStatuses({
+        taskIds: task.dependencies,
+        user,
+      });
+      // merge back everything into { taskId, status, metadata }
+      const dependentTasks = task.dependencies.map(taskId => {
+        const definition = definitions.find(d => d.taskId === taskId);
+        const status = statuses.find(s => s.taskId === taskId);
+
+        return {
+          taskId,
+          status: status ? status.status : null,
+          metadata: definition ? definition?.task?.metadata : null,
+        };
+      });
+
+      this.setState({ dependentTasks });
+    }
+
+    this.setState({ loading: false });
+  }
+
   render() {
-    const {
-      classes,
-      task,
-      dependentTasks,
-      dependents,
-      onDependentsPageChange,
-    } = this.props;
-    const { showPayload } = this.state;
+    const { classes, task, dependents, onDependentsPageChange } = this.props;
+    const { showPayload, dependentTasks, loading } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
     const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
@@ -261,11 +285,11 @@ export default class TaskDetailsCard extends Component {
                   }
                 />
               </ListItem>
-              {dependentTasks && dependentTasks.length ? (
+              {task.dependencies.length ? (
                 <Fragment>
                   <ListItem>
                     <ListItemText
-                      primary="Dependencies"
+                      primary={`Dependencies (${task.dependencies.length})`}
                       secondary={
                         <Fragment>
                           This task will be scheduled when
@@ -288,28 +312,31 @@ export default class TaskDetailsCard extends Component {
                       }
                     />
                   </ListItem>
-                  <List disablePadding>
-                    {dependentTasks.map(task => (
-                      // note that the task might not exist, if it has
-                      // expired
-                      <Link key={task.taskId} to={`/tasks/${task.taskId}`}>
-                        <ListItem
-                          button
-                          className={classes.listItemButton}
-                          title="View Task">
-                          <StatusLabel
-                            state={task.status?.state || 'EXPIRED'}
-                          />
-                          <ListItemText
-                            primaryTypographyProps={{ variant: 'body2' }}
-                            className={classes.listItemText}
-                            primary={task.metadata?.name || task.taskId}
-                          />
-                          <LinkIcon />
-                        </ListItem>
-                      </Link>
-                    ))}
-                  </List>
+                  {loading && <LinearProgress />}
+                  {!loading && dependentTasks && (
+                    <List disablePadding className={classes.dependenciesList}>
+                      {dependentTasks.map(dep => (
+                        // note that the task might not exist, if it has
+                        // expired
+                        <Link key={dep.taskId} to={`/tasks/${dep.taskId}`}>
+                          <ListItem
+                            button
+                            className={classes.listItemButton}
+                            title="View Task">
+                            <StatusLabel
+                              state={dep.status?.state || 'EXPIRED'}
+                            />
+                            <ListItemText
+                              primaryTypographyProps={{ variant: 'body2' }}
+                              className={classes.listItemText}
+                              primary={dep.metadata?.name || dep.taskId}
+                            />
+                            <LinkIcon />
+                          </ListItem>
+                        </Link>
+                      ))}
+                    </List>
+                  )}
                 </Fragment>
               ) : (
                 <ListItem>

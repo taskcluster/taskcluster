@@ -23,36 +23,11 @@ def _dependency_versions():
 def taskcluster_image_versions(config, tasks):
     node_version, go_version, _, rust_version, pg_version = _dependency_versions()
     for task in tasks:
-        image = task["docker-image"]
-        task["docker-image"] = image.format(
-            node_version=node_version,
-            go_version=go_version[2:],
-            rust_version=rust_version,
-            pg_version=pg_version
-        ).strip()
-
-        yield task
-
-
-@transforms.add
-def taskcluster_images(config, tasks):
-    node_version, go_version, _, rust_version, pg_version = _dependency_versions()
-    for task in tasks:
         image = task["worker"]["docker-image"]
-        if isinstance(image, dict) and tuple(image.keys())[0] == "taskcluster":
-            repo = image["taskcluster"]
-            if (repo == "ci-image"):
-                image = "taskcluster/ci-image:node{node_version}-pg{pg_version}-{go_version}"
-            elif (repo == "browser-test"):
-                image = "taskcluster/browser-test:{node_version}"
-            elif (repo == "rabbit-test"):
-                image = "taskcluster/rabbit-test:{node_version}"
-            elif (repo == "worker-ci"):
-                image = "taskcluster/worker-ci:node{node_version}"
-
+        if isinstance(image, str):
             task["worker"]["docker-image"] = image.format(
                 node_version=node_version,
-                go_version=go_version,
+                go_version=go_version[2:],
                 rust_version=rust_version,
                 pg_version=pg_version
             ).strip()
@@ -94,52 +69,6 @@ def add_task_env(config, tasks):
         # We want to set this everywhere other than lib-testing
         if task["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
-        yield task
-
-
-@transforms.add
-def podman_run(config, tasks):
-    for task in tasks:
-        env = task["worker"].setdefault("env", {})
-
-        managed_env = {}
-        managed_env["RUN_ID"] = "${{RUN_ID}}"
-        managed_env["TASKCLUSTER_ROOT_URL"] = "${{TASKCLUSTER_ROOT_URL}}"
-        managed_env["TASK_ID"] = "${{TASK_ID}}"
-        managed_env["TASKCLUSTER_WORKER_LOCATION"] = "${{TASKCLUSTER_WORKER_LOCATION}}"
-        taskcluster_proxy = task["worker"].get("taskcluster-proxy")
-        if taskcluster_proxy:
-            managed_env["TASKCLUSTER_PROXY_URL"] = "${{TASKCLUSTER_PROXY_URL}}"
-
-        managed_env.update(env)
-
-        has_artifacts = task["worker"].get("artifacts")
-
-        image = task.pop("docker-image")
-        command = "git clone --quiet --depth=20 --no-single-branch {head_repository} taskcluster && " + \
-            "cd taskcluster && " + \
-            "git checkout {head_rev} && " + \
-            task["run"]["command"]
-        task["run"]["command"] = "podman run --name taskcontainer " if has_artifacts else "podman run --rm "
-        if taskcluster_proxy:
-            task["run"]["command"] += "--add-host=taskcluster:127.0.0.1 --net=host "
-        task["run"]["command"] += ' '.join([f'-e "{key}={value}"' for key, value in managed_env.items()])
-        task["run"]["command"] += f" '{image}' /bin/bash -ec '{command}'"
-        if has_artifacts:
-            task["run"]["command"] += """
-                exit_code=$?
-                podman cp 'taskcontainer:/taskcluster/artifacts' artifact0
-                podman rm taskcontainer
-                exit ${{exit_code}}"""
-
-        # An error sometimes occurs while pulling the docker image:
-        # Error: reading blob sha256:<SHA>: Get "<URL>": remote error: tls: handshake failure
-        # And this exits 125, so we'd like to retry.
-        # Another error sometimes occurs while pulling the docker image:
-        # error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)
-        # And this exits 128, so we'd like to retry.
-        task["worker"].setdefault("retry-exit-status", []).extend([125, 128])
-
         yield task
 
 

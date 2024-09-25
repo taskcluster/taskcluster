@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
 )
 
 func addUserToGroup(user, group string) error {
@@ -15,7 +15,7 @@ func removeUserFromGroup(user, group string) error {
 }
 
 func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
-	taskContext.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password)
+	taskContext.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password, !config.HeadlessTasks)
 	for _, command := range osGroups.Task.Commands {
 		command.SysProcAttr.Token = taskContext.pd.LoginInfo.AccessToken()
 	}

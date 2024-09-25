@@ -72,6 +72,7 @@
    * [`purge_cache_wpid`](#purge_cache_wpid)
    * [`purge_requests_wpid`](#purge_requests_wpid)
  * [queue functions](#queue)
+   * [`add_task_dependencies`](#add_task_dependencies)
    * [`add_task_dependency`](#add_task_dependency)
    * [`cancel_task`](#cancel_task)
    * [`cancel_task_group`](#cancel_task_group)
@@ -129,6 +130,7 @@
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
+   * [`remove_task_dependencies`](#remove_task_dependencies)
    * [`remove_task_dependency`](#remove_task_dependency)
    * [`rerun_task`](#rerun_task)
    * [`resolve_task`](#resolve_task)
@@ -1325,6 +1327,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 
 ## queue
 
+* [`add_task_dependencies`](#add_task_dependencies)
 * [`add_task_dependency`](#add_task_dependency)
 * [`cancel_task`](#cancel_task)
 * [`cancel_task_group`](#cancel_task_group)
@@ -1382,6 +1385,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
+* [`remove_task_dependencies`](#remove_task_dependencies)
 * [`remove_task_dependency`](#remove_task_dependency)
 * [`rerun_task`](#rerun_task)
 * [`resolve_task`](#resolve_task)
@@ -1391,6 +1395,21 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`seal_task_group`](#seal_task_group)
 * [`task_queue_seen`](#task_queue_seen)
 * [`update_queue_artifact_2`](#update_queue_artifact_2)
+
+### add_task_dependencies
+
+* *Mode*: write
+* *Arguments*:
+  * `dependent_task_id_in text`
+  * `required_task_ids_in jsonb`
+  * `requires_in task_requires`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 103
+
+Create multiple un-satisfied task dependencies between the two tasks, with the given
+requirement style and expiration. If the dependency already exists, nothing
+happens.
 
 ### add_task_dependency
 
@@ -2394,6 +2413,18 @@ This returns the task's updated status, or nothing if the current status was not
 
 Remove the given task, regardless of its expiration status.  This is
 typically used when task creation has failed.
+
+### remove_task_dependencies
+
+* *Mode*: write
+* *Arguments*:
+  * `dependent_task_id_in text`
+  * `required_task_ids_in jsonb`
+* *Returns*: `void`
+* *Last defined on version*: 103
+
+Mark all task dependencies as satisfied.  If the dependency does not exist, nothing
+happens.
 
 ### remove_task_dependency
 

@@ -47,7 +47,7 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, err
 	}
 
-	path := fmt.Sprintf(dir + "/stream")
+	path := fmt.Sprint(dir + "/stream")
 	log.Printf("created at path %v", path)
 
 	file, openErr :=

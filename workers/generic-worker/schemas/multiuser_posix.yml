@@ -50,7 +50,7 @@ oneOf:
 
         The following environment variables will automatically be set in the task
         commands, and may not be overridden by environment variables in the task payload:
-          * `DISPLAY` - `:0` (Linux only)
+          * `DISPLAY` - `:0` (Linux only, and only when `headlessTasks` is `false`)
           * `TASK_ID` - the task ID of the currently running task
           * `RUN_ID` - the run ID of the currently running task
           * `TASK_GROUP_ID` - the task group ID of the currently running task
@@ -480,6 +480,15 @@ oneOf:
             still includes feature in order for d2g to work with it.
           type: boolean
           default: false
+        containerEngine:
+          title: Container engine
+          description: >-
+            The container engine to use when executing tasks
+            with Docker Worker formatted task payloads.
+          type: string
+          enum:
+            - docker
+            - podman
         devices:
           title: Devices to be attached to task containers
           description: >-

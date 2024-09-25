@@ -13,10 +13,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v67/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v70/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -358,10 +358,6 @@ func UACEnabled() bool {
 		return false
 	}
 	return enableLUA == 1
-}
-
-func rebootBetweenTasks() bool {
-	return true
 }
 
 func platformTargets(arguments map[string]interface{}) ExitCode {

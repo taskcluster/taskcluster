@@ -13,9 +13,9 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v67/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v70/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -36,12 +36,12 @@ func platformFeatures() []Feature {
 
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	err := host.Run("/usr/bin/sudo", "/bin/chmod", "-R", "u+w", path)
+	err := host.Run("/bin/chmod", "-R", "u+w", path)
 	if err != nil {
 		log.Print("WARNING: could not chmod -R u+w '" + path + "'")
 		log.Printf("%v", err)
 	}
-	err = host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
+	err = host.Run("/bin/rm", "-rf", path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
@@ -101,10 +101,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func rebootBetweenTasks() bool {
-	return true
-}
-
 func platformTargets(arguments map[string]interface{}) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
@@ -144,7 +140,7 @@ func (task *TaskRun) EnvVars() []string {
 	if config.RunTasksAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
 	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
 		if !config.RunTasksAsCurrentUser {
 			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))

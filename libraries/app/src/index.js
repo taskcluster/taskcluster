@@ -29,6 +29,8 @@ export const traceMiddleware = (req, res, next) => {
   next();
 };
 
+let listenersAdded = false;
+
 /**
  * Create server; this becomes a method of the `app` object, so `this`
  * refers to an Express app.
@@ -65,8 +67,12 @@ const createServer = function() {
         process.exit(0);
       });
   }
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+
+  if (!listenersAdded) {
+    listenersAdded = true;
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+  }
 
   return new Promise((accept, reject) => {
     // Launch HTTP server

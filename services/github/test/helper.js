@@ -90,6 +90,7 @@ helper.withFakeQueue = (mock, skipping) => {
     fake: {
       sealTaskGroup: sinon.stub(),
       cancelTaskGroup: sinon.stub(),
+      listArtifacts: sinon.stub(),
     },
   });
 

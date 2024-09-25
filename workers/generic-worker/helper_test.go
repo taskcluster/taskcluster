@@ -24,13 +24,13 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v67/clients/client-go"
-	"github.com/taskcluster/taskcluster/v67/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v67/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v67/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v67/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v67/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v70/clients/client-go"
+	"github.com/taskcluster/taskcluster/v70/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v70/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v70/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v70/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v70/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -357,11 +357,13 @@ func GWTest(t *testing.T) *Test {
 			CheckForNewDeploymentEverySecs: 0,
 			CleanUpTaskDirs:                false,
 			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			ContainerEngine:                "docker",
 			DeploymentID:                   "",
 			DisableReboots:                 true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
+			EnableD2G:                 true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
@@ -414,7 +416,6 @@ func GWTest(t *testing.T) *Test {
 		}
 		testConfig.RootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
 	}
-	setConfigRunTasksAsCurrentUser(testConfig)
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
 		cachesDir,
@@ -440,12 +441,7 @@ func GWTest(t *testing.T) *Test {
 		}
 	}
 
-	// Needed for tests that don't call RunWorker()
-	// but test methods/functions directly
-	taskContext = &TaskContext{
-		TaskDir: testdataDir,
-		pd:      newPlatformData(testConfig),
-	}
+	engineTestSetup(t, testConfig)
 
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))

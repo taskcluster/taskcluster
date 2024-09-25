@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-built-in-workers",
-  "version": "67.1.0",
+  "version": "70.0.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
@@ -13,6 +13,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.5.2"
+    "mocha": "^10.7.0"
   }
 }

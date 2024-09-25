@@ -21,6 +21,11 @@ workers:
       os: linux
       implementation: generic-worker
       worker-type: gw-ubuntu-24-04
+    ubuntu-24-04:
+      provisioner: proj-taskcluster
+      os: linux
+      implementation: docker-worker
+      worker-type: gw-ubuntu-24-04
     gw-ci-ubuntu-24-04:
       provisioner: proj-taskcluster
       os: linux
@@ -41,3 +46,8 @@ workers:
       os: windows
       implementation: generic-worker
       worker-type: gw-ci-windows-2022
+    images:
+      provisioner: proj-taskcluster
+      os: linux
+      implementation: docker-worker
+      worker-type: gw-ubuntu-24-04

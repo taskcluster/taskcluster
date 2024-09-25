@@ -12,6 +12,7 @@
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
       "queue:cancel-task-group:taskcluster-github/*",
+      "queue:list-artifacts:*",
       "queue:list-task-group:*",
       "queue:route:checks",
       "queue:route:statuses",

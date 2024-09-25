@@ -10,6 +10,11 @@ const NoTaskGroup = lazy(() =>
 const ViewTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
 );
+const TaskArtifactRedirect = lazy(() =>
+  import(
+    /* webpackChunkName: 'Tasks.TaskArtifactRedirect' */ './TaskArtifactRedirect'
+  )
+);
 const TaskLog = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
 );
@@ -68,6 +73,11 @@ export default path => [
   {
     component: TaskLog,
     path: `${path}/:taskId/runs/:runId/logs/:name+`,
+  },
+  {
+    component: TaskArtifactRedirect,
+    path: `${path}/:taskId/runs/:runId/:artifactName+`,
+    description: taskDescription,
   },
   {
     component: ViewTask,
