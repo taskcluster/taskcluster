@@ -145,6 +145,15 @@ class ClaimResolver {
 
     let status = task.status();
 
+    // Publish message about task exception
+    await this.publisher.taskException({
+      status: status,
+      runId: runId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+    }, task.routes);
+    this.monitor.log.taskException({ taskId, runId });
+
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
     let newRun = task.runs[runId + 1];
@@ -163,15 +172,6 @@ class ClaimResolver {
     } else {
       // Update dependencyTracker
       await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
-
-      // Publish message about task exception
-      await this.publisher.taskException({
-        status: status,
-        runId: runId,
-        workerGroup: run.workerGroup,
-        workerId: run.workerId,
-      }, task.routes);
-      this.monitor.log.taskException({ taskId, runId });
     }
 
     return remove();

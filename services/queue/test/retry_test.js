@@ -56,8 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].state === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'claim-expired'));
     }, 100, 250);
-    // there should be no task-exception message in this case
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.clearPulseMessages();
 
     debug('### Stop claimResolver');

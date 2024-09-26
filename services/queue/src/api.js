@@ -1795,10 +1795,19 @@ builder.declare({
     tags: task.tags,
   };
 
-  // If a newRun was created and it is a retry with state pending then we better
-  // publish messages about it. And if we're not retrying the task, because then
-  // the task is resolved as it has no more runs, and we publish a message about
-  // task-exception.
+  // Publish message about taskException
+  await this.publisher.taskException({
+    status,
+    runId,
+    task: taskPulseContents,
+    workerGroup: run.workerGroup,
+    workerId: run.workerId,
+  }, task.routes);
+  this.monitor.log.taskException({ taskId, runId });
+
+  // If a newRun was created and it is a retry with state pending then we
+  // better publish messages about it. If we're not retrying the task, the task
+  // is resolved as it has no more runs.
   let newRun = task.runs[runId + 1];
   if (newRun &&
       task.runs.length - 1 === runId + 1 &&
@@ -1822,16 +1831,6 @@ builder.declare({
       task.schedulerId,
       'exception',
     );
-
-    // Publish message about taskException
-    await this.publisher.taskException({
-      status,
-      runId,
-      task: taskPulseContents,
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
-    this.monitor.log.taskException({ taskId, runId });
   }
 
   // Reply to caller
