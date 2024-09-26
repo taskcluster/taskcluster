@@ -21,8 +21,8 @@ type OSUser struct {
 func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Creating Windows user " + user.Name + "...")
 	userExisted, err := host.RunIgnoreError(
-		"The account already exists",
-		"net", "user", user.Name, user.Password, "/add", "/expires:never", "/passwordchg:no", "/y",
+		"User "+user.Name+" already exists",
+		"powershell", "-Command", "New-LocalUser -Name '"+user.Name+"' -Password (ConvertTo-SecureString '"+user.Password+"' -AsPlainText -Force) -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword",
 	)
 	if err != nil {
 		return err
@@ -33,8 +33,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Created new OS user!")
 	err = host.RunBatch(
 		userExisted,
-		[]string{"wmic", "useraccount", "where", "name='" + user.Name + "'", "set", "passwordexpires=false"},
-		[]string{"net", "localgroup", "Remote Desktop Users", "/add", user.Name},
+		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + user.Name + "'"},
 	)
 	// if user existed, the above commands can fail
 	// if it didn't, they can't
@@ -48,7 +47,10 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 }
 
 func (user *OSUser) MakeAdmin() error {
-	_, err := host.RunIgnoreError("The specified account name is already a member of the group", "net", "localgroup", "administrators", user.Name, "/add")
+	_, err := host.RunIgnoreError(
+		user.Name+" is already a member of group administrators",
+		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+user.Name+"'",
+	)
 	return err
 }
 
@@ -71,7 +73,7 @@ func DeleteUser(username string) (err error) {
 	} else {
 		log.Printf("WARNING: not able to look up SID for user %v: %v", username, err)
 	}
-	err2 := host.Run("net", "user", username, "/delete")
+	err2 := host.Run("powershell", "-Command", "Remove-LocalUser -Name '"+username+"'")
 	if err2 != nil {
 		log.Printf("WARNING: not able to delete user account %v: %v", username, err2)
 		if err == nil {
@@ -83,12 +85,12 @@ func DeleteUser(username string) (err error) {
 
 func ListUserAccounts() (usernames []string, err error) {
 	var out string
-	out, err = host.CombinedOutput("wmic", "useraccount", "get", "name")
+	out, err = host.CombinedOutput("powershell", "-Command", "Get-LocalUser | Select-Object -ExpandProperty Name")
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(out, "\r\n") {
-		trimmedLine := strings.Trim(line, "\r\n ")
+	for _, line := range strings.Split(out, "\n") {
+		trimmedLine := strings.TrimSpace(line)
 		usernames = append(usernames, trimmedLine)
 	}
 	return

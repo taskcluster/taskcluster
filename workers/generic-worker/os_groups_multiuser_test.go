@@ -46,7 +46,7 @@ func TestOSGroupsRespected(t *testing.T) {
 	for _, newGroup := range newGroups {
 		switch runtime.GOOS {
 		case "windows":
-			err = host.Run("net", "localgroup", newGroup, "/add")
+			err = host.Run("powershell", "-Command", "New-LocalGroup -Name '"+newGroup+"'")
 		case "darwin":
 			err = host.Run("/usr/sbin/dseditgroup", "-o", "create", newGroup)
 		case "freebsd":
@@ -63,7 +63,7 @@ func TestOSGroupsRespected(t *testing.T) {
 		defer func(newGroup string) {
 			switch runtime.GOOS {
 			case "windows":
-				err = host.Run("net", "localgroup", newGroup, "/delete")
+				err = host.Run("powershell", "-Command", "Remove-LocalGroup -Name '"+newGroup+"'")
 			case "darwin":
 				err = host.Run("/usr/sbin/dseditgroup", "-o", "delete", newGroup)
 			case "freebsd":
