@@ -85,7 +85,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v70/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v71/clients/client-go"
 )
 
 type Queue tcclient.Client

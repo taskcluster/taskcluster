@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v71.0.0
+
+### GENERAL
+
+▶ [patch] [#7278](https://github.com/taskcluster/taskcluster/issues/7278)
+Adds `containerEngine` docs in `Capabilities` section of Docker Worker docs.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7235](https://github.com/taskcluster/taskcluster/issues/7235)
+Generic Worker (windows): Removes calls to `wmic` (being [deprecated](https://techcommunity.microsoft.com/t5/windows-it-pro-blog/wmi-command-line-wmic-utility-deprecation-next-steps/ba-p/4039242)) and `net` in favor of a more modern approach using PowerShell cmdlets.
+
+The `powershell` executable is required to be in the path.
+
 ## v70.0.0
 
 ### WORKER-DEPLOYERS
