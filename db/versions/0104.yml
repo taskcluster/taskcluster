@@ -1,0 +1,19 @@
+version: 104
+description: get number of claimed tasks for a task queue
+methods:
+  queue_claimed_tasks_count:
+    description: |
+      Count the number of claimed tasks for given task queue.
+    mode: read
+    serviceName: queue
+    args: task_queue_id_in text
+    returns: integer
+    body: |-
+      begin
+        return (
+          select count(*)
+          from queue_claimed_tasks
+          where task_queue_id = task_queue_id_in
+            and taken_until > now()
+        );
+      end

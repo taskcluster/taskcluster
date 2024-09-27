@@ -113,6 +113,7 @@
    * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
    * [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+   * [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
    * [`queue_pending_task_delete`](#queue_pending_task_delete)
    * [`queue_pending_tasks_add`](#queue_pending_tasks_add)
    * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
@@ -1368,6 +1369,7 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
 * [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+* [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
 * [`queue_pending_task_delete`](#queue_pending_task_delete)
 * [`queue_pending_tasks_add`](#queue_pending_tasks_add)
 * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
@@ -2167,6 +2169,17 @@ It is possible to have multiple records for a given taskId+runId combination.
 
 Once the task gets resolved it is no longer relevant for the claim queue, since it cannot expire anymore.
 We can safely delete given run from the claim queue.
+
+
+### queue_claimed_tasks_count
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 104
+
+Count the number of claimed tasks for given task queue.
 
 
 ### queue_pending_task_delete

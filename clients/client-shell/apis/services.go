@@ -1828,10 +1828,23 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
-				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.",
-				Stability:   "stable",
+				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/pending/<taskQueueId>",
+				Args: []string{
+					"taskQueueId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "taskQueueCounts",
+				Title:       "Get Number of Pending and Claimed Tasks",
+				Description: "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/task-queues/<taskQueueId>/counts",
 				Args: []string{
 					"taskQueueId",
 				},

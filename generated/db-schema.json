@@ -7264,6 +7264,21 @@
         }
       },
       "version": 103
+    },
+    {
+      "description": "get number of claimed tasks for a task queue",
+      "methods": {
+        "queue_claimed_tasks_count": {
+          "args": "task_queue_id_in text",
+          "body": "begin\n  return (\n    select count(*)\n    from queue_claimed_tasks\n    where task_queue_id = task_queue_id_in\n      and taken_until > now()\n  );\nend",
+          "deprecated": false,
+          "description": "Count the number of claimed tasks for given task queue.\n",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        }
+      },
+      "version": 104
     }
   ]
 }

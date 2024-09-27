@@ -196,7 +196,8 @@ helper.withServer = (mock, skipping) => {
  * an `setPending` method to add fake tasks.
  */
 const stubbedQueue = () => {
-  const taskQueues = {};
+  const pendingCounts = {};
+  const claimedCounts = {};
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
@@ -204,14 +205,11 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      pendingTasks: async (taskQueueId) => {
-        let pendingTasks = 0;
-        if (taskQueues[taskQueueId]) {
-          pendingTasks = taskQueues[taskQueueId];
-        }
+      taskQueueCounts: async (taskQueueId) => {
         const [provisionerId, workerType] = taskQueueId.split('/');
         return {
-          pendingTasks,
+          pendingTasks: pendingCounts[taskQueueId] ?? 0,
+          claimedTasks: claimedCounts[taskQueueId] ?? 0,
           taskQueueId,
           provisionerId,
           workerType,
@@ -221,7 +219,11 @@ const stubbedQueue = () => {
   });
 
   queue.setPending = function(taskQueueId, pending) {
-    taskQueues[taskQueueId] = pending;
+    pendingCounts[taskQueueId] = pending;
+  };
+
+  queue.setClaimed = function(taskQueueId, claimed) {
+    claimedCounts[taskQueueId] = claimed;
   };
 
   return queue;

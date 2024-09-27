@@ -1406,6 +1406,7 @@ builder.declare({
     );
   }
 
+  await this.queueService.removePendingMessage(taskId, runId);
   await this.workerInfo.taskSeen(task.taskQueueId, workerGroup, workerId, [result]);
 
   // Reply to caller
@@ -1969,7 +1970,7 @@ builder.declare({
   route: '/pending/:taskQueueId(*)',
   name: 'pendingTasks',
   scopes: 'queue:pending-count:<taskQueueId>',
-  stability: APIBuilder.stability.stable,
+  stability: APIBuilder.stability.deprecated,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
@@ -1978,6 +1979,8 @@ builder.declare({
     '',
     'As task states may change rapidly, this number may not represent the exact',
     'number of pending tasks, but a very good approximation.',
+    '',
+    'This method is **deprecated**, use queue.taskQueueCounts instead.',
   ].join('\n'),
 }, async function(req, res) {
   const taskQueueId = req.params.taskQueueId;
@@ -1992,6 +1995,47 @@ builder.declare({
     workerType: workerType,
     taskQueueId: taskQueueId,
     pendingTasks: count,
+  });
+});
+
+/** Pending and claimed counts for a queue */
+builder.declare({
+  method: 'get',
+  route: '/task-queues/:taskQueueId(*)/counts',
+  name: 'taskQueueCounts',
+  scopes: {
+    AllOf: [
+      'queue:pending-count:<taskQueueId>',
+      'queue:claimed-count:<taskQueueId>',
+    ],
+  },
+  stability: APIBuilder.stability.stable,
+  category: 'Worker Metadata',
+  output: 'task-queue-counts-response.yml',
+  title: 'Get Number of Pending and Claimed Tasks',
+  description: [
+    'Get an approximate number of pending and claimed tasks for the given `taskQueueId`.',
+    '',
+    'As task states may change rapidly, this number may not represent the exact',
+    'number of pending and claimed tasks, but a very good approximation.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskQueueId = req.params.taskQueueId;
+  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
+
+  // Get number of pending message
+  let [pendingCount, claimedCount] = await Promise.all([
+    this.queueService.countPendingTasks(taskQueueId),
+    this.queueService.countClaimedTasks(taskQueueId),
+  ]);
+
+  // Reply to call with count `pendingTasks`
+  return res.reply({
+    provisionerId: provisionerId,
+    workerType: workerType,
+    taskQueueId: taskQueueId,
+    pendingTasks: pendingCount,
+    claimedTasks: claimedCount,
   });
 });
 

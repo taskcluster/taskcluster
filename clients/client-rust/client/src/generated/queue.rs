@@ -1308,6 +1308,8 @@ impl Queue {
     ///
     /// As task states may change rapidly, this number may not represent the exact
     /// number of pending tasks, but a very good approximation.
+    ///
+    /// This method is **deprecated**, use queue.taskQueueCounts instead.
     pub async fn pendingTasks(&self, taskQueueId: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::pendingTasks_details(taskQueueId);
@@ -1331,6 +1333,40 @@ impl Queue {
     /// Determine the HTTP request details for pendingTasks
     fn pendingTasks_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("pending/{}", urlencode(taskQueueId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Number of Pending and Claimed Tasks
+    ///
+    /// Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+    ///
+    /// As task states may change rapidly, this number may not represent the exact
+    /// number of pending and claimed tasks, but a very good approximation.
+    pub async fn taskQueueCounts(&self, taskQueueId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the taskQueueCounts endpoint
+    pub fn taskQueueCounts_url(&self, taskQueueId: &str) -> Result<String, Error> {
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the taskQueueCounts endpoint
+    pub fn taskQueueCounts_signed_url(&self, taskQueueId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for taskQueueCounts
+    fn taskQueueCounts_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-queues/{}/counts", urlencode(taskQueueId));
         let query = None;
 
         (path, query)

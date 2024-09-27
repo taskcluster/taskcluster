@@ -135,6 +135,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       stoppingCapacity: 0,
     };
     helper.queue.setPending('foo/bar', 100);
+    helper.queue.setClaimed('foo/bar', 25);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 100,
@@ -254,6 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       stoppingCapacity: 10,
     };
     helper.queue.setPending('foo/bar', 20);
+    helper.queue.setClaimed('foo/bar', 0);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
       maxCapacity: 50,
@@ -265,5 +267,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.strictEqual(estimate, 10);
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
+  });
+  test('idle capacity', async function () {
+    const workerInfo = {
+      existingCapacity: 10,
+    };
+
+    const tests = [
+      { pending: 5, claimed: 0, expected: 0 },
+      { pending: 10, claimed: 0, expected: 0 },
+      { pending: 11, claimed: 0, expected: 1 }, // pending - existing = 1
+
+      { pending: 5, claimed: 5, expected: 0 }, // pending - claimed = 0
+      { pending: 5, claimed: 10, expected: 5 },
+    ];
+
+    tests.forEach(async ({ pending, claimed, expected }) => {
+      helper.queue.setPending('foo/bar', pending);
+      helper.queue.setClaimed('foo/bar', claimed);
+      assert.strictEqual(expected, await estimator.simple({
+        workerPoolId: 'foo/bar',
+        maxCapacity: 50,
+        minCapacity: 0,
+        scalingRatio: 1,
+        workerInfo,
+      }));
+    });
   });
 });
