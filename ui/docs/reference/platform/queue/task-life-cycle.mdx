@@ -88,10 +88,12 @@ For example, exceptions with reason `malformed-payload` will never be retried.
 A task may also enter the exception state, if it is canceled, the deadline is
 exceeded or the worker disappears and retries have been exhausted.
 
-Whenever, a task is immediately retried, the _run_ will be resolved _exception_,
-but the _task_ never enters the _exception_ state, and no message is published
-about the _run_ that is resolved _exception_. A message signaling _exception_
-will only be published if no automatic retry is initiated.
+Some types of exceptions trigger an automatic retry. When this happens the
+_run_ will be resolved _exception_, but the _task_ will re-enter the _pending_
+state. A message is published about the _run_ that is resolved _exception_
+regardless of whether or not it was automatically retried. To determine whether
+there was an automatic retry, inspect whether there exists a following _run_
+with a `reasonCreated` of `retry`.
 
 ## Task Expiration
 When a task is resolved, _completed_, _failed_, or _exception_, it will sit

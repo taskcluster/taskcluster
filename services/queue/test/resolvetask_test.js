@@ -360,8 +360,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status.runs[1].state).equals('pending');
     assume(r1.status.runs[1].reasonCreated).equals('retry');
 
-    // no exception message, just right back to pending
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.assertPulseMessage('task-pending', m => (
       _.isEqual(m.payload.status, r1.status) &&
       m.payload.runId === 1));
@@ -370,7 +369,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'worker-shutdown',
     });
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.assertPulseMessage('task-pending');
     helper.clearPulseMessages();
 
