@@ -127,6 +127,15 @@ export default class TaskDetailsCard extends Component {
     this.fetchDependentTasks();
   }
 
+  componentDidUpdate(prevProps) {
+    if (
+      prevProps.task.taskId !== this.props.task.taskId ||
+      prevProps.user !== this.props.user
+    ) {
+      this.fetchDependentTasks();
+    }
+  }
+
   async fetchDependentTasks() {
     const { task, user } = this.props;
 
