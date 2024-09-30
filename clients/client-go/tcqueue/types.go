@@ -420,7 +420,7 @@ type (
 		// as they might be currently resolved by a worker or claim-resolver.
 		//
 		// Tasks are returned by claimed time, with the oldest claimed tasks first.
-		Tasks []Var3 `json:"tasks"`
+		Tasks []Var4 `json:"tasks"`
 	}
 
 	// Response from a `listDependentTasks` request.
@@ -461,7 +461,7 @@ type (
 		// as they might be actively claimed by a worker.
 		//
 		// Tasks are returned in inserted order.
-		Tasks []Var2 `json:"tasks"`
+		Tasks []Var3 `json:"tasks"`
 	}
 
 	ListProvisionersResponse struct {
@@ -1575,7 +1575,7 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Default:    []
-		Tasks []Var `json:"tasks"`
+		Tasks []Var1 `json:"tasks"`
 	}
 
 	// Request to list definitions of multiple tasks.
@@ -1947,10 +1947,50 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Default:    []
-		Statuses []Var1 `json:"statuses"`
+		Statuses []Var2 `json:"statuses"`
 	}
 
+	// Response to a request for the number of pending and claimed tasks for a given
+	// `provisionerId` and `workerType`.
 	Var struct {
+
+		// An approximate number of claimed tasks for the given `provisionerId` and
+		// `workerType`. Number of reported here may be higher than actual number of
+		// claimed tasks.
+		//
+		// Mininum:    0
+		ClaimedTasks int64 `json:"claimedTasks"`
+
+		// An approximate number of pending tasks for the given `provisionerId` and
+		// `workerType`. Number of reported here may be higher than actual number of
+		// pending tasks.
+		//
+		// Mininum:    0
+		PendingTasks int64 `json:"pendingTasks"`
+
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
+		ProvisionerID string `json:"provisionerId"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerType string `json:"workerType"`
+	}
+
+	Var1 struct {
 
 		// Definition of a task that can be scheduled
 		Task TaskDefinitionResponse `json:"task"`
@@ -1958,7 +1998,7 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	Var1 struct {
+	Var2 struct {
 
 		// A representation of **task status** as known by the queue
 		Status TaskStatusStructure `json:"status"`
@@ -1966,7 +2006,7 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	Var2 struct {
+	Var3 struct {
 		Inserted tcclient.Time `json:"inserted"`
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.
@@ -1986,7 +2026,7 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	Var3 struct {
+	Var4 struct {
 		Claimed tcclient.Time `json:"claimed"`
 
 		// Unique run identifier, this is a number between 0 and 1000 inclusive.

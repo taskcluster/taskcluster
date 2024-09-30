@@ -3381,6 +3381,47 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-queue-counts-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response to a request for the number of pending and claimed tasks for a given\n`provisionerId` and `workerType`.\n",
+      "properties": {
+        "claimedTasks": {
+          "description": "An approximate number of claimed tasks for the given `provisionerId` and\n`workerType`. Number of reported here may be higher than actual number of\nclaimed tasks.\n",
+          "minimum": 0,
+          "title": "Number of Claimed Tasks",
+          "type": "integer"
+        },
+        "pendingTasks": {
+          "description": "An approximate number of pending tasks for the given `provisionerId` and\n`workerType`. Number of reported here may be higher than actual number of\npending tasks.\n",
+          "minimum": 0,
+          "title": "Number of Pending Tasks",
+          "type": "integer"
+        },
+        "provisionerId": {
+          "$ref": "task.json#/properties/provisionerId"
+        },
+        "taskQueueId": {
+          "$ref": "task.json#/properties/taskQueueId"
+        },
+        "workerType": {
+          "$ref": "task.json#/properties/workerType"
+        }
+      },
+      "required": [
+        "provisionerId",
+        "workerType",
+        "taskQueueId",
+        "pendingTasks",
+        "claimedTasks"
+      ],
+      "title": "Count Pending and Claimed Tasks Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-queue-counts-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pulse-definition.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -18049,7 +18090,7 @@
             "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
@@ -18057,8 +18098,30 @@
           ],
           "route": "/pending/<taskQueueId>",
           "scopes": "queue:pending-count:<taskQueueId>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
+          "method": "get",
+          "name": "taskQueueCounts",
+          "output": "v1/task-queue-counts-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/<taskQueueId>/counts",
+          "scopes": {
+            "AllOf": [
+              "queue:pending-count:<taskQueueId>",
+              "queue:claimed-count:<taskQueueId>"
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Number of Pending and Claimed Tasks",
           "type": "function"
         },
         {

@@ -763,10 +763,26 @@ class Queue(AsyncBaseClient):
         As task states may change rapidly, this number may not represent the exact
         number of pending tasks, but a very good approximation.
 
-        This method is ``stable``
+        This method is **deprecated**, use queue.taskQueueCounts instead.
+
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["pendingTasks"], *args, **kwargs)
+
+    async def taskQueueCounts(self, *args, **kwargs):
+        """
+        Get Number of Pending and Claimed Tasks
+
+        Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+
+        As task states may change rapidly, this number may not represent the exact
+        number of pending and claimed tasks, but a very good approximation.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["taskQueueCounts"], *args, **kwargs)
 
     async def listPendingTasks(self, *args, **kwargs):
         """
@@ -1222,7 +1238,7 @@ class Queue(AsyncBaseClient):
             'name': 'pendingTasks',
             'output': 'v1/pending-tasks-response.json#',
             'route': '/pending/<taskQueueId>',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "ping": {
             'args': [],
@@ -1321,6 +1337,14 @@ class Queue(AsyncBaseClient):
             'name': 'task',
             'output': 'v1/task.json#',
             'route': '/task/<taskId>',
+            'stability': 'stable',
+        },
+        "taskQueueCounts": {
+            'args': ['taskQueueId'],
+            'method': 'get',
+            'name': 'taskQueueCounts',
+            'output': 'v1/task-queue-counts-response.json#',
+            'route': '/task-queues/<taskQueueId>/counts',
             'stability': 'stable',
         },
         "tasks": {

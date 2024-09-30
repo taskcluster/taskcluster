@@ -51,6 +51,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     );
     assume(r1.pendingTasks).is.greaterThan(1);
 
+    const c1 = await helper.queue.taskQueueCounts(
+      'no-provisioner-extended-extended/query-test-worker-extended-extended',
+    );
+    assume(c1.pendingTasks).is.greaterThan(1);
+
     // Creating same task twice should only result in single entry in pending task queue
     await helper.queue.createTask(taskId1, taskDef);
 
@@ -196,6 +201,34 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       assume(new Date(res.tasks[0].claimed)).is.below(new Date(res.tasks[1].claimed));
     });
   });
+
+  test('taskQueueCounts', async () => {
+    const taskId1 = slugid.v4();
+    const taskId2 = slugid.v4();
+    const workerGroup = 'my-worker-group';
+    const workerId = 'my-worker-id';
+    const taskQueueId = 'some/queue';
+    const runId = 0;
+
+    await helper.queue.createTask(taskId1, { ...taskDef, taskQueueId });
+    await helper.queue.createTask(taskId2, { ...taskDef, taskQueueId });
+
+    const r1 = await helper.queue.taskQueueCounts(taskQueueId);
+    assume(r1.pendingTasks).equals(2);
+    assume(r1.claimedTasks).equals(0);
+
+    await helper.queue.claimTask(taskId1, runId, { workerGroup, workerId });
+    const r2 = await helper.queue.taskQueueCounts(taskQueueId);
+    assume(r2.pendingTasks).equals(1);
+    assume(r2.claimedTasks).equals(1);
+
+    await helper.queue.claimTask(taskId2, runId, { workerGroup, workerId });
+
+    const r3 = await helper.queue.taskQueueCounts(taskQueueId);
+    assume(r3.pendingTasks).equals(0);
+    assume(r3.claimedTasks).equals(2);
+  });
+
   test('pagination works', async () => {
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker-id';

@@ -2948,7 +2948,7 @@ export default {
             "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
@@ -2956,8 +2956,30 @@ export default {
           ],
           "route": "/pending/<taskQueueId>",
           "scopes": "queue:pending-count:<taskQueueId>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
+          "method": "get",
+          "name": "taskQueueCounts",
+          "output": "v1/task-queue-counts-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/<taskQueueId>/counts",
+          "scopes": {
+            "AllOf": [
+              "queue:pending-count:<taskQueueId>",
+              "queue:claimed-count:<taskQueueId>"
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Number of Pending and Claimed Tasks",
           "type": "function"
         },
         {

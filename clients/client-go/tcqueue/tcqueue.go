@@ -1189,10 +1189,14 @@ func (queue *Queue) DeclareProvisioner(provisionerId string, payload *Provisione
 	return responseObject.(*ProvisionerResponse), err
 }
 
+// Stability: *** DEPRECATED ***
+//
 // Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // As task states may change rapidly, this number may not represent the exact
 // number of pending tasks, but a very good approximation.
+//
+// This method is **deprecated**, use queue.taskQueueCounts instead.
 //
 // Required scopes:
 //
@@ -1215,6 +1219,38 @@ func (queue *Queue) PendingTasks(taskQueueId string) (*CountPendingTasksResponse
 func (queue *Queue) PendingTasks_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/pending/"+url.QueryEscape(taskQueueId), nil, duration)
+}
+
+// Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+//
+// As task states may change rapidly, this number may not represent the exact
+// number of pending and claimed tasks, but a very good approximation.
+//
+// Required scopes:
+//
+//	All of:
+//	* queue:pending-count:<taskQueueId>
+//	* queue:claimed-count:<taskQueueId>
+//
+// See #taskQueueCounts
+func (queue *Queue) TaskQueueCounts(taskQueueId string) (*Var, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task-queues/"+url.QueryEscape(taskQueueId)+"/counts", new(Var), nil)
+	return responseObject.(*Var), err
+}
+
+// Returns a signed URL for TaskQueueCounts, valid for the specified duration.
+//
+// Required scopes:
+//
+//	All of:
+//	* queue:pending-count:<taskQueueId>
+//	* queue:claimed-count:<taskQueueId>
+//
+// See TaskQueueCounts for more details.
+func (queue *Queue) TaskQueueCounts_SignedURL(taskQueueId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*queue)
+	return (&cd).SignedURL("/task-queues/"+url.QueryEscape(taskQueueId)+"/counts", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***

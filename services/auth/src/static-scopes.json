@@ -93,6 +93,7 @@
       "auth:create-client:worker/*",
       "notify:email:*",
       "queue:claim-work:*",
+      "queue:claimed-count:*",
       "queue:pending-count:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",

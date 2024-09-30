@@ -4,9 +4,19 @@ export class Estimator {
     this.monitor = monitor;
   }
 
-  async simple({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo }) {
-    const { pendingTasks } = await this.queue.pendingTasks(workerPoolId);
-    const { existingCapacity, stoppingCapacity = 0, requestedCapacity = 0 } = workerInfo;
+  async simple({
+    workerPoolId,
+    minCapacity,
+    maxCapacity,
+    scalingRatio = 1.0,
+    workerInfo: { existingCapacity, stoppingCapacity = 0, requestedCapacity = 0 },
+  }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+
+    const totalIdleCapacity = existingCapacity - claimedTasks;
+
+    // we assume that idle workers are going to pick up tasks soon
+    const adjustedPendingTasks = Math.max(0, pendingTasks - totalIdleCapacity);
 
     // Due to the fact that workers could fail to start on azure, deprovisioning will take significant amount of time
     // and on the next provision loop, those workers wouldn't be considered as requested or existing capacity
@@ -24,13 +34,15 @@ export class Estimator {
     const desiredCapacity = Math.max(
       minCapacity,
       // only scale as high as maxCapacity
-      Math.min(pendingTasks * scalingRatio + totalNonStopped, maxCapacity),
+      Math.min(adjustedPendingTasks * scalingRatio + totalNonStopped, maxCapacity),
     );
     const estimatorInfo = {
       workerPoolId,
       pendingTasks,
       minCapacity,
       maxCapacity,
+      totalIdleCapacity,
+      adjustedPendingTasks,
       scalingRatio,
       existingCapacity,
       desiredCapacity,

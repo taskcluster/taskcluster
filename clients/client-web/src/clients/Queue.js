@@ -45,7 +45,8 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"deprecated","type":"function"}; // eslint-disable-line
+    this.taskQueueCounts.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"taskQueueCounts","output":true,"query":[],"route":"/task-queues/<taskQueueId>/counts","scopes":{"AllOf":["queue:pending-count:<taskQueueId>","queue:claimed-count:<taskQueueId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.listPendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listPendingTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/pending","scopes":"queue:pending-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listClaimedTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listClaimedTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/claimed","scopes":"queue:claimed-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -590,11 +591,22 @@ export default class Queue extends Client {
   // Get an approximate number of pending tasks for the given `taskQueueId`.
   // As task states may change rapidly, this number may not represent the exact
   // number of pending tasks, but a very good approximation.
+  // This method is **deprecated**, use queue.taskQueueCounts instead.
   /* eslint-enable max-len */
   pendingTasks(...args) {
     this.validate(this.pendingTasks.entry, args);
 
     return this.request(this.pendingTasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+  // As task states may change rapidly, this number may not represent the exact
+  // number of pending and claimed tasks, but a very good approximation.
+  /* eslint-enable max-len */
+  taskQueueCounts(...args) {
+    this.validate(this.taskQueueCounts.entry, args);
+
+    return this.request(this.taskQueueCounts.entry, args);
   }
   /* eslint-disable max-len */
   // List pending tasks for the given `taskQueueId`.
