@@ -299,6 +299,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     await helper.apiClient.listRoleIds(query)
       .then(() => assert(false, 'Expected error'),
         err => assert(err.statusCode === 400, 'Expected 400'));
+
+    // testing unexpected characters that make hashids.decode throw error
+    query.continuationToken = '@@something##';
+    await helper.apiClient.listRoleIds(query)
+      .then(() => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
   test('listRoles2', async () => {

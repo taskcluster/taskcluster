@@ -56,7 +56,12 @@ const rolesResponseBuilder = async (that, req, res) => {
 
   // Assign the continuationToken
   if (req.query.continuationToken) {
-    continuationToken = hashids.decode(req.query.continuationToken);
+    try {
+      continuationToken = hashids.decode(req.query.continuationToken);
+    } catch (err) {
+      // hashids.decode will throw an error if token contains invalid characters
+      return res.reportError('InputError', 'Invalid continuationToken', {});
+    }
     // If continuationToken is invalid
     if (continuationToken.length === 0) {
       return res.reportError('InputError', 'Invalid continuationToken', {});
