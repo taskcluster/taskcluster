@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v71/clients/client-go"
-	"github.com/taskcluster/taskcluster/v71/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v71/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
+	"github.com/taskcluster/taskcluster/v72/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v72/internal/testrooturl"
 )
 
 func ExampleCredentials_CreateTemporaryCredentials() {

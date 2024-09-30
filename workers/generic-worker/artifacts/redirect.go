@@ -3,9 +3,9 @@ package artifacts
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v71/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v71/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v71/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v72/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v72/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gwconfig"
 )
 
 type RedirectArtifact struct {

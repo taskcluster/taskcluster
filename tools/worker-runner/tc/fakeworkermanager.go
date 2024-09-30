@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v71/clients/client-go"
-	"github.com/taskcluster/taskcluster/v71/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
+	"github.com/taskcluster/taskcluster/v72/clients/client-go/tcworkermanager"
 )
 
 var (

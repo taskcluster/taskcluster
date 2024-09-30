@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v71/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v71/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v72/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v72/tools/d2g/genericworker"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/shell"

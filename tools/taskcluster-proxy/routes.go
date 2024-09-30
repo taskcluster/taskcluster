@@ -15,8 +15,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v71/clients/client-go"
-	tc "github.com/taskcluster/taskcluster/v71/tools/taskcluster-proxy/taskcluster"
+	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
+	tc "github.com/taskcluster/taskcluster/v72/tools/taskcluster-proxy/taskcluster"
 )
 
 // Routes represents the context of the running service

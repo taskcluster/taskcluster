@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v72.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7052](https://github.com/taskcluster/taskcluster/issues/7052)
+Worker-manager now uses number of claimed tasks during estimation process to avoid having too many idling workers.
+`queue.pendingTasks` is being deprecated in favour of `queue.taskQueueCounts` which includes both pending and claimed tasks counts.
+
+▶ [patch] [#7222](https://github.com/taskcluster/taskcluster/issues/7222)
+Worker Runner: Replaces deprecated `/proc/<pid>/oom_adj` with `/proc/<pid>/oom_score_adj`.
+
+### USERS
+
+▶ [MAJOR] [#7174](https://github.com/taskcluster/taskcluster/issues/7174)
+Queue service now emits pulse messages to the `exchange/taskcluster-queue/v1/task-exception` exchange when a task has an exception that is automatically retried.
+
+▶ [patch] [#7151](https://github.com/taskcluster/taskcluster/issues/7151)
+Fixes Task dependencies not being reloaded in the UI when switching between tasks.
+
+▶ [patch]
+Fixes continuation token error handling
+
 ## v71.0.0
 
 ### GENERAL

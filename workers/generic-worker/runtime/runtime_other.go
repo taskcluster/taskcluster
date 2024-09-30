@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v71/workers/generic-worker/gdm3"
+	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gdm3"
 )
 
 const (
