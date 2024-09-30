@@ -2024,7 +2024,7 @@ builder.declare({
   const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
-  let [pendingCount, claimedCount] = await Promise.all([
+  const [pendingCount, claimedCount] = await Promise.all([
     this.queueService.countPendingTasks(taskQueueId),
     this.queueService.countClaimedTasks(taskQueueId),
   ]);
