@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v72.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7052](https://github.com/taskcluster/taskcluster/issues/7052)
+Fixes edge-case in estimation that was introduced in #7283 where claimed count might be greater than the existing capacity.
+
 ## v72.0.0
 
 ### WORKER-DEPLOYERS
