@@ -13,7 +13,8 @@ export class Estimator {
   }) {
     const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
 
-    const totalIdleCapacity = existingCapacity - claimedTasks;
+    // if data is stale we might have more claimed tasks than existing capacity
+    const totalIdleCapacity = Math.max(0, existingCapacity - claimedTasks);
 
     // we assume that idle workers are going to pick up tasks soon
     const adjustedPendingTasks = Math.max(0, pendingTasks - totalIdleCapacity);
