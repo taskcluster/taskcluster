@@ -280,18 +280,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       { pending: 5, claimed: 5, expected: 0 }, // pending - claimed = 0
       { pending: 5, claimed: 10, expected: 5 },
+
+      // estimator is currently working with partially stale data
+      // as it gets to the actual calculation and calls queue.taskQueueCounts
+      // workerInfo values obtained some time ago might be different
+      // in this test we would have more claimed than existing
+      { pending: 0, claimed: workerInfo.existingCapacity + 1, expected: 0 },
     ];
 
-    tests.forEach(async ({ pending, claimed, expected }) => {
+    for (const { pending, claimed, expected } of tests) {
       helper.queue.setPending('foo/bar', pending);
       helper.queue.setClaimed('foo/bar', claimed);
-      assert.strictEqual(expected, await estimator.simple({
+      const result = await estimator.simple({
         workerPoolId: 'foo/bar',
         maxCapacity: 50,
         minCapacity: 0,
         scalingRatio: 1,
         workerInfo,
-      }));
-    });
+      });
+      assert.strictEqual(expected, result);
+    }
   });
 });
