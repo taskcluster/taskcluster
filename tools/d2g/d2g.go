@@ -504,16 +504,16 @@ func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs 
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
 	}
 	if dwPayload.Capabilities.Devices.KVM {
-		volumeMounts.WriteString(" -v /dev/kvm:/dev/kvm")
+		volumeMounts.WriteString(" --device=/dev/kvm")
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
-		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+		volumeMounts.WriteString(" --device=/dev/shm")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackVideo {
-		volumeMounts.WriteString(` -v "${TASKCLUSTER_VIDEO_DEVICE}:${TASKCLUSTER_VIDEO_DEVICE}"`)
+		volumeMounts.WriteString(` --device="${TASKCLUSTER_VIDEO_DEVICE}"`)
 	}
 	if dwPayload.Capabilities.Devices.LoopbackAudio {
-		volumeMounts.WriteString(" -v /dev/snd:/dev/snd")
+		volumeMounts.WriteString(" --device=/dev/snd")
 	}
 	return volumeMounts.String()
 }
