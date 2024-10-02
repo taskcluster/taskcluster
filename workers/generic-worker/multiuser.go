@@ -9,11 +9,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v72/workers/generic-worker/runtime"
 )
@@ -290,4 +292,20 @@ func featureInitFailure(err error) (exitCode ExitCode) {
 	}
 	log.Print(err)
 	return
+}
+
+func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
+	// sentry requires string values...
+	m["headlessTasks"] = strconv.FormatBool(c.HeadlessTasks)
+	m["runTasksAsCurrentUser"] = strconv.FormatBool(c.RunTasksAsCurrentUser)
+}
+
+func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
+	// Create empty config entry if it doesn't exist already, so that if it does
+	// exist, entries are merged rather than entire map being replaced.
+	if _, exists := m["config"]; !exists {
+		m["config"] = map[string]interface{}{}
+	}
+	m["config"].(map[string]interface{})["headlessTasks"] = c.HeadlessTasks
+	m["config"].(map[string]interface{})["runTasksAsCurrentUser"] = c.RunTasksAsCurrentUser
 }

@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
+	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/process"
 )
@@ -191,4 +192,10 @@ func (task *TaskRun) EnvVars() []string {
 
 func featureInitFailure(err error) ExitCode {
 	panic(err)
+}
+
+func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
+}
+
+func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
 }
