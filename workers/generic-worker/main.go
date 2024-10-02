@@ -288,6 +288,8 @@ func loadConfig(configFile *gwconfig.File) error {
 		"workerId":        config.WorkerID,
 		"workerType":      config.WorkerType,
 	}
+	addEngineDebugInfo(debugInfo, config)
+	addEngineMetadata(gwMetadata, config)
 	return nil
 }
 
