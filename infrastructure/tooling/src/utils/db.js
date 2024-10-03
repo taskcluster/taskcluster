@@ -173,6 +173,14 @@ export const updateDbFns = async (schema, releases, currentTcVersion) => {
       output.push('');
       output.push(method.description);
       output.push('');
+      output.push('<details><summary>Function Body</summary>');
+      output.push('');
+      output.push('```');
+      output.push(method.body);
+      output.push('```');
+      output.push('');
+      output.push('</details>');
+      output.push('');
     }
 
     const depMethods = methods.filter(method => method.deprecated);
