@@ -147,7 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
+    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${rootUrl}/tasks/${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -160,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!gBxblkbeeBSadzOniu:mozilla.org');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].format, 'matrix.foo');
-    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, 'DKPZPsvvQEiw67Pb3rkdNg');
+    assert.equal(helper.matrixClient.sendEvent.args[0][2].body, `${helper.rootUrl}/tasks/DKPZPsvvQEiw67Pb3rkdNg`);
     assert.equal(helper.matrixClient.sendEvent.args[0][2].formatted_body, '<h1>DKPZPsvvQEiw67Pb3rkdNg</h1>');
     assert.equal(helper.matrixClient.sendEvent.args[0][2].msgtype, 'm.text');
     assert(monitor.manager.messages.find(m => m.Type === 'matrix'));
@@ -210,7 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('slack', async () => {
     const route = 'test-notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { slackText: 'hey hey ${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
+    task.extra = { notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -223,7 +223,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
     assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
       channel: 'C123456',
-      text: `hey hey ${baseStatus.taskId}`,
+      text: `hey hey ${helper.rootUrl}/tasks/${baseStatus.taskId}`,
       blocks: [{}],
       attachments: [{}, {}],
     });
