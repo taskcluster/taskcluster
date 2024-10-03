@@ -3024,21 +3024,21 @@
     "title": "Task Life-Cycle"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "completedfailed-tasks",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Completed/Failed Tasks",
     "title": "Task Life-Cycle"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "pending-tasks",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Pending Tasks",
     "title": "Task Life-Cycle"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "running-tasks",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Running Tasks",
@@ -3046,13 +3046,20 @@
   },
   {
     "element": "h2",
+    "id": "runs",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Runs",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h3",
     "id": "task-exceptions",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Task Exceptions",
     "title": "Task Life-Cycle"
   },
   {
-    "element": "h2",
+    "element": "h3",
     "id": "task-expiration",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Task Expiration",
@@ -3060,6 +3067,13 @@
   },
   {
     "element": "h2",
+    "id": "tasks",
+    "path": "/reference/platform/queue/task-life-cycle",
+    "subtitle": "Tasks",
+    "title": "Task Life-Cycle"
+  },
+  {
+    "element": "h3",
     "id": "unscheduled-tasks",
     "path": "/reference/platform/queue/task-life-cycle",
     "subtitle": "Unscheduled Tasks",
