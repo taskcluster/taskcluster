@@ -173,7 +173,6 @@ testSuite:
               artifact: test/path.zst
               namespace: test.namespace
             file: dockerimage
-            format: zst
         features:
           taskclusterProxy: true
         onExitStatus:
@@ -290,7 +289,6 @@ testSuite:
               artifact: public/test/path.zst
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: dockerimage
-            format: zst
         maxRunTime: 3600
         onExitStatus:
           retry:
@@ -378,7 +376,6 @@ testSuite:
               artifact: public/test/path.zst
               taskId: 2JGiKFtpRnGbVczc6-OJ1Q
             file: dockerimage
-            format: zst
         maxRunTime: 3600
         onExitStatus:
           retry:
