@@ -6,13 +6,16 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/mcuadros/go-defaults"
+	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
 	"github.com/taskcluster/taskcluster/v72/tools/d2g/dockerworker"
 )
 
 func TestWithValidDockerWorkerPayload(t *testing.T) {
 	setup(t)
+	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
@@ -22,9 +25,26 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 	payload := dockerworker.DockerWorkerPayload{
-		Command:    []string{"/bin/bash", "-c", "echo hello world"},
+		Command:    []string{"/bin/bash", "-c", "echo hello world > testWithoutExpiresPath && echo bye > testWithExpiresPath"},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
+		Artifacts: map[string]dockerworker.Artifact{
+			"testWithoutExpires": {
+				Path: "testWithoutExpiresPath",
+				Type: "file",
+				// purposely do NOT set Expires
+				// because this is also testing
+				// that the default expires value
+				// is not present in the translated
+				// generic worker task definition
+				// Expires: tcclient.Time{},
+			},
+			"testWithExpires": {
+				Path:    "testWithExpiresPath",
+				Type:    "file",
+				Expires: testTime,
+			},
+		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
@@ -32,11 +52,22 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+		logtext := LogText(t)
+		// tests the default artifact expiry is not present in the
+		// translated task definition
+		if strings.Contains(logtext, "0001-01-01T00:00:00.000Z") {
+			t.Fatal("Was expecting log file to not contain '0001-01-01T00:00:00.000Z'")
+		}
+		// tests the set artifact expiry is present in the
+		// translated task definition
+		if testTimeStr := testTime.String(); !strings.Contains(logtext, testTimeStr) {
+			t.Fatalf("Was expecting log file to contain '%s'", testTimeStr)
+		}
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]")
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -88,7 +119,7 @@ func TestIssue6789(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]")
+			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
