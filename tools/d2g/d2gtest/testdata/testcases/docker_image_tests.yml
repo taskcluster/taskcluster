@@ -15,7 +15,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -45,7 +45,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -78,7 +78,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -118,7 +118,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -159,7 +159,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -199,7 +199,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -237,7 +237,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -276,7 +276,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -316,7 +316,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               --uidmap 1000:0:1 --uidmap 0:1:1000 --uidmap 1001:1001:64536
               --gidmap 1000:0:1 --gidmap 0:1:1000 --gidmap 1001:1001:64536
               -v "$(pwd)/cache0:/builds/worker/checkouts"
@@ -360,7 +360,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -v "$(pwd)/cache0:/builds/worker/checkouts"
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE

@@ -6,7 +6,7 @@ testSuite:
     - name: Env escaping test
       description: >-
         If an environment variable contains spaces or special characters,
-        it should be escaped before passing to the docker run --init command.
+        it should be escaped before passing to the docker run command.
       dockerWorkerTaskPayload:
         command:
           - echo "Hello world"
@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e ' test123 --help  ; whoami ; '
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE

@@ -19,7 +19,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1 --privileged
+              docker run -t --rm --memory-swap -1 --pids-limit -1 --privileged
               --device=/dev/shm
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -52,7 +52,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               --device=/dev/kvm
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -87,7 +87,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               --device="${TASKCLUSTER_VIDEO_DEVICE}"
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -122,7 +122,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               --device=/dev/snd
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
