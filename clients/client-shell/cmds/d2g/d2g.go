@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
@@ -106,6 +107,14 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("output validation failed: %v", err)
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////
+		//
+		// horrible hack here, until we have jsonschema2go generating pointer types...
+		//
+		//////////////////////////////////////////////////////////////////////////////////
+		re := regexp.MustCompile(`(?m)^\s*"expires": "0001-01-01T00:00:00.000Z",?\s*\n`)
+		gwTaskDefJSON = re.ReplaceAll([]byte(gwTaskDefJSON), []byte{})
+
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
@@ -125,6 +134,14 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("output validation failed: %v", err)
 		}
+
+		//////////////////////////////////////////////////////////////////////////////////
+		//
+		// horrible hack here, until we have jsonschema2go generating pointer types...
+		//
+		//////////////////////////////////////////////////////////////////////////////////
+		re := regexp.MustCompile(`(?m)^\s*"expires": "0001-01-01T00:00:00.000Z",?\s*\n`)
+		formattedActualGWPayload = re.ReplaceAll(formattedActualGWPayload, []byte{})
 
 		fmt.Fprintln(cmd.OutOrStdout(), string(formattedActualGWPayload))
 	}
