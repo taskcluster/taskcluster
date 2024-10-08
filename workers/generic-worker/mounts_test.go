@@ -328,22 +328,15 @@ func TestValidSHA256(t *testing.T) {
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// Required text from first task with no cached value
-	pass1 := append([]string{
+	pass1 := []string{
 		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
 		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
 		`Creating directory .*unknown_issuer_app_1`,
 		`Copying file '.*' to '.*'`,
-	},
-		grantingCacheFile...,
-	)
-	pass1 = append(pass1,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
-	)
-	pass1 = append(pass1,
-		grantingDir...,
-	)
+	}
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
