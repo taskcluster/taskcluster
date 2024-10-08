@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v72.1.0
+
+### GENERAL
+
+▶ [patch] [#7307](https://github.com/taskcluster/taskcluster/issues/7307)
+Generic Worker (D2G): Pass devices through to the `docker run ...` command using `--device` instead of a volume mount.
+
+▶ [patch]
+Upgrades to go1.23.2 and yarn 4.5.0
+
+### USERS
+
+▶ [minor]
+The notify service includes `rootUrl` in the json-e context when rendering slack/matrix/email messages.
+
+▶ [patch]
+D2G: No longer specify file mount format on image if compressed with gzip, bzip2, xz, or zstd when using docker. Generic Worker will now no longer decompress these files before running `docker load`. Docs [here](https://docs.docker.com/reference/cli/docker/image/load/).
+
+▶ [patch] [#7305](https://github.com/taskcluster/taskcluster/issues/7305)
+Generic Worker multiuser engine task log headers now include generic-worker
+config properties `runTasksAsCurrentUser` and `headlessTasks` in order to help
+troubleshoot unexpected behaviour. These properties fundamentally affect how
+the task runs, so it is useful to log them together with the other worker
+environment information.
+
+Sentry reports also now include this information.
+
+### OTHER
+
+▶ Additional change not described here: [#6923](https://github.com/taskcluster/taskcluster/issues/6923).
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps-dev): bump eslint (bb654ed93)
+* build(deps): bump debug in /clients/client in the client-node-deps group (6b285333f)
+* build(deps): bump taskcluster from 68.0.3 to 72.0.1 in /taskcluster (5b5b8b614)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (0077af900)
+* build(deps): bump the go-deps group with 5 updates (4145de19d)
+
+</details>
+
 ## v72.0.1
 
 ### WORKER-DEPLOYERS
