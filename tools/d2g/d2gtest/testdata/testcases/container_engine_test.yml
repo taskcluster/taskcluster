@@ -16,7 +16,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              docker run --init -t --rm --memory-swap -1 --pids-limit -1
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -47,7 +47,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              podman run --init -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
+              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL

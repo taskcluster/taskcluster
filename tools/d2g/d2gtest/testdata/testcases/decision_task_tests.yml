@@ -81,7 +81,7 @@ testSuite:
           - - bash
             - '-cx'
             - >-
-              timeout 3600 docker run --init -t --name taskcontainer
+              timeout -s KILL 3600 docker run -t --name taskcontainer
               --memory-swap -1 --pids-limit -1 --privileged
               -v "$(pwd)/cache0:/builds/worker/checkouts"
               --add-host=taskcluster:127.0.0.1 --net=host
