@@ -24,7 +24,7 @@ type (
 	NamedDockerImage    dockerworker.NamedDockerImage
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
-		FileMounts() ([]genericworker.FileMount, error)
+		FileMounts(tool string) ([]genericworker.FileMount, error)
 		String(tool string) (string, error)
 		LoadCommands(tool string) []string
 	}
@@ -163,7 +163,7 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string
 	if err != nil {
 		return
 	}
-	gwFileMounts, err := dwImage.FileMounts()
+	gwFileMounts, err := dwImage.FileMounts(tool)
 	if err != nil {
 		return
 	}

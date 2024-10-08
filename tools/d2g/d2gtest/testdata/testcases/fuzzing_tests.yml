@@ -59,7 +59,6 @@ testSuite:
             artifact: public/bugmon.tar.zst
             namespace: project.fuzzing.orion.bugmon.master
           file: dockerimage
-          format: zst
         onExitStatus:
           retry:
           - 125

@@ -5,7 +5,7 @@ import (
 	"github.com/taskcluster/taskcluster/v72/tools/d2g/genericworker"
 )
 
-func (ndi *NamedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
+func (ndi *NamedDockerImage) FileMounts(tool string) ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{}, nil
 }
 
