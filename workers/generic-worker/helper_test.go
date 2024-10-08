@@ -28,6 +28,7 @@ import (
 	"github.com/taskcluster/taskcluster/v72/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v72/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v72/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v72/tools/d2g"
 	"github.com/taskcluster/taskcluster/v72/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gwconfig"
@@ -344,6 +345,7 @@ type (
 
 func GWTest(t *testing.T) *Test {
 	t.Helper()
+	d2g.MaxArtifactCopyDuration = 30
 	testConfig := &gwconfig.Config{
 		PrivateConfig: gwconfig.PrivateConfig{
 			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),

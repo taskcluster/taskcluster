@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v72/tools/d2g"
@@ -48,6 +49,14 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	if validateErr != nil {
 		return executionError(malformedPayload, errored, fmt.Errorf("d2g output validation failed: %v", validateErr))
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//
+	// horrible hack here, until we have jsonschema2go generating pointer types...
+	//
+	//////////////////////////////////////////////////////////////////////////////////
+	re := regexp.MustCompile(`(?m)^\s*"expires": "0001-01-01T00:00:00.000Z",?\s*\n`)
+	d2gConvertedPayloadJSON = re.ReplaceAll(d2gConvertedPayloadJSON, []byte{})
 
 	err = json.Unmarshal(d2gConvertedPayloadJSON, &task.Payload)
 	if err != nil {

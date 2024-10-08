@@ -18,6 +18,8 @@ import (
 	"github.com/taskcluster/shell"
 )
 
+var MaxArtifactCopyDuration int64 = 900
+
 type (
 	DockerImageName     string
 	IndexedDockerImage  dockerworker.IndexedDockerImage
@@ -427,7 +429,7 @@ func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *gener
 	gwPayload.MaxRunTime = dwPayload.MaxRunTime
 	if len(gwPayload.Artifacts) > 0 {
 		// Add 15 minutes as buffer for task to be able to upload artifacts
-		gwPayload.MaxRunTime += 900
+		gwPayload.MaxRunTime += MaxArtifactCopyDuration
 	}
 }
 
