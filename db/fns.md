@@ -171,6 +171,7 @@
    * [`delete_worker_pool`](#delete_worker_pool)
    * [`delete_worker_pool_error`](#delete_worker_pool_error)
    * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
+   * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
    * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
@@ -6419,6 +6420,7 @@ end
 * [`delete_worker_pool`](#delete_worker_pool)
 * [`delete_worker_pool_error`](#delete_worker_pool_error)
 * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
+* [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
 * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
@@ -6740,6 +6742,37 @@ begin
     return count;
   end if;
   return 0;
+end
+```
+
+</details>
+
+### expire_worker_pool_launch_configs
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `table`
+  * `launch_config_id text`
+* *Last defined on version*: 105
+
+Expire worker pools launch configs, that no longer have any workers associated with them
+Returns the launch config ids that it deletes.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from worker_pool_launch_configs wplc
+  where
+    wplc.is_archived = true
+    AND
+    not exists (
+      select 1
+      from workers w
+      where w.launch_config_id = wplc.launch_config_id
+    )
+  returning wplc.launch_config_id;
 end
 ```
 

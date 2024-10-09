@@ -200,14 +200,11 @@ export class WorkerPoolLaunchConfig {
     return rows.map(WorkerPoolLaunchConfig.fromDb);
   }
 
-  // replicates generate_launch_config_id db function
-  // static async calculateLaunchConfigId(workerPoolId, providerId, configuration) {
-  //   const hash = crypto.createHash('md5');
-  //   hash.update(workerPoolId)
-  //   hash.update(providerId)
-  //   hash.update(JSON.stringify(configuration));
-  //   return `lc-${hash.digest('hex').substring(0, 20)}`;
-  // }
+  // remove launch configurations that no longer have workers associated with them
+  static async expire({ db, monitor }) {
+    const rows = await db.fns.expire_worker_pool_launch_configs();
+    return rows.map(row => row.launch_config_id);
+  }
 }
 
 export class WorkerPoolError {

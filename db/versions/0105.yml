@@ -187,6 +187,29 @@ methods:
         PERFORM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
       end
 
+  expire_worker_pool_launch_configs:
+    description: |-
+      Expire worker pools launch configs, that no longer have any workers associated with them
+      Returns the launch config ids that it deletes.
+    mode: write
+    serviceName: worker_manager
+    args: ''
+    returns: table(launch_config_id text)
+    body: |-
+      begin
+        return query
+        delete from worker_pool_launch_configs wplc
+        where
+          wplc.is_archived = true
+          AND
+          not exists (
+            select 1
+            from workers w
+            where w.launch_config_id = wplc.launch_config_id
+          )
+        returning wplc.launch_config_id;
+      end
+
   update_worker_pool_with_capacity_and_counts_by_state:
     deprecated: true
   update_worker_pool_with_launch_configs:

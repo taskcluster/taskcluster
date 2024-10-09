@@ -7341,6 +7341,15 @@
           "returns": "uuid",
           "serviceName": "worker_manager"
         },
+        "expire_worker_pool_launch_configs": {
+          "args": "",
+          "body": "begin\n  return query\n  delete from worker_pool_launch_configs wplc\n  where\n    wplc.is_archived = true\n    AND\n    not exists (\n      select 1\n      from workers w\n      where w.launch_config_id = wplc.launch_config_id\n    )\n  returning wplc.launch_config_id;\nend",
+          "deprecated": false,
+          "description": "Expire worker pools launch configs, that no longer have any workers associated with them\nReturns the launch config ids that it deletes.",
+          "mode": "write",
+          "returns": "table(launch_config_id text)",
+          "serviceName": "worker_manager"
+        },
         "get_non_stopped_workers_scanner": {
           "deprecated": true
         },
