@@ -163,6 +163,12 @@ export class GoogleProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
+    await worker.update(this.db, w => {
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
+        w.lastModified = new Date();
+        w.state = Worker.states.STOPPING;
+      }
+    });
     await this.onWorkerRemoved({ worker, reason });
     try {
       // This returns an operation that we could track but the chances
