@@ -383,10 +383,10 @@ export class AwsProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
-    await worker.update(this.db, worker => {
-      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state)) {
-        worker.lastModified = new Date();
-        worker.state = Worker.states.STOPPING;
+    await worker.update(this.db, w => {
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
+        w.lastModified = new Date();
+        w.state = Worker.states.STOPPING;
       }
     });
     await this.onWorkerRemoved({ worker, reason });
