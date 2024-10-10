@@ -713,15 +713,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suite('AWS provider - removeWorker', function() {
 
     test('successfully terminated instance', async function() {
-      const worker = {
-        ...defaultWorker,
+      const worker = Worker.fromApi({
+        ...workerInDB,
         workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
-          ...defaultWorker.providerData,
-          region: 'us-west-2',
+          ...workerInDB.providerData,
         },
-      };
+      });
+      await worker.create(helper.db);
       await assert.doesNotReject(provider.removeWorker({ worker }));
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
+      assert.equal(worker.state, Worker.states.STOPPING);
     });
 
   });
