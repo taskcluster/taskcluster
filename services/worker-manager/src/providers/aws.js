@@ -119,11 +119,13 @@ export class AwsProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
-    const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll: true });
+    const shuffledConfigs = _.shuffle(cfgs);
+    const toSpawnPerConfig = Math.ceil(toSpawn / shuffledConfigs.length);
 
     let toSpawnCounter = toSpawn;
-    for await (let config of shuffledConfigs) {
+    for await (let lc of shuffledConfigs) {
+      const config = lc.configuration;
       if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
@@ -147,6 +149,7 @@ export class AwsProvider extends Provider {
         workerPoolId,
         providerId: this.providerId,
         workerGroup: config.region,
+        launchConfigId: lc.launchConfigId,
         // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
         workerConfig: config.workerConfig || {},
       }));
@@ -268,6 +271,7 @@ export class AwsProvider extends Provider {
             queueInactivityTimeout,
             workerConfig: config.workerConfig || {},
           },
+          launchConfigId: lc.launchConfigId,
         });
         await this.onWorkerRequested({ worker, terminateAfter });
         return worker.create(this.db);

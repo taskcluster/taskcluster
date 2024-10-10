@@ -159,6 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
+        'launch-config-id': worker.launchConfigId,
       });
       assert.equal(parameters.requestBody.description, 'none');
       assert.deepEqual(parameters.requestBody.disks, []);
@@ -234,6 +235,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
         'color': 'red',
+        'launch-config-id': workers[0].launchConfigId,
       });
     });
 
@@ -263,6 +265,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },
@@ -318,6 +321,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },

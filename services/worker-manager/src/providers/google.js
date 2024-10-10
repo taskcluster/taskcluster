@@ -204,14 +204,11 @@ export class GoogleProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = [];
-    while (toSpawn > 0) {
-      const cfg = _.sample(workerPool.config.launchConfigs);
-      cfgs.push(cfg);
-      toSpawn -= cfg.capacityPerInstance;
-    }
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn });
 
-    await Promise.all(cfgs.map(async cfg => {
+    await Promise.all(cfgs.map(async launchConfig => {
+      const cfg = launchConfig.configuration;
+
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
@@ -228,6 +225,7 @@ export class GoogleProvider extends Provider {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
         'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+        'launch-config-id': launchConfig.launchConfigId,
       };
       let op;
 
@@ -342,6 +340,7 @@ export class GoogleProvider extends Provider {
           queueInactivityTimeout,
           workerConfig: cfg.workerConfig || {},
         },
+        launchConfigId: launchConfig.launchConfigId,
       });
       await worker.create(this.db);
       await this.onWorkerRequested({ worker, terminateAfter });

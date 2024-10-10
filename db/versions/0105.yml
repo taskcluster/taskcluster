@@ -1,0 +1,581 @@
+version: 105
+description: add description here
+migrationScript: 0105-migration.sql
+downgradeScript: 0105-downgrade.sql
+methods:
+  create_worker_pool:
+    deprecated: true
+  create_worker_pool_launch_config:
+    description: |-
+      Create a new launch configuration.
+    mode: write
+    serviceName: worker_manager
+    args: launch_config_id_in text, worker_pool_id_in text, provider_id_in text, is_archived_in boolean, is_paused_in boolean, configuration_in jsonb, initial_weight_in integer, max_capacity_in integer, created_in timestamptz, last_modified_in timestamptz
+    returns: void
+    body: |-
+      begin
+        insert into worker_pool_launch_configs (
+          launch_config_id,
+          worker_pool_id,
+          provider_id,
+          is_archived,
+          is_paused,
+          configuration,
+          initial_weight,
+          max_capacity,
+          created,
+          last_modified
+        ) values (
+          coalesce(launch_config_id_in, generate_launch_config_id(worker_pool_id_in, provider_id_in, configuration_in)),
+          worker_pool_id_in,
+          provider_id_in,
+          is_archived_in,
+          is_paused_in,
+          configuration_in,
+          initial_weight_in,
+          max_capacity_in,
+          created_in,
+          last_modified_in
+        );
+      end
+  upsert_worker_pool_launch_configs:
+    description: |-
+      Creates or updates launch configs and marks the old ones as archived.
+      If a launch config already exist but is archived, it would be unarchived.
+      All launch configs that are not in the updated list will be archived.
+
+      This will return list of launch config ids that were updated, created, archived.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, config_in jsonb
+    returns: table(updated_launch_configs text[], created_launch_configs text[], archived_launch_configs text[])
+    body: |-
+      declare
+        config_without_lc jsonb;
+        updated_lcs text[];
+        created_lcs text[];
+        archived_lcs text[];
+        processed_lcs text[];
+        wp_launch_config_id text;
+        config jsonb;
+        tmp text[];
+      begin
+        -- update launch configurations
+        created_lcs := '{}';
+        updated_lcs := '{}';
+        archived_lcs := '{}';
+
+        FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP
+          wp_launch_config_id := generate_launch_config_id(worker_pool_id_in, provider_id_in, config);
+          processed_lcs := array_append(processed_lcs, wp_launch_config_id);
+
+          -- we only insert new configs if they don't already exist and mark everything else as archived
+          IF NOT EXISTS
+            (SELECT 1
+            FROM worker_pool_launch_configs
+            WHERE worker_pool_id = worker_pool_id_in
+              AND provider_id = provider_id_in
+              AND launch_config_id = wp_launch_config_id)
+          THEN
+            created_lcs := array_append(created_lcs, wp_launch_config_id);
+            PERFORM create_worker_pool_launch_config(
+              wp_launch_config_id,
+              worker_pool_id_in,
+              provider_id_in,
+              false,
+              false,
+              config,
+              1,
+              COALESCE((config->>'maxCapacity')::integer, 0),
+              now(),
+              now()
+            );
+          ELSE
+            -- make sure it is not archived
+            UPDATE worker_pool_launch_configs
+            SET is_archived = false,
+                last_modified = now()
+            WHERE
+              worker_pool_id = worker_pool_id_in
+              AND provider_id = provider_id_in
+              AND launch_config_id = wp_launch_config_id;
+
+            updated_lcs := array_append(updated_lcs, wp_launch_config_id);
+          END IF;
+        END LOOP;
+
+        -- mark all launch configs that are not in the updated list as archived
+        WITH updated_rows AS (
+          UPDATE worker_pool_launch_configs
+          SET is_archived = true
+          WHERE
+            (
+              worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+              AND worker_pool_launch_configs.provider_id = provider_id_in
+              AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+              AND worker_pool_launch_configs.is_archived = false
+            )
+            OR
+            (
+              worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+              AND worker_pool_launch_configs.provider_id <> provider_id_in  -- when switching providers we archive all previous ones
+              AND worker_pool_launch_configs.is_archived = false
+            )
+          RETURNING launch_config_id
+        )
+        SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;
+        archived_lcs := array_cat(archived_lcs, tmp);
+
+        return query
+        select updated_lcs, created_lcs, archived_lcs;
+      end
+
+  get_worker_pool_launch_configs:
+    description: |-
+      Get worker pool launch configs by worker_pool_id.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, is_archived_in boolean, page_size_in integer, page_offset_in integer
+    returns: table(launch_config_id text, worker_pool_id text, provider_id text, is_archived boolean, is_paused boolean, configuration jsonb, initial_weight integer, max_capacity integer, created timestamp with time zone, last_modified timestamp with time zone)
+    body: |-
+      begin
+        return query
+        select
+          wplc.launch_config_id,
+          wplc.worker_pool_id,
+          wplc.provider_id,
+          wplc.is_archived,
+          wplc.is_paused,
+          wplc.configuration,
+          wplc.initial_weight,
+          wplc.max_capacity,
+          wplc.created,
+          wplc.last_modified
+        from worker_pool_launch_configs wplc
+        where
+          wplc.worker_pool_id = worker_pool_id_in and
+          wplc.provider_id = provider_id_in and
+          (is_archived_in is null or wplc.is_archived = is_archived_in)
+        order by wplc.launch_config_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  collect_launch_configs_if_exist:
+    description: |-
+      Assemble the launch configurations for a worker pool and set them in the config.
+      This is useful at the moment to maintain backwards compatibility.
+    mode: write
+    serviceName: worker_manager
+    args: config_in jsonb, worker_pool_id_in text, provider_id_in text
+    returns: jsonb
+    body: |-
+      declare
+        launch_configs jsonb;
+      begin
+        select coalesce(jsonb_agg(worker_pool_launch_configs.configuration), null) into launch_configs
+        from worker_pool_launch_configs
+        where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+          and worker_pool_launch_configs.provider_id = provider_id_in
+          and worker_pool_launch_configs.is_archived = false;
+
+        if launch_configs is not null then
+          return jsonb_set(config_in, '{launchconfigs}', launch_configs);
+        end if;
+
+        return config_in;
+      end
+  create_worker_pool_with_launch_configs:
+    description: |-
+      Create a new worker pool.
+      Raises UNIQUE_VIOLATION if the pool already exists.
+      Launch configurations are stored in a separate table.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb
+    returns: table(updated_launch_configs text[], created_launch_configs text[], archived_launch_configs text[])
+    body: |-
+      declare
+        config_without_lc jsonb;
+        config jsonb;
+      begin
+        config_without_lc := config_in;
+        config_without_lc := config_without_lc - 'launchConfigs';
+
+        insert
+          into worker_pools (worker_pool_id, provider_id, previous_provider_ids, description, config, created, last_modified, owner, email_on_error, provider_data)
+          values (worker_pool_id_in, provider_id_in, previous_provider_ids_in, description_in, config_without_lc, created_in, last_modified_in, owner_in, email_on_error_in, provider_data_in);
+
+        return query select * from upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
+      end
+
+  expire_worker_pool_launch_configs:
+    description: |-
+      Expire worker pools launch configs, that no longer have any workers associated with them
+      Returns the launch config ids that it deletes.
+    mode: write
+    serviceName: worker_manager
+    args: ''
+    returns: table(launch_config_id text)
+    body: |-
+      begin
+        return query
+        delete from worker_pool_launch_configs wplc
+        where
+          wplc.is_archived = true
+          AND
+          not exists (
+            select 1
+            from workers w
+            where w.launch_config_id = wplc.launch_config_id
+          )
+        returning wplc.launch_config_id;
+      end
+
+  update_worker_pool_with_capacity_and_counts_by_state:
+    deprecated: true
+  update_worker_pool_with_launch_configs:
+    description: |-
+      Update API-accessible columns on an existig worker pool.  All fields are
+      overridden, but if the provider_id changes, then the existing provider_id
+      is added to previous_provider_ids.  The return value contains values
+      required for an API response and previous_provider_id (singular) containing
+      the provider_id found before the update.  If no such worker pool exists,
+      the return value is an empty set.
+      All existing not archived launch configurations would be marked as archived if they are not present in the new configuration.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean
+    returns: |-
+      table(
+        worker_pool_id text,
+        provider_id text,
+        description text,
+        config jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        owner text,
+        email_on_error boolean,
+        previous_provider_id text,
+        updated_launch_configs text[],
+        created_launch_configs text[],
+        archived_launch_configs text[]
+      )
+    body: |-
+      declare
+        existing record;
+        updated_wp record;
+        config_without_lc jsonb;
+        updated_wplc record;
+      begin
+        select
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        -- lock this row for the duration of this transaction..
+        for update
+        into existing;
+
+        if not found then
+          return;
+        end if;
+
+        -- update previous_provider_ids, if the provider_id has changed
+        if existing.provider_id <> provider_id_in then
+          -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id
+          existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);
+        end if;
+
+        config_without_lc := config_in;
+        config_without_lc := config_without_lc - 'launchConfigs';
+
+        UPDATE worker_pools
+        SET
+          provider_id = provider_id_in,
+          description = description_in,
+          config = config_without_lc,
+          last_modified = last_modified_in,
+          owner = owner_in,
+          email_on_error = email_on_error_in,
+          previous_provider_ids = existing.previous_provider_ids
+        WHERE worker_pools.worker_pool_id = worker_pool_id_in
+        RETURNING
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.description,
+          worker_pools.config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          existing.provider_id as previous_provider_id
+        INTO updated_wp;
+
+        SELECT * FROM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in) INTO updated_wplc;
+
+        RETURN QUERY
+        SELECT
+          updated_wp.worker_pool_id,
+          updated_wp.provider_id,
+          updated_wp.description,
+          config_in as config,  -- we preserve the input config here for backwards compatibility
+          updated_wp.created,
+          updated_wp.last_modified,
+          updated_wp.owner,
+          updated_wp.email_on_error,
+          updated_wp.previous_provider_id,
+          updated_wplc.updated_launch_configs,
+          updated_wplc.created_launch_configs,
+          updated_wplc.archived_launch_configs;
+      end
+
+  get_worker_pool_with_capacity_and_counts_by_state:
+    deprecated: true
+  get_worker_pool_capacity_and_counts_by_state:
+    description: |-
+      Get the capacity and counts of workers in a worker pool, grouped by state.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(worker_pool_id text, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+          coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+          coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer
+        from worker_pools
+        left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        group by worker_pools.worker_pool_id
+        order by worker_pools.worker_pool_id;
+      end
+  get_worker_pools_with_capacity_and_counts_by_state:
+    deprecated: true
+  get_worker_pools_with_capacity_and_counts_and_launch_configs:
+    description: |-
+      Get the capacity and counts of workers in all worker pools, grouped by state.
+    mode: read
+    serviceName: worker_manager
+    args: page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb, current_capacity integer, requested_count integer, running_count integer, stopping_count integer, stopped_count integer, requested_capacity integer, running_capacity integer, stopping_capacity integer, stopped_capacity integer)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id, worker_pools.provider_id) as config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data,
+          coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+          coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,
+          coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+          coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+          coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer
+        from worker_pools
+        left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+        group by worker_pools.worker_pool_id
+        order by worker_pools.worker_pool_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  get_worker_pool_with_launch_configs:
+    description: |-
+      Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(worker_pool_id text, provider_id text, previous_provider_ids jsonb, description text, config jsonb, created timestamptz, last_modified timestamptz, owner text, email_on_error boolean, provider_data jsonb)
+    body: |-
+      begin
+        return query
+        select
+          worker_pools.worker_pool_id,
+          worker_pools.provider_id,
+          worker_pools.previous_provider_ids,
+          worker_pools.description,
+          collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id, worker_pools.provider_id) as config,
+          worker_pools.created,
+          worker_pools.last_modified,
+          worker_pools.owner,
+          worker_pools.email_on_error,
+          worker_pools.provider_data
+        from worker_pools
+        where worker_pools.worker_pool_id = worker_pool_id_in
+        group by worker_pools.worker_pool_id
+        order by worker_pools.worker_pool_id;
+      end
+  get_non_stopped_workers_scanner:
+    deprecated: true
+  get_non_stopped_workers_with_launch_config_scanner:
+    description: |-
+      Get non-stopped workers filtered by the optional arguments,
+      ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset `page_offset`.
+      The `quaratine_until` contains NULL or a date in the past if the
+      worker is not quarantined, otherwise the date until which it is
+      quaratined. `first_claim` and `last_date_active` contains information
+      known to the queue service about the worker.
+      `providers_filter_cond` and `providers_filter_value` used to
+      filter `=` or `<>` provider by value.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, launch_config_id text, quarantine_until timestamptz, first_claim timestamptz, last_date_active timestamptz)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.secret,
+          workers.etag,
+          workers.launch_config_id,
+          queue_workers.quarantine_until,
+          queue_workers.first_claim,
+          queue_workers.last_date_active
+        from
+          workers
+          left join queue_workers on
+            workers.worker_pool_id = queue_workers.task_queue_id and
+            workers.worker_id = queue_workers.worker_id and
+            workers.worker_group = queue_workers.worker_group
+        where
+          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (workers.worker_group = worker_group_in or worker_group_in is null) and
+          (workers.worker_id = worker_id_in or worker_id_in is null) and
+          (workers.state <> 'stopped') and
+          (providers_filter_cond is null or providers_filter_value is null or
+            case
+              when providers_filter_cond = '='
+                then workers.provider_id = ANY(string_to_array(providers_filter_value, ','))
+              when providers_filter_cond = '<>'
+                then workers.provider_id <> ALL(string_to_array(providers_filter_value, ','))
+            end
+            )
+        order by worker_pool_id, worker_group, worker_id
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+
+  create_worker:
+    deprecated: true
+  create_worker_with_lc:
+    description: |-
+      Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.
+      Returns the etag of the newly created worker.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, launch_config_id_in text
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, launch_config_id)
+          values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag, launch_config_id_in);
+
+        return new_etag;
+      end
+
+
+  get_worker_manager_workers:
+    deprecated: true
+  get_worker_manager_workers2:
+    description: |-
+      Get workers created by worker manager filtered by the optional arguments,
+      ordered by `created` timestamp.
+      This returns only worker manager view without queue data.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, capacity integer, last_modified timestamptz, last_checked timestamptz, launch_config_id text)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.launch_config_id
+        from workers
+        where
+          (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (workers.worker_group = worker_group_in or worker_group_in is null) and
+          (workers.worker_id = worker_id_in or worker_id_in is null) and
+          (workers.state = state_in or state_in is null)
+        order by created desc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+
+  get_worker_2:
+    deprecated: true
+  get_worker_3:
+    description: Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text, worker_group_in text, worker_id_in text
+    returns: table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, launch_config_id text)
+    body: |-
+      begin
+        return query
+        select
+          workers.worker_pool_id,
+          workers.worker_group,
+          workers.worker_id,
+          workers.provider_id,
+          workers.created,
+          workers.expires,
+          workers.state,
+          workers.provider_data,
+          workers.capacity,
+          workers.last_modified,
+          workers.last_checked,
+          workers.secret,
+          workers.etag,
+          workers.launch_config_id
+        from workers
+        where
+          workers.worker_pool_id = worker_pool_id_in and
+          workers.worker_group = worker_group_in and
+          workers.worker_id = worker_id_in;
+      end
