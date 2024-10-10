@@ -6580,7 +6580,10 @@ end
   * `owner_in text`
   * `email_on_error_in boolean`
   * `provider_data_in jsonb`
-* *Returns*: `void`
+* *Returns*: `table`
+  * `updated_launch_configs text[]`
+  * `created_launch_configs text[]`
+  * `archived_launch_configs text[]`
 * *Last defined on version*: 105
 
 Create a new worker pool.
@@ -6601,7 +6604,7 @@ begin
     into worker_pools (worker_pool_id, provider_id, previous_provider_ids, description, config, created, last_modified, owner, email_on_error, provider_data)
     values (worker_pool_id_in, provider_id_in, previous_provider_ids_in, description_in, config_without_lc, created_in, last_modified_in, owner_in, email_on_error_in, provider_data_in);
 
-  PERFORM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
+  return query select * from upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
 end
 ```
 
@@ -7392,7 +7395,7 @@ Get the capacity and counts of workers in a worker pool, grouped by state.
 begin
   return query
   select
-    workers.worker_pool_id,
+    worker_pools.worker_pool_id,
     coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
     coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
     coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
@@ -7402,10 +7405,11 @@ begin
     coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
     coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
     coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer
-  from workers
-  where workers.worker_pool_id = worker_pool_id_in
-  group by workers.worker_pool_id
-  order by workers.worker_pool_id;
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  group by worker_pools.worker_pool_id
+  order by worker_pools.worker_pool_id;
 end
 ```
 
@@ -8020,15 +8024,18 @@ end
   * `owner_in text`
   * `email_on_error_in boolean`
 * *Returns*: `table`
-  * `worker_pool_id text`
-  * `provider_id text`
-  * `description text`
-  * `config jsonb`
-  * `created timestamptz`
-  * `last_modified timestamptz`
-  * `owner text`
-  * `email_on_error boolean`
-  * `previous_provider_id text`
+  * `   worker_pool_id text`
+  * `  provider_id text`
+  * `  description text`
+  * `  config jsonb`
+  * `  created timestamptz`
+  * `  last_modified timestamptz`
+  * `  owner text`
+  * `  email_on_error boolean`
+  * `  previous_provider_id text`
+  * `  updated_launch_configs text[]`
+  * `  created_launch_configs text[]`
+  * `  archived_launch_configs text[] `
 * *Last defined on version*: 105
 
 Update API-accessible columns on an existig worker pool.  All fields are
@@ -8046,6 +8053,7 @@ declare
   existing record;
   updated_wp record;
   config_without_lc jsonb;
+  updated_wplc record;
 begin
   select
     worker_pools.provider_id,
@@ -8091,7 +8099,7 @@ begin
     existing.provider_id as previous_provider_id
   INTO updated_wp;
 
-  PERFORM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
+  SELECT * FROM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in) INTO updated_wplc;
 
   RETURN QUERY
   SELECT
@@ -8103,7 +8111,10 @@ begin
     updated_wp.last_modified,
     updated_wp.owner,
     updated_wp.email_on_error,
-    updated_wp.previous_provider_id;
+    updated_wp.previous_provider_id,
+    updated_wplc.updated_launch_configs,
+    updated_wplc.created_launch_configs,
+    updated_wplc.archived_launch_configs;
 end
 ```
 
@@ -8116,10 +8127,17 @@ end
   * `worker_pool_id_in text`
   * `provider_id_in text`
   * `config_in jsonb`
-* *Returns*: `void`
+* *Returns*: `table`
+  * `updated_launch_configs text[]`
+  * `created_launch_configs text[]`
+  * `archived_launch_configs text[]`
 * *Last defined on version*: 105
 
 Creates or updates launch configs and marks the old ones as archived.
+If a launch config already exist but is archived, it would be unarchived.
+All launch configs that are not in the updated list will be archived.
+
+This will return list of launch config ids that were updated, created, archived.
 
 <details><summary>Function Body</summary>
 
@@ -8127,14 +8145,21 @@ Creates or updates launch configs and marks the old ones as archived.
 declare
   config_without_lc jsonb;
   updated_lcs text[];
+  created_lcs text[];
+  archived_lcs text[];
+  processed_lcs text[];
   wp_launch_config_id text;
   config jsonb;
+  tmp text[];
 begin
   -- update launch configurations
+  created_lcs := '{}';
   updated_lcs := '{}';
+  archived_lcs := '{}';
+
   FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP
     wp_launch_config_id := generate_launch_config_id(worker_pool_id_in, provider_id_in, config);
-    updated_lcs := array_append(updated_lcs, wp_launch_config_id);
+    processed_lcs := array_append(processed_lcs, wp_launch_config_id);
 
     -- we only insert new configs if they don't already exist and mark everything else as archived
     IF NOT EXISTS
@@ -8144,6 +8169,7 @@ begin
         AND provider_id = provider_id_in
         AND launch_config_id = wp_launch_config_id)
     THEN
+      created_lcs := array_append(created_lcs, wp_launch_config_id);
       PERFORM create_worker_pool_launch_config(
         wp_launch_config_id,
         worker_pool_id_in,
@@ -8165,26 +8191,35 @@ begin
         worker_pool_id = worker_pool_id_in
         AND provider_id = provider_id_in
         AND launch_config_id = wp_launch_config_id;
+
+      updated_lcs := array_append(updated_lcs, wp_launch_config_id);
     END IF;
   END LOOP;
 
   -- mark all launch configs that are not in the updated list as archived
-  UPDATE worker_pool_launch_configs
-  SET is_archived = true
-  WHERE
-    (
-      worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-      AND worker_pool_launch_configs.provider_id = provider_id_in
-      AND worker_pool_launch_configs.launch_config_id != ALL(updated_lcs)
-      AND worker_pool_launch_configs.is_archived = false
-    )
-    OR
-    (
-      worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-      AND worker_pool_launch_configs.provider_id <> provider_id_in  -- when switching providers we archive all previous ones
-      AND worker_pool_launch_configs.is_archived = false
-    )
-  ;
+  WITH updated_rows AS (
+    UPDATE worker_pool_launch_configs
+    SET is_archived = true
+    WHERE
+      (
+        worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+        AND worker_pool_launch_configs.provider_id = provider_id_in
+        AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+        AND worker_pool_launch_configs.is_archived = false
+      )
+      OR
+      (
+        worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+        AND worker_pool_launch_configs.provider_id <> provider_id_in  -- when switching providers we archive all previous ones
+        AND worker_pool_launch_configs.is_archived = false
+      )
+    RETURNING launch_config_id
+  )
+  SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;
+  archived_lcs := array_cat(archived_lcs, tmp);
+
+  return query
+  select updated_lcs, created_lcs, archived_lcs;
 end
 ```
 
