@@ -358,7 +358,7 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	}
 	command.WriteString(createVolumeMountsString(dwPayload, wdcs))
 	if dwPayload.Features.TaskclusterProxy {
-		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
+		command.WriteString(" --add-host=taskcluster:host-gateway -e TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL/localhost/taskcluster}")
 	}
 	command.WriteString(envMappings(dwPayload))
 	dockerImageString, err := dwImage.String(tool)
@@ -566,10 +566,6 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 		"TASKCLUSTER_WORKER_LOCATION",
 		"TASK_GROUP_ID", // note, docker-worker didn't set this, but decision tasks may in future choose to use it if it is set
 		"TASK_ID",
-	}
-
-	if dwPayload.Features.TaskclusterProxy {
-		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
 	envVarNames := []string{}

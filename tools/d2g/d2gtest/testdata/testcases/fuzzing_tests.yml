@@ -38,14 +38,26 @@ testSuite:
         command:
         - - bash
           - "-cx"
-          - "IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image:
-            //p')\ntimeout -s KILL 14400 docker run -t --name taskcontainer
+          - "IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')\n\
+            timeout -s KILL 14400 docker run -t --name taskcontainer
             --memory-swap -1 --pids-limit -1 --privileged --security-opt=seccomp=unconfined
-            --device=/dev/shm --device=/dev/snd --add-host=taskcluster:127.0.0.1 --net=host
-            -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-            -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
-            -e TASK_ID \"${IMAGE_ID}\" \nexit_code=$?\ndocker cp taskcontainer:/bugmon-artifacts/
-            artifact0\ndocker rm taskcontainer\nexit \"${exit_code}\""
+            --device=/dev/shm --device=/dev/snd
+            --add-host=taskcluster:host-gateway
+            -e TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL/localhost/taskcluster}
+            -e BUG_ACTION
+            -e MONITOR_ARTIFACT
+            -e PROCESSOR_ARTIFACT
+            -e RUN_ID
+            -e TASKCLUSTER_INSTANCE_TYPE
+            -e TASKCLUSTER_ROOT_URL
+            -e TASKCLUSTER_WORKER_LOCATION
+            -e TASK_GROUP_ID
+            -e TASK_ID
+            \"${IMAGE_ID}\" \n\
+            exit_code=$?\n\
+            docker cp taskcontainer:/bugmon-artifacts/ artifact0\n\
+            docker rm taskcontainer\n\
+            exit \"${exit_code}\""
         env:
           BUG_ACTION: process
           MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
