@@ -4,9 +4,35 @@ description: Phases of a task life-cycle.
 order: 50
 ---
 import Image from 'taskcluster-ui/views/Documentation/Image'
+import Warning from 'taskcluster-ui/views/Documentation/components/Warning'
 import taskLifeCycle from './task-life-cycle.svg'
+import runLifeCycle from './run-life-cycle.svg'
 
 # Task Life-Cycle
+
+A task has zero or more runs, indexed sequentially, and its status depends on
+the status of the latest (highest-numbered) run, if any.
+
+## Runs
+
+The diagram below outlines the life-cycle of a single run. Once a run is in one
+of the terminal states (_failed_, _completed_, or _exception_), it will not
+change further. Only the latest run in a task can be in a non-terminal state.
+
+<Image src={runLifeCycle} />
+
+A run is created when its containing task is scheduled, or when a task with no
+runs is cancelled. In the latter case, the run is created in the _exception_
+state.
+
+When a task is claimed or re-claimed, its _pending_ run enters the _running_
+state. A _pending_ run may also transition directly to the _exception_ state,
+such as at the task deadline or when canceled.
+
+A _running_ task enters a terminal state depending on the result of its
+execution.
+
+## Tasks
 
 The diagram below outlines the task life-cycle. Transitions drawn by solid
 black lines are initiated by workers. While dashes transitions are initiated
@@ -14,7 +40,15 @@ at the initiative of the queue, or its consumers.
 
 <Image src={taskLifeCycle} />
 
-## Unscheduled Tasks
+<Warning>
+NOTE: New task state transitions have been added in the past, and may be added
+again. Do not assume that a state transition cannot occur, simply because it is
+not described here.
+</Warning>
+
+### Unscheduled Tasks
+A task with no runs is considered _unscheduled_.
+
 When a task is created it is _unscheduled_ until (i) it is scheduled by
 invocation of `queue.scheduleTask`, or (ii) all of its dependencies have been
 satisfied. Notice that if a task doesn't have any dependencies, it will
@@ -32,7 +66,9 @@ _failed_, or _exception_. If you need semantics other than `all-completed` or
 `all-resolved`, you can implement that using an intermediary decision task with
 `all-resolved` semantics.
 
-## Pending Tasks
+### Pending Tasks
+A _pending_ task is one with a latest run in the _pending_ state.
+
 When a task becomes _pending_ it can be claimed by a worker that wishes to
 complete the task. Once claimed the task atomically transitions to the _running_
 state.
@@ -53,7 +89,9 @@ The queue exposes an approximate number of pending tasks for each
 task queue, for use by provisioners that are able
 to dynamically scale up the number of workers.
 
-## Running Tasks
+### Running Tasks
+A _running_ task is one with a latest run in the _running_ state.
+
 When a _pending_ task is claimed by a worker it becomes _running_.
 More accurately it is the latest run from the task that is claimed by a worker,
 and hence, transitioning the state of the run/task from _pending_ to _running_.
@@ -69,33 +107,37 @@ from the queue. These can be used to (i) upload artifacts, (ii) reclaim the
 task/run, and, (iii) resolve the task. Finally, these temporary credentials also
 cover `task.scopes`, allowing the worker to use any scope granted to the task.
 
-## Completed/Failed Tasks
+### Completed/Failed Tasks
+A _completed_ or _failed_ task is one with a latest run in the corresponding
+state.
+
 Once execution of a task is finished and all artifacts/logs have been uploaded,
-the worker processing the task will transition the task/run to _completed_ or
+the worker processing the task will transition the run to _completed_ or
 _failed_ using `reportCompleted`/`reportFailed`.
 
 Once a task enters this state it is resolved, and will remain stable until its
 expiration date. It's possible to run the task again, by calling `rerunTask`
 creating a new _pending_ run. However, this strongly discouraged for simplicity.
 
-## Task Exceptions
+### Task Exceptions
+A task in the _exception_ state is one with a latest run in the _exception_ state.
+
 If a worker processing a task decides to shutdown, detects an internal error, or
-determines that the `task.payload` is invalid, it can resolve the _run_ as
+determines that the `task.payload` is invalid, it can resolve the run as
 _exception_. Depending on the `reason` given for the exception resolution, and
 whether or not retries have been exhausted a new _pending_ run may be created.
 For example, exceptions with reason `malformed-payload` will never be retried.
 
-A task may also enter the exception state, if it is canceled, the deadline is
+A task may also enter the exception state if it is canceled, the deadline is
 exceeded or the worker disappears and retries have been exhausted.
 
 Some types of exceptions trigger an automatic retry. When this happens the
-_run_ will be resolved _exception_, but the _task_ will re-enter the _pending_
-state. A message is published about the _run_ that is resolved _exception_
-regardless of whether or not it was automatically retried. To determine whether
-there was an automatic retry, inspect whether there exists a following _run_
-with a `reasonCreated` of `retry`.
+_run_ will be resolved _exception_, but a new _pending_ run will be added
+immediately and the _task_ will re-enter the _pending_ state. A message is
+published about the _run_ that is resolved _exception_ regardless of whether or
+not it was automatically retried. To determine whether there was an automatic
+retry, inspect whether there exists a following _run_ with a `reasonCreated` of
+`retry`.
 
-## Task Expiration
-When a task is resolved, _completed_, _failed_, or _exception_, it will sit
-around until `task.expires` at which point the task will be deleted by
-expiration.
+### Task Expiration
+A task is deleted at `task.expires`, regardless of its status at the time.
