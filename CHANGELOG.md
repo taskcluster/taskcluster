@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v72.1.1
+
+### USERS
+
+▶ [patch] [#7309](https://github.com/taskcluster/taskcluster/issues/7309)
+D2G: No longer pass `--init` to the `docker run ...` command. This was breaking docker image build tasks that Taskgraph creates. To kill the running docker container, we now pass `-s KILL` to the `timeout` command.
+
+▶ [patch] [#6858](https://github.com/taskcluster/taskcluster/issues/6858)
+D2G: Translated payload or task definition will no longer contain the default `expires` string for artifacts, `"0001-01-01T00:00:00.000Z"`.
+
 ## v72.1.0
 
 ### GENERAL
