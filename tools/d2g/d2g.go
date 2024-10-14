@@ -325,27 +325,27 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 			// https://docs.podman.io/en/v4.4/markdown/options/userns.container.html
 
 			// We start mapping at the non-reserved UIDs and GIDs
-			uid_start := 1000
-			gid_start := 1000
+			uidStart := 1000
+			gidStart := 1000
 			// The number of UIDs and GIDs we map. Ideally this would come from running
 			// `podman info` (see details in the above links), but this only works when
 			// running as a non-root user, which is not possible here. This value was
 			// found experimentally on an Ubuntu 22.04 worker and may not work
 			// universally.
-			mapping_range := 64536
-			// Map `uid_start` in the container to your normal UID on the host.
-			command.WriteString(fmt.Sprintf(" --uidmap %v:0:1", uid_start))
-			// Map the UIDs between 0 and `uid_start` - 1 in the container to the
+			mappingRange := 64536
+			// Map `uidStart` in the container to your normal UID on the host.
+			command.WriteString(fmt.Sprintf(" --uidmap %v:0:1", uidStart))
+			// Map the UIDs between 0 and `uidStart` - 1 in the container to the
 			// lower part of the subuids.
-			command.WriteString(fmt.Sprintf(" --uidmap 0:1:%v", uid_start))
+			command.WriteString(fmt.Sprintf(" --uidmap 0:1:%v", uidStart))
 			// Map the UIDs between $uid+1 and 64536 in the container to the remaining subuids.
 			// Ideally 64536 would be pulled from `podman info` running as a task user,
 			// but we're running as root here, so we can't do that.
-			command.WriteString(fmt.Sprintf(" --uidmap %v:%v:%v", uid_start+1, uid_start+1, mapping_range))
+			command.WriteString(fmt.Sprintf(" --uidmap %v:%v:%v", uidStart+1, uidStart+1, mappingRange))
 			// Same thing for GIDs
-			command.WriteString(fmt.Sprintf(" --gidmap %v:0:1", gid_start))
-			command.WriteString(fmt.Sprintf(" --gidmap 0:1:%v", gid_start))
-			command.WriteString(fmt.Sprintf(" --gidmap %v:%v:%v", gid_start+1, gid_start+1, mapping_range))
+			command.WriteString(fmt.Sprintf(" --gidmap %v:0:1", gidStart))
+			command.WriteString(fmt.Sprintf(" --gidmap 0:1:%v", gidStart))
+			command.WriteString(fmt.Sprintf(" --gidmap %v:%v:%v", gidStart+1, gidStart+1, mappingRange))
 		}
 	}
 	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
