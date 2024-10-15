@@ -17,11 +17,20 @@ begin
   CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs(worker_pool_id) WHERE is_archived;
 
   -- utility function to create launch config id from worker pool id and config
-  -- this should probably ignore some fields inside config to avoid unnecessary updates?
+  -- this will ignore "workerManager" part of the config if it exists, as it can be "dynamic"
+  -- and allow changing maxCapacity/initialWeight without changing the id
   CREATE OR REPLACE FUNCTION generate_launch_config_id(worker_pool_id TEXT, provider_id TEXT, config JSONB)
   RETURNS TEXT AS $$
+  DECLARE
+    cfg_without_wm JSONB;
   BEGIN
-    RETURN 'lc-' || left(md5(worker_pool_id || provider_id || config::text), 20);
+    IF jsonb_typeof(config) = 'object' THEN
+      cfg_without_wm := config - 'workerManager';
+    ELSE
+      cfg_without_wm := config;
+    END IF;
+
+    RETURN 'lc-' || left(md5(worker_pool_id || provider_id || cfg_without_wm::text), 20);
   END;
   $$ LANGUAGE plpgsql;
 

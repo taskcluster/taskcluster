@@ -18,18 +18,9 @@ properties:
             The other properties of the launch configuration section are passed directly through to
             AWS APIs, whereas this section is interpreted directly by Worker Manager.
           properties:
-            capacityPerInstance:
-              title: Capacity Per Instance
-              type: integer
-              minimum: 1
-              description: The number of tasks a single worker of this type can run at any given time.
-            maxCapacity:
-              title: Max Capacity
-              type: integer
-              minimum: 0
-              description: |-
-                The maximum capacity of workers of this type that can be running at any given time.
-                This cannot exceed worker pool's `maxCapacity`.
+            capacityPerInstance: { $const: lc-capacity-per-instance }
+            initialWeight: { $const: lc-initial-weight }
+            maxCapacity: { $const: lc-max-capacity }
           additionalProperties: false
         region:
           title: Region
@@ -67,11 +58,7 @@ properties:
             workerConfig: {not: {}}
           required: []
           additionalProperties: true
-        capacityPerInstance:
-          title: Capacity Per Instance
-          type: integer
-          minimum: 1
-          description: Deprecated - please use `workerManager.capacityPerInstance` instead
+        capacityPerInstance: { $const: capacity-per-instance-deprecated }
         workerConfig:
           title: Worker Config
           type: object
