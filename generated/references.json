@@ -1782,7 +1782,7 @@
               "capacityPerInstance": {
                 "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "disks": {
@@ -1829,8 +1829,15 @@
                     "title": "Capacity Per Instance",
                     "type": "integer"
                   },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "integer"
+                  },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type that can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"
@@ -1923,7 +1930,7 @@
               "capacityPerInstance": {
                 "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "hardwareProfile": {
@@ -2080,8 +2087,15 @@
                     "type": "array",
                     "uniqueItems": true
                   },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "integer"
+                  },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type that can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"
@@ -2113,17 +2127,19 @@
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -2182,7 +2198,7 @@
               "capacityPerInstance": {
                 "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "launchConfig": {
@@ -2229,8 +2245,15 @@
                     "title": "Capacity Per Instance",
                     "type": "integer"
                   },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "integer"
+                  },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type that can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"

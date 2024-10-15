@@ -1235,6 +1235,7 @@ suite(testing.suiteName(), function () {
       assert.deepEqual(arr1, arr2);
     };
 
+
     helper.dbTest('create_worker_pool_launch_config/get_worker_pool_launch_configs', async function (db) {
       const wpId = 'w/i1';
       const provId = 'p1';
@@ -1253,15 +1254,30 @@ suite(testing.suiteName(), function () {
     });
 
     helper.dbTest('upsert_worker_pool_launch_configs returns expected ids', async function (db) {
+      const launchConfigs = [
+        { cfg: 'c1', workerManager: { maxCapacity: 5 } },
+        { cfg: 'c2', workerManager: { maxCapacity: 5 } },
+        { cfg: 'c3', workerManager: { maxCapacity: 5 } },
+      ];
       const [res] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
-        launchConfigs: ['c1', 'c2', 'c3'],
+        launchConfigs,
       });
       assert.equal(res.created_launch_configs.length, 3);
       assert.equal(res.updated_launch_configs.length, 0);
       assert.equal(res.archived_launch_configs.length, 0);
 
+      // changing workerManager related values shouldn't change ids
+      launchConfigs[0].workerManager.maxCapacity = 10;
+      launchConfigs[1].workerManager.initialWeight = 1.0;
+      const [res1] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+        launchConfigs,
+      });
+      assert.equal(res1.created_launch_configs.length, 0);
+      assert.equal(res1.updated_launch_configs.length, 3);
+      assert.equal(res1.archived_launch_configs.length, 0);
+
       const [res2] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
-        launchConfigs: ['c3'],
+        launchConfigs: [launchConfigs[2]],
       });
       assert.equal(res2.created_launch_configs.length, 0);
       assert.equal(res2.updated_launch_configs.length, 1);
@@ -1269,7 +1285,7 @@ suite(testing.suiteName(), function () {
       assertEqualSorted(res.created_launch_configs, [...res2.archived_launch_configs, ...res2.updated_launch_configs]);
 
       const [res3] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
-        launchConfigs: ['c1', 'c2'],
+        launchConfigs: [launchConfigs[0], launchConfigs[1]],
       });
       assert.equal(res3.created_launch_configs.length, 0);
       assert.equal(res3.updated_launch_configs.length, 2);
