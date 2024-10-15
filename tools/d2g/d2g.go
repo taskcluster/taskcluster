@@ -348,7 +348,7 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 			command.WriteString(fmt.Sprintf(" --gidmap %v:%v:%v", gidStart+1, gidStart+1, mappingRange))
 		}
 	}
-	if dwPayload.Capabilities.Privileged || dwPayload.Features.Dind || dwPayload.Capabilities.Devices.HostSharedMemory {
+	if dwPayload.Capabilities.Privileged {
 		command.WriteString(" --privileged")
 	} else if dwPayload.Features.AllowPtrace {
 		command.WriteString(" --cap-add=SYS_PTRACE")
