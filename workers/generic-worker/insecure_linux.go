@@ -2,7 +2,7 @@
 
 package main
 
-import gwruntime "github.com/taskcluster/taskcluster/v72/workers/generic-worker/runtime"
+import gwruntime "github.com/taskcluster/taskcluster/v73/workers/generic-worker/runtime"
 
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
 	return nil

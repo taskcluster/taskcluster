@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
-	"github.com/taskcluster/taskcluster/v72/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v73/clients/client-go"
+	"github.com/taskcluster/taskcluster/v73/clients/client-go/tcqueue"
 )
 
 func main() {

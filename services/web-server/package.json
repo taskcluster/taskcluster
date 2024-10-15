@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-web-server",
-  "version": "72.1.1",
+  "version": "73.0.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

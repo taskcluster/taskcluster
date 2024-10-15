@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v73.0.0
+
+### GENERAL
+
+▶ [patch] [#7322](https://github.com/taskcluster/taskcluster/issues/7322)
+Worker Manager: AWS and GCP workers now transition into stopping state on call to `removeWorker`.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7320](https://github.com/taskcluster/taskcluster/issues/7320)
+D2G: containers no longer use the host's network namespace
+
+### USERS
+
+▶ [patch] [#7327](https://github.com/taskcluster/taskcluster/issues/7327)
+D2G: Don't provide `--privileged` flag for dind and host shared memory use. Only using now as a one-to-one mapping to Docker Worker's privileged payload flag.
+
+### OTHER
+
+▶ Additional change not described here: [#7286](https://github.com/taskcluster/taskcluster/issues/7286).
+
 ## v72.1.1
 
 ### USERS

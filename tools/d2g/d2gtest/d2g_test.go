@@ -15,9 +15,9 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	d2g "github.com/taskcluster/taskcluster/v72/tools/d2g"
-	"github.com/taskcluster/taskcluster/v72/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v72/tools/d2g/genericworker"
+	d2g "github.com/taskcluster/taskcluster/v73/tools/d2g"
+	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
 )
 
 func ExampleScopes_mixture() {

@@ -1,9 +1,9 @@
 package artifacts
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v72/clients/client-go"
-	"github.com/taskcluster/taskcluster/v72/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v72/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v73/clients/client-go"
+	"github.com/taskcluster/taskcluster/v73/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/gwconfig"
 )
 
 type (
