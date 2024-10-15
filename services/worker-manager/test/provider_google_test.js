@@ -460,6 +460,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await provider.removeWorker({ worker });
     assert(fake.compute.instances.delete_called);
     helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId);
+    assert.equal(worker.state, Worker.states.STOPPING);
   });
 
   suite('checkWorker', function() {
@@ -495,6 +496,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
 
       // RUNNING is set by register which does not happen here
@@ -507,6 +509,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.RUNNING);
     });
@@ -575,11 +578,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
 
-      // the worker isn't marked as stopped until we see it disappear
-      assert.equal(worker.state, Worker.states.RUNNING);
+      // the worker is first marked as stopping
+      // until we see it disappear, then stopped
+      assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
         m.payload.reason === 'terminateAfter time exceeded');
@@ -630,9 +635,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker.firstClaim = null;
       worker.lastDateActive = null;
 
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
-      assert.equal(worker.state, Worker.states.RUNNING);
+      assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
         m.payload.reason.includes('never claimed work'));
@@ -652,9 +658,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker.firstClaim = taskcluster.fromNow('-100 minutes');
       worker.lastDateActive = taskcluster.fromNow('-80 minutes');
 
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
-      assert.equal(worker.state, Worker.states.RUNNING);
+      assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
         m.payload.reason.includes('worker inactive'));

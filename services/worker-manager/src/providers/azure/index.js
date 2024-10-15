@@ -1321,11 +1321,11 @@ export class AzureProvider extends Provider {
 
     // transition from either REQUESTED or RUNNING to STOPPING, and let the
     // worker scanner take it from there.
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, w => {
       const now = new Date();
-      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state)) {
-        worker.lastModified = now;
-        worker.state = Worker.states.STOPPING;
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
+        w.lastModified = now;
+        w.state = Worker.states.STOPPING;
       }
     });
   }
