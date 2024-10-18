@@ -246,7 +246,7 @@ async fn simple_upload(
     let stream = FramedRead::new(reader, BytesCodec::new());
     req = req.body(Body::wrap_stream(stream));
 
-    req.send().await?;
+    req.send().await?.error_for_status()?;
 
     Ok(())
 }
