@@ -371,6 +371,18 @@ type (
 		// Since: generic-worker 49.2.0
 		Interactive bool `json:"interactive,omitempty"`
 
+		// KVM device support for D2G tasks in order to properly
+		// protect the feature using native, Generic Worker
+		// scopes.
+		//
+		// This feature is only available on Linux. If a task
+		// is submitted with this feature enabled on a non-Linux,
+		// posix platform (FreeBSD, macOS), the task will resolve as
+		// `exception/malformed-payload`.
+		//
+		// Since: generic-worker 73.1.0
+		KVM bool `json:"kvm,omitempty"`
+
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
 		//
@@ -1105,6 +1117,11 @@ func JSONSchema() string {
             "interactive": {
               "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a bash shell is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 49.2.0",
               "title": "Interactive shell",
+              "type": "boolean"
+            },
+            "kvm": {
+              "description": "KVM device support for D2G tasks in order to properly\nprotect the feature using native, Generic Worker\nscopes.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 73.1.0",
+              "title": "KVM device support for D2G tasks",
               "type": "boolean"
             },
             "liveLog": {

@@ -24,6 +24,7 @@ const (
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&KVMFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},
 		&LoopbackVideoFeature{},

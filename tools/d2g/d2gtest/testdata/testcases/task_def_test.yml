@@ -61,6 +61,7 @@ testSuite:
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
             backingLog: true
+            kvm: true
             liveLog: true
           logs:
             backing: public/logs/live_backing.log
@@ -147,6 +148,7 @@ testSuite:
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
             backingLog: true
+            kvm: true
             liveLog: true
           logs:
             backing: public/logs/live_backing.log
@@ -169,6 +171,7 @@ testSuite:
         schedulerId: taskcluster-ui
         scopes:
           - generic-worker:apples
+          - generic-worker:capability:device:kvm
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
@@ -237,6 +240,7 @@ testSuite:
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
             backingLog: true
+            kvm: true
             liveLog: true
           logs:
             backing: public/logs/live_backing.log

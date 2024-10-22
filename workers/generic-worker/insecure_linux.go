@@ -1,4 +1,4 @@
-//go:build insecure && linux
+//go:build insecure
 
 package main
 

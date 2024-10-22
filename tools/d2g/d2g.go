@@ -111,6 +111,14 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 		case s == "docker-worker:capability:device:kvm":
 			gwScopes = append(
 				gwScopes,
+				"generic-worker:capability:device:kvm",
+				"generic-worker:os-group:"+taskQueueID+"/kvm",
+				"generic-worker:os-group:"+taskQueueID+"/libvirt",
+			)
+		case strings.HasPrefix(s, "docker-worker:capability:device:kvm:"):
+			gwScopes = append(
+				gwScopes,
+				"generic-worker:capability:device:kvm:"+s[len("docker-worker:capability:device:kvm:"):],
 				"generic-worker:os-group:"+taskQueueID+"/kvm",
 				"generic-worker:os-group:"+taskQueueID+"/libvirt",
 			)
@@ -398,6 +406,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
 	gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
+	gwPayload.Features.KVM = dwPayload.Capabilities.Devices.KVM
 
 	switch dwPayload.Features.Artifacts {
 	case true:
