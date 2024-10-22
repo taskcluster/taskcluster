@@ -53,7 +53,9 @@ func ExampleScopes_mixture() {
 	// 	"generic-worker:loopback-video:x/y/z"
 	// 	"generic-worker:monkey"
 	//	"generic-worker:os-group:proj-misc/tutorial/docker"
-	// 	"generic-worker:teapot"
+	//	"generic-worker:os-group:proj-misc/tutorial/kvm"
+	//	"generic-worker:os-group:proj-misc/tutorial/libvirt"
+	//	"generic-worker:teapot"
 }
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.

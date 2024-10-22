@@ -70,6 +70,10 @@ testSuite:
           - kvm
           - libvirt
           - docker
+        features:
+          backingLog: true
+          kvm: true
+          liveLog: true
 
     - name: Video Loopback
       description: >-
