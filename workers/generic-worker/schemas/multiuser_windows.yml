@@ -47,6 +47,7 @@ properties:
       commands:
         * `TASK_ID` - the task ID of the currently running task
         * `RUN_ID` - the run ID of the currently running task
+        * `TASK_WORKDIR` - the working directory of the currently running task
         * `TASK_GROUP_ID` - the task group ID of the currently running task
         * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
         * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
