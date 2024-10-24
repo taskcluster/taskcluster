@@ -274,6 +274,20 @@ oneOf:
               `exception/malformed-payload`.
 
               Since: generic-worker 54.5.0
+        allowPtrace:
+          type: boolean
+          title: ptrace support for D2G tasks
+          description: |-
+            ptrace support for D2G tasks in order to properly
+            protect the feature using native, Generic Worker
+            scopes.
+
+            This feature is only available on Linux. If a task
+            is submitted with this feature enabled on a non-Linux,
+            posix platform (FreeBSD, macOS), the task will resolve as
+            `exception/malformed-payload`.
+
+            Since: generic-worker 73.1.0
     mounts:
       type: array
       description: |-

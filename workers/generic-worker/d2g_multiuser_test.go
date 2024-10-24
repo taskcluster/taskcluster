@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
@@ -50,5 +51,34 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
+	t.Log(LogText(t))
+}
+
+func TestD2GWithIncorrectAllowPtraceScopes(t *testing.T) {
+	setup(t)
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{"/bin/bash", "-c", "echo hello"},
+		Image:   json.RawMessage(`"denolehov/curl"`),
+		Features: dockerworker.FeatureFlags{
+			AllowPtrace: true,
+		},
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	// don't set ptrace toggle scope, generic-worker:feature:allowPtrace
+
+	switch runtime.GOOS {
+	case "linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+		logtext := LogText(t)
+		if !strings.Contains(logtext, "generic-worker:feature:allowPtrace") {
+			t.Fatal("Expected log file to contain missing scopes, but it didn't")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+
 	t.Log(LogText(t))
 }

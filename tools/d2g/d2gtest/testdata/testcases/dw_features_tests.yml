@@ -27,6 +27,10 @@ testSuite:
               -e TASK_ID
               ubuntu 'echo "Hello world"'
         maxRunTime: 3600
+        features:
+          allowPtrace: true
+          backingLog: true
+          liveLog: true
         onExitStatus:
           retry:
             - 125

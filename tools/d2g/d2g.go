@@ -398,6 +398,7 @@ func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 	gwPayload.Features.Interactive = dwPayload.Features.Interactive
 	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
 	gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
+	gwPayload.Features.AllowPtrace = dwPayload.Features.AllowPtrace
 
 	switch dwPayload.Features.Artifacts {
 	case true:

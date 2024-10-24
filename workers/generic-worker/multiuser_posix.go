@@ -24,6 +24,7 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&AllowPtraceFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},
 		&LoopbackVideoFeature{},
