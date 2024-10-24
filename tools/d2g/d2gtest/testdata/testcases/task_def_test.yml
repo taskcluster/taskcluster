@@ -110,6 +110,7 @@ testSuite:
         scopes:
           - docker-worker:apples
           - docker-worker:capability:device:kvm
+          - docker-worker:feature:allowPtrace
         payload:
           image: ubuntu:latest
           command:
@@ -120,6 +121,8 @@ testSuite:
           capabilities:
             devices:
               kvm: true
+          features:
+            allowPtrace: true
         metadata:
           name: example-task
           owner: name@example.com
@@ -142,10 +145,11 @@ testSuite:
           command:
           - - bash
             - -cx
-            - docker run -t --rm --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+            - docker run -t --rm --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest /bin/bash -c
               'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
           features:
+            allowPtrace: true
             backingLog: true
             liveLog: true
           logs:
@@ -169,6 +173,7 @@ testSuite:
         schedulerId: taskcluster-ui
         scopes:
           - generic-worker:apples
+          - generic-worker:feature:allowPtrace
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt

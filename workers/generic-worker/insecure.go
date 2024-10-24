@@ -24,6 +24,7 @@ const (
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&AllowPtraceFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},
 		&LoopbackVideoFeature{},

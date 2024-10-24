@@ -350,6 +350,18 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
+		// ptrace support for D2G tasks in order to properly
+		// protect the feature using native, Generic Worker
+		// scopes.
+		//
+		// This feature is only available on Linux. If a task
+		// is submitted with this feature enabled on a non-Linux,
+		// posix platform (FreeBSD, macOS), the task will resolve as
+		// `exception/malformed-payload`.
+		//
+		// Since: generic-worker 73.1.0
+		AllowPtrace bool `json:"allowPtrace,omitempty"`
+
 		// The backing log feature publishes a task artifact containing the complete
 		// stderr and stdout of the task.
 		//
@@ -1096,6 +1108,11 @@ func JSONSchema() string {
           "additionalProperties": false,
           "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
           "properties": {
+            "allowPtrace": {
+              "description": "ptrace support for D2G tasks in order to properly\nprotect the feature using native, Generic Worker\nscopes.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 73.1.0",
+              "title": "ptrace support for D2G tasks",
+              "type": "boolean"
+            },
             "backingLog": {
               "default": true,
               "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",

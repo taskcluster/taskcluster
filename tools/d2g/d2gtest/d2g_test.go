@@ -29,6 +29,7 @@ func ExampleScopes_mixture() {
 		"docker-worker:monkey",
 		"generic-worker:teapot",
 		"docker-worker:docker-worker:potato",
+		"docker-worker:feature:allowPtrace",
 		"docker-worker:capability:device:loopbackVideo",
 		"docker-worker:capability:device:loopbackVideo:",
 		"docker-worker:capability:device:loopbackVideo:x/y/z",
@@ -48,6 +49,7 @@ func ExampleScopes_mixture() {
 	// 	"foo"
 	// 	"generic-worker:capability:device:kvm:x/y/z"
 	// 	"generic-worker:docker-worker:potato"
+	//	"generic-worker:feature:allowPtrace"
 	// 	"generic-worker:loopback-video:"
 	// 	"generic-worker:loopback-video:*"
 	// 	"generic-worker:loopback-video:x/y/z"
