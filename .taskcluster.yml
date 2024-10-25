@@ -2,197 +2,226 @@
 version: 1
 reporting: checks-v1
 policy:
-    pullRequests: public
+  pullRequests: public
 autoCancelPreviousChecks: true
 tasks:
-    - $let:
-          trustDomain: taskcluster
-          # We set some of these directly in tc because we don't have some mozilla-specific concepts
-          ownerEmail: taskcluster-internal@mozilla.com
-          level: 1
+  - $let:
+      trustDomain: taskcluster
+      # We set some of these directly in tc because we don't have some mozilla-specific concepts
+      ownerEmail: taskcluster-internal@mozilla.com
+      level: 1
 
-          # Github events have this stuff in different places...
-          baseRepoUrl:
-              $if: 'tasks_for in ["github-push", "github-release"]'
-              then: '${event.repository.html_url}'
-              else:
-                  $if: 'tasks_for[:19] == "github-pull-request"'
-                  then: '${event.pull_request.base.repo.html_url}'
+      # Github events have this stuff in different places...
+      baseRepoUrl:
+        $if: 'tasks_for in ["github-push", "github-release"]'
+        then: "${event.repository.html_url}"
+        else:
+          $if: 'tasks_for[:19] == "github-pull-request"'
+          then: "${event.pull_request.base.repo.html_url}"
 
-          repoUrl:
-              $if: 'tasks_for in ["github-push", "github-release"]'
-              then: '${event.repository.html_url}'
-              else:
-                  $if: 'tasks_for[:19] == "github-pull-request"'
-                  then: '${event.pull_request.head.repo.html_url}'
+      repoUrl:
+        $if: 'tasks_for in ["github-push", "github-release"]'
+        then: "${event.repository.html_url}"
+        else:
+          $if: 'tasks_for[:19] == "github-pull-request"'
+          then: "${event.pull_request.head.repo.html_url}"
 
-          project:
-              $if: 'tasks_for in ["github-push", "github-release"]'
-              then: '${event.repository.name}'
-              else:
-                  $if: 'tasks_for[:19] == "github-pull-request"'
-                  then: '${event.pull_request.head.repo.name}'
+      project:
+        $if: 'tasks_for in ["github-push", "github-release"]'
+        then: "${event.repository.name}"
+        else:
+          $if: 'tasks_for[:19] == "github-pull-request"'
+          then: "${event.pull_request.head.repo.name}"
 
-          head_branch:
-              $if: 'tasks_for[:19] == "github-pull-request"'
-              then: ${event.pull_request.head.ref}
-              else:
-                  $if: 'tasks_for == "github-push"'
-                  then: ${event.ref}
-                  else:
-                      $if: 'tasks_for == "github-release"'
-                      then: '${event.release.target_commitish}'
+      head_branch:
+        $if: 'tasks_for[:19] == "github-pull-request"'
+        then: ${event.pull_request.head.ref}
+        else:
+          $if: 'tasks_for == "github-push"'
+          then: ${event.ref}
+          else:
+            $if: 'tasks_for == "github-release"'
+            then: "${event.release.target_commitish}"
 
-          base_ref:
-              $if: 'tasks_for[:19] == "github-pull-request"'
-              then: ${event.pull_request.base.ref}
-              else:
-                  # event.base_ref is barely documented[1]. Testing showed it's only
-                  # defined when creating a new branch. It's null when pushing to an
-                  # existing branch
-                  #
-                  # [1] https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
-                  $if: 'tasks_for == "github-push" && event.base_ref'
-                  then:
-                      $if: 'event.base_ref[:11] == "refs/heads/"'
-                      then: {$eval: 'event.base_ref[11:]'}
-                      else: ${event.base_ref}
-                  else:
-                      $if: 'tasks_for == "github-push"'
-                      then:
-                          $if: 'event.ref[:11] == "refs/heads/"'
-                          then: {$eval: 'event.ref[11:]'}
-                          else: ${event.ref}
-                      else:
-                          $if: 'tasks_for in ["cron", "action"]'
-                          then:
-                            $if: '${push.branch}[:11] == "refs/heads/"'
-                            then: {$eval: 'push.branch[11:]'}
-                            else: '${push.branch}'
-
-          head_ref:
-              $if: 'tasks_for[:19] == "github-pull-request"'
-              then: ${event.pull_request.head.ref}
-              else:
-                  $if: 'tasks_for == "github-push"'
-                  then: ${event.ref}
-                  else:
-                      $if: 'tasks_for in ["cron", "action"]'
-                      then: '${push.branch}'
-
-          head_sha:
-              $if: 'tasks_for == "github-push"'
-              then: '${event.after}'
-              else:
-                  $if: 'tasks_for[:19] == "github-pull-request"'
-                  then: '${event.pull_request.head.sha}'
-                  else:
-                      $if: 'tasks_for == "github-release"'
-                      then: '${event.release.tag_name}'
-
-          head_tag:
-              $if: 'tasks_for == "github-release"'
-              then: '${event.release.tag_name}'
-              else: ''
-
-          ownTaskId: {$eval: as_slugid("decision_task")}
-
-          pullRequestAction:
-              $if: 'tasks_for[:19] == "github-pull-request"'
-              then: ${event.action}
-              else: 'UNDEFINED'
-
-          isPullRequest:
-              $eval: 'tasks_for[:19] == "github-pull-request"'
-
-      in:
-          $if: >
-            (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
-            || (tasks_for == "github-push" && project == "taskcluster" && (event["ref"] == "refs/heads/master" || event["ref"] == "refs/heads/main"))
-            || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
-            || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
+      base_ref:
+        $if: 'tasks_for[:19] == "github-pull-request"'
+        then: ${event.pull_request.base.ref}
+        else:
+          # event.base_ref is barely documented[1]. Testing showed it's only
+          # defined when creating a new branch. It's null when pushing to an
+          # existing branch
+          #
+          # [1] https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
+          $if: 'tasks_for == "github-push" && event.base_ref'
           then:
-              schedulerId: taskcluster-level-${level}
-              taskId: '${ownTaskId}'
-              taskGroupId: '${ownTaskId}'  # same as taskId; this is how automation identifies a decision task
-              created: {$fromNow: ''}
-              deadline: {$fromNow: '1 day'}
-              expires: {$fromNow: '1 year 1 second'}  # 1 second so artifacts expire first, despite rounding errors
-              metadata:
-                owner: "${ownerEmail}"
-                source: '${repoUrl}/raw/${head_sha}/.taskcluster.yml'
-                name: Decision Task (${tasks_for})
-                description: Load, transform, optimize, and submit other tasks
-              provisionerId: proj-taskcluster
-              workerType: gw-ubuntu-24-04
-              scopes:
-                  # `https://` is 8 characters so, ${repoUrl[8:]} is the repository without the protocol.
-                  $if: 'tasks_for == "github-push" && event["ref"][:11] != "refs/tags/v"'
-                  then:
-                      $let:
-                          short_head_branch:
-                              $if: 'head_branch[:11] == "refs/heads/"'
-                              then: {$eval: 'head_branch[11:]'}
-                              else: ${head_branch}
-                      in:
-                          - 'assume:repo:${repoUrl[8:]}:branch:${short_head_branch}'
-                  else:
-                      $if: 'isPullRequest'
-                      then:
-                          - 'assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request'
-                      else:
-                        $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
-                        then:
-                          - 'assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}'
+            $if: 'event.base_ref[:11] == "refs/heads/"'
+            then: { $eval: "event.base_ref[11:]" }
+            else: ${event.base_ref}
+          else:
+            $if: 'tasks_for == "github-push"'
+            then:
+              $if: 'event.ref[:11] == "refs/heads/"'
+              then: { $eval: "event.ref[11:]" }
+              else: ${event.ref}
+            else:
+              $if: 'tasks_for in ["cron", "action"]'
+              then:
+                $if: '${push.branch}[:11] == "refs/heads/"'
+                then: { $eval: "push.branch[11:]" }
+                else: "${push.branch}"
 
-              requires: all-completed
-              priority: highest
-              retries: 5
+      base_sha:
+        $switch:
+          'tasks_for == "github-push"': '${event.before}'
+          'tasks_for == "github-release"': '${event.release.target_commitish}'
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
 
-              payload:
-                  env:
-                      # run-task uses these to check out the source; the inputs
-                      # to `mach taskgraph decision` are all on the command line.
-                      $if: 'isPullRequest'
-                      then:
-                          TASKCLUSTER_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
-                  features:
-                      taskclusterProxy: true
-                  # Note: This task is built server side without the context or tooling that
-                  # exist in tree so we must hard code the hash
-                  image:
-                      mozillareleases/taskgraph:decision-d1ddb5593679cec9d7d2cdd8e9b8e2228b14ebe9b844411276cc3cfe37d189aa@sha256:b236321d98367f9cdbbd28c47bad7c0df34884897b75d266185d2e9e569ac0fa
+      head_ref:
+        $if: 'tasks_for[:19] == "github-pull-request"'
+        then: ${event.pull_request.head.ref}
+        else:
+          $if: 'tasks_for == "github-push"'
+          then: ${event.ref}
+          else:
+            $if: 'tasks_for in ["cron", "action"]'
+            then: "${push.branch}"
 
-                  maxRunTime: 600
+      head_sha:
+        $if: 'tasks_for == "github-push"'
+        then: "${event.after}"
+        else:
+          $if: 'tasks_for[:19] == "github-pull-request"'
+          then: "${event.pull_request.head.sha}"
+          else:
+            $if: 'tasks_for == "github-release"'
+            then: "${event.release.tag_name}"
 
-                  command:
-                      - run-task
-                      - '--taskcluster-checkout=/builds/worker/checkouts/src'
-                      - '--task-cwd=/builds/worker/checkouts/src'
-                      - '--'
-                      - bash
-                      - -cx
-                      - >
-                        ln -s /builds/worker/artifacts artifacts &&
-                        ~/.local/bin/taskgraph decision
-                        --pushlog-id='0'
-                        --pushdate='0'
-                        --project='${project}'
-                        --message=""
-                        --owner='${ownerEmail}'
-                        --level='${level}'
-                        --repository-type=git
-                        --target-tasks-method=taskcluster-branches
-                        --tasks-for='${tasks_for}'
-                        --base-repository='${baseRepoUrl}'
-                        --base-ref='${base_ref}'
-                        --head-repository='${repoUrl}'
-                        --head-ref='${head_ref}'
-                        --head-rev='${head_sha}'
-                        --head-tag='${head_tag}' &&
-                        rm artifacts/actions.json # taskcluster is not using actions.json
-                  artifacts:
-                      'public':
-                          type: 'directory'
-                          path: '/builds/worker/artifacts'
-                          expires: {$fromNow: '1 year'}
+      head_tag:
+        $if: 'tasks_for == "github-release"'
+        then: "${event.release.tag_name}"
+        else: ""
+
+      ownTaskId: { $eval: as_slugid("decision_task") }
+
+      pullRequestAction:
+        $if: 'tasks_for[:19] == "github-pull-request"'
+        then: ${event.action}
+        else: "UNDEFINED"
+
+      isPullRequest:
+        $eval: 'tasks_for[:19] == "github-pull-request"'
+
+    in:
+      $if: >
+        (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
+        || (tasks_for == "github-push" && project == "taskcluster" && (event["ref"] == "refs/heads/master" || event["ref"] == "refs/heads/main"))
+        || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
+        || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
+      then:
+        schedulerId: taskcluster-level-${level}
+        taskId: "${ownTaskId}"
+        taskGroupId: "${ownTaskId}" # same as taskId; this is how automation identifies a decision task
+        created: { $fromNow: "" }
+        deadline: { $fromNow: "1 day" }
+        expires: { $fromNow: "1 year 1 second" } # 1 second so artifacts expire first, despite rounding errors
+        metadata:
+          owner: "${ownerEmail}"
+          source: "${repoUrl}/raw/${head_sha}/.taskcluster.yml"
+          name: Decision Task (${tasks_for})
+          description: Load, transform, optimize, and submit other tasks
+        provisionerId: proj-taskcluster
+        workerType: gw-ubuntu-24-04
+        scopes:
+          # `https://` is 8 characters so, ${repoUrl[8:]} is the repository without the protocol.
+          $if: 'tasks_for == "github-push" && event["ref"][:11] != "refs/tags/v"'
+          then:
+            $let:
+              short_head_branch:
+                $if: 'head_branch[:11] == "refs/heads/"'
+                then: { $eval: "head_branch[11:]" }
+                else: ${head_branch}
+            in:
+              - "assume:repo:${repoUrl[8:]}:branch:${short_head_branch}"
+          else:
+            $if: "isPullRequest"
+            then:
+              - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request"
+            else:
+              $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
+              then:
+                - "assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}"
+
+        requires: all-completed
+        priority: highest
+        retries: 5
+
+        payload:
+          env:
+            # run-task uses these to check out the source; the inputs
+            # to `mach taskgraph decision` are all on the command line.
+            $merge:
+              - TASKCLUSTER_BASE_REPOSITORY: "${baseRepoUrl}"
+                TASKCLUSTER_BASE_REF: "${base_ref}"
+                TASKCLUSTER_BASE_REV: "${base_sha}"
+                TASKCLUSTER_HEAD_REPOSITORY: "${repoUrl}"
+                TASKCLUSTER_HEAD_REF: "${head_ref}"
+                TASKCLUSTER_HEAD_REV: "${head_sha}"
+                TASKCLUSTER_REPOSITORY_TYPE: git
+                REPOSITORIES: { $json: { taskcluster: Taskcluster } }
+              - $if: "isPullRequest"
+                then:
+                  TASKCLUSTER_PULL_REQUEST_NUMBER: "${event.pull_request.number}"
+
+          cache:
+            "${trustDomain}-level-${level}-checkouts-sparse-v2": /builds/worker/checkouts
+
+          features:
+            taskclusterProxy: true
+
+          # Note: This task is built server side without the context or tooling that
+          # exist in tree so we must hard code the hash
+          image: mozillareleases/taskgraph:decision-v12.0.0@sha256:e6d5f4342ab3d9ba0860d6257f99673f8292da4e283c36c9f541e34386b40e24
+
+          maxRunTime: 600
+
+          command:
+            - run-task
+            - "--taskcluster-checkout=/builds/worker/checkouts/src"
+            - "--task-cwd=/builds/worker/checkouts/src"
+            - "--"
+            - bash
+            - -cx
+            - >
+              ln -s /builds/worker/artifacts artifacts &&
+              taskgraph decision
+              --pushlog-id='0'
+              --pushdate='0'
+              --project='${project}'
+              --message=""
+              --owner='${ownerEmail}'
+              --level='${level}'
+              --repository-type=git
+              --target-tasks-method=taskcluster-branches
+              --tasks-for='${tasks_for}'
+              --base-repository='${baseRepoUrl}'
+              --base-ref='${base_ref}'
+              --base-rev='${base_sha}'
+              --head-repository='${repoUrl}'
+              --head-ref='${head_ref}'
+              --head-rev='${head_sha}'
+              --head-tag='${head_tag}' &&
+              rm artifacts/actions.json # taskcluster is not using actions.json
+          artifacts:
+            "public":
+              type: "directory"
+              path: "/builds/worker/artifacts"
+              expires: { $fromNow: "1 year" }
+            "public/docker-contexts":
+              type: "directory"
+              path: "/builds/worker/checkouts/src/docker-contexts"
+              # This needs to be at least the deadline of the
+              # decision task + the docker-image task deadlines.
+              # It is set to a week to allow for some time for
+              # debugging, but they are not useful long-term.
+              expires: { $fromNow: "7 day" }
