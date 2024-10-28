@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v73/internal/scopes"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
 
@@ -34,7 +35,7 @@ type (
 	}
 )
 
-func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string) (json.RawMessage, error) {
+func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string, scopeExpander scopes.ScopeExpander) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
 	var parsedTaskDef map[string]interface{}
 	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
@@ -57,7 +58,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string) (j
 		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
 	}
 
-	gwPayload, err := Convert(dwPayload, containerEngine)
+	gwPayload, err := ConvertPayload(dwPayload, containerEngine)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
@@ -79,7 +80,10 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string) (j
 		if taskQueueID == "" {
 			return nil, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required")
 		}
-		parsedTaskDef["scopes"] = Scopes(dwScopes, dwPayload, taskQueueID, containerEngine)
+		parsedTaskDef["scopes"], err = ConvertScopes(dwScopes, dwPayload, taskQueueID, containerEngine, scopeExpander)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert scopes: %v", err)
+		}
 	}
 
 	d2gConvertedPayloadJSON, err := json.Marshal(*gwPayload)
@@ -97,20 +101,25 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string) (j
 	return json.RawMessage(gwTaskDef), nil
 }
 
-// Scopes takes a slice of Docker Worker task scopes and returns a slice of
+// ConvertScopes takes a slice of Docker Worker task scopes and returns a slice of
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
-func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID, containerEngine string) (gwScopes []string) {
+func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID, containerEngine string, scopeExpander scopes.ScopeExpander) (gwScopes []string, err error) {
+	var expandedScopes scopes.Given
+	expandedScopes, err = validateDockerWorkerScopes(dwPayload, dwScopes, taskQueueID, scopeExpander)
+	if err != nil {
+		return
+	}
 	tool := getContainerEngine(dwPayload, containerEngine)
 	gwScopes = []string{}
 	if tool == "docker" {
 		// scopes to use docker, by default, should just come "for free"
 		gwScopes = append(gwScopes, "generic-worker:os-group:"+taskQueueID+"/docker")
 	}
-	for _, s := range dwScopes {
+	for _, s := range expandedScopes {
 		switch true {
-		case s == "docker-worker:capability:device:kvm":
+		case s == "docker-worker:capability:device:kvm" || strings.HasPrefix(s, "docker-worker:capability:device:kvm:"):
 			gwScopes = append(
 				gwScopes,
 				"generic-worker:os-group:"+taskQueueID+"/kvm",
@@ -138,12 +147,12 @@ func Scopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, task
 
 // Dev notes: https://docs.google.com/document/d/1QNfHVpxtzXAlLWqZNz3b5mvbQWOrtsWpvadJHiMNbRc/edit#heading=h.uib8l9zhaz1n
 
-// Convert transforms a Docker Worker task payload into an equivalent Generic
+// ConvertPayload transforms a Docker Worker task payload into an equivalent Generic
 // Worker Multiuser POSIX task payload. The resulting Generic Worker payload is
 // a BASH script which uses Docker (by default) to contain the Docker Worker payload. Since
 // scopes fall outside of the payload in a task definition, scopes need to be
-// converted separately (see d2g.Scopes function).
-func Convert(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string) (gwPayload *genericworker.GenericWorkerPayload, err error) {
+// converted separately (see d2g.ConvertScopes function).
+func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string) (gwPayload *genericworker.GenericWorkerPayload, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
 
@@ -185,6 +194,72 @@ func Convert(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string
 	setOSGroups(dwPayload, gwPayload, tool)
 
 	return
+}
+
+func validateDockerWorkerScopes(dwPayload *dockerworker.DockerWorkerPayload, dwScopes []string, taskQueueID string, scopeExpander scopes.ScopeExpander) (scopes.Given, error) {
+	expandedScopes, err := scopes.Given(dwScopes).Expand(scopeExpander)
+	if err != nil {
+		return nil, fmt.Errorf("error expanding scopes: %v", err)
+	}
+
+	dummyExpander := scopes.DummyExpander()
+
+	if dwPayload.Capabilities.Privileged {
+		requiredScopes := scopes.Required{
+			{"docker-worker:capability:privileged"},
+			{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("privileged capability requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
+	if dwPayload.Capabilities.Devices.HostSharedMemory {
+		requiredScopes := scopes.Required{
+			{"docker-worker:capability:device:hostSharedMemory"},
+			{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("host shared memory device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
+	if dwPayload.Capabilities.Devices.KVM {
+		requiredScopes := scopes.Required{
+			{"docker-worker:capability:device:kvm"},
+			{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("kvm device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
+	if dwPayload.Features.AllowPtrace {
+		requiredScopes := scopes.Required{
+			{"docker-worker:feature:allowPtrace"},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("allowPtrace feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
+	return expandedScopes, nil
 }
 
 func mounts(gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gwFileMounts []genericworker.FileMount) (result []json.RawMessage, err error) {

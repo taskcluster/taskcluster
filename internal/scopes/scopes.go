@@ -45,6 +45,8 @@ type (
 	// are equal, required scopes ending with a `*` can be used, although are
 	// relatively uncommon. See the examples.
 	Required [][]string
+
+	dummyExpander struct{}
 )
 
 // Note, this is trivially implemented by *Auth in
@@ -101,7 +103,7 @@ func (given Given) Expand(scopeExpander ScopeExpander) (expanded Given, err erro
 			goto hasAssume
 		}
 	}
-	expanded = make(Given, 0, len(given))
+	expanded = make(Given, len(given))
 	copy(expanded, given)
 	return
 
@@ -146,4 +148,16 @@ func (required Required) String() string {
 		text += strings.Join(lines, ", or\n")
 	}
 	return text
+}
+
+// DummyExpander is a scope expander that performs
+// no scope expansion. This is useful for calling
+// Satisfies when you know the given scopes have
+// already been expanded.
+func DummyExpander() ScopeExpander {
+	return &dummyExpander{}
+}
+
+func (d *dummyExpander) ExpandScopes(s *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error) {
+	return s, nil
 }

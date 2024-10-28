@@ -9,7 +9,10 @@ import (
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
+	tcclient "github.com/taskcluster/taskcluster/v73/clients/client-go"
+	"github.com/taskcluster/taskcluster/v73/clients/client-go/tcauth"
 	"github.com/taskcluster/taskcluster/v73/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v73/clients/client-shell/config"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
@@ -85,8 +88,14 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("failed to marshal docker worker task definition: %v", err)
 		}
 
+		var creds *tcclient.Credentials
+		if config.Credentials != nil {
+			creds = config.Credentials.ToClientCredentials()
+		}
+		auth := tcauth.New(creds, config.RootURL())
+
 		// Convert dwTaskDef to gwTaskDef
-		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, engine)
+		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, engine, auth)
 		if err != nil {
 			return fmt.Errorf("failed to convert docker worker task definition to a generic worker task definition: %v", err)
 		}
@@ -118,7 +127,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, err := d2g.Convert(dwPayload, engine)
+		gwPayload, err := d2g.ConvertPayload(dwPayload, engine)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}

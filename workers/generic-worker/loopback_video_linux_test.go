@@ -24,7 +24,7 @@ func TestLoopbackVideo(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-video")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -77,7 +77,7 @@ func TestLoopbackVideoNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-video")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -95,7 +95,7 @@ func TestLoopbackVideoNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td = testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-video")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 

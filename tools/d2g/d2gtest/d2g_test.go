@@ -15,12 +15,13 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
+	"github.com/taskcluster/taskcluster/v73/internal/scopes"
 	d2g "github.com/taskcluster/taskcluster/v73/tools/d2g"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
 )
 
-func ExampleScopes_mixture() {
+func ExampleConvertScopes_mixture() {
 	dwScopes := []string{
 		"foo",
 		"bar:dog",
@@ -36,7 +37,10 @@ func ExampleScopes_mixture() {
 	}
 	dwPayload := dockerworker.DockerWorkerPayload{}
 	defaults.SetDefaults(&dwPayload)
-	gwScopes := d2g.Scopes(dwScopes, &dwPayload, "proj-misc/tutorial", "docker")
+	gwScopes, err := d2g.ConvertScopes(dwScopes, &dwPayload, "proj-misc/tutorial", "docker", scopes.DummyExpander())
+	if err != nil {
+		fmt.Print(err)
+	}
 	for _, s := range gwScopes {
 		fmt.Printf("\t%#v\n", s)
 	}
@@ -46,13 +50,14 @@ func ExampleScopes_mixture() {
 	// 	"cat:docker-worker:feet"
 	// 	"docker-worker"
 	// 	"foo"
-	// 	"generic-worker:capability:device:kvm:x/y/z"
 	// 	"generic-worker:docker-worker:potato"
 	// 	"generic-worker:loopback-video:"
 	// 	"generic-worker:loopback-video:*"
 	// 	"generic-worker:loopback-video:x/y/z"
 	// 	"generic-worker:monkey"
 	//	"generic-worker:os-group:proj-misc/tutorial/docker"
+	//	"generic-worker:os-group:proj-misc/tutorial/kvm"
+	//	"generic-worker:os-group:proj-misc/tutorial/libvirt"
 	// 	"generic-worker:teapot"
 }
 
@@ -124,7 +129,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
 		}
-		actualGWPayload, err := d2g.Convert(&dwPayload, tc.ContainerEngine)
+		actualGWPayload, err := d2g.ConvertPayload(&dwPayload, tc.ContainerEngine)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
@@ -154,7 +159,7 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tc.Validate(t)
-		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, tc.ContainerEngine)
+		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, tc.ContainerEngine, scopes.DummyExpander())
 		if err != nil {
 			t.Fatalf("cannot convert task definition: %v", err)
 		}
