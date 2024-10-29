@@ -10,7 +10,9 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"testing"
 
+	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
 
@@ -244,7 +246,11 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool string, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
 	containerName := ""
 	if len(gwArtifacts) > 0 {
-		containerName = "taskcontainer"
+		if testing.Testing() {
+			containerName = "taskcontainer"
+		} else {
+			containerName = "taskcontainer_" + slugid.Nice()
+		}
 	}
 
 	commands := []string{}
