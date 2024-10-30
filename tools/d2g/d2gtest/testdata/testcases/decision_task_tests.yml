@@ -84,8 +84,7 @@ testSuite:
               timeout -s KILL 3600 docker run -t --name taskcontainer
               --memory-swap -1 --pids-limit -1 --privileged
               -v "$(pwd)/cache0:/builds/worker/checkouts"
-              --add-host=taskcluster:host-gateway
-              -e TASKCLUSTER_PROXY_URL=${TASKCLUSTER_PROXY_URL/localhost/taskcluster}
+              --add-host=taskcluster:127.0.0.1 --net=host
               -e GECKO_BASE_REPOSITORY
               -e GECKO_BASE_REV
               -e GECKO_HEAD_REF
@@ -97,6 +96,7 @@ testSuite:
               -e RUN_ID
               -e TASKCLUSTER_CACHES
               -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_PROXY_URL
               -e TASKCLUSTER_ROOT_URL
               -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID
