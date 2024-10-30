@@ -112,18 +112,25 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 		return
 	}
 	tool := getContainerEngine(dwPayload, containerEngine)
-	gwScopes = []string{}
+	gwScopes = make([]string, len(dwScopes))
+	copy(gwScopes, dwScopes)
 	if tool == "docker" {
 		// scopes to use docker, by default, should just come "for free"
 		gwScopes = append(gwScopes, "generic-worker:os-group:"+taskQueueID+"/docker")
 	}
 	for _, s := range expandedScopes {
 		switch true {
-		case s == "docker-worker:capability:device:kvm" || strings.HasPrefix(s, "docker-worker:capability:device:kvm:"):
+		case s == "docker-worker:capability:device:kvm":
 			gwScopes = append(
 				gwScopes,
 				"generic-worker:os-group:"+taskQueueID+"/kvm",
 				"generic-worker:os-group:"+taskQueueID+"/libvirt",
+			)
+		case strings.HasPrefix(s, "docker-worker:capability:device:kvm:"):
+			gwScopes = append(
+				gwScopes,
+				"generic-worker:os-group:"+s[len("docker-worker:capability:device:kvm:"):]+"/kvm",
+				"generic-worker:os-group:"+s[len("docker-worker:capability:device:kvm:"):]+"/libvirt",
 			)
 		case s == "docker-worker:capability:device:loopbackVideo":
 			gwScopes = append(gwScopes, "generic-worker:loopback-video:*")
@@ -135,8 +142,6 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 			gwScopes = append(gwScopes, "generic-worker:loopback-audio:"+s[len("docker-worker:capability:device:loopbackAudio:"):])
 		case strings.HasPrefix(s, "docker-worker:"):
 			gwScopes = append(gwScopes, "generic-worker:"+s[len("docker-worker:"):])
-		default:
-			gwScopes = append(gwScopes, s)
 		}
 	}
 

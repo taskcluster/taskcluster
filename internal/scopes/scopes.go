@@ -158,6 +158,16 @@ func DummyExpander() ScopeExpander {
 	return &dummyExpander{}
 }
 
-func (d *dummyExpander) ExpandScopes(s *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error) {
-	return s, nil
+// Performs no scope expansion. Directly copies
+// the set of scopes from given to expanded.
+func (d *dummyExpander) ExpandScopes(given *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error) {
+	expanded := new(tcauth.SetOfScopes)
+	if given == nil {
+		return expanded, nil
+	}
+
+	expanded.Scopes = make([]string, len(given.Scopes))
+	copy(expanded.Scopes, given.Scopes)
+
+	return expanded, nil
 }

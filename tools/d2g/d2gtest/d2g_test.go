@@ -46,19 +46,25 @@ func ExampleConvertScopes_mixture() {
 	}
 
 	// Output:
-	// 	"bar:dog"
-	// 	"cat:docker-worker:feet"
-	// 	"docker-worker"
-	// 	"foo"
-	// 	"generic-worker:docker-worker:potato"
-	// 	"generic-worker:loopback-video:"
-	// 	"generic-worker:loopback-video:*"
-	// 	"generic-worker:loopback-video:x/y/z"
-	// 	"generic-worker:monkey"
+	//	"bar:dog"
+	//	"cat:docker-worker:feet"
+	//	"docker-worker"
+	//	"docker-worker:capability:device:kvm:x/y/z"
+	//	"docker-worker:capability:device:loopbackVideo"
+	//	"docker-worker:capability:device:loopbackVideo:"
+	//	"docker-worker:capability:device:loopbackVideo:x/y/z"
+	//	"docker-worker:docker-worker:potato"
+	//	"docker-worker:monkey"
+	//	"foo"
+	//	"generic-worker:docker-worker:potato"
+	//	"generic-worker:loopback-video:"
+	//	"generic-worker:loopback-video:*"
+	//	"generic-worker:loopback-video:x/y/z"
+	//	"generic-worker:monkey"
 	//	"generic-worker:os-group:proj-misc/tutorial/docker"
-	//	"generic-worker:os-group:proj-misc/tutorial/kvm"
-	//	"generic-worker:os-group:proj-misc/tutorial/libvirt"
-	// 	"generic-worker:teapot"
+	//	"generic-worker:os-group:x/y/z/kvm"
+	//	"generic-worker:os-group:x/y/z/libvirt"
+	//	"generic-worker:teapot"
 }
 
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.
