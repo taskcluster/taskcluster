@@ -158,14 +158,13 @@ func DummyExpander() ScopeExpander {
 	return &dummyExpander{}
 }
 
-// Performs no scope expansion. Directly copies
-// the set of scopes from given to expanded.
+// Performs no scope expansion. Returns a copy of given.
 func (d *dummyExpander) ExpandScopes(given *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error) {
-	expanded := new(tcauth.SetOfScopes)
 	if given == nil {
-		return expanded, nil
+		return nil, nil
 	}
 
+	expanded := new(tcauth.SetOfScopes)
 	expanded.Scopes = make([]string, len(given.Scopes))
 	copy(expanded.Scopes, given.Scopes)
 
