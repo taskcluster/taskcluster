@@ -18,7 +18,7 @@ func TestLoopbackVideoReturnsMalformedPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-video")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	// This test is expected to fail with malformed payload
 	// because loopback video is not supported on macOS

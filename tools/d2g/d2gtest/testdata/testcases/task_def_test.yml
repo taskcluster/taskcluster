@@ -24,6 +24,7 @@ testSuite:
         expires: '2024-10-26T17:06:09.867Z'
         scopes:
           - docker-worker:apples
+          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
         payload:
           image: ubuntu:latest
           command:
@@ -82,8 +83,12 @@ testSuite:
         routes: []
         schedulerId: taskcluster-ui
         scopes:
+          - docker-worker:apples
+          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
           - generic-worker:apples
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-24-04
@@ -168,6 +173,8 @@ testSuite:
         routes: []
         schedulerId: taskcluster-ui
         scopes:
+          - docker-worker:apples
+          - docker-worker:capability:device:kvm
           - generic-worker:apples
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
@@ -198,6 +205,7 @@ testSuite:
         expires: '2024-10-26T17:06:09.867Z'
         scopes:
           - docker-worker:apples
+          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
         payload:
           image: ubuntu:latest
           command:
@@ -257,7 +265,11 @@ testSuite:
         routes: []
         schedulerId: taskcluster-ui
         scopes:
+          - docker-worker:apples
+          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
           - generic-worker:apples
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-24-04
