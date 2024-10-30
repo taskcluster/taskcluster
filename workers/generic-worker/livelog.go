@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v73/clients/client-go"
-	"github.com/taskcluster/taskcluster/v73/internal/scopes"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/livelog"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v74/clients/client-go"
+	"github.com/taskcluster/taskcluster/v74/internal/scopes"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/livelog"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/process"
 )
 
 type LiveLogFeature struct {

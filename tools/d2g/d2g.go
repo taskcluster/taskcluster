@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v73/internal/scopes"
-	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v73/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v74/internal/scopes"
+	"github.com/taskcluster/taskcluster/v74/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v74/tools/d2g/genericworker"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/shell"

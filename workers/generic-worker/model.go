@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v73/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v73/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v73/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v74/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v74/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/process"
 )
 
 type (
