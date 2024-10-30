@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:20.18.0 AS build
+FROM node:22.11.0 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -21,17 +21,16 @@ COPY /.yarn /base/yarn-client/.yarn/
 
 # install all dependencies
 WORKDIR /base/yarn-client
-RUN corepack enable
-RUN yarn workspaces focus --all --production
+RUN corepack enable && \
+    yarn workspaces focus --all --production
 WORKDIR /base/yarn
 RUN yarn workspaces focus --all --production
 WORKDIR /base/yarn-ui
-RUN yarn install --immutable
-
-RUN mkdir -p /base/app/ui /base/app/clients/client
-RUN cp -r /base/yarn/node_modules /base/app/
-RUN cp -r /base/yarn-ui/node_modules /base/app/ui/
-RUN cp -r /base/yarn-client/node_modules /base/app/clients/client/
+RUN yarn install --immutable && \
+    mkdir -p /base/app/ui /base/app/clients/client && \
+    cp -r /base/yarn/node_modules /base/app/ && \
+    cp -r /base/yarn-ui/node_modules /base/app/ui/ && \
+    cp -r /base/yarn-client/node_modules /base/app/clients/client/
 
 # copy the repository into the image, including the entrypoint
 WORKDIR /base/app
@@ -63,7 +62,7 @@ RUN /bin/bash -c "\
 ##
 # build the final image
 
-FROM node:20.18.0-alpine AS image
+FROM node:22.11.0-alpine AS image
 RUN apk --no-cache add --update nginx bash
 COPY --from=build /base/app /app
 ENV HOME=/app

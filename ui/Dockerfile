@@ -1,10 +1,10 @@
-FROM node:20.18.0
+FROM node:22.11.0
 
 WORKDIR /app/ui
 COPY yarn.lock package.json ./
 
-RUN corepack enable
-RUN yarn
+RUN corepack enable && \
+    yarn
 
 ENTRYPOINT [ "yarn" ]
 CMD [ "start:docker" ]

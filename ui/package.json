@@ -4,7 +4,7 @@
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "20.18.0"
+    "node": "22.11.0"
   },
   "packageManager": "yarn@4.5.1",
   "scripts": {
