@@ -602,7 +602,7 @@ export class AzureProvider extends Provider {
       if (issuer) {
         try {
           this.addIntermediateCert(issuer);
-        } catch(err) {
+        } catch (err) {
           this.monitor.log.registrationErrorWarning({
             message: 'Error verifying new intermediate certificate',
             error: err.message,

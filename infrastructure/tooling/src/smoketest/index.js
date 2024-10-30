@@ -40,7 +40,7 @@ export const main = async (options) => {
   }
 
   const target = options.target ? [`target-${options.target}`] : undefined;
-  const taskgraph = new TaskGraph( checks, { target });
+  const taskgraph = new TaskGraph(checks, { target });
   const results = await taskgraph.run();
   if (results['deployment-version']) {
     console.log(chalk`{bold ${process.env.TASKCLUSTER_ROOT_URL} is running Taskcluster version:} {yellow ${results['deployment-version']}}`);

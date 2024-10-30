@@ -2114,7 +2114,7 @@ suite(testing.suiteName(), function() {
         await create(db, { taskQueueId: `p-${i}/wt` });
       }
       let results = [];
-      while (true ) {
+      while (true) {
         const res = await db.deprecatedFns.get_queue_provisioners(null, 2, results.length);
         results = results.concat(res);
         if (res.length === 0) {

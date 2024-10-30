@@ -45,7 +45,7 @@ export class TestBackend extends Backend {
 
   async startDownload(object, method, params) {
     assert(this.data.has(object.name));
-    switch (method){
+    switch (method) {
       case 'simple': {
         assert.equal(params, true);
         return {

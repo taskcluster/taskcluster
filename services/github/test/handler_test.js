@@ -48,11 +48,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   let github = null;
   let handlers = null;
 
-  function buildArtifactLinks(limit, taskId){
+  function buildArtifactLinks(limit, taskId) {
 
     const artifactLinks = [];
 
-    for(let i = 0;i < limit;i++) {
+    for (let i = 0;i < limit;i++) {
       artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
     }
 
@@ -180,7 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         const artifacts = [];
 
-        for(let i = 0;i < options.limit;i++) {
+        for (let i = 0;i < options.limit;i++) {
           artifacts.push({
             name: `artifact-${i}`,
           });

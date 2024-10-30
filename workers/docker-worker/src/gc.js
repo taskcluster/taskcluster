@@ -51,7 +51,7 @@ GarbageCollector.prototype = {
 
   markStaleContainers: async function () {
     let containers = await this.docker.listContainers({ all: true });
-    for(let container of containers) {
+    for (let container of containers) {
       if (!(container.Id in this.markedContainers) &&
           (this.ignoredContainers.indexOf(container.Id) === -1)) {
         let stale = await isContainerStale(
@@ -110,7 +110,7 @@ GarbageCollector.prototype = {
             container: containerId,
             caches: caches,
           });
-        } catch(e) {
+        } catch (e) {
           let message = e;
           if (e.reason === 'no such container') {
             delete this.markedContainers[containerId];

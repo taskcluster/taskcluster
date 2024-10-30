@@ -66,7 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     // Ensure sending notification to that address fails with appropriate error
     try {
       await helper.apiClient.pulse({ routingKey: 'notify-test', message: { test: 123 } });
-    } catch(e) {
+    } catch (e) {
       assert(e.code, 'DenylistedAddress');
     }
 
@@ -99,7 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
         link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ' },
       });
-    } catch(e) {
+    } catch (e) {
       if (e.code !== "DenylistedAddress") {
         throw e;
       }

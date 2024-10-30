@@ -10,7 +10,7 @@ const helper = require('../helper');
 function removeFile(filename) {
   try {
     fs.unlinkSync(filename);
-  } catch(e) {} // eslint-disable-line no-empty
+  } catch (e) {} // eslint-disable-line no-empty
 }
 
 function createQueue() {

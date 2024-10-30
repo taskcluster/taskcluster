@@ -52,7 +52,7 @@ helper.withMockedEventIterator = () => {
   };
 
   PulseEngineCopy.eventIterator = (eventName, subscriptions) => {
-    if(!PulseEngineCopy.NextAsyncIterator){
+    if (!PulseEngineCopy.NextAsyncIterator) {
       throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
     }
     return PulseEngineCopy.NextAsyncIterator;
@@ -430,7 +430,7 @@ const stubbedClients = () => {
       fake: {
         listRoles: async () => {
           let allRoles = [];
-          for(let roleId of roles.keys()){
+          for (let roleId of roles.keys()) {
             allRoles.push(roles.get(roleId));
           }
           return Promise.resolve(allRoles);
@@ -459,7 +459,7 @@ const stubbedClients = () => {
           return Promise.resolve(newRole);
         },
         updateRole: async (roleId, role) => {
-          if(!roles.has(roleId)){
+          if (!roles.has(roleId)) {
             return Promise.reject('role not found');
           }
           const updatedRole = {
@@ -475,7 +475,7 @@ const stubbedClients = () => {
           return Promise.resolve(updatedRole);
         },
         deleteRole: async (roleId) => {
-          if(!roles.has(roleId)){
+          if (!roles.has(roleId)) {
             return Promise.reject('role not found');
           }
           roles.delete(roleId);
@@ -520,7 +520,7 @@ const stubbedClients = () => {
 
           return Promise.resolve(taskStatus);
         },
-        getArtifact: async (taskId, runId, name ) => {
+        getArtifact: async (taskId, runId, name) => {
           const artifact = {
             taskId: taskId,
             runId: runId,

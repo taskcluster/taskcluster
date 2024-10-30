@@ -57,7 +57,7 @@ module.exports = class IndexedImage extends ArtifactImage {
       let { taskId } = await index.findTask(this.namespace);
       this.taskId = taskId;
       return taskId;
-    } catch(e) {
+    } catch (e) {
       throw new Error(
         `Could not find a task associated with "${this.namespace}" ` +
         `namespace. ${e.message}`,

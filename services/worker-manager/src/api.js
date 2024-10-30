@@ -738,7 +738,7 @@ builder.declare({
   const { workerPoolId } = req.params;
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
-  if(!workerPool){
+  if (!workerPool) {
     return res.reportError('ResourceNotFound',
       `Worker Pool does not exist`, {});
   }

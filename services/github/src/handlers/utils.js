@@ -203,7 +203,7 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
     return null;
   }
 
-  if(!isValidDate(timestamp1) || !isValidDate(timestamp2)) {
+  if (!isValidDate(timestamp1) || !isValidDate(timestamp2)) {
     return null;
   }
 

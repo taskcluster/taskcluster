@@ -119,7 +119,7 @@ suite(suiteName(), function() {
     try {
       await cache.get(cacheName);
       assert(false, 'Error should have been thrown when retrieving invalid cache name');
-    } catch(e) {
+    } catch (e) {
       assert.ok(!fs.existsSync(fullPath),
         'Volume cache created cached volume directory when it should not ' +
         'have.',
