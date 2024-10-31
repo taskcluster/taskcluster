@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v73/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v74/clients/client-go"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
@@ -32,6 +32,7 @@ func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, cre
 		"--root-url", rootURL,
 		"--client-id", creds.ClientID,
 		"--access-token", creds.AccessToken,
+		"--ip-address", "127.0.0.1",
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)

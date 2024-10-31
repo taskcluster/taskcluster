@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v73/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v74/tools/d2g/dockerworker"
 )
 
 func TestD2GWithChainOfTrust(t *testing.T) {
@@ -29,6 +29,7 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	switch fmt.Sprintf("%s:%v", runtime.GOOS, config.RunTasksAsCurrentUser) {
 	case "linux:false":
 		taskID := submitAndAssert(t, td, payload, "completed", "completed")
+		t.Log(LogText(t))
 		cotUnsignedBytes := getArtifactContent(t, taskID, "public/chain-of-trust.json")
 		var cotCert ChainOfTrustData
 		err := json.Unmarshal(cotUnsignedBytes, &cotCert)
@@ -50,5 +51,4 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
-	t.Log(LogText(t))
 }

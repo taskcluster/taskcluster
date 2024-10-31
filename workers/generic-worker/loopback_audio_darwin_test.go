@@ -18,7 +18,7 @@ func TestLoopbackAudioReturnsMalformedPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	// This test is expected to fail with malformed payload
 	// because loopback audio is not supported on macOS

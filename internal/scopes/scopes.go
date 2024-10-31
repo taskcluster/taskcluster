@@ -8,7 +8,7 @@ package scopes
 import (
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v73/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v74/clients/client-go/tcauth"
 )
 
 type (
@@ -45,10 +45,12 @@ type (
 	// are equal, required scopes ending with a `*` can be used, although are
 	// relatively uncommon. See the examples.
 	Required [][]string
+
+	dummyExpander struct{}
 )
 
 // Note, this is trivially implemented by *Auth in
-// github.com/taskcluster/taskcluster/v73/clients/client-go/tcauth package, so typically
+// github.com/taskcluster/taskcluster/v74/clients/client-go/tcauth package, so typically
 // tcauth.New(nil) will satisfy this interface.
 type ScopeExpander interface {
 	ExpandScopes(*tcauth.SetOfScopes) (*tcauth.SetOfScopes, error)
@@ -101,7 +103,7 @@ func (given Given) Expand(scopeExpander ScopeExpander) (expanded Given, err erro
 			goto hasAssume
 		}
 	}
-	expanded = make(Given, 0, len(given))
+	expanded = make(Given, len(given))
 	copy(expanded, given)
 	return
 
@@ -146,4 +148,25 @@ func (required Required) String() string {
 		text += strings.Join(lines, ", or\n")
 	}
 	return text
+}
+
+// DummyExpander is a scope expander that performs
+// no scope expansion. This is useful for calling
+// Satisfies when you know the given scopes have
+// already been expanded.
+func DummyExpander() ScopeExpander {
+	return &dummyExpander{}
+}
+
+// Performs no scope expansion. Returns a copy of given.
+func (d *dummyExpander) ExpandScopes(given *tcauth.SetOfScopes) (*tcauth.SetOfScopes, error) {
+	if given == nil {
+		return nil, nil
+	}
+
+	expanded := new(tcauth.SetOfScopes)
+	expanded.Scopes = make([]string, len(given.Scopes))
+	copy(expanded.Scopes, given.Scopes)
+
+	return expanded, nil
 }

@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v74.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js 20.18.0 and yarn 4.5.1
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+D2G: Renamed methods `Convert()` --> `ConvertPayload()` and `Scopes()` --> `ConvertScopes()`.
+
+D2G: `ConvertScopes()` checks that the provided docker worker payload is valid with the supplied scopes. Generic Worker will now resolve a docker worker task as `exception/malformed-payload` if any required docker worker scopes are missing for its payload.
+
+▶ [MAJOR] [#7320](https://github.com/taskcluster/taskcluster/issues/7320)
+Reverts PR #7324. Taskcluster Proxy will now only listen on 127.0.0.1.
+
+### USERS
+
+▶ [patch] [#7340](https://github.com/taskcluster/taskcluster/issues/7340)
+D2G: Use unique task container names to avoid container naming conflicts.
+
+### DEVELOPERS
+
+▶ [patch]
+Fixed the rust library for uploading artifact when the object service returned
+a `content-length` header. It will now avoid duping the header which was
+resulting in 400s from upstream object storages.
+
+▶ [patch]
+The rust client will now properly fail when the PUT url call returns an error
+while uploading an artifact.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump elliptic from 6.5.7 to 6.6.0 in /ui (11ebddccd)
+* build(deps): bump elliptic from 6.5.7 to 6.6.0 in /clients/client-web (eef39b199)
+* build(deps): bump matrix-js-sdk from 25.1.1 to 34.8.0 (#7330) (73da29d98)
+
+</details>
+
 ## v73.0.0
 
 ### GENERAL

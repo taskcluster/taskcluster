@@ -33,7 +33,7 @@ func TestLoopbackAudio(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -89,7 +89,7 @@ func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -107,7 +107,7 @@ func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td = testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -144,7 +144,7 @@ func TestLoopbackAudioInvalidDeviceNumber(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "exception", "internal-error")
 }

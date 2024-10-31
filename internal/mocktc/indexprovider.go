@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v73/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v74/internal/mocktc/tc"
 )
 
 type IndexProvider struct {
