@@ -253,6 +253,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://bananium.fr/"><img src="https://avatars.githubusercontent.com/u/3650385?v=4?s=100" width="100px;" alt="Bastien Orivel"/><br /><sub><b>Bastien Orivel</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=Eijebong" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://aminehamdi.dev"><img src="https://avatars.githubusercontent.com/u/37228315?v=4?s=100" width="100px;" alt="HamdiAmine"/><br /><sub><b>HamdiAmine</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=AmineVolk" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/thakkarujas5"><img src="https://avatars.githubusercontent.com/u/42888663?v=4?s=100" width="100px;" alt="Ujas Thakkar"/><br /><sub><b>Ujas Thakkar</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=thakkarujas5" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 

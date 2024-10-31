@@ -921,9 +921,19 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "thakkarujas5",
+      "name": "Ujas Thakkar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42888663?v=4",
+      "profile": "https://github.com/thakkarujas5",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
-  "commitConvention": "none"
+  "commitConvention": "none",
+  "commitType": "docs"
 }
