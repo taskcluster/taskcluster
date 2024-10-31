@@ -441,7 +441,7 @@ suite('component loader', () => {
       },
     });
 
-    assert.throws( function() { load.crashOnError(true); }, 'false');
+    assert.throws(function() { load.crashOnError(true); }, 'false');
   });
 
   test('should pass own name to setup', async () => {

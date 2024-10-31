@@ -230,7 +230,7 @@ export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLengt
   const lines = logString.split('\n');
   const LOG_BUFFER = 42;
 
-  if(lines.length <= headLines + tailLines) {
+  if (lines.length <= headLines + tailLines) {
     return logString;
   }
 
@@ -243,7 +243,7 @@ export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLengt
 
   const tailLog = extractTailLinesFromLog(logString, maxPayloadLength - headLog.length - LOG_BUFFER, tailLines);
 
-  if(!tailLog) {
+  if (!tailLog) {
     return `${headLog}\n\n...(${lines.length - headLogArray.length} lines hidden)...\n\n`;
   }
 

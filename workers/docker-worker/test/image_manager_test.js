@@ -172,7 +172,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Images should not be used when proper scopes are not provided');
-    } catch(e) {
+    } catch (e) {
       return;
     }
   });
@@ -253,7 +253,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Could not find a task associated'),
         'Error message did not appear indicating a task could not be found.',
@@ -293,7 +293,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Could not download artifact'),
         `Error message did not appear indicating an artifact could not be found. ${e.message}`,
@@ -332,7 +332,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Unrecognized image type'),
         `Error message did not appear indicating unrecognized image type was used. ${e.message}`,

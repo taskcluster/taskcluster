@@ -26,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const store = new SessionStore();
 
     if (shouldPromisify) {
-      Object.getOwnPropertyNames( SessionStore.prototype )
+      Object.getOwnPropertyNames(SessionStore.prototype)
         .filter(m => m !== 'constructor').forEach(method => {
           store[method] = promisify(store[method]);
         });

@@ -35,7 +35,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
       // for tests.
       await worker.terminate();
       settings.cleanup();
-    } catch(e) {
+    } catch (e) {
       // If the worker did not setup, terminate() will throw an exception.  Ignore
       // for tests.
       settings.cleanup();

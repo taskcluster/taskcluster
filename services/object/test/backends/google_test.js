@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       Prefix: prefix,
     }));
     if (objects.Contents?.length > 0) {
-      for(let obj of objects.Contents) {
+      for (let obj of objects.Contents) {
         await s3.send(new DeleteObjectCommand({
           Bucket: secret.testBucket,
           Key: obj.Key,

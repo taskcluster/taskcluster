@@ -157,7 +157,7 @@ Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
           Key: prefix,
         };
       }),
-      ...(quiet ? { Quiet: true } : {} ),
+      ...(quiet ? { Quiet: true } : {}),
     },
   }));
 };

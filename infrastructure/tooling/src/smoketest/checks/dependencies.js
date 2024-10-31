@@ -20,7 +20,7 @@ tasks.push({
     let taskCount = 3;
     let taskIds = [];
     let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
-    for (let i = 0; i < taskCount; i++){
+    for (let i = 0; i < taskCount; i++) {
       let task = {
         provisionerId: 'built-in',
         workerType: 'succeed',
@@ -41,20 +41,20 @@ tasks.push({
       utils.status({ message: 'Created task ' + taskIds[i] });
     }
     let pollStartTime = new Date();
-    while(new Date() - pollStartTime < 1200000){
+    while (new Date() - pollStartTime < 1200000) {
       let statuses = [];
       let message = 'Task execution status:';
-      for (let i = 0; i < taskCount; i++){
+      for (let i = 0; i < taskCount; i++) {
         let taskStatus = await queue.status(taskIds[i]);
         message += '\n\t' + i + '. ' + taskIds[i] + ':' + taskStatus.status.state;
         if (i > 0) {
-          if (taskStatus.status.state === ('pending' || 'running' || 'completed')){
-            if (taskStatus.status.runs){
+          if (taskStatus.status.state === ('pending' || 'running' || 'completed')) {
+            if (taskStatus.status.runs) {
               let scheduledDate = new Date(taskStatus.status.runs[taskStatus.status.runs.length - 1].scheduled);
               let previousTaskCompletion = new Date(
                 statuses[i - 1].status.runs[statuses[i - 1].status.runs.length - 1].resolved,
               );
-              if (scheduledDate < previousTaskCompletion){
+              if (scheduledDate < previousTaskCompletion) {
                 throw new Error('Task ' + taskIds[i] + ' scheduled before completion of task ' + taskIds[i - 1]);
               }
             }

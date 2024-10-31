@@ -203,7 +203,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }[resourceType];
   };
 
-  suite('setup', function(){
+  suite('setup', function() {
     test('has all Azure root certificates', async function() {
       // https://docs.microsoft.com/en-us/azure/security/fundamentals/tls-certificate-changes
       const azureRootCAs = new Map([

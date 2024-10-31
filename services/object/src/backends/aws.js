@@ -168,7 +168,7 @@ export class AwsBackend extends Backend {
   }
 
   async startDownload(object, method, params) {
-    switch (method){
+    switch (method) {
       case 'simple': {
         let downloadUrl;
         const command = new GetObjectCommand({

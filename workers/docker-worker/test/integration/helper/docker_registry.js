@@ -69,7 +69,7 @@ class Registry {
       await this.container.stop();
       await this.container.remove();
       console.log('container removed');
-    } catch(e) {
+    } catch (e) {
       console.log('Could not stop registry container. ', e.message);
     }
 

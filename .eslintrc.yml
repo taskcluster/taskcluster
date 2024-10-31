@@ -81,3 +81,15 @@ rules:
   object-curly-spacing:
     - error
     - always
+
+  keyword-spacing:
+    - error
+    - before: true
+
+  space-before-blocks:
+    - error
+    - always
+
+  space-in-parens:
+    - error
+    - never

@@ -52,7 +52,7 @@ export default function ({ session, db, options = {} }) {
 
         if (!row) {
           return callback();
-        } else if (db.decrypt({ value: row.encrypted_session_id }).toString('utf8') !== sessionId){
+        } else if (db.decrypt({ value: row.encrypted_session_id }).toString('utf8') !== sessionId) {
           return callback();
         }
 

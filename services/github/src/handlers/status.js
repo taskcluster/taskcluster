@@ -197,7 +197,7 @@ export async function statusHandler(message) {
 
     output.addText(`${CHECK_RUN_TEXT_OUTPUT} | ${CHECK_LOGS_TEXT_OUTPUT} | ${CHECK_TASK_GROUP_TEXT_OUTPUT}`);
 
-    if(runs.length > 0) {
+    if (runs.length > 0) {
       const taskExecutionTime = getTimeDifference(runs[runId]?.started, runs[runId]?.resolved);
       output.addText(`### Task Status`);
       output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);

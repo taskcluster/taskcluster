@@ -31,7 +31,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     try {
       await worker.terminate();
       settings.cleanup();
-    } catch(e) {
+    } catch (e) {
       settings.cleanup();
     }
   });

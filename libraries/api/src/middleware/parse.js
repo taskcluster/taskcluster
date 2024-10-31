@@ -36,7 +36,7 @@ export const parseBody = ({ inputLimit }) => {
           req.body = {};
         }
         next();
-      } catch(err) {
+      } catch (err) {
         next(err);
       }
     });

@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suite('Artifact Subscriptions', function() {
     helper.withMockedEventIterator();
 
-    test('subscribe works', async function(){
+    test('subscribe works', async function() {
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
       const artifactsCreated = await helper.loadFixture('artifactsCreated.graphql');
