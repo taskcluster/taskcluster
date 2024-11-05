@@ -109,7 +109,11 @@ Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
     Key: prefix,
   });
   const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
-  url.pathname = path.join(url.pathname, prefix);
+  // Some aws-sdk versions return prefix already in pathname,
+  // avoid double prefixing
+  if (!url.pathname.endsWith(prefix)) {
+    url.pathname = path.join(url.pathname, prefix);
+  }
   return url.href;
 };
 

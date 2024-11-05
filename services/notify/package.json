@@ -13,10 +13,10 @@
     "lint": "eslint src/*.js test/*.js"
   },
   "devDependencies": {
-    "@aws-sdk/client-sns": "^3.621.0",
-    "@aws-sdk/client-sqs": "^3.621.0",
+    "@aws-sdk/client-sns": "^3.682.0",
+    "@aws-sdk/client-sqs": "^3.682.0",
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.7.0"
+    "mocha": "^10.8.2"
   }
 }
