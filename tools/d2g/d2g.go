@@ -251,6 +251,34 @@ func validateDockerWorkerScopes(dwPayload *dockerworker.DockerWorkerPayload, dwS
 		}
 	}
 
+	if dwPayload.Capabilities.Devices.LoopbackAudio {
+		requiredScopes := scopes.Required{
+			{"docker-worker:capability:device:loopbackAudio"},
+			{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("loopbackAudio device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
+	if dwPayload.Capabilities.Devices.LoopbackVideo {
+		requiredScopes := scopes.Required{
+			{"docker-worker:capability:device:loopbackVideo"},
+			{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+		}
+		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			return nil, fmt.Errorf("loopbackVideo device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+		}
+	}
+
 	if dwPayload.Features.AllowPtrace {
 		requiredScopes := scopes.Required{
 			{"docker-worker:feature:allowPtrace"},
