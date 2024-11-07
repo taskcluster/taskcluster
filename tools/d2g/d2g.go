@@ -208,88 +208,55 @@ func validateDockerWorkerScopes(dwPayload *dockerworker.DockerWorkerPayload, dwS
 	}
 
 	dummyExpander := scopes.DummyExpander()
+	var requiredScopes scopes.Required
 
 	if dwPayload.Capabilities.Privileged {
-		requiredScopes := scopes.Required{
-			{"docker-worker:capability:privileged"},
-			{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("privileged capability requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:privileged"},
+			[]string{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+		)
 	}
 
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
-		requiredScopes := scopes.Required{
-			{"docker-worker:capability:device:hostSharedMemory"},
-			{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("host shared memory device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:device:hostSharedMemory"},
+			[]string{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+		)
 	}
 
 	if dwPayload.Capabilities.Devices.KVM {
-		requiredScopes := scopes.Required{
-			{"docker-worker:capability:device:kvm"},
-			{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("kvm device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:device:kvm"},
+			[]string{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackAudio {
-		requiredScopes := scopes.Required{
-			{"docker-worker:capability:device:loopbackAudio"},
-			{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("loopbackAudio device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:device:loopbackAudio"},
+			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackVideo {
-		requiredScopes := scopes.Required{
-			{"docker-worker:capability:device:loopbackVideo"},
-			{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("loopbackVideo device requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:device:loopbackVideo"},
+			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+		)
 	}
 
 	if dwPayload.Features.AllowPtrace {
-		requiredScopes := scopes.Required{
-			{"docker-worker:feature:allowPtrace"},
-		}
-		scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding scopes: %v", err)
-		}
-		if !scopesSatisfied {
-			return nil, fmt.Errorf("allowPtrace feature requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
-		}
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:feature:allowPtrace"},
+		)
+	}
+
+	scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
+	if err != nil {
+		return nil, fmt.Errorf("error expanding scopes: %v", err)
+	}
+	if !scopesSatisfied {
+		return nil, fmt.Errorf("d2g task requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
 	}
 
 	return expandedScopes, nil
