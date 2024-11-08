@@ -27,7 +27,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	session := Client(conn, Config{Log: genLogger()})
 
 	buf := make([]byte, 0)
-	for i := range 1500 {
+	for i := 0; i < 1500; i++ {
 		buf = append(buf, byte(i%127))
 	}
 
@@ -66,7 +66,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 		}
 	}
 
-	for i := range maxTestStreams {
+	for i := 0; i < maxTestStreams; i++ {
 		wg.Add(1)
 		go sender(i)
 	}
@@ -269,7 +269,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 	}
 
 	buf := make([]byte, 0)
-	for i := range 1500 {
+	for i := 0; i < 1500; i++ {
 		buf = append(buf, byte(i%127))
 	}
 

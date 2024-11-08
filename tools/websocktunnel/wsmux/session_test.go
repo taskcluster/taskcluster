@@ -52,7 +52,7 @@ func TestEchoLarge(t *testing.T) {
 		t.Fatal(err)
 	}
 	buf := make([]byte, 0)
-	for i := range 1500 {
+	for i := 0; i < 1500; i++ {
 		buf = append(buf, byte(i%127))
 	}
 

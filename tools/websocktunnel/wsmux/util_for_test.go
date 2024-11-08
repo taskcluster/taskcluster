@@ -159,7 +159,7 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 		}
 	}
 
-	for i := range maxTestStreams {
+	for i := 0; i < maxTestStreams; i++ {
 		wg.Add(1)
 		go acceptor(i)
 	}

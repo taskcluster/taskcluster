@@ -51,7 +51,7 @@ func (pc *ProviderConfig) Unpack(out interface{}) error {
 	}
 	desttype := destval.Type()
 	numfield := desttype.NumField()
-	for i := range numfield {
+	for i := 0; i < numfield; i++ {
 		// get the expected property name
 		field := desttype.Field(i)
 		var name string

@@ -46,14 +46,14 @@ func (g *Generator) PrettyPrint(data interface{}) {
 			break
 		}
 		g.Print("{\n")
-		for i := range v.Len() {
+		for i := 0; i < v.Len(); i++ {
 			g.PrettyPrint(v.Index(i).Interface())
 			g.Print(",\n")
 		}
 		g.Print("}")
 	case reflect.Struct:
 		g.Printf("%s{\n", t.String())
-		for i := range v.NumField() {
+		for i := 0; i < v.NumField(); i++ {
 			g.Printf("%s: ", t.Field(i).Name)
 			g.PrettyPrint(v.Field(i).Interface())
 			g.Print(",\n")
@@ -83,7 +83,7 @@ func (g *Generator) PrettyPrint(data interface{}) {
 			}
 		} else {
 			// If the keys are not strings, we don't sort them for now.
-			for i := range v.Len() {
+			for i := 0; i < v.Len(); i++ {
 				k := keys[i]
 				g.Printf("%#v: ", k)
 				g.PrettyPrint(v.MapIndex(k).Interface())

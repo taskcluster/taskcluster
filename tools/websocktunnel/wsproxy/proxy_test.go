@@ -369,7 +369,7 @@ func TestProxyWebsocket(t *testing.T) {
 
 	// Generate 1M message
 	message := make([]byte, 0)
-	for i := range 1024 * 1024 {
+	for i := 0; i < 1024*1024; i++ {
 		message = append(message, byte(i%127))
 	}
 
@@ -752,7 +752,7 @@ func TestConcurrentConnections(t *testing.T) {
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
 	wg.Add(200)
-	for range 200 {
+	for i := 0; i < 200; i++ {
 		go func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
 			if err != nil {

@@ -25,7 +25,7 @@ func TestSlugidNormal(t *testing.T) {
 	cmd.Flags().Bool("nice", false, "")
 
 	// Let's test 1000 generated slugs, to increase confidence
-	for range 1000 {
+	for i := 0; i < 1000; i++ {
 		buf.Reset()
 		generate(cmd, []string{})
 
@@ -44,7 +44,7 @@ func TestSlugidNice(t *testing.T) {
 	cmd.Flags().Bool("nice", true, "")
 
 	// Let's test 1000 generated slugs, to increase confidence
-	for range 1000 {
+	for i := 0; i < 1000; i++ {
 		buf.Reset()
 		generate(cmd, []string{})
 

@@ -49,7 +49,7 @@ func TestHandleMessage(t *testing.T) {
 	var reports []*tcworkermanager.WorkerErrorReport
 	var err error
 	func() {
-		for range 200 {
+		for i := 0; i < 200; i++ {
 			reports, err = tc.FakeWorkerManagerWorkerErrorReports()
 			if len(reports) == 1 {
 				return

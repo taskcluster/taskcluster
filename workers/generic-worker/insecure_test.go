@@ -24,7 +24,7 @@ func TestNewTaskDirectoryForEachTask(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	for range config.NumberOfTasksToRun {
+	for i := uint(0); i < config.NumberOfTasksToRun; i++ {
 		_ = scheduleTask(t, td, payload)
 	}
 

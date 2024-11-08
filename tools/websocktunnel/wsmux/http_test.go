@@ -141,7 +141,7 @@ func TestMultiplePost(t *testing.T) {
 		}
 	}
 
-	for range 50 {
+	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go sendAndWait()
 	}
