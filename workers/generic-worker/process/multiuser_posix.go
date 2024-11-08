@@ -115,7 +115,7 @@ func (r *Result) Crashed() bool {
 	return false
 }
 
-func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
+func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	cmd := f()
 	cmd.Env = env
 	cmd.Dir = workingDirectory
@@ -140,21 +140,21 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pla
 		cmd.Stderr = os.Stderr
 		return cmd
 	}
-	return newCommand(f, commandLine, workingDirectory, env, platformData)
+	return newCommand(f, workingDirectory, env, platformData)
 }
 
 func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.Command(commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, platformData)
+	return newCommand(f, workingDirectory, env, platformData)
 }
 
 func NewCommandContext(ctx context.Context, commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, platformData)
+	return newCommand(f, workingDirectory, env, platformData)
 }
 
 func (c *Command) SetEnv(envVar, value string) {

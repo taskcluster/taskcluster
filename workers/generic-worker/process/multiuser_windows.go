@@ -72,7 +72,7 @@ func (r *Result) Crashed() bool {
 	return r.SystemError != nil && !r.Aborted
 }
 
-func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
 	cmd := f()
 	var err error
 	var combined *[]string
@@ -115,14 +115,14 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pd 
 		cmd.Stderr = os.Stderr
 		return cmd
 	}
-	return newCommand(f, commandLine, workingDirectory, env, pd)
+	return newCommand(f, workingDirectory, env, pd)
 }
 
 func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.Command(commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, pd)
+	return newCommand(f, workingDirectory, env, pd)
 }
 
 func (c *Command) Kill() (killOutput string, err error) {
