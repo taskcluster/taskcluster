@@ -2,9 +2,6 @@ package runtime
 
 import (
 	"os"
-	"path/filepath"
-	"runtime"
-	"testing"
 
 	"github.com/dchest/uniuri"
 )
@@ -27,14 +24,7 @@ func GenericWorkerBinary() string {
 	// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
 	// installed binary. This hack will go if we can impersonate the logged on user.
 	var exe string
-	if testing.Testing() {
-		exe = filepath.Join(os.Getenv("GOPATH"), "bin", "generic-worker")
-		if runtime.GOOS == "windows" {
-			exe += ".exe"
-		}
-	} else {
-		exe = os.Args[0]
-	}
+	exe = os.Args[0]
 
 	return exe
 }

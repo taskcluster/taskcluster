@@ -1,82 +1,47 @@
 module github.com/taskcluster/taskcluster/v74
 
-// DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
-go 1.23.2
+go 1.20
 
 require (
-	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
-	github.com/Microsoft/go-winio v0.6.2
-	github.com/cenkalti/backoff/v3 v3.2.2
-	github.com/creack/pty v1.1.23
-	github.com/dchest/uniuri v1.2.0
-	github.com/deckarep/golang-set v1.8.0
-	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	github.com/elastic/go-sysinfo v1.14.2
-	github.com/fatih/camelcase v1.0.0
-	github.com/getsentry/raven-go v0.2.0
-	github.com/gofrs/flock v0.12.1
-	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/gorilla/mux v1.8.1
-	github.com/gorilla/websocket v1.5.3
-	github.com/iancoleman/strcase v0.3.0
-	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c
-	github.com/mcuadros/go-defaults v1.2.0
-	github.com/mholt/archiver/v3 v3.5.1
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mozilla-services/go-mozlogrus v2.0.0+incompatible
-	github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e
-	github.com/pborman/uuid v1.2.1
-	github.com/peterbourgon/mergemap v0.0.1
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
-	github.com/pkg/errors v0.9.1
-	github.com/sergi/go-diff v1.3.1
-	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.5
-	github.com/streadway/amqp v1.1.0
-	github.com/stretchr/testify v1.9.0
-	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
-	github.com/taskcluster/httpbackoff/v3 v3.1.0
-	github.com/taskcluster/pulse-go v1.0.0
-	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3
-	github.com/taskcluster/slugid-go v1.1.0
-	github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible
-	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
-	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.27.0
-	golang.org/x/net v0.29.0
-	golang.org/x/sys v0.25.0
-	golang.org/x/tools v0.25.0
-	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.1
-	sigs.k8s.io/yaml v1.4.0
-)
-
-require (
-	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/andybalholm/brotli v1.0.1 // indirect
+	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dchest/uniuri v1.2.0 // indirect
+	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
-	github.com/elastic/go-windows v1.0.1 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
-	github.com/klauspost/pgzip v1.2.6 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/nwaples/rardecode v1.1.3 // indirect
-	github.com/pierrec/lz4/v4 v4.1.18 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/elastic/go-sysinfo v1.15.0 // indirect
+	github.com/elastic/go-windows v1.0.0 // indirect
+	github.com/fatih/camelcase v1.0.0 // indirect
+	github.com/getsentry/raven-go v0.2.0 // indirect
+	github.com/gofrs/flock v0.12.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
+	github.com/golang/snappy v0.0.2 // indirect
+	github.com/google/uuid v1.0.0 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/johncgriffin/overflow v0.0.0-20211019200055-46fa312c352c // indirect
+	github.com/klauspost/compress v1.11.4 // indirect
+	github.com/klauspost/pgzip v1.2.5 // indirect
+	github.com/mcuadros/go-defaults v1.2.0 // indirect
+	github.com/mholt/archiver/v3 v3.5.1 // indirect
+	github.com/nwaples/rardecode v1.1.0 // indirect
+	github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e // indirect
+	github.com/pborman/uuid v1.2.0 // indirect
+	github.com/peterbourgon/mergemap v0.0.1 // indirect
+	github.com/pierrec/lz4/v4 v4.1.2 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/spf13/afero v1.9.5 // indirect
-	github.com/ulikunitz/xz v0.5.11 // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
+	github.com/taskcluster/httpbackoff/v3 v3.1.0 // indirect
+	github.com/taskcluster/shell v0.0.0-20191115171910-c688067f12d3 // indirect
+	github.com/taskcluster/slugid-go v1.1.0 // indirect
+	github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible // indirect
+	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957 // indirect
+	github.com/ulikunitz/xz v0.5.9 // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
+	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
-	howett.net/plist v1.0.0 // indirect
-	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
+	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 )

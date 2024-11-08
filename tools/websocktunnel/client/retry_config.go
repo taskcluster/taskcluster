@@ -1,7 +1,7 @@
 package client
 
 import (
-	"math/rand/v2"
+	"math/rand"
 	"time"
 )
 
