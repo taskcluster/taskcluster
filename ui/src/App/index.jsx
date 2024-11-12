@@ -89,6 +89,15 @@ export default class App extends Component {
     options: {
       reconnect: true,
       lazy: true,
+      connectionParams: async () => {
+        const user = await this.authController.getUser();
+
+        if (user && user.credentials) {
+          return {
+            Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+          };
+        }
+      },
     },
   });
 

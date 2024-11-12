@@ -133,8 +133,8 @@ const load = loader(
     },
 
     httpServer: {
-      requires: ['app', 'schema', 'context', 'monitor'],
-      setup: async ({ app, schema, context, monitor }) => {
+      requires: ['cfg', 'app', 'schema', 'context', 'monitor'],
+      setup: async ({ cfg, app, schema, context, monitor }) => {
         const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
@@ -164,6 +164,7 @@ const load = loader(
         );
 
         createSubscriptionServer({
+          cfg,
           server: httpServer, // this attaches itself directly to the server
           schema,
           context,

@@ -2,17 +2,67 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import credentials from './credentials.js';
 import formatError from './formatError.js';
+import scopeUtils from 'taskcluster-lib-scopes';
+import taskcluster from 'taskcluster-client';
+import { decryptToken } from './decryptToken.js';
+import { ErrorReply } from 'taskcluster-lib-api';
 
-export default ({ server, schema, context, path }) =>
+// TODO: Check for expiration of access token when the websocket connection is active
+export default ({ cfg, server, schema, context, path }) => {
+
+  let disconnectTimeout;
   SubscriptionServer.create(
     {
       schema,
       execute,
       subscribe,
-      onConnect(params, socket) {
-        return new Promise(resolve => {
-          credentials()(socket.upgradeReq, {}, resolve);
+      async onConnect(params, socket) {
+
+        disconnectTimeout = setTimeout(() => {
+          if (socket && socket.readyState !== socket.CLOSING && socket.readyState !== socket.CLOSED) {
+            socket.close();
+          }
+        }, cfg.server.socketAliveTimeoutMilliSeconds);
+
+        return new Promise((resolve, reject) => {
+          credentials()(socket.upgradeReq, {}, async () => {
+            try {
+
+              const credentials = params?.Authorization ? decryptToken(params.Authorization) : null;
+
+              const authClient = new taskcluster.Auth({
+                rootUrl: cfg.taskcluster.rootUrl,//process.env['TASKCLUSTER_ROOT_URL'],
+                credentials: credentials,
+              });
+
+              const scopes = await authClient.currentScopes();
+              const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
+
+              if (!satisfyingScopes) {
+
+                const message = ([
+                  `This request requires Taskcluster credentials that satisfy the following scope: `,
+                  '',
+                  '```',
+                  'web:read-pulse',
+                  '```',
+                ]).join('\n');
+
+                return reject(new ErrorReply({
+                  code: 'InsufficientScopes',
+                  message: message,
+                }));
+              }
+
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
         });
+      },
+      onDisconnect(socket) {
+        clearTimeout(disconnectTimeout);
       },
       async onOperation(message, connection) {
         // formatResponse should be replaced when
@@ -34,3 +84,4 @@ export default ({ server, schema, context, path }) =>
       path,
     },
   );
+};
