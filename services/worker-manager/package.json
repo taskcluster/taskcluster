@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-worker-manager",
-  "version": "74.0.0",
+  "version": "74.0.1",
   "description": "Taskcluster Worker Manager",
   "exports": "./src/main.js",
   "type": "module",

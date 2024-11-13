@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v74.0.1
+
+### GENERAL
+
+▶ [patch]
+D2G: `ConvertScopes()` additionally checks scopes for `loopbackAudio` and `loopbackVideo`.
+
+▶ [patch]
+D2G: `ConvertScopes()` checks all scopes at once so users would see all missing scopes in one run.
+
+▶ [patch]
+Upgrades to go1.23.3.
+
+▶ [patch]
+Upgrades to the new Node.js LTS version 22.11.0
+
+### DEVELOPERS
+
+▶ [patch] [#7246](https://github.com/taskcluster/taskcluster/issues/7246)
+Add linting rule for spaces before and after keywords
+Add linting rule to remove spaces inside round parenthesis
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps): bump matrix-js-sdk from 34.9.0 to 34.11.1 (221b10b53)
+* build(deps): bump the client-node-deps group across 1 directory with 2 updates (8a7ee712a)
+* build(deps): bump github.com/golang-jwt/jwt/v4 from 4.5.0 to 4.5.1 (19586b5bf)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (b05031f76)
+* build(deps): bump the node-deps group with 30 updates (7c778cb1c)
+* build(deps-dev): bump the client-web-node-deps group (08362e208)
+* build(deps): bump taskcluster from 72.0.1 to 74.0.0 in /taskcluster (bc8269d34)
+* build(deps): bump the go-deps group with 6 updates (1e5054f9e)
+
+</details>
+
 ## v74.0.0
 
 ### GENERAL

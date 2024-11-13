@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-index",
-  "version": "74.0.0",
+  "version": "74.0.1",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
