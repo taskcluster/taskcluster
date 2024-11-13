@@ -88,9 +88,12 @@ begin
 
   -- workers need new field
   alter table workers add column launch_config_id text null;
+  CREATE INDEX workers_lc_idx ON workers(worker_pool_id, launch_config_id, state);
+
 
   -- errors also need to know where they are coming from
   alter table worker_pool_errors add column launch_config_id text null;
+  CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors(worker_pool_id, launch_config_id);
 
   -- allow
   GRANT select, insert, update, delete ON worker_pool_launch_configs to $db_user_prefix$_worker_manager;

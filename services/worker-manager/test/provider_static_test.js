@@ -43,6 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator: await helper.load('estimator'),
       validator: await helper.load('validator'),
       publisher: await helper.load('publisher'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       fakeCloudApis: {},
       rootUrl: helper.rootUrl,
       Worker: helper.Worker,

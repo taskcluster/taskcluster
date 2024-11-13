@@ -27,6 +27,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     Date.now = oldnow;
   });
 
+  const createWP = async (overrides = {}) => {
+    const workerPool = WorkerPool.fromApi({
+      workerPoolId: 'ww/tt',
+      providerId: 'testing1',
+      description: 'none',
+      scheduledForDeletion: false,
+      config: {},
+      owner: 'whatever@example.com',
+      emailOnError: false,
+      ...overrides,
+    });
+    await workerPool.create(helper.db);
+    return workerPool;
+  };
+
+  const createProvider = async () =>
+    new Provider({
+      notify: await helper.load('notify'),
+      db: helper.db,
+      monitor,
+      WorkerPoolError: WorkerPoolError,
+      estimator: await helper.load('estimator'),
+      validator: await helper.load('validator'),
+      publisher: await helper.load('publisher'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
+    });
+
   suite('interpretLifecycle', function() {
     test('no lifecycle', async function() {
       assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
@@ -141,32 +168,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('reportError', function() {
-    const createWP = async (overrides = {}) => {
-      const workerPool = WorkerPool.fromApi({
-        workerPoolId: 'ww/tt',
-        providerId: 'testing1',
-        description: 'none',
-        scheduledForDeletion: false,
-        config: {},
-        owner: 'whatever@example.com',
-        emailOnError: false,
-        ...overrides,
-      });
-      await workerPool.create(helper.db);
-      return workerPool;
-    };
-
     let provider;
     suiteSetup(async function() {
-      provider = new Provider({
-        notify: await helper.load('notify'),
-        db: helper.db,
-        monitor,
-        WorkerPoolError: WorkerPoolError,
-        estimator: await helper.load('estimator'),
-        validator: await helper.load('validator'),
-        publisher: await helper.load('publisher'),
-      });
+      provider = await createProvider();
     });
 
     test('report errors (no email)', async function() {
@@ -290,6 +294,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'gecko-t/win7-gpu': 1,
         'gecko-t/win7-x64': 1,
       }));
+    });
+  });
+
+  suite('selectLaunchConfigsForSpawn', function () {
+    let provider;
+
+    suiteSetup(async function() {
+      provider = await createProvider();
+    });
+
+    test('selects configs', async function () {
+      const workerPool = await createWP();
+
+      const configs = await provider.selectLaunchConfigsForSpawn({ workerPool, toSpawn: 1 });
+      assert.deepEqual([], configs);
     });
   });
 });

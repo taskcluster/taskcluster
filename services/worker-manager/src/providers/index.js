@@ -27,7 +27,9 @@ export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
  * properly by never returning a failed provider.
  */
 export class Providers {
-  async setup({ cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher }) {
+  async setup({
+    cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
+  }) {
     this.monitor = monitor;
     this._providers = {};
 
@@ -57,6 +59,7 @@ export class Providers {
         providerConfig,
         providerType: providerConfig.providerType,
         publisher,
+        launchConfigSelector,
       });
       this._providers[providerId] = provider;
 
