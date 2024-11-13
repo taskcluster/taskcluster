@@ -554,3 +554,22 @@ methods:
           workers.worker_group = worker_group_in and
           workers.worker_id = worker_id_in;
       end
+
+  get_worker_pool_launch_config_stats:
+    description: Get the number of workers in each state for a given worker pool.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table(state text, launch_config_id text, count bigint)
+    body: |-
+      begin
+        return query
+        select
+          state,
+          launch_config_id,
+          count(*)
+        from workers
+        where
+          worker_pool_id = worker_pool_id_in
+        group by state, launch_config_id;
+      end

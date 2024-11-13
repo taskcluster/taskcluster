@@ -71,6 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator: await helper.load('estimator'),
       publisher: await helper.load('publisher'),
       validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
