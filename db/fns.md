@@ -190,6 +190,7 @@
    * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
    * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
+   * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
    * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
    * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
    * [`get_worker_pools_with_capacity_and_counts_and_launch_configs`](#get_worker_pools_with_capacity_and_counts_and_launch_configs)
@@ -6438,6 +6439,7 @@ end
 * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
 * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
+* [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
 * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
 * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
 * [`get_worker_pools_with_capacity_and_counts_and_launch_configs`](#get_worker_pools_with_capacity_and_counts_and_launch_configs)
@@ -7620,6 +7622,37 @@ begin
   order by worker_pool_errors.reported desc
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pool_launch_config_stats
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `state text`
+  * `launch_config_id text`
+  * `count bigint`
+* *Last defined on version*: 105
+
+Get the number of workers in each state for a given worker pool.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    state,
+    launch_config_id,
+    count(*)
+  from workers
+  where
+    worker_pool_id = worker_pool_id_in
+  group by state, launch_config_id;
 end
 ```
 

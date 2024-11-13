@@ -15,6 +15,7 @@ import { Provisioner } from './provisioner.js';
 import { Providers } from './providers/index.js';
 import { WorkerScanner } from './worker-scanner.js';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
+import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -195,10 +196,15 @@ let load = loader({
     setup: async ({ cfg, schemaset }) => await schemaset.validator(cfg.taskcluster.rootUrl),
   },
 
+  launchConfigSelector: {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }) => new LaunchConfigSelector({ db, monitor }),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator'],
-    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator }) =>
-      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator }),
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator', 'launchConfigSelector'],
+    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator, launchConfigSelector }) =>
+      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator, launchConfigSelector }),
   },
 
   azureProviderIds: {
