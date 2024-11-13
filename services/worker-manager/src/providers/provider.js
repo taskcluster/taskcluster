@@ -4,7 +4,7 @@ import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
 import yaml from 'js-yaml';
-import { Worker, WorkerPoolError, WorkerPoolLaunchConfig } from '../data.js';
+import { Worker, WorkerPoolError } from '../data.js';
 
 /**
  * The parent class for all providers.
@@ -23,6 +23,7 @@ export class Provider {
     providerConfig,
     providerType,
     publisher,
+    launchConfigSelector,
   }) {
     assert(db, 'db is required');
     assert(estimator, 'estimator is required');
@@ -30,6 +31,7 @@ export class Provider {
     assert(notify, 'notify is required');
     assert(validator, 'validator is required');
     assert(publisher, 'publisher is required');
+    assert(launchConfigSelector, 'launchConfigSelector is required');
 
     this.providerId = providerId;
     this.monitor = monitor;
@@ -42,6 +44,7 @@ export class Provider {
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
     this.publisher = publisher;
+    this.launchConfigSelector = launchConfigSelector;
 
     this.emailCache = [];
   }
@@ -90,28 +93,14 @@ export class Provider {
    */
   async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
-    const configs = [];
 
-    const launchConfigs = await WorkerPoolLaunchConfig.load(this.db, workerPool.workerPoolId, workerPool.providerId);
-    const activeConfigs = launchConfigs.filter((cfg) => cfg.isPaused === false);
+    const configSelector = this.launchConfigSelector.forWorkerPool(workerPool);
 
-    if (activeConfigs.length === 0) {
-      this.monitor.warning('No active launch configs found', { workerPoolId: workerPool.workerPoolId });
-      return configs;
-    }
-
-    // some providers do more complex things here
     if (returnAll) {
-      return activeConfigs;
+      return configSelector.getAll();
     }
 
-    while (toSpawn > 0) {
-      const cfg = _.sample(activeConfigs);
-      configs.push(cfg);
-      toSpawn -= cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance;
-    }
-
-    return configs;
+    return configSelector.selectCapacity(toSpawn);
   }
 
   async createWorker({ workerPool, workerGroup, workerId, input }) {

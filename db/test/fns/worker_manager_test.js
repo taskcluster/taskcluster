@@ -1235,7 +1235,6 @@ suite(testing.suiteName(), function () {
       assert.deepEqual(arr1, arr2);
     };
 
-
     helper.dbTest('create_worker_pool_launch_config/get_worker_pool_launch_configs', async function (db) {
       const wpId = 'w/i1';
       const provId = 'p1';
