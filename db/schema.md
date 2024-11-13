@@ -610,10 +610,12 @@ CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha51
 CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING btree (dependent_task_id) WHERE (NOT satisfied);
 CREATE INDEX tasks_task_group_id_idx ON tasks USING btree (task_group_id);
 CREATE INDEX tasks_task_group_id_unresolved_idx ON tasks USING btree (task_group_id) WHERE (NOT ever_resolved);
+CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX worker_pool_errors_reported_idx ON worker_pool_errors USING btree (reported);
 CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs USING btree (worker_pool_id) WHERE is_archived;
 CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs USING btree (launch_config_id);
 CREATE INDEX worker_pool_launch_configs_worker_pool_id_idx ON worker_pool_launch_configs USING btree (worker_pool_id);
 CREATE INDEX workers_created_idx ON workers USING btree (created);
+CREATE INDEX workers_lc_idx ON workers USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX workers_state_idx ON workers USING btree (state);
 ```

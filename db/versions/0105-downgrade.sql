@@ -20,8 +20,10 @@ begin
   -- if config section is dropped, restore back all launch configs into wp config
   drop table if exists worker_pool_launch_configs;
 
+  drop index if exists workers_lc_idx;
   alter table workers drop column launch_config_id;
 
+  drop index if exists worker_pool_errors_lc_idx;
   alter table worker_pool_errors drop column launch_config_id;
 
   -- drop functions

@@ -17,39 +17,15 @@ import { WorkerPool, Worker } from '../data.js';
 const __dirname = new URL('.', import.meta.url).pathname;
 
 export class AwsProvider extends Provider {
-  constructor({
-    providerId,
-    monitor,
-    rootUrl,
-    Worker,
-    WorkerPoolError,
-    estimator,
-    validator,
-    notify,
-    db,
-    providerConfig,
-    publisher,
-  }) {
-    super({
-      providerId,
-      monitor,
-      rootUrl,
-      Worker,
-      WorkerPoolError,
-      estimator,
-      validator,
-      notify,
-      db,
-      providerConfig,
-      publisher,
-    });
+  constructor(conf) {
+    super(conf);
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = Object.assign({}, {
       intervalCapDefault: 150,
       intervalDefault: 10 * 1000,
       _backoffDelay: 2000,
-    }, providerConfig);
+    }, conf.providerConfig);
 
   }
 
