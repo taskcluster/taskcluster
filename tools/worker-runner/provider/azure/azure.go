@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v74/clients/client-go"
-	"github.com/taskcluster/taskcluster/v74/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v74/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v74/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v74/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v74/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v74/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v75/clients/client-go"
+	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v75/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v75/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v75/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v75/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v75/tools/workerproto"
 )
 
 type AzureProvider struct {

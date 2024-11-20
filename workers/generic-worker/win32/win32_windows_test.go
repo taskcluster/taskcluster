@@ -3,7 +3,7 @@ package win32_test
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v75/workers/generic-worker/win32"
 )
 
 func ExampleMergeEnvLists() {

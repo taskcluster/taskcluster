@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v74/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v74/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v75/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v75/workers/generic-worker/runtime"
 )
 
 func defaultTasksDir() string {

@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v75.0.0
+
+### USERS
+
+▶ [MAJOR] [#7128](https://github.com/taskcluster/taskcluster/issues/7128)
+Generic Worker now only changes file ownership of files inside caches, if the
+file was owned by the previous task user. Previously Generic Worker changed the
+ownership of all files inside a cache to be the new task user, which caused
+problems if files were modified inside containers using different subuids.
+
+▶ [patch] [#7386](https://github.com/taskcluster/taskcluster/issues/7386)
+Fixes UI issue where "No WorkerPool exists" error was shown in pending/claimed tasks list.
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump cross-spawn from 7.0.3 to 7.0.6 in /clients/client (8f1ae7081)
+* build(deps): bump cross-spawn from 7.0.3 to 7.0.6 in /ui/test/e2e (ba80be7ae)
+* build(deps): bump cross-spawn from 6.0.5 to 6.0.6 in /ui (b61b37312)
+* build(deps): bump cross-spawn from 7.0.3 to 7.0.6 in /clients/client-web (34e12e170)
+* build(deps): bump cross-spawn from 6.0.5 to 6.0.6 (1204a00e5)
+* build(deps): bump @eslint/plugin-kit in /clients/client-web (df1f054b9)
+
+</details>
+
 ## v74.0.1
 
 ### GENERAL
