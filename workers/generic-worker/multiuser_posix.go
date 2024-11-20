@@ -163,6 +163,18 @@ func (task *TaskRun) EnvVars() []string {
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
+func changeOwnershipInDir(dir string, currentOwnerUID string, newOwnerUsername string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
+	case "linux":
+		return host.Run("/usr/bin/find", dir, "-uid", currentOwnerUID, "-exec", "/bin/chown", newOwnerUsername+":"+newOwnerUsername, "{}", ";")
+	case "freebsd":
+		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
+	}
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
+}
+
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
 	// We'll use chown binary rather that os.Chown here since:
 	// 1) we have user/group names not ids, and can avoid extra code to look up
@@ -193,20 +205,4 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
 	}
 	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
-}
-
-func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
-	// Note, only need to set top directory, not recursively, since without
-	// access to top directory, nothing inside can be read anyway
-	var err error
-	switch runtime.GOOS {
-	case "darwin":
-		err = host.Run("/usr/sbin/chown", "0:0", dir)
-	case "linux":
-		err = host.Run("/bin/chown", "0:0", dir)
-	}
-	if err != nil {
-		return fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
-	}
-	return os.Chmod(dir, 0700)
 }
