@@ -18,6 +18,7 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
 
 @graphql(claimedTasks, {
   options: props => ({
+    errorPolicy: 'all',
     variables: {
       taskQueueId: joinWorkerPoolId(
         props.match.params.provisionerId,
@@ -97,6 +98,9 @@ export default class WMViewClaimedTasks extends Component {
       data: { loading, error, listClaimedTasks, WorkerPool },
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
+    // Claimed tasks could exist for the pools that are not managed by w-m
+    // so one of the request would fail with errors
+    const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
       <Dashboard
@@ -131,9 +135,9 @@ export default class WMViewClaimedTasks extends Component {
         </Box>
         {loading && <Spinner loading />}
 
-        {error && <ErrorPanel fixed error={error} />}
+        {error && !wpMissing && <ErrorPanel fixed error={error} />}
 
-        {!error && !loading && (
+        {!loading && listClaimedTasks && (
           <ConnectionDataTable
             noItemsMessage="No claimed tasks"
             connection={listClaimedTasks}

@@ -19,6 +19,7 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
 
 @graphql(pendingTasks, {
   options: props => ({
+    errorPolicy: 'all',
     variables: {
       taskQueueId: joinWorkerPoolId(
         props.match.params.provisionerId,
@@ -94,6 +95,9 @@ export default class WMViewPendingTasks extends Component {
       data: { loading, error, listPendingTasks, WorkerPool },
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
+    // Pending tasks could exist for the pools that are not managed by w-m
+    // so one of the request would fail with errors
+    const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
       <Dashboard
@@ -129,9 +133,9 @@ export default class WMViewPendingTasks extends Component {
 
         {loading && <Spinner loading />}
 
-        {error && <ErrorPanel fixed error={error} />}
+        {error && !wpMissing && <ErrorPanel fixed error={error} />}
 
-        {!error && !loading && (
+        {!loading && listPendingTasks && (
           <ConnectionDataTable
             noItemsMessage="No pending tasks"
             connection={listPendingTasks}
