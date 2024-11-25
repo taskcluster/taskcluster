@@ -22,14 +22,6 @@ const (
 	engine = "insecure"
 )
 
-func platformFeatures() []Feature {
-	return []Feature{
-		&InteractiveFeature{},
-		&LoopbackAudioFeature{},
-		&LoopbackVideoFeature{},
-	}
-}
-
 func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }

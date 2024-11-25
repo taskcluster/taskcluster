@@ -218,20 +218,21 @@ func loadConfig(configFile *gwconfig.File) error {
 	// only one place if possible (defaults also declared in `usage`)
 	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
+			PublicPlatformConfig:           gwconfig.DefaultPublicPlatformConfig(),
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
-			ContainerEngine:                "docker",
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
-			EnableD2G:                      false,
-			EnableInteractive:              false,
+			EnableChainOfTrust:             true,
+			EnableLiveLog:                  true,
+			EnableMounts:                   true,
+			EnableOSGroups:                 true,
+			EnableTaskclusterProxy:         true,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
-			LoopbackAudioDeviceNumber:      16,
-			LoopbackVideoDeviceNumber:      0,
 			MaxTaskRunTime:                 86400, // 86400s is 24 hours
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
@@ -628,7 +629,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 		panic(err)
 	}
 	if _, exists := payload["image"]; exists {
-		if !config.EnableD2G {
+		if !config.PublicPlatformConfig.D2GEnabled() {
 			workerPoolID := config.ProvisionerID + "/" + config.WorkerType
 			workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
 			return MalformedPayloadError(fmt.Errorf(`docker worker payload detected, but D2G is not enabled on this worker pool (%s).
@@ -1033,7 +1034,17 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	// create task features
 	for _, feature := range Features {
-		if feature.IsEnabled(task) {
+		if feature.IsRequested(task) {
+			if !feature.IsEnabled() {
+				workerPoolID := config.ProvisionerID + "/" + config.WorkerType
+				workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
+				err.add(MalformedPayloadError(fmt.Errorf(`this task is attempting to use feature %q, but it's not enabled on this worker pool (%s)
+If you do not require this feature, remove the toggle from the task definition.
+If you do require this feature, please do one of two things:
+	1. Contact the owner of the worker pool %s (see %s) and ask for %q to be enabled.
+	2. Use a worker pool that already allows %q`, feature.Name(), workerPoolID, workerPoolID, workerManagerURL, feature.Name(), feature.Name())))
+				continue
+			}
 			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()

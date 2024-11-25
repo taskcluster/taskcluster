@@ -352,20 +352,24 @@ func GWTest(t *testing.T) *Test {
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 		PublicConfig: gwconfig.PublicConfig{
-			AvailabilityZone: "outer-space",
+			PublicPlatformConfig: gwconfig.DefaultPublicPlatformConfig(),
+			AvailabilityZone:     "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			CachesDir:                      cachesDir,
 			CheckForNewDeploymentEverySecs: 0,
 			CleanUpTaskDirs:                false,
 			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			ContainerEngine:                "docker",
 			DeploymentID:                   "",
 			DisableReboots:                 true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
-			EnableD2G:                 true,
+			EnableChainOfTrust:        true,
+			EnableLiveLog:             true,
+			EnableMounts:              true,
+			EnableOSGroups:            true,
+			EnableTaskclusterProxy:    true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",

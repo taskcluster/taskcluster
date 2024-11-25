@@ -27,7 +27,11 @@ func (feature *TaskclusterProxyFeature) PersistState() error {
 	return nil
 }
 
-func (feature *TaskclusterProxyFeature) IsEnabled(task *TaskRun) bool {
+func (feature *TaskclusterProxyFeature) IsEnabled() bool {
+	return config.EnableTaskclusterProxy
+}
+
+func (feature *TaskclusterProxyFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.TaskclusterProxy
 }
 
