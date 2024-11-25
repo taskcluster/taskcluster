@@ -22,7 +22,11 @@ func (feature *RunAsAdministratorFeature) PersistState() error {
 	return nil
 }
 
-func (feature *RunAsAdministratorFeature) IsEnabled(task *TaskRun) bool {
+func (feature *RunAsAdministratorFeature) IsEnabled() bool {
+	return config.EnableRunAsAdministrator
+}
+
+func (feature *RunAsAdministratorFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.RunAsAdministrator
 }
 

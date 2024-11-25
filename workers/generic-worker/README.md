@@ -133,12 +133,6 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
-          containerEngine                   The default container engine to use for translated
-                                            Docker Worker tasks when not specified in the
-                                            Docker Worker task payload (property
-                                            capabilities.containerEngine).
-                                            Accepted values: "docker" or "podman".
-                                            [default: "docker"]
           createObjectArtifacts             If true, use artifact type 'object' for artifacts
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
@@ -166,12 +160,41 @@ and reports back results to the queue.
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
-          enableD2G                         Enables D2G (Docker Worker to Generic Worker payload
-                                            transformation). This allows for Docker Worker payloads
-                                            to be submitted to Generic Worker. [default: false]
-          enableInteractive                 Enables interactive mode. This allows an
-                                            interactive shell session to run on the worker.
-                                            [default: false]
+          d2gConfig                         D2G-specific (Docker Worker to Generic Worker payload
+                                            transformation) configuration. This allows finer tuning
+                                            of the internal D2G payload translation. Available
+                                            config with provided defaults:
+                                              * enableD2G - Enables D2G. [default: true]
+                                              * allowChainOfTrust - Allows Chain of Trust. [default: true]
+                                              * allowDisableSeccomp - Allows disabling Seccomp. [default: true]
+                                              * allowHostSharedMemory - Allows Host Shared Memory. [default: true]
+                                              * allowInteractive - Allows Interactive. [default: true]
+                                              * allowKVM - Allows KVM. [default: true]
+                                              * allowLoopbackAudio - Allows Loopback Audio. [default: true]
+                                              * allowLoopbackVideo - Allows Loopback Video. [default: true]
+                                              * allowPrivileged - Allows Privileged. [default: true]
+                                              * allowPtrace - Allows Ptrace. [default: true]
+                                              * allowTaskclusterProxy - Allows Taskcluster Proxy. [default: true]
+                                              * containerEngine - The default container engine to use for translated
+                                                Docker Worker tasks when not specified in the Docker Worker task payload
+                                                (property capabilities.containerEngine). Accepted values: "docker" or "podman".
+                                                [default: "docker"]
+          enableChainOfTrust                Enables the Chain of Trust feature to be used in the
+                                            task payload. [default: true]
+          enableLiveLog                     Enables the LiveLog feature to be used in the task
+                                            payload. [default: true]
+          enableMounts                      Enables the Mounts feature to be used in the task
+                                            payload. [default: true]
+          enableOSGroups                    Enables the OS Groups feature to be used in the task
+                                            payload. [default: true]
+          enableTaskclusterProxy            Enables the Taskcluster Proxy feature to be used in
+                                            the task payload. [default: true]
+          enableInteractive                 Enables the Interactive feature to be used in the
+                                            task payload. [default: true]
+          enableLoopbackAudio               Enables the Loopback Audio feature to be used in the
+                                            task payload. [default: true]
+          enableLoopbackVideo               Enables the Loopback Video feature to be used in the
+                                            task payload. [default: true]
           headlessTasks                     If true, no dedicated graphical session will be available to tasks.
                                             There will also be no reboots between tasks and multiple workers
                                             can be run on the same host. Useful for tasks that don't require
