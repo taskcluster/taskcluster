@@ -629,8 +629,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^14.4.2":
-  version: 14.4.4
-  resolution: "got@npm:14.4.4"
+  version: 14.4.5
+  resolution: "got@npm:14.4.5"
   dependencies:
     "@sindresorhus/is": "npm:^7.0.1"
     "@szmarczak/http-timer": "npm:^5.0.1"
@@ -643,7 +643,7 @@ __metadata:
     p-cancelable: "npm:^4.0.1"
     responselike: "npm:^3.0.0"
     type-fest: "npm:^4.26.1"
-  checksum: 10c0/2135303a48edaf0bdf1f590db231c4e69a6725efc5f306fff409003e182eafeb9135ae6c2de37f9d5ebe8e3f0a6b8227fd008fce9ac9581b38e6278b19e152a6
+  checksum: 10c0/37bcb77dcbe6b2d00345d11e2749bb9f5fcab38850dab84015684545b72ba0169324330ccde81e40ef356150238008c3b282ea38fb774bde66289f6433681cd8
   languageName: node
   linkType: hard
 
@@ -1144,13 +1144,13 @@ __metadata:
   linkType: hard
 
 "nock@npm:^13.5.5":
-  version: 13.5.5
-  resolution: "nock@npm:13.5.5"
+  version: 13.5.6
+  resolution: "nock@npm:13.5.6"
   dependencies:
     debug: "npm:^4.1.0"
     json-stringify-safe: "npm:^5.0.1"
     propagate: "npm:^2.0.0"
-  checksum: 10c0/58be4dda214d6e1914232ae41a3ac4f4e05622f71eb82825816f3030e0343bd54c1001878a6bce8412067c1059730919f3d600069d76f1336da11f47bd3b5d40
+  checksum: 10c0/94249a294176a6e521bbb763c214de4aa6b6ab63dff1e299aaaf455886a465d38906891d7f24570d94a43b1e376c239c54d89ff7697124bc57ef188006acc25e
   languageName: node
   linkType: hard
 
