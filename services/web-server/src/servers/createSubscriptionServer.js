@@ -41,7 +41,9 @@ export default ({ cfg, server, schema, context, path }) => {
               if (!satisfyingScopes) {
 
                 const message = ([
-                  `This request requires Taskcluster credentials that satisfy the following scope: `,
+                  `Error: InsufficientScopes`,
+                  '',
+                  `Client ID ${credentials?.clientId ?? 'anonymous'} does not have sufficient scopes and is missing the following scopes:`,
                   '',
                   '```',
                   'web:read-pulse',
@@ -51,6 +53,9 @@ export default ({ cfg, server, schema, context, path }) => {
                 return reject(new ErrorReply({
                   code: 'InsufficientScopes',
                   message: message,
+                  details: {
+                    required: ['web:read-pulse'],
+                  }
                 }));
               }
 
