@@ -59,9 +59,22 @@ MonitorManager.register({
   },
 });
 
+/** @typedef {import('../@types/fns.d.ts').DbFunctions} DbFunctions */
+/** @typedef {import('../@types/fns.d.ts').DeprecatedDbFunctions} DeprecatedDbFunctions */
+
 class Database {
   /**
    * Get a new Database instance
+   * @param {object} options
+   * @param {string} options.readDbUrl
+   * @param {string} options.writeDbUrl
+   * @param {any?} options.schema
+   * @param {string} options.serviceName
+   * @param {MonitorManager | false} options.monitor
+   * @param {number=} options.statementTimeout
+   * @param {number=} options.poolSize
+   * @param {import('./Keyring.js').CryptoKey[]} options.dbCryptoKeys
+   * @param {string} options.azureCryptoKey
    */
   static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
     azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
@@ -92,7 +105,9 @@ class Database {
 
   _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
+    /** @type {DbFunctions | {}} */
     this.fns = {};
+    /** @type {DeprecatedDbFunctions | {}} */
     this.deprecatedFns = {};
     schema.allMethods().forEach(method => {
       let collection = this.fns;
@@ -487,6 +502,12 @@ class Database {
 
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
+   * @param {object} options
+   * @param {{ read?: string, write?: string, admin?: string }} options.urlsByMode
+   * @param {MonitorManager | false} options.monitor
+   * @param {number} [options.statementTimeout]
+   * @param {number} [options.poolSize]
+   * @param {Keyring} options.keyring
    */
   constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');

@@ -1,8 +1,18 @@
 import assert from 'assert';
 
+/**
+* @typedef {Object} CryptoKey
+* @property {string} id
+* @property {string} key
+* @property {string} algo
+*/
+
 class Keyring {
   /**
    * Construct a new keyring from a service's configuration.
+   * @param {Object} config
+   * @param {string} config.azureCryptoKey
+   * @param {CryptoKey[]} config.dbCryptoKeys
    */
   constructor({ azureCryptoKey, dbCryptoKeys }) {
     this.crypto = new Map();

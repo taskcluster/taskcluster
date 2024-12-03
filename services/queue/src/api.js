@@ -61,7 +61,32 @@ let SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za
 let GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 
-/** API end-point for version v1/ */
+/**
+ * API end-point for version v1/
+ *
+ * @type {APIBuilder<{
+ *  cfg: object;
+ *  db: import('taskcluster-db').Database;
+ *  monitor: import('taskcluster-lib-monitor').Monitor;
+ *  publisher: import('taskcluster-lib-pulse').PulsePublisher; // TODO add generic type
+ *  taskGroupExpiresExtension: object; // todo
+ *  signPublicArtifactUrls: object; // todo
+ *  publicBucket: import('./bucket.js');
+ *  privateBucket: import('./bucket.js');
+ *  claimTimeout: object; // todo
+ *  queueService: object; // todo
+ *  regionResolver: object; // todo
+ *  credentials: object; // todo
+ *  dependencyTracker: object; // todo
+ *  workClaimer: object; // todo
+ *  workerInfo: object; // todo
+ *  artifactRegion: object; // todo
+ *  LRUcache: import('quick-lru')<string, any>;
+ *  objectService: object; // todo
+ *  maxTaskDeadlineDays: object; // todo
+ *  taskMaxDependencies: object; // todo
+ * }>}
+ */
 let builder = new APIBuilder({
   title: 'Queue Service',
   description: [
@@ -158,7 +183,6 @@ builder.declare({
   scopes: 'queue:get-task:<taskId>',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
-  idempotent: true,
   output: 'task.yml',
   title: 'Get Task Definition',
   description: [
@@ -207,7 +231,6 @@ builder.declare({
   input: 'tasks-request.yml',
   stability: APIBuilder.stability.experimental,
   category: 'Tasks',
-  idempotent: true,
   output: 'tasks-response.yml',
   title: 'Get multiple task definitions',
   description: [
@@ -245,7 +268,6 @@ builder.declare({
   input: 'tasks-request.yml',
   stability: APIBuilder.stability.experimental,
   category: 'Tasks',
-  idempotent: true,
   output: 'tasks-statuses-response.yml',
   title: 'Get multiple task definitions',
   description: [
@@ -783,7 +805,6 @@ builder.declare({
   route: '/task/:taskId',
   name: 'createTask',
   stability: APIBuilder.stability.stable,
-  idempotent: true,
   category: 'Tasks',
   scopes: { AllOf: [
     { for: 'scope', in: 'scopes', each: '<scope>' },

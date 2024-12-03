@@ -229,9 +229,9 @@ class Monitor {
   /**
    * Take a standard error and break it up into loggable bits.
    *
-   * * err: A string or Error object to be serialized and logged
-   * * level: Kept around for legacy reasons, only added to fields
-   * * extra: extra data to add to the serialized error
+   * @param {Error | string} err: A string or Error object to be serialized and logged
+   * @param {string | Record<string, any>} [level]: Kept around for legacy reasons, only added to fields
+   * @param {Record<string, any>} [extra]: extra data to add to the serialized error
    *
    */
   reportError(err, level = 'err', extra = {}) {

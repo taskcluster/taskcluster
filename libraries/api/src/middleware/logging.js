@@ -48,6 +48,13 @@ MonitorManager.register({
 /**
  * Log an API request on completion, including information determined
  * by the `remoteAuthentication` middleware, if present.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   builder: import('../index.js').APIBuilder<TContext>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const logRequest = ({ builder, entry }) => {
   return (req, res, next) => {

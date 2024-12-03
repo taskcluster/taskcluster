@@ -5,13 +5,14 @@ import { URL } from 'url';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
+/** @param {{ useDbDirectory?: boolean }} opts */
 export const schema = ({ useDbDirectory } = {}) => {
   // using the DB directory is a bit slower (YAML parsing is slow) so we prefer to load the
   // generated schema in production, but load the DB directory when running tests.
   if (useDbDirectory) {
     return Schema.fromDbDirectory(path.join(__dirname, '..'));
   } else {
-    const json = fs.readFileSync(path.join(__dirname, '../../generated/db-schema.json'));
+    const json = fs.readFileSync(path.join(__dirname, '../../generated/db-schema.json'), 'utf8');
     const serializable = JSON.parse(json);
     return Schema.fromSerializable(serializable);
   }

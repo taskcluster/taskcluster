@@ -6,7 +6,7 @@ import Version from './Version.js';
 import Access from './Access.js';
 import Relations from './Relations.js';
 
-class Schema {
+export class Schema {
   constructor(versions, access, tables) {
     this.versions = versions;
     this.access = access;
