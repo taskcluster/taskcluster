@@ -11,6 +11,9 @@ import * as middleware from './middleware/index.js';
 export * from './pagination.js';
 export * from './error-reply.js';
 
+/**
+ * @type {object | null}
+ */
 let taskclusterVersion = null;
 export const loadVersion = async () => {
   if (!taskclusterVersion) {
@@ -87,9 +90,29 @@ const version = {
 };
 
 /**
+ * @typedef {Object} ErrorCodes
+ * @property {number} [key: string]
+ */
+
+/**
+ * @typedef {Object} APIBuilderOptions
+ * @property {string} title
+ * @property {string} description
+ * @property {string} serviceName
+ * @property {string} apiVersion
+ * @property {ErrorCodes} [errorCodes]
+ * @property {Record<string, any>} [params]
+ * @property {string[]} [context]
+ */
+
+/**
  * Create an APIBuilder; see README for syntax
  */
 export class APIBuilder {
+  /**
+   * Create an APIBuilder
+   * @param {APIBuilderOptions} options
+   */
   constructor(options) {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
     assert(!options.version, 'version is now apiVersion');

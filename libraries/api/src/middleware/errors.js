@@ -14,10 +14,26 @@ export const ERROR_CODES = {
   InternalServerError: 500, // Only for internal errors
 };
 
+
+/**
+ * @typedef {(
+ *   code: string,
+ *   message: string,
+ *   details?: object
+ * ) => never} ReportErrorFunction
+ */
+
 /**
  * Middleware that adds `res.reportError(code, message, details)`
  */
 export const buildReportErrorMethod = () => {
+  /**
+   * Builds and attaches an error reporting method to the response object
+   * @param {import('express').Request} req
+   * @param {import('express').Response & { reportError: ReportErrorFunction }} res
+   * @param {import('express').NextFunction} next - Express next middleware function
+   * @returns {void}
+   */
   return (req, res, next) => {
     res.reportError = reportError;
     next();
