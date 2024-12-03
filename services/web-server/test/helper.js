@@ -75,6 +75,20 @@ helper.withFakeAuth = (mock, skipping) => {
   });
 };
 
+helper.withFakeAuthFactory = (mock, skipping) => {
+  suiteSetup('withFakeAuthFactory', function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.load.inject('authFactory', stubbedAuthFactory());
+  });
+
+  suiteTeardown(function() {
+    helper.load.remove('authFactory');
+  });
+};
+
 helper.withClients = (mock, skipping) => {
   suiteSetup('withClients', async function() {
     if (skipping()) {
@@ -352,6 +366,15 @@ const stubbedAuth = () => {
   });
 
   return auth;
+};
+
+const stubbedAuthFactory = () => {
+  return ({ credentials }) => new taskcluster.Auth({
+    rootUrl: helper.rootUrl,
+    fake: {
+      currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
+    },
+  });
 };
 
 const stubbedClients = () => {

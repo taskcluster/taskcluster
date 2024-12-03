@@ -3,14 +3,14 @@ import { execute, subscribe } from 'graphql';
 import credentials from './credentials.js';
 import formatError from './formatError.js';
 import scopeUtils from 'taskcluster-lib-scopes';
-import taskcluster from 'taskcluster-client';
 import { decryptToken } from './decryptToken.js';
 import { ErrorReply } from 'taskcluster-lib-api';
 
 // TODO: Check for expiration of access token when the websocket connection is active
-export default ({ cfg, server, schema, context, path }) => {
+export default ({ cfg, server, schema, context, path, authFactory }) => {
 
-  let disconnectTimeout;
+  const timeoutMap = new WeakMap();
+
   SubscriptionServer.create(
     {
       schema,
@@ -18,11 +18,12 @@ export default ({ cfg, server, schema, context, path }) => {
       subscribe,
       async onConnect(params, socket) {
 
-        disconnectTimeout = setTimeout(() => {
+        const disconnectTimeout = setTimeout(() => {
           if (socket && socket.readyState !== socket.CLOSING && socket.readyState !== socket.CLOSED) {
             socket.close();
           }
         }, cfg.server.socketAliveTimeoutMilliSeconds);
+        timeoutMap.set(socket, disconnectTimeout);
 
         return new Promise((resolve, reject) => {
           credentials()(socket.upgradeReq, {}, async () => {
@@ -30,10 +31,7 @@ export default ({ cfg, server, schema, context, path }) => {
 
               const credentials = params?.Authorization ? decryptToken(params.Authorization) : null;
 
-              const authClient = new taskcluster.Auth({
-                rootUrl: cfg.taskcluster.rootUrl,//process.env['TASKCLUSTER_ROOT_URL'],
-                credentials: credentials,
-              });
+              const authClient = authFactory({ credentials });
 
               const scopes = await authClient.currentScopes();
               const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
@@ -55,19 +53,23 @@ export default ({ cfg, server, schema, context, path }) => {
                   message: message,
                   details: {
                     required: ['web:read-pulse'],
-                  }
+                  },
                 }));
               }
 
               resolve();
             } catch (err) {
+              console.log(err);
               reject(err);
             }
           });
         });
       },
       onDisconnect(socket) {
-        clearTimeout(disconnectTimeout);
+
+        const timeout = timeoutMap.get(socket);
+        clearTimeout(timeout);
+        timeoutMap.delete(socket);
       },
       async onOperation(message, connection) {
         // formatResponse should be replaced when
