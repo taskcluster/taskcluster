@@ -130,6 +130,7 @@
     "@aws-sdk/client-iam": "^3.699.0",
     "@aws-sdk/client-sns": "^3.699.0",
     "@aws-sdk/client-sqs": "^3.699.0",
+    "@types/pg": "^8.11.10",
     "acorn-loose": "^8.0.1",
     "acorn-walk": "^8.3.4",
     "apollo-link-ws": "^1.0.20",
@@ -164,6 +165,7 @@
     "sinon": "^13.0.0",
     "snake-case": "^3.0.3",
     "taskcluster-lib-testing": "link:libraries/testing",
+    "typescript": "^5.7.2",
     "ws": "^7.5.10",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.10.0",
@@ -209,7 +211,8 @@
     "db:downgrade": "node db/src/main.js downgrade",
     "db:renumber": "node db/src/main.js renumber",
     "db:new": "node db/src/main.js new",
-    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0"
+    "preinstall": "[ -d clients/client ] && cd clients/client && yarn --immutable || exit 0",
+    "types": "tsc --noEmit"
   },
   "metatests": {
     "specialImports": [
@@ -218,7 +221,9 @@
       "cross-env",
       "ejs",
       "@octokit/core",
-      "@apollo/client"
+      "@apollo/client",
+      "typescript",
+      "@types/pg"
     ]
   },
   "eslintIgnore": [

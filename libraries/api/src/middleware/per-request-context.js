@@ -1,13 +1,21 @@
 /**
  * If a bit of context supports per-request configuration, we
  * make sure to set that up here
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   context: TContext,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const perRequestContext = ({ entry, context }) => {
   return (req, res, next) => {
+    /** @type {{ [key: string | symbol]: any }} */
     const cache = {};
     req.tcContext = new Proxy(context, {
       get(target, prop) {
-        const val = target[prop];
+        const val = target[/** @type string */(prop)];
         if (val === undefined) {
           return undefined;
         }

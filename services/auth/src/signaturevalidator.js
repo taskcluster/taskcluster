@@ -217,7 +217,6 @@ const createSignatureValidator = function(options) {
   assert(options.expandScopes instanceof Function,
     'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
-  assert(!options.nonceManager, 'nonceManager is not supported');
 
   const loadCredentials = async (clientId, ext) => {
     // We may have two clientIds here: the credentialName (the one the caller

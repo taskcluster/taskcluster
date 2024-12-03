@@ -1,18 +1,31 @@
 import assert from 'assert';
 
+/** @typedef {'aes-256'} AlgoType */
+
+/**
+ * @typedef {Object} CryptoKey
+ * @property {string} id
+ * @property {string} key
+ * @property {AlgoType} algo
+ */
+
 class Keyring {
   /**
    * Construct a new keyring from a service's configuration.
+   * @param {Object} config
+   * @param {string} [config.azureCryptoKey]
+   * @param {CryptoKey[]} [config.dbCryptoKeys]
    */
   constructor({ azureCryptoKey, dbCryptoKeys }) {
     this.crypto = new Map();
     this.currentCrypto = undefined;
 
+    /** @type {{ [K in AlgoType]: (param: {id: string, key: string}) => Buffer }} */
     const algos = {
-      'aes-256': ({ id, key }) => {
-        key = Buffer.from(key, 'base64');
-        assert.equal(key.length, 32, `aes-256 key must be 32 bytes in base64 in ${id}`);
-        return key;
+      'aes-256': /** @param {{id: string, key: string}} param0 */ ({ id, key }) => {
+        const keyBuf = Buffer.from(key, 'base64');
+        assert.equal(keyBuf.length, 32, `aes-256 key must be 32 bytes in base64 in ${id}`);
+        return keyBuf;
       },
     };
 
@@ -43,6 +56,8 @@ class Keyring {
    * checks that the key is built for the given algorithm.  The
    * result is the raw key material.  Throws an exception if no
    * key is available, to avoid accidentally null-encrypting data.
+   *
+   * @param {string} algo
    */
   currentCryptoKey(algo) {
     assert(this.currentCrypto, "no current key is configured");
@@ -53,6 +68,9 @@ class Keyring {
   /**
    * Get a key by key-id, returning undefined if not found. This
    * also checks the algorithm, failing if there is no match.
+   *
+   * @param {string} kid
+   * @param {string} algo
    */
   getCryptoKey(kid, algo) {
     const crypto = this.crypto.get(kid);

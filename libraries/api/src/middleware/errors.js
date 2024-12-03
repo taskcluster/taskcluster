@@ -1,5 +1,8 @@
 import { reportError } from '../error-reply.js';
 
+/**
+ * @typedef {Record<string, number>} ErrorCodes
+ */
 export const ERROR_CODES = {
   MalformedPayload: 400, // Only for JSON.parse() errors
   InvalidRequestArguments: 400, // Only for query and param validation errors
@@ -16,6 +19,7 @@ export const ERROR_CODES = {
 
 /**
  * Middleware that adds `res.reportError(code, message, details)`
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<{}>}
  */
 export const buildReportErrorMethod = () => {
   return (req, res, next) => {

@@ -5,9 +5,13 @@ import yaml from 'js-yaml';
 
 const dbDir = new URL('..', import.meta.url).pathname;
 
-const filePath = file => path.join(dbDir, 'versions', file);
-const testPath = file => path.join(dbDir, 'test/versions', file);
+const filePath = /** @param {string} file */(file) => path.join(dbDir, 'versions', file);
+const testPath = /** @param {string} file */(file) => path.join(dbDir, 'test/versions', file);
 
+/**
+ * @param {string[]} command
+ * @returns {Promise<void>}
+ */
 const run = async command => {
   const proc = child_process.spawn(command[0], command.slice(1), {
     stdio: 'inherit',
@@ -25,6 +29,11 @@ const run = async command => {
   });
 };
 
+/**
+ * @param {number|string} fromVersion
+ * @param {number|string} toVersion
+ * @param {{ runGit?: boolean }} opts
+*/
 export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   const options = {
     runGit: true,
@@ -91,7 +100,10 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
 
 };
 
-// migration script
+/**
+ * migration script
+ * @param {number} version
+ */
 const versionTemplate = version => `version: ${version}
 description: add description here
 migrationScript: |-
@@ -116,7 +128,10 @@ methods:
 #      end
 `;
 
-// test for new migration
+/**
+ * test for new migration
+ * @param {number} version
+ */
 const testTemplate = version => `import testing from 'taskcluster-lib-testing';
 
 suite(testing.suiteName(), function() {
@@ -124,16 +139,14 @@ suite(testing.suiteName(), function() {
 });
 `;
 
-export const newVersion = async (opts) => {
-  const options = {
-    runGit: true,
-    ...opts,
-  };
-
+/**
+ * @param {{ runGit?: boolean }} options
+ */
+export const newVersion = async (options = { runGit: true }) => {
   // find latest version
   const versions = fs.readdirSync(filePath(''));
-  const latestVersion = versions.filter(name => name.endsWith('.yml')).sort().pop().replace(/\.yml$/, '');
-  const nextVersion = parseInt(latestVersion) + 1;
+  const latestVersion = versions.filter(name => name.endsWith('.yml')).sort().pop()?.replace(/\.yml$/, '');
+  const nextVersion = parseInt(latestVersion || '0') + 1;
   const newVersion = nextVersion.toString().padStart(4, '0');
 
   const newVersionFile = filePath(`${newVersion}.yml`);

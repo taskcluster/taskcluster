@@ -3,11 +3,17 @@ import { strict as assert } from 'assert';
 
 const { isPlainObject } = lodash;
 
+/**
+ * @typedef {Object.<string, {tables: Object.<string, ('read'|'write')>}>} AccessDefinition
+ */
+
 class Access {
   /**
    * Load an Access from the the content of a db/access.yml file.
+   *
+   * @param {AccessDefinition} content
    */
-  static fromYamlFileContent(content, filename) {
+  static fromYamlFileContent(content) {
     // The serializable format is the same as the access.yml file,
     // so just short-circuit to that function, while keeping this
     // function to parallel similar methods in Schema, Version, etc.
@@ -16,6 +22,8 @@ class Access {
 
   /**
    * Load an Access from a serialized representation
+   *
+   * @param {AccessDefinition} serializable
    */
   static fromSerializable(serializable) {
     const access = new Access(serializable);
@@ -30,6 +38,9 @@ class Access {
     return this.services;
   }
 
+  /**
+   * @param {AccessDefinition} services
+   */
   constructor(services) {
     this.services = services;
   }
@@ -38,14 +49,20 @@ class Access {
     return Object.keys(this.services);
   }
 
+  /** @param {string} serviceName */
   tables(serviceName) {
     return this.services[serviceName].tables;
   }
 
+  /**
+   * @private
+   * @param {AccessDefinition} content
+   * @param {string} filename
+   */
   _check(content, filename) {
-    assert(isPlainObject(this.services), `${filename} should define an object`);
-    Object.keys(this.services).forEach(serviceName => {
-      const serviceAccess = this.services[serviceName];
+    assert(isPlainObject(content), `${filename} should define an object`);
+    Object.keys(content).forEach(serviceName => {
+      const serviceAccess = content[serviceName];
       assert(isPlainObject(serviceAccess), `each service in ${filename} should define an object`);
       assert.deepEqual(Object.keys(serviceAccess).sort(), ['tables'],
         `each service in ${filename} should only have a 'tables' property`);
