@@ -6,7 +6,6 @@ import scopeUtils from 'taskcluster-lib-scopes';
 import { decryptToken } from './decryptToken.js';
 import { ErrorReply } from 'taskcluster-lib-api';
 
-// TODO: Check for expiration of access token when the websocket connection is active
 export default ({ cfg, server, schema, context, path, authFactory }) => {
 
   const timeoutMap = new WeakMap();
@@ -59,7 +58,6 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
 
               resolve();
             } catch (err) {
-              console.log(err);
               reject(err);
             }
           });
