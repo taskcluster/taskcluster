@@ -324,6 +324,7 @@ func TestValidSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
+	grantingDir, _ := grantingDenying(t, "directory", false, "unknown_issuer_app_1")
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
 	// Required text from first task with no cached value
@@ -340,6 +341,9 @@ func TestValidSHA256(t *testing.T) {
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
 	)
+	pass1 = append(pass1,
+		grantingDir...,
+	)
 
 	// Required text from second task when download is already cached
 	pass2 := append([]string{
@@ -352,6 +356,9 @@ func TestValidSHA256(t *testing.T) {
 	pass2 = append(pass2,
 		`Extracting zip file .* to '.*unknown_issuer_app_1'`,
 		`Removing file '.*'`,
+	)
+	pass2 = append(pass2,
+		grantingDir...,
 	)
 
 	LogTest(
@@ -542,8 +549,8 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
+	grantingDir, denying := grantingDenying(t, "directory", false, t.Name())
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -561,24 +568,26 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
+	pass1 = append(pass1, denying...)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
 		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
 		`Creating directory .*`,
 	},
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
+	pass2 = append(pass2, denying...)
 
 	LogTest(
 		&MountsLoggingTestCase{
@@ -841,8 +850,8 @@ func TestCacheMoved(t *testing.T) {
 
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -860,7 +869,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -884,7 +893,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,

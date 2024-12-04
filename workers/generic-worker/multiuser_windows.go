@@ -257,6 +257,11 @@ func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.
 	return host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F")
 }
 
+func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
+	// see http://ss64.com/nt/icacls.html
+	return host.Run("icacls", dir, "/remove:g", user.Name)
+}
+
 // The windows implementation of os.Rename(...) doesn't allow renaming files
 // across drives (i.e. copy and delete semantics) - this alternative
 // implementation is identical to the os.Rename(...) implementation, but
@@ -536,10 +541,6 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func changeOwnershipInDir(dir string, currentOwnerUID string, newOwnerUsername string) error {
-	return host.Run("icacls", dir, "/grant:r", newOwnerUsername+":(OI)(CI)F")
 }
 
 func convertNilToEmptyString(val interface{}) string {

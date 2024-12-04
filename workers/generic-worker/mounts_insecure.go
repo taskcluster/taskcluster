@@ -14,7 +14,12 @@ func makeFileReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 	return nil
 }
 
-func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
+func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
+	// No user separation
+	return nil
+}
+
+func makeDirUnreadableForTaskUser(taskMount *TaskMount, dir string) error {
 	// No user separation
 	return nil
 }
