@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v75.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7404](https://github.com/taskcluster/taskcluster/issues/7404)
+Generic Worker: Reverting 61b985dd009210a204da3bb354eab2037d132bef due to issue #7404 with cache permissions.
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group across 1 directory with 17 updates (8607b9d44)
+* build(deps): bump taskcluster from 74.0.0 to 75.0.0 in /taskcluster (3565e2b7e)
+* build(deps): bump taskcluster-taskgraph (94375c104)
+* build(deps): bump the go-deps group with 5 updates (b724509a7)
+* build(deps-dev): bump the client-web-node-deps group (5a81717fa)
+* build(deps): bump the client-node-deps group (76501c53a)
+
+</details>
+
 ## v75.0.0
 
 ### USERS
