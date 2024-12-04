@@ -1489,9 +1489,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/s3-request-presigner@npm:^3.703.0":
-  version: 3.703.0
-  resolution: "@aws-sdk/s3-request-presigner@npm:3.703.0"
+"@aws-sdk/s3-request-presigner@npm:^3.705.0":
+  version: 3.705.0
+  resolution: "@aws-sdk/s3-request-presigner@npm:3.705.0"
   dependencies:
     "@aws-sdk/signature-v4-multi-region": "npm:3.696.0"
     "@aws-sdk/types": "npm:3.696.0"
@@ -1501,7 +1501,7 @@ __metadata:
     "@smithy/smithy-client": "npm:^3.4.4"
     "@smithy/types": "npm:^3.7.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/055cf3f6968d30561b5a43edec225fdd8df75138c6f9cee05f94e260c0a760c9c7c888423169ab27eab19068e7f555935dcab26ce9db940e005139f2758a82dd
+  checksum: 10c0/8f32b979b0ce1b8758a59e27780c0783fb14dca7b230ae0dd9c499c786ca347d6b073dad049dbf27a967a07e36334abadb56d8b93e7ed06dea1ae1ea6cdbaae4
   languageName: node
   linkType: hard
 
@@ -1981,29 +1981,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:^9.0.11":
-  version: 9.0.11
-  resolution: "@graphql-tools/merge@npm:9.0.11"
+"@graphql-tools/merge@npm:^9.0.12":
+  version: 9.0.12
+  resolution: "@graphql-tools/merge@npm:9.0.12"
   dependencies:
-    "@graphql-tools/utils": "npm:^10.6.1"
+    "@graphql-tools/utils": "npm:^10.6.2"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/51df1cf3d6fd97d2468ed6359f2e60e8e69a0fa10e1090bdd6c0b6ec45da3c4b9eafae750144e6e84f85cc5ee0a23d05f07cb72b26a8f6fcba92c2c37938a8b7
+  checksum: 10c0/997ba41a1c5afd5ab271859be2ffa4b28a5785fc187a73b5869c60490cfb6d164754cfd1bcc63e7b49821c5a62c6cdb830587d20280e9a18a10b02d2423adde7
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:^10.0.10":
-  version: 10.0.10
-  resolution: "@graphql-tools/schema@npm:10.0.10"
+"@graphql-tools/schema@npm:^10.0.11":
+  version: 10.0.11
+  resolution: "@graphql-tools/schema@npm:10.0.11"
   dependencies:
-    "@graphql-tools/merge": "npm:^9.0.11"
-    "@graphql-tools/utils": "npm:^10.6.1"
+    "@graphql-tools/merge": "npm:^9.0.12"
+    "@graphql-tools/utils": "npm:^10.6.2"
     tslib: "npm:^2.4.0"
     value-or-promise: "npm:^1.0.12"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/bb74e9b2eca491c23bb7893d92ffa5acd94bd2177d06f962403b8869d4929992c28eec13f3dd3b32d7d450ce8a436b4e2f4ca95911ed4d2946e5777d9ce81695
+  checksum: 10c0/3e6e3664efab1f91c3d00d3bdc8ab16d28b6957c60a588c9811fa4cab2125bfa3feba402abf605372c0e346deb19ae8ad8bf4525e36a660862d438fb9c25c699
   languageName: node
   linkType: hard
 
@@ -2021,9 +2021,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:^10.6.1":
-  version: 10.6.1
-  resolution: "@graphql-tools/utils@npm:10.6.1"
+"@graphql-tools/utils@npm:^10.6.2":
+  version: 10.6.2
+  resolution: "@graphql-tools/utils@npm:10.6.2"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     cross-inspect: "npm:1.0.1"
@@ -2031,7 +2031,7 @@ __metadata:
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/00cd131e34e0adf85c4b879fc301fcf0b51709d8b802efe0349d0207dbc64990b018f3588d8bc122de805c0759f96e145ec1f80083a2f95a37f4ea83ce0329ed
+  checksum: 10c0/354d1e2c5db63302665de34a3e7a0d3fa6ea169525a943867054e29dc7bfd3dea96710b3e90869fbc5815a5e25444c09501181d7453c6e2adbb708fdcd320759
   languageName: node
   linkType: hard
 
@@ -5546,10 +5546,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dataloader@npm:^2.0.0":
-  version: 2.2.2
-  resolution: "dataloader@npm:2.2.2"
-  checksum: 10c0/125ec69f821478cf7c6b4360095db6cab939fe57876a0d2060c428091a8deee7152345189923b71a6afa694aaec463779f34b585317164016fd6f54f52cd94ba
+"dataloader@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "dataloader@npm:2.2.3"
+  checksum: 10c0/9b9a056fbc863ca86da87d59e053e871e263b4966aa4d55e40d61a65e96815fae5530ca220629064ca5f8e3000c0c4ec93292e170c38ff393fb34256b4d7c1aa
   languageName: node
   linkType: hard
 
@@ -8885,9 +8885,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"matrix-js-sdk@npm:^34.12.0":
-  version: 34.12.0
-  resolution: "matrix-js-sdk@npm:34.12.0"
+"matrix-js-sdk@npm:^34.13.0":
+  version: 34.13.0
+  resolution: "matrix-js-sdk@npm:34.13.0"
   dependencies:
     "@babel/runtime": "npm:^7.12.5"
     "@matrix-org/matrix-sdk-crypto-wasm": "npm:^9.0.0"
@@ -8904,7 +8904,7 @@ __metadata:
     sdp-transform: "npm:^2.14.1"
     unhomoglyph: "npm:^1.0.6"
     uuid: "npm:11"
-  checksum: 10c0/99a3b7d33c04b2642fbec502751e5d33cc25bc4b7dd78d381debbbf6ef3e5b76313a831429c6ce9d873fc10980a54ce8b1dc8808406e0ffb9911865f0f79a57e
+  checksum: 10c0/cd94e73b06fcf527a37c847e8c97847b941964ee8f5222a7a0c274fa216f8dddfed59daf8d52feaf4ba69bdbfcb15c92f20f8626fe902ea6774294c604899281
   languageName: node
   linkType: hard
 
@@ -12154,7 +12154,7 @@ __metadata:
     "@aws-sdk/client-sqs": "npm:^3.699.0"
     "@aws-sdk/client-sts": "npm:^3.699.0"
     "@aws-sdk/middleware-endpoint": "npm:^3.374.0"
-    "@aws-sdk/s3-request-presigner": "npm:^3.703.0"
+    "@aws-sdk/s3-request-presigner": "npm:^3.705.0"
     "@azure/arm-compute": "npm:^16.0.0"
     "@azure/arm-network": "npm:^24.0.0"
     "@azure/ms-rest-azure-js": "npm:^2.0.1"
@@ -12163,7 +12163,7 @@ __metadata:
     "@googleapis/compute": "npm:^10.0.0"
     "@googleapis/iam": "npm:^16.0.0"
     "@googleapis/iamcredentials": "npm:^3.0.0"
-    "@graphql-tools/schema": "npm:^10.0.10"
+    "@graphql-tools/schema": "npm:^10.0.11"
     "@octokit/auth-app": "npm:^4.0.7"
     "@octokit/core": "npm:^3.0.0"
     "@octokit/plugin-retry": "npm:^7.1.2"
@@ -12193,7 +12193,7 @@ __metadata:
     cron-parser: "npm:4.9.0"
     cronstrue: "npm:^2.52.0"
     cross-env: "npm:^7.0.2"
-    dataloader: "npm:^2.0.0"
+    dataloader: "npm:^2.2.3"
     debug: "npm:^4.3.7"
     deepmerge: "npm:^4.3.1"
     dockerode: "npm:^3.3.4"
@@ -12235,7 +12235,7 @@ __metadata:
     loglevel: "npm:^1.9.2"
     markdown-table: "npm:^3.0.4"
     marked: "npm:^4.1.1"
-    matrix-js-sdk: "npm:^34.12.0"
+    matrix-js-sdk: "npm:^34.13.0"
     md-directory: "npm:^1.0.2"
     memorystore: "npm:^1.6.1"
     mkdirp: "npm:^1.0.0"
