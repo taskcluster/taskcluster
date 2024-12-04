@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"sort"
 	"time"
@@ -68,24 +67,6 @@ type Cache struct {
 	Key string `json:"key"`
 	// SHA256 of content, if a file (not used for directories)
 	SHA256 string `json:"sha256"`
-	// Keeps a record of which task user mounts this cache. This is so that
-	// when the cache is mounted as a new task user, file ownership can be
-	// recursively changed from the previous task user to the new task user.
-	// Note, when tasks create containers which contain additional users
-	// (subuids), it is recommended that those subuids and subgids are mapped
-	// with explicit fixed ranges, so that when a future task mounts the cache,
-	// inside the container the same uids will be seen.
-	//
-	// Note, although uid is typically a uint32, we store as a string since
-	// that is how the standard library passes it to us, and we pass it to
-	// task commands as a string, so this avoids converting from string to
-	// uint32 and then back again. We use a uid rather than username, since
-	// task users get deleted, so the system may no longer recognise the
-	// previous task user username, but uids should remain intact.
-	//
-	// Since: generic-worker 75.0.0
-	OwnerUsername string `json:"ownerUsername"`
-	OwnerUID      string `json:"mounterUID"`
 }
 
 // Rating determines how valuable the file cache is compared to other file
@@ -538,18 +519,12 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		basename := slugid.Nice()
 		file := filepath.Join(config.CachesDir, basename)
 		taskMount.Infof("No existing writable directory cache '%v' - creating %v", w.CacheName, file)
-		currentUser, err := user.Current()
-		if err != nil {
-			panic(fmt.Errorf("[mounts] Not able to look up UID for current user: %w", err))
-		}
 		directoryCaches[w.CacheName] = &Cache{
-			Hits:          1,
-			Created:       time.Now(),
-			Location:      file,
-			Owner:         directoryCaches,
-			Key:           w.CacheName,
-			OwnerUsername: currentUser.Username,
-			OwnerUID:      currentUser.Uid,
+			Hits:     1,
+			Created:  time.Now(),
+			Location: file,
+			Owner:    directoryCaches,
+			Key:      w.CacheName,
 		}
 		// preloaded content?
 		if w.Content != nil {
@@ -573,7 +548,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 	// since the mounted folder sits inside the task directory of the task user,
 	// which is owned and controlled by the task user, even if commands execute as
 	// LocalSystem, the file system resources should still be owned by task user.
-	err := exchangeDirectoryOwnership(taskMount, target, directoryCaches[w.CacheName])
+	err := makeDirReadWritableForTaskUser(taskMount, target)
 	if err != nil {
 		panic(err)
 	}
@@ -620,6 +595,14 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		// with it.
 		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
 	}
+	// Regardless of whether we are running as current user, remove task user access
+	// since the mounted folder sits inside the task directory of the task user,
+	// and would have been granted access, which should be removed since next time
+	// it is mounted, a different task user account should be active.
+	err = makeDirUnreadableForTaskUser(taskMount, cacheDir)
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
@@ -629,7 +612,11 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
 	dir := filepath.Join(taskContext.TaskDir, r.Directory)
-	return extract(c, r.Format, dir, taskMount)
+	err = extract(c, r.Format, dir, taskMount)
+	if err != nil {
+		return err
+	}
+	return makeDirReadWritableForTaskUser(taskMount, dir)
 }
 
 // Nothing to do - original archive file wasn't moved
