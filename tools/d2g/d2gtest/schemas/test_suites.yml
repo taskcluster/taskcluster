@@ -40,6 +40,7 @@ properties:
             - description
             - dockerWorkerTaskPayload
             - genericWorkerTaskPayload
+            - d2gConfig
           additionalProperties: false
           properties:
             name: {$ref: '#/definitions/caseName'}
@@ -56,12 +57,7 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
-            containerEngine:
-              type: string
-              enum:
-                - docker
-                - podman
-              default: docker
+            d2gConfig: {$ref: '#/definitions/d2gConfig'}
       taskDefTests:
         title: Task definition test cases
         description: |-
@@ -81,6 +77,7 @@ properties:
             - description
             - dockerWorkerTaskDefinition
             - genericWorkerTaskDefinition
+            - d2gConfig
           additionalProperties: false
           properties:
             name: {$ref: '#/definitions/caseName'}
@@ -97,12 +94,7 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
-            containerEngine:
-              type: string
-              enum:
-                - docker
-                - podman
-              default: docker
+            d2gConfig: {$ref: '#/definitions/d2gConfig'}
 definitions:
   suiteName:
     title: Test Suite Name
@@ -124,3 +116,46 @@ definitions:
     description: |-
       Detailed information about what the test case tests
     type: string
+  d2gConfig:
+    title: d2g Configuration
+    description: |-
+      Configuration options for the d2g translation
+    type: object
+    properties:
+      allowChainOfTrust:
+        type: boolean
+        default: true
+      allowDisableSeccomp:
+        type: boolean
+        default: true
+      allowHostSharedMemory:
+        type: boolean
+        default: true
+      allowInteractive:
+        type: boolean
+        default: true
+      allowKVM:
+        type: boolean
+        default: true
+      allowLoopbackAudio:
+        type: boolean
+        default: true
+      allowLoopbackVideo:
+        type: boolean
+        default: true
+      allowPrivileged:
+        type: boolean
+        default: true
+      allowPtrace:
+        type: boolean
+        default: true
+      allowTaskclusterProxy:
+        type: boolean
+        default: true
+      containerEngine:
+        type: string
+        default: docker
+        enum:
+          - docker
+          - podman
+    additionalProperties: false

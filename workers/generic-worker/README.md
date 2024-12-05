@@ -164,7 +164,7 @@ and reports back results to the queue.
                                             transformation) configuration. This allows finer tuning
                                             of the internal D2G payload translation. Available
                                             config with provided defaults:
-                                              * enableD2G - Enables D2G. [default: true]
+                                              * enableD2G - Enables D2G. [default: false]
                                               * allowChainOfTrust - Allows Chain of Trust. [default: true]
                                               * allowDisableSeccomp - Allows disabling Seccomp. [default: true]
                                               * allowHostSharedMemory - Allows Host Shared Memory. [default: true]

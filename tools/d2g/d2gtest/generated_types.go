@@ -7,6 +7,47 @@ import (
 )
 
 type (
+	// Configuration options for the d2g translation
+	D2GConfiguration struct {
+
+		// Default:    true
+		AllowChainOfTrust bool `json:"allowChainOfTrust" default:"true"`
+
+		// Default:    true
+		AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
+
+		// Default:    true
+		AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
+
+		// Default:    true
+		AllowInteractive bool `json:"allowInteractive" default:"true"`
+
+		// Default:    true
+		AllowKVM bool `json:"allowKVM" default:"true"`
+
+		// Default:    true
+		AllowLoopbackAudio bool `json:"allowLoopbackAudio" default:"true"`
+
+		// Default:    true
+		AllowLoopbackVideo bool `json:"allowLoopbackVideo" default:"true"`
+
+		// Default:    true
+		AllowPrivileged bool `json:"allowPrivileged" default:"true"`
+
+		// Default:    true
+		AllowPtrace bool `json:"allowPtrace" default:"true"`
+
+		// Default:    true
+		AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
+
+		// Possible values:
+		//   * "docker"
+		//   * "podman"
+		//
+		// Default:    "docker"
+		ContainerEngine string `json:"containerEngine" default:"docker"`
+	}
+
 	// Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
 	// (inputs) and Generic Worker expected task def/payload (outputs).
 	D2GTestCases struct {
@@ -22,12 +63,8 @@ type (
 	// Worker task definition in the test case.
 	TaskDefinitionTestCase struct {
 
-		// Possible values:
-		//   * "docker"
-		//   * "podman"
-		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
+		// Configuration options for the d2g translation
+		D2GConfig D2GConfiguration `json:"d2gConfig"`
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -49,12 +86,8 @@ type (
 	// Worker task payload in the test case.
 	TaskPayloadTestCase struct {
 
-		// Possible values:
-		//   * "docker"
-		//   * "podman"
-		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
+		// Configuration options for the d2g translation
+		D2GConfig D2GConfiguration `json:"d2gConfig"`
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -114,6 +147,62 @@ func JSONSchema() string {
       "title": "Test Case Name",
       "type": "string"
     },
+    "d2gConfig": {
+      "additionalProperties": false,
+      "description": "Configuration options for the d2g translation",
+      "properties": {
+        "allowChainOfTrust": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowDisableSeccomp": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowHostSharedMemory": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowInteractive": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowKVM": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowLoopbackAudio": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowLoopbackVideo": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowPrivileged": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowPtrace": {
+          "default": true,
+          "type": "boolean"
+        },
+        "allowTaskclusterProxy": {
+          "default": true,
+          "type": "boolean"
+        },
+        "containerEngine": {
+          "default": "docker",
+          "enum": [
+            "docker",
+            "podman"
+          ],
+          "type": "string"
+        }
+      },
+      "title": "d2g Configuration",
+      "type": "object"
+    },
     "suiteDescription": {
       "description": "Detailed information about what the test cases do and do not test",
       "title": "Test Suite Description",
@@ -143,13 +232,8 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task payload, and an\nexpected Generic Worker task payload output. The Docker Worker task payload\nis converted by d2g to a Generic Worker task payload. The test is successful\nif the generated Generic Worker task payload exactly matches the Generic\nWorker task payload in the test case.",
             "properties": {
-              "containerEngine": {
-                "default": "docker",
-                "enum": [
-                  "docker",
-                  "podman"
-                ],
-                "type": "string"
+              "d2gConfig": {
+                "$ref": "#/definitions/d2gConfig"
               },
               "description": {
                 "$ref": "#/definitions/caseDescription"
@@ -168,7 +252,8 @@ func JSONSchema() string {
               "name",
               "description",
               "dockerWorkerTaskPayload",
-              "genericWorkerTaskPayload"
+              "genericWorkerTaskPayload",
+              "d2gConfig"
             ],
             "title": "Task payload test case",
             "type": "object"
@@ -182,13 +267,8 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task definition, and an\nexpected Generic Worker task definition output. The Docker Worker task definition\nis converted by d2g to a Generic Worker task definition. The test is successful\nif the generated Generic Worker task definition exactly matches the Generic\nWorker task definition in the test case.",
             "properties": {
-              "containerEngine": {
-                "default": "docker",
-                "enum": [
-                  "docker",
-                  "podman"
-                ],
-                "type": "string"
+              "d2gConfig": {
+                "$ref": "#/definitions/d2gConfig"
               },
               "description": {
                 "$ref": "#/definitions/caseDescription"
@@ -207,7 +287,8 @@ func JSONSchema() string {
               "name",
               "description",
               "dockerWorkerTaskDefinition",
-              "genericWorkerTaskDefinition"
+              "genericWorkerTaskDefinition",
+              "d2gConfig"
             ],
             "title": "Task definition test case",
             "type": "object"

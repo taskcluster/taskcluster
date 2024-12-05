@@ -35,7 +35,7 @@ type (
 	}
 )
 
-func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string, scopeExpander scopes.ScopeExpander) (json.RawMessage, error) {
+func ConvertTaskDefinition(dwTaskDef json.RawMessage, config map[string]interface{}, scopeExpander scopes.ScopeExpander) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
 	var parsedTaskDef map[string]interface{}
 	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
@@ -58,7 +58,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string, sc
 		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
 	}
 
-	gwPayload, err := ConvertPayload(dwPayload, containerEngine)
+	gwPayload, err := ConvertPayload(dwPayload, config)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
@@ -80,7 +80,7 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, containerEngine string, sc
 		if taskQueueID == "" {
 			return nil, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required")
 		}
-		parsedTaskDef["scopes"], err = ConvertScopes(dwScopes, dwPayload, taskQueueID, containerEngine, scopeExpander)
+		parsedTaskDef["scopes"], err = ConvertScopes(dwScopes, dwPayload, taskQueueID, config["containerEngine"].(string), scopeExpander)
 		if err != nil {
 			return nil, fmt.Errorf("cannot convert scopes: %v", err)
 		}
@@ -157,7 +157,7 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 // a BASH script which uses Docker (by default) to contain the Docker Worker payload. Since
 // scopes fall outside of the payload in a task definition, scopes need to be
 // converted separately (see d2g.ConvertScopes function).
-func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, containerEngine string) (gwPayload *genericworker.GenericWorkerPayload, err error) {
+func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[string]interface{}) (gwPayload *genericworker.GenericWorkerPayload, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
 
@@ -176,8 +176,8 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, containerEngine
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	tool := getContainerEngine(dwPayload, containerEngine)
-	err = setCommand(dwPayload, gwPayload, dwImage, tool, gwWritableDirectoryCaches)
+	tool := getContainerEngine(dwPayload, config["containerEngine"].(string))
+	err = setCommand(dwPayload, gwPayload, dwImage, tool, gwWritableDirectoryCaches, config)
 	if err != nil {
 		return
 	}
@@ -191,12 +191,12 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, containerEngine
 	}
 
 	setEnv(dwPayload, gwPayload)
-	setFeatures(dwPayload, gwPayload)
+	setFeatures(dwPayload, gwPayload, config)
 	setLogs(dwPayload, gwPayload)
 	setMaxRunTime(dwPayload, gwPayload)
 	setOnExitStatus(dwPayload, gwPayload)
 	setSupersederURL(dwPayload, gwPayload)
-	setOSGroups(dwPayload, gwPayload, tool)
+	setOSGroups(dwPayload, gwPayload, tool, config)
 
 	return
 }
@@ -318,7 +318,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 	return gwArtifacts
 }
 
-func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool string, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) ([][]string, error) {
+func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool string, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, config map[string]interface{}) ([][]string, error) {
 	containerName := ""
 	if len(gwArtifacts) > 0 {
 		if testing.Testing() {
@@ -330,7 +330,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool st
 
 	commands := []string{}
 	commands = append(commands, dwImage.LoadCommands(tool)...)
-	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, tool)
+	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, tool, config)
 	if err != nil {
 		return nil, fmt.Errorf("could not form %v run command: %w", tool, err)
 	}
@@ -376,7 +376,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool st
 	}, nil
 }
 
-func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, tool string) (string, error) {
+func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, tool string, config map[string]interface{}) (string, error) {
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
@@ -429,19 +429,19 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 			command.WriteString(fmt.Sprintf(" --gidmap %v:%v:%v", gidStart+1, gidStart+1, mappingRange))
 		}
 	}
-	if dwPayload.Capabilities.Privileged {
+	if dwPayload.Capabilities.Privileged && config["allowPrivileged"].(bool) {
 		command.WriteString(" --privileged")
-	} else if dwPayload.Features.AllowPtrace {
+	} else if dwPayload.Features.AllowPtrace && config["allowPtrace"].(bool) {
 		command.WriteString(" --cap-add=SYS_PTRACE")
 	}
-	if dwPayload.Capabilities.DisableSeccomp {
+	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
-	command.WriteString(createVolumeMountsString(dwPayload, wdcs))
-	if dwPayload.Features.TaskclusterProxy {
+	command.WriteString(createVolumeMountsString(dwPayload, wdcs, config))
+	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
-	command.WriteString(envMappings(dwPayload))
+	command.WriteString(envMappings(dwPayload, config))
 	dockerImageString, err := dwImage.String(tool)
 	if err != nil {
 		return "", fmt.Errorf("could not form docker image string: %w", err)
@@ -472,13 +472,23 @@ func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworke
 	gwPayload.Env = dwPayload.Env
 }
 
-func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
-	gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
-	// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
-	gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
-	gwPayload.Features.Interactive = dwPayload.Features.Interactive
-	gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
-	gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
+func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config map[string]interface{}) {
+	if config["allowChainOfTrust"].(bool) {
+		gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
+	}
+	if config["allowTaskclusterProxy"].(bool) {
+		// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
+		gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
+	}
+	if config["allowInteractive"].(bool) {
+		gwPayload.Features.Interactive = dwPayload.Features.Interactive
+	}
+	if config["allowLoopbackAudio"].(bool) {
+		gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
+	}
+	if config["allowLoopbackVideo"].(bool) {
+		gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
+	}
 
 	switch dwPayload.Features.Artifacts {
 	case true:
@@ -496,8 +506,8 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 	}
 }
 
-func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, tool string, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache) (err error) {
-	gwPayload.Command, err = command(dwPayload, dwImage, tool, gwPayload.Artifacts, gwWritableDirectoryCaches)
+func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, tool string, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, config map[string]interface{}) (err error) {
+	gwPayload.Command, err = command(dwPayload, dwImage, tool, gwPayload.Artifacts, gwWritableDirectoryCaches, config)
 	return
 }
 
@@ -541,8 +551,8 @@ func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *ge
 	gwPayload.SupersederURL = dwPayload.SupersederURL
 }
 
-func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, tool string) {
-	if dwPayload.Capabilities.Devices.KVM {
+func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, tool string, config map[string]interface{}) {
+	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
 		// task user needs to be in kvm and libvirt groups for KVM to work:
 		// https://help.ubuntu.com/community/KVM/Installation
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
@@ -581,25 +591,25 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache) string {
+func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache, config map[string]interface{}) string {
 	volumeMounts := strings.Builder{}
 	for _, wdc := range wdcs {
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
 	}
-	if dwPayload.Capabilities.Devices.KVM {
+	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
 		volumeMounts.WriteString(" --device=/dev/kvm")
 	}
-	if dwPayload.Capabilities.Devices.HostSharedMemory {
+	if dwPayload.Capabilities.Devices.HostSharedMemory && config["allowHostSharedMemory"].(bool) {
 		// need to use volume mount here otherwise we get
 		// docker: Error response from daemon: error
 		// gathering device information while adding
 		// custom device "/dev/shm": not a device node
 		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
 	}
-	if dwPayload.Capabilities.Devices.LoopbackVideo {
+	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
 		volumeMounts.WriteString(` --device="${TASKCLUSTER_VIDEO_DEVICE}"`)
 	}
-	if dwPayload.Capabilities.Devices.LoopbackAudio {
+	if dwPayload.Capabilities.Devices.LoopbackAudio && config["allowLoopbackAudio"].(bool) {
 		volumeMounts.WriteString(" --device=/dev/snd")
 	}
 	return volumeMounts.String()
@@ -641,7 +651,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]interface{}) string {
 	envStrBuilder := strings.Builder{}
 
 	additionalEnvVars := []string{
@@ -653,7 +663,7 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload) string {
 		"TASK_ID",
 	}
 
-	if dwPayload.Features.TaskclusterProxy {
+	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 

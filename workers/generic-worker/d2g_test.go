@@ -48,6 +48,7 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
+	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -92,6 +93,7 @@ func TestWithInvalidDockerWorkerPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
+	config.PublicPlatformConfig.EnableD2G(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
@@ -112,6 +114,7 @@ func TestIssue6789(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "docker-worker:cache:d2g-test")
+	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -161,6 +164,7 @@ func TestDockerWorkerPayloadWithValidScopes(t *testing.T) {
 		"docker-worker:capability:device:kvm:" + td.ProvisionerID + "/" + td.WorkerType,
 		"docker-worker:feature:allowPtrace",
 	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -197,6 +201,7 @@ func TestDockerWorkerPayloadWithInvalidScopes(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
+	config.PublicPlatformConfig.EnableD2G(t)
 
 	// don't set any scopes
 

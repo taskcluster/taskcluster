@@ -218,7 +218,7 @@ func loadConfig(configFile *gwconfig.File) error {
 	// only one place if possible (defaults also declared in `usage`)
 	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
-			PublicPlatformConfig:           gwconfig.DefaultPublicPlatformConfig(),
+			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,

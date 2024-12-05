@@ -35,6 +35,41 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig: {}
+
+    - name: Host Shared Memory disabled
+      description: >-
+        Tests that host shared memory device isn't mounted as a volume in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            hostSharedMemory: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowHostSharedMemory: false
 
     - name: KVM
       description: >-
@@ -70,6 +105,41 @@ testSuite:
           - kvm
           - libvirt
           - docker
+      d2gConfig: {}
+
+    - name: KVM disabled
+      description: >-
+        Tests that KVM device isn't mounted as a volume in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            kvm: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowKVM: false
 
     - name: Video Loopback
       description: >-
@@ -105,6 +175,41 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig: {}
+
+    - name: Video Loopback disabled
+      description: >-
+        Tests that loopbackVideo _capability_ in Docker Worker does not map to Generic Worker _feature_ of the same name.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            loopbackVideo: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowLoopbackVideo: false
 
     - name: Audio Loopback
       description: >-
@@ -140,4 +245,39 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig: {}
+
+    - name: Audio Loopback disabled
+      description: >-
+        Tests that loopbackAudio _capability_ in Docker Worker does not map to Generic Worker _feature_ of the same name.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          devices:
+            loopbackAudio: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowLoopbackAudio: false
   taskDefTests: []

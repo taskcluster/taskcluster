@@ -9,7 +9,7 @@ Generic Worker: adds `d2gConfig` worker config to fine-tune adjust D2G translati
 {
     ...
     "d2gConfig": {
-        "enableD2G": true,
+        "enableD2G": false,
         "allowChainOfTrust": true,
         "allowDisableSeccomp": true,
         "allowHostSharedMemory": true,
