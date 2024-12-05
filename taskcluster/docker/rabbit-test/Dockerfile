@@ -1,4 +1,4 @@
-FROM node:22.11.0-bookworm
+FROM node:22.12.0-bookworm
 RUN apt-get update && apt-get install -y \
     rabbitmq-server && \
     rm -rf /var/lib/apt/lists/*
