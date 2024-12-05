@@ -222,7 +222,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
         {
           region: 'us-west1',
           zone: 'us-west1-a',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           disks: [
             {
               autoDelete: true,
@@ -262,7 +264,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
       launchConfigs: [
         {
           location: 'westus',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           subnetId: '...',
           hardwareProfile: {
             vmSize: 'Basic_A1',
