@@ -23,7 +23,7 @@ class WeightedRandomConfig:
             cumulative_weight += weight
             if cumulative_weight >= target:
                 return config
-        
+
         # This should never happen, but just in case
         return self.configs[-1][0]
 
