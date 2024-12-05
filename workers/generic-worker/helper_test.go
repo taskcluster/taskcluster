@@ -352,7 +352,7 @@ func GWTest(t *testing.T) *Test {
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 		PublicConfig: gwconfig.PublicConfig{
-			PublicPlatformConfig: gwconfig.DefaultPublicPlatformConfig(),
+			PublicPlatformConfig: *gwconfig.DefaultPublicPlatformConfig(),
 			AvailabilityZone:     "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.

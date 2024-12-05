@@ -135,7 +135,13 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite Docker Worker payload %v: %v", string(tc.DockerWorkerTaskPayload), err)
 		}
-		actualGWPayload, err := d2g.ConvertPayload(&dwPayload, tc.ContainerEngine)
+
+		var d2gConfig map[string]interface{}
+		err = json.Unmarshal(tc.D2GConfig, &d2gConfig)
+		if err != nil {
+			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(tc.D2GConfig), err)
+		}
+		actualGWPayload, err := d2g.ConvertPayload(&dwPayload, d2gConfig)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
@@ -165,7 +171,12 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 		tc.Validate(t)
-		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, tc.ContainerEngine, scopes.DummyExpander())
+		var d2gConfig map[string]interface{}
+		err := json.Unmarshal(tc.D2GConfig, &d2gConfig)
+		if err != nil {
+			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(tc.D2GConfig), err)
+		}
+		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, d2gConfig, scopes.DummyExpander())
 		if err != nil {
 			t.Fatalf("cannot convert task definition: %v", err)
 		}

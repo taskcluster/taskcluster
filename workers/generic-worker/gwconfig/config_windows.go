@@ -5,15 +5,11 @@ type PublicPlatformConfig struct {
 	EnableRunAsAdministrator bool `json:"enableRunAsAdministrator"`
 }
 
-func DefaultPublicPlatformConfig() PublicPlatformConfig {
-	return PublicPlatformConfig{
+func DefaultPublicPlatformConfig() *PublicPlatformConfig {
+	return &PublicPlatformConfig{
 		EnableRDP:                true,
 		EnableRunAsAdministrator: true,
 	}
-}
-
-func (c *PublicPlatformConfig) D2GConfigContainerEngine() string {
-	return ""
 }
 
 func (c *PublicPlatformConfig) D2GEnabled() bool {

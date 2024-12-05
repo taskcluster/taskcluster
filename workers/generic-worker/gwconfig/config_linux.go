@@ -9,8 +9,8 @@ type PublicPlatformConfig struct {
 	LoopbackVideoDeviceNumber uint8                  `json:"loopbackVideoDeviceNumber"`
 }
 
-func DefaultPublicPlatformConfig() PublicPlatformConfig {
-	return PublicPlatformConfig{
+func DefaultPublicPlatformConfig() *PublicPlatformConfig {
+	return &PublicPlatformConfig{
 		D2GConfig: map[string]interface{}{
 			"enableD2G":             true,
 			"allowChainOfTrust":     true,
@@ -31,10 +31,6 @@ func DefaultPublicPlatformConfig() PublicPlatformConfig {
 		LoopbackAudioDeviceNumber: 16,
 		LoopbackVideoDeviceNumber: 0,
 	}
-}
-
-func (c *PublicPlatformConfig) D2GConfigContainerEngine() string {
-	return c.D2GConfig["containerEngine"].(string)
 }
 
 func (c *PublicPlatformConfig) D2GEnabled() bool {

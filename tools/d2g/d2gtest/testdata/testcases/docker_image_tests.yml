@@ -30,6 +30,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: NamedDockerImage
       description: Test NamedDockerImage
@@ -60,6 +72,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: IndexedDockerImage
       description: Test IndexedDockerImage
@@ -100,6 +124,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: IndexedDockerImage with .lz4 extension
       description: Test IndexedDockerImage with .lz4 extension
@@ -141,6 +177,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: IndexedDockerImage with .zst extension
       description: Test IndexedDockerImage with .zst extension
@@ -181,6 +229,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: DockerImageArtifact
       description: Test DockerImageArtifact
@@ -219,6 +279,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: DockerImageArtifact with .lz4 extension
       description: Test DockerImageArtifact with .lz4 extension
@@ -258,6 +330,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: DockerImageArtifact with .zst extension
       description: Test DockerImageArtifact with .zst extension
@@ -296,6 +380,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: DockerImage with cache using podman
       description: Test DockerImage with cache using podman
@@ -340,6 +436,18 @@ testSuite:
           retry:
             - 125
             - 128
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: DockerImage with cache
       description: Test DockerImage with cache
@@ -383,4 +491,16 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
   taskDefTests: []
