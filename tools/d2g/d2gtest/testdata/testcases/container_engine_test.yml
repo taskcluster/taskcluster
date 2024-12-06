@@ -31,6 +31,18 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
 
     - name: Set to podman container engine test
       description: >-
@@ -60,4 +72,16 @@ testSuite:
           retry:
             - 125
             - 128
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
   taskDefTests: []

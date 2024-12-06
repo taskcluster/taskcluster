@@ -65,3 +65,15 @@ testSuite:
           - 128
         osGroups:
           - docker
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true

@@ -26,19 +26,22 @@ type (
 
 	PublicConfig struct {
 		PublicEngineConfig
+		PublicPlatformConfig
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
-		ContainerEngine                string                 `json:"containerEngine"`
 		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
-		EnableD2G                      bool                   `json:"enableD2G"`
-		EnableInteractive              bool                   `json:"enableInteractive"`
+		EnableChainOfTrust             bool                   `json:"enableChainOfTrust"`
+		EnableLiveLog                  bool                   `json:"enableLiveLog"`
+		EnableMounts                   bool                   `json:"enableMounts"`
+		EnableOSGroups                 bool                   `json:"enableOSGroups"`
+		EnableTaskclusterProxy         bool                   `json:"enableTaskclusterProxy"`
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
@@ -46,8 +49,6 @@ type (
 		LiveLogExecutable              string                 `json:"livelogExecutable"`
 		LiveLogPortBase                uint16                 `json:"livelogPortBase"`
 		LiveLogExposePort              uint16                 `json:"livelogExposePort"`
-		LoopbackAudioDeviceNumber      uint8                  `json:"loopbackAudioDeviceNumber"`
-		LoopbackVideoDeviceNumber      uint8                  `json:"loopbackVideoDeviceNumber"`
 		MaxTaskRunTime                 uint32                 `json:"maxTaskRunTime"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP                 `json:"privateIP"`

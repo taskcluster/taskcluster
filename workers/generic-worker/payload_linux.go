@@ -35,13 +35,13 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	// Validate that the required docker worker scopes
 	// are present for the given docker worker payload
 	// and then convert dwScopes to gwScopes
-	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, dwPayload, taskQueueID, config.ContainerEngine, serviceFactory.Auth(config.Credentials(), config.RootURL))
+	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, dwPayload, taskQueueID, config.PublicPlatformConfig.D2GConfig["containerEngine"].(string), serviceFactory.Auth(config.Credentials(), config.RootURL))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 
 	// Convert dwPayload to gwPayload
-	gwPayload, err := d2g.ConvertPayload(dwPayload, config.ContainerEngine)
+	gwPayload, err := d2g.ConvertPayload(dwPayload, config.PublicPlatformConfig.D2GConfig)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}
