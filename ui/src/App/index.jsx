@@ -89,6 +89,23 @@ export default class App extends Component {
     options: {
       reconnect: true,
       lazy: true,
+      connectionCallback: error => {
+        if (error?.message?.includes('InsufficientScopes')) {
+          // close without reconnect
+          // note: immediate is used to ensure error is propagated
+          // to the subscriber before channel is closed
+          setImmediate(() => this.wsLink.subscriptionClient.close());
+        }
+      },
+      connectionParams: async () => {
+        const user = await this.authController.getUser();
+
+        if (user && user.credentials) {
+          return {
+            Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+          };
+        }
+      },
     },
   });
 

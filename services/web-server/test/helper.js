@@ -75,6 +75,20 @@ helper.withFakeAuth = (mock, skipping) => {
   });
 };
 
+helper.withFakeAuthFactory = (mock, skipping) => {
+  suiteSetup('withFakeAuthFactory', function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.load.inject('authFactory', stubbedAuthFactory());
+  });
+
+  suiteTeardown(function() {
+    helper.load.remove('authFactory');
+  });
+};
+
 helper.withClients = (mock, skipping) => {
   suiteSetup('withClients', async function() {
     if (skipping()) {
@@ -303,11 +317,22 @@ helper.getWebsocketClient = (subscriptionClient) => {
 // If a subscription client is created for a test, it also needs to be closed.
 // Otherwise, the tests will just hang and timeout
 helper.createSubscriptionClient = async () => {
+
+  const credentials = {
+    clientId: 'testing',
+    accessToken: 'testing',
+  };
+
   return new Promise(function(resolve, reject) {
     const subscriptionClient = new SubscriptionClient(
       `ws://localhost:${helper.serverPort}/subscription`,
       {
         reconnect: true,
+        connectionParams: () => {
+          return {
+            Authorization: `Bearer ${btoa(JSON.stringify(credentials))}`,
+          };
+        },
       },
       WebSocket,
     );
@@ -341,6 +366,15 @@ const stubbedAuth = () => {
   });
 
   return auth;
+};
+
+const stubbedAuthFactory = () => {
+  return ({ credentials }) => new taskcluster.Auth({
+    rootUrl: helper.rootUrl,
+    fake: {
+      currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
+    },
+  });
 };
 
 const stubbedClients = () => {

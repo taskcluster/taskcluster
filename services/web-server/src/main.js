@@ -132,9 +132,19 @@ const load = loader(
         createApp({ cfg, strategies, auth, monitor, db }),
     },
 
+    authFactory: {
+      requires: ['cfg'],
+      setup: ({ cfg }) => {
+        return ({ credentials }) => new taskcluster.Auth({
+          credentials,
+          rootUrl: cfg.taskcluster.rootUrl,
+        });
+      },
+    },
+
     httpServer: {
-      requires: ['app', 'schema', 'context', 'monitor'],
-      setup: async ({ app, schema, context, monitor }) => {
+      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory'],
+      setup: async ({ cfg, app, schema, context, monitor, authFactory }) => {
         const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
@@ -164,10 +174,12 @@ const load = loader(
         );
 
         createSubscriptionServer({
+          cfg,
           server: httpServer, // this attaches itself directly to the server
           schema,
           context,
           path: '/subscription',
+          authFactory,
         });
 
         return httpServer;
