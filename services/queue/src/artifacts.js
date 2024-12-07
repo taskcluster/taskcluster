@@ -55,6 +55,10 @@ const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
     }
 
+    if (artifact.expires < new Date()) {
+      return res.reportError('ResourceExpired', 'Artifact expired', {});
+    }
+
     if (artifact.storageType !== 'link') {
       return artifact;
     }
