@@ -126,7 +126,7 @@ export class Provisioner {
       const poolsByProvider = new Map();
 
       // Now for each worker pool we ask the providers to do stuff
-      const workerPools = (await this.db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(null, null))
+      const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null))
         .map(row => WorkerPool.fromDb(row));
       for (const workerPool of workerPools) {
         const start = process.hrtime.bigint();

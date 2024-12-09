@@ -38,7 +38,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTableColumn('workers', 'launch_config_id');
     await helper.assertTableColumn('worker_pool_errors', 'launch_config_id');
 
-    const configs = await db.fns.get_worker_pool_launch_configs('wp/id', 'provider', null, null, null);
+    const configs = await db.fns.get_worker_pool_launch_configs('wp/id', null, null, null);
     assert.equal(configs.length, 2);
 
     await helper.downgradeTo(PREV_VERSION);

@@ -121,51 +121,19 @@ suite(testing.suiteName(), function () {
   };
 
   const get_worker_pool = async (db, worker_pool_id) => {
-    const with_cap = await db.fns.get_worker_pool_with_launch_configs(worker_pool_id);
-    for (const wp of with_cap) {
-      assert(wp.requested_count === 0);
-      assert(wp.running_count === 0);
-      assert(wp.stopping_count === 0);
-      assert(wp.stopped_count === 0);
-      assert(wp.requested_capacity === 0);
-      assert(wp.running_capacity === 0);
-      assert(wp.stopping_capacity === 0);
-      assert(wp.stopped_capacity === 0);
-      delete wp.requested_count;
-      delete wp.running_count;
-      delete wp.stopping_count;
-      delete wp.stopped_count;
-      delete wp.requested_capacity;
-      delete wp.running_capacity;
-      delete wp.stopping_capacity;
-      delete wp.stopped_capacity;
-    }
+    const workerPool = await db.fns.get_worker_pool_with_launch_configs(worker_pool_id);
     const old = await db.deprecatedFns.get_worker_pool_with_capacity(worker_pool_id);
-    assert.deepEqual(with_cap, old);
-    return with_cap;
+    delete old?.[0]?.current_capacity;
+    assert.deepEqual(workerPool, old);
+    return workerPool;
   };
 
   const get_worker_pools = async (db, page_size, page_offset) => {
-    const with_cap = await db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(page_size, page_offset);
-    for (const wp of with_cap) {
-      assert(wp.requested_count === 0);
-      assert(wp.running_count === 0);
-      assert(wp.stopping_count === 0);
-      assert(wp.stopped_count === 0);
-      assert(wp.requested_capacity === 0);
-      assert(wp.running_capacity === 0);
-      assert(wp.stopping_capacity === 0);
-      assert(wp.stopped_capacity === 0);
-      delete wp.requested_count;
-      delete wp.running_count;
-      delete wp.stopping_count;
-      delete wp.stopped_count;
-      delete wp.requested_capacity;
-      delete wp.running_capacity;
-      delete wp.stopping_capacity;
-      delete wp.stopped_capacity;
-    }
+    const with_cap = await db.fns.get_worker_pools_with_launch_configs(page_size, page_offset);
     const old = await db.deprecatedFns.get_worker_pools_with_capacity(page_size, page_offset);
+    for (let i = 0; i < old.length; i++) {
+      delete old[i].current_capacity;
+    }
     assert.deepEqual(with_cap, old);
     return with_cap;
   };
@@ -1093,7 +1061,7 @@ suite(testing.suiteName(), function () {
   suite('existing capacity', function () {
     helper.dbTest('no workers', async function (db) {
       await create_worker_pool(db);
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 0);
       assert.equal(row.requested_count, 0);
       assert.equal(row.running_count, 0);
@@ -1107,7 +1075,7 @@ suite(testing.suiteName(), function () {
     helper.dbTest('single worker, capacity 1', async function (db) {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 1, state: 'running' });
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 1);
       assert.equal(row.requested_count, 0);
       assert.equal(row.running_count, 1);
@@ -1121,7 +1089,7 @@ suite(testing.suiteName(), function () {
     helper.dbTest('single worker, capacity > 1', async function (db) {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 64, state: 'running' });
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 64);
       assert.equal(row.requested_count, 0);
       assert.equal(row.running_count, 1);
@@ -1138,7 +1106,7 @@ suite(testing.suiteName(), function () {
       await create_worker(db, { worker_id: 'foo2', capacity: 1, state: 'running' });
       await create_worker(db, { worker_id: 'foo3', capacity: 1, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 4);
       assert.equal(row.requested_count, 0);
       assert.equal(row.running_count, 4);
@@ -1155,7 +1123,7 @@ suite(testing.suiteName(), function () {
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'running' });
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 161);
       assert.equal(row.requested_count, 0);
       assert.equal(row.running_count, 4);
@@ -1172,7 +1140,7 @@ suite(testing.suiteName(), function () {
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'stopped' });
       await create_worker(db, { worker_id: 'foo3', capacity: 64, state: 'running' });
       await create_worker(db, { worker_id: 'foo4', capacity: 1, state: 'requested' });
-      const row = (await db.fns.get_worker_pool_with_launch_configs('wp/id'))[0];
+      const row = (await db.fns.get_worker_pool_with_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 97);
       assert.equal(row.requested_count, 1);
       assert.equal(row.running_count, 2);
@@ -1186,7 +1154,7 @@ suite(testing.suiteName(), function () {
     helper.dbTest('no workers (multiple pools)', async function (db) {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
-      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_counts_and_capacity(null, null)).sort();
       assert.equal(pools[0].current_capacity, 0);
       assert.equal(pools[1].current_capacity, 0);
     });
@@ -1194,7 +1162,7 @@ suite(testing.suiteName(), function () {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       await create_worker(db, { capacity: 4, state: 'running' });
-      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_counts_and_capacity(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');
       assert.equal(pools[0].current_capacity, 0);
@@ -1208,7 +1176,7 @@ suite(testing.suiteName(), function () {
       await create_worker(db, { worker_id: 'foo3', capacity: 10, state: 'running', worker_pool_id: 'ff/tt' });
       await create_worker(db, { worker_id: 'foo4', capacity: 3, state: 'stopped' });
       await create_worker(db, { worker_id: 'foo5', capacity: 7, state: 'stopped', worker_pool_id: 'ff/tt' });
-      const pools = (await db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(null, null)).sort();
+      const pools = (await db.fns.get_worker_pools_with_counts_and_capacity(null, null)).sort();
       assert.equal(pools[0].worker_pool_id, 'ff/tt');
       assert.equal(pools[1].worker_pool_id, 'wp/id');
       assert.equal(pools[0].current_capacity, 10);
@@ -1237,15 +1205,14 @@ suite(testing.suiteName(), function () {
 
     helper.dbTest('create_worker_pool_launch_config/get_worker_pool_launch_configs', async function (db) {
       const wpId = 'w/i1';
-      const provId = 'p1';
-      await db.fns.create_worker_pool_launch_config('lc1', wpId, provId, false, false, { config: '1' }, fromNow('0s'), fromNow('0s'));
-      await db.fns.create_worker_pool_launch_config('lc2', wpId, provId, false, false, { config: '2' }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config('lc1', wpId, false, { config: '1' }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config('lc2', wpId, false, { config: '2' }, fromNow('0s'), fromNow('0s'));
 
-      const configs = await db.fns.get_worker_pool_launch_configs(wpId, provId, null, null, null);
+      const configs = await db.fns.get_worker_pool_launch_configs(wpId, null, null, null);
       assert.equal(configs.length, 2);
       assertEqualSorted(configs.map(c => c.launch_config_id), ['lc1', 'lc2']);
 
-      const res = await db.fns.collect_launch_configs_if_exist({ max: 9 }, wpId, provId);
+      const res = await db.fns.collect_launch_configs_if_exist({ max: 9 }, wpId);
       assert.deepEqual(res[0].collect_launch_configs_if_exist, {
         max: 9,
         launchConfigs: [{ config: '1' }, { config: '2' }],
@@ -1258,7 +1225,7 @@ suite(testing.suiteName(), function () {
         { cfg: 'c2', workerManager: { maxCapacity: 5 } },
         { cfg: 'c3', workerManager: { maxCapacity: 5 } },
       ];
-      const [res] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+      const [res] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
         launchConfigs,
       });
       assert.equal(res.created_launch_configs.length, 3);
@@ -1268,14 +1235,14 @@ suite(testing.suiteName(), function () {
       // changing workerManager related values shouldn't change ids
       launchConfigs[0].workerManager.maxCapacity = 10;
       launchConfigs[1].workerManager.initialWeight = 1.0;
-      const [res1] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+      const [res1] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
         launchConfigs,
       });
       assert.equal(res1.created_launch_configs.length, 0);
       assert.equal(res1.updated_launch_configs.length, 3);
       assert.equal(res1.archived_launch_configs.length, 0);
 
-      const [res2] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+      const [res2] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
         launchConfigs: [launchConfigs[2]],
       });
       assert.equal(res2.created_launch_configs.length, 0);
@@ -1283,7 +1250,7 @@ suite(testing.suiteName(), function () {
       assert.equal(res2.archived_launch_configs.length, 2);
       assertEqualSorted(res.created_launch_configs, [...res2.archived_launch_configs, ...res2.updated_launch_configs]);
 
-      const [res3] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+      const [res3] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
         launchConfigs: [launchConfigs[0], launchConfigs[1]],
       });
       assert.equal(res3.created_launch_configs.length, 0);
@@ -1291,7 +1258,7 @@ suite(testing.suiteName(), function () {
       assert.equal(res3.archived_launch_configs.length, 1);
       assertEqualSorted(res.created_launch_configs, [...res3.archived_launch_configs, ...res3.updated_launch_configs]);
 
-      const [res4] = await db.fns.upsert_worker_pool_launch_configs('wp/id', 'prov1', {
+      const [res4] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
         launchConfigs: ['c4', 'c5'],
       });
       assert.equal(res4.created_launch_configs.length, 2);
@@ -1304,10 +1271,9 @@ suite(testing.suiteName(), function () {
       await db.fns.expire_worker_pool_launch_configs();
 
       const wpId = 'w/i2';
-      const provId = 'p2';
-      const isExpired = true;
-      await db.fns.create_worker_pool_launch_config('lc1', wpId, provId, isExpired, false, { config: '1' }, fromNow('0s'), fromNow('0s'));
-      await db.fns.create_worker_pool_launch_config('lc2', wpId, provId, isExpired, false, { config: '2' }, fromNow('0s'), fromNow('0s'));
+      const isArchived = true;
+      await db.fns.create_worker_pool_launch_config('lc1', wpId, isArchived, { config: '1' }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config('lc2', wpId, isArchived, { config: '2' }, fromNow('0s'), fromNow('0s'));
       await create_worker(db, {
         worker_id: 'f1',
         worker_pool_id: wpId,
