@@ -34,15 +34,15 @@ export class WorkerPool {
       previousProviderIds: row.previous_provider_ids,
       providerData: row.provider_data,
       // stats
-      currentCapacity: row.current_capacity,
-      requestedCount: row.requested_count,
-      runningCount: row.running_count,
-      stoppingCount: row.stopping_count,
-      stoppedCount: row.stopped_count,
-      requestedCapacity: row.requested_capacity,
-      runningCapacity: row.running_capacity,
-      stoppingCapacity: row.stopping_capacity,
-      stoppedCapacity: row.stopped_capacity,
+      // currentCapacity: row.current_capacity,
+      // requestedCount: row.requested_count,
+      // runningCount: row.running_count,
+      // stoppingCount: row.stopping_count,
+      // stoppedCount: row.stopped_count,
+      // requestedCapacity: row.requested_capacity,
+      // runningCapacity: row.running_capacity,
+      // stoppingCapacity: row.stopping_capacity,
+      // stoppedCapacity: row.stopped_capacity,
     });
   }
 
@@ -62,15 +62,15 @@ export class WorkerPool {
       providerData: {},
       lastModified: now,
       created: now,
-      currentCapacity: 0,
-      requestedCount: 0,
-      runningCount: 0,
-      stoppingCount: 0,
-      stoppedCount: 0,
-      requestedCapacity: 0,
-      runningCapacity: 0,
-      stoppingCapacity: 0,
-      stoppedCapacity: 0,
+      // currentCapacity: 0,
+      // requestedCount: 0,
+      // runningCount: 0,
+      // stoppingCount: 0,
+      // stoppedCount: 0,
+      // requestedCapacity: 0,
+      // runningCapacity: 0,
+      // stoppingCapacity: 0,
+      // stoppedCapacity: 0,
       ...input,
     });
   }
@@ -132,15 +132,15 @@ export class WorkerPool {
       config: this.config,
       owner: this.owner,
       emailOnError: this.emailOnError,
-      currentCapacity: this.currentCapacity ?? 0,
-      requestedCount: this.requestedCount ?? 0,
-      runningCount: this.runningCount ?? 0,
-      stoppingCount: this.stoppingCount ?? 0,
-      stoppedCount: this.stoppedCount ?? 0,
-      requestedCapacity: this.requestedCapacity ?? 0,
-      runningCapacity: this.runningCapacity ?? 0,
-      stoppingCapacity: this.stoppingCapacity ?? 0,
-      stoppedCapacity: this.stoppedCapacity ?? 0,
+      // currentCapacity: this.currentCapacity ?? 0,
+      // requestedCount: this.requestedCount ?? 0,
+      // runningCount: this.runningCount ?? 0,
+      // stoppingCount: this.stoppingCount ?? 0,
+      // stoppedCount: this.stoppedCount ?? 0,
+      // requestedCapacity: this.requestedCapacity ?? 0,
+      // runningCapacity: this.runningCapacity ?? 0,
+      // stoppingCapacity: this.stoppingCapacity ?? 0,
+      // stoppedCapacity: this.stoppedCapacity ?? 0,
     };
   }
 
@@ -169,16 +169,15 @@ export class WorkerPoolLaunchConfig {
       workerPoolId: row.worker_pool_id,
       providerId: row.provider_id,
       isArchived: row.is_archived,
-      isPaused: row.is_paused,
       configuration: row.configuration,
       created: row.created,
       lastModified: row.last_modified,
     });
   }
 
-  static async load(db, workerPoolId, providerId) {
+  static async load(db, workerPoolId) {
     const isArchived = false;
-    const rows = await db.fns.get_worker_pool_launch_configs(workerPoolId, providerId, isArchived, null, null);
+    const rows = await db.fns.get_worker_pool_launch_configs(workerPoolId, isArchived, null, null);
 
     return rows.map(WorkerPoolLaunchConfig.fromDb);
   }

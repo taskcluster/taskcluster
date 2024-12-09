@@ -192,8 +192,10 @@
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
    * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
+   * [`get_worker_pool_with_counts_and_capacity`](#get_worker_pool_with_counts_and_capacity)
    * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
-   * [`get_worker_pools_with_capacity_and_counts_and_launch_configs`](#get_worker_pools_with_capacity_and_counts_and_launch_configs)
+   * [`get_worker_pools_with_counts_and_capacity`](#get_worker_pools_with_counts_and_capacity)
+   * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -6441,8 +6443,10 @@ end
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
 * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
+* [`get_worker_pool_with_counts_and_capacity`](#get_worker_pool_with_counts_and_capacity)
 * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
-* [`get_worker_pools_with_capacity_and_counts_and_launch_configs`](#get_worker_pools_with_capacity_and_counts_and_launch_configs)
+* [`get_worker_pools_with_counts_and_capacity`](#get_worker_pools_with_counts_and_capacity)
+* [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
@@ -6455,7 +6459,6 @@ end
 * *Arguments*:
   * `config_in jsonb`
   * `worker_pool_id_in text`
-  * `provider_id_in text`
 * *Returns*: `jsonb`
 * *Last defined on version*: 105
 
@@ -6471,7 +6474,6 @@ begin
   select coalesce(jsonb_agg(worker_pool_launch_configs.configuration), null) into launch_configs
   from worker_pool_launch_configs
   where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-    and worker_pool_launch_configs.provider_id = provider_id_in
     and worker_pool_launch_configs.is_archived = false;
 
   if launch_configs is not null then
@@ -6521,9 +6523,7 @@ end
 * *Arguments*:
   * `launch_config_id_in text`
   * `worker_pool_id_in text`
-  * `provider_id_in text`
   * `is_archived_in boolean`
-  * `is_paused_in boolean`
   * `configuration_in jsonb`
   * `created_in timestamptz`
   * `last_modified_in timestamptz`
@@ -6539,18 +6539,14 @@ begin
   insert into worker_pool_launch_configs (
     launch_config_id,
     worker_pool_id,
-    provider_id,
     is_archived,
-    is_paused,
     configuration,
     created,
     last_modified
   ) values (
-    coalesce(launch_config_id_in, generate_launch_config_id(worker_pool_id_in, provider_id_in, configuration_in)),
+    coalesce(launch_config_id_in, get_or_create_launch_config_id(worker_pool_id_in, configuration_in)),
     worker_pool_id_in,
-    provider_id_in,
     is_archived_in,
-    is_paused_in,
     configuration_in,
     created_in,
     last_modified_in
@@ -6598,7 +6594,7 @@ begin
     into worker_pools (worker_pool_id, provider_id, previous_provider_ids, description, config, created, last_modified, owner, email_on_error, provider_data)
     values (worker_pool_id_in, provider_id_in, previous_provider_ids_in, description_in, config_without_lc, created_in, last_modified_in, owner_in, email_on_error_in, provider_data_in);
 
-  return query select * from upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in);
+  return query select * from upsert_worker_pool_launch_configs(worker_pool_id_in, config_in);
 end
 ```
 
@@ -7663,16 +7659,13 @@ end
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
-  * `provider_id_in text`
   * `is_archived_in boolean`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
   * `launch_config_id text`
   * `worker_pool_id text`
-  * `provider_id text`
   * `is_archived boolean`
-  * `is_paused boolean`
   * `configuration jsonb`
   * `created timestamp with time zone`
   * `last_modified timestamp with time zone`
@@ -7688,20 +7681,62 @@ begin
   select
     wplc.launch_config_id,
     wplc.worker_pool_id,
-    wplc.provider_id,
     wplc.is_archived,
-    wplc.is_paused,
     wplc.configuration,
     wplc.created,
     wplc.last_modified
   from worker_pool_launch_configs wplc
   where
     wplc.worker_pool_id = worker_pool_id_in and
-    wplc.provider_id = provider_id_in and
     (is_archived_in is null or wplc.is_archived = is_archived_in)
   order by wplc.launch_config_id
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pool_with_counts_and_capacity
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 105
+
+Get the capacity of workers in each state for a given worker pool.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  group by worker_pools.worker_pool_id;
 end
 ```
 
@@ -7723,15 +7758,6 @@ end
   * `owner text`
   * `email_on_error boolean`
   * `provider_data jsonb`
-  * `current_capacity integer`
-  * `requested_count integer`
-  * `running_count integer`
-  * `stopping_count integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `running_capacity integer`
-  * `stopping_capacity integer`
-  * `stopped_capacity integer`
 * *Last defined on version*: 105
 
 Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
@@ -7746,32 +7772,68 @@ begin
     worker_pools.provider_id,
     worker_pools.previous_provider_ids,
     worker_pools.description,
-    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id, worker_pools.provider_id) as config,
+    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id) as config,
     worker_pools.created,
     worker_pools.last_modified,
     worker_pools.owner,
     worker_pools.email_on_error,
-    worker_pools.provider_data,
-    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
-    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer
+    worker_pools.provider_data
   from worker_pools
-  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
-  where worker_pools.worker_pool_id = worker_pool_id_in
-  group by worker_pools.worker_pool_id
-  order by worker_pools.worker_pool_id;
+  where worker_pools.worker_pool_id = worker_pool_id_in;
 end
 ```
 
 </details>
 
-### get_worker_pools_with_capacity_and_counts_and_launch_configs
+### get_worker_pools_with_counts_and_capacity
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 105
+
+Get the capacity of workers in each state for all worker pools.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  group by worker_pools.worker_pool_id
+  order by worker_pools.worker_pool_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pools_with_launch_configs
 
 * *Mode*: read
 * *Arguments*:
@@ -7788,15 +7850,6 @@ end
   * `owner text`
   * `email_on_error boolean`
   * `provider_data jsonb`
-  * `current_capacity integer`
-  * `requested_count integer`
-  * `running_count integer`
-  * `stopping_count integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `running_capacity integer`
-  * `stopping_capacity integer`
-  * `stopped_capacity integer`
 * *Last defined on version*: 105
 
 Get the capacity and counts of workers in all worker pools, grouped by state.
@@ -7811,24 +7864,13 @@ begin
     worker_pools.provider_id,
     worker_pools.previous_provider_ids,
     worker_pools.description,
-    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id, worker_pools.provider_id) as config,
+    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id) as config,
     worker_pools.created,
     worker_pools.last_modified,
     worker_pools.owner,
     worker_pools.email_on_error,
-    worker_pools.provider_data,
-    coalesce(sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer,
-    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
-    coalesce(sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
-    coalesce(sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer
+    worker_pools.provider_data
   from worker_pools
-  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
-  group by worker_pools.worker_pool_id
   order by worker_pools.worker_pool_id
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
@@ -8093,7 +8135,7 @@ begin
     existing.provider_id as previous_provider_id
   INTO updated_wp;
 
-  SELECT * FROM upsert_worker_pool_launch_configs(worker_pool_id_in, provider_id_in, config_in) INTO updated_wplc;
+  SELECT * FROM upsert_worker_pool_launch_configs(worker_pool_id_in, config_in) INTO updated_wplc;
 
   RETURN QUERY
   SELECT
@@ -8119,7 +8161,6 @@ end
 * *Mode*: write
 * *Arguments*:
   * `worker_pool_id_in text`
-  * `provider_id_in text`
   * `config_in jsonb`
 * *Returns*: `table`
   * `updated_launch_configs text[]`
@@ -8152,23 +8193,19 @@ begin
   archived_lcs := '{}';
 
   FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP
-    wp_launch_config_id := generate_launch_config_id(worker_pool_id_in, provider_id_in, config);
+    wp_launch_config_id := get_or_create_launch_config_id(worker_pool_id_in, config);
     processed_lcs := array_append(processed_lcs, wp_launch_config_id);
 
     -- we only insert new configs if they don't already exist and mark everything else as archived
     IF NOT EXISTS
       (SELECT 1
       FROM worker_pool_launch_configs
-      WHERE worker_pool_id = worker_pool_id_in
-        AND provider_id = provider_id_in
-        AND launch_config_id = wp_launch_config_id)
+      WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id)
     THEN
       created_lcs := array_append(created_lcs, wp_launch_config_id);
       PERFORM create_worker_pool_launch_config(
         wp_launch_config_id,
         worker_pool_id_in,
-        provider_id_in,
-        false,
         false,
         config,
         now(),
@@ -8181,7 +8218,6 @@ begin
           last_modified = now()
       WHERE
         worker_pool_id = worker_pool_id_in
-        AND provider_id = provider_id_in
         AND launch_config_id = wp_launch_config_id;
 
       updated_lcs := array_append(updated_lcs, wp_launch_config_id);
@@ -8193,18 +8229,9 @@ begin
     UPDATE worker_pool_launch_configs
     SET is_archived = true
     WHERE
-      (
-        worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-        AND worker_pool_launch_configs.provider_id = provider_id_in
-        AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
-        AND worker_pool_launch_configs.is_archived = false
-      )
-      OR
-      (
-        worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-        AND worker_pool_launch_configs.provider_id <> provider_id_in  -- when switching providers we archive all previous ones
-        AND worker_pool_launch_configs.is_archived = false
-      )
+      worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+      AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+      AND worker_pool_launch_configs.is_archived = false
     RETURNING launch_config_id
   )
   SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;
@@ -8219,11 +8246,11 @@ end
 
 ### deprecated methods
 
-* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v76.0.0)
-* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v76.0.0)
-* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v76.0.0)
-* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v76.0.0)
-* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v76.0.0)
-* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v76.0.0)
-* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v76.0.0)
-* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v76.0.0)
+* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v77.0.0)
+* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v77.0.0)
+* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
+* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v77.0.0)
+* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
+* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v77.0.0)
+* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
+* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v77.0.0)
