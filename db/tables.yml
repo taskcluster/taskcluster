@@ -142,9 +142,7 @@ worker_pools:
 worker_pool_launch_configs:
   launch_config_id: text not null
   worker_pool_id: text not null
-  provider_id: text not null
   is_archived: boolean not null
-  is_paused: boolean not null
   configuration: jsonb not null
   created: timestamp with time zone not null
   last_modified: timestamp with time zone not null

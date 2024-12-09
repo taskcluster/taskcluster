@@ -4,33 +4,37 @@ begin
   CREATE TABLE worker_pool_launch_configs (
     launch_config_id text not null,
     worker_pool_id text not null,
-    provider_id text not null,
     is_archived boolean not null,
-    is_paused boolean not null,
     configuration jsonb not null,
     created timestamp with time zone not null,
     last_modified timestamp with time zone not null
   );
 
-  CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs(launch_config_id);
-  CREATE INDEX worker_pool_launch_configs_worker_pool_id_idx ON worker_pool_launch_configs(worker_pool_id);
-  CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs(worker_pool_id) WHERE is_archived;
+  CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs(worker_pool_id, launch_config_id);
+  CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs(worker_pool_id) WHERE NOT is_archived;
 
   -- utility function to create launch config id from worker pool id and config
+  -- if workerManager.launchConfig is set it will be returned instead of generated one
   -- this will ignore "workerManager" part of the config if it exists, as it can be "dynamic"
   -- and allow changing maxCapacity/initialWeight without changing the id
-  CREATE OR REPLACE FUNCTION generate_launch_config_id(worker_pool_id TEXT, provider_id TEXT, config JSONB)
+  CREATE OR REPLACE FUNCTION get_or_create_launch_config_id(worker_pool_id TEXT, config JSONB)
   RETURNS TEXT AS $$
   DECLARE
     cfg_without_wm JSONB;
   BEGIN
     IF jsonb_typeof(config) = 'object' THEN
+      -- check if id is present and return if it is
+      IF (config->>'workerManager' IS NOT NULL) AND
+         (config->'workerManager'->>'launchConfigId' IS NOT NULL) THEN
+        RETURN config->'workerManager'->>'launchConfigId';
+      END IF;
+
       cfg_without_wm := config - 'workerManager';
     ELSE
       cfg_without_wm := config;
     END IF;
 
-    RETURN 'lc-' || left(md5(worker_pool_id || provider_id || cfg_without_wm::text), 20);
+    RETURN 'lc-' || left(md5(worker_pool_id || cfg_without_wm::text), 20);
   END;
   $$ LANGUAGE plpgsql;
 
@@ -53,18 +57,14 @@ begin
               INSERT INTO worker_pool_launch_configs (
                   launch_config_id,
                   worker_pool_id,
-                  provider_id,
                   is_archived,
-                  is_paused,
                   configuration,
                   created,
                   last_modified
               ) VALUES (
-                  generate_launch_config_id(wp.worker_pool_id, wp.provider_id, config),
+                  get_or_create_launch_config_id(wp.worker_pool_id, config),
                   wp.worker_pool_id,
-                  wp.provider_id,
                   false, -- not archived by default
-                  false, -- not paused
                   config,
                   wp.created,
                   wp.last_modified

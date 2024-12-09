@@ -27,5 +27,5 @@ begin
   alter table worker_pool_errors drop column launch_config_id;
 
   -- drop functions
-  drop function generate_launch_config_id(worker_pool_id TEXT, provider_id TEXT, config JSONB);
+  drop function get_or_create_launch_config_id(worker_pool_id TEXT, config JSONB);
 end
