@@ -196,7 +196,7 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
+  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     input.providerId,
     input.description,
@@ -231,6 +231,7 @@ builder.declare({
     'Mark a worker pool for deletion.  This is the same as updating the pool to',
     'set its providerId to `"null-provider"`, but does not require scope',
     '`worker-manager:provider:null-provider`.',
+    'This will also mark all launch configurations as archived.',
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId } = req.params;
@@ -243,7 +244,7 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
+  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     providerId,
     workerPool.description,
@@ -254,7 +255,11 @@ builder.declare({
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
-  workerPool = WorkerPool.fromDb(row);
+  // TODO: emit launch config events
+  // that can be found in row.{updated_launch_configs,archived_launch_configs,deleted_launch_configs}
+
+  // reload full worker pool
+  workerPool = await WorkerPool.get(this.db, workerPoolId);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
@@ -302,7 +307,7 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(size, offset),
+    fetch: (size, offset) => this.db.fns.get_worker_pools_with_launch_configs(size, offset),
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
@@ -495,7 +500,7 @@ declareWithTrailingColon({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers(
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2(
       workerPoolId,
       workerGroup,
       null,
@@ -745,7 +750,7 @@ builder.declare({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers({
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2({
       worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,

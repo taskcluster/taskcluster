@@ -107,6 +107,7 @@ class WorkerManager(AsyncBaseClient):
         Mark a worker pool for deletion.  This is the same as updating the pool to
         set its providerId to `"null-provider"`, but does not require scope
         `worker-manager:provider:null-provider`.
+        This will also mark all launch configurations as archived.
 
         This method is ``stable``
         """
