@@ -98,12 +98,10 @@ export class LaunchConfigSelector {
   }
 
   async loadLaunchConfigs(workerPool) {
-    let launchConfigs = await WorkerPoolLaunchConfig.load(
+    const launchConfigs = await WorkerPoolLaunchConfig.load(
       this.db,
       workerPool.workerPoolId,
-      workerPool.providerId,
     );
-    launchConfigs = launchConfigs.filter((cfg) => cfg.isPaused === false);
 
     if (launchConfigs.length === 0) {
       this.monitor.alert('No launch configs found for worker pool');

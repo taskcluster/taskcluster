@@ -538,9 +538,7 @@ ALTER TABLE worker_pool_errors
 CREATE TABLE worker_pool_launch_configs (
     launch_config_id text NOT NULL,
     worker_pool_id text NOT NULL,
-    provider_id text NOT NULL,
     is_archived boolean NOT NULL,
-    is_paused boolean NOT NULL,
     configuration jsonb NOT NULL,
     created timestamp with time zone NOT NULL,
     last_modified timestamp with time zone NOT NULL
@@ -612,10 +610,9 @@ CREATE INDEX tasks_task_group_id_idx ON tasks USING btree (task_group_id);
 CREATE INDEX tasks_task_group_id_unresolved_idx ON tasks USING btree (task_group_id) WHERE (NOT ever_resolved);
 CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX worker_pool_errors_reported_idx ON worker_pool_errors USING btree (reported);
-CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs USING btree (worker_pool_id) WHERE is_archived;
-CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs USING btree (launch_config_id);
-CREATE INDEX worker_pool_launch_configs_worker_pool_id_idx ON worker_pool_launch_configs USING btree (worker_pool_id);
+CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs USING btree (worker_pool_id) WHERE (NOT is_archived);
+CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX workers_created_idx ON workers USING btree (created);
-CREATE INDEX workers_lc_idx ON workers USING btree (worker_pool_id, launch_config_id);
+CREATE INDEX workers_lc_idx ON workers USING btree (worker_pool_id, launch_config_id, state);
 CREATE INDEX workers_state_idx ON workers USING btree (state);
 ```
