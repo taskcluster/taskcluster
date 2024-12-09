@@ -18,6 +18,7 @@ properties:
             The other properties of the launch configuration section are passed directly through to
             AWS APIs, whereas this section is interpreted directly by Worker Manager.
           properties:
+            launchConfigId: { $const: lc-id }
             capacityPerInstance: { $const: lc-capacity-per-instance }
             initialWeight: { $const: lc-initial-weight }
             maxCapacity: { $const: lc-max-capacity }

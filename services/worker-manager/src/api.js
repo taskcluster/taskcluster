@@ -316,7 +316,7 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity_and_counts_and_launch_configs(size, offset),
+    fetch: (size, offset) => this.db.fns.get_worker_pools_with_launch_configs(size, offset),
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),

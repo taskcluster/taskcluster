@@ -41,7 +41,9 @@ properties:
     description: |
       The launch config ID that was used when the error occurred.
     type: string
-    pattern: {$const: launchconfigid-pattern}
+    pattern: {$const: identifier-pattern}
+    minLength: {$const: identifier-min-length}
+    maxLength: {$const: identifier-max-length}
 additionalProperties: false
 required:
   - workerPoolId

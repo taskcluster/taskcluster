@@ -774,7 +774,9 @@ type (
 
 		// The launch config ID that was used when the error occurred.
 		//
-		// Syntax:     ^lc-[a-zA-Z0-9-_]{1,20}$
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
 		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// Date and time when this error was reported

@@ -403,7 +403,9 @@
         },
         "launchConfigId": {
           "description": "The launch config ID that was used when the error occurred.\n",
-          "pattern": "^lc-[a-zA-Z0-9-_]{1,20}$",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
           "title": "Launch Config ID",
           "type": "string"
         },
@@ -1836,6 +1838,14 @@
                     "title": "Initial Weight",
                     "type": "integer"
                   },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
+                  },
                   "maxCapacity": {
                     "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
                     "minimum": 0,
@@ -2094,6 +2104,14 @@
                     "title": "Initial Weight",
                     "type": "integer"
                   },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
+                  },
                   "maxCapacity": {
                     "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
                     "minimum": 0,
@@ -2251,6 +2269,14 @@
                     "minimum": 0,
                     "title": "Initial Weight",
                     "type": "integer"
+                  },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
                   },
                   "maxCapacity": {
                     "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
