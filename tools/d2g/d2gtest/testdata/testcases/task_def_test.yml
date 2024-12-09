@@ -93,6 +93,18 @@ testSuite:
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-24-04
         workerType: gw-ubuntu-24-04
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
     - name: Task definition test without taskQueueId set
       description: >-
         d2g should properly translate this Docker Worker task definition
@@ -182,6 +194,18 @@ testSuite:
         tags: {}
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         workerType: gw-ubuntu-24-04
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
     - name: Task definition test with a new, fake field set, foo
       description: >-
         d2g should properly translate this Docker Worker task definition
@@ -274,4 +298,16 @@ testSuite:
         taskGroupId: PIxhISDQSDa98W9ppGUNsw
         taskQueueId: proj-taskcluster/gw-ubuntu-24-04
         workerType: gw-ubuntu-24-04
+      d2gConfig:
+        containerEngine: docker
+        allowChainOfTrust: true
+        allowDisableSeccomp: true
+        allowHostSharedMemory: true
+        allowInteractive: true
+        allowKVM: true
+        allowLoopbackAudio: true
+        allowLoopbackVideo: true
+        allowPrivileged: true
+        allowPtrace: true
+        allowTaskclusterProxy: true
   payloadTests: []

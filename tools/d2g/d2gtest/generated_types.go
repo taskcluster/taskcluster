@@ -4,9 +4,103 @@ package d2gtest
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type (
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Default:    true
+	//  	AllowChainOfTrust bool `json:"allowChainOfTrust" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowInteractive bool `json:"allowInteractive" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowKVM bool `json:"allowKVM" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowLoopbackAudio bool `json:"allowLoopbackAudio" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowLoopbackVideo bool `json:"allowLoopbackVideo" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowPrivileged bool `json:"allowPrivileged" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowPtrace bool `json:"allowPtrace" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
+	//
+	//  	// Possible values:
+	//  	//   * "docker"
+	//  	//   * "podman"
+	//  	//
+	//  	// Default:    "docker"
+	//  	ContainerEngine string `json:"containerEngine" default:"docker"`
+	//  }
+	//
+	// Additional properties allowed
+	D2GConfig json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Default:    true
+	//  	AllowChainOfTrust bool `json:"allowChainOfTrust" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowInteractive bool `json:"allowInteractive" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowKVM bool `json:"allowKVM" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowLoopbackAudio bool `json:"allowLoopbackAudio" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowLoopbackVideo bool `json:"allowLoopbackVideo" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowPrivileged bool `json:"allowPrivileged" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowPtrace bool `json:"allowPtrace" default:"true"`
+	//
+	//  	// Default:    true
+	//  	AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
+	//
+	//  	// Possible values:
+	//  	//   * "docker"
+	//  	//   * "podman"
+	//  	//
+	//  	// Default:    "docker"
+	//  	ContainerEngine string `json:"containerEngine" default:"docker"`
+	//
+	//  	// Default:    true
+	//  	EnableD2G bool `json:"enableD2G" default:"true"`
+	//  }
+	//
+	// Additional properties allowed
+	D2GConfig1 json.RawMessage
+
 	// Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
 	// (inputs) and Generic Worker expected task def/payload (outputs).
 	D2GTestCases struct {
@@ -22,12 +116,53 @@ type (
 	// Worker task definition in the test case.
 	TaskDefinitionTestCase struct {
 
-		// Possible values:
-		//   * "docker"
-		//   * "podman"
+		// Defined properties:
 		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
+		//  struct {
+		//
+		//  	// Default:    true
+		//  	AllowChainOfTrust bool `json:"allowChainOfTrust" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowInteractive bool `json:"allowInteractive" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowKVM bool `json:"allowKVM" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowLoopbackAudio bool `json:"allowLoopbackAudio" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowLoopbackVideo bool `json:"allowLoopbackVideo" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowPrivileged bool `json:"allowPrivileged" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowPtrace bool `json:"allowPtrace" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
+		//
+		//  	// Possible values:
+		//  	//   * "docker"
+		//  	//   * "podman"
+		//  	//
+		//  	// Default:    "docker"
+		//  	ContainerEngine string `json:"containerEngine" default:"docker"`
+		//
+		//  	// Default:    true
+		//  	EnableD2G bool `json:"enableD2G" default:"true"`
+		//  }
+		//
+		// Additional properties allowed
+		D2GConfig json.RawMessage `json:"d2gConfig,omitempty"`
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -49,12 +184,50 @@ type (
 	// Worker task payload in the test case.
 	TaskPayloadTestCase struct {
 
-		// Possible values:
-		//   * "docker"
-		//   * "podman"
+		// Defined properties:
 		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
+		//  struct {
+		//
+		//  	// Default:    true
+		//  	AllowChainOfTrust bool `json:"allowChainOfTrust" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowInteractive bool `json:"allowInteractive" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowKVM bool `json:"allowKVM" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowLoopbackAudio bool `json:"allowLoopbackAudio" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowLoopbackVideo bool `json:"allowLoopbackVideo" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowPrivileged bool `json:"allowPrivileged" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowPtrace bool `json:"allowPtrace" default:"true"`
+		//
+		//  	// Default:    true
+		//  	AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
+		//
+		//  	// Possible values:
+		//  	//   * "docker"
+		//  	//   * "podman"
+		//  	//
+		//  	// Default:    "docker"
+		//  	ContainerEngine string `json:"containerEngine" default:"docker"`
+		//  }
+		//
+		// Additional properties allowed
+		D2GConfig json.RawMessage `json:"d2gConfig,omitempty"`
 
 		// Detailed information about what the test case tests
 		Description string `json:"description"`
@@ -85,6 +258,38 @@ type (
 		TaskDefTests []TaskDefinitionTestCase `json:"taskDefTests,omitempty"`
 	}
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// D2GConfig is of type json.RawMessage...
+func (m *D2GConfig) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *D2GConfig) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("D2GConfig: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// D2GConfig1 is of type json.RawMessage...
+func (m *D2GConfig1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *D2GConfig1) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("D2GConfig1: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
 
 // Returns json schema for the payload part of the task definition. Please
 // note we use a go string and do not load an external file, since we want this
@@ -143,13 +348,58 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task payload, and an\nexpected Generic Worker task payload output. The Docker Worker task payload\nis converted by d2g to a Generic Worker task payload. The test is successful\nif the generated Generic Worker task payload exactly matches the Generic\nWorker task payload in the test case.",
             "properties": {
-              "containerEngine": {
-                "default": "docker",
-                "enum": [
-                  "docker",
-                  "podman"
-                ],
-                "type": "string"
+              "d2gConfig": {
+                "properties": {
+                  "allowChainOfTrust": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowDisableSeccomp": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowHostSharedMemory": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowInteractive": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowKVM": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowLoopbackAudio": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowLoopbackVideo": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowPrivileged": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowPtrace": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowTaskclusterProxy": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "containerEngine": {
+                    "default": "docker",
+                    "enum": [
+                      "docker",
+                      "podman"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
               "description": {
                 "$ref": "#/definitions/caseDescription"
@@ -182,13 +432,62 @@ func JSONSchema() string {
             "additionalProperties": false,
             "description": "A test case contains a static input Docker Worker task definition, and an\nexpected Generic Worker task definition output. The Docker Worker task definition\nis converted by d2g to a Generic Worker task definition. The test is successful\nif the generated Generic Worker task definition exactly matches the Generic\nWorker task definition in the test case.",
             "properties": {
-              "containerEngine": {
-                "default": "docker",
-                "enum": [
-                  "docker",
-                  "podman"
-                ],
-                "type": "string"
+              "d2gConfig": {
+                "properties": {
+                  "allowChainOfTrust": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowDisableSeccomp": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowHostSharedMemory": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowInteractive": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowKVM": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowLoopbackAudio": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowLoopbackVideo": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowPrivileged": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowPtrace": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "allowTaskclusterProxy": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "containerEngine": {
+                    "default": "docker",
+                    "enum": [
+                      "docker",
+                      "podman"
+                    ],
+                    "type": "string"
+                  },
+                  "enableD2G": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
               },
               "description": {
                 "$ref": "#/definitions/caseDescription"

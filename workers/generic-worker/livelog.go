@@ -30,7 +30,11 @@ func (feature *LiveLogFeature) PersistState() error {
 	return nil
 }
 
-func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
+func (feature *LiveLogFeature) IsEnabled() bool {
+	return config.EnableLiveLog
+}
+
+func (feature *LiveLogFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.LiveLog
 }
 

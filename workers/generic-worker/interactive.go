@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os/exec"
 	"path"
@@ -33,7 +32,11 @@ func (feature *InteractiveFeature) PersistState() error {
 	return nil
 }
 
-func (feature *InteractiveFeature) IsEnabled(task *TaskRun) bool {
+func (feature *InteractiveFeature) IsEnabled() bool {
+	return config.EnableInteractive
+}
+
+func (feature *InteractiveFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.Interactive
 }
 
@@ -63,16 +66,6 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 }
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
-	if !config.EnableInteractive {
-		workerPoolID := config.ProvisionerID + "/" + config.WorkerType
-		workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
-		return MalformedPayloadError(fmt.Errorf(`this task has payload.features.interactive set to true, but enableInteractive is not enabled on this worker pool (%s)
-If you do not require an interactive task, remove payload.features.interactive from the task definition.
-If you do require an interactive task, please do one of two things:
-	1. Contact the owner of the worker pool %s (see %s) and ask for interactive tasks to be enabled.
-	2. Use a worker pool that already allows interactive tasks (search for "enableInteractive": "true" in the worker pool definition)`, workerPoolID, workerPoolID, workerManagerURL))
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	cmd := func() (*exec.Cmd, error) {
 		return it.task.generateInteractiveCommand(ctx)

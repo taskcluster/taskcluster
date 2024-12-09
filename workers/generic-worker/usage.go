@@ -150,12 +150,6 @@ and reports back results to the queue.
                                             but for one-off troubleshooting, it can be useful
                                             to (temporarily) leave home directories in place.
                                             Accepted values: true or false. [default: true]
-          containerEngine                   The default container engine to use for translated
-                                            Docker Worker tasks when not specified in the
-                                            Docker Worker task payload (property
-                                            capabilities.containerEngine).
-                                            Accepted values: "docker" or "podman".
-                                            [default: "docker"]
           createObjectArtifacts             If true, use artifact type 'object' for artifacts
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
@@ -182,13 +176,17 @@ and reports back results to the queue.
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
-                                            an absolute path. [default: "downloads"]
-          enableD2G                         Enables D2G (Docker Worker to Generic Worker payload
-                                            transformation). This allows for Docker Worker payloads
-                                            to be submitted to Generic Worker. [default: false]
-          enableInteractive                 Enables interactive mode. This allows an
-                                            interactive shell session to run on the worker.
-                                            [default: false]` + headlessTasksUsage() + `
+                                            an absolute path. [default: "downloads"]` + d2gConfig() + `
+          enableChainOfTrust                Enables the Chain of Trust feature to be used in the
+                                            task payload. [default: true]
+          enableLiveLog                     Enables the LiveLog feature to be used in the task
+                                            payload. [default: true]
+          enableMounts                      Enables the Mounts feature to be used in the task
+                                            payload. [default: true]
+          enableOSGroups                    Enables the OS Groups feature to be used in the task
+                                            payload. [default: true]
+          enableTaskclusterProxy            Enables the Taskcluster Proxy feature to be used in
+                                            the task payload. [default: true]` + enableTaskFeatures() + headlessTasksUsage() + `
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
@@ -209,16 +207,7 @@ and reports back results to the queue.
                                             [default: 60098]
           livelogExposePort                 When not using websocktunnel, livelog would be exposed using this port.
                                             If it is set to 0, logs would be exposed using a random port.
-                                            [default: 0]
-          loopbackAudioDeviceNumber         The audio loopback device number. The resulting devices inside /dev/snd
-                                            will take the form controlC<DEVICE_NUMBER>, pcmC<DEVICE_NUMBER>D0c,
-                                            pcmC<DEVICE_NUMBER>D0p, pcmC<DEVICE_NUMBER>D1c, pcmC<DEVICE_NUMBER>D1p
-                                            where <DEVICE_NUMBER> is an integer between 0 and 31.
-                                            [default: 16]
-          loopbackVideoDeviceNumber         The video loopback device number. Its value will take the form
-                                            /dev/video<DEVICE_NUMBER> where <DEVICE_NUMBER> is an integer
-                                            between 0 and 255. This setting may be used to change it.
-                                            [default: 0]
+                                            [default: 0]` + loopbackDeviceNumbers() + `
           maxTaskRunTime                    The maximum value allowed for maxRunTime on generic-worker payloads.
                                             [default: 86400]
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after

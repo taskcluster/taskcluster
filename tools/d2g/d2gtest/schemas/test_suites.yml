@@ -56,12 +56,45 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
-            containerEngine:
-              type: string
-              enum:
-                - docker
-                - podman
-              default: docker
+            d2gConfig:
+              type: object
+              properties:
+                allowChainOfTrust:
+                  type: boolean
+                  default: true
+                allowDisableSeccomp:
+                  type: boolean
+                  default: true
+                allowHostSharedMemory:
+                  type: boolean
+                  default: true
+                allowInteractive:
+                  type: boolean
+                  default: true
+                allowKVM:
+                  type: boolean
+                  default: true
+                allowLoopbackAudio:
+                  type: boolean
+                  default: true
+                allowLoopbackVideo:
+                  type: boolean
+                  default: true
+                allowPrivileged:
+                  type: boolean
+                  default: true
+                allowPtrace:
+                  type: boolean
+                  default: true
+                allowTaskclusterProxy:
+                  type: boolean
+                  default: true
+                containerEngine:
+                  type: string
+                  default: docker
+                  enum:
+                    - docker
+                    - podman
       taskDefTests:
         title: Task definition test cases
         description: |-
@@ -97,12 +130,48 @@ properties:
               # schemas and we prefer not to keep both json and yml versions in
               # the repo
               type: object
-            containerEngine:
-              type: string
-              enum:
-                - docker
-                - podman
-              default: docker
+            d2gConfig:
+              type: object
+              properties:
+                enableD2G:
+                  type: boolean
+                  default: true
+                allowChainOfTrust:
+                  type: boolean
+                  default: true
+                allowDisableSeccomp:
+                  type: boolean
+                  default: true
+                allowHostSharedMemory:
+                  type: boolean
+                  default: true
+                allowInteractive:
+                  type: boolean
+                  default: true
+                allowKVM:
+                  type: boolean
+                  default: true
+                allowLoopbackAudio:
+                  type: boolean
+                  default: true
+                allowLoopbackVideo:
+                  type: boolean
+                  default: true
+                allowPrivileged:
+                  type: boolean
+                  default: true
+                allowPtrace:
+                  type: boolean
+                  default: true
+                allowTaskclusterProxy:
+                  type: boolean
+                  default: true
+                containerEngine:
+                  type: string
+                  default: docker
+                  enum:
+                    - docker
+                    - podman
 definitions:
   suiteName:
     title: Test Suite Name

@@ -22,18 +22,6 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func platformFeatures() []Feature {
-	return []Feature{
-		&InteractiveFeature{},
-		&LoopbackAudioFeature{},
-		&LoopbackVideoFeature{},
-		// keep chain of trust as low down as possible, as it checks permissions
-		// of signing key file, and a feature could change them, so we want these
-		// checks as late as possible
-		&ChainOfTrustFeature{},
-	}
-}
-
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
 	err := host.Run("/bin/chmod", "-R", "u+w", path)

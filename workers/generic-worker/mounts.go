@@ -253,9 +253,13 @@ func (bc *Base64Content) RequiredScopes() []string {
 	return []string{}
 }
 
+func (feature *MountsFeature) IsEnabled() bool {
+	return config.EnableMounts
+}
+
 // Since mounts are protected by scopes per mount, no reason to have
 // a feature flag to enable. Having mounts in the payload is enough.
-func (feature *MountsFeature) IsEnabled(task *TaskRun) bool {
+func (feature *MountsFeature) IsRequested(task *TaskRun) bool {
 	return true
 }
 

@@ -64,3 +64,19 @@ func sidSID() string {
                                             interactive windows station and desktop, for
                                             example: 'S-1-5-5-0-41431533'.`
 }
+
+func d2gConfig() string {
+	return ""
+}
+
+func enableTaskFeatures() string {
+	return `
+          enableRDP                         Enables the RDP feature to be used in the task
+                                            payload. [default: true]
+          enableRunAsAdministrator          Enables the RunAsAdministrator feature to be used in
+                                            the task payload. [default: true]`
+}
+
+func loopbackDeviceNumbers() string {
+	return ""
+}
