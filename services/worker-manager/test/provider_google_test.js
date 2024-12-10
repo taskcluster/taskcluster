@@ -107,6 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         publisher: await helper.load('publisher'),
         rootUrl: helper.rootUrl,
         WorkerPoolError: helper.WorkerPoolError,
+        launchConfigSelector: await helper.load('launchConfigSelector'),
         providerConfig: {
           project,
           instancePermissions: [],
