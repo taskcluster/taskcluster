@@ -111,7 +111,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     await workerPool.create(helper.db);
 
-    return workerPool;
+    // reload from db with launchConfigIds
+    return await WorkerPool.get(helper.db, workerPoolId);
   };
 
   const assertHasTag = (runInstanceCall, ResourceType, Key, Value) => {
