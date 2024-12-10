@@ -6471,7 +6471,15 @@ This is useful at the moment to maintain backwards compatibility.
 declare
   launch_configs jsonb;
 begin
-  select coalesce(jsonb_agg(worker_pool_launch_configs.configuration), null) into launch_configs
+  -- also make sure launchConfigId is set in the returned configuration
+  select coalesce(jsonb_agg(
+    case
+      when configuration ? 'workerManager' then
+        jsonb_set(configuration, '{workerManager,launchConfigId}', to_jsonb(launch_config_id))
+      else
+        configuration || jsonb_build_object('workerManager', jsonb_build_object('launchConfigId', launch_config_id))
+    end
+  ), null) into launch_configs
   from worker_pool_launch_configs
   where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
     and worker_pool_launch_configs.is_archived = false;
