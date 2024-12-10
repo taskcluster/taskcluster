@@ -309,6 +309,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const configs = await provider.selectLaunchConfigsForSpawn({ workerPool, toSpawn: 1 });
       assert.deepEqual([], configs);
+
+      const monitor = await helper.load('monitor');
+      const monitorErrors = monitor.manager.messages.filter(
+        ({ Type }) => Type === 'monitor.generic',
+      ) || [];
+      assert.equal(monitorErrors.length, 1);
+      assert.equal(monitorErrors[0].Fields.message, 'No launch configs found for worker pool');
+      monitor.manager.reset();
     });
   });
 });
