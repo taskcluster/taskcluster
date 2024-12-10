@@ -134,6 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       validator: await helper.load('validator'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       providerConfig: {
         clientId: 'my client id',
         secret: 'my secret',
@@ -980,15 +981,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('de-provisioning loop', async function() {
-    const workerPool = await makeWorkerPool({
-      // simulate previous provisionig and deleting the workerpool
-      providerId: 'null-provider',
-      previousProviderIds: ['azure'],
+  suite('deprovision', function () {
+    test('de-provisioning loop', async function () {
+      const workerPool = await makeWorkerPool({
+        // simulate previous provisionig and deleting the workerpool
+        providerId: 'null-provider',
+        previousProviderIds: ['azure'],
+      });
+      await provider.deprovision({ workerPool });
+      // nothing has changed..
+      assert(workerPool.previousProviderIds.includes('azure'));
     });
-    await provider.deprovision({ workerPool });
-    // nothing has changed..
-    assert(workerPool.previousProviderIds.includes('azure'));
   });
 
   suite('checkWorker', function() {

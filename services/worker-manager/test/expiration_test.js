@@ -68,7 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   suite('expireLaunchConfigs', function () {
     const getWPLCs = async (workerPoolId, providerId) => {
-      return helper.db.fns.get_worker_pool_launch_configs(workerPoolId, providerId, null, null, null);
+      return helper.db.fns.get_worker_pool_launch_configs(workerPoolId, null, null, null);
     };
 
     const updateWP = async (workerPoolId, providerId, config) => {
