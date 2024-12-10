@@ -70,14 +70,12 @@ begin
                   wp.last_modified
               );
           END LOOP;
-
-            -- we can't drop launchConfigs from the worker pool at this point
-            -- as it's used in the running processes
-            -- will be updated in the next migration
-            -- UPDATE worker_pools
-            -- SET config = config - 'launchConfigs'
-            -- WHERE worker_pool_id = wp.worker_pool_id;
       END LOOP;
+
+      -- remove launchConfigs from worker_pools configs
+      UPDATE worker_pools
+      SET config = worker_pools.config - 'launchConfigs';
+
   END;
   $$ LANGUAGE plpgsql;
 
