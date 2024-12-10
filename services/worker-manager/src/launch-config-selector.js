@@ -8,6 +8,9 @@ import { WorkerPoolLaunchConfig } from './data.js';
 * The higher the initial weight, the more likely the launch config will be selected.
 */
 class WeightedRandomConfig {
+  /**
+   * @param {import('./data.js').WorkerPoolLaunchConfig[]} launchConfigs
+   */
   constructor(launchConfigs = []) {
     this.configs = [];
     this.totalWeight = 0;
@@ -78,7 +81,11 @@ export class LaunchConfigSelector {
     this.monitor = monitor;
   }
 
-  forWorkerPool(workerPool) {
+  /**
+   * @param {import('./data.js').WorkerPool} workerPool
+   * @returns {Promise<WeightedRandomConfig>}
+   */
+  async forWorkerPool(workerPool) {
     // this is called in the provider.provision() method
     // before that estimator.simple() is running to determine how many instances to start
     // more calculations and workers counting done in the provisioner
@@ -86,7 +93,7 @@ export class LaunchConfigSelector {
     //  combine calculations and aggreagations for both estimator and selector?
     //  make selector part of the estimator?
 
-    const launchConfigs = this.loadLaunchConfigs(workerPool);
+    const launchConfigs = await this.loadLaunchConfigs(workerPool);
 
     // TODO: fetch workers stats - launchConfig/state/count information
     //    to take into account for maxCapacity
@@ -97,6 +104,10 @@ export class LaunchConfigSelector {
     return new WeightedRandomConfig(launchConfigs);
   }
 
+  /**
+   * @param {import('./data.js').WorkerPool} workerPool
+   * @returns {Promise<import('./data.js').WorkerPoolLaunchConfig[]>}
+   */
   async loadLaunchConfigs(workerPool) {
     const launchConfigs = await WorkerPoolLaunchConfig.load(
       this.db,

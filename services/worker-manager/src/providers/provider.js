@@ -90,11 +90,15 @@ export class Provider {
 
   /**
    * Get active launch configs to spawn workers
+   * @param {Object} options
+   * @param {String} options.workerPool - worker pool id
+   * @param {Number} options.toSpawn - number of workers to spawn
+   * @param {Boolean} options.returnAll - return all launch configs
    */
   async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
 
-    const configSelector = this.launchConfigSelector.forWorkerPool(workerPool);
+    const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool);
 
     if (returnAll) {
       return configSelector.getAll();
