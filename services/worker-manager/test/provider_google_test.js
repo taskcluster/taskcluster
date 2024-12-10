@@ -30,6 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator: await helper.load('estimator'),
       publisher: await helper.load('publisher'),
       validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: WorkerPoolError,
       providerConfig: {
@@ -47,7 +48,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   const defaultLaunchConfig = {
-    capacityPerInstance: 1,
+    workerManager: {
+      capacityPerInstance: 1,
+    },
     machineType: 'n1-standard-2',
     region: 'us-east1',
     zone: 'us-east1-a',
@@ -104,6 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         publisher: await helper.load('publisher'),
         rootUrl: helper.rootUrl,
         WorkerPoolError: helper.WorkerPoolError,
+        launchConfigSelector: await helper.load('launchConfigSelector'),
         providerConfig: {
           project,
           instancePermissions: [],
@@ -159,6 +163,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
+        'launch-config-id': worker.launchConfigId,
       });
       assert.equal(parameters.requestBody.description, 'none');
       assert.deepEqual(parameters.requestBody.disks, []);
@@ -234,6 +239,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
         'color': 'red',
+        'launch-config-id': workers[0].launchConfigId,
       });
     });
 
@@ -263,6 +269,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },
@@ -318,6 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },

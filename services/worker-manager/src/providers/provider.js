@@ -23,6 +23,7 @@ export class Provider {
     providerConfig,
     providerType,
     publisher,
+    launchConfigSelector,
   }) {
     assert(db, 'db is required');
     assert(estimator, 'estimator is required');
@@ -30,6 +31,7 @@ export class Provider {
     assert(notify, 'notify is required');
     assert(validator, 'validator is required');
     assert(publisher, 'publisher is required');
+    assert(launchConfigSelector, 'launchConfigSelector is required');
 
     this.providerId = providerId;
     this.monitor = monitor;
@@ -42,6 +44,7 @@ export class Provider {
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
     this.publisher = publisher;
+    this.launchConfigSelector = launchConfigSelector;
 
     this.emailCache = [];
   }
@@ -83,6 +86,25 @@ export class Provider {
   }
 
   async scanCleanup() {
+  }
+
+  /**
+   * Get active launch configs to spawn workers
+   * @param {Object} options
+   * @param {String} options.workerPool - worker pool id
+   * @param {Number} options.toSpawn - number of workers to spawn
+   * @param {Boolean} options.returnAll - return all launch configs
+   */
+  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
+    assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
+
+    const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool);
+
+    if (returnAll) {
+      return configSelector.getAll();
+    }
+
+    return configSelector.selectCapacity(toSpawn);
   }
 
   async createWorker({ workerPool, workerGroup, workerId, input }) {

@@ -76,7 +76,17 @@ export class WorkerPool {
 
   // Get a worker pool from the DB, or undefined if it does not exist.
   static async get(db, workerPoolId) {
-    return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity_and_counts_by_state(workerPoolId));
+    const [rows, stats] = await Promise.all([
+      db.fns.get_worker_pool_with_launch_configs(workerPoolId),
+      db.fns.get_worker_pool_with_counts_and_capacity(workerPoolId),
+    ]);
+
+    if (rows.length === 1) {
+      return WorkerPool.fromDb({
+        ...rows[0],
+        ...stats[0],
+      });
+    }
   }
 
   // Expire worker pools with null-provider that no longer have any workers,
@@ -91,7 +101,7 @@ export class WorkerPool {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      await db.fns.create_worker_pool(
+      await db.fns.create_worker_pool_with_launch_configs(
         this.workerPoolId,
         this.providerId,
         // node-pg cannot correctly encode JS arrays as JSONB
@@ -109,7 +119,7 @@ export class WorkerPool {
         throw err;
       }
       const existing = WorkerPool.fromDbRows(
-        await db.fns.get_worker_pool_with_capacity_and_counts_by_state(this.workerPoolId));
+        await db.fns.get_worker_pool_with_launch_configs(this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool does not match, so this is a "real" conflict
@@ -130,15 +140,15 @@ export class WorkerPool {
       config: this.config,
       owner: this.owner,
       emailOnError: this.emailOnError,
-      currentCapacity: this.currentCapacity,
-      requestedCount: this.requestedCount,
-      runningCount: this.runningCount,
-      stoppingCount: this.stoppingCount,
-      stoppedCount: this.stoppedCount,
-      requestedCapacity: this.requestedCapacity,
-      runningCapacity: this.runningCapacity,
-      stoppingCapacity: this.stoppingCapacity,
-      stoppedCapacity: this.stoppedCapacity,
+      currentCapacity: this.currentCapacity ?? 0,
+      requestedCount: this.requestedCount ?? 0,
+      runningCount: this.runningCount ?? 0,
+      stoppingCount: this.stoppingCount ?? 0,
+      stoppedCount: this.stoppedCount ?? 0,
+      requestedCapacity: this.requestedCapacity ?? 0,
+      runningCapacity: this.runningCapacity ?? 0,
+      stoppingCapacity: this.stoppingCapacity ?? 0,
+      stoppedCapacity: this.stoppedCapacity ?? 0,
     };
   }
 
@@ -153,6 +163,48 @@ export class WorkerPool {
       'emailOnError',
     ];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
+  }
+}
+
+/**
+ * @class WorkerPoolLaunchConfig
+ * @property {string} launchConfigId
+ * @property {string} workerPoolId
+ * @property {Boolean} isArchived
+ * @property {Object} configuration
+ * @property {Date} created
+ * @property {Date} lastModified
+ */
+export class WorkerPoolLaunchConfig {
+  constructor(props) {
+    Object.assign(this, props);
+  }
+
+  static fromDb(row) {
+    return new WorkerPoolLaunchConfig({
+      launchConfigId: row.launch_config_id,
+      workerPoolId: row.worker_pool_id,
+      isArchived: row.is_archived,
+      configuration: row.configuration,
+      created: row.created,
+      lastModified: row.last_modified,
+    });
+  }
+
+  /**
+   * @param {Object} db
+   * @param {string} workerPoolId
+   */
+  static async load(db, workerPoolId) {
+    const isArchived = false;
+    const rows = await db.fns.get_worker_pool_launch_configs(workerPoolId, isArchived, null, null);
+    return rows.map(WorkerPoolLaunchConfig.fromDb);
+  }
+
+  // remove launch configurations that no longer have workers associated with them
+  static async expire({ db, monitor }) {
+    const rows = await db.fns.expire_worker_pool_launch_configs();
+    return rows.map(row => row.launch_config_id);
   }
 }
 
@@ -172,6 +224,7 @@ export class WorkerPoolError {
       title: row.title,
       description: row.description,
       extra: row.extra,
+      launchConfigId: row.launch_config_id,
     });
   }
 
@@ -242,6 +295,7 @@ export class WorkerPoolError {
       title: this.title,
       description: this.description,
       extra: this.extra,
+      launchConfigId: this.launchConfigId,
     };
   }
 
@@ -253,6 +307,7 @@ export class WorkerPoolError {
       'kind',
       'title',
       'description',
+      'launchConfigId',
     ];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
   }
@@ -287,6 +342,7 @@ export class Worker {
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
       lastDateActive: row.last_date_active,
+      launchConfigId: row.launch_config_id,
     });
   }
 
@@ -310,13 +366,14 @@ export class Worker {
       secret: null,
       expires: taskcluster.fromNow('1 week'),
       quarantineUntil: null,
+      launchConfigId: null,
       ...input,
     });
   }
 
   // Get a worker from the DB, or undefined if it does not exist.
   static async get(db, { workerPoolId, workerGroup, workerId }) {
-    return Worker.fromDbRows(await db.fns.get_worker_2(workerPoolId, workerGroup, workerId));
+    return Worker.fromDbRows(await db.fns.get_worker_3(workerPoolId, workerGroup, workerId));
   }
 
   // Get a queue worker from the DB, or undefined if it does not exist.
@@ -390,7 +447,7 @@ export class Worker {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      const etag = (await db.fns.create_worker(
+      const etag = (await db.fns.create_worker_with_lc(
         this.workerPoolId,
         this.workerGroup,
         this.workerId,
@@ -402,7 +459,8 @@ export class Worker {
         this.capacity,
         this.lastModified,
         this.lastChecked,
-      ))[0].create_worker;
+        this.launchConfigId,
+      ))[0].create_worker_with_lc;
 
       return new Worker({
         workerPoolId: this.workerPoolId,
@@ -419,6 +477,7 @@ export class Worker {
         etag,
         secret: this.secret,
         quarantineUntil: null,
+        launchConfigId: this.launchConfigId,
       });
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
