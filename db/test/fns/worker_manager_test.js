@@ -1215,7 +1215,13 @@ suite(testing.suiteName(), function () {
       const res = await db.fns.collect_launch_configs_if_exist({ max: 9 }, wpId);
       assert.deepEqual(res[0].collect_launch_configs_if_exist, {
         max: 9,
-        launchConfigs: [{ config: '1' }, { config: '2' }],
+        launchConfigs: [{
+          workerManager: { launchConfigId: 'lc1' },
+          config: '1',
+        }, {
+          workerManager: { launchConfigId: 'lc2' },
+          config: '2',
+        }],
       });
     });
 
