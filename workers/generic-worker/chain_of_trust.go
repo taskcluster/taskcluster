@@ -95,7 +95,11 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	return
 }
 
-func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
+func (feature *ChainOfTrustFeature) IsEnabled() bool {
+	return config.EnableChainOfTrust
+}
+
+func (feature *ChainOfTrustFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.ChainOfTrust
 }
 

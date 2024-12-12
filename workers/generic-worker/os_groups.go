@@ -20,7 +20,11 @@ func (feature *OSGroupsFeature) PersistState() error {
 	return nil
 }
 
-func (feature *OSGroupsFeature) IsEnabled(task *TaskRun) bool {
+func (feature *OSGroupsFeature) IsEnabled() bool {
+	return config.EnableOSGroups
+}
+
+func (feature *OSGroupsFeature) IsRequested(task *TaskRun) bool {
 	// always enabled, since scopes protect usage at a group level
 	return true
 }

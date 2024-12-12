@@ -11,3 +11,11 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
 	return nil
 }
+
+func platformFeatures() []Feature {
+	return []Feature{
+		&InteractiveFeature{},
+		&LoopbackAudioFeature{},
+		&LoopbackVideoFeature{},
+	}
+}

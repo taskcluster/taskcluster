@@ -30,8 +30,12 @@ func (feature *RDPFeature) PersistState() error {
 	return nil
 }
 
+func (feature *RDPFeature) IsEnabled() bool {
+	return config.EnableRDP
+}
+
 // RDP is only enabled when task.payload.rdpInfo is set
-func (feature *RDPFeature) IsEnabled(task *TaskRun) bool {
+func (feature *RDPFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.RdpInfo != ""
 }
 

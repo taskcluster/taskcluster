@@ -1,16 +1,19 @@
 ---
 testSuite:
-  name: Docker Worker feature tests
-  description: Tests for docker-worker features
+  name: Docker Worker feature/capability tests
+  description: Tests for docker-worker features/capabilities
   payloadTests:
-    - name: Allow ptrace
+    - name: Allow ptrace, disableSeccomp, and taskclusterProxy
       description: >-
-        Test when ptrace feature is enabled
+        Test when ptrace, disableSeccommp, and taskclusterProxy are enabled
       dockerWorkerTaskPayload:
         command:
           - echo "Hello world"
+        capabilities:
+          disableSeccomp: true
         features:
           allowPtrace: true
+          taskclusterProxy: true
         image: ubuntu
         maxRunTime: 3600
       genericWorkerTaskPayload:
@@ -18,7 +21,49 @@ testSuite:
           - - bash
             - "-cx"
             - >-
-              docker run -t --rm --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              --cap-add=SYS_PTRACE --security-opt=seccomp=unconfined
+              --add-host=taskcluster:127.0.0.1 --net=host
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_PROXY_URL
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        features:
+          backingLog: true
+          liveLog: true
+          taskclusterProxy: true
+        osGroups:
+          - docker
+      d2gConfig: {}
+
+    - name: Allow ptrace, disableSeccomp, and taskclusterProxy disabled
+      description: >-
+        Test when ptrace, disableSeccomp, and taskclusterProxy are enabled but disabled in d2gConfig that it is not added to the generic worker task payload
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          disableSeccomp: true
+        features:
+          allowPtrace: true
+          taskclusterProxy: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - "-cx"
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -33,4 +78,74 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig:
+        allowDisableSeccomp: false
+        allowPrivileged: false
+        allowPtrace: false
+        allowTaskclusterProxy: false
+
+    - name: Allow privileged
+      description: >-
+        Test when privileged is enabled
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          privileged: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - "-cx"
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1 --privileged
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig: {}
+
+    - name: Allow privileged disabled
+      description: >-
+        Test when privileged is enabled but disabled in d2gConfig that it is not added to the generic worker task payload
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        capabilities:
+          privileged: true
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - "-cx"
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowPrivileged: false
   taskDefTests: []

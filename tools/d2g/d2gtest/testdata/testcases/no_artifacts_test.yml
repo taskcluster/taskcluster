@@ -41,4 +41,5 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig: {}
   taskDefTests: []

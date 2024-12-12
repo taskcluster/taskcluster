@@ -31,6 +31,7 @@ testSuite:
             - 128
         osGroups:
           - docker
+      d2gConfig: {}
 
     - name: Set to podman container engine test
       description: >-
@@ -60,4 +61,5 @@ testSuite:
           retry:
             - 125
             - 128
+      d2gConfig: {}
   taskDefTests: []

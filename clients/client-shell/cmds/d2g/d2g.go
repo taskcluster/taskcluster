@@ -82,6 +82,20 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to convert input to a docker worker payload definition: %v", err)
 	}
 
+	d2gConfig := map[string]interface{}{
+		"allowChainOfTrust":     true,
+		"allowDisableSeccomp":   true,
+		"allowHostSharedMemory": true,
+		"allowInteractive":      true,
+		"allowKVM":              true,
+		"allowLoopbackAudio":    true,
+		"allowLoopbackVideo":    true,
+		"allowPrivileged":       true,
+		"allowPtrace":           true,
+		"allowTaskclusterProxy": true,
+		"containerEngine":       engine,
+	}
+
 	if isTaskDef {
 		dwTaskDefJSON, err := json.Marshal(dwTaskDef)
 		if err != nil {
@@ -95,7 +109,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		auth := tcauth.New(creds, config.RootURL())
 
 		// Convert dwTaskDef to gwTaskDef
-		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, engine, auth)
+		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, d2gConfig, auth)
 		if err != nil {
 			return fmt.Errorf("failed to convert docker worker task definition to a generic worker task definition: %v", err)
 		}
@@ -127,7 +141,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, err := d2g.ConvertPayload(dwPayload, engine)
+		gwPayload, err := d2g.ConvertPayload(dwPayload, d2gConfig)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}
