@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v75/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v75/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v76/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v76/workers/generic-worker/runtime"
 )
 
 func gwCopyToTempFile(filePath string) (string, error) {

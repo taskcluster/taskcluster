@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v76.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.12.0, go v1.23.4, and yarn v4.5.3.
+
+### USERS
+
+▶ [MAJOR] [#3823](https://github.com/taskcluster/taskcluster/issues/3823)
+Add authentication to websockets at the time of subscribing to pulse messages
+
+This introduces new scope `web:read-pulse` that needs to be added to the existing `anonymous` role
+in order to keep Pulse subscriptions public.
+
+▶ [patch] [#4086](https://github.com/taskcluster/taskcluster/issues/4086)
+`queue.getArtifact()` checks if artifact is expired and returns `ResourceExpired - 410` in such cases
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group across 1 directory with 4 updates (2edd60b1a)
+
+</details>
+
 ## v75.0.1
 
 ### WORKER-DEPLOYERS

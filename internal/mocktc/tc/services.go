@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcindex"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v75/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v76/clients/client-go/tcworkermanager"
 )
 
 type Auth interface {

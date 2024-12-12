@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v75/tools/livelog/writer"
+	"github.com/taskcluster/taskcluster/v76/tools/livelog/writer"
 )
 
 func listenOnRandomPort() (net.Listener, uint16, error) {

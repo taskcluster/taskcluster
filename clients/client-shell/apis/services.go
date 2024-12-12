@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v75/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v76/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{

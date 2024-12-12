@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v75/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v76/tools/websocktunnel/util"
 )
 
 type wrapStream struct {

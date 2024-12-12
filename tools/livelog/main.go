@@ -11,8 +11,8 @@ import (
 	"sync"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster/v75/internal"
-	stream "github.com/taskcluster/taskcluster/v75/tools/livelog/writer"
+	"github.com/taskcluster/taskcluster/v76/internal"
+	stream "github.com/taskcluster/taskcluster/v76/tools/livelog/writer"
 )
 
 const (
