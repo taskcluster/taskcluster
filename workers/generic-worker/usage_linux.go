@@ -1,5 +1,13 @@
 package main
 
+func disableNativePayloads() string {
+	return `
+          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
+                                            enabled (d2gConfig.enableD2G) when this is set to true.
+                                            Tasks submitted with native payloads will be resolved
+                                            as exception/malformed-payload. [default: false]`
+}
+
 func d2gConfig() string {
 	return `
           d2gConfig                         D2G-specific (Docker Worker to Generic Worker payload

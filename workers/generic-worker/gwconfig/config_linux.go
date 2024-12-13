@@ -4,6 +4,7 @@ import "testing"
 
 type PublicPlatformConfig struct {
 	D2GConfig                 map[string]interface{} `json:"d2gConfig"`
+	DisableNativePayloads     bool                   `json:"disableNativePayloads"`
 	EnableInteractive         bool                   `json:"enableInteractive"`
 	EnableLoopbackAudio       bool                   `json:"enableLoopbackAudio"`
 	EnableLoopbackVideo       bool                   `json:"enableLoopbackVideo"`
@@ -29,6 +30,7 @@ func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 			"containerEngine":       "docker",
 			"gpus":                  "all",
 		},
+		DisableNativePayloads:     false,
 		EnableInteractive:         true,
 		EnableLoopbackAudio:       true,
 		EnableLoopbackVideo:       true,
@@ -46,4 +48,8 @@ func (c *PublicPlatformConfig) D2GEnabled() bool {
 func (c *PublicPlatformConfig) EnableD2G(t *testing.T) {
 	t.Helper()
 	c.D2GConfig["enableD2G"] = true
+}
+
+func (c *PublicPlatformConfig) NativePayloadsDisabled() bool {
+	return c.DisableNativePayloads
 }

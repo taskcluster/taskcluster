@@ -2,6 +2,10 @@
 
 package main
 
+func disableNativePayloads() string {
+	return ""
+}
+
 func d2gConfig() string {
 	return ""
 }

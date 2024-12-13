@@ -146,6 +146,10 @@ and reports back results to the queue.
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
                                             https://bugzil.la/1298010
+          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
+                                            enabled (d2gConfig.enableD2G) when this is set to true.
+                                            Tasks submitted with native payloads will be resolved
+                                            as exception/malformed-payload. [default: false]
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.

@@ -148,6 +148,7 @@ func NowMillis(t *testing.T) (now time.Time) {
 
 // If an artifact expires before task deadline we should get a Malformed Payload
 func TestArtifactExpiresBeforeDeadline(t *testing.T) {
+	setup(t)
 	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {
@@ -285,6 +286,7 @@ func TestArtifactExpiresWithTask(t *testing.T) {
 
 // If an artifact expires after task expiry we should get a Malformed Payload
 func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
+	setup(t)
 	now := NowMillis(t)
 	task := taskWithPayload(`{
   "env": {

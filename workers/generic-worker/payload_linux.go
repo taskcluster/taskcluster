@@ -84,18 +84,20 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("could not convert task definition from JSON to YAML: %v", err))
 	}
 
-	task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")
-	task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
-	task.Warn("utility (Docker Worker 2 Generic Worker):")
-	task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#translating-docker-worker-task-definitionpayload-to-generic-worker-task-definitionpayload")
-	task.Warn("")
-	task.Warn("We recommend that you convert all your Docker Worker tasks to Generic Worker tasks, to ensure")
-	task.Warn("continued support. For this task, see the converted payload below. If you have many tasks that")
-	task.Warn("require conversion, consider using the d2g tool (above) directly. It simply takes a Docker")
-	task.Warn("Worker task payload as input, and outputs a Generic Worker task payload. It can also convert")
-	task.Warn("Docker Worker scopes to equivalent Generic Worker scopes.")
-	task.Warn("")
-	task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
+	if !config.PublicPlatformConfig.NativePayloadsDisabled() {
+		task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")
+		task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
+		task.Warn("utility (Docker Worker 2 Generic Worker):")
+		task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#translating-docker-worker-task-definitionpayload-to-generic-worker-task-definitionpayload")
+		task.Warn("")
+		task.Warn("We recommend that you convert all your Docker Worker tasks to Generic Worker tasks, to ensure")
+		task.Warn("continued support. For this task, see the converted payload below. If you have many tasks that")
+		task.Warn("require conversion, consider using the d2g tool (above) directly. It simply takes a Docker")
+		task.Warn("Worker task payload as input, and outputs a Generic Worker task payload. It can also convert")
+		task.Warn("Docker Worker scopes to equivalent Generic Worker scopes.")
+		task.Warn("")
+		task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
+	}
 
 	return nil
 }

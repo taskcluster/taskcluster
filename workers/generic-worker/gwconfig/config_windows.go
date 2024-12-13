@@ -23,3 +23,7 @@ func (c *PublicPlatformConfig) D2GEnabled() bool {
 func (c *PublicPlatformConfig) EnableD2G(t *testing.T) {
 	t.Helper()
 }
+
+func (c *PublicPlatformConfig) NativePayloadsDisabled() bool {
+	return false
+}

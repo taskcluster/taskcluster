@@ -628,10 +628,10 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	if err != nil {
 		panic(err)
 	}
+	workerPoolID := config.ProvisionerID + "/" + config.WorkerType
+	workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
 	if _, exists := payload["image"]; exists {
 		if !config.PublicPlatformConfig.D2GEnabled() {
-			workerPoolID := config.ProvisionerID + "/" + config.WorkerType
-			workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
 			return MalformedPayloadError(fmt.Errorf(`docker worker payload detected, but D2G is not enabled on this worker pool (%s).
 If you need D2G to translate your Docker Worker payload so Generic Worker can process it, please do one of two things:
 	1. Contact the owner of the worker pool %s (see %s) and ask for D2G to be enabled.
@@ -641,6 +641,8 @@ If you need D2G to translate your Docker Worker payload so Generic Worker can pr
 		if err != nil {
 			return err
 		}
+	} else if config.PublicPlatformConfig.NativePayloadsDisabled() {
+		return MalformedPayloadError(fmt.Errorf("native Generic Worker payloads are disabled on this worker pool (%s)", workerPoolID))
 	} else {
 		err := json.Unmarshal(jsonPayload, &task.Payload)
 		if err != nil {
