@@ -174,6 +174,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       ));
   });
 
+  test('create worker pool - launchConfigIds are added/preserved', async function () {
+    const input = {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [{
+          workerManager: {
+            // launchConfigId: 'lc1',
+          },
+          region: 'r1',
+          launchConfig: { ImageId: 'img1' },
+          capacityPerInstance: 1,
+        }],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    const created = await helper.workerManager.createWorkerPool(workerPoolId, input);
+    assert(created.config.launchConfigs[0].workerManager.launchConfigId);
+    delete created.config.launchConfigs[0].workerManager.launchConfigId;
+    workerPoolCompare(workerPoolId, input, created);
+  });
+
   test('create worker pool fails when pulse publish fails', async function () {
     const input = {
       providerId: 'testing1',

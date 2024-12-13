@@ -142,8 +142,17 @@ builder.declare({
 
   let workerPool = WorkerPool.fromApi({ workerPoolId, ...input });
 
+  let updatedLaunchConfigs = [];
+  let createdLaunchConfigs = [];
+  let archivedLaunchConfigs = [];
+
   try {
-    await workerPool.create(this.db);
+    const rows = await workerPool.create(this.db);
+    if (rows.length === 1) {
+      updatedLaunchConfigs = rows[0].updated_launch_configs;
+      createdLaunchConfigs = rows[0].created_launch_configs;
+      archivedLaunchConfigs = rows[0].archived_launch_configs;
+    }
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -151,7 +160,18 @@ builder.declare({
     return res.reportError('RequestConflict', 'Worker pool already exists', {});
   }
 
-  await this.publisher.workerPoolCreated({ workerPoolId, providerId });
+  // messages would be published with extra info
+  await this.publisher.workerPoolCreated({
+    workerPoolId,
+    providerId,
+    updatedLaunchConfigs,
+    createdLaunchConfigs,
+    archivedLaunchConfigs,
+  });
+
+  // refresh from DB to include launchConfigIds
+  workerPool = await WorkerPool.get(this.db, workerPoolId);
+
   res.reply(workerPool.serializable());
 });
 
