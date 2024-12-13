@@ -100,6 +100,28 @@ type (
 	// The message that is emitted when worker pools are created/changed/deleted.
 	WorkerTypePulseMessage struct {
 
+		// The launch configuration IDs that were archived for this worker pool.
+		//
+		// Array items:
+		// The ID of the launch configuration. This must be unique within the worker pool.
+		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		ArchivedLaunchConfigs []string `json:"archivedLaunchConfigs,omitempty"`
+
+		// The launch configuration IDs that were created for this worker pool.
+		//
+		// Array items:
+		// The ID of the launch configuration. This must be unique within the worker pool.
+		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		CreatedLaunchConfigs []string `json:"createdLaunchConfigs,omitempty"`
+
 		// If this is defined, it was the provider that handled this worker pool in the
 		// configuration before the current one. This will be used by providers to clean
 		// up any resources created for this workerType when they are no longer responsible
@@ -119,6 +141,17 @@ type (
 		// Min length: 1
 		// Max length: 38
 		ProviderID string `json:"providerId"`
+
+		// The launch configuration IDs that were updated for this worker pool.
+		//
+		// Array items:
+		// The ID of the launch configuration. This must be unique within the worker pool.
+		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		UpdatedLaunchConfigs []string `json:"updatedLaunchConfigs,omitempty"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//

@@ -183,6 +183,7 @@
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_3`](#get_worker_3)
    * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
+   * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
    * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
@@ -192,9 +193,8 @@
    * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
    * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
    * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
-   * [`get_worker_pool_with_counts_and_capacity`](#get_worker_pool_with_counts_and_capacity)
    * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
-   * [`get_worker_pools_with_counts_and_capacity`](#get_worker_pools_with_counts_and_capacity)
+   * [`get_worker_pools_counts_and_capacity`](#get_worker_pools_counts_and_capacity)
    * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
    * [`update_worker_2`](#update_worker_2)
@@ -6434,6 +6434,7 @@ end
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_3`](#get_worker_3)
 * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
+* [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
 * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
@@ -6443,9 +6444,8 @@ end
 * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
 * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
 * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
-* [`get_worker_pool_with_counts_and_capacity`](#get_worker_pool_with_counts_and_capacity)
 * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
-* [`get_worker_pools_with_counts_and_capacity`](#get_worker_pools_with_counts_and_capacity)
+* [`get_worker_pools_counts_and_capacity`](#get_worker_pools_counts_and_capacity)
 * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
 * [`update_worker_2`](#update_worker_2)
@@ -7367,6 +7367,51 @@ end
 
 </details>
 
+### get_worker_pool_counts_and_capacity
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 105
+
+Get the capacity of workers in each state for a given worker pool.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  group by worker_pools.worker_pool_id;
+end
+```
+
+</details>
+
 ### get_worker_pool_error
 
 * *Mode*: read
@@ -7705,51 +7750,6 @@ end
 
 </details>
 
-### get_worker_pool_with_counts_and_capacity
-
-* *Mode*: read
-* *Arguments*:
-  * `worker_pool_id_in text`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `current_capacity integer`
-  * `stopped_capacity integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `requested_count integer`
-  * `running_capacity integer`
-  * `running_count integer`
-  * `stopping_capacity integer`
-  * `stopping_count integer`
-* *Last defined on version*: 105
-
-Get the capacity of workers in each state for a given worker pool.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    worker_pools.worker_pool_id,
-    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
-    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
-    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
-    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
-    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
-    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
-  from worker_pools
-  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
-  where worker_pools.worker_pool_id = worker_pool_id_in
-  group by worker_pools.worker_pool_id;
-end
-```
-
-</details>
-
 ### get_worker_pool_with_launch_configs
 
 * *Mode*: read
@@ -7793,7 +7793,7 @@ end
 
 </details>
 
-### get_worker_pools_with_counts_and_capacity
+### get_worker_pools_counts_and_capacity
 
 * *Mode*: read
 * *Arguments*:
@@ -8254,11 +8254,11 @@ end
 
 ### deprecated methods
 
-* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v77.0.0)
-* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v77.0.0)
-* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
-* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v77.0.0)
-* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
-* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v77.0.0)
-* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v77.0.0)
-* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v77.0.0)
+* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v78.0.0)
+* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v78.0.0)
+* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
+* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v78.0.0)
+* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
+* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v78.0.0)
+* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
+* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v78.0.0)

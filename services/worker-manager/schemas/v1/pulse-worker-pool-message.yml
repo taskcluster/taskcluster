@@ -16,6 +16,28 @@ properties:
       configuration before the current one. This will be used by providers to clean
       up any resources created for this workerType when they are no longer responsible
       for it.
+  createdLaunchConfigs:
+    title: Created Launch Configs
+    description: |
+      The launch configuration IDs that were created for this worker pool.
+    type: array
+    items: {$const: lc-id}
+    uniqueItems: true
+  updatedLaunchConfigs:
+    title: Updated Launch Configs
+    description: |
+      The launch configuration IDs that were updated for this worker pool.
+    type: array
+    items: {$const: lc-id}
+    uniqueItems: true
+  archivedLaunchConfigs:
+    title: Archived Launch Configs
+    description: |
+      The launch configuration IDs that were archived for this worker pool.
+    type: array
+    items: {$const: lc-id}
+    uniqueItems: true
+
 additionalProperties: false
 required:
   - workerPoolId

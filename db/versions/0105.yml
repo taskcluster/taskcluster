@@ -538,7 +538,7 @@ methods:
       end
 
 
-  get_worker_pools_with_counts_and_capacity:
+  get_worker_pools_counts_and_capacity:
     description: Get the capacity of workers in each state for all worker pools.
     mode: read
     serviceName: worker_manager
@@ -566,7 +566,7 @@ methods:
         offset get_page_offset(page_offset_in);
       end
 
-  get_worker_pool_with_counts_and_capacity:
+  get_worker_pool_counts_and_capacity:
     description: Get the capacity of workers in each state for a given worker pool.
     mode: read
     serviceName: worker_manager

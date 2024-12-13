@@ -44,6 +44,8 @@ class WorkerManagerEvents(BaseClient):
 
          * workerId: Worker ID
 
+         * launchConfigId: ID of the launch configuration
+
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
 
@@ -77,6 +79,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -106,6 +112,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location)
 
          * workerId: Worker ID
+
+         * launchConfigId: ID of the launch configuration
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -140,6 +148,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -170,6 +182,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location)
 
          * workerId: Worker ID
+
+         * launchConfigId: ID of the launch configuration
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -204,6 +218,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -232,6 +250,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location) (required)
 
          * workerId: Worker ID (required)
+
+         * launchConfigId: ID of the launch configuration (required)
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -266,6 +286,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -295,6 +319,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location) (required)
 
          * workerId: Worker ID (required)
+
+         * launchConfigId: ID of the launch configuration (required)
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -329,6 +355,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -358,6 +388,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location) (required)
 
          * workerId: Worker ID (required)
+
+         * launchConfigId: ID of the launch configuration (required)
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -392,6 +424,10 @@ class WorkerManagerEvents(BaseClient):
                     'name': 'workerId',
                 },
                 {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
+                },
+                {
                     'multipleWords': True,
                     'name': 'reserved',
                 },
@@ -422,6 +458,8 @@ class WorkerManagerEvents(BaseClient):
          * workerGroup: Worker group of the worker (region or location) (required)
 
          * workerId: Worker ID (required)
+
+         * launchConfigId: ID of the launch configuration (required)
 
          * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
         """
@@ -454,6 +492,10 @@ class WorkerManagerEvents(BaseClient):
                 {
                     'multipleWords': False,
                     'name': 'workerId',
+                },
+                {
+                    'multipleWords': False,
+                    'name': 'launchConfigId',
                 },
                 {
                     'multipleWords': True,
