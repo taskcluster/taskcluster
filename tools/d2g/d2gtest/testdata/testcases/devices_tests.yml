@@ -280,4 +280,67 @@ testSuite:
           - docker
       d2gConfig:
         allowLoopbackAudio: false
+    - name: GPUs
+      description: >-
+        Tests that GPUs are provided in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              --gpus all
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowGPUs: true
+    - name: GPUs with custom device
+      description: >-
+        Tests that custom GPU is provided in the resulting generic worker task payload.
+      dockerWorkerTaskPayload:
+        command:
+          - echo "Hello world"
+        image: ubuntu
+        maxRunTime: 3600
+      genericWorkerTaskPayload:
+        command:
+          - - bash
+            - '-cx'
+            - >-
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
+              -e RUN_ID
+              -e TASKCLUSTER_INSTANCE_TYPE
+              -e TASKCLUSTER_ROOT_URL
+              -e TASKCLUSTER_WORKER_LOCATION
+              -e TASK_GROUP_ID
+              -e TASK_ID
+              ubuntu 'echo "Hello world"'
+        maxRunTime: 3600
+        onExitStatus:
+          retry:
+            - 125
+            - 128
+        osGroups:
+          - docker
+      d2gConfig:
+        allowGPUs: true
+        gpus: device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
   taskDefTests: []

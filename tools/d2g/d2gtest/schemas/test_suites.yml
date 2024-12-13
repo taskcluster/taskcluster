@@ -128,6 +128,9 @@ definitions:
       allowDisableSeccomp:
         type: boolean
         default: true
+      allowGPUs:
+        type: boolean
+        default: false
       allowHostSharedMemory:
         type: boolean
         default: true
@@ -158,4 +161,7 @@ definitions:
         enum:
           - docker
           - podman
+      gpus:
+        type: string
+        default: all
     additionalProperties: false
