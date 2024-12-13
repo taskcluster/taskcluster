@@ -56,6 +56,7 @@ type WorkerPoolCreated struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -83,6 +84,7 @@ type WorkerPoolUpdated struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -111,6 +113,7 @@ type WorkerPoolError struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -137,6 +140,7 @@ type WorkerRequested struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -164,6 +168,7 @@ type WorkerRunning struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -191,6 +196,7 @@ type WorkerStopped struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -219,6 +225,7 @@ type WorkerRemoved struct {
 	WorkerType     string `mwords:"*"`
 	WorkerGroup    string `mwords:"*"`
 	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 

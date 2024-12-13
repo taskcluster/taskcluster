@@ -1366,6 +1366,34 @@
       "additionalProperties": false,
       "description": "The message that is emitted when worker pools are created/changed/deleted.",
       "properties": {
+        "archivedLaunchConfigs": {
+          "description": "The launch configuration IDs that were archived for this worker pool.\n",
+          "items": {
+            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
+            "title": "Launch Configuration ID",
+            "type": "string"
+          },
+          "title": "Archived Launch Configs",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "createdLaunchConfigs": {
+          "description": "The launch configuration IDs that were created for this worker pool.\n",
+          "items": {
+            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
+            "title": "Launch Configuration ID",
+            "type": "string"
+          },
+          "title": "Created Launch Configs",
+          "type": "array",
+          "uniqueItems": true
+        },
         "previousProviderId": {
           "description": "If this is defined, it was the provider that handled this worker pool in the\nconfiguration before the current one. This will be used by providers to clean\nup any resources created for this workerType when they are no longer responsible\nfor it.\n",
           "maxLength": 38,
@@ -1376,6 +1404,20 @@
         },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "updatedLaunchConfigs": {
+          "description": "The launch configuration IDs that were updated for this worker pool.\n",
+          "items": {
+            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
+            "title": "Launch Configuration ID",
+            "type": "string"
+          },
+          "title": "Updated Launch Configs",
+          "type": "array",
+          "uniqueItems": true
         },
         "workerPoolId": {
           "$ref": "worker-pool-full.json#/properties/workerPoolId"
@@ -15133,6 +15175,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15184,6 +15232,12 @@
               "name": "workerId",
               "required": false,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -15239,6 +15293,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15290,6 +15350,12 @@
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -15345,6 +15411,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15398,6 +15470,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15449,6 +15527,12 @@
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,

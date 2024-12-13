@@ -4434,6 +4434,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4485,6 +4491,12 @@ export default {
               "name": "workerId",
               "required": false,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4540,6 +4552,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4591,6 +4609,12 @@ export default {
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4646,6 +4670,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4699,6 +4729,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4750,6 +4786,12 @@ export default {
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": true,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
