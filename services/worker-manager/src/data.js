@@ -78,7 +78,7 @@ export class WorkerPool {
   static async get(db, workerPoolId) {
     const [rows, stats] = await Promise.all([
       db.fns.get_worker_pool_with_launch_configs(workerPoolId),
-      db.fns.get_worker_pool_with_counts_and_capacity(workerPoolId),
+      db.fns.get_worker_pool_counts_and_capacity(workerPoolId),
     ]);
 
     if (rows.length === 1) {
@@ -101,7 +101,7 @@ export class WorkerPool {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      await db.fns.create_worker_pool_with_launch_configs(
+      return await db.fns.create_worker_pool_with_launch_configs(
         this.workerPoolId,
         this.providerId,
         // node-pg cannot correctly encode JS arrays as JSONB
@@ -126,6 +126,7 @@ export class WorkerPool {
         throw err;
       }
     }
+    return [];
   }
 
   // Create a serializable representation of this worker pool suitable for response

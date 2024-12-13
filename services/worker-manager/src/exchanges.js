@@ -51,6 +51,11 @@ let buildCommonRoutingKey = (options) => {
       required: options?.hasWorker || false,
       maxSize: 38,
     }, {
+      name: 'launchConfigId',
+      summary: 'ID of the launch configuration',
+      required: options?.hasWorker || false,
+      maxSize: 38,
+    }, {
       name: 'reserved',
       summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
@@ -70,6 +75,7 @@ let commonRoutingKeyBuilder = function(message, routing) {
     workerGroup: message.workerGroup,
     providerId: message.providerId,
     workerId: message.workerId,
+    launchConfigId: message.launchConfigId,
   };
 
   if (message.provisionerId && message.workerType) {
