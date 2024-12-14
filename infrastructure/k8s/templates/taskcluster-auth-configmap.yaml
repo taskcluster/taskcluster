@@ -24,5 +24,6 @@ data:
   PULSE_HOSTNAME: '{{ if typeIs "<nil>" .Values.pulseHostname }}{{ else }}{{ if typeIs "string" .Values.pulseHostname }}{{ .Values.pulseHostname }}{{ else }}{{ .Values.pulseHostname | toJson }}{{ end }}{{ end }}'
   PULSE_VHOST: '{{ if typeIs "<nil>" .Values.pulseVhost }}{{ else }}{{ if typeIs "string" .Values.pulseVhost }}{{ .Values.pulseVhost }}{{ else }}{{ .Values.pulseVhost | toJson }}{{ end }}{{ end }}'
   PULSE_AMQPS: '{{ if typeIs "<nil>" .Values.pulseAmqps }}{{ else }}{{ if typeIs "string" .Values.pulseAmqps }}{{ .Values.pulseAmqps }}{{ else }}{{ .Values.pulseAmqps | toJson }}{{ end }}{{ end }}'
+  AUDIT_RETENTION_DAYS: '{{ if typeIs "<nil>" .Values.auth.audit_retention_days }}{{ else }}{{ if typeIs "string" .Values.auth.audit_retention_days }}{{ .Values.auth.audit_retention_days }}{{ else }}{{ .Values.auth.audit_retention_days | toJson }}{{ end }}{{ end }}'
   DEBUG: '{{ if typeIs "<nil>" .Values.auth.debug }}{{ else }}{{ if typeIs "string" .Values.auth.debug }}{{ .Values.auth.debug }}{{ else }}{{ .Values.auth.debug | toJson }}{{ end }}{{ end }}'
 {{- end }}
