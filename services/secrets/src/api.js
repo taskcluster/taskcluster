@@ -50,9 +50,23 @@ builder.declare({
 }, async function(req, res) {
   const { name } = req.params;
   const { secret, expires } = req.body;
+  const clientId = await req.clientId();
+
   await this.db.fns.upsert_secret(name, this.db.encrypt({
     value: Buffer.from(JSON.stringify(secret), 'utf8'),
   }), new Date(expires));
+
+
+  await this.db.fns.upsert_audit_history(
+    name,
+   'secret',
+    clientId,
+    JSON.stringify({
+      clientId,
+      timestamp: new Date().toISOString(),
+    })
+  );
+
   res.reply({});
 });
 

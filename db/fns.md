@@ -146,6 +146,7 @@
    * [`expire_secrets`](#expire_secrets)
    * [`get_secret`](#get_secret)
    * [`get_secrets`](#get_secrets)
+   * [`upsert_audit_history`](#upsert_audit_history)
    * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`add_github_access_token`](#add_github_access_token)
@@ -5832,6 +5833,7 @@ end
 * [`expire_secrets`](#expire_secrets)
 * [`get_secret`](#get_secret)
 * [`get_secrets`](#get_secrets)
+* [`upsert_audit_history`](#upsert_audit_history)
 * [`upsert_secret`](#upsert_secret)
 
 ### delete_secret
@@ -5933,6 +5935,43 @@ begin
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
+```
+
+</details>
+
+### upsert_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `client_id_in text`
+  * `entity_history_in jsonb`
+* *Returns*: `void`
+* *Last defined on version*: 105
+
+Insert or update an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    entity_history
+  ) VALUES (
+    entity_id_in,
+    entity_type_in,
+    client_id_in,
+    entity_history_in
+  )
+  ON CONFLICT (entity_id, entity_type) DO UPDATE SET
+    client_id = EXCLUDED.client_id,
+    entity_history = EXCLUDED.entity_history;
+end;
 ```
 
 </details>

@@ -1,0 +1,31 @@
+version: 105
+description: add description here
+
+migrationScript: 0105-migration.sql
+downgradeScript: 0105-downgrade.sql
+
+methods:
+  upsert_audit_history:
+    description: |
+      Insert or update an audit history entry for a given entity.
+    mode: write
+    serviceName: secrets
+    args: entity_id_in text, entity_type_in text, client_id_in text, entity_history_in jsonb
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          entity_history
+        ) VALUES (
+          entity_id_in,
+          entity_type_in,
+          client_id_in,
+          entity_history_in
+        )
+        ON CONFLICT (entity_id, entity_type) DO UPDATE SET
+          client_id = EXCLUDED.client_id,
+          entity_history = EXCLUDED.entity_history;
+      end;

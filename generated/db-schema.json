@@ -92,6 +92,12 @@
       "identity_provider_id": "text not null",
       "redirect_uri": "text not null"
     },
+    "audit_history": {
+      "client_id": "text not null",
+      "entity_history": "jsonb not null",
+      "entity_id": "text not null",
+      "entity_type": "text not null"
+    },
     "authorization_codes": {
       "client_details": "jsonb not null",
       "client_id": "text not null",
@@ -7279,6 +7285,23 @@
         }
       },
       "version": 104
+    },
+    {
+      "description": "add description here",
+      "downgradeScript": "begin\n\n    DROP FUNCTION IF EXISTS upsert_audit_history(text, text, text, jsonb);\n    DROP TABLE audit_history;\n\nend\n",
+      "methods": {
+        "upsert_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, entity_history_in jsonb",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    entity_history\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    entity_history_in\n  )\n  ON CONFLICT (entity_id, entity_type) DO UPDATE SET\n    client_id = EXCLUDED.client_id,\n    entity_history = EXCLUDED.entity_history;\nend;",
+          "deprecated": false,
+          "description": "Insert or update an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n\n  CREATE TABLE audit_history (\n    entity_id text not null,\n    entity_type text not null,\n    client_id text not null,\n    entity_history jsonb not null\n  );\n\n  ALTER TABLE audit_history add primary key (entity_id, entity_type);\n\nend\n",
+      "version": 105
     }
   ]
 }
