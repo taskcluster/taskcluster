@@ -1,0 +1,76 @@
+version: 105
+description: add description here
+
+migrationScript: 0105-migration.sql
+downgradeScript: 0105-downgrade.sql
+
+methods:
+  insert_auth_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: auth
+    args: entity_id_in text, entity_type_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          entity_id_in,
+          entity_type_in,
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end
+  insert_secrets_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: secrets
+    args: entity_id_in text, entity_type_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          entity_id_in,
+          entity_type_in,
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end
+  insert_hooks_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: hooks
+    args: entity_id_in text, entity_type_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          entity_id_in,
+          entity_type_in,
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end;

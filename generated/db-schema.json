@@ -2,6 +2,7 @@
   "access": {
     "auth": {
       "tables": {
+        "audit_history": "write",
         "clients": "write",
         "roles": "write"
       }
@@ -91,6 +92,13 @@
       "identity": "text not null",
       "identity_provider_id": "text not null",
       "redirect_uri": "text not null"
+    },
+    "audit_history": {
+      "action_type": "text not null",
+      "client_id": "text not null",
+      "created": "timestamp with time zone not null",
+      "entity_id": "text not null",
+      "entity_type": "text not null"
     },
     "authorization_codes": {
       "client_details": "jsonb not null",
@@ -7279,6 +7287,41 @@
         }
       },
       "version": 104
+    },
+    {
+      "description": "add description here",
+      "downgradeScript": "begin\n\n      REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_auth;\n    DROP TABLE audit_history;\n\nend\n",
+      "methods": {
+        "insert_auth_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "insert_hooks_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "insert_secrets_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        }
+      },
+      "migrationScript": "begin\n\n  CREATE TABLE audit_history (\n    entity_id text not null,\n    entity_type text not null,\n    client_id text not null,\n    action_type text not null,\n    created timestamptz not null\n  );\n\n  ALTER TABLE audit_history add primary key (entity_id, entity_type, created);\n\n  GRANT select, insert, update, delete ON audit_history to $db_user_prefix$_auth;\n\nend\n",
+      "version": 105
     }
   ]
 }
