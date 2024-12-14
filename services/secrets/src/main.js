@@ -63,7 +63,11 @@ let load = loader({
     requires: ['cfg', 'db', 'schemaset', 'monitor'],
     setup: async ({ cfg, db, schemaset, monitor }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db },
+      context: {
+        cfg,
+        db,
+        monitor: monitor.childMonitor('api-context'),
+      },
       monitor: monitor.childMonitor('api'),
       schemaset,
     }),

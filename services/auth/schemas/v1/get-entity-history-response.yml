@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Get Entity History Response
+description: |
+  Response from getEntityHistory endpoint containing audit history entries
+type: object
+properties:
+  auditHistory:
+    type: array
+    items:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: The ID of the client that performed the action
+        action_type:
+          type: string
+          description: The type of action performed
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the action occurred
+      additionalProperties: false
+      required:
+        - client_id
+        - action_type
+        - created
+  continuationToken:
+    type: string
+    description: Token to be used to get the next page of results
+additionalProperties: false
+required:
+  - auditHistory

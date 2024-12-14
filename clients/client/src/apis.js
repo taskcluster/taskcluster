@@ -113,6 +113,26 @@ export default {
         },
         {
           "args": [
+            "entityType",
+            "entityId"
+          ],
+          "category": "Audit",
+          "description": "Get entity history based on entity type and entity name",
+          "method": "get",
+          "name": "getEntityHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/audit/<entityType>/<entityId>",
+          "scopes": "auth:audit-history:<entityType>",
+          "stability": "stable",
+          "title": "Get Entity History",
+          "type": "function"
+        },
+        {
+          "args": [
             "clientId"
           ],
           "category": "Clients",

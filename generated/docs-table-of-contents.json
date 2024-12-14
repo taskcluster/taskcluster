@@ -2203,13 +2203,35 @@
                 },
                 "name": "scopes",
                 "next": {
-                  "path": "reference/platform/auth/clients",
-                  "title": "Clients"
+                  "path": "reference/platform/auth/audit",
+                  "title": "Audit History"
                 },
                 "path": "reference/platform/auth/scopes",
                 "prev": {
                   "path": "reference/platform/auth/logs",
                   "title": "logs"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 15,
+                  "title": "Audit History"
+                },
+                "name": "audit",
+                "next": {
+                  "path": "reference/platform/auth/clients",
+                  "title": "Clients"
+                },
+                "path": "reference/platform/auth/audit",
+                "prev": {
+                  "path": "reference/platform/auth/scopes",
+                  "title": "Scopes and Satisfaction"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2230,8 +2252,8 @@
                 },
                 "path": "reference/platform/auth/clients",
                 "prev": {
-                  "path": "reference/platform/auth/scopes",
-                  "title": "Scopes and Satisfaction"
+                  "path": "reference/platform/auth/audit",
+                  "title": "Audit History"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",

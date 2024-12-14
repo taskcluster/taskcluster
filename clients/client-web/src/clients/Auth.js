@@ -16,6 +16,7 @@ export default class Auth extends Client {
     this.listClients.entry = {"args":[],"category":"Clients","method":"get","name":"listClients","output":true,"query":["prefix","continuationToken","limit"],"route":"/clients/","scopes":"auth:list-clients","stability":"stable","type":"function"}; // eslint-disable-line
     this.client.entry = {"args":["clientId"],"category":"Clients","method":"get","name":"client","output":true,"query":[],"route":"/clients/<clientId>","scopes":"auth:get-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createClient.entry = {"args":["clientId"],"category":"Clients","input":true,"method":"put","name":"createClient","output":true,"query":[],"route":"/clients/<clientId>","scopes":{"AllOf":["auth:create-client:<clientId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.getEntityHistory.entry = {"args":["entityType","entityId"],"category":"Audit","method":"get","name":"getEntityHistory","output":true,"query":["continuationToken","limit"],"route":"/audit/<entityType>/<entityId>","scopes":"auth:audit-history:<entityType>","stability":"stable","type":"function"}; // eslint-disable-line
     this.resetAccessToken.entry = {"args":["clientId"],"category":"Clients","method":"post","name":"resetAccessToken","output":true,"query":[],"route":"/clients/<clientId>/reset","scopes":"auth:reset-access-token:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.updateClient.entry = {"args":["clientId"],"category":"Clients","input":true,"method":"post","name":"updateClient","output":true,"query":[],"route":"/clients/<clientId>","scopes":{"AllOf":["auth:update-client:<clientId>",{"each":"<scope>","for":"scope","in":"scopesAdded"}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.enableClient.entry = {"args":["clientId"],"category":"Clients","method":"post","name":"enableClient","output":true,"query":[],"route":"/clients/<clientId>/enable","scopes":"auth:enable-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -109,6 +110,14 @@ export default class Auth extends Client {
     this.validate(this.createClient.entry, args);
 
     return this.request(this.createClient.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get entity history based on entity type and entity name
+  /* eslint-enable max-len */
+  getEntityHistory(...args) {
+    this.validate(this.getEntityHistory.entry, args);
+
+    return this.request(this.getEntityHistory.entry, args);
   }
   /* eslint-disable max-len */
   // Reset a clients `accessToken`, this will revoke the existing

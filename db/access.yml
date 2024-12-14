@@ -8,6 +8,7 @@ auth:
   tables:
     clients: write
     roles: write
+    audit_history: write
 github:
   tables:
     github_builds: write
@@ -19,6 +20,7 @@ hooks:
     hooks_queues: write
     hooks_last_fires: write
     tasks: read
+    audit_history: write
 index:
   tables:
     indexed_tasks: write
@@ -49,6 +51,7 @@ queue:
 secrets:
   tables:
     secrets: write
+    audit_history: write
 web_server:
   tables:
     authorization_codes: write
@@ -63,3 +66,4 @@ worker_manager:
     worker_pool_errors: write
     queue_workers: read
     task_queues: read
+    audit_history: write

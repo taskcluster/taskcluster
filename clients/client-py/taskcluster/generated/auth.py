@@ -115,6 +115,17 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["createClient"], *args, **kwargs)
 
+    def getEntityHistory(self, *args, **kwargs):
+        """
+        Get Entity History
+
+        Get entity history based on entity type and entity name
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["getEntityHistory"], *args, **kwargs)
+
     def resetAccessToken(self, *args, **kwargs):
         """
         Reset `accessToken`
@@ -702,6 +713,15 @@ class Auth(BaseClient):
             'name': 'gcpCredentials',
             'output': 'v1/gcp-credentials-response.json#',
             'route': '/gcp/credentials/<projectId>/<serviceAccount>',
+            'stability': 'stable',
+        },
+        "getEntityHistory": {
+            'args': ['entityType', 'entityId'],
+            'method': 'get',
+            'name': 'getEntityHistory',
+            'output': 'v1/get-entity-history-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/audit/<entityType>/<entityId>',
             'stability': 'stable',
         },
         "heartbeat": {

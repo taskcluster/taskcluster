@@ -155,7 +155,7 @@ let load = loader({
       context: {
         cfg,
         db,
-        monitor,
+        monitor: monitor.childMonitor('api-context'),
         providers,
         publisher,
         notify,

@@ -2773,6 +2773,83 @@
   },
   {
     "element": "h1",
+    "id": "audit-history",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": null,
+    "title": "Audit History"
+  },
+  {
+    "element": "h2",
+    "id": "accessing-audit-history",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Accessing Audit History",
+    "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "clients",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Clients",
+    "title": "Audit History"
+  },
+  {
+    "element": "h2",
+    "id": "data-retention",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Data Retention",
+    "title": "Audit History"
+  },
+  {
+    "element": "h2",
+    "id": "example-usage",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Example Usage",
+    "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "hooks",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Hooks",
+    "title": "Audit History"
+  },
+  {
+    "element": "h2",
+    "id": "required-scopes",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Required Scopes",
+    "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "roles",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Roles",
+    "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "secrets",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Secrets",
+    "title": "Audit History"
+  },
+  {
+    "element": "h2",
+    "id": "tracked-actions",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Tracked Actions",
+    "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "worker-manager",
+    "path": "/reference/platform/auth/audit",
+    "subtitle": "Worker manager",
+    "title": "Audit History"
+  },
+  {
+    "element": "h1",
     "id": "roles-and-role-expansion",
     "path": "/reference/platform/auth/roles",
     "subtitle": null,

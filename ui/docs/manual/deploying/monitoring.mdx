@@ -41,6 +41,7 @@ have their schedules and maximum allowed duration defined here. All times are re
 | Service        | Name                         | Logger                     | Deadline (seconds) | Schedule                    |
 | -------------- | ---------------------------- | -------------------------- | ------------------ | --------------------------- |
 | auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM                 |
+| auth           | purgeAuditHistory            | taskcluster.auth           | 86400              | At 12:10 AM                 |
 | github         | sync                         | taskcluster.github         | 86400              | At 02:00 AM                 |
 | hooks          | expires                      | taskcluster.hooks          | 86400              | At 12:10 AM                 |
 | index          | expire                       | taskcluster.index          | 86400              | At 12:05 AM                 |

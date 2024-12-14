@@ -248,6 +248,22 @@ services:
       - cron
       - auth
       - auth-cron
+  auth-cron-purgeAuditHistory:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.auth
+    command:
+      - auth/purgeAuditHistory
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - auth
+      - auth-cron
   built-in-workers-server:
     image: ${IMAGE}
     networks:

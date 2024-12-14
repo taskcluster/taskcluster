@@ -6,6 +6,14 @@ import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  WORKER_POOL: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
 /**
  * @type {APIBuilder<{
  *  cfg: object;
@@ -197,6 +205,20 @@ builder.declare({
   // refresh from DB to include launchConfigIds
   workerPool = await WorkerPool.get(this.db, workerPoolId);
 
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker_pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
+  );
+
   res.reply(workerPool.serializable());
 });
 
@@ -280,6 +302,20 @@ builder.declare({
   } = row;
   const workerPool = WorkerPool.fromDb(wp);
 
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker_pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
+  );
+
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
@@ -343,6 +379,20 @@ builder.declare({
 
   // reload full worker pool
   workerPool = WorkerPool.fromDb(wp);
+
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker_pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,
+  );
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,

@@ -533,4 +533,28 @@ suite(testing.suiteName(), function() {
       await db.fns.delete_hook('hook/group/id', 'hook-id');
     });
   });
+
+  suite(`${testing.suiteName()} - hooks audit history`, function() {
+    helper.dbTest('insert_hooks_audit_history creates audit entry', async function(db) {
+      await db.fns.insert_hooks_audit_history(
+        'hook/1',
+        'client-1',
+        'created',
+      );
+
+      const rows = await helper.withDbClient(async client => {
+        const result = await client.query(`
+          SELECT client_id, action_type, created
+          FROM audit_history
+          WHERE entity_id = $1 AND entity_type = $2
+        `, ['hook/1', 'hook']);
+        return result.rows;
+      });
+
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].client_id, 'client-1');
+      assert.equal(rows[0].action_type, 'created');
+      assert(rows[0].created instanceof Date);
+    });
+  });
 });

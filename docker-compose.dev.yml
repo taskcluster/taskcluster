@@ -61,6 +61,23 @@ services:
       - auth-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js purge-expired-clients"
+  auth-cron-purgeAuditHistory:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/auth:/app/services/auth
+    profiles:
+      - cron
+      - auth
+      - auth-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js purge-audit-history"
   built-in-workers-server:
     image: ${IMAGE_DEV}
     environment:

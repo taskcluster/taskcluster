@@ -382,6 +382,14 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// Response from getEntityHistory endpoint containing audit history entries
+	GetEntityHistoryResponse struct {
+		AuditHistory []Var `json:"auditHistory"`
+
+		// Token to be used to get the next page of results
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
 	// If no limit is given, the roleIds of all roles are returned. Since this
 	// list may become long, callers can use the `limit` and `continuationToken`
 	// query arguments to page through the responses.
@@ -649,6 +657,18 @@ type (
 		//
 		// Syntax:     ^[ -~]*$
 		Scopes []string `json:"scopes"`
+	}
+
+	Var struct {
+
+		// The type of action performed
+		Action_Type string `json:"action_type"`
+
+		// The ID of the client that performed the action
+		Client_ID string `json:"client_id"`
+
+		// Timestamp when the action occurred
+		Created tcclient.Time `json:"created"`
 	}
 
 	// Token for connecting a worker to websocktunnel proxy
