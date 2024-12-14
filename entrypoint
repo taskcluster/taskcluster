@@ -6,6 +6,7 @@ case "${1}" in
 auth/web) exec node services/auth/src/main.js server;;
 auth/expireSentry) exec node services/auth/src/main.js expire-sentry;;
 auth/purgeExpiredClients) exec node services/auth/src/main.js purge-expired-clients;;
+auth/purgeAuditHistory) exec node services/auth/src/main.js purge-audit-history;;
 auth/write-docs) exec node services/auth/src/main.js writeDocs;;
 built-in-workers/server) exec node services/built-in-workers/src/main.js server;;
 built-in-workers/write-docs) exec node services/built-in-workers/src/main.js writeDocs;;

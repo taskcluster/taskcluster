@@ -9,6 +9,11 @@ purgeExpiredClients:
   schedule: '0 0 * * *'
   deadline: 86400
   command: node services/auth/src/main.js purge-expired-clients
+purgeAuditHistory:
+  type: cron
+  schedule: '10 0 * * *'
+  deadline: 86400
+  command: node services/auth/src/main.js purge-audit-history
 write-docs:
   type: build
   command: node services/auth/src/main.js writeDocs
