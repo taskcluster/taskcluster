@@ -15,6 +15,7 @@
     "lib": ["esnext", "dom"],
     "esModuleInterop": true,
     "moduleResolution": "NodeNext",
+    "typeRoots": ["./@types"]
   },
   // Add a @ts-check comment to a JS file to start type checking it.
   "include": [
