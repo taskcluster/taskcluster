@@ -186,11 +186,12 @@
    * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
    * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+   * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
    * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
    * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
    * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
    * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
-   * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
+   * [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
    * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
    * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
    * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
@@ -6437,11 +6438,12 @@ end
 * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
 * [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+* [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
 * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
 * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
 * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
 * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
-* [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
+* [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
 * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
 * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
 * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
@@ -7480,6 +7482,35 @@ end
 
 </details>
 
+### get_worker_pool_error_launch_configs
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool text`
+  * `launch_config_id text`
+  * `count integer`
+* *Last defined on version*: 105
+
+Returns errors grouped by launch config
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int
+  FROM worker_pool_errors
+  WHERE
+    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;
+end
+```
+
+</details>
+
 ### get_worker_pool_error_stats_last_24_hours
 
 * *Mode*: read
@@ -7628,12 +7659,13 @@ end
 
 </details>
 
-### get_worker_pool_errors_for_worker_pool
+### get_worker_pool_errors_for_worker_pool2
 
 * *Mode*: read
 * *Arguments*:
   * `error_id_in text`
   * `worker_pool_id_in text`
+  * `launch_config_id_in text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -7644,9 +7676,10 @@ end
   * `title text`
   * `description text`
   * `extra jsonb`
-* *Last defined on version*: 31
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
-Get existing worker pool errors filtered by `worker_pool_id` and `error_id`,
+Get existing worker pool errors filtered by `worker_pool_id`, `error_id` or `launch_config_id`,
 ordered by `reported`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -7663,10 +7696,12 @@ begin
     worker_pool_errors.kind,
     worker_pool_errors.title,
     worker_pool_errors.description,
-    worker_pool_errors.extra
+    worker_pool_errors.extra,
+    worker_pool_errors.launch_config_id
   from worker_pool_errors
   where
     (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (worker_pool_errors.launch_config_id = launch_config_id_in or launch_config_id_in is null) and
     (worker_pool_errors.error_id = error_id_in or error_id_in is null)
   order by worker_pool_errors.reported desc
   limit get_page_limit(page_size_in)
@@ -8150,7 +8185,7 @@ begin
     updated_wp.worker_pool_id,
     updated_wp.provider_id,
     updated_wp.description,
-    config_in as config,  -- we preserve the input config here for backwards compatibility
+    collect_launch_configs_if_exist(config_without_lc, worker_pool_id_in) as config,
     updated_wp.created,
     updated_wp.last_modified,
     updated_wp.owner,
@@ -8259,6 +8294,7 @@ end
 * `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
 * `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v78.0.0)
 * `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
+* `get_worker_pool_errors_for_worker_pool(error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
 * `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v78.0.0)
 * `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
 * `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v78.0.0)

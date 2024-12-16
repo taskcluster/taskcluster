@@ -290,6 +290,7 @@ export class Provider {
         timestamp: new Date().toJSON(),
         workerId: extra?.workerId,
         workerGroup: extra?.workerGroup,
+        launchConfigId: extra?.launchConfigId ?? undefined,
       });
 
       try {
