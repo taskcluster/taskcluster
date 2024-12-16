@@ -272,6 +272,7 @@ helper.resetTables = (mock, skipping) => {
       'workers',
       'worker_pools',
       'worker_pool_errors',
+      'worker_pool_launch_configs',
     ] });
   });
 };

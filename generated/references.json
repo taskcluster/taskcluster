@@ -467,6 +467,12 @@
               "title": "Last 24 hours",
               "type": "object"
             },
+            "launchConfigId": {
+              "additionalProperties": true,
+              "description": "Breakdown by launchConfigId where available",
+              "title": "By launch config ID",
+              "type": "object"
+            },
             "title": {
               "additionalProperties": true,
               "description": "Breakdown by title",
@@ -490,7 +496,8 @@
             "daily",
             "hourly",
             "title",
-            "code"
+            "code",
+            "launchConfigId"
           ],
           "type": "object"
         },
@@ -1366,34 +1373,6 @@
       "additionalProperties": false,
       "description": "The message that is emitted when worker pools are created/changed/deleted.",
       "properties": {
-        "archivedLaunchConfigs": {
-          "description": "The launch configuration IDs that were archived for this worker pool.\n",
-          "items": {
-            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
-            "maxLength": 38,
-            "minLength": 1,
-            "pattern": "^([a-zA-Z0-9-_]*)$",
-            "title": "Launch Configuration ID",
-            "type": "string"
-          },
-          "title": "Archived Launch Configs",
-          "type": "array",
-          "uniqueItems": true
-        },
-        "createdLaunchConfigs": {
-          "description": "The launch configuration IDs that were created for this worker pool.\n",
-          "items": {
-            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
-            "maxLength": 38,
-            "minLength": 1,
-            "pattern": "^([a-zA-Z0-9-_]*)$",
-            "title": "Launch Configuration ID",
-            "type": "string"
-          },
-          "title": "Created Launch Configs",
-          "type": "array",
-          "uniqueItems": true
-        },
         "previousProviderId": {
           "description": "If this is defined, it was the provider that handled this worker pool in the\nconfiguration before the current one. This will be used by providers to clean\nup any resources created for this workerType when they are no longer responsible\nfor it.\n",
           "maxLength": 38,
@@ -1404,20 +1383,6 @@
         },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
-        },
-        "updatedLaunchConfigs": {
-          "description": "The launch configuration IDs that were updated for this worker pool.\n",
-          "items": {
-            "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
-            "maxLength": 38,
-            "minLength": 1,
-            "pattern": "^([a-zA-Z0-9-_]*)$",
-            "title": "Launch Configuration ID",
-            "type": "string"
-          },
-          "title": "Updated Launch Configs",
-          "type": "array",
-          "uniqueItems": true
         },
         "workerPoolId": {
           "$ref": "worker-pool-full.json#/properties/workerPoolId"
@@ -1444,6 +1409,21 @@
         },
         "kind": {
           "$ref": "worker-pool-error.json#/properties/kind"
+        },
+        "launchConfigId": {
+          "oneOf": [
+            {
+              "const": ""
+            },
+            {
+              "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+              "maxLength": 38,
+              "minLength": 1,
+              "pattern": "^([a-zA-Z0-9-_]*)$",
+              "title": "Launch Configuration ID",
+              "type": "string"
+            }
+          ]
         },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
@@ -1521,6 +1501,38 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/pulse-worker-message.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/pulse-launch-config-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The message that is emitted when worker pool launch configs are created/changed/archived.",
+      "properties": {
+        "launchConfigId": {
+          "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Configuration ID",
+          "type": "string"
+        },
+        "providerId": {
+          "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "launchConfigId",
+        "workerPoolId",
+        "providerId"
+      ],
+      "title": "Launch Config Pulse Message",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/pulse-launch-config-message.json"
   },
   {
     "content": {
@@ -15354,7 +15366,7 @@
             {
               "multipleWords": false,
               "name": "launchConfigId",
-              "required": true,
+              "required": false,
               "summary": "ID of the launch configuration"
             },
             {
@@ -15413,7 +15425,7 @@
             {
               "multipleWords": false,
               "name": "launchConfigId",
-              "required": true,
+              "required": false,
               "summary": "ID of the launch configuration"
             },
             {
@@ -15472,7 +15484,7 @@
             {
               "multipleWords": false,
               "name": "launchConfigId",
-              "required": true,
+              "required": false,
               "summary": "ID of the launch configuration"
             },
             {
@@ -15531,7 +15543,7 @@
             {
               "multipleWords": false,
               "name": "launchConfigId",
-              "required": true,
+              "required": false,
               "summary": "ID of the launch configuration"
             },
             {
@@ -15543,6 +15555,183 @@
           ],
           "schema": "v1/pulse-worker-removed-message.json#",
           "title": "Worker Removed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a new launch configuration is created for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-created",
+          "name": "launchConfigCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is updated for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-updated",
+          "name": "launchConfigUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is archived for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-archived",
+          "name": "launchConfigArchived",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Archived Messages",
           "type": "topic-exchange"
         }
       ],
@@ -15767,7 +15956,9 @@
           "output": "v1/worker-pool-error-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "errorId",
+            "launchConfigId"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
