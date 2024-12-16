@@ -402,7 +402,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkerPoolErrors',
             'output': 'v1/worker-pool-error-list.json#',
-            'query': ['continuationToken', 'limit'],
+            'query': ['continuationToken', 'limit', 'errorId', 'launchConfigId'],
             'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'stable',
         },

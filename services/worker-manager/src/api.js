@@ -1,6 +1,7 @@
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import slug from 'slugid';
 import assert from 'assert';
+import _ from 'lodash';
 import { ApiError, Provider } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker } from './data.js';
@@ -62,6 +63,22 @@ const declareWithTrailingColon = (options, handler) => {
 
   // declare the un-modified version
   builder.declare(options, handler);
+};
+
+const publishLaunchConfigEvents = async ({
+  publisher,
+  workerPoolId, providerId,
+  updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs }) => {
+
+  for (const launchConfigId of updatedLaunchConfigs) {
+    await publisher.launchConfigUpdated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of createdLaunchConfigs) {
+    await publisher.launchConfigCreated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of archivedLaunchConfigs) {
+    await publisher.launchConfigArchived({ workerPoolId, providerId, launchConfigId });
+  }
 };
 
 builder.declare({
@@ -164,9 +181,11 @@ builder.declare({
   await this.publisher.workerPoolCreated({
     workerPoolId,
     providerId,
-    updatedLaunchConfigs,
-    createdLaunchConfigs,
-    archivedLaunchConfigs,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
 
   // refresh from DB to include launchConfigIds
@@ -237,12 +256,23 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const workerPool = WorkerPool.fromDb(row);
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
+  const workerPool = WorkerPool.fromDb(wp);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
   res.reply(workerPool.serializable());
 });
@@ -277,23 +307,34 @@ builder.declare({
     workerPoolId,
     providerId,
     workerPool.description,
-    workerPool.config,
+    // updating worker pool without launch configs would mark all existing as archived
+    _.omit(workerPool.config, 'launchConfigs'),
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
-  // TODO: emit launch config events
-  // that can be found in row.{updated_launch_configs,archived_launch_configs,deleted_launch_configs}
+
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
 
   // reload full worker pool
-  workerPool = await WorkerPool.get(this.db, workerPoolId);
+  workerPool = WorkerPool.fromDb(wp);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
   res.reply(workerPool.serializable());
 });
@@ -395,12 +436,15 @@ builder.declare({
     });
   }
 
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+  let launchConfigId = worker?.launchConfigId;
+
   const wpe = await provider.reportError({
     workerPool,
     kind: input.kind,
     title: input.title,
     description: input.description,
-    extra: { ...input.extra, workerGroup, workerId },
+    extra: { ...input.extra, workerGroup, workerId, launchConfigId },
   });
 
   res.reply(wpe.serializable());
@@ -447,6 +491,7 @@ builder.declare({
       title: {},
       code: {},
       workerPool: {},
+      launchConfigId: {},
     },
   };
 
@@ -460,12 +505,13 @@ builder.declare({
     }
   };
 
-  const [daily, hourly, titles, codes, pools] = await Promise.all([
+  const [daily, hourly, titles, codes, pools, launchConfigs] = await Promise.all([
     this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
     this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
     this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_launch_configs(workerPoolId || null),
   ]);
 
   for (const row of daily) {
@@ -476,6 +522,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
+  rowsToDict(out.totals.workerPool, launchConfigs, 'launchConfigId');
 
   return res.reply(out);
 });
@@ -483,7 +530,11 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
-  query: paginateResults.query,
+  query: {
+    ...paginateResults.query,
+    errorId: /^[0-9]+$/,
+    launchConfigId: /^[a-zA-Z0-9-]+$/,
+  },
   name: 'listWorkerPoolErrors',
   scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
   title: 'List Worker Pool Errors',
@@ -494,12 +545,13 @@ builder.declare({
     'Get the list of worker pool errors.',
   ].join('\n'),
 }, async function(req, res) {
-  const { errorId, workerPoolId } = req.params;
+  const { errorId, workerPoolId, launchConfigId } = req.params;
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
+    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool2(
       errorId || null,
       workerPoolId || null,
+      launchConfigId || null,
       size,
       offset,
     ),
@@ -1030,6 +1082,7 @@ builder.declare({
         state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
+        launchConfigId: worker.launchConfigId || null,
         quarantineUntil: worker.quarantineUntil?.toJSON(),
       };
       if (worker.recentTasks.length > 0) {

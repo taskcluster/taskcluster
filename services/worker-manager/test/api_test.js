@@ -196,6 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const created = await helper.workerManager.createWorkerPool(workerPoolId, input);
     assert(created.config.launchConfigs[0].workerManager.launchConfigId);
     delete created.config.launchConfigs[0].workerManager.launchConfigId;
+
     workerPoolCompare(workerPoolId, input, created);
   });
 
@@ -930,7 +931,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     };
     await helper.workerManager.createWorkerPool(workerPoolId, input);
 
-    const messages = [];
+    let messages = [];
     helper.onPulsePublish((exchange, routingKey, data) => {
       messages.push({
         exchange,
@@ -974,7 +975,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     assert.equal(messages.length, 1);
     assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-error');
-    assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi._');
+    assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi._._');
     let { errorId, ...msgData } = messages[0].data;
     assert(new Date(msgData.timestamp) > beforeTime.getTime() - 1);
 
@@ -988,6 +989,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       workerGroup: 'wg',
       timestamp: 'xx',
     });
+
+    messages = [];
+
+    // test with the launchConfigId
+    const worker2 = await createWorker({
+      workerPoolId,
+      workerId: 'wi2',
+      launchConfigId: 'lc-id-1',
+    });
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      workerGroup: worker2.workerGroup,
+      workerId: worker2.workerId,
+      kind: "worker-error",
+      title: 'Something is definitely Wrong',
+      description: 'Doh!',
+      extra: { notes: 'launchConfigId should be here' },
+    });
+
+    assert.equal(messages.length, 1);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-error');
+    assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi2.lc-id-1._');
+    assert.equal(messages[0].data.launchConfigId, 'lc-id-1');
   });
 
   test('Report a worker error, no such pool', async function () {
@@ -1269,6 +1292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         {
           workerManager: {
             capacityPerInstance: 1,
+            launchConfigId: 'lc-goog-1',
           },
           machineType: 'n1-standard-2',
           region: 'us-east1',

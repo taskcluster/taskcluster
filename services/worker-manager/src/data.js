@@ -225,7 +225,7 @@ export class WorkerPoolError {
       title: row.title,
       description: row.description,
       extra: row.extra,
-      launchConfigId: row.launch_config_id,
+      launchConfigId: row.launch_config_id ?? '',
     });
   }
 

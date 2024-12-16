@@ -296,7 +296,7 @@ methods:
           updated_wp.worker_pool_id,
           updated_wp.provider_id,
           updated_wp.description,
-          config_in as config,  -- we preserve the input config here for backwards compatibility
+          collect_launch_configs_if_exist(config_without_lc, worker_pool_id_in) as config,
           updated_wp.created,
           updated_wp.last_modified,
           updated_wp.owner,
@@ -590,4 +590,55 @@ methods:
         left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
         where worker_pools.worker_pool_id = worker_pool_id_in
         group by worker_pools.worker_pool_id;
+      end
+
+  get_worker_pool_error_launch_configs:
+    description: |
+      Returns errors grouped by launch config
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (worker_pool text, launch_config_id text, count integer)
+    body: |-
+      begin
+        RETURN query
+        SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int
+        FROM worker_pool_errors
+        WHERE
+          (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+        GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;
+      end
+
+  get_worker_pool_errors_for_worker_pool:
+    deprecated: true
+  get_worker_pool_errors_for_worker_pool2:
+    description: |-
+      Get existing worker pool errors filtered by `worker_pool_id`, `error_id` or `launch_config_id`,
+      ordered by `reported`.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: worker_manager
+    args: error_id_in text, worker_pool_id_in text, launch_config_id_in text, page_size_in integer, page_offset_in integer
+    returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb, launch_config_id text)
+    body: |-
+      begin
+        return query
+        select
+          worker_pool_errors.error_id,
+          worker_pool_errors.worker_pool_id,
+          worker_pool_errors.reported,
+          worker_pool_errors.kind,
+          worker_pool_errors.title,
+          worker_pool_errors.description,
+          worker_pool_errors.extra,
+          worker_pool_errors.launch_config_id
+        from worker_pool_errors
+        where
+          (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+          (worker_pool_errors.launch_config_id = launch_config_id_in or launch_config_id_in is null) and
+          (worker_pool_errors.error_id = error_id_in or error_id_in is null)
+        order by worker_pool_errors.reported desc
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
       end

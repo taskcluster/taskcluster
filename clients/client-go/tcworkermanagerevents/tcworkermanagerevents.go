@@ -241,6 +241,87 @@ func (binding WorkerRemoved) NewPayloadObject() interface{} {
 	return new(WorkerRemovedPulseMessage)
 }
 
+// Whenever a new launch configuration is created for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigCreated
+type LaunchConfigCreated struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigCreated) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigCreated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-created"
+}
+
+func (binding LaunchConfigCreated) NewPayloadObject() interface{} {
+	return new(LaunchConfigPulseMessage)
+}
+
+// Whenever a launch configuration is updated for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigUpdated
+type LaunchConfigUpdated struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigUpdated) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigUpdated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-updated"
+}
+
+func (binding LaunchConfigUpdated) NewPayloadObject() interface{} {
+	return new(LaunchConfigPulseMessage)
+}
+
+// Whenever a launch configuration is archived for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigArchived
+type LaunchConfigArchived struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigArchived) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigArchived) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-archived"
+}
+
+func (binding LaunchConfigArchived) NewPayloadObject() interface{} {
+	return new(LaunchConfigPulseMessage)
+}
+
 func generateRoutingKey(x interface{}) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())

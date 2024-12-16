@@ -359,6 +359,11 @@ type (
 		// Additional properties allowed
 		Hourly json.RawMessage `json:"hourly"`
 
+		// Breakdown by launchConfigId where available
+		//
+		// Additional properties allowed
+		LaunchConfigID json.RawMessage `json:"launchConfigId"`
+
 		// Breakdown by title
 		//
 		// Additional properties allowed
