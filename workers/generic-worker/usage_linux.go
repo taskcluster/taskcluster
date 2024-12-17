@@ -31,7 +31,9 @@ func d2gConfig() string {
                                                 (property capabilities.containerEngine). Accepted values: "docker" or "podman".
                                                 [default: "docker"]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
-                                                Only used if allowGPUs is true. [default: "all"]`
+                                                Only used if allowGPUs is true. [default: "all"]
+                                              * logTranslation - Logs the D2G-translated task definition to the task logs.
+                                                [default: true]`
 }
 
 func enableTaskFeatures() string {

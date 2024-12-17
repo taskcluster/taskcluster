@@ -27,3 +27,7 @@ func (c *PublicPlatformConfig) EnableD2G(t *testing.T) {
 func (c *PublicPlatformConfig) NativePayloadsDisabled() bool {
 	return false
 }
+
+func (c *PublicPlatformConfig) LogD2GTranslation() bool {
+	return false
+}

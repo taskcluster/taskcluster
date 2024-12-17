@@ -96,6 +96,9 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 		task.Warn("Worker task payload as input, and outputs a Generic Worker task payload. It can also convert")
 		task.Warn("Docker Worker scopes to equivalent Generic Worker scopes.")
 		task.Warn("")
+	}
+
+	if config.PublicPlatformConfig.LogD2GTranslation() {
 		task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
 	}
 

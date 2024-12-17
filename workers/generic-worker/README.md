@@ -186,6 +186,8 @@ and reports back results to the queue.
                                                 [default: "docker"]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
                                                 Only used if allowGPUs is true. [default: "all"]
+                                              * logTranslation - Logs the D2G-translated task definition to the task logs.
+                                                [default: true]
           enableChainOfTrust                Enables the Chain of Trust feature to be used in the
                                             task payload. [default: true]
           enableLiveLog                     Enables the LiveLog feature to be used in the task

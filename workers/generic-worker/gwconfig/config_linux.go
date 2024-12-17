@@ -29,6 +29,7 @@ func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 			"allowTaskclusterProxy": true,
 			"containerEngine":       "docker",
 			"gpus":                  "all",
+			"logTranslation":        true,
 		},
 		DisableNativePayloads:     false,
 		EnableInteractive:         true,
@@ -52,4 +53,8 @@ func (c *PublicPlatformConfig) EnableD2G(t *testing.T) {
 
 func (c *PublicPlatformConfig) NativePayloadsDisabled() bool {
 	return c.DisableNativePayloads
+}
+
+func (c *PublicPlatformConfig) LogD2GTranslation() bool {
+	return c.D2GConfig["logTranslation"].(bool)
 }
