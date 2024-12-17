@@ -16,6 +16,9 @@ type (
 		// Default:    true
 		AllowDisableSeccomp bool `json:"allowDisableSeccomp" default:"true"`
 
+		// Default:    false
+		AllowGPUs bool `json:"allowGPUs" default:"false"`
+
 		// Default:    true
 		AllowHostSharedMemory bool `json:"allowHostSharedMemory" default:"true"`
 
@@ -46,6 +49,9 @@ type (
 		//
 		// Default:    "docker"
 		ContainerEngine string `json:"containerEngine" default:"docker"`
+
+		// Default:    "all"
+		Gpus string `json:"gpus" default:"all"`
 	}
 
 	// Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
@@ -159,6 +165,10 @@ func JSONSchema() string {
           "default": true,
           "type": "boolean"
         },
+        "allowGPUs": {
+          "default": false,
+          "type": "boolean"
+        },
         "allowHostSharedMemory": {
           "default": true,
           "type": "boolean"
@@ -197,6 +207,10 @@ func JSONSchema() string {
             "docker",
             "podman"
           ],
+          "type": "string"
+        },
+        "gpus": {
+          "default": "all",
           "type": "string"
         }
       },

@@ -167,6 +167,7 @@ and reports back results to the queue.
                                               * enableD2G - Enables D2G. [default: false]
                                               * allowChainOfTrust - Allows Chain of Trust. [default: true]
                                               * allowDisableSeccomp - Allows disabling Seccomp. [default: true]
+                                              * allowGPUs - Allows the use of NVIDIA GPUs. [default: false]
                                               * allowHostSharedMemory - Allows Host Shared Memory. [default: true]
                                               * allowInteractive - Allows Interactive. [default: true]
                                               * allowKVM - Allows KVM. [default: true]
@@ -179,6 +180,8 @@ and reports back results to the queue.
                                                 Docker Worker tasks when not specified in the Docker Worker task payload
                                                 (property capabilities.containerEngine). Accepted values: "docker" or "podman".
                                                 [default: "docker"]
+                                              * gpus - The NVIDIA GPUs to make available to the running container.
+                                                Only used if allowGPUs is true. [default: "all"]
           enableChainOfTrust                Enables the Chain of Trust feature to be used in the
                                             task payload. [default: true]
           enableLiveLog                     Enables the LiveLog feature to be used in the task

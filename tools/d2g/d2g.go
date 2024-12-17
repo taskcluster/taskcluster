@@ -441,6 +441,9 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
 		command.WriteString(" --add-host=taskcluster:127.0.0.1 --net=host")
 	}
+	if config["allowGPUs"].(bool) {
+		command.WriteString(" --gpus " + config["gpus"].(string))
+	}
 	command.WriteString(envMappings(dwPayload, config))
 	dockerImageString, err := dwImage.String(tool)
 	if err != nil {
