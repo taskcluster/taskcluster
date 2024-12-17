@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v76/internal/scopes"
-	"github.com/taskcluster/taskcluster/v76/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v77/internal/scopes"
+	"github.com/taskcluster/taskcluster/v77/workers/generic-worker/host"
 )
 
 type LoopbackVideoFeature struct {

@@ -5,7 +5,7 @@ package dockerworker
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v76/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v77/clients/client-go"
 )
 
 type (

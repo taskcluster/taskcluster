@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v77.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+Generic Worker: adds worker config feature toggles to quickly/easily enable/disable features across entire worker pools. All features are enabled, by default.
+
+Generic Worker: adds `d2gConfig` worker config to configure D2G translations. `enableD2G` and `containerEngine` config settings have been moved into this new config. The following is the new structure (with default values shown):
+
+```json
+{
+    ...
+    "d2gConfig": {
+        "enableD2G": false,
+        "allowChainOfTrust": true,
+        "allowDisableSeccomp": true,
+        "allowHostSharedMemory": true,
+        "allowInteractive": true,
+        "allowKVM": true,
+        "allowLoopbackAudio": true,
+        "allowLoopbackVideo": true,
+        "allowPrivileged": true,
+        "allowPtrace": true,
+        "allowTaskclusterProxy": true,
+        "containerEngine": "docker"
+    },
+    ...
+}
+```
+
+Tasks using disabled features will be resolved as `exception/malformed-payload`.
+
+▶ [minor] [#7390](https://github.com/taskcluster/taskcluster/issues/7390)
+Generic Worker: adds `d2gConfig.allowGPUs` (default: `false`) and `d2gConfig.gpus` (default: `all`) worker config to provide NVIDIA GPU access to the running container for d2g-translated task payloads.
+
+The translation will add the gpus flag: `--gpus <d2gConfig.gpus>` to the `docker run ...` command. Read more about the usage [here](https://docs.docker.com/reference/cli/docker/container/run/#gpus).
+
+▶ [minor]
+Generic Worker: adds `disableNativePayloads` (default: `false`) worker config option (`linux` only) to require all task payloads to be Docker Worker payloads. If this option is set to `true`, the task log will no longer contain the translated task definition and the warning about using Docker Worker payloads.
+
+Tasks submitted with native payloads will be resolved as `exception/malformed-payload`.
+
+Generic Worker: adds `d2gConfig.logTranslation` (default: `true`) worker config to control whether the D2G-translated task definition is logged to the task logs.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump nanoid from 3.3.6 to 3.3.8 (e451def2d)
+* build(deps): bump golang.org/x/crypto from 0.29.0 to 0.31.0 (e2f947058)
+
+</details>
+
 ## v76.0.0
 
 ### GENERAL
