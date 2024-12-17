@@ -1,5 +1,13 @@
 package main
 
+func disableNativePayloads() string {
+	return `
+          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
+                                            enabled (d2gConfig.enableD2G) when this is set to true.
+                                            Tasks submitted with native payloads will be resolved
+                                            as exception/malformed-payload. [default: false]`
+}
+
 func d2gConfig() string {
 	return `
           d2gConfig                         D2G-specific (Docker Worker to Generic Worker payload
@@ -23,7 +31,9 @@ func d2gConfig() string {
                                                 (property capabilities.containerEngine). Accepted values: "docker" or "podman".
                                                 [default: "docker"]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
-                                                Only used if allowGPUs is true. [default: "all"]`
+                                                Only used if allowGPUs is true. [default: "all"]
+                                              * logTranslation - Logs the D2G-translated task definition to the task logs.
+                                                [default: true]`
 }
 
 func enableTaskFeatures() string {

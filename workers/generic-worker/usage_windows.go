@@ -65,6 +65,10 @@ func sidSID() string {
                                             example: 'S-1-5-5-0-41431533'.`
 }
 
+func disableNativePayloads() string {
+	return ""
+}
+
 func d2gConfig() string {
 	return ""
 }

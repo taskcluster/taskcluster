@@ -162,7 +162,7 @@ and reports back results to the queue.
                                             in the config of the worker type definition is
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
-                                            https://bugzil.la/1298010
+                                            https://bugzil.la/1298010` + disableNativePayloads() + `
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.

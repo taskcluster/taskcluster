@@ -146,6 +146,10 @@ and reports back results to the queue.
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
                                             https://bugzil.la/1298010
+          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
+                                            enabled (d2gConfig.enableD2G) when this is set to true.
+                                            Tasks submitted with native payloads will be resolved
+                                            as exception/malformed-payload. [default: false]
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.
@@ -182,6 +186,8 @@ and reports back results to the queue.
                                                 [default: "docker"]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
                                                 Only used if allowGPUs is true. [default: "all"]
+                                              * logTranslation - Logs the D2G-translated task definition to the task logs.
+                                                [default: true]
           enableChainOfTrust                Enables the Chain of Trust feature to be used in the
                                             task payload. [default: true]
           enableLiveLog                     Enables the LiveLog feature to be used in the task
