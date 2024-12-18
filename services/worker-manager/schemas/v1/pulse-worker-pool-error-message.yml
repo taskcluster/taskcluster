@@ -9,10 +9,7 @@ properties:
   workerId: {$ref: "worker-full.json#/properties/workerId"}
   workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
   # can be null if worker is missing ??? how to make it nulll....
-  launchConfigId:
-    oneOf:
-    - const: ''
-    - { $const: launch-config-id }
+  launchConfigId: { $const: launch-config-id }
   errorId: {$ref: "worker-pool-error.json#/properties/errorId"}
   kind: {$ref: "worker-pool-error.json#/properties/kind"}
   title: {$ref: "worker-pool-error.json#/properties/title"}

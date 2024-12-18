@@ -95,7 +95,11 @@ methods:
           SET is_archived = true
           WHERE
             worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-            AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+            AND (
+              -- if the array is empty, ALL(array[]) will return null and not TRUE
+              array_length(processed_lcs, 1) IS NULL
+              OR worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+            )
             AND worker_pool_launch_configs.is_archived = false
           RETURNING launch_config_id
         )
@@ -590,6 +594,25 @@ methods:
         left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
         where worker_pools.worker_pool_id = worker_pool_id_in
         group by worker_pools.worker_pool_id;
+      end
+
+  create_worker_pool_error:
+    deprecated: true
+  create_worker_pool_error_launch_config:
+    description: |-
+      Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
+    mode: write
+    serviceName: worker_manager
+    args: error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb, launch_config_id_in text
+    returns: uuid
+    body: |-
+      declare
+        new_etag uuid := public.gen_random_uuid();
+      begin
+        insert
+          into worker_pool_errors (error_id, worker_pool_id, reported, kind, title, description, extra, launch_config_id)
+          values (error_id_in, worker_pool_id_in, reported_in, kind_in, title_in, description_in, extra_in, launch_config_id_in);
+        return new_etag;
       end
 
   get_worker_pool_error_launch_configs:
