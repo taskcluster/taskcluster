@@ -4,6 +4,13 @@ import taskcluster from 'taskcluster-client';
 import { MAX_MODIFY_ATTEMPTS } from './util.js';
 import { paginateResults } from 'taskcluster-lib-api';
 
+/**
+ * Create error
+ * @param {string} message
+ * @param {string} code
+ * @param {number} statusCode
+ * @returns {Error}
+ */
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
   err.code = code;
@@ -15,6 +22,23 @@ const makeError = (message, code, statusCode) => {
 const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
 export class WorkerPool {
+  /** @type {string} */
+  workerPoolId;
+  /** @type {string} */
+  providerId;
+  /** @type {string} */
+  description;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  lastModified;
+  /** @type {Object} */
+  config;
+  /** @type {string} */
+  owner;
+  /** @type {Boolean} */
+  emailOnError;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -167,16 +191,20 @@ export class WorkerPool {
   }
 }
 
-/**
- * @class WorkerPoolLaunchConfig
- * @property {string} launchConfigId
- * @property {string} workerPoolId
- * @property {Boolean} isArchived
- * @property {Object} configuration
- * @property {Date} created
- * @property {Date} lastModified
- */
 export class WorkerPoolLaunchConfig {
+  /** @type {string} */
+  launchConfigId;
+  /** @type {string} */
+  workerPoolId;
+  /** @type {Boolean} */
+  isArchived;
+  /** @type {Object} */
+  configuration;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  lastModified;
+
   constructor(props) {
     Object.assign(this, props);
   }
@@ -210,6 +238,23 @@ export class WorkerPoolLaunchConfig {
 }
 
 export class WorkerPoolError {
+  /** @type {string} */
+  errorId;
+  /** @type {string} */
+  workerPoolId;
+  /** @type {Date} */
+  reported;
+  /** @type {string} */
+  kind;
+  /** @type {string} */
+  title;
+  /** @type {string} */
+  description;
+  /** @type {Object} */
+  extra;
+  /** @type {string?} */
+  launchConfigId;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -225,7 +270,7 @@ export class WorkerPoolError {
       title: row.title,
       description: row.description,
       extra: row.extra,
-      launchConfigId: row.launch_config_id ?? '',
+      launchConfigId: row.launch_config_id,
     });
   }
 
@@ -263,14 +308,15 @@ export class WorkerPoolError {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      await db.fns.create_worker_pool_error(
+      await db.fns.create_worker_pool_error_launch_config(
         this.errorId,
         this.workerPoolId,
         this.reported,
         this.kind,
         this.title,
         this.description,
-        this.extra);
+        this.extra,
+        this.launchConfigId);
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
         throw err;
@@ -296,7 +342,7 @@ export class WorkerPoolError {
       title: this.title,
       description: this.description,
       extra: this.extra,
-      launchConfigId: this.launchConfigId,
+      launchConfigId: this.launchConfigId || undefined,
     };
   }
 
@@ -315,6 +361,45 @@ export class WorkerPoolError {
 }
 
 export class Worker {
+  /** @type {string} */
+  workerPoolId;
+  /** @type {string} */
+  workerGroup;
+  /** @type {string} */
+  workerId;
+  /** @type {string} */
+  providerId;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  expires;
+  /** @type {string} */
+  state;
+  /** @type {Object} */
+  providerData;
+  /** @type {number} */
+  capacity;
+  /** @type {Date} */
+  lastModified;
+  /** @type {Date} */
+  lastChecked;
+  /** @type {string} */
+  etag;
+  /** @type {string} */
+  secret;
+  /** @type {Date} */
+  quarantineUntil;
+  /** @type {Array} */
+  quarantineDetails;
+  /** @type {Date} */
+  firstClaim;
+  /** @type {Array} */
+  recentTasks;
+  /** @type {Date} */
+  lastDateActive;
+  /** @type {string|null} */
+  launchConfigId;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -389,11 +474,18 @@ export class Worker {
     );
   }
 
-  // Call db.get_queue_workers_with_wm_join.
-  // The response will be of the form { rows, continationToken }.
-  // If there are no workers to show, the response will have the
-  // `rows` field set to an empty array.
-  static async getWorkers(db, { workerPoolId, expires }, { query } = {}) {
+  /**
+   * db.get_queue_workers_with_wm_join.
+   * The response will be of the form { rows, continationToken }.
+   * If there are no workers to show, the response will have the
+   * `rows` field set to an empty array.
+   *
+   * @param {Object} db
+   * @param {{workerPoolId: string, expires: Date}} params - Parameters object
+   * @param {{query?: Record<string, string>}} [options] - Optional options object
+   * @returns {Promise<{rows: Worker[], continuationToken: string}>}
+   */
+  static async getWorkers(db, { workerPoolId, expires }, { query: queryIn } = {}) {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
@@ -434,7 +526,7 @@ export class Worker {
     };
 
     // Fetch results
-    return fetchResults(query || {});
+    return fetchResults(queryIn || {});
   }
 
   // Expire workers,

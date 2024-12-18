@@ -8,8 +8,14 @@ import { WorkerPoolLaunchConfig } from './data.js';
 * The higher the initial weight, the more likely the launch config will be selected.
 */
 class WeightedRandomConfig {
+  /** @type {object[]} */
+  configs;
+
+  /** @type {Number} */
+  totalWeight;
+
   /**
-   * @param {import('./data.js').WorkerPoolLaunchConfig[]} launchConfigs
+   * @param {object[]} launchConfigs
    */
   constructor(launchConfigs = []) {
     this.configs = [];
@@ -22,12 +28,21 @@ class WeightedRandomConfig {
     }
   }
 
+  /**
+   * Adds a config with a weight to the weighted random config list.
+   *
+   * @param {import('./data.js').WorkerPoolLaunchConfig} config The launch config to add
+   * @param {number} weight The weight to assign to this config
+   */
   addConfig(config, weight) {
     this.totalWeight += weight;
     this.configs.push(config);
     this.configs.sort((a, b) => a.weight - b.weight);
   }
 
+  /**
+   * @returns {import('./data.js').WorkerPoolLaunchConfig | null}
+   */
   getRandomConfig() {
     if (this.totalWeight === 0) {
       return null;
@@ -50,6 +65,10 @@ class WeightedRandomConfig {
     return this.configs;
   }
 
+  /**
+   * @param {number} toSpawn
+   * @returns {import('./data.js').WorkerPoolLaunchConfig[]}
+   */
   selectCapacity(toSpawn) {
     // during selection, should we adjust the weights as we go?
     // we might hit the max capacity so we cannot select it more than we do..
@@ -73,6 +92,11 @@ class WeightedRandomConfig {
 * and prepare them for selection based on weighted random selection.
 */
 export class LaunchConfigSelector {
+  /**
+   * @param {object} options
+   * @param {object} options.db
+   * @param {{ alert: Function } &object} options.monitor
+   */
   constructor({ db, monitor }) {
     assert(db, 'db is required');
     assert(monitor, 'monitor is required');

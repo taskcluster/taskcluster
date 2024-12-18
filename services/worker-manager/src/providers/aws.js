@@ -140,6 +140,7 @@ export class AwsProvider extends Provider {
           extra: {
             config: config.launchConfig,
           },
+          launchConfigId: lc.launchConfigId,
         });
       }
 

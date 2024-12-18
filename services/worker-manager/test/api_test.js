@@ -58,6 +58,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     return worker.create(helper.db);
   };
 
+  const capturePulseMessages = () => {
+    let messages = [];
+    helper.onPulsePublish((exchange, routingKey, data) => {
+      messages.push({
+        exchange,
+        routingKey,
+        data: JSON.parse(Buffer.from(data).toString()),
+      });
+    });
+    return messages;
+  };
+
+  const genAwsLaunchConfig = (workerManager = {}) => ({
+    workerManager,
+    region: 'us-west-2',
+    launchConfig: {
+      ImageId: 'ami-12345678',
+    },
+    capacityPerInstance: 1,
+  });
+
   test('ping', async function () {
     await helper.workerManager.ping();
   });
@@ -153,22 +174,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       providerId: 'aws',
       description: 'bar',
       config: {
-        launchConfigs: [{
-          workerManager: {
-            // launchConfigId: 'lc1',
-          },
-          region: 'r1',
-          launchConfig: { ImageId: 'img1' },
-          capacityPerInstance: 1,
-        }],
+        launchConfigs: [genAwsLaunchConfig()],
         minCapacity: 1,
         maxCapacity: 1,
       },
       owner: 'example@example.com',
       emailOnError: false,
     };
+    let messages = capturePulseMessages();
     const created = await helper.workerManager.createWorkerPool(workerPoolId, input);
     assert(created.config.launchConfigs[0].workerManager.launchConfigId);
+    assert.equal(messages.length, 2);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-created');
+    assert.equal(messages[1].exchange, 'exchange/taskcluster-worker-manager/v1/launch-config-created');
+    assert.equal(messages[1].data.launchConfigId, created.config.launchConfigs[0].workerManager.launchConfigId);
     delete created.config.launchConfigs[0].workerManager.launchConfigId;
 
     workerPoolCompare(workerPoolId, input, created);
@@ -200,6 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('update worker pool', async function () {
+    let messages = capturePulseMessages();
     const input = {
       providerId: 'testing1',
       description: 'bar',
@@ -209,6 +229,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     };
     const initial = await helper.workerManager.createWorkerPool(workerPoolId, input);
     workerPoolCompare(workerPoolId, input, initial);
+    assert.equal(messages.length, 1);
     const input2 = {
       providerId: 'testing2',
       description: 'bing',
@@ -226,6 +247,84 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert.equal(initial.lastModified, initial.created);
     assert.equal(initial.created, updated.created);
     assert(updated.lastModifed !== updated.created);
+
+    assert.equal(messages.length, 2);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-created');
+    assert.equal(messages[1].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-updated');
+  });
+
+  test('update worker pool - launch config events emitted', async function () {
+    let messages = capturePulseMessages();
+    const input = {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
+          genAwsLaunchConfig({ launchConfigId: 'lc2' }),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+    assert.equal(messages.length, 3);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-created');
+    assert.equal(messages[1].exchange, 'exchange/taskcluster-worker-manager/v1/launch-config-created');
+    assert.equal(messages[1].data.launchConfigId, 'lc1');
+    assert.equal(messages[2].exchange, 'exchange/taskcluster-worker-manager/v1/launch-config-created');
+    assert.equal(messages[2].data.launchConfigId, 'lc2');
+
+    const input2 = {
+      ...input,
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
+          genAwsLaunchConfig({ launchConfigId: 'lc3' }),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+    };
+    messages.length = 0; // reset messages
+    const updated = await helper.workerManager.updateWorkerPool(workerPoolId, input2);
+    // updated launch config should have lc1, lc3 configs only
+    assert.equal(updated.config.launchConfigs.length, 2);
+    assert.equal(updated.config.launchConfigs[0].workerManager.launchConfigId, 'lc1');
+    assert.equal(updated.config.launchConfigs[1].workerManager.launchConfigId, 'lc3');
+
+    // events should have been emitted for archival of lc2, creation of lc3 and update of lc1
+    assert.equal(messages.length, 4);
+    assert.deepEqual(
+      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
+        .map(({ data }) => data.launchConfigId),
+      ['lc2']);
+    assert.deepEqual(
+      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-created')
+        .map(({ data }) => data.launchConfigId),
+      ['lc3']);
+    assert.deepEqual(
+      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-updated')
+        .map(({ data }) => data.launchConfigId),
+      ['lc1']);
+
+    const input3 = {
+      ...input,
+      config: {
+        launchConfigs: [],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+    };
+    messages.length = 0;
+    await helper.workerManager.updateWorkerPool(workerPoolId, input3);
+    // all launch configs should have been archived
+    assert.deepEqual(
+      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
+        .map(({ data }) => data.launchConfigId),
+      ['lc1', 'lc3']);
   });
 
   test('update worker pool fails when pulse publish fails', async function () {
@@ -356,6 +455,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await helper.workerManager.deleteWorkerPool('pp/oo');
     const wp = await helper.workerManager.workerPool('pp/oo');
     assert.equal(wp.providerId, 'null-provider');
+  });
+
+  test('delete worker pool - archives launch configs', async function () {
+    await helper.workerManager.createWorkerPool(workerPoolId, {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
+          genAwsLaunchConfig({ launchConfigId: 'lc2' }),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    let messages = capturePulseMessages();
+    await helper.workerManager.deleteWorkerPool(workerPoolId);
+    assert.equal(messages.length, 3);
+    assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-updated');
+    assert.equal(messages[1].exchange, 'exchange/taskcluster-worker-manager/v1/launch-config-archived');
+    assert.equal(messages[2].exchange, 'exchange/taskcluster-worker-manager/v1/launch-config-archived');
+    assert.equal(messages[1].data.launchConfigId, 'lc1');
+    assert.equal(messages[2].data.launchConfigId, 'lc2');
   });
 
   test('create worker pool (already exists)', async function () {

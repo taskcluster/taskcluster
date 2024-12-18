@@ -1274,6 +1274,14 @@ suite(testing.suiteName(), function () {
       assert.equal(res4.created_launch_configs.length, 2);
       assert.equal(res4.updated_launch_configs.length, 0);
       assert.equal(res4.archived_launch_configs.length, 2);
+
+      // should archive all
+      const [res5] = await db.fns.upsert_worker_pool_launch_configs('wp/id', {
+        launchConfigs: [],
+      });
+      assert.equal(res5.created_launch_configs.length, 0);
+      assert.equal(res5.updated_launch_configs.length, 0);
+      assert.equal(res5.archived_launch_configs.length, 2);
     });
 
     helper.dbTest('expire_worker_pool_launch_configs', async function (db) {
