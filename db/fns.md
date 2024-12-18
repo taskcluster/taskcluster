@@ -163,7 +163,7 @@
    * [`session_touch`](#session_touch)
  * [worker_manager functions](#worker_manager)
    * [`collect_launch_configs_if_exist`](#collect_launch_configs_if_exist)
-   * [`create_worker_pool_error`](#create_worker_pool_error)
+   * [`create_worker_pool_error_launch_config`](#create_worker_pool_error_launch_config)
    * [`create_worker_pool_launch_config`](#create_worker_pool_launch_config)
    * [`create_worker_pool_with_launch_configs`](#create_worker_pool_with_launch_configs)
    * [`create_worker_with_lc`](#create_worker_with_lc)
@@ -6415,7 +6415,7 @@ end
 ## worker_manager
 
 * [`collect_launch_configs_if_exist`](#collect_launch_configs_if_exist)
-* [`create_worker_pool_error`](#create_worker_pool_error)
+* [`create_worker_pool_error_launch_config`](#create_worker_pool_error_launch_config)
 * [`create_worker_pool_launch_config`](#create_worker_pool_launch_config)
 * [`create_worker_pool_with_launch_configs`](#create_worker_pool_with_launch_configs)
 * [`create_worker_with_lc`](#create_worker_with_lc)
@@ -6496,7 +6496,7 @@ end
 
 </details>
 
-### create_worker_pool_error
+### create_worker_pool_error_launch_config
 
 * *Mode*: write
 * *Arguments*:
@@ -6507,8 +6507,9 @@ end
   * `title_in text`
   * `description_in text`
   * `extra_in jsonb`
+  * `launch_config_id_in text`
 * *Returns*: `uuid`
-* *Last defined on version*: 29
+* *Last defined on version*: 105
 
 Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
 
@@ -6519,8 +6520,8 @@ declare
   new_etag uuid := public.gen_random_uuid();
 begin
   insert
-    into worker_pool_errors (error_id, worker_pool_id, reported, kind, title, description, extra)
-    values (error_id_in, worker_pool_id_in, reported_in, kind_in, title_in, description_in, extra_in);
+    into worker_pool_errors (error_id, worker_pool_id, reported, kind, title, description, extra, launch_config_id)
+    values (error_id_in, worker_pool_id_in, reported_in, kind_in, title_in, description_in, extra_in, launch_config_id_in);
   return new_etag;
 end
 ```
@@ -8273,7 +8274,11 @@ begin
     SET is_archived = true
     WHERE
       worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
-      AND worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+      AND (
+        -- if the array is empty, ALL(array[]) will return null and not TRUE
+        array_length(processed_lcs, 1) IS NULL
+        OR worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+      )
       AND worker_pool_launch_configs.is_archived = false
     RETURNING launch_config_id
   )
@@ -8291,6 +8296,7 @@ end
 
 * `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v78.0.0)
 * `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v78.0.0)
+* `create_worker_pool_error(error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb)` (compatibility guaranteed until v78.0.0)
 * `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
 * `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v78.0.0)
 * `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
