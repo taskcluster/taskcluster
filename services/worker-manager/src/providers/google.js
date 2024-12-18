@@ -322,6 +322,7 @@ export class GoogleProvider extends Provider {
             extra: {
               config: cfg,
             },
+            launchConfigId: launchConfig.launchConfigId,
           });
         }
         return;

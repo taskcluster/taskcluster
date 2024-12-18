@@ -617,6 +617,14 @@ type (
 		// Date and time when this worker last changed state
 		LastModified tcclient.Time `json:"lastModified"`
 
+		// The ID of the launch configuration. This must be unique within the worker pool.
+		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
 		//

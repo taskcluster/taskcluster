@@ -34,17 +34,6 @@ type (
 		WorkerPoolID string `json:"workerPoolId"`
 	}
 
-	// The ID of the launch configuration. This must be unique within the worker pool.
-	// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
-	//
-	// Syntax:     ^([a-zA-Z0-9-_]*)$
-	// Min length: 1
-	// Max length: 38
-	LaunchConfigurationID string
-
-	// Constant value: ""
-	Var string
-
 	// The message that is emitted when workers requested/running/stopped.
 	WorkerPulseMessage struct {
 
@@ -178,9 +167,12 @@ type (
 		// Max length: 128
 		Kind string `json:"kind"`
 
-		// One of:
-		//   * Var
-		//   * LaunchConfigurationID
+		// The ID of the launch configuration. This must be unique within the worker pool.
+		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
 		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider responsible for managing this worker pool.

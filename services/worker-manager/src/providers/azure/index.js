@@ -1027,6 +1027,7 @@ export class AzureProvider extends Provider {
             workerGroup: worker.workerGroup,
             config: worker.providerData,
           },
+          launchConfigId: worker.launchConfigId,
         });
       }
       await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });

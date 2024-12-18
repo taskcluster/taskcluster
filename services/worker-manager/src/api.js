@@ -1,7 +1,6 @@
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import slug from 'slugid';
 import assert from 'assert';
-import _ from 'lodash';
 import { ApiError, Provider } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker } from './data.js';
@@ -303,12 +302,14 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
+  // updating worker pool without launch configs would mark all existing as archived
+  const newConfig = workerPool.config?.launchConfigs ? { ...workerPool.config, launchConfigs: [] } : workerPool.config;
+
   const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     providerId,
     workerPool.description,
-    // updating worker pool without launch configs would mark all existing as archived
-    _.omit(workerPool.config, 'launchConfigs'),
+    newConfig,
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
@@ -437,14 +438,14 @@ builder.declare({
   }
 
   const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
-  let launchConfigId = worker?.launchConfigId;
 
   const wpe = await provider.reportError({
     workerPool,
     kind: input.kind,
     title: input.title,
     description: input.description,
-    extra: { ...input.extra, workerGroup, workerId, launchConfigId },
+    extra: { ...input.extra, workerGroup, workerId },
+    launchConfigId: worker?.launchConfigId,
   });
 
   res.reply(wpe.serializable());
@@ -522,7 +523,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
-  rowsToDict(out.totals.workerPool, launchConfigs, 'launchConfigId');
+  rowsToDict(out.totals.launchConfigId, launchConfigs, 'launchConfigId');
 
   return res.reply(out);
 });
@@ -1082,7 +1083,7 @@ builder.declare({
         state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
-        launchConfigId: worker.launchConfigId || null,
+        launchConfigId: worker.launchConfigId,
         quarantineUntil: worker.quarantineUntil?.toJSON(),
       };
       if (worker.recentTasks.length > 0) {
