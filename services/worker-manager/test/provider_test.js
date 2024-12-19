@@ -185,7 +185,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
@@ -204,7 +204,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
@@ -224,7 +224,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
       await provider.reportError(errorDetails);
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
@@ -234,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.reportError(errorDetails);
       await provider.reportError(errorDetails);
 
-      const errors2 = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, 'ww/tt', null, null);
+      const errors2 = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors2.length, 3);
       assert.equal(helper.notify.emails.length, 1);
     });
@@ -254,7 +254,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
