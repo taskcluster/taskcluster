@@ -2220,7 +2220,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "deleteWorkerPool",
 				Title:       "Delete Worker Pool",
-				Description: "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+				Description: "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
 				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/worker-pool/<workerPoolId>",
@@ -2296,6 +2296,8 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"errorId",
+					"launchConfigId",
 				},
 				Input: "",
 			},
