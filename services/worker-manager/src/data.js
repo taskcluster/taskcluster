@@ -428,7 +428,7 @@ export class Worker {
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
       lastDateActive: row.last_date_active,
-      launchConfigId: row.launch_config_id,
+      launchConfigId: row.launch_config_id || undefined,
     });
   }
 
@@ -465,7 +465,7 @@ export class Worker {
   // Get a queue worker from the DB, or undefined if it does not exist.
   static async getQueueWorker(db, workerPoolId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.fns.get_queue_worker_with_wm_join_2(
+      await db.fns.get_queue_worker_with_wm_data(
         workerPoolId,
         workerGroup,
         workerId,
@@ -481,7 +481,7 @@ export class Worker {
    * `rows` field set to an empty array.
    *
    * @param {Object} db
-   * @param {{workerPoolId: string, expires: Date}} params - Parameters object
+   * @param {{workerPoolId?: string, expires?: Date}} params - Parameters object
    * @param {{query?: Record<string, string>}} [options] - Optional options object
    * @returns {Promise<{rows: Worker[], continuationToken: string}>}
    */
@@ -490,30 +490,15 @@ export class Worker {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => {
-          if (
-            Object.keys(query).includes("workerState") &&
-            Object.values(Worker.states).includes(query.workerState)
-          ) {
-            return db.fns.get_queue_workers_with_wm_join_state(
-              workerPoolId || null,
-              expires || null,
-              size,
-              offset,
-              query.workerState,
-            );
-          }
-
-          if (query.quarantined === 'true') {
-            return db.fns.get_queue_workers_with_wm_join_quarantined_2(
-              workerPoolId || null,
-              size,
-              offset,
-            );
-          }
-
-          return db.fns.get_queue_workers_with_wm_join(
+          return db.fns.get_queue_workers_with_wm_data(
             workerPoolId || null,
             expires || null,
+            (Object.keys(query).includes("workerState") &&
+              Object.values(Worker.states).includes(query.workerState))
+              ? query.workerState
+              : null,
+            // only_quarantined_in
+            query.quarantined === 'true',
             size,
             offset,
           );
@@ -603,6 +588,7 @@ export class Worker {
       expires: this.expires?.toJSON(),
       state: this.state || 'standalone',
       capacity: this.capacity || 0,
+      launchConfigId: this.launchConfigId || undefined,
       lastModified: this.lastModified?.toJSON(),
       lastChecked: this.lastChecked?.toJSON(),
       firstClaim: this.firstClaim?.toJSON(),
