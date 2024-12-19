@@ -1085,8 +1085,9 @@ builder.declare({
         providerId: worker.providerId || 'none',
         launchConfigId: worker.launchConfigId,
         quarantineUntil: worker.quarantineUntil?.toJSON(),
+        latestTask: undefined,
       };
-      if (worker.recentTasks.length > 0) {
+      if (worker?.recentTasks?.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
       }
       return entry;

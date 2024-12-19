@@ -146,10 +146,6 @@ and reports back results to the queue.
                                             different to the worker's current deploymentId, the
                                             worker will shut itself down. See
                                             https://bugzil.la/1298010
-          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
-                                            enabled (d2gConfig.enableD2G) when this is set to true.
-                                            Tasks submitted with native payloads will be resolved
-                                            as exception/malformed-payload. [default: false]
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.
@@ -196,10 +192,6 @@ and reports back results to the queue.
                                             the task payload. [default: true]
           enableInteractive                 Enables the Interactive feature to be used in the
                                             task payload. [default: true]
-          enableLoopbackAudio               Enables the Loopback Audio feature to be used in the
-                                            task payload. [default: true]
-          enableLoopbackVideo               Enables the Loopback Video feature to be used in the
-                                            task payload. [default: true]
           headlessTasks                     If true, no dedicated graphical session will be available to tasks.
                                             There will also be no reboots between tasks and multiple workers
                                             can be run on the same host. Useful for tasks that don't require
@@ -224,15 +216,6 @@ and reports back results to the queue.
                                             [default: 60098]
           livelogExposePort                 When not using websocktunnel, livelog would be exposed using this port.
                                             If it is set to 0, logs would be exposed using a random port.
-                                            [default: 0]
-          loopbackAudioDeviceNumber         The audio loopback device number. The resulting devices inside /dev/snd
-                                            will take the form controlC<DEVICE_NUMBER>, pcmC<DEVICE_NUMBER>D0c,
-                                            pcmC<DEVICE_NUMBER>D0p, pcmC<DEVICE_NUMBER>D1c, pcmC<DEVICE_NUMBER>D1p
-                                            where <DEVICE_NUMBER> is an integer between 0 and 31.
-                                            [default: 16]
-          loopbackVideoDeviceNumber         The video loopback device number. Its value will take the form
-                                            /dev/video<DEVICE_NUMBER> where <DEVICE_NUMBER> is an integer
-                                            between 0 and 255. This setting may be used to change it.
                                             [default: 0]
           maxTaskRunTime                    The maximum value allowed for maxRunTime on generic-worker payloads.
                                             [default: 86400]
