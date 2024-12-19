@@ -1,0 +1,15 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Launch Configurationsn
+description: |
+  A liust of worker pool launch configurations.
+type:               object
+properties:
+  workerPoolId:
+    title: Worker Pool ID
+    type:           string
+    pattern:        {$const: workerpoolid-pattern}
+    description: |
+      The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+additionalProperties: false
+required:
+  - workerPoolId

@@ -934,6 +934,22 @@ services:
       - cron
       - worker-manager
       - worker-manager-cron
+  worker-manager-cron-expire-launch-configs:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/expire-launch-configs
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
   worker-manager-cron-expire-errors:
     image: ${IMAGE}
     networks:

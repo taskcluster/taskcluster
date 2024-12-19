@@ -23,6 +23,7 @@ export class Provider {
     providerConfig,
     providerType,
     publisher,
+    launchConfigSelector,
   }) {
     assert(db, 'db is required');
     assert(estimator, 'estimator is required');
@@ -30,6 +31,7 @@ export class Provider {
     assert(notify, 'notify is required');
     assert(validator, 'validator is required');
     assert(publisher, 'publisher is required');
+    assert(launchConfigSelector, 'launchConfigSelector is required');
 
     this.providerId = providerId;
     this.monitor = monitor;
@@ -42,6 +44,7 @@ export class Provider {
     this.WorkerPoolError = WorkerPoolError;
     this.providerType = providerType;
     this.publisher = publisher;
+    this.launchConfigSelector = launchConfigSelector;
 
     this.emailCache = [];
   }
@@ -85,6 +88,25 @@ export class Provider {
   async scanCleanup() {
   }
 
+  /**
+   * Get active launch configs to spawn workers
+   * @param {Object} options
+   * @param {String} options.workerPool - worker pool id
+   * @param {Number} options.toSpawn - number of workers to spawn
+   * @param {Boolean} options.returnAll - return all launch configs
+   */
+  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
+    assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
+
+    const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool);
+
+    if (returnAll) {
+      return configSelector.getAll();
+    }
+
+    return configSelector.selectCapacity(toSpawn);
+  }
+
   async createWorker({ workerPool, workerGroup, workerId, input }) {
     throw new ApiError('not supported for this provider');
   }
@@ -97,6 +119,11 @@ export class Provider {
     throw new ApiError('not supported for this provider');
   }
 
+  /**
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   * @param {Number|Date} options.terminateAfter
+   */
   async onWorkerRequested({ worker, terminateAfter }) {
     return this._onWorkerEvent({
       worker,
@@ -105,6 +132,10 @@ export class Provider {
     });
   }
 
+  /**
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   */
   async onWorkerRunning({ worker }) {
     return this._onWorkerEvent({
       worker,
@@ -112,6 +143,10 @@ export class Provider {
     });
   }
 
+  /**
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   */
   async onWorkerStopped({ worker }) {
     return this._onWorkerEvent({
       worker,
@@ -119,6 +154,11 @@ export class Provider {
     });
   }
 
+  /**
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   * @param {String} options.reason
+   */
   async onWorkerRemoved({ worker, reason = 'unknown' }) {
     return this._onWorkerEvent({
       worker,
@@ -128,6 +168,13 @@ export class Provider {
     });
   }
 
+  /**
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   * @param {String} options.event
+   * @param {Object} [options.extraLog]
+   * @param {Object} [options.extraPublish]
+   */
   async _onWorkerEvent({ worker, event, extraLog = {}, extraPublish = {} }) {
     assert(['workerRequested', 'workerRunning', 'workerStopped', 'workerRemoved'].includes(event), 'unknown event');
     this.monitor.log[event]({
@@ -165,6 +212,8 @@ export class Provider {
    *
    * Both `firstClaim` and `lastDateActive` are coming from queue service.
    * Those get updated when worker calls queue methods.
+   *
+   * @param {{ worker: import('../data.js').Worker }} options
    */
   static isZombie({ worker }) {
     const queueInactivityTimeout = worker.providerData?.queueInactivityTimeout || 7200 * 1000;
@@ -223,8 +272,19 @@ export class Provider {
     };
   }
 
-  // Report an error concerning this worker pool.  This handles notifications and logging.
-  async reportError({ workerPool, kind, title, description, extra = {} }) {
+  /**
+   * Report an error concerning this worker pool.  This handles notifications and logging.
+   *
+   * @param {Object} options
+   * @param {import('../data.js').WorkerPool} options.workerPool
+   * @param {String} options.kind
+   * @param {String} options.title
+   * @param {String} options.description
+   * @param {{ workerId?:string, workerGroup?:string } &object} options.extra - extra information about the error
+   * @param {String|null} options.launchConfigId
+   * @returns {Promise<import('../data.js').WorkerPoolError>}
+   */
+  async reportError({ workerPool, kind, title, description, extra = {}, launchConfigId }) {
     const errorId = slugid.v4();
     let error = this.WorkerPoolError.fromApi({
       workerPoolId: workerPool.workerPoolId,
@@ -234,6 +294,7 @@ export class Provider {
       title,
       description,
       extra,
+      launchConfigId,
     });
 
     try {
@@ -268,6 +329,7 @@ export class Provider {
         timestamp: new Date().toJSON(),
         workerId: extra?.workerId,
         workerGroup: extra?.workerGroup,
+        launchConfigId,
       });
 
       try {
@@ -292,6 +354,9 @@ export class Provider {
 
   /**
    * Create a monitor object suitable for logging about a worker
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   * @param {Object} options.extra
    */
   workerMonitor({ worker, extra = {} }) {
     return this.monitor.childMonitor({
@@ -331,7 +396,15 @@ export class Provider {
 export class ApiError extends Error {
 }
 
-// Utility function for reportError
+/**
+ * Utility function for reportError
+ * @param {Object} options
+ * @param {Object} options.extra
+ * @param {string} options.workerPoolId
+ * @param {string} options.description
+ * @param {string} options.errorId
+ * @returns {string} Formatted email message
+ */
 const getExtraInfo = ({ extra, workerPoolId, description, errorId }) => {
   let extraInfo = '';
   if (Object.keys(extra).length) {

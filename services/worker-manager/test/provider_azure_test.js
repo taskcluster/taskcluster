@@ -134,6 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       validator: await helper.load('validator'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       providerConfig: {
         clientId: 'my client id',
         secret: 'my secret',
@@ -170,7 +171,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
         launchConfigs: [
           {
-            capacityPerInstance: 1,
+            workerManager: {
+              capacityPerInstance: 1,
+            },
             subnetId: 'some/subnet',
             location: 'westus',
             hardwareProfile: {
@@ -247,7 +250,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           maxCapacity: 1,
           scalingRatio: 1,
           launchConfigs: [{
-            capacityPerInstance: 1,
+            workerManager: {
+              capacityPerInstance: 1,
+            },
             subnetId: 'some/subnet',
             location: 'westus',
             hardwareProfile: { vmSize: 'Basic_A2' },
@@ -446,6 +451,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const workerPool = await makeWorkerPool({}, {
         workerManager: {
           publicIp: true,
+          capacityPerInstance: 1,
         },
       });
       const workerInfo = {
@@ -975,15 +981,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('de-provisioning loop', async function() {
-    const workerPool = await makeWorkerPool({
-      // simulate previous provisionig and deleting the workerpool
-      providerId: 'null-provider',
-      previousProviderIds: ['azure'],
+  suite('deprovision', function () {
+    test('de-provisioning loop', async function () {
+      const workerPool = await makeWorkerPool({
+        // simulate previous provisionig and deleting the workerpool
+        providerId: 'null-provider',
+        previousProviderIds: ['azure'],
+      });
+      await provider.deprovision({ workerPool });
+      // nothing has changed..
+      assert(workerPool.previousProviderIds.includes('azure'));
     });
-    await provider.deprovision({ workerPool });
-    // nothing has changed..
-    assert(workerPool.previousProviderIds.includes('azure'));
   });
 
   suite('checkWorker', function() {
