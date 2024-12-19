@@ -46,35 +46,34 @@ begin
       config JSONB;
       launch_config_id TEXT;
   BEGIN
-    -- todo skip static and standalone
-      truncate table worker_pool_launch_configs;
+    truncate table worker_pool_launch_configs;
 
-      -- FOR wp IN SELECT * FROM worker_pools WHERE worker_pool_id LIKE 'proj-taskcluster/%' LOOP
-      FOR wp IN SELECT * FROM worker_pools LOOP
-          -- Iterate through each config in the array
-          FOR config IN SELECT jsonb_array_elements(wp.config->'launchConfigs') LOOP
-              -- Insert into the new table
-              INSERT INTO worker_pool_launch_configs (
-                  launch_config_id,
-                  worker_pool_id,
-                  is_archived,
-                  configuration,
-                  created,
-                  last_modified
-              ) VALUES (
-                  get_or_create_launch_config_id(wp.worker_pool_id, config),
-                  wp.worker_pool_id,
-                  false, -- not archived by default
-                  config,
-                  wp.created,
-                  wp.last_modified
-              );
-          END LOOP;
-      END LOOP;
+    -- FOR wp IN SELECT * FROM worker_pools WHERE worker_pool_id LIKE 'proj-taskcluster/%' LOOP
+    FOR wp IN SELECT * FROM worker_pools LOOP
+        -- Iterate through each config in the array
+        FOR config IN SELECT jsonb_array_elements(wp.config->'launchConfigs') LOOP
+            -- Insert into the new table
+            INSERT INTO worker_pool_launch_configs (
+                launch_config_id,
+                worker_pool_id,
+                is_archived,
+                configuration,
+                created,
+                last_modified
+            ) VALUES (
+                get_or_create_launch_config_id(wp.worker_pool_id, config),
+                wp.worker_pool_id,
+                false, -- not archived by default
+                config,
+                wp.created,
+                wp.last_modified
+            );
+        END LOOP;
+    END LOOP;
 
-      -- remove launchConfigs from worker_pools configs
-      UPDATE worker_pools
-      SET config = worker_pools.config - 'launchConfigs';
+    -- remove launchConfigs from worker_pools configs
+    UPDATE worker_pools
+    SET config = worker_pools.config - 'launchConfigs';
 
   END;
   $$ LANGUAGE plpgsql;
@@ -83,11 +82,9 @@ begin
   PERFORM _migrate_worker_pools_to_launch_configs();
   DROP FUNCTION _migrate_worker_pools_to_launch_configs();
 
-
   -- workers need new field
   alter table workers add column launch_config_id text null;
   CREATE INDEX workers_lc_idx ON workers(worker_pool_id, launch_config_id, state);
-
 
   -- errors also need to know where they are coming from
   alter table worker_pool_errors add column launch_config_id text null;

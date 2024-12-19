@@ -2456,7 +2456,13 @@ export type WebServerSessionTouchFn = (
 
 // worker_manager function signatures
 
-export type WorkerManagerCreateWorkerFn = (
+export type WorkerManagerCollectLaunchConfigsIfExistFn = (
+  config_in: JsonB,
+  worker_pool_id_in: string
+) => Promise<JsonB>;
+
+/** @deprecated */
+export type WorkerManagerCreateWorkerDeprecatedFn = (
   worker_pool_id_in: string,
   worker_group_in: string,
   worker_id_in: string,
@@ -2470,7 +2476,8 @@ export type WorkerManagerCreateWorkerFn = (
   last_checked_in: Date
 ) => Promise<string>;
 
-export type WorkerManagerCreateWorkerPoolFn = (
+/** @deprecated */
+export type WorkerManagerCreateWorkerPoolDeprecatedFn = (
   worker_pool_id_in: string,
   provider_id_in: string,
   previous_provider_ids_in: JsonB,
@@ -2483,7 +2490,8 @@ export type WorkerManagerCreateWorkerPoolFn = (
   provider_data_in: JsonB
 ) => Promise<void>;
 
-export type WorkerManagerCreateWorkerPoolErrorFn = (
+/** @deprecated */
+export type WorkerManagerCreateWorkerPoolErrorDeprecatedFn = (
   error_id_in: string,
   worker_pool_id_in: string,
   reported_in: Date,
@@ -2491,6 +2499,54 @@ export type WorkerManagerCreateWorkerPoolErrorFn = (
   title_in: string,
   description_in: string,
   extra_in: JsonB
+) => Promise<string>;
+
+export type WorkerManagerCreateWorkerPoolErrorLaunchConfigFn = (
+  error_id_in: string,
+  worker_pool_id_in: string,
+  reported_in: Date,
+  kind_in: string,
+  title_in: string,
+  description_in: string,
+  extra_in: JsonB,
+  launch_config_id_in: string
+) => Promise<string>;
+
+export type WorkerManagerCreateWorkerPoolLaunchConfigFn = (
+  launch_config_id_in: string,
+  worker_pool_id_in: string,
+  is_archived_in: boolean,
+  configuration_in: JsonB,
+  created_in: Date,
+  last_modified_in: Date
+) => Promise<void>;
+
+export type WorkerManagerCreateWorkerPoolWithLaunchConfigsFn = (
+  worker_pool_id_in: string,
+  provider_id_in: string,
+  previous_provider_ids_in: JsonB,
+  description_in: string,
+  config_in: JsonB,
+  created_in: Date,
+  last_modified_in: Date,
+  owner_in: string,
+  email_on_error_in: boolean,
+  provider_data_in: JsonB
+) => Promise<Array<{updated_launch_configs: any, created_launch_configs: any, archived_launch_configs: any}>>;
+
+export type WorkerManagerCreateWorkerWithLcFn = (
+  worker_pool_id_in: string,
+  worker_group_in: string,
+  worker_id_in: string,
+  provider_id_in: string,
+  created_in: Date,
+  expires_in: Date,
+  state_in: string,
+  provider_data_in: JsonB,
+  capacity_in: number,
+  last_modified_in: Date,
+  last_checked_in: Date,
+  launch_config_id_in: string
 ) => Promise<string>;
 
 export type WorkerManagerDeleteWorkerFn = (
@@ -2511,6 +2567,9 @@ export type WorkerManagerDeleteWorkerPoolErrorFn = (
 export type WorkerManagerExpireWorkerPoolErrorsFn = (
   expires_in: Date
 ) => Promise<number>;
+
+export type WorkerManagerExpireWorkerPoolLaunchConfigsFn = (
+) => Promise<Array<{launch_config_id: string}>>;
 
 export type WorkerManagerExpireWorkerPoolsFn = (
 ) => Promise<Array<{worker_pool_id: string}>>;
@@ -2557,7 +2616,8 @@ export type WorkerManagerGetNonStoppedWorkersQuntilProvidersDeprecatedFn = (
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date}>>;
 
-export type WorkerManagerGetNonStoppedWorkersScannerFn = (
+/** @deprecated */
+export type WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn = (
   worker_pool_id_in: string,
   worker_group_in: string,
   worker_id_in: string,
@@ -2567,6 +2627,23 @@ export type WorkerManagerGetNonStoppedWorkersScannerFn = (
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 
+export type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = (
+  worker_pool_id_in: string,
+  worker_group_in: string,
+  worker_id_in: string,
+  providers_filter_cond: string,
+  providers_filter_value: string,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
+
+export type WorkerManagerGetQueueWorkerWithWmDataFn = (
+  task_queue_id_in: string,
+  worker_group_in: string,
+  worker_id_in: string,
+  expires_in: Date
+) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, quarantine_details: JsonB, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string, launch_config_id: string}>>;
+
 /** @deprecated */
 export type WorkerManagerGetQueueWorkerWithWmJoinDeprecatedFn = (
   task_queue_id_in: string,
@@ -2575,14 +2652,25 @@ export type WorkerManagerGetQueueWorkerWithWmJoinDeprecatedFn = (
   expires_in: Date
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
-export type WorkerManagerGetQueueWorkerWithWmJoin2Fn = (
+/** @deprecated */
+export type WorkerManagerGetQueueWorkerWithWmJoin2DeprecatedFn = (
   task_queue_id_in: string,
   worker_group_in: string,
   worker_id_in: string,
   expires_in: Date
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, quarantine_details: JsonB, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
-export type WorkerManagerGetQueueWorkersWithWmJoinFn = (
+export type WorkerManagerGetQueueWorkersWithWmDataFn = (
+  task_queue_id_in: string,
+  expires_in: Date,
+  worker_state_in: string,
+  only_quarantined_in: boolean,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string, launch_config_id: string}>>;
+
+/** @deprecated */
+export type WorkerManagerGetQueueWorkersWithWmJoinDeprecatedFn = (
   task_queue_id_in: string,
   expires_in: Date,
   page_size_in: number,
@@ -2596,13 +2684,15 @@ export type WorkerManagerGetQueueWorkersWithWmJoinQuarantinedDeprecatedFn = (
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
-export type WorkerManagerGetQueueWorkersWithWmJoinQuarantined2Fn = (
+/** @deprecated */
+export type WorkerManagerGetQueueWorkersWithWmJoinQuarantined2DeprecatedFn = (
   task_queue_id_in: string,
   page_size_in: number,
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
-export type WorkerManagerGetQueueWorkersWithWmJoinStateFn = (
+/** @deprecated */
+export type WorkerManagerGetQueueWorkersWithWmJoinStateDeprecatedFn = (
   task_queue_id_in: string,
   expires_in: Date,
   page_size_in: number,
@@ -2637,13 +2727,21 @@ export type WorkerManagerGetWorkerDeprecatedFn = (
   worker_id_in: string
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, etag: string}>>;
 
-export type WorkerManagerGetWorker2Fn = (
+/** @deprecated */
+export type WorkerManagerGetWorker2DeprecatedFn = (
   worker_pool_id_in: string,
   worker_group_in: string,
   worker_id_in: string
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string}>>;
 
-export type WorkerManagerGetWorkerManagerWorkersFn = (
+export type WorkerManagerGetWorker3Fn = (
+  worker_pool_id_in: string,
+  worker_group_in: string,
+  worker_id_in: string
+) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string}>>;
+
+/** @deprecated */
+export type WorkerManagerGetWorkerManagerWorkersDeprecatedFn = (
   worker_pool_id_in: string,
   worker_group_in: string,
   worker_id_in: string,
@@ -2652,10 +2750,23 @@ export type WorkerManagerGetWorkerManagerWorkersFn = (
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date}>>;
 
+export type WorkerManagerGetWorkerManagerWorkers2Fn = (
+  worker_pool_id_in: string,
+  worker_group_in: string,
+  worker_id_in: string,
+  state_in: string,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date, launch_config_id: string}>>;
+
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolDeprecatedFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
+
+export type WorkerManagerGetWorkerPoolCountsAndCapacityFn = (
+  worker_pool_id_in: string
+) => Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorFn = (
   error_id_in: string,
@@ -2665,6 +2776,10 @@ export type WorkerManagerGetWorkerPoolErrorFn = (
 export type WorkerManagerGetWorkerPoolErrorCodesFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{code: string, count: number}>>;
+
+export type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = (
+  worker_pool_id_in: string
+) => Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn = (
   worker_pool_id_in: string
@@ -2688,21 +2803,46 @@ export type WorkerManagerGetWorkerPoolErrorsDeprecatedFn = (
   page_offset_in: number
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 
-export type WorkerManagerGetWorkerPoolErrorsForWorkerPoolFn = (
+/** @deprecated */
+export type WorkerManagerGetWorkerPoolErrorsForWorkerPoolDeprecatedFn = (
   error_id_in: string,
   worker_pool_id_in: string,
   page_size_in: number,
   page_offset_in: number
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 
+export type WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn = (
+  error_id_in: string,
+  worker_pool_id_in: string,
+  launch_config_id_in: string,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
+
+export type WorkerManagerGetWorkerPoolLaunchConfigStatsFn = (
+  worker_pool_id_in: string
+) => Promise<Array<{state: string, launch_config_id: string, count: any}>>;
+
+export type WorkerManagerGetWorkerPoolLaunchConfigsFn = (
+  worker_pool_id_in: string,
+  is_archived_in: boolean,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
+
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolWithCapacityDeprecatedFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number}>>;
 
-export type WorkerManagerGetWorkerPoolWithCapacityAndCountsByStateFn = (
+/** @deprecated */
+export type WorkerManagerGetWorkerPoolWithCapacityAndCountsByStateDeprecatedFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number, requested_count: number, running_count: number, stopping_count: number, stopped_count: number, requested_capacity: number, running_capacity: number, stopping_capacity: number, stopped_capacity: number}>>;
+
+export type WorkerManagerGetWorkerPoolWithLaunchConfigsFn = (
+  worker_pool_id_in: string
+) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolsDeprecatedFn = (
@@ -2710,16 +2850,27 @@ export type WorkerManagerGetWorkerPoolsDeprecatedFn = (
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
 
+export type WorkerManagerGetWorkerPoolsCountsAndCapacityFn = (
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
+
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolsWithCapacityDeprecatedFn = (
   page_size_in: number,
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number}>>;
 
-export type WorkerManagerGetWorkerPoolsWithCapacityAndCountsByStateFn = (
+/** @deprecated */
+export type WorkerManagerGetWorkerPoolsWithCapacityAndCountsByStateDeprecatedFn = (
   page_size_in: number,
   page_offset_in: number
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number, requested_count: number, running_count: number, stopping_count: number, stopped_count: number, requested_capacity: number, running_capacity: number, stopping_capacity: number, stopped_capacity: number}>>;
+
+export type WorkerManagerGetWorkerPoolsWithLaunchConfigsFn = (
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkersDeprecatedFn = (
@@ -2806,7 +2957,8 @@ export type WorkerManagerUpdateWorkerPoolWithCapacityDeprecatedFn = (
   email_on_error_in: boolean
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, previous_provider_id: string, current_capacity: number}>>;
 
-export type WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateFn = (
+/** @deprecated */
+export type WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateDeprecatedFn = (
   worker_pool_id_in: string,
   provider_id_in: string,
   description_in: string,
@@ -2815,6 +2967,21 @@ export type WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateFn = (
   owner_in: string,
   email_on_error_in: boolean
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, previous_provider_id: string, current_capacity: number, requested_count: number, running_count: number, stopping_count: number, stopped_count: number, requested_capacity: number, running_capacity: number, stopping_capacity: number, stopped_capacity: number}>>;
+
+export type WorkerManagerUpdateWorkerPoolWithLaunchConfigsFn = (
+  worker_pool_id_in: string,
+  provider_id_in: string,
+  description_in: string,
+  config_in: JsonB,
+  last_modified_in: Date,
+  owner_in: string,
+  email_on_error_in: boolean
+) => Promise<void>;
+
+export type WorkerManagerUpsertWorkerPoolLaunchConfigsFn = (
+  worker_pool_id_in: string,
+  config_in: JsonB
+) => Promise<Array<{updated_launch_configs: any, created_launch_configs: any, archived_launch_configs: any}>>;
 
 /** @deprecated */
 export type WorkerManagerWmworkerPoolErrorsEntitiesCreateDeprecatedFn = (
@@ -3106,37 +3273,44 @@ export interface DbFunctions {
   session_touch: WebServerSessionTouchFn;
 
   // WorkerManager
-  create_worker: WorkerManagerCreateWorkerFn;
-  create_worker_pool: WorkerManagerCreateWorkerPoolFn;
-  create_worker_pool_error: WorkerManagerCreateWorkerPoolErrorFn;
+  collect_launch_configs_if_exist: WorkerManagerCollectLaunchConfigsIfExistFn;
+  create_worker_pool_error_launch_config: WorkerManagerCreateWorkerPoolErrorLaunchConfigFn;
+  create_worker_pool_launch_config: WorkerManagerCreateWorkerPoolLaunchConfigFn;
+  create_worker_pool_with_launch_configs: WorkerManagerCreateWorkerPoolWithLaunchConfigsFn;
+  create_worker_with_lc: WorkerManagerCreateWorkerWithLcFn;
   delete_worker: WorkerManagerDeleteWorkerFn;
   delete_worker_pool: WorkerManagerDeleteWorkerPoolFn;
   delete_worker_pool_error: WorkerManagerDeleteWorkerPoolErrorFn;
   expire_worker_pool_errors: WorkerManagerExpireWorkerPoolErrorsFn;
+  expire_worker_pool_launch_configs: WorkerManagerExpireWorkerPoolLaunchConfigsFn;
   expire_worker_pools: WorkerManagerExpireWorkerPoolsFn;
   expire_workers: WorkerManagerExpireWorkersFn;
-  get_non_stopped_workers_scanner: WorkerManagerGetNonStoppedWorkersScannerFn;
-  get_queue_worker_with_wm_join_2: WorkerManagerGetQueueWorkerWithWmJoin2Fn;
-  get_queue_workers_with_wm_join: WorkerManagerGetQueueWorkersWithWmJoinFn;
-  get_queue_workers_with_wm_join_quarantined_2: WorkerManagerGetQueueWorkersWithWmJoinQuarantined2Fn;
-  get_queue_workers_with_wm_join_state: WorkerManagerGetQueueWorkersWithWmJoinStateFn;
+  get_non_stopped_workers_with_launch_config_scanner: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn;
+  get_queue_worker_with_wm_data: WorkerManagerGetQueueWorkerWithWmDataFn;
+  get_queue_workers_with_wm_data: WorkerManagerGetQueueWorkersWithWmDataFn;
   get_task_queue_wm_2: WorkerManagerGetTaskQueueWm2Fn;
   get_task_queues_wm: WorkerManagerGetTaskQueuesWmFn;
-  get_worker_2: WorkerManagerGetWorker2Fn;
-  get_worker_manager_workers: WorkerManagerGetWorkerManagerWorkersFn;
+  get_worker_3: WorkerManagerGetWorker3Fn;
+  get_worker_manager_workers2: WorkerManagerGetWorkerManagerWorkers2Fn;
+  get_worker_pool_counts_and_capacity: WorkerManagerGetWorkerPoolCountsAndCapacityFn;
   get_worker_pool_error: WorkerManagerGetWorkerPoolErrorFn;
   get_worker_pool_error_codes: WorkerManagerGetWorkerPoolErrorCodesFn;
+  get_worker_pool_error_launch_configs: WorkerManagerGetWorkerPoolErrorLaunchConfigsFn;
   get_worker_pool_error_stats_last_24_hours: WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn;
   get_worker_pool_error_stats_last_7_days: WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn;
   get_worker_pool_error_titles: WorkerManagerGetWorkerPoolErrorTitlesFn;
   get_worker_pool_error_worker_pools: WorkerManagerGetWorkerPoolErrorWorkerPoolsFn;
-  get_worker_pool_errors_for_worker_pool: WorkerManagerGetWorkerPoolErrorsForWorkerPoolFn;
-  get_worker_pool_with_capacity_and_counts_by_state: WorkerManagerGetWorkerPoolWithCapacityAndCountsByStateFn;
-  get_worker_pools_with_capacity_and_counts_by_state: WorkerManagerGetWorkerPoolsWithCapacityAndCountsByStateFn;
+  get_worker_pool_errors_for_worker_pool2: WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn;
+  get_worker_pool_launch_config_stats: WorkerManagerGetWorkerPoolLaunchConfigStatsFn;
+  get_worker_pool_launch_configs: WorkerManagerGetWorkerPoolLaunchConfigsFn;
+  get_worker_pool_with_launch_configs: WorkerManagerGetWorkerPoolWithLaunchConfigsFn;
+  get_worker_pools_counts_and_capacity: WorkerManagerGetWorkerPoolsCountsAndCapacityFn;
+  get_worker_pools_with_launch_configs: WorkerManagerGetWorkerPoolsWithLaunchConfigsFn;
   remove_worker_pool_previous_provider_id: WorkerManagerRemoveWorkerPoolPreviousProviderIdFn;
   update_worker_2: WorkerManagerUpdateWorker2Fn;
   update_worker_pool_provider_data: WorkerManagerUpdateWorkerPoolProviderDataFn;
-  update_worker_pool_with_capacity_and_counts_by_state: WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateFn;
+  update_worker_pool_with_launch_configs: WorkerManagerUpdateWorkerPoolWithLaunchConfigsFn;
+  upsert_worker_pool_launch_configs: WorkerManagerUpsertWorkerPoolLaunchConfigsFn;
 }
 
 export interface DeprecatedDbFunctions {
@@ -3357,24 +3531,38 @@ export interface DeprecatedDbFunctions {
   session_storage_table_entities_scan: WebServerSessionStorageTableEntitiesScanDeprecatedFn;
 
   // WorkerManager
+  create_worker: WorkerManagerCreateWorkerDeprecatedFn;
+  create_worker_pool: WorkerManagerCreateWorkerPoolDeprecatedFn;
+  create_worker_pool_error: WorkerManagerCreateWorkerPoolErrorDeprecatedFn;
   get_non_stopped_workers: WorkerManagerGetNonStoppedWorkersDeprecatedFn;
   get_non_stopped_workers_2: WorkerManagerGetNonStoppedWorkers2DeprecatedFn;
   get_non_stopped_workers_quntil: WorkerManagerGetNonStoppedWorkersQuntilDeprecatedFn;
   get_non_stopped_workers_quntil_providers: WorkerManagerGetNonStoppedWorkersQuntilProvidersDeprecatedFn;
+  get_non_stopped_workers_scanner: WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn;
   get_queue_worker_with_wm_join: WorkerManagerGetQueueWorkerWithWmJoinDeprecatedFn;
+  get_queue_worker_with_wm_join_2: WorkerManagerGetQueueWorkerWithWmJoin2DeprecatedFn;
+  get_queue_workers_with_wm_join: WorkerManagerGetQueueWorkersWithWmJoinDeprecatedFn;
   get_queue_workers_with_wm_join_quarantined: WorkerManagerGetQueueWorkersWithWmJoinQuarantinedDeprecatedFn;
+  get_queue_workers_with_wm_join_quarantined_2: WorkerManagerGetQueueWorkersWithWmJoinQuarantined2DeprecatedFn;
+  get_queue_workers_with_wm_join_state: WorkerManagerGetQueueWorkersWithWmJoinStateDeprecatedFn;
   get_task_queue_wm: WorkerManagerGetTaskQueueWmDeprecatedFn;
   get_worker: WorkerManagerGetWorkerDeprecatedFn;
+  get_worker_2: WorkerManagerGetWorker2DeprecatedFn;
+  get_worker_manager_workers: WorkerManagerGetWorkerManagerWorkersDeprecatedFn;
   get_worker_pool: WorkerManagerGetWorkerPoolDeprecatedFn;
   get_worker_pool_errors: WorkerManagerGetWorkerPoolErrorsDeprecatedFn;
+  get_worker_pool_errors_for_worker_pool: WorkerManagerGetWorkerPoolErrorsForWorkerPoolDeprecatedFn;
   get_worker_pool_with_capacity: WorkerManagerGetWorkerPoolWithCapacityDeprecatedFn;
+  get_worker_pool_with_capacity_and_counts_by_state: WorkerManagerGetWorkerPoolWithCapacityAndCountsByStateDeprecatedFn;
   get_worker_pools: WorkerManagerGetWorkerPoolsDeprecatedFn;
   get_worker_pools_with_capacity: WorkerManagerGetWorkerPoolsWithCapacityDeprecatedFn;
+  get_worker_pools_with_capacity_and_counts_by_state: WorkerManagerGetWorkerPoolsWithCapacityAndCountsByStateDeprecatedFn;
   get_workers: WorkerManagerGetWorkersDeprecatedFn;
   get_workers_without_provider_data: WorkerManagerGetWorkersWithoutProviderDataDeprecatedFn;
   update_worker: WorkerManagerUpdateWorkerDeprecatedFn;
   update_worker_pool: WorkerManagerUpdateWorkerPoolDeprecatedFn;
   update_worker_pool_with_capacity: WorkerManagerUpdateWorkerPoolWithCapacityDeprecatedFn;
+  update_worker_pool_with_capacity_and_counts_by_state: WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateDeprecatedFn;
   wmworker_pool_errors_entities_create: WorkerManagerWmworkerPoolErrorsEntitiesCreateDeprecatedFn;
   wmworker_pool_errors_entities_load: WorkerManagerWmworkerPoolErrorsEntitiesLoadDeprecatedFn;
   wmworker_pool_errors_entities_modify: WorkerManagerWmworkerPoolErrorsEntitiesModifyDeprecatedFn;
