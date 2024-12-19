@@ -57,11 +57,19 @@ tasks.push({
     await execCommand({
       command: ['go', 'build', '-tags', 'multiuser', '-o', binary, './workers/generic-worker'],
       utils,
+      env: { GOOS: 'linux', GOARCH: 'amd64', ...process.env },
     });
+
+    let gwHelpCommand;
+    if (process.platform === 'linux') {
+      gwHelpCommand = [binary, '--help'];
+    } else {
+      gwHelpCommand = ['docker', 'run', '--rm', '-q', '-v', `${tempDir}:/app`, '-w', '/app', 'alpine', './generic-worker', '--help'];
+    }
 
     let gwHelp = await execCommand({
       dir: REPO_ROOT,
-      command: [binary, '--help'],
+      command: gwHelpCommand,
       utils,
       keepAllOutput: true,
     });
