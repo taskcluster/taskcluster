@@ -175,10 +175,8 @@
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
    * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
-   * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
-   * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
-   * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
-   * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+   * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
+   * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
    * [`get_worker_3`](#get_worker_3)
@@ -6427,10 +6425,8 @@ end
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
 * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
-* [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
-* [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
-* [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
-* [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+* [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
+* [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
 * [`get_worker_3`](#get_worker_3)
@@ -6927,7 +6923,7 @@ end
 
 </details>
 
-### get_queue_worker_with_wm_join_2
+### get_queue_worker_with_wm_data
 
 * *Mode*: read
 * *Arguments*:
@@ -6949,7 +6945,8 @@ end
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 83
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
@@ -6973,7 +6970,8 @@ begin
     workers.state,
     workers.capacity,
     workers.provider_id,
-    public.gen_random_uuid()
+    public.gen_random_uuid(),
+    workers.launch_config_id
   from queue_workers
   full outer join workers on workers.worker_id = queue_workers.worker_id
     and workers.worker_pool_id = queue_workers.task_queue_id
@@ -6988,135 +6986,16 @@ begin
 
 </details>
 
-### get_queue_workers_with_wm_join
+### get_queue_workers_with_wm_data
 
 * *Mode*: read
 * *Arguments*:
   * `task_queue_id_in text`
   * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `state text`
-  * `capacity int4`
-  * `provider_id text`
-  * `etag uuid`
-* *Last defined on version*: 80
-
-Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
-Workers are not considered expired until after their quarantine date expires.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-This also performs an outer join with the worker_manager.worker table for more data.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    queue_workers.task_queue_id as worker_pool_id,
-    queue_workers.worker_group,
-    queue_workers.worker_id,
-    queue_workers.quarantine_until,
-    queue_workers.expires,
-    queue_workers.first_claim,
-    queue_workers.recent_tasks,
-    queue_workers.last_date_active,
-    workers.state,
-    workers.capacity,
-    workers.provider_id,
-    public.gen_random_uuid()
-  from queue_workers
-  full outer join workers on workers.worker_id = queue_workers.worker_id
-    and workers.worker_pool_id = queue_workers.task_queue_id
-    and workers.worker_group = queue_workers.worker_group
-  where
-    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join.task_queue_id_in is null) and
-    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join.expires_in is null)
-  order by worker_pool_id, worker_group, worker_id
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
-end
-```
-
-</details>
-
-### get_queue_workers_with_wm_join_quarantined_2
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `state text`
-  * `capacity int4`
-  * `provider_id text`
-  * `etag uuid`
-* *Last defined on version*: 78
-
-Get quarantined queue workers ordered by worker_pool_id, worker_group, and worker_id.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-This also performs an outer join with the worker_manager.worker table for more data.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    queue_workers.task_queue_id as worker_pool_id,
-    queue_workers.worker_group,
-    queue_workers.worker_id,
-    queue_workers.quarantine_until,
-    queue_workers.expires,
-    queue_workers.first_claim,
-    queue_workers.recent_tasks,
-    queue_workers.last_date_active,
-    workers.state,
-    workers.capacity,
-    workers.provider_id,
-    public.gen_random_uuid()
-  from queue_workers
-  full outer join workers on workers.worker_id = queue_workers.worker_id
-  where
-    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join_quarantined_2.task_queue_id_in is null)
-    and queue_workers.quarantine_until >= now()
-  order by worker_pool_id, worker_group, worker_id
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
-end
-```
-
-</details>
-
-### get_queue_workers_with_wm_join_state
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
   * `worker_state_in text`
+  * `only_quarantined_in boolean`
+  * `page_size_in integer`
+  * `page_offset_in integer`
 * *Returns*: `table`
   * `worker_pool_id text`
   * `worker_group text`
@@ -7130,9 +7009,10 @@ end
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 77
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
-Get non-expired queue workers by state ordered by worker_pool_id, worker_group, and worker_id.
+Get workers ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
@@ -7145,8 +7025,8 @@ begin
   return query
   select
     queue_workers.task_queue_id as worker_pool_id,
-    queue_workers.worker_group,
-    queue_workers.worker_id,
+    queue_workers.worker_group as worker_group,
+    queue_workers.worker_id as worker_id,
     queue_workers.quarantine_until,
     queue_workers.expires,
     queue_workers.first_claim,
@@ -7155,13 +7035,32 @@ begin
     workers.state,
     workers.capacity,
     workers.provider_id,
-    public.gen_random_uuid()
+    public.gen_random_uuid(),
+    workers.launch_config_id
   from queue_workers
   full outer join workers on workers.worker_id = queue_workers.worker_id
   where
-    workers.state = worker_state_in and
-    (queue_workers.task_queue_id = task_queue_id_in or get_queue_workers_with_wm_join_state.task_queue_id_in is null) and
-    ((queue_workers.expires > expires_in and queue_workers.quarantine_until < expires_in) or get_queue_workers_with_wm_join_state.expires_in is null)
+    (
+      queue_workers.task_queue_id = task_queue_id_in
+      or task_queue_id_in is null
+    )
+    and
+    (
+      -- Normal expiration check
+      (not only_quarantined_in and expires_in is not null and
+      queue_workers.expires > expires_in and
+      queue_workers.quarantine_until < expires_in)
+      or
+      -- Only quarantined check
+      (only_quarantined_in and queue_workers.quarantine_until >= now())
+      or
+      -- No filtering if both flags are false/null
+      (not only_quarantined_in and expires_in is null)
+    )
+    and (
+      workers.state = worker_state_in
+      or worker_state_in is null
+    )
   order by worker_pool_id, worker_group, worker_id
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
@@ -8294,13 +8193,17 @@ end
 
 ### deprecated methods
 
-* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v78.0.0)
-* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v78.0.0)
-* `create_worker_pool_error(error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb)` (compatibility guaranteed until v78.0.0)
-* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
-* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v78.0.0)
-* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
-* `get_worker_pool_errors_for_worker_pool(error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
-* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v78.0.0)
-* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v78.0.0)
-* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v78.0.0)
+* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v79.0.0)
+* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v79.0.0)
+* `create_worker_pool_error(error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb)` (compatibility guaranteed until v79.0.0)
+* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_queue_worker_with_wm_join_2(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v79.0.0)
+* `get_queue_workers_with_wm_join(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_queue_workers_with_wm_join_quarantined_2(task_queue_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_queue_workers_with_wm_join_state(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer, worker_state_in text)` (compatibility guaranteed until v79.0.0)
+* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v79.0.0)
+* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_worker_pool_errors_for_worker_pool(error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v79.0.0)
+* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v79.0.0)

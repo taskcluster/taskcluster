@@ -722,6 +722,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         capacity: 1,
         providerData: {},
         secret: null,
+        launchConfigId: 'lc-w1',
       },
       {
         workerPoolId,
@@ -826,10 +827,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       state: Worker.states.RUNNING,
       providerData: {},
       secret: null,
+      launchConfigId: 'lc-w1',
     };
 
     await createWorker(input);
     const data = await helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434');
+
     const worker = await Worker.get(helper.db, {
       workerPoolId: input.workerPoolId,
       workerGroup: input.workerGroup,
@@ -1819,18 +1822,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   suite('worker metadata', function () {
-    test('get worker with queue metadata', async function () {
-      await createWorkerPool({});
-      await createWorker({});
-
-      const [provisionerId, workerType] = workerPoolId.split('/');
-
-      // worker is not yet visible to the queue so this method will fail
-      await assert.rejects(() =>
-        helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId),
-      new RegExp(`Worker with workerId.+not found`),
-      );
-
+    const makeQueueVisible = async (workerPoolId, workerGroup, workerId) => {
       // make it visible to the queue
       // we cannot directly call queue_worker_seen_with_last_date_active
       // because worker-manager client doesn't have write access to that tables
@@ -1846,6 +1838,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           ($1, now() + interval '1 hour', now() - interval '1 hour', $2, $3)`,
         [workerPoolId, 'experimental', 'description']);
       });
+    };
+
+    test('get worker/workers with queue metadata', async function () {
+      await createWorkerPool({});
+      await createWorker({});
+
+      const [provisionerId, workerType] = workerPoolId.split('/');
+
+      // worker is not yet visible to the queue so this method will fail
+      await assert.rejects(() =>
+        helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId),
+      new RegExp(`Worker with workerId.+not found`),
+      );
+
+      await makeQueueVisible(workerPoolId, workerGroup, workerId);
 
       const res = await helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId);
       assert.equal(res.workerPoolId, workerPoolId);
@@ -1853,15 +1860,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('get workers with queue metadata', async function () {
-      await createWorkerPool({});
-      await createWorker({});
+      const wpId = 'tt/cc2';
+      await createWorkerPool({ workerPoolId: wpId });
+      await createWorker({
+        workerId: 'w2',
+        workerPoolId: wpId,
+        launchConfigId: 'wp-lc-1',
+      });
 
-      const [provisionerId, workerType] = workerPoolId.split('/');
+      await makeQueueVisible(wpId, workerGroup, 'w2');
+      const [provisionerId, workerType] = wpId.split('/');
 
       const { workers } = await helper.workerManager.listWorkers(provisionerId, workerType);
       assert.equal(workers.length, 1);
-      assert.equal(workers[0].workerPoolId, workerPoolId);
-      assert.equal(workers[0].workerId, workerId);
+      assert.equal(workers[0].workerPoolId, wpId);
+      assert.equal(workers[0].workerId, 'w2');
+      assert.equal(workers[0].launchConfigId, 'wp-lc-1');
     });
   });
 
