@@ -54,6 +54,22 @@ const declareWithTrailingColon = (options, handler) => {
   builder.declare(options, handler);
 };
 
+const publishLaunchConfigEvents = async ({
+  publisher,
+  workerPoolId, providerId,
+  updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs }) => {
+
+  for (const launchConfigId of updatedLaunchConfigs) {
+    await publisher.launchConfigUpdated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of createdLaunchConfigs) {
+    await publisher.launchConfigCreated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of archivedLaunchConfigs) {
+    await publisher.launchConfigArchived({ workerPoolId, providerId, launchConfigId });
+  }
+};
+
 builder.declare({
   method: 'get',
   route: '/providers',
@@ -133,8 +149,17 @@ builder.declare({
 
   let workerPool = WorkerPool.fromApi({ workerPoolId, ...input });
 
+  let updatedLaunchConfigs = [];
+  let createdLaunchConfigs = [];
+  let archivedLaunchConfigs = [];
+
   try {
-    await workerPool.create(this.db);
+    const rows = await workerPool.create(this.db);
+    if (rows.length === 1) {
+      updatedLaunchConfigs = rows[0].updated_launch_configs;
+      createdLaunchConfigs = rows[0].created_launch_configs;
+      archivedLaunchConfigs = rows[0].archived_launch_configs;
+    }
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -142,7 +167,20 @@ builder.declare({
     return res.reportError('RequestConflict', 'Worker pool already exists', {});
   }
 
-  await this.publisher.workerPoolCreated({ workerPoolId, providerId });
+  // messages would be published with extra info
+  await this.publisher.workerPoolCreated({
+    workerPoolId,
+    providerId,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
+  });
+
+  // refresh from DB to include launchConfigIds
+  workerPool = await WorkerPool.get(this.db, workerPoolId);
+
   res.reply(workerPool.serializable());
 });
 
@@ -196,7 +234,7 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
+  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     input.providerId,
     input.description,
@@ -208,12 +246,23 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const workerPool = WorkerPool.fromDb(row);
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
+  const workerPool = WorkerPool.fromDb(wp);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
   res.reply(workerPool.serializable());
 });
@@ -231,6 +280,7 @@ builder.declare({
     'Mark a worker pool for deletion.  This is the same as updating the pool to',
     'set its providerId to `"null-provider"`, but does not require scope',
     '`worker-manager:provider:null-provider`.',
+    'This will also mark all launch configurations as archived.',
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId } = req.params;
@@ -243,23 +293,40 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
+  // updating worker pool without launch configs would mark all existing as archived
+  const newConfig = workerPool.config?.launchConfigs ? { ...workerPool.config, launchConfigs: [] } : workerPool.config;
+
+  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     providerId,
     workerPool.description,
-    workerPool.config,
+    newConfig,
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
-  workerPool = WorkerPool.fromDb(row);
+
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
+
+  // reload full worker pool
+  workerPool = WorkerPool.fromDb(wp);
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
   res.reply(workerPool.serializable());
 });
@@ -302,7 +369,7 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(size, offset),
+    fetch: (size, offset) => this.db.fns.get_worker_pools_with_launch_configs(size, offset),
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
@@ -361,12 +428,15 @@ builder.declare({
     });
   }
 
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+
   const wpe = await provider.reportError({
     workerPool,
     kind: input.kind,
     title: input.title,
     description: input.description,
     extra: { ...input.extra, workerGroup, workerId },
+    launchConfigId: worker?.launchConfigId,
   });
 
   res.reply(wpe.serializable());
@@ -413,6 +483,7 @@ builder.declare({
       title: {},
       code: {},
       workerPool: {},
+      launchConfigId: {},
     },
   };
 
@@ -426,12 +497,13 @@ builder.declare({
     }
   };
 
-  const [daily, hourly, titles, codes, pools] = await Promise.all([
+  const [daily, hourly, titles, codes, pools, launchConfigs] = await Promise.all([
     this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
     this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
     this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_launch_configs(workerPoolId || null),
   ]);
 
   for (const row of daily) {
@@ -442,6 +514,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
+  rowsToDict(out.totals.launchConfigId, launchConfigs, 'launchConfigId');
 
   return res.reply(out);
 });
@@ -449,7 +522,11 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
-  query: paginateResults.query,
+  query: {
+    ...paginateResults.query,
+    errorId: /^[0-9]+$/,
+    launchConfigId: /^[a-zA-Z0-9-]+$/,
+  },
   name: 'listWorkerPoolErrors',
   scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
   title: 'List Worker Pool Errors',
@@ -460,12 +537,13 @@ builder.declare({
     'Get the list of worker pool errors.',
   ].join('\n'),
 }, async function(req, res) {
-  const { errorId, workerPoolId } = req.params;
+  const { errorId, workerPoolId, launchConfigId } = req.params;
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
+    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool2(
       errorId || null,
       workerPoolId || null,
+      launchConfigId || null,
       size,
       offset,
     ),
@@ -495,7 +573,7 @@ declareWithTrailingColon({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers(
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2(
       workerPoolId,
       workerGroup,
       null,
@@ -745,7 +823,7 @@ builder.declare({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers({
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2({
       worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,
@@ -993,9 +1071,11 @@ builder.declare({
         state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
+        launchConfigId: worker.launchConfigId,
         quarantineUntil: worker.quarantineUntil?.toJSON(),
+        latestTask: undefined,
       };
-      if (worker.recentTasks.length > 0) {
+      if (worker?.recentTasks?.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
       }
       return entry;
