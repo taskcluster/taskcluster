@@ -25,8 +25,8 @@
     "./db/**/*.js",
     "./clients/client/**/*.js"
   ],
-  // "files": [
-  //   "src/@types/globals.d.ts"
-  // ],
+  "files": [
+    "@types/globals.d.ts"
+  ],
   "exclude": []
 }

@@ -61,20 +61,17 @@ MonitorManager.register({
 
 /** @typedef {import('../@types/fns.d.ts').DbFunctions} DbFunctions */
 /** @typedef {import('../@types/fns.d.ts').DeprecatedDbFunctions} DeprecatedDbFunctions */
+/** @typedef {import('../@types/index.d.ts').SetupOptions} SetupOptions */
+/** @typedef {import('../@types/index.d.ts').UpgradeOptions} UpgradeOptions */
+/** @typedef {import('../@types/index.d.ts').DowngradeOptions} DowngradeOptions */
+/** @typedef {import('../@types/index.d.ts').DbAccessMode} DbAccessMode */
+/** @typedef {import('../@types/index.d.ts').QueryContext} QueryContext */
+/** @typedef {import('../@types/index.d.ts').DatabaseCallback} DatabaseCallback */
 
 class Database {
   /**
    * Get a new Database instance
-   * @param {object} options
-   * @param {string} options.readDbUrl
-   * @param {string} options.writeDbUrl
-   * @param {any?} options.schema
-   * @param {string} options.serviceName
-   * @param {MonitorManager | false} options.monitor
-   * @param {number=} options.statementTimeout
-   * @param {number=} options.poolSize
-   * @param {import('./Keyring.js').CryptoKey[]} options.dbCryptoKeys
-   * @param {string} options.azureCryptoKey
+   * @param {SetupOptions} options
    */
   static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
     azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
@@ -103,15 +100,21 @@ class Database {
     return db;
   }
 
+  /**
+  * @param {object} options
+  * @param {import('./Schema.js').Schema} options.schema
+  * @param {string} options.serviceName
+  */
   _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
-    /** @type {DbFunctions | {}} */
+    /** @type {DbFunctions | Record<string, any>} */
     this.fns = {};
-    /** @type {DeprecatedDbFunctions | {}} */
+    /** @type {DeprecatedDbFunctions | Record<string, any>} */
     this.deprecatedFns = {};
     schema.allMethods().forEach(method => {
+      /** @type {DbFunctions | DeprecatedDbFunctions | Record<string, any>} */
       let collection = this.fns;
-      if (method.deprecated) {
+      if (method.deprecated && this.deprecatedFns) {
         collection = this.deprecatedFns;
       }
 
@@ -176,6 +179,8 @@ class Database {
    * progress of the upgrade.
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
+   *
+   * @param {UpgradeOptions} options
    */
   static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl, skipChecks }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -231,7 +236,7 @@ class Database {
         showProgress('...checking permissions');
         await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
-        await Database._checkTableColumns({ db, schema, usernamePrefix });
+        await Database._checkTableColumns({ db, schema });
       }
     } finally {
       await db.close();
@@ -244,6 +249,8 @@ class Database {
    * functions.
    *
    * The `showProgress` parameter is like that for upgrade().
+   *
+   * @param {DowngradeOptions} options
    */
   static async downgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -304,6 +311,9 @@ class Database {
     }
   }
 
+  /**
+   * @param {{ db: Database, schema: import('./Schema.js').Schema, usernamePrefix: string }} param0
+   */
   static async _checkPermissions({ db, schema, usernamePrefix }) {
     await db._withClient('admin', async (client) => {
       const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
@@ -411,8 +421,12 @@ class Database {
     });
   }
 
+  /**
+   * @param {{ db: Database, schema: import('./Schema.js').Schema }} param0
+   */
   static async _checkTableColumns({ db, schema }) {
     const current = await db._withClient('admin', async client => {
+      /** @type {Record<string, Record<string, string>>} */
       const tables = {};
 
       const tablesres = await client.query(`
@@ -503,14 +517,18 @@ class Database {
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
    * @param {object} options
-   * @param {{ read?: string, write?: string, admin?: string }} options.urlsByMode
-   * @param {MonitorManager | false} options.monitor
+   * @param {Partial<Record<DbAccessMode, string>>} options.urlsByMode
+   * @param {MonitorManager} [options.monitor]
    * @param {number} [options.statementTimeout]
    * @param {number} [options.poolSize]
-   * @param {Keyring} options.keyring
+   * @param {Keyring} [options.keyring]
    */
   constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
+    /**
+     * @param {string} dbUrl
+     * @returns {typeof Pool}
+     */
     const makePool = dbUrl => {
       const connectOptions = {
         // default to a max of 5 connections. For services running both a read
@@ -575,8 +593,10 @@ class Database {
 
     this.monitor = monitor;
 
-    this.pools = {};
+    /** @type {Record<DbAccessMode, Pool>} */
+    this.pools = { read: null, write: null, admin: null };
     for (let mode of Object.keys(urlsByMode)) {
+      // @ts-ignore mode is of a type DbAccessMode
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
 
@@ -594,6 +614,9 @@ class Database {
    *
    * This annotates syntax errors from `query` with the position at which the
    * error occurred.
+   *
+   * @param {DbAccessMode} mode
+   * @param {DatabaseCallback} cb
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
@@ -610,6 +633,7 @@ class Database {
     let clientError = undefined;
     const handleError = err => clientError = err;
     client.on('error', handleError);
+    /** @type {QueryContext} */
     const wrapped = {
       query: async function(query) {
         try {
