@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import assert from 'assert';
 
 /**
@@ -9,19 +8,26 @@ import assert from 'assert';
  * Parameters not listed in `req.params` will be ignored. But parameters
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const parameterValidator = ({ entry }) => {
-  const { params } = entry;
+  const { params = {} } = entry;
 
   // Validate parameters
-  _.forIn(params, (pattern, param) => {
-    assert(pattern instanceof RegExp || pattern instanceof Function,
+  Object.keys(params).forEach(param => {
+    assert(params[param] instanceof RegExp || params[param] instanceof Function,
       'Pattern given for param: \'' + param + '\' must be a RegExp or ' +
            'a function');
   });
   return (req, res, next) => {
+    /** @type {string[]} */
     const errors = [];
-    _.forIn(req.params, (val, param) => {
+    Object.entries(req.params).forEach(([param, val]) => {
       const pattern = params[param];
       if (pattern instanceof RegExp) {
         if (!pattern.test(val)) {

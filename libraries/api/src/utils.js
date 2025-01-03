@@ -3,10 +3,15 @@
  * route rewritten to use `<..>` syntax for the parameters.  `params`
  * is the full list of parameters.  And `optionalParams` is the list of
  * parameters with a `?` suffix, making them optional.
+ *
+ * @param {string} route
+ * @returns {[string, string[], string[]]}
  */
 export const cleanRouteAndParams = (route) => {
   // Find parameters for entry
+  /** @type {string[]} */
   const params = [];
+  /** @type {string[]} */
   const optionalParams = [];
   // Note: express uses the NPM module path-to-regexp for parsing routes
   // when modifying this to support more complicated routes it can be

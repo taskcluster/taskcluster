@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    // Set the baseUrl to the root of the project.
+    "baseUrl": "src",
+    // Make the type checking as strict as possible.
+    "strict": true,
+    // TypeScript will check JS files only if they have a @ts-check comment in them.
+    "allowJs": true,
+    "checkJs": true,
+    // Only type check, don't emit files.
+    "noEmit": true,
+    // Allow esnext syntax. Otherwise the default is ES5 only.
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext"
+  },
+  // Add a @ts-check comment to a JS file to start type checking it.
+  "include": [
+    "./services/**/*.js",
+    // "./ui/src/**/*.js",
+    "./libraries/**/*.d.ts",
+    "./libraries/**/*.js",
+    "./db/**/*.js",
+    "./clients/client/**/*.js"
+  ],
+  "files": [
+    "@types/globals.d.ts"
+  ],
+  "exclude": []
+}

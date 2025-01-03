@@ -12,7 +12,13 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "NODE_OPTIONS=--dns-result-order=ipv4first mocha test/*_test.js"
   },
-  "exports": "./src/index.js",
+  "exports": {
+    ".": {
+      "default": "./src/index.js",
+      "types": "./@types/index.d.ts"
+    }
+  },
+  "types": "./@types/index.d.ts",
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",

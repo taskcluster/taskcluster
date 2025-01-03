@@ -1,6 +1,6 @@
 import util from 'util';
 import chalk from 'chalk';
-import { upgrade, downgrade } from 'taskcluster-db';
+import { upgrade, downgrade } from './upgrade.js';
 import { renumberVersions, newVersion } from './versions.js';
 
 const main = async () => {
@@ -14,6 +14,7 @@ const main = async () => {
     throw new Error('$USERNAME_PREFIX is not set');
   }
 
+  /** @param {string} message */
   const showProgress = message => {
     util.log(chalk.green(message));
   };
@@ -36,6 +37,9 @@ const main = async () => {
     case 'renumber':
       if (process.argv.length !== 5) {
         throw new Error('usage: node db/src/main.js renumber <from> <to>');
+      }
+      if (!toVersion) {
+        throw new Error('must specify a version to renumber to');
       }
       await renumberVersions(toVersion, parseInt(process.argv[4], 10));
       break;

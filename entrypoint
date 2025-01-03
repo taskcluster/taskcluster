@@ -95,6 +95,7 @@ script/db:downgrade) shift; exec yarn run db:downgrade "${@}";;
 script/db:renumber) shift; exec yarn run db:renumber "${@}";;
 script/db:new) shift; exec yarn run db:new "${@}";;
 script/preinstall) shift; exec yarn run preinstall "${@}";;
+script/types) shift; exec yarn run types "${@}";;
 references/web) exec sh infrastructure/references/references.sh;;
 ui/web) node /app/ui/generate-env-js.js /app/ui/build/static/env.js && exec nginx -c /app/ui/web-ui-nginx-site.conf -g 'daemon off;';;
 *) exec "${@}";;
