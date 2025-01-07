@@ -448,7 +448,6 @@ options to `builder.build` are:
    [taskcluster-lib-validate](../validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for
    the Auth service, as the default signature validator consults the Auth service.
- * `nonceManager` - a function to check for replay attacks (seldom used)
 
 For publishing (only supported for the legacy URL scheme):
  * `publish` - if true, publish the API metadata where documentation and client libraries

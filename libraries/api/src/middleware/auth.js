@@ -6,6 +6,18 @@ import { cleanRouteAndParams } from '../utils.js';
 import ScopeExpressionTemplate from '../expressions.js';
 import { ErrorReply } from '../error-reply.js';
 
+/** @typedef {import('../../@types/index.d.ts').SignatureValidatorResult} SignatureValidatorResult */
+/** @typedef {import('../../@types/index.d.ts').APIRequest} APIRequest */
+/** @typedef {import('../../@types/index.d.ts').SignatureValidator} SignatureValidator */
+/**
+ * @template {Record<string, any>} TContext
+ * @typedef {import('../../@types/index.d.ts').APIEntryOptions<TContext>} APIEntryOptions
+ */
+/**
+ * @template {Record<string, any>} TContext
+ * @typedef {import('../../@types/index.d.ts').APIRequestHandler<TContext>} APIRequestHandler
+ */
+
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
  * a specified scope expression.
@@ -103,6 +115,10 @@ import { ErrorReply } from '../error-reply.js';
  * limited to this expiration time.
  *
  * Reports 401 if authentication fails.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{ entry: APIEntryOptions<TContext>, signatureValidator: SignatureValidator }} options
+ * @returns {APIRequestHandler<TContext>}
  */
 export const remoteAuthentication = ({ signatureValidator, entry }) => {
   assert(signatureValidator instanceof Function,
@@ -111,6 +127,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
   // Returns promise for object on the form:
   //   {status, message, scopes, scheme, hash}
   // scopes, scheme, hash are only present if status isn't auth-failed
+  /** @param {APIRequest} req */
   const authenticate = async (req) => {
     // Check that we're not using two authentication schemes, we could
     // technically allow two. There are cases where we redirect and it would be
@@ -132,7 +149,11 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     // Find port, overwrite if forwarded by reverse proxy
     let port = host.port;
     if (req.headers['x-forwarded-port'] !== undefined) {
-      port = parseInt(req.headers['x-forwarded-port'], 10);
+      if (Array.isArray(req.headers['x-forwarded-port'])) {
+        port = parseInt(req.headers['x-forwarded-port'][0], 10);
+      } else {
+        port = parseInt(req.headers['x-forwarded-port'], 10);
+      }
     } else if (req.headers['x-forwarded-proto'] !== undefined) {
       port = req.headers['x-forwarded-proto'] === 'https' ? 443 : port;
     }
@@ -148,13 +169,17 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     }, { traceId: req.traceId, requestId: req.requestId }));
 
     // Validate request hash if one is provided
-    if (typeof result.hash === 'string' && result.scheme === 'hawk') {
+    if (result.status === 'auth-success'
+      && typeof result.hash === 'string' && result.scheme === 'hawk') {
       const hash = hawk.crypto.calculatePayloadHash(
-        Buffer.from(req.text, 'utf-8'),
+        Buffer.from(req.text ?? '', 'utf-8'),
         'sha256',
         req.headers['content-type'],
       );
-      if (!crypto.timingSafeEqual(Buffer.from(result.hash), Buffer.from(hash))) {
+      if (!crypto.timingSafeEqual(
+        new Uint8Array(Buffer.from(result.hash)),
+        new Uint8Array(Buffer.from(hash)))
+      ) {
         // create a fake auth-failed result with the failed hash
         result = {
           status: 'auth-failed',
@@ -173,6 +198,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
   };
 
   // Compile the scopeTemplate
+  /** @type {ScopeExpressionTemplate} */
   let scopeTemplate;
   let useUrlParams = false;
   if (entry.scopes) {
@@ -190,6 +216,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
   }
 
   return async (req, res, next) => {
+    /** @type {SignatureValidatorResult | Promise<SignatureValidatorResult>} */
     let result;
     try {
       /** Create method that returns list of scopes the caller has */

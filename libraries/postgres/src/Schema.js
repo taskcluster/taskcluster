@@ -6,7 +6,19 @@ import Version from './Version.js';
 import Access from './Access.js';
 import Relations from './Relations.js';
 
-class Schema {
+/**
+ * @typedef {Object} SerializableSchema
+ * @property {import('./Access.js').AccessDefinition} access
+ * @property {import('./Relations.js').RelationsDefinition} tables
+ * @property {Array<Version>} versions
+ */
+
+export class Schema {
+  /**
+   * @param {Array<Version>} versions
+   * @param {Access} access
+   * @param {Relations} tables
+   */
   constructor(versions, access, tables) {
     this.versions = versions;
     this.access = access;
@@ -15,9 +27,12 @@ class Schema {
 
   /**
    * Load a Schema from a db directory
+   *
+   * @param {string} directory
    */
   static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
+    /** @type {Array<Version>} */
     let versions = [];
 
     dentries.forEach(dentry => {
@@ -31,7 +46,7 @@ class Schema {
         return;
       }
 
-      const content = yaml.load(fs.readFileSync(filename));
+      const content = yaml.load(fs.readFileSync(filename, 'utf8'));
       const version = Version.fromYamlFileContent(content, filename);
       if (versions[version.version - 1]) {
         throw new Error(`duplicate version number ${version.version} in ${filename}`);
@@ -48,10 +63,9 @@ class Schema {
     Schema._checkMethodUpdates(versions);
 
     const access = Access.fromYamlFileContent(
-      yaml.load(fs.readFileSync(path.join(directory, 'access.yml'))),
-      'access.yml');
+      yaml.load(fs.readFileSync(path.join(directory, 'access.yml'), 'utf8')));
     const tables = Relations.fromYamlFileContent(
-      yaml.load(fs.readFileSync(path.join(directory, 'tables.yml'))),
+      yaml.load(fs.readFileSync(path.join(directory, 'tables.yml'), 'utf8')),
       'tables.yml');
 
     return new Schema(versions, access, tables);
@@ -59,6 +73,8 @@ class Schema {
 
   /**
    * Load a Schema from a serialized representation
+   *
+   * @param {SerializableSchema} serializable
    */
   static fromSerializable(serializable) {
     assert.deepEqual(Object.keys(serializable).sort(), ['access', 'tables', 'versions']);
@@ -80,6 +96,7 @@ class Schema {
     };
   }
 
+  /** @param {Array<Version>} versions */
   static _checkMethodUpdates(versions) {
     // verify that no method declarations incorrectly try to change fixed attributes
     // of those methods
@@ -96,6 +113,10 @@ class Schema {
     }
   }
 
+  /**
+   * @param {number} version
+   * @returns {Version}
+   */
   getVersion(version) {
     const v = this.versions[version - 1];
 
@@ -113,6 +134,8 @@ class Schema {
   /**
    * Generate a map of all defined methods as of the current version (or, if given,
    * as of atVersion)
+   *
+   * @param {{ atVersion?: number }} [options]
    */
   allMethods({ atVersion } = {}) {
     const map = this.versions.reduce(

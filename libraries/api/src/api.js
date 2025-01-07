@@ -1,8 +1,6 @@
 import express from 'express';
 import url from 'url';
-import Debug from 'debug';
 import assert from 'assert';
-import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import taskcluster from 'taskcluster-client';
 import { buildReportErrorMethod } from './middleware/errors.js';
@@ -16,13 +14,14 @@ import { expressError } from './middleware/express-error.js';
 import { logRequest } from './middleware/logging.js';
 import { perRequestContext } from './middleware/per-request-context.js';
 
-const debug = Debug('api');
-
 /**
  * A service represents an instance of an API at a specific rootUrl, ready to
  * provide an Express router, references, etc.  It is constructed by APIBuilder.build().
+ *
+ * @template {Record<string, any>} TContext
  */
 export default class API {
+  /** @param {import('../@types/index.d.ts').APIOptions<TContext>} options */
   constructor(options) {
     assert(!options.authBaseUrl, 'authBaseUrl option is no longer allowed');
     assert(!options.baseUrl, 'baseUrl option is no longer allowed');
@@ -31,37 +30,39 @@ export default class API {
     assert(options.monitor, 'monitor option is required');
     assert(!options.referencePrefix, 'referencePrefix is now deprecated!');
 
-    options = _.defaults({}, options, {
+    const resolvedOptions = {
       inputLimit: '10mb',
       allowedCORSOrigin: '*',
-      context: {},
-      nonceManager: nonceManager(),
       referenceBucket: 'references.taskcluster.net',
       signatureValidator: createRemoteSignatureValidator({
         rootUrl: options.rootUrl,
       }),
       serviceName: options.builder.serviceName,
       apiVersion: options.builder.apiVersion,
-    });
-    this.builder = options.builder;
+      ...options,
+      ...{
+        context: options.context || {},
+      },
+    };
+    this.builder = resolvedOptions.builder;
 
     // validate context
-    this.builder.context.forEach((property) => {
-      assert(options.context[property] !== undefined,
+    this.builder.context?.forEach((property) => {
+      assert(resolvedOptions.context[property] !== undefined,
         'Context must have declared property: \'' + property + '\'');
     });
 
-    Object.keys(options.context).forEach(property => {
-      assert(this.builder.context.indexOf(property) !== -1,
+    Object.keys(resolvedOptions.context).forEach(property => {
+      assert(this.builder.context?.indexOf(property) !== -1,
         `Context has unexpected property: ${property}`);
     });
 
     // Always make monitor available in context
-    options.context.monitor = options.monitor;
+    resolvedOptions.context.monitor = resolvedOptions.monitor;
 
-    this.entries = this.builder.entries.map(_.clone);
+    this.entries = [...(this.builder.entries)];
 
-    this.options = options;
+    this.options = resolvedOptions;
   }
 
   /**
@@ -76,6 +77,7 @@ export default class API {
       validator,
       schemaset,
       context,
+      monitor,
     } = this.options;
     const { errorCodes, serviceName } = this.builder;
     const absoluteSchemas = schemaset.absoluteSchemas(rootUrl);
@@ -102,7 +104,7 @@ export default class API {
         parameterValidator({ entry }),
         queryValidator({ entry }),
         validateSchemas({ validator, absoluteSchemas, rootUrl, serviceName, entry }),
-        callHandler({ entry }),
+        callHandler({ entry, monitor, context }),
         expressError({ errorCodes, entry }),
       ];
 
@@ -114,16 +116,22 @@ export default class API {
     return router;
   }
 
+  /** @param {import('express').Express} app */
   express(app) {
     // generate the appropriate path for this service, based on the rootUrl
     const path = url.parse(
       libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, '')).path;
+    if (path === null) {
+      throw new Error('Failed to parse path');
+    }
     app.use(path, this.router());
   }
 }
 
 /**
  * Set up cache headers
+ *
+ * @returns {import('express').RequestHandler}}
  */
 const cacheHeaders = () => {
   return (req, res, next) => {
@@ -134,11 +142,14 @@ const cacheHeaders = () => {
 
 /**
  * Set up CORS headers
+ *
+ * @param {string} allowedCORSOrigin
+ * @returns {import('express').RequestHandler}
  */
 const corsHeaders = allowedCORSOrigin => {
   return (req, res, next) => {
     res.header('Access-Control-Allow-Origin', allowedCORSOrigin);
-    res.header('Access-Control-Max-Age', 900);
+    res.header('Access-Control-Max-Age', '900');
     res.header('Access-Control-Allow-Methods', [
       'OPTIONS',
       'GET',
@@ -163,47 +174,6 @@ const corsHeaders = allowedCORSOrigin => {
 };
 
 /**
- * Local nonce cache for hawk, using an over-approximation
- *
- * options:
- * {
- *   size:             250   // Number of entries to keep track of
- * }
- *
- * Higher size helps mitigate replay attacks, but also takes more memory.
- * Please, note that this doesn't do much for replay-attacks if there are
- * multiple instance of the server process. But it's better than nothing,
- * and a lot cheaper and faster than using azure table storage.
- *
- * Ideally, nonces should probably be stored in something like memcache.
- */
-export const nonceManager = (options) => {
-  options = _.defaults({}, options || {}, {
-    size: 250,
-  });
-  let nextnonce = 0;
-  const N = options.size;
-  const noncedb = new Array(N);
-  for (let i = 0; i < N; i++) {
-    noncedb[i] = { nonce: null, ts: null };
-  }
-  return (nonce, ts, cb) => {
-    for (let i = 0; i < N; i++) {
-      if (noncedb[i].nonce === nonce && noncedb[i].ts === ts) {
-        debug('CRITICAL: Replay attack detected!');
-        return cb(new Error('Signature already used'));
-      }
-    }
-    noncedb[nextnonce].nonce = nonce;
-    noncedb[nextnonce].ts = ts;
-    // Increment nextnonce
-    nextnonce += 1;
-    nextnonce %= N;
-    cb();
-  };
-};
-
-/**
  * Make a function for the remote signature validation.
  *
  * options:
@@ -220,6 +190,7 @@ export const nonceManager = (options) => {
  *
  * The method returned by this function works as `signatureValidator` for
  * `remoteAuthentication`.
+ * @param {{ rootUrl: string }} options
  */
 const createRemoteSignatureValidator = (options) => {
   assert(options.rootUrl, 'options.rootUrl is required');

@@ -59,9 +59,18 @@ MonitorManager.register({
   },
 });
 
+/** @typedef {import('../@types/fns.d.ts').DbFunctions} DbFunctions */
+/** @typedef {import('../@types/fns.d.ts').DeprecatedDbFunctions} DeprecatedDbFunctions */
+/** @typedef {import('../@types/index.d.ts').SetupOptions} SetupOptions */
+/** @typedef {import('../@types/index.d.ts').UpgradeOptions} UpgradeOptions */
+/** @typedef {import('../@types/index.d.ts').DowngradeOptions} DowngradeOptions */
+/** @typedef {import('../@types/index.d.ts').DbAccessMode} DbAccessMode */
+/** @typedef {import('../@types/index.d.ts').EncryptedValue} EncryptedValue */
+
 class Database {
   /**
    * Get a new Database instance
+   * @param {SetupOptions} options
    */
   static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
     azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
@@ -90,13 +99,20 @@ class Database {
     return db;
   }
 
+  /**
+   * @private
+   * @param {object} options
+   * @param {import('./Schema.js').Schema} options.schema
+   * @param {string} options.serviceName
+  */
   _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
-    this.fns = {};
-    this.deprecatedFns = {};
+    this.fns = /** @type {DbFunctions} */({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
     schema.allMethods().forEach(method => {
+      /** @type {DbFunctions | DeprecatedDbFunctions | Record<string, any>} */
       let collection = this.fns;
-      if (method.deprecated) {
+      if (method.deprecated && this.deprecatedFns) {
         collection = this.deprecatedFns;
       }
 
@@ -161,6 +177,8 @@ class Database {
    * progress of the upgrade.
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
+   *
+   * @param {UpgradeOptions} options
    */
   static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl, skipChecks }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -216,7 +234,7 @@ class Database {
         showProgress('...checking permissions');
         await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
-        await Database._checkTableColumns({ db, schema, usernamePrefix });
+        await Database._checkTableColumns({ db, schema });
       }
     } finally {
       await db.close();
@@ -229,6 +247,8 @@ class Database {
    * functions.
    *
    * The `showProgress` parameter is like that for upgrade().
+   *
+   * @param {DowngradeOptions} options
    */
   static async downgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -289,6 +309,10 @@ class Database {
     }
   }
 
+  /**
+   * @private
+   * @param {{ db: Database, schema: import('./Schema.js').Schema, usernamePrefix: string }} param0
+   */
   static async _checkPermissions({ db, schema, usernamePrefix }) {
     await db._withClient('admin', async (client) => {
       const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
@@ -396,8 +420,13 @@ class Database {
     });
   }
 
+  /**
+   * @private
+   * @param {{ db: Database, schema: import('./Schema.js').Schema }} param0
+   */
   static async _checkTableColumns({ db, schema }) {
     const current = await db._withClient('admin', async client => {
+      /** @type {Record<string, Record<string, string>>} */
       const tables = {};
 
       const tablesres = await client.query(`
@@ -436,6 +465,7 @@ class Database {
     assert.deepEqual(current, schema.tables.get());
   }
 
+  /** @private */
   async _checkVersion() {
     await this._withClient('admin', async client => {
       const version = await client.query(`
@@ -449,6 +479,7 @@ class Database {
     });
   }
 
+  /** @private */
   async _createExtensions() {
     await this._withClient('admin', async client => {
       for (let ext of EXTENSIONS) {
@@ -464,6 +495,7 @@ class Database {
     });
   }
 
+  /** @private */
   async _checkDbSettings() {
     await this._withClient('admin', async client => {
       // check the DB collation by its behavior, rather than by name, as names seem to vary.
@@ -487,9 +519,19 @@ class Database {
 
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
+   * @param {object} options
+   * @param {Partial<Record<DbAccessMode, string>>} options.urlsByMode
+   * @param {Keyring} [options.keyring]
+   * @param {MonitorManager} [options.monitor]
+   * @param {number} [options.statementTimeout]
+   * @param {number} [options.poolSize]
    */
   constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
+    /**
+     * @param {string} dbUrl
+     * @returns {pg.Pool}
+     */
     const makePool = dbUrl => {
       const connectOptions = {
         // default to a max of 5 connections. For services running both a read
@@ -554,14 +596,16 @@ class Database {
 
     this.monitor = monitor;
 
-    this.pools = {};
+    this.pools = /** @type {Record<DbAccessMode, pg.Pool>} */({});
     for (let mode of Object.keys(urlsByMode)) {
+      // @ts-ignore mode is of a type DbAccessMode
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
 
     this._startMonitoringPools();
 
-    this.fns = {};
+    this.fns = /** @type {DbFunctions} */({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
     this.keyring = keyring;
   }
 
@@ -573,6 +617,11 @@ class Database {
    *
    * This annotates syntax errors from `query` with the position at which the
    * error occurred.
+   *
+   * @private
+   * @param {DbAccessMode} mode
+   * @param {(context: { query: (query: string, ...args: any[]) => Promise<pg.QueryResult> }) => Promise<any>} cb
+   * @returns {Promise<pg.Client>}
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
@@ -590,9 +639,15 @@ class Database {
     const handleError = err => clientError = err;
     client.on('error', handleError);
     const wrapped = {
-      query: async function(query) {
+      /**
+       * @param {string} query
+       * @param {...any[]} args
+       * @returns {Promise<pg.QueryResult>}
+       */
+      query: async function(query, ...args) {
         try {
-          return await client.query.apply(client, arguments);
+          // it is important to keep await here, as we need to catch the error
+          return await client.query(query, ...args);
         } catch (err) {
           annotateError(query, err);
           throw err;
@@ -631,8 +686,11 @@ class Database {
   /**
    * Periodically monitor pool size, producing a measure every 1m.  These values
    * should represent a long-term trend so more frequent reports are not useful.
+   *
+   * @private
    */
   _startMonitoringPools() {
+    /** @private */
     this._poolMonitorInterval = setInterval(() => {
       for (const [name, pool] of Object.entries(this.pools)) {
         this._logDbPoolCounts({
@@ -645,10 +703,12 @@ class Database {
     }, 60 * 1000);
   }
 
+  /** @private */
   _stopMonitoringPools() {
     if (this._poolMonitorInterval) {
       clearInterval(this._poolMonitorInterval);
     }
+    /** @private */
     this._poolMonitorInterval = null;
   }
 
@@ -660,6 +720,10 @@ class Database {
     await Promise.all(Object.values(this.pools).map(pool => pool.end()));
   }
 
+  /**
+   * @private
+   * @param {string} usernamePrefix
+   */
   static _validUsernamePrefix(usernamePrefix) {
     return usernamePrefix.match(/^[a-z_]+$/);
   }
@@ -668,12 +732,15 @@ class Database {
    * Depending on context, we may not have a monitor (e.g., during upgrade), so
    * these methods wrap calls to `monitor.<foo>` with a check for monitor being
    * undefined, ignoring the call in that case.
+   *
+   * @private
    */
   _logDbFunctionCall(fields) {
     if (this.monitor) {
       this.monitor.log.dbFunctionCall(fields);
     }
   }
+  /** @private */
   _logDbPoolCounts(fields) {
     if (this.monitor) {
       this.monitor.log.dbPoolCounts(fields);
@@ -687,6 +754,9 @@ class Database {
    * This currently only supports lib-entities shaped data but can be extended to support
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
+   *
+   * @param {{ value: Buffer }} options
+   * @returns {EncryptedValue}
    */
   encrypt({ value }) {
     assert(value instanceof Buffer, 'Encrypted values must be Buffers');
@@ -713,6 +783,8 @@ class Database {
    * This currently only supports lib-entities shaped data but can be extended to support
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
+   *
+   * @param {{ value: EncryptedValue }} options
    */
   decrypt({ value }) {
     const key = this.keyring.getCryptoKey(value.kid, 'aes-256');

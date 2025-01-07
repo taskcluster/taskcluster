@@ -5,11 +5,20 @@ import assert from 'assert';
  *
  * This invokes the handler with `context` as `this` and then catches
  * exceptions and failures of returned promises handler.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   context: Record<string, any>,
+ *   monitor: import('taskcluster-lib-monitor').Monitor
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const callHandler = ({ entry, context, monitor }) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {
+      // @ts-ignore - we check this above already
       return entry.handler.call(req.tcContext, req, res);
     }).then(() => {
       if (!req.public && !req.satisfyingScopes) {

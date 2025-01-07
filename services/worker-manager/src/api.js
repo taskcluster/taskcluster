@@ -6,6 +6,16 @@ import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
+/**
+* @type {APIBuilder<{
+*  cfg: object;
+*  providers: import('./providers/index.js').Providers;
+*  db: import('taskcluster-lib-postgres').Database;
+*  monitor: import('taskcluster-lib-monitor').Monitor;
+*  notify: object; // TODO import('taskcluster-client').Notify;
+*  publisher: import('taskcluster-lib-pulse').PulsePublisher; // TODO add generic type
+* }>}
+*/
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
   description: [
@@ -108,7 +118,6 @@ builder.declare({
   const { workerPoolId } = req.params;
   const input = req.body;
   const providerId = input.providerId;
-
   await req.authorize({ workerPoolId, providerId });
 
   const provider = this.providers.get(providerId);
