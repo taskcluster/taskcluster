@@ -32,7 +32,7 @@ const run = async command => {
 /**
  * @param {number|string} fromVersion
  * @param {number|string} toVersion
- * @param {{ runGit?: boolean }} opts
+ * @param {Partial<{ runGit: boolean }>} opts
 */
 export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   const options = {

@@ -30,7 +30,7 @@ export default class API {
     assert(options.monitor, 'monitor option is required');
     assert(!options.referencePrefix, 'referencePrefix is now deprecated!');
 
-    options = Object.assign({}, {
+    const resolvedOptions = {
       inputLimit: '10mb',
       allowedCORSOrigin: '*',
       referenceBucket: 'references.taskcluster.net',
@@ -39,28 +39,30 @@ export default class API {
       }),
       serviceName: options.builder.serviceName,
       apiVersion: options.builder.apiVersion,
-    }, options, {
-      context: options.context || {},
-    });
-    this.builder = options.builder;
+      ...options,
+      ...{
+        context: options.context || {},
+      },
+    };
+    this.builder = resolvedOptions.builder;
 
     // validate context
     this.builder.context?.forEach((property) => {
-      assert(options.context[property] !== undefined,
+      assert(resolvedOptions.context[property] !== undefined,
         'Context must have declared property: \'' + property + '\'');
     });
 
-    Object.keys(options.context).forEach(property => {
+    Object.keys(resolvedOptions.context).forEach(property => {
       assert(this.builder.context?.indexOf(property) !== -1,
         `Context has unexpected property: ${property}`);
     });
 
     // Always make monitor available in context
-    options.context.monitor = options.monitor;
+    resolvedOptions.context.monitor = resolvedOptions.monitor;
 
     this.entries = [...(this.builder.entries)];
 
-    this.options = options;
+    this.options = resolvedOptions;
   }
 
   /**

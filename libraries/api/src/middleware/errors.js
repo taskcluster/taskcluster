@@ -1,7 +1,7 @@
 import { reportError } from '../error-reply.js';
 
 /**
- * @typedef {Record<string, number>} ErrorCodes
+ * @type {import('../../@types/index.d.ts').ErrorCodes}
  */
 export const ERROR_CODES = {
   MalformedPayload: 400, // Only for JSON.parse() errors

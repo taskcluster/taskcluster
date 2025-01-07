@@ -338,14 +338,6 @@ export const generateDbTypes = async (schema) => {
 
   writeSection('export interface DbFunctions', false);
   writeSection('export interface DeprecatedDbFunctions', true);
-  // writeSection('export declare class DatabaseFns implements DbFunctions', false, true);
-  // writeSection('export declare class DatabaseDeprecatedFns implements DeprecatedDbFunctions', true, true);
-
-  // Generate the main export
-  // output.push('export declare const db: {');
-  // output.push('  fns: DatabaseFns;');
-  // output.push('  deprecatedFns: DatabaseDeprecatedFns;');
-  // output.push('};\n');
 
   const typesFile = path.join('libraries', 'postgres', '@types', 'fns.d.ts');
   await writeRepoFile(typesFile, output.join('\n'));

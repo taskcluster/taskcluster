@@ -8,6 +8,8 @@ export type ValidationMap = {
   [key: string]: RegExp | ((val: string) => string | null);
 };
 
+export type ErrorCodes = Record<string, number>;
+
 import type { Request, Response } from 'express';
 // add extra context API is injecting into the request
 export interface APIRequest extends Request {
@@ -110,7 +112,7 @@ export interface APIBuilderOptions<TContext extends Record<string, any>> {
   description: string;
   serviceName: string;
   apiVersion: string;
-  errorCodes: Record<string, number>;
+  errorCodes: ErrorCodes;
   params?: Record<string, any>;
   context?: (keyof TContext)[];
 }

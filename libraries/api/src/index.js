@@ -148,7 +148,7 @@ export class APIBuilder {
     this.description = options.description;
     this.params = options.params;
     this.context = options.context;
-    /** @type {import('../src/middleware/errors.js').ErrorCodes} */
+    /** @type {import('../@types/index.d.ts').ErrorCodes} */
     this.errorCodes = options.errorCodes;
     /** @type {APIEntryOptions<TContext>[]} */
     this.entries = [ping, lbHeartbeat, version];
