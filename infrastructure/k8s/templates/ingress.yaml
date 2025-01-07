@@ -17,6 +17,9 @@ metadata:
     kubernetes.io/tls-acme: '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
     kubernetes.io/ingress.class: '{{ if eq .Values.ingressType "nginx" }}nginx{{ end }}'
     ingress.kubernetes.io/force-ssl-redirect: '{{ if .Values.certManagerClusterIssuerName }}true{{ end }}'
+{{- if .Values.cloudArmorPolicy }}
+    cloud.google.com/backend-config: '{"default": "taskcluster-backendconfig"}'
+{{- end }}
 spec:
   tls:
     - secretName: '{{ .Values.ingressTlsSecretName | default "" }}'
