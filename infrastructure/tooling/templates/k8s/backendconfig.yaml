@@ -1,0 +1,9 @@
+# This will be wrapped with condition in generator after jsone pass {{- if .Values.cloudArmorPolicy }}
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: taskcluster-backendconfig
+  labels: {$eval: labels}
+spec:
+  securityPolicy:
+    name: "{{ .Values.cloudArmorPolicy }}"

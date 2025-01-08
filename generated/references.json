@@ -10770,6 +10770,10 @@
           "description": "Name of the cluster issuer, i.e. \"letsencrypt-prod\"",
           "type": "string"
         },
+        "cloudArmorPolicy": {
+          "description": "Name of the cloud armor policy to use for the backendconfig",
+          "type": "string"
+        },
         "dockerImage": {
           "description": "The docker image containing taskcluster.",
           "type": "string"
