@@ -15,7 +15,7 @@ export type AuthClientsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ clients_entities_create: string }]>;
 
 /** @deprecated */
 export type AuthClientsEntitiesLoadDeprecatedFn = (
@@ -62,7 +62,7 @@ export type AuthDeleteClientFn = (
 ) => Promise<void>;
 
 export type AuthExpireClientsFn = (
-) => Promise<number>;
+) => Promise<[{ expire_clients: number }]>;
 
 export type AuthGetClientFn = (
   client_id_in: string
@@ -89,7 +89,7 @@ export type AuthRolesEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ roles_entities_create: string }]>;
 
 /** @deprecated */
 export type AuthRolesEntitiesLoadDeprecatedFn = (
@@ -254,7 +254,7 @@ export type GithubTaskclusterCheckRunsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ taskcluster_check_runs_entities_create: string }]>;
 
 /** @deprecated */
 export type GithubTaskclusterCheckRunsEntitiesLoadDeprecatedFn = (
@@ -293,7 +293,7 @@ export type GithubTaskclusterChecksToTasksEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ taskcluster_checks_to_tasks_entities_create: string }]>;
 
 /** @deprecated */
 export type GithubTaskclusterChecksToTasksEntitiesLoadDeprecatedFn = (
@@ -332,7 +332,7 @@ export type GithubTaskclusterGithubBuildsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ taskcluster_github_builds_entities_create: string }]>;
 
 /** @deprecated */
 export type GithubTaskclusterGithubBuildsEntitiesLoadDeprecatedFn = (
@@ -371,7 +371,7 @@ export type GithubTaskclusterIntegrationOwnersEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ taskcluster_integration_owners_entities_create: string }]>;
 
 /** @deprecated */
 export type GithubTaskclusterIntegrationOwnersEntitiesLoadDeprecatedFn = (
@@ -428,7 +428,7 @@ export type HooksCreateHooksQueueFn = (
   hook_id_in: string,
   queue_name_in: string,
   bindings_in: JsonB
-) => Promise<string>;
+) => Promise<[{ create_hooks_queue: string }]>;
 
 export type HooksCreateLastFireFn = (
   hook_group_id_in: string,
@@ -438,7 +438,7 @@ export type HooksCreateLastFireFn = (
   task_create_time_in: Date,
   result_in: string,
   error_in: string
-) => Promise<string>;
+) => Promise<[{ create_last_fire: string }]>;
 
 export type HooksDeleteHookFn = (
   hook_group_id_in: string,
@@ -456,7 +456,7 @@ export type HooksDeleteLastFiresFn = (
 ) => Promise<void>;
 
 export type HooksExpireLastFiresFn = (
-) => Promise<number>;
+) => Promise<[{ expire_last_fires: number }]>;
 
 export type HooksGetHookFn = (
   hook_group_id_in: string,
@@ -503,7 +503,7 @@ export type HooksHooksEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ hooks_entities_create: string }]>;
 
 /** @deprecated */
 export type HooksHooksEntitiesLoadDeprecatedFn = (
@@ -542,7 +542,7 @@ export type HooksLastFire3EntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ last_fire_3_entities_create: string }]>;
 
 /** @deprecated */
 export type HooksLastFire3EntitiesLoadDeprecatedFn = (
@@ -581,7 +581,7 @@ export type HooksQueuesEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queues_entities_create: string }]>;
 
 /** @deprecated */
 export type HooksQueuesEntitiesLoadDeprecatedFn = (
@@ -655,10 +655,10 @@ export type IndexDeleteIndexedTaskFn = (
 ) => Promise<void>;
 
 export type IndexExpireIndexNamespacesFn = (
-) => Promise<number>;
+) => Promise<[{ expire_index_namespaces: number }]>;
 
 export type IndexExpireIndexedTasksFn = (
-) => Promise<number>;
+) => Promise<[{ expire_indexed_tasks: number }]>;
 
 export type IndexGetIndexNamespaceFn = (
   parent_in: string,
@@ -704,7 +704,7 @@ export type IndexIndexedTasksEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ indexed_tasks_entities_create: string }]>;
 
 /** @deprecated */
 export type IndexIndexedTasksEntitiesLoadDeprecatedFn = (
@@ -743,7 +743,7 @@ export type IndexNamespacesEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ namespaces_entities_create: string }]>;
 
 /** @deprecated */
 export type IndexNamespacesEntitiesLoadDeprecatedFn = (
@@ -805,7 +805,7 @@ export type NotifyAllDenylistAddressesFn = (
 export type NotifyDeleteDenylistAddressFn = (
   notification_type_in: string,
   notification_address_in: string
-) => Promise<number>;
+) => Promise<[{ delete_denylist_address: number }]>;
 
 /** @deprecated */
 export type NotifyDenylistedNotificationEntitiesCreateDeprecatedFn = (
@@ -814,7 +814,7 @@ export type NotifyDenylistedNotificationEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ denylisted_notification_entities_create: string }]>;
 
 /** @deprecated */
 export type NotifyDenylistedNotificationEntitiesLoadDeprecatedFn = (
@@ -849,7 +849,7 @@ export type NotifyDenylistedNotificationEntitiesScanDeprecatedFn = (
 export type NotifyExistsDenylistAddressFn = (
   notification_type_in: string,
   notification_address_in: string
-) => Promise<boolean>;
+) => Promise<[{ exists_denylist_address: boolean }]>;
 
 /** @deprecated */
 export type NotifyUpdateWidgetsDeprecatedFn = (
@@ -929,7 +929,7 @@ export type PurgeCacheCachePurgesEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ cache_purges_entities_create: string }]>;
 
 /** @deprecated */
 export type PurgeCacheCachePurgesEntitiesLoadDeprecatedFn = (
@@ -963,7 +963,7 @@ export type PurgeCacheCachePurgesEntitiesScanDeprecatedFn = (
 
 export type PurgeCacheExpireCachePurgesFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_cache_purges: number }]>;
 
 /** @deprecated */
 export type PurgeCachePurgeCacheDeprecatedFn = (
@@ -1010,7 +1010,7 @@ export type QueueAddTaskDependencyFn = (
 /** @deprecated */
 export type QueueAzureQueueCountDeprecatedFn = (
   queue_name: string
-) => Promise<number>;
+) => Promise<[{ azure_queue_count: number }]>;
 
 /** @deprecated */
 export type QueueAzureQueueDeleteDeprecatedFn = (
@@ -1101,7 +1101,7 @@ export type QueueCreateQueueProvisionerDeprecatedFn = (
   description_in: string,
   stability_in: string,
   actions_in: JsonB
-) => Promise<string>;
+) => Promise<[{ create_queue_provisioner: string }]>;
 
 /** @deprecated */
 export type QueueCreateQueueWorkerDeprecatedFn = (
@@ -1113,7 +1113,7 @@ export type QueueCreateQueueWorkerDeprecatedFn = (
   expires_in: Date,
   first_claim_in: Date,
   recent_tasks_in: JsonB
-) => Promise<string>;
+) => Promise<[{ create_queue_worker: string }]>;
 
 /** @deprecated */
 export type QueueCreateQueueWorkerTqidDeprecatedFn = (
@@ -1124,7 +1124,7 @@ export type QueueCreateQueueWorkerTqidDeprecatedFn = (
   expires_in: Date,
   first_claim_in: Date,
   recent_tasks_in: JsonB
-) => Promise<string>;
+) => Promise<[{ create_queue_worker_tqid: string }]>;
 
 /** @deprecated */
 export type QueueCreateQueueWorkerTypeDeprecatedFn = (
@@ -1134,7 +1134,7 @@ export type QueueCreateQueueWorkerTypeDeprecatedFn = (
   last_date_active_in: Date,
   description_in: string,
   stability_in: string
-) => Promise<string>;
+) => Promise<[{ create_queue_worker_type: string }]>;
 
 /** @deprecated */
 export type QueueCreateTaskDeprecatedFn = (
@@ -1186,7 +1186,7 @@ export type QueueCreateTaskQueueDeprecatedFn = (
   last_date_active_in: Date,
   description_in: string,
   stability_in: string
-) => Promise<string>;
+) => Promise<[{ create_task_queue: string }]>;
 
 /** @deprecated */
 export type QueueCreateTaskTqidDeprecatedFn = (
@@ -1241,32 +1241,32 @@ export type QueueEnsureTaskGroupFn = (
 /** @deprecated */
 export type QueueExpireQueueProvisionersDeprecatedFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_queue_provisioners: number }]>;
 
 /** @deprecated */
 export type QueueExpireQueueWorkerTypesDeprecatedFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_queue_worker_types: number }]>;
 
 export type QueueExpireQueueWorkersFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_queue_workers: number }]>;
 
 export type QueueExpireTaskDependenciesFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_task_dependencies: number }]>;
 
 export type QueueExpireTaskGroupsFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_task_groups: number }]>;
 
 export type QueueExpireTaskQueuesFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_task_queues: number }]>;
 
 export type QueueExpireTasksFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_tasks: number }]>;
 
 export type QueueGetClaimedTasksByTaskQueueIdFn = (
   task_queue_id_in: string,
@@ -1417,7 +1417,7 @@ export type QueueGetTaskGroupDeprecatedFn = (
 
 export type QueueGetTaskGroupSizeFn = (
   task_group_id_in: string
-) => Promise<number>;
+) => Promise<[{ get_task_group_size: number }]>;
 
 export type QueueGetTaskGroup2Fn = (
   task_group_id_in: string
@@ -1466,15 +1466,15 @@ export type QueueGetTasksByTaskGroupTqidDeprecatedFn = (
 
 export type QueueIsTaskBlockedFn = (
   dependent_task_id_in: string
-) => Promise<boolean>;
+) => Promise<[{ is_task_blocked: boolean }]>;
 
 export type QueueIsTaskGroupActiveFn = (
   task_group_id_in: string
-) => Promise<boolean>;
+) => Promise<[{ is_task_group_active: boolean }]>;
 
 export type QueueIsTaskGroupSealedFn = (
   task_group_id_in: string
-) => Promise<boolean>;
+) => Promise<[{ is_task_group_sealed: boolean }]>;
 
 export type QueueMarkTaskEverResolvedFn = (
   task_id_in: string
@@ -1517,7 +1517,7 @@ export type QueueQueueArtifactsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_artifacts_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueArtifactsEntitiesLoadDeprecatedFn = (
@@ -1575,7 +1575,7 @@ export type QueueQueueClaimedTaskResolvedFn = (
 
 export type QueueQueueClaimedTasksCountFn = (
   task_queue_id_in: string
-) => Promise<number>;
+) => Promise<[{ queue_claimed_tasks_count: number }]>;
 
 export type QueueQueuePendingTaskDeleteFn = (
   task_id_in: string,
@@ -1593,7 +1593,7 @@ export type QueueQueuePendingTasksAddFn = (
 
 export type QueueQueuePendingTasksCountFn = (
   task_queue_id_in: string
-) => Promise<number>;
+) => Promise<[{ queue_pending_tasks_count: number }]>;
 
 export type QueueQueuePendingTasksDeleteFn = (
   task_id_in: string,
@@ -1632,7 +1632,7 @@ export type QueueQueueProvisionerEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_provisioner_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueProvisionerEntitiesLoadDeprecatedFn = (
@@ -1711,7 +1711,7 @@ export type QueueQueueTaskDependencyEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_task_dependency_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTaskDependencyEntitiesLoadDeprecatedFn = (
@@ -1750,7 +1750,7 @@ export type QueueQueueTaskGroupActiveSetsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_task_group_active_sets_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTaskGroupActiveSetsEntitiesLoadDeprecatedFn = (
@@ -1789,7 +1789,7 @@ export type QueueQueueTaskGroupMembersEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_task_group_members_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTaskGroupMembersEntitiesLoadDeprecatedFn = (
@@ -1828,7 +1828,7 @@ export type QueueQueueTaskGroupsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_task_groups_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTaskGroupsEntitiesLoadDeprecatedFn = (
@@ -1867,7 +1867,7 @@ export type QueueQueueTaskRequirementEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_task_requirement_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTaskRequirementEntitiesLoadDeprecatedFn = (
@@ -1906,7 +1906,7 @@ export type QueueQueueTasksEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_tasks_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueTasksEntitiesLoadDeprecatedFn = (
@@ -1945,7 +1945,7 @@ export type QueueQueueWorkerEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_worker_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueWorkerEntitiesLoadDeprecatedFn = (
@@ -2006,7 +2006,7 @@ export type QueueQueueWorkerTypeEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ queue_worker_type_entities_create: string }]>;
 
 /** @deprecated */
 export type QueueQueueWorkerTypeEntitiesLoadDeprecatedFn = (
@@ -2170,7 +2170,7 @@ export type SecretsDeleteSecretFn = (
 ) => Promise<void>;
 
 export type SecretsExpireSecretsFn = (
-) => Promise<number>;
+) => Promise<[{ expire_secrets: number }]>;
 
 export type SecretsGetSecretFn = (
   name_in: string
@@ -2188,7 +2188,7 @@ export type SecretsSecretsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ secrets_entities_create: string }]>;
 
 /** @deprecated */
 export type SecretsSecretsEntitiesLoadDeprecatedFn = (
@@ -2235,7 +2235,7 @@ export type WebServerAccessTokenTableEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ access_token_table_entities_create: string }]>;
 
 /** @deprecated */
 export type WebServerAccessTokenTableEntitiesLoadDeprecatedFn = (
@@ -2279,7 +2279,7 @@ export type WebServerAuthorizationCodesTableEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ authorization_codes_table_entities_create: string }]>;
 
 /** @deprecated */
 export type WebServerAuthorizationCodesTableEntitiesLoadDeprecatedFn = (
@@ -2334,14 +2334,14 @@ export type WebServerCreateAuthorizationCodeFn = (
 
 export type WebServerExpireAccessTokensFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_access_tokens: number }]>;
 
 export type WebServerExpireAuthorizationCodesFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_authorization_codes: number }]>;
 
 export type WebServerExpireSessionsFn = (
-) => Promise<number>;
+) => Promise<[{ expire_sessions: number }]>;
 
 export type WebServerGetAccessTokenFn = (
   hashed_access_token_in: string
@@ -2358,7 +2358,7 @@ export type WebServerGithubAccessTokenTableEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ github_access_token_table_entities_create: string }]>;
 
 /** @deprecated */
 export type WebServerGithubAccessTokenTableEntitiesLoadDeprecatedFn = (
@@ -2416,7 +2416,7 @@ export type WebServerSessionStorageTableEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ session_storage_table_entities_create: string }]>;
 
 /** @deprecated */
 export type WebServerSessionStorageTableEntitiesLoadDeprecatedFn = (
@@ -2459,7 +2459,7 @@ export type WebServerSessionTouchFn = (
 export type WorkerManagerCollectLaunchConfigsIfExistFn = (
   config_in: JsonB,
   worker_pool_id_in: string
-) => Promise<JsonB>;
+) => Promise<[{ collect_launch_configs_if_exist: JsonB }]>;
 
 /** @deprecated */
 export type WorkerManagerCreateWorkerDeprecatedFn = (
@@ -2474,7 +2474,7 @@ export type WorkerManagerCreateWorkerDeprecatedFn = (
   capacity_in: number,
   last_modified_in: Date,
   last_checked_in: Date
-) => Promise<string>;
+) => Promise<[{ create_worker: string }]>;
 
 /** @deprecated */
 export type WorkerManagerCreateWorkerPoolDeprecatedFn = (
@@ -2499,7 +2499,7 @@ export type WorkerManagerCreateWorkerPoolErrorDeprecatedFn = (
   title_in: string,
   description_in: string,
   extra_in: JsonB
-) => Promise<string>;
+) => Promise<[{ create_worker_pool_error: string }]>;
 
 export type WorkerManagerCreateWorkerPoolErrorLaunchConfigFn = (
   error_id_in: string,
@@ -2510,7 +2510,7 @@ export type WorkerManagerCreateWorkerPoolErrorLaunchConfigFn = (
   description_in: string,
   extra_in: JsonB,
   launch_config_id_in: string
-) => Promise<string>;
+) => Promise<[{ create_worker_pool_error_launch_config: string }]>;
 
 export type WorkerManagerCreateWorkerPoolLaunchConfigFn = (
   launch_config_id_in: string,
@@ -2547,7 +2547,7 @@ export type WorkerManagerCreateWorkerWithLcFn = (
   last_modified_in: Date,
   last_checked_in: Date,
   launch_config_id_in: string
-) => Promise<string>;
+) => Promise<[{ create_worker_with_lc: string }]>;
 
 export type WorkerManagerDeleteWorkerFn = (
   worker_pool_id_in: string,
@@ -2566,7 +2566,7 @@ export type WorkerManagerDeleteWorkerPoolErrorFn = (
 
 export type WorkerManagerExpireWorkerPoolErrorsFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_worker_pool_errors: number }]>;
 
 export type WorkerManagerExpireWorkerPoolLaunchConfigsFn = (
 ) => Promise<Array<{launch_config_id: string}>>;
@@ -2576,7 +2576,7 @@ export type WorkerManagerExpireWorkerPoolsFn = (
 
 export type WorkerManagerExpireWorkersFn = (
   expires_in: Date
-) => Promise<number>;
+) => Promise<[{ expire_workers: number }]>;
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkersDeprecatedFn = (
@@ -2768,7 +2768,8 @@ export type WorkerManagerGetWorkerPoolCountsAndCapacityFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
 
-export type WorkerManagerGetWorkerPoolErrorFn = (
+/** @deprecated */
+export type WorkerManagerGetWorkerPoolErrorDeprecatedFn = (
   error_id_in: string,
   worker_pool_id_in: string
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
@@ -2776,6 +2777,11 @@ export type WorkerManagerGetWorkerPoolErrorFn = (
 export type WorkerManagerGetWorkerPoolErrorCodesFn = (
   worker_pool_id_in: string
 ) => Promise<Array<{code: string, count: number}>>;
+
+export type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = (
+  error_id_in: string,
+  worker_pool_id_in: string
+) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 
 export type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = (
   worker_pool_id_in: string
@@ -2990,7 +2996,7 @@ export type WorkerManagerWmworkerPoolErrorsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ wmworker_pool_errors_entities_create: string }]>;
 
 /** @deprecated */
 export type WorkerManagerWmworkerPoolErrorsEntitiesLoadDeprecatedFn = (
@@ -3029,7 +3035,7 @@ export type WorkerManagerWmworkerPoolsEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ wmworker_pools_entities_create: string }]>;
 
 /** @deprecated */
 export type WorkerManagerWmworkerPoolsEntitiesLoadDeprecatedFn = (
@@ -3068,7 +3074,7 @@ export type WorkerManagerWmworkersEntitiesCreateDeprecatedFn = (
   properties: JsonB,
   overwrite: boolean,
   version: number
-) => Promise<string>;
+) => Promise<[{ wmworkers_entities_create: string }]>;
 
 /** @deprecated */
 export type WorkerManagerWmworkersEntitiesLoadDeprecatedFn = (
@@ -3293,8 +3299,8 @@ export interface DbFunctions {
   get_worker_3: WorkerManagerGetWorker3Fn;
   get_worker_manager_workers2: WorkerManagerGetWorkerManagerWorkers2Fn;
   get_worker_pool_counts_and_capacity: WorkerManagerGetWorkerPoolCountsAndCapacityFn;
-  get_worker_pool_error: WorkerManagerGetWorkerPoolErrorFn;
   get_worker_pool_error_codes: WorkerManagerGetWorkerPoolErrorCodesFn;
+  get_worker_pool_error_launch_config: WorkerManagerGetWorkerPoolErrorLaunchConfigFn;
   get_worker_pool_error_launch_configs: WorkerManagerGetWorkerPoolErrorLaunchConfigsFn;
   get_worker_pool_error_stats_last_24_hours: WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn;
   get_worker_pool_error_stats_last_7_days: WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn;
@@ -3550,6 +3556,7 @@ export interface DeprecatedDbFunctions {
   get_worker_2: WorkerManagerGetWorker2DeprecatedFn;
   get_worker_manager_workers: WorkerManagerGetWorkerManagerWorkersDeprecatedFn;
   get_worker_pool: WorkerManagerGetWorkerPoolDeprecatedFn;
+  get_worker_pool_error: WorkerManagerGetWorkerPoolErrorDeprecatedFn;
   get_worker_pool_errors: WorkerManagerGetWorkerPoolErrorsDeprecatedFn;
   get_worker_pool_errors_for_worker_pool: WorkerManagerGetWorkerPoolErrorsForWorkerPoolDeprecatedFn;
   get_worker_pool_with_capacity: WorkerManagerGetWorkerPoolWithCapacityDeprecatedFn;

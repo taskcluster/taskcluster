@@ -6,6 +6,8 @@ import testing from 'taskcluster-lib-testing';
 import tc from 'taskcluster-client';
 const { fromNow } = tc;
 
+/** @typedef {import('taskcluster-lib-postgres').Database} Database */
+
 suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'worker_manager' });
 
@@ -20,6 +22,10 @@ suite(testing.suiteName(), function () {
 
   // worker-manager entities functions are tested by entities_test.js and by the worker-manager service tests
 
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} wp
+   */
   const create_worker_pool = async (db, wp = {}) => {
     await db.fns.create_worker_pool_with_launch_configs(
       wp.worker_pool_id || 'wp/id',
@@ -34,6 +40,10 @@ suite(testing.suiteName(), function () {
       wp.provider_data || { providerdata: true },
     );
   };
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} wp
+   */
   const update_worker_pool = async (db, wp = {}) => {
     const input = [
       wp.worker_pool_id || 'wp/id',
@@ -59,8 +69,12 @@ suite(testing.suiteName(), function () {
     assert.deepEqual({ ...upd[0], previous_provider_id: '' }, { ...old[0], previous_provider_id: '' });
     return upd;
   };
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} e
+   */
   const create_worker_pool_error = async (db, e = {}) => {
-    await db.fns.create_worker_pool_error(
+    await db.fns.create_worker_pool_error_launch_config(
       e.error_id || 'e/id',
       e.worker_pool_id || 'wp/id',
       e.reported || new Date(),
@@ -68,8 +82,13 @@ suite(testing.suiteName(), function () {
       e.title || 'title',
       e.description || 'descr',
       e.extra || { extra: true },
+      e.launch_config_id || null,
     );
   };
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} w
+   */
   const create_worker = async (db, w = {}) => {
     return (await db.fns.create_worker_with_lc(
       w.worker_pool_id || 'wp/id',
@@ -86,6 +105,11 @@ suite(testing.suiteName(), function () {
       w.launch_config_id || null,
     ))[0].create_worker_with_lc;
   };
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} w
+   * @param {string} etag
+   */
   const update_worker = async (db, w = {}, etag) => {
     return await db.deprecatedFns.update_worker(
       w.worker_pool_id || 'wp/id',
@@ -102,6 +126,11 @@ suite(testing.suiteName(), function () {
       etag,
     );
   };
+  /**
+   * @param {Database} db
+   * @param {Record<string, any>} w
+   * @param {string} etag
+   */
   const update_worker_2 = async (db, w = {}, etag) => {
     return await db.fns.update_worker_2(
       w.worker_pool_id || 'wp/id',
@@ -120,6 +149,10 @@ suite(testing.suiteName(), function () {
     );
   };
 
+  /**
+   * @param {Database} db
+   * @param {string} worker_pool_id
+   */
   const get_worker_pool = async (db, worker_pool_id) => {
     const workerPool = await db.fns.get_worker_pool_with_launch_configs(worker_pool_id);
     const old = await db.deprecatedFns.get_worker_pool_with_capacity(worker_pool_id);
@@ -128,6 +161,11 @@ suite(testing.suiteName(), function () {
     return workerPool;
   };
 
+  /**
+   * @param {Database} db
+   * @param {number} page_size
+   * @param {number} page_offset
+   */
   const get_worker_pools = async (db, page_size, page_offset) => {
     const with_cap = await db.fns.get_worker_pools_with_launch_configs(page_size, page_offset);
     const old = await db.deprecatedFns.get_worker_pools_with_capacity(page_size, page_offset);
@@ -283,19 +321,20 @@ suite(testing.suiteName(), function () {
   suite(`${testing.suiteName()} - worker_pool_errors`, function () {
     helper.dbTest('create_worker_pool_error/get_worker_pool_error', async function (db) {
       const now = new Date();
-      await create_worker_pool_error(db, { reported: now });
-      const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
+      await create_worker_pool_error(db, { reported: now, launch_config_id: 'lc/id' });
+      const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
       assert.equal(rows[0].error_id, 'e/id');
       assert.equal(rows[0].worker_pool_id, 'wp/id');
       assert.deepEqual(rows[0].reported, now);
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
       assert.equal(rows[0].description, 'descr');
+      assert.equal(rows[0].launch_config_id, 'lc/id');
       assert.deepEqual(rows[0].extra, { extra: true });
     });
 
     helper.dbTest('get_worker_pool_error not found', async function (db) {
-      const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
+      const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
 
@@ -360,7 +399,7 @@ suite(testing.suiteName(), function () {
 
       await db.fns.delete_worker_pool_error('e/id', 'wp/id');
 
-      const rows = await db.fns.get_worker_pool_error('e/id', 'wp/id');
+      const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
     helper.dbTest('get_worker_pool_error_stats_last_24_hours', async function (db) {

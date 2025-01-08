@@ -182,8 +182,8 @@
    * [`get_worker_3`](#get_worker_3)
    * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
    * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
-   * [`get_worker_pool_error`](#get_worker_pool_error)
    * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+   * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
    * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
    * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
    * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
@@ -6432,8 +6432,8 @@ end
 * [`get_worker_3`](#get_worker_3)
 * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
 * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
-* [`get_worker_pool_error`](#get_worker_pool_error)
 * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+* [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
 * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
 * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
 * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
@@ -7314,46 +7314,6 @@ end
 
 </details>
 
-### get_worker_pool_error
-
-* *Mode*: read
-* *Arguments*:
-  * `error_id_in text`
-  * `worker_pool_id_in text`
-* *Returns*: `table`
-  * `error_id text`
-  * `worker_pool_id text`
-  * `reported timestamptz`
-  * `kind text`
-  * `title text`
-  * `description text`
-  * `extra jsonb`
-* *Last defined on version*: 29
-
-Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    worker_pool_errors.error_id,
-    worker_pool_errors.worker_pool_id,
-    worker_pool_errors.reported,
-    worker_pool_errors.kind,
-    worker_pool_errors.title,
-    worker_pool_errors.description,
-    worker_pool_errors.extra
-  from worker_pool_errors
-  where
-    worker_pool_errors.worker_pool_id = worker_pool_id_in and
-    worker_pool_errors.error_id = error_id_in;
-end
-```
-
-</details>
-
 ### get_worker_pool_error_codes
 
 * *Mode*: read
@@ -7377,6 +7337,48 @@ begin
   WHERE
     (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
   GROUP BY worker_pool_errors.extra->>'code';
+end
+```
+
+</details>
+
+### get_worker_pool_error_launch_config
+
+* *Mode*: read
+* *Arguments*:
+  * `error_id_in text`
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `error_id text`
+  * `worker_pool_id text`
+  * `reported timestamptz`
+  * `kind text`
+  * `title text`
+  * `description text`
+  * `extra jsonb`
+  * `launch_config_id text`
+* *Last defined on version*: 105
+
+Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pool_errors.error_id,
+    worker_pool_errors.worker_pool_id,
+    worker_pool_errors.reported,
+    worker_pool_errors.kind,
+    worker_pool_errors.title,
+    worker_pool_errors.description,
+    worker_pool_errors.extra,
+    worker_pool_errors.launch_config_id
+  from worker_pool_errors
+  where
+    worker_pool_errors.worker_pool_id = worker_pool_id_in and
+    worker_pool_errors.error_id = error_id_in;
 end
 ```
 
@@ -8203,6 +8205,7 @@ end
 * `get_queue_workers_with_wm_join_state(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer, worker_state_in text)` (compatibility guaranteed until v79.0.0)
 * `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v79.0.0)
 * `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
+* `get_worker_pool_error(error_id_in text, worker_pool_id_in text)` (compatibility guaranteed until v79.0.0)
 * `get_worker_pool_errors_for_worker_pool(error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
 * `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v79.0.0)
 * `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v79.0.0)
