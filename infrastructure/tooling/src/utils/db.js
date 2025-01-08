@@ -301,7 +301,8 @@ export const generateDbTypes = async (schema) => {
             returnType = `Array<{${columns.join(', ')}}>`;
           }
         } else {
-          returnType = pgToTs(method.returns);
+          // single return value is a column with the function name
+          returnType = `[{ ${method.name}: ${pgToTs(method.returns)} }]`;
         }
       }
 

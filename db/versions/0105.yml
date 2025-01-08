@@ -615,6 +615,32 @@ methods:
         return new_etag;
       end
 
+  get_worker_pool_error:
+    deprecated: true
+  get_worker_pool_error_launch_config:
+    description: |-
+      Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+    mode: read
+    serviceName: worker_manager
+    args: error_id_in text, worker_pool_id_in text
+    returns: table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb, launch_config_id text)
+    body: |-
+      begin
+        return query
+        select
+          worker_pool_errors.error_id,
+          worker_pool_errors.worker_pool_id,
+          worker_pool_errors.reported,
+          worker_pool_errors.kind,
+          worker_pool_errors.title,
+          worker_pool_errors.description,
+          worker_pool_errors.extra,
+          worker_pool_errors.launch_config_id
+        from worker_pool_errors
+        where
+          worker_pool_errors.worker_pool_id = worker_pool_id_in and
+          worker_pool_errors.error_id = error_id_in;
+      end
   get_worker_pool_error_launch_configs:
     description: |
       Returns errors grouped by launch config

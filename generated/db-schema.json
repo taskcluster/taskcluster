@@ -7433,6 +7433,18 @@
           "returns": "table(worker_pool_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)",
           "serviceName": "worker_manager"
         },
+        "get_worker_pool_error": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_launch_config": {
+          "args": "error_id_in text, worker_pool_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pool_errors.error_id,\n    worker_pool_errors.worker_pool_id,\n    worker_pool_errors.reported,\n    worker_pool_errors.kind,\n    worker_pool_errors.title,\n    worker_pool_errors.description,\n    worker_pool_errors.extra,\n    worker_pool_errors.launch_config_id\n  from worker_pool_errors\n  where\n    worker_pool_errors.worker_pool_id = worker_pool_id_in and\n    worker_pool_errors.error_id = error_id_in;\nend",
+          "deprecated": false,
+          "description": "Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.",
+          "mode": "read",
+          "returns": "table(error_id text, worker_pool_id text, reported timestamptz, kind text, title text, description text, extra jsonb, launch_config_id text)",
+          "serviceName": "worker_manager"
+        },
         "get_worker_pool_error_launch_configs": {
           "args": "worker_pool_id_in text",
           "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;\nend",
