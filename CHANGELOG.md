@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v77.1.0
+
+### USERS
+
+▶ [minor] [#7404](https://github.com/taskcluster/taskcluster/issues/7404)
+Re-apply the patch to fix docker cache issues and fix the issues when using
+podman as the container engine.
+
+### DEVELOPERS
+
+▶ [minor]
+Adding type checks with jsdoc and typescript.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump taskcluster from 75.0.0 to 77.0.0 in /taskcluster (1cb203ecc)
+* build(deps-dev): bump the client-web-node-deps group (b73bd5464)
+* build(deps): bump jinja2 from 3.1.4 to 3.1.5 in /taskcluster (d2003e3f8)
+* build(deps): bump the go-deps group with 2 updates (3d8bd1bbb)
+* build(deps): bump debug in /clients/client in the client-node-deps group (a6146f51c)
+
+</details>
+
 ## v77.0.0
 
 ### WORKER-DEPLOYERS
