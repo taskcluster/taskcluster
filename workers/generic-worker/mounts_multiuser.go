@@ -13,6 +13,10 @@ func makeFileReadWritableForTaskUser(taskMount *TaskMount, file string) error {
 	return makeReadWritableForTaskUser(taskMount, file, "file", false)
 }
 
+func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
+	return makeReadWritableForTaskUser(taskMount, dir, "directory", true)
+}
+
 func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
 	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
