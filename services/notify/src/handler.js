@@ -215,7 +215,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
               : content;
             subject = extra.subject ? this.renderMessage(extra.subject, { task, status, taskId, rootUrl: this.rootUrl })
               : subject;
-            link = extra.link ? jsone(extra.link, { task, status }) : link;
+            link = extra.link ? jsone(extra.link, { task, status, rootUrl: this.rootUrl }) : link;
             template = extra.template ? jsone(extra.template, { task, status }) : template;
           }
           return await this.notifier.email({
