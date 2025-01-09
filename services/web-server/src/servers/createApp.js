@@ -115,11 +115,18 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     return done(null, obj);
   });
 
-  app.post('/login/logout', cors(corsOptions), (req, res) => {
+  app.post('/login/logout', cors(corsOptions), async (req, res) => {
     // Remove the req.user property and clear the login session
-    req.logout();
+    await new Promise((resolve, reject) => {
+      try {
+        req.logout(resolve);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
     res
-      .status('200')
+      .status(200)
       .send();
   });
 
@@ -168,6 +175,7 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.use((err, req, res, next) => {
     // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
     const error = { code: err.code, name: err.name };
+    monitor.reportError(err);
     let statusCode = 500;
 
     if (err.name === 'InputError') {

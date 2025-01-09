@@ -80,6 +80,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(err.response.body.code, 'unauthorized_client');
       assert(!res);
+
+      await helper.expectMonitorError('unauthorized_client');
     });
     test('unauthorized_client when client_id is not registered', async function() {
       const agent = await helper.signedInAgent();
@@ -99,6 +101,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(err.response.body.code, 'unauthorized_client');
       assert(!res);
+
+      await helper.expectMonitorError('unauthorized_client');
     });
     test('invalid_request when missing required parameters', async function() {
       const agent = await helper.signedInAgent();
@@ -130,6 +134,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         assert.equal(err.response.body.code, 'invalid_request');
         assert(!res);
+
+        await helper.expectMonitorError('invalid_request');
       }
     });
     test('invalid_scope', async function() {
@@ -250,6 +256,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .ok(res => res.status === 302));
 
       assert.equal(error.response.body.name, 'ForbiddenError');
+
+      await helper.expectMonitorError('ForbiddenError');
     });
     test('maxExpires is respected', async function() {
       const agent = await helper.signedInAgent();
@@ -407,6 +415,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(error.response.body.name, 'InputError');
       assert.equal(error.response.body.message, 'Could not generate credentials for this access token');
+
+      await helper.expectMonitorError('InputError');
     });
   });
   suite('integration', function() {
