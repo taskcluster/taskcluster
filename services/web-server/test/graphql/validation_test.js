@@ -25,6 +25,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal('PayloadTooLargeError', err.networkError.result.name);
         assert.ok(err.networkError.statusCode === 413);
       }
+
+      helper.expectMonitorError('PayloadTooLargeError');
     });
     test('max queries in request', async function() {
       const client = helper.getHttpClient({ suppressErrors: true });

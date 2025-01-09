@@ -46,6 +46,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     'https://deploy-preview-897--taskcluster-web.netlify.com/',
     'https://deploy-preview-897--taskcluster-web.netlify.com/');
 
+  suite('auth endpoints', function () {
+    helper.withServer(mock, skipping);
+
+    test('login/logout', async function () {
+      const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
+      assert(logout.body);
+    });
+  });
+
   suite('service endpoints', function() {
     helper.withServer(mock, skipping);
 

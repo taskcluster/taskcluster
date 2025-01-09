@@ -1,3 +1,4 @@
+import assert from 'assert';
 import load from '../src/main.js';
 import taskcluster from 'taskcluster-client';
 import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from 'taskcluster-lib-testing';
@@ -25,6 +26,15 @@ suiteSetup(async function() {
 });
 
 withMonitor(helper);
+
+/** @param {string} errorCode */
+helper.expectMonitorError = async (errorCode) => {
+  const monitor = await helper.load('monitor');
+  assert.equal(monitor.manager.messages.length, 1);
+  const Fields = monitor.manager.messages[0].Fields;
+  assert.equal(Fields?.code || Fields?.name, errorCode);
+  monitor.manager.reset();
+};
 
 helper.rootUrl = libUrls.testRootUrl();
 
