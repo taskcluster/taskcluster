@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v77.3.0
+
+### USERS
+
+▶ [minor]
+The notify service includes `rootUrl` in the json-e context when rendering the `link` included in emails.
+
 ## v77.2.0
 
 ### ADMINS
