@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v77.2.0
+
+### ADMINS
+
+▶ [minor]
+Allows the ability to attach a Cloud Armor policy to a BackendConfig and to use
+that BackendConfig in the ingress configuration. (OPST-1755)
+
+### USERS
+
+▶ [patch]
+Web-Server: fixes missing callback function in passport req.logout.
+
 ## v77.1.0
 
 ### USERS
