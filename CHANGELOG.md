@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v77.3.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker: fixes permissions issues with ReadOnlyDirectory mounts.
+
 ## v77.3.0
 
 ### USERS
