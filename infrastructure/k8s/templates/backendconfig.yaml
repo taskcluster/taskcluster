@@ -1,0 +1,14 @@
+{{- if .Values.cloudArmorPolicy -}}
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: taskcluster-backendconfig
+  labels:
+    app.kubernetes.io/name: taskcluster-backendconfig
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-backendconfig-backendconfig
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  securityPolicy:
+    name: '{{ .Values.cloudArmorPolicy }}'
+{{- end }}
