@@ -633,7 +633,11 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
 	dir := filepath.Join(taskContext.TaskDir, r.Directory)
-	return extract(c, r.Format, dir, taskMount)
+	err = extract(c, r.Format, dir, taskMount)
+	if err != nil {
+		return err
+	}
+	return makeDirReadWritableForTaskUser(taskMount, dir)
 }
 
 // Nothing to do - original archive file wasn't moved
