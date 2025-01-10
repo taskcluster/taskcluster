@@ -102,6 +102,12 @@ access_tokens:
   identity_provider_id: text not null
   expires: timestamp with time zone not null
   client_details: jsonb not null
+audit_history:
+  entity_id: text not null
+  entity_type: text not null
+  client_id: text not null
+  action_type: text not null
+  created: timestamp with time zone not null
 authorization_codes:
   code: text not null
   client_id: text not null

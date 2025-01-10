@@ -8,6 +8,7 @@
    * [`get_client`](#get_client)
    * [`get_clients`](#get_clients)
    * [`get_roles`](#get_roles)
+   * [`insert_auth_audit_history`](#insert_auth_audit_history)
    * [`modify_roles`](#modify_roles)
    * [`update_client`](#update_client)
    * [`update_client_last_used`](#update_client_last_used)
@@ -38,6 +39,7 @@
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
    * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
+   * [`insert_hooks_audit_history`](#insert_hooks_audit_history)
    * [`update_hook`](#update_hook)
    * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
  * [index functions](#index)
@@ -146,6 +148,7 @@
    * [`expire_secrets`](#expire_secrets)
    * [`get_secret`](#get_secret)
    * [`get_secrets`](#get_secrets)
+   * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
    * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`add_github_access_token`](#add_github_access_token)
@@ -202,6 +205,7 @@
 * [`get_client`](#get_client)
 * [`get_clients`](#get_clients)
 * [`get_roles`](#get_roles)
+* [`insert_auth_audit_history`](#insert_auth_audit_history)
 * [`modify_roles`](#modify_roles)
 * [`update_client`](#update_client)
 * [`update_client_last_used`](#update_client_last_used)
@@ -454,6 +458,42 @@ begin
     roles.etag
   from roles
   order by role_id;
+end
+```
+
+</details>
+
+### insert_auth_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 105
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    entity_id_in,
+    entity_type_in,
+    client_id_in,
+    action_type_in,
+    now()
+  );
 end
 ```
 
@@ -1066,6 +1106,7 @@ end
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
 * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
+* [`insert_hooks_audit_history`](#insert_hooks_audit_history)
 * [`update_hook`](#update_hook)
 * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
 
@@ -1510,6 +1551,42 @@ begin
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
+```
+
+</details>
+
+### insert_hooks_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 105
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    entity_id_in,
+    entity_type_in,
+    client_id_in,
+    action_type_in,
+    now()
+  );
+end;
 ```
 
 </details>
@@ -5832,6 +5909,7 @@ end
 * [`expire_secrets`](#expire_secrets)
 * [`get_secret`](#get_secret)
 * [`get_secrets`](#get_secrets)
+* [`insert_secrets_audit_history`](#insert_secrets_audit_history)
 * [`upsert_secret`](#upsert_secret)
 
 ### delete_secret
@@ -5932,6 +6010,42 @@ begin
   order by secrets.name
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### insert_secrets_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 105
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    entity_id_in,
+    entity_type_in,
+    client_id_in,
+    action_type_in,
+    now()
+  );
 end
 ```
 

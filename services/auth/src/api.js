@@ -13,6 +13,26 @@ import { azureBuilder } from './azure.js';
 import { sentryBuilder } from './sentry.js';
 import { websocktunnelBuilder } from './websocktunnel.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  CLIENT: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+    ENABLED: 'client enabled',
+    DISABLED: 'client disabled',
+    ACCESS_TOKEN_RESET: 'access token reset'
+  },
+  ROLE: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted'
+  },
+  SECRET: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted'
+  }
+});
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
  * This involves adding expandedRoles using the resolver.
@@ -288,6 +308,12 @@ builder.declare({
     return res.reportError('RequestConflict', 'Client already exists', {});
   }
 
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.CREATED
+  );
   // Send pulse message
   await Promise.all([
     this.publisher.clientCreated({ clientId }),
@@ -349,6 +375,12 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.ACCESS_TOKEN_RESET
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -428,6 +460,13 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.UPDATED
+  );
+
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -484,6 +523,12 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.ENABLED
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -539,6 +584,12 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.DISABLED
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -577,6 +628,13 @@ builder.declare({
   await req.authorize({ clientId });
 
   await this.db.fns.delete_client(clientId);
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.DELETED
+  );
 
   await Promise.all([
     this.publisher.clientDeleted({ clientId }),
@@ -778,6 +836,14 @@ builder.declare({
         roles.push(role);
       }
     });
+
+    await this.db.fns.insert_auth_audit_history(
+      roleId,
+      'role',
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.ROLE.CREATED
+    );
+
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
@@ -864,6 +930,13 @@ builder.declare({
       role.description = input.description;
       role.last_modified = new Date();
     });
+
+    await this.db.fns.insert_auth_audit_history(
+      roleId,
+      'role',
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.ROLE.UPDATED
+    );
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
@@ -911,6 +984,13 @@ builder.declare({
       roles.splice(i, 1);
     }
   });
+
+  await this.db.fns.insert_auth_audit_history(
+    roleId,
+    'role',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.ROLE.DELETED
+  );
 
   await Promise.all([
     this.publisher.roleDeleted({ roleId }),

@@ -8,6 +8,7 @@ auth:
   tables:
     clients: write
     roles: write
+    audit_history: write
 github:
   tables:
     github_builds: write
