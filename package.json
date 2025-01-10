@@ -5,9 +5,9 @@
   "engine-strict": true,
   "type": "module",
   "engines": {
-    "node": "22.12.0"
+    "node": "22.13.0"
   },
-  "packageManager": "yarn@4.5.3",
+  "packageManager": "yarn@4.6.0",
   "workspaces": [
     "libraries/*",
     "services/*",
