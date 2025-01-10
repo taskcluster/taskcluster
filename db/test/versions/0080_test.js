@@ -32,7 +32,7 @@ suite(testing.suiteName(), function () {
     }
     // create same worker with multiple queue ids
     const workerPoolIds = ['prov/w/1', 'some/other/pool', 'extra/pool'];
-    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.fns.create_worker(
+    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.deprecatedFns.create_worker(
       pool,
       `wg-${idx}`,
       'worker-1',

@@ -216,6 +216,7 @@ impl WorkerManager {
     /// Mark a worker pool for deletion.  This is the same as updating the pool to
     /// set its providerId to `"null-provider"`, but does not require scope
     /// `worker-manager:provider:null-provider`.
+    /// This will also mark all launch configurations as archived.
     pub async fn deleteWorkerPool(&self, workerPoolId: &str) -> Result<Value, Error> {
         let method = "DELETE";
         let (path, query) = Self::deleteWorkerPool_details(workerPoolId);
@@ -368,28 +369,28 @@ impl WorkerManager {
     /// List Worker Pool Errors
     ///
     /// Get the list of worker pool errors.
-    pub async fn listWorkerPoolErrors(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+    pub async fn listWorkerPoolErrors(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, errorId: Option<&str>, launchConfigId: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
+        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit, errorId, launchConfigId);
         let body = None;
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkerPoolErrors endpoint
-    pub fn listWorkerPoolErrors_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
+    pub fn listWorkerPoolErrors_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, errorId: Option<&str>, launchConfigId: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit, errorId, launchConfigId);
         self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkerPoolErrors endpoint
-    pub fn listWorkerPoolErrors_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit);
+    pub fn listWorkerPoolErrors_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, errorId: Option<&str>, launchConfigId: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolErrors_details(workerPoolId, continuationToken, limit, errorId, launchConfigId);
         self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkerPoolErrors
-    fn listWorkerPoolErrors_details<'a>(workerPoolId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn listWorkerPoolErrors_details<'a>(workerPoolId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, errorId: Option<&'a str>, launchConfigId: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("worker-pool-errors/{}", urlencode(workerPoolId));
         let mut query = None;
         if let Some(q) = continuationToken {
@@ -397,6 +398,12 @@ impl WorkerManager {
         }
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = errorId {
+            query.get_or_insert_with(Vec::new).push(("errorId", q));
+        }
+        if let Some(q) = launchConfigId {
+            query.get_or_insert_with(Vec::new).push(("launchConfigId", q));
         }
 
         (path, query)

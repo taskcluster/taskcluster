@@ -309,15 +309,11 @@ export class AzureProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = [];
-    while (toSpawn > 0) {
-      const cfg = _.sample(workerPool.config.launchConfigs);
-      cfgs.push(cfg);
-      toSpawn -= cfg.capacityPerInstance;
-    }
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn });
 
     // Create "empty" workers to provision in provisionResources loop
-    await Promise.all(cfgs.map(async cfg => {
+    await Promise.all(cfgs.map(async lc => {
+      const cfg = lc.configuration;
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // 38 chars is workerId limit, and we have a 3-character prefix (`vm-`), so this is 35 characters.
       const nameSuffix = `${nicerId()}${nicerId()}`.slice(0, 35);
@@ -409,6 +405,7 @@ export class AzureProvider extends Provider {
           'worker-pool-id': workerPoolId,
           'root-url': this.rootUrl,
           'owner': workerPool.owner,
+          'launch-config-id': lc.launchConfigId,
         },
         vm: {
           name: virtualMachineName,
@@ -432,7 +429,8 @@ export class AzureProvider extends Provider {
         subnet: {
           id: cfg.subnetId,
         },
-        ignoreFailedProvisioningStates: cfg.ignoreFailedProvisioningStates,
+        ignoreFailedProvisioningStates: cfg?.workerManager?.ignoreFailedProvisioningStates
+          ?? cfg.ignoreFailedProvisioningStates,
       };
 
       const worker = Worker.fromApi({
@@ -440,13 +438,14 @@ export class AzureProvider extends Provider {
         providerId: this.providerId,
         workerGroup,
         workerId: virtualMachineName,
-        capacity: cfg.capacityPerInstance,
+        capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
         providerData: {
           ...providerData,
           terminateAfter,
           reregistrationTimeout,
           queueInactivityTimeout,
         },
+        launchConfigId: lc.launchConfigId,
       });
       await worker.create(this.db);
       await this.onWorkerRequested({ worker, terminateAfter });
@@ -1026,6 +1025,7 @@ export class AzureProvider extends Provider {
             workerGroup: worker.workerGroup,
             config: worker.providerData,
           },
+          launchConfigId: worker.launchConfigId,
         });
       }
       await this.removeWorker({ worker, reason: titleString + `: ${err.message}` });
