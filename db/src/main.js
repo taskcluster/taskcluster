@@ -1,4 +1,3 @@
-import util from 'util';
 import chalk from 'chalk';
 import { upgrade, downgrade } from './upgrade.js';
 import { renumberVersions, newVersion } from './versions.js';
@@ -16,7 +15,7 @@ const main = async () => {
 
   /** @param {string} message */
   const showProgress = message => {
-    util.log(chalk.green(message));
+    console.log(chalk.green(message));
   };
 
   const toVersion = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
