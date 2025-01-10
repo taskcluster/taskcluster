@@ -1,4 +1,3 @@
-import util from 'util';
 import chalk from 'chalk';
 import path from 'path';
 import _ from 'lodash';
@@ -79,7 +78,7 @@ export const dbUpgrade = async (options) => {
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
-    util.log(chalk.green(message));
+    console.log(chalk.green(message));
   };
 
   await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
@@ -97,7 +96,7 @@ export const dbDowngrade = async (options) => {
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
-    util.log(chalk.green(message));
+    console.log(chalk.green(message));
   };
 
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
