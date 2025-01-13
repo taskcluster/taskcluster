@@ -156,7 +156,7 @@ func changeOwnershipInDir(dir string, currentOwnerUID string, newOwnerUsername s
 	case "darwin":
 		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
 	case "linux":
-		return host.Run("/usr/bin/find", dir, "-uid", currentOwnerUID, "-exec", "/bin/chown", newOwnerUsername+":"+newOwnerUsername, "{}", ";")
+		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", currentOwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
 	case "freebsd":
 		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
 	}
