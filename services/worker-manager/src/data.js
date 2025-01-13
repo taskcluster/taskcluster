@@ -294,7 +294,7 @@ export class WorkerPoolError {
 
   // Get a worker pool error from the DB, or undefined if it does not exist.
   static async get(db, errorId, workerPoolId) {
-    return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error(errorId, workerPoolId));
+    return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error_launch_config(errorId, workerPoolId));
   }
 
   // Expire worker pool errors reported before the specified time
@@ -322,7 +322,7 @@ export class WorkerPoolError {
         throw err;
       }
       const existing = WorkerPoolError.fromDbRows(
-        await db.fns.get_worker_pool_error(this.errorId, this.workerPoolId));
+        await db.fns.get_worker_pool_error_launch_config(this.errorId, this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool error does not match, so this is a "real" conflict
