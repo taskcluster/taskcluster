@@ -148,6 +148,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await helper.workerManager.createWorkerPool(workerPoolId2, input2));
   });
 
+  test('schema validation - queueInactivityTimeout', async function () {
+    const input = {
+      providerId: 'aws',
+      description: 'bar',
+      owner: 'example@example.com',
+      emailOnError: false,
+      config: {
+        launchConfigs: [],
+        minCapacity: 1,
+        maxCapacity: 1,
+        scalingRatio: 1,
+        lifecycle: {
+          registrationTimeout: 6000,
+          queueInactivityTimeout: 2,
+        },
+      },
+    };
+    const apiClient = helper.workerManager.use({ retries: 0 });
+    await assert.rejects(
+      () => apiClient.createWorkerPool(workerPoolId, input),
+      err => (
+        err.statusCode === 400 &&
+        err.message.includes('queueInactivityTimeout must be >= 1200')
+      ));
+  });
+
   test('create worker pool fails when pulse publish fails', async function () {
     const input = {
       providerId: 'testing1',
