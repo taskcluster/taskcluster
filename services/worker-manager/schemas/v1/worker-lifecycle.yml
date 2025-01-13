@@ -33,7 +33,7 @@ properties:
   queueInactivityTimeout:
     title: Queue Inactivity Timeout
     type: integer
-    minimum: 60 # 1 minute
+    minimum: 1200 # 20 minutes DEFAULT_CLAIM_TIMEOUT
     default: 7200 # 2 hours
     description: |
       In order to prevent workers from being stuck without doing any work,
@@ -41,8 +41,9 @@ properties:
       working on a task. If worker process dies, or it stops calling `claimWork`
       or `reclaimTask` it should be considered dead and terminated.
 
-      Minimum allowed value is 1 minute, to prevent workers from being terminated
-      while they are starting up or rebooting between the tasks.
+      Minimum allowed value is 20 minutes (default claim timeout),
+      to prevent workers from being terminated
+      while they are executing task, starting up or rebooting between the tasks.
 
       This timeout has no affect quarantined workers,
       as they are still calling `claimWork`.
