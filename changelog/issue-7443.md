@@ -1,5 +1,5 @@
 audience: worker-deployers
-level: minor
+level: major
 reference: issue 7443
 ---
 
