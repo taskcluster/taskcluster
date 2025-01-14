@@ -8,9 +8,18 @@ import { ApiError } from './providers/provider.js';
  * Run all provisioning logic
  */
 export class Provisioner {
-  constructor({ providers, iterateConf, Worker, WorkerPool,
-    monitor, notify, db, reference,
-    rootUrl, ownName }) {
+  /**
+   * @param {object} options
+   * @param {import('./providers/index.js').Providers} options.providers
+   * @param {object} options.iterateConf
+   * @param {Worker} options.Worker
+   * @param {WorkerPool} options.WorkerPool
+   * @param {object&{alert: Function}} options.monitor
+   * @param {object} options.notify
+   * @param {import('taskcluster-lib-postgres').Database} options.db
+   * @param {string} options.ownName
+   */
+  constructor({ providers, iterateConf, Worker, WorkerPool, monitor, notify, db, ownName }) {
     this.providers = providers;
     this.WorkerPool = WorkerPool;
     this.Worker = Worker;
@@ -53,11 +62,6 @@ export class Provisioner {
    * Terminate the Provisioner
    */
   async terminate() {
-    if (this.pq) {
-      // TODO: is it defined anywhere at all?
-      await this.pq.stop();
-      this.pq = null;
-    }
     await this.iterate.stop();
     await this.providers.forAll(p => p.terminate());
   }

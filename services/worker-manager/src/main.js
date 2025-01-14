@@ -259,16 +259,14 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'providers', 'notify', 'reference', 'db'],
-    setup: async ({ cfg, monitor, providers, notify, reference, db }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'notify', 'db'],
+    setup: async ({ cfg, monitor, providers, notify, db }, ownName) => {
       return new Provisioner({
         ownName,
         monitor: monitor.childMonitor('provisioner'),
         providers,
         notify,
         db,
-        reference,
-        rootUrl: cfg.taskcluster.rootUrl,
         iterateConf: cfg.app.provisionerIterateConfig || {},
       });
     },
