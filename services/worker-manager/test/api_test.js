@@ -387,7 +387,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     );
   });
 
-  test.only('launchConfigIds should be unique across worker pool - update worker pool', async function () {
+  test('launchConfigIds should be unique across worker pool - update worker pool', async function () {
     const input = {
       providerId: 'aws',
       description: 'bar',
