@@ -70,9 +70,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     return messages;
   };
 
-  const genAwsLaunchConfig = (workerManager = {}) => ({
+  const genAwsLaunchConfig = (workerManager = {}, region = 'us-west-2') => ({
     workerManager,
-    region: 'us-west-2',
+    region,
     launchConfig: {
       ImageId: 'ami-12345678',
     },
@@ -351,6 +351,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
         .map(({ data }) => data.launchConfigId),
       ['lc1', 'lc3']);
+  });
+
+  test('launchConfigIds should be unique across worker pool', async function () {
+    const input = {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }, 'us-west-1'),
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }, 'us-west-2'),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+
+    await assert.rejects(
+      async () => {
+        await helper.workerManager.createWorkerPool('non/unique', input);
+      },
+      (err) => {
+        assert.equal(err.statusCode, 409);
+        assert.equal(err.body.code, 'RequestConflict');
+        assert.match(err.body.message, /Launch config with ID `lc1` already exists/);
+        return true;
+      },
+    );
+    // no worker pool record should be created since launch configs are not unique
+    await assert.rejects(
+      async () => helper.workerManager.workerPool('non/unique'),
+      /ResourceNotFound/,
+    );
   });
 
   test('update worker pool fails when pulse publish fails', async function () {

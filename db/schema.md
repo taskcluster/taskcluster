@@ -45,6 +45,7 @@
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
 CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);
+CREATE UNIQUE INDEX worker_pool_launch_configs_uniq_idx ON worker_pool_launch_configs USING btree (worker_pool_id, launch_config_id);
 ```
 
 ## access_tokens
@@ -611,7 +612,6 @@ CREATE INDEX tasks_task_group_id_unresolved_idx ON tasks USING btree (task_group
 CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX worker_pool_errors_reported_idx ON worker_pool_errors USING btree (reported);
 CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs USING btree (worker_pool_id) WHERE (NOT is_archived);
-CREATE INDEX worker_pool_launch_configs_launch_config_id_idx ON worker_pool_launch_configs USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX workers_created_idx ON workers USING btree (created);
 CREATE INDEX workers_lc_idx ON workers USING btree (worker_pool_id, launch_config_id, state);
 CREATE INDEX workers_state_idx ON workers USING btree (state);

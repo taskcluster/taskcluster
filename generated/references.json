@@ -90,7 +90,7 @@
           "type": "string"
         },
         "launchConfigId": {
-          "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -661,7 +661,7 @@
           "type": "string"
         },
         "launchConfigId": {
-          "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -1427,7 +1427,7 @@
           "$ref": "worker-pool-error.json#/properties/kind"
         },
         "launchConfigId": {
-          "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -1519,7 +1519,7 @@
       "description": "The message that is emitted when worker pool launch configs are created/changed/archived.",
       "properties": {
         "launchConfigId": {
-          "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
           "maxLength": 38,
           "minLength": 1,
           "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -1631,7 +1631,7 @@
                 "title": "Most Recent Task"
               },
               "launchConfigId": {
-                "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
                 "maxLength": 38,
                 "minLength": 1,
                 "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -1909,7 +1909,7 @@
                     "type": "integer"
                   },
                   "launchConfigId": {
-                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
                     "maxLength": 38,
                     "minLength": 1,
                     "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -2175,7 +2175,7 @@
                     "type": "integer"
                   },
                   "launchConfigId": {
-                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
                     "maxLength": 38,
                     "minLength": 1,
                     "pattern": "^([a-zA-Z0-9-_]*)$",
@@ -2341,7 +2341,7 @@
                     "type": "integer"
                   },
                   "launchConfigId": {
-                    "description": "The ID of the launch configuration. This must be unique within the worker pool.\nThe ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.\n",
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
                     "maxLength": 38,
                     "minLength": 1,
                     "pattern": "^([a-zA-Z0-9-_]*)$",

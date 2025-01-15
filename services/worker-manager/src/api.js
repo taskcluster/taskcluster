@@ -173,7 +173,10 @@ builder.declare({
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
-    return res.reportError('RequestConflict', 'Worker pool already exists', {});
+    const message = err.message.includes('Launch config') ?
+      err.message :
+      'Worker pool already exists'
+    return res.reportError('RequestConflict', message, {});
   }
 
   // messages would be published with extra info

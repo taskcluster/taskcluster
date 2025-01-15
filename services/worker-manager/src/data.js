@@ -4,6 +4,8 @@ import taskcluster from 'taskcluster-client';
 import { MAX_MODIFY_ATTEMPTS } from './util.js';
 import { paginateResults } from 'taskcluster-lib-api';
 
+/** @typedef {import('taskcluster-lib-postgres').Database} Database */
+
 /**
  * Create error
  * @param {string} message
@@ -98,7 +100,12 @@ export class WorkerPool {
     });
   }
 
-  // Get a worker pool from the DB, or undefined if it does not exist.
+  /**
+   * Get a worker pool from the DB, or undefined if it does not exist.
+   * @param {Database} db
+   * @param {string} workerPoolId
+   * @returns {Promise<WorkerPool|undefined>}
+   */
   static async get(db, workerPoolId) {
     const [rows, stats] = await Promise.all([
       db.fns.get_worker_pool_with_launch_configs(workerPoolId),
@@ -113,16 +120,24 @@ export class WorkerPool {
     }
   }
 
-  // Expire worker pools with null-provider that no longer have any workers,
-  // returning the list of worker pools expired.
-  static async expire({ db, monitor }) {
+  /**
+   * Expire worker pools with null-provider that no longer have any workers,
+   * returning the list of worker pools expired.
+   *
+   * @param {{ db: Database }} options
+   */
+  static async expire({ db }) {
     const rows = await db.fns.expire_worker_pools();
     return rows.map(row => row.worker_pool_id);
   }
 
-  // Call db.create_worker_pool with the content of this instance.  This
-  // implements the usual idempotency checks and returns an error with code
-  // UNIQUE_VIOLATION when those checks fail.
+  /**
+   * Call db.create_worker_pool with the content of this instance. This
+   * implements the usual idempotency checks and returns an error with code
+   * UNIQUE_VIOLATION when those checks fail.
+   *
+   * @param {Database} db
+   */
   async create(db) {
     try {
       return await db.fns.create_worker_pool_with_launch_configs(
@@ -177,7 +192,11 @@ export class WorkerPool {
     };
   }
 
-  // Compare "important" fields to another worker pool (used to check idempotency)
+  /**
+   * Compare "important" fields to another worker pool (used to check idempotency)
+   *
+   * @param {WorkerPool} other
+   */
   equals(other) {
     const fields = [
       'workerPoolId',

@@ -414,8 +414,12 @@ type (
 		// A run of a task.
 		LatestTask TaskRun `json:"latestTask,omitempty"`
 
-		// The ID of the launch configuration. This must be unique within the worker pool.
-		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -625,8 +629,12 @@ type (
 		// Date and time when this worker last changed state
 		LastModified tcclient.Time `json:"lastModified"`
 
-		// The ID of the launch configuration. This must be unique within the worker pool.
-		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -974,8 +982,12 @@ type (
 		// is first seen.
 		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
 
-		// The ID of the launch configuration. This must be unique within the worker pool.
-		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1

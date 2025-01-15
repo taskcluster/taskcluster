@@ -10,8 +10,12 @@ type (
 	// The message that is emitted when worker pool launch configs are created/changed/archived.
 	LaunchConfigPulseMessage struct {
 
-		// The ID of the launch configuration. This must be unique within the worker pool.
-		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -167,8 +171,12 @@ type (
 		// Max length: 128
 		Kind string `json:"kind"`
 
-		// The ID of the launch configuration. This must be unique within the worker pool.
-		// The ID must be between 1 and 38 characters long and contain only alphanumeric characters, dashes, and underscores.
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1

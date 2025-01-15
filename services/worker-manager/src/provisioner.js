@@ -114,7 +114,12 @@ export class Provisioner {
         }
       };
 
-      // Check the state of workers (state is updated by worker-scanner)
+      /**
+       * Check the state of workers (state is updated by worker-scanner)
+       *
+       * @param {number} size
+       * @param {number|Map<string, any>} offset
+       */
       const fetch =
         async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
           null, null, null, null, null, size, offset);

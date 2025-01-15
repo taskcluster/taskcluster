@@ -6584,7 +6584,7 @@ end
 * *Last defined on version*: 105
 
 Create a new worker pool.
-Raises UNIQUE_VIOLATION if the pool already exists.
+Raises UNIQUE_VIOLATION if the pool already exists or launch configs are not unique.
 Launch configurations are stored in a separate table.
 
 <details><summary>Function Body</summary>
@@ -8119,6 +8119,8 @@ All launch configs that are not in the updated list will be archived.
 
 This will return list of launch config ids that were updated, created, archived.
 
+Raises UNIQUE_VIOLATION if the pool already exists with given launchConfigId and content differs.
+
 <details><summary>Function Body</summary>
 
 ```
@@ -8131,6 +8133,7 @@ declare
   wp_launch_config_id text;
   config jsonb;
   tmp text[];
+  existing_config jsonb;
 begin
   -- update launch configurations
   created_lcs := '{}';
@@ -8141,22 +8144,18 @@ begin
     wp_launch_config_id := get_or_create_launch_config_id(worker_pool_id_in, config);
     processed_lcs := array_append(processed_lcs, wp_launch_config_id);
 
-    -- we only insert new configs if they don't already exist and mark everything else as archived
-    IF NOT EXISTS
-      (SELECT 1
-      FROM worker_pool_launch_configs
-      WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id)
-    THEN
-      created_lcs := array_append(created_lcs, wp_launch_config_id);
-      PERFORM create_worker_pool_launch_config(
-        wp_launch_config_id,
-        worker_pool_id_in,
-        false,
-        config,
-        now(),
-        now()
-      );
-    ELSE
+    -- Check if config exists and get its content
+    SELECT configuration INTO existing_config
+    FROM worker_pool_launch_configs
+    WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id;
+
+    IF existing_config IS NOT NULL THEN
+      -- Config exists, check if content matches
+      IF existing_config != config THEN
+        RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',
+          wp_launch_config_id
+          USING ERRCODE = 'unique_violation';
+      END IF;
       -- make sure it is not archived
       UPDATE worker_pool_launch_configs
       SET is_archived = false,
@@ -8166,6 +8165,16 @@ begin
         AND launch_config_id = wp_launch_config_id;
 
       updated_lcs := array_append(updated_lcs, wp_launch_config_id);
+    ELSE
+      created_lcs := array_append(created_lcs, wp_launch_config_id);
+      PERFORM create_worker_pool_launch_config(
+        wp_launch_config_id,
+        worker_pool_id_in,
+        false,
+        config,
+        now(),
+        now()
+      );
     END IF;
   END LOOP;
 
