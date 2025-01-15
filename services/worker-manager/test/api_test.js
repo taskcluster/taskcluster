@@ -353,7 +353,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       ['lc1', 'lc3']);
   });
 
-  test('launchConfigIds should be unique across worker pool', async function () {
+  test('launchConfigIds should be unique across worker pool - create worker pool', async function () {
     const input = {
       providerId: 'aws',
       description: 'bar',
@@ -386,6 +386,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /ResourceNotFound/,
     );
   });
+
+  test.only('launchConfigIds should be unique across worker pool - update worker pool', async function () {
+    const input = {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ launchConfigId: 'lc1' }, 'us-west-1'),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+
+    await helper.workerManager.createWorkerPool('non/unique', input);
+
+    // changing config but not the id should result in a conflict
+    input.config.launchConfigs[0].region = 'us-west-2';
+
+    await assert.rejects(
+      async () => {
+        await helper.workerManager.updateWorkerPool('non/unique', input);
+      },
+      (err) => {
+        assert.equal(err.statusCode, 409);
+        assert.equal(err.body.code, 'RequestConflict');
+        assert.match(err.body.message, /Launch config with ID `lc1` already exists/);
+        return true;
+      },
+    );
+
+    // existing worker pool should not be modified
+    const wp = await helper.workerManager.workerPool('non/unique');
+    assert.equal(wp.config.launchConfigs.length, 1);
+    assert.equal(wp.config.launchConfigs[0].region, 'us-west-1');
+    assert.equal(wp.config.launchConfigs[0].workerManager.launchConfigId, 'lc1');
+  });
+
   test('launchConfigIds can be non unique across different worker pools', async function () {
     await helper.workerManager.createWorkerPool('wp/p1', {
       providerId: 'aws',

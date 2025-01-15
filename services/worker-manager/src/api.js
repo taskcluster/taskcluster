@@ -246,14 +246,24 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
-    workerPoolId,
-    input.providerId,
-    input.description,
-    input.config,
-    new Date(),
-    input.owner,
-    input.emailOnError);
+  let row;
+  try {
+    const rows = await this.db.fns.update_worker_pool_with_launch_configs(
+      workerPoolId,
+      input.providerId,
+      input.description,
+      input.config,
+      new Date(),
+      input.owner,
+      input.emailOnError);
+    row = rows[0];
+  } catch (err) {
+    if (err.code !== UNIQUE_VIOLATION) {
+      throw err;
+    }
+    return res.reportError('RequestConflict', err.message, {});
+  }
+
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
