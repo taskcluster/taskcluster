@@ -274,6 +274,16 @@ export const generateDbTypes = async (schema) => {
   output.push('export type TaskRequires = string; // Enum type from DB');
   output.push('export type TaskPriority = string; // Enum type from DB\n');
 
+  /**
+   * most args are optional, and the only way to tell is to analyze the function body
+   * @param {string} arg
+   * @param {string} body
+   */
+  const isArgOptional = (arg, body) => {
+    const allowedNulls = ['page_size_in', 'page_offset_in'];
+    return allowedNulls.includes(arg) || body.includes(`${arg} is null`);
+  };
+
   // Generate function signatures for each service
   for (let [serviceName, methods] of services.entries()) {
     output.push(`// ${serviceName} function signatures\n`);
@@ -313,9 +323,9 @@ export const generateDbTypes = async (schema) => {
         output.push(`export type ${typeName(serviceName, method.name, 'Fn')} = (`);
       }
       if (args.length > 0) {
-        // TODO: most args are optional, and the only way to tell is to analyze the function body
         args.forEach((arg, i) => {
-          output.push(`  ${arg.name}: ${arg.type}${i < args.length - 1 ? ',' : ''}`);
+          const argType = `${arg.type}${isArgOptional(arg.name, method.body) ? ' | null' : ''}`;
+          output.push(`  ${arg.name}: ${argType}${i < args.length - 1 ? ',' : ''}`);
         });
       }
       output.push(`) => Promise<${returnType}>;\n`);

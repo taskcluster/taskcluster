@@ -69,9 +69,9 @@ export type AuthGetClientFn = (
 ) => Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 
 export type AuthGetClientsFn = (
-  prefix_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  prefix_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 
 export type AuthGetRolesFn = (
@@ -124,7 +124,7 @@ export type AuthRolesEntitiesScanDeprecatedFn = (
 export type AuthUpdateClientFn = (
   client_id_in: string,
   description_in: string,
-  encrypted_access_token_in: JsonB,
+  encrypted_access_token_in: JsonB | null,
   expires_in: Date,
   disabled_in: boolean,
   scopes_in: JsonB,
@@ -187,20 +187,20 @@ export type GithubGetGithubBuildPrFn = (
 
 /** @deprecated */
 export type GithubGetGithubBuildsDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number,
-  organization_in: string,
-  repository_in: string,
-  sha_in: string
+  page_size_in: number | null,
+  page_offset_in: number | null,
+  organization_in: string | null,
+  repository_in: string | null,
+  sha_in: string | null
 ) => Promise<Array<{organization: string, repository: string, sha: string, task_group_id: string, state: string, created: Date, updated: Date, installation_id: number, event_type: string, event_id: string, etag: string}>>;
 
 export type GithubGetGithubBuildsPrFn = (
-  page_size_in: number,
-  page_offset_in: number,
-  organization_in: string,
-  repository_in: string,
-  sha_in: string,
-  pull_request_number_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null,
+  organization_in: string | null,
+  repository_in: string | null,
+  sha_in: string | null,
+  pull_request_number_in: number | null
 ) => Promise<Array<{organization: string, repository: string, sha: string, task_group_id: string, state: string, created: Date, updated: Date, installation_id: number, event_type: string, event_id: string, pull_request_number: number, etag: string}>>;
 
 export type GithubGetGithubCheckByRunIdFn = (
@@ -219,8 +219,8 @@ export type GithubGetGithubCheckByTaskIdDeprecatedFn = (
 ) => Promise<Array<{task_group_id: string, task_id: string, check_suite_id: string, check_run_id: string}>>;
 
 export type GithubGetGithubChecksByTaskGroupIdFn = (
-  page_size_in: number,
-  page_offset_in: number,
+  page_size_in: number | null,
+  page_offset_in: number | null,
   task_group_id_in: string
 ) => Promise<Array<{task_group_id: string, task_id: string, check_suite_id: string, check_run_id: string}>>;
 
@@ -229,17 +229,17 @@ export type GithubGetGithubIntegrationFn = (
 ) => Promise<Array<{owner: string, installation_id: number}>>;
 
 export type GithubGetGithubIntegrationsFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{owner: string, installation_id: number}>>;
 
 export type GithubGetPendingGithubBuildsFn = (
-  page_size_in: number,
-  page_offset_in: number,
+  page_size_in: number | null,
+  page_offset_in: number | null,
   organization_in: string,
   repository_in: string,
-  sha_in: string,
-  pull_request_number_in: number
+  sha_in: string | null,
+  pull_request_number_in: number | null
 ) => Promise<Array<{organization: string, repository: string, sha: string, task_group_id: string, state: string, created: Date, updated: Date, installation_id: number, event_type: string, event_id: string, pull_request_number: number, etag: string}>>;
 
 export type GithubSetGithubBuildStateFn = (
@@ -464,15 +464,15 @@ export type HooksGetHookFn = (
 ) => Promise<Array<{hook_group_id: string, hook_id: string, metadata: JsonB, task: JsonB, bindings: JsonB, schedule: JsonB, encrypted_trigger_token: JsonB, encrypted_next_task_id: JsonB, next_scheduled_date: Date, trigger_schema: JsonB}>>;
 
 export type HooksGetHooksFn = (
-  hook_group_id_in: string,
-  next_scheduled_date_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  hook_group_id_in: string | null,
+  next_scheduled_date_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{hook_group_id: string, hook_id: string, metadata: JsonB, task: JsonB, bindings: JsonB, schedule: JsonB, encrypted_trigger_token: JsonB, encrypted_next_task_id: JsonB, next_scheduled_date: Date, trigger_schema: JsonB}>>;
 
 export type HooksGetHooksQueuesFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{hook_group_id: string, hook_id: string, queue_name: string, bindings: JsonB, etag: string}>>;
 
 export type HooksGetLastFireFn = (
@@ -485,15 +485,15 @@ export type HooksGetLastFireFn = (
 export type HooksGetLastFiresDeprecatedFn = (
   hook_group_id_in: string,
   hook_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{hook_group_id: string, hook_id: string, fired_by: string, task_id: string, task_create_time: Date, result: string, error: string, etag: string}>>;
 
 export type HooksGetLastFiresWithTaskStateFn = (
   hook_group_id_in: string,
   hook_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{hook_group_id: string, hook_id: string, fired_by: string, task_id: string, task_create_time: Date, result: string, error: string, etag: string, task_state: string}>>;
 
 /** @deprecated */
@@ -666,10 +666,10 @@ export type IndexGetIndexNamespaceFn = (
 ) => Promise<Array<{parent: string, name: string, expires: Date}>>;
 
 export type IndexGetIndexNamespacesFn = (
-  parent_in: string,
-  name_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  parent_in: string | null,
+  name_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{parent: string, name: string, expires: Date}>>;
 
 export type IndexGetIndexedTaskFn = (
@@ -678,23 +678,23 @@ export type IndexGetIndexedTaskFn = (
 ) => Promise<Array<{namespace: string, name: string, rank: number, task_id: string, data: JsonB, expires: Date}>>;
 
 export type IndexGetIndexedTasksFn = (
-  namespace_in: string,
-  name_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  namespace_in: string | null,
+  name_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{namespace: string, name: string, rank: number, task_id: string, data: JsonB, expires: Date}>>;
 
 /** @deprecated */
 export type IndexGetTasksFromIndexesDeprecatedFn = (
   indexes_in: JsonB,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{namespace: string, name: string, rank: number, task_id: string, data: JsonB, expires: Date}>>;
 
 export type IndexGetTasksFromIndexesAndNamespacesFn = (
   indexes_in: JsonB,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{namespace: string, name: string, rank: number, task_id: string, data: JsonB, expires: Date}>>;
 
 /** @deprecated */
@@ -798,8 +798,8 @@ export type NotifyAddDenylistAddressFn = (
 ) => Promise<void>;
 
 export type NotifyAllDenylistAddressesFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{notification_type: string, notification_address: string}>>;
 
 export type NotifyDeleteDenylistAddressFn = (
@@ -876,10 +876,10 @@ export type ObjectCreateObjectForUploadFn = (
   name_in: string,
   project_id_in: string,
   backend_id_in: string,
-  upload_id_in: string,
-  upload_expires_in: Date,
+  upload_id_in: string | null,
+  upload_expires_in: Date | null,
   data_in: JsonB,
-  expires_in: Date
+  expires_in: Date | null
 ) => Promise<void>;
 
 export type ObjectDeleteObjectFn = (
@@ -888,7 +888,7 @@ export type ObjectDeleteObjectFn = (
 
 export type ObjectGetExpiredObjectsFn = (
   limit_in: number,
-  start_at_in: string
+  start_at_in: string | null
 ) => Promise<Array<{name: string, data: JsonB, project_id: string, backend_id: string, expires: Date}>>;
 
 /** @deprecated */
@@ -913,13 +913,13 @@ export type ObjectObjectUploadCompleteFn = (
 
 /** @deprecated */
 export type PurgeCacheAllPurgeRequestsDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{provisioner_id: string, worker_type: string, cache_name: string, before: Date}>>;
 
 export type PurgeCacheAllPurgeRequestsWpidFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, cache_name: string, before: Date}>>;
 
 /** @deprecated */
@@ -1270,35 +1270,35 @@ export type QueueExpireTasksFn = (
 
 export type QueueGetClaimedTasksByTaskQueueIdFn = (
   task_queue_id_in: string,
-  page_size_in: number,
-  after_claimed_in: Date,
-  after_task_id_in: string
+  page_size_in: number | null,
+  after_claimed_in: Date | null,
+  after_task_id_in: string | null
 ) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, worker_group: string, worker_id: string, claimed: Date}>>;
 
 export type QueueGetDependentTasksFn = (
   required_task_id_in: string,
-  satisfied_in: boolean,
-  tasks_after_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  satisfied_in: boolean | null,
+  tasks_after_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{dependent_task_id: string, requires: TaskRequires, satisfied: boolean}>>;
 
 export type QueueGetExpiredArtifactsForDeletionFn = (
   expires_in: Date,
-  page_size_in: number
+  page_size_in: number | null
 ) => Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
 
 export type QueueGetMultipleTasksFn = (
   tasks_in: JsonB,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueGetPendingTasksByTaskQueueIdFn = (
   task_queue_id_in: string,
-  page_size_in: number,
-  after_inserted_in: Date,
-  after_task_id_in: string
+  page_size_in: number | null,
+  after_inserted_in: Date | null,
+  after_task_id_in: string | null
 ) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, inserted: Date}>>;
 
 export type QueueGetQueueArtifactFn = (
@@ -1309,19 +1309,19 @@ export type QueueGetQueueArtifactFn = (
 
 /** @deprecated */
 export type QueueGetQueueArtifactsDeprecatedFn = (
-  task_id_in: string,
-  run_id_in: number,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_id_in: string | null,
+  run_id_in: number | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
 
 export type QueueGetQueueArtifactsPaginatedFn = (
-  task_id_in: string,
-  run_id_in: number,
-  expires_in: Date,
-  page_size_in: number,
-  after_task_id_in: string,
+  task_id_in: string | null,
+  run_id_in: number | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  after_task_id_in: string | null,
   after_run_id_in: number,
   after_name_in: string
 ) => Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
@@ -1334,9 +1334,9 @@ export type QueueGetQueueProvisionerDeprecatedFn = (
 
 /** @deprecated */
 export type QueueGetQueueProvisionersDeprecatedFn = (
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{provisioner_id: string, expires: Date, last_date_active: Date, description: string, stability: string, actions: JsonB, etag: string}>>;
 
 /** @deprecated */
@@ -1373,36 +1373,36 @@ export type QueueGetQueueWorkerTypeDeprecatedFn = (
 
 /** @deprecated */
 export type QueueGetQueueWorkerTypesDeprecatedFn = (
-  provisioner_id_in: string,
-  worker_type_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  provisioner_id_in: string | null,
+  worker_type_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{provisioner_id: string, worker_type: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 /** @deprecated */
 export type QueueGetQueueWorkersDeprecatedFn = (
-  provisioner_id_in: string,
-  worker_type_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  provisioner_id_in: string | null,
+  worker_type_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{provisioner_id: string, worker_type: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, etag: string}>>;
 
 /** @deprecated */
 export type QueueGetQueueWorkersTqidDeprecatedFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_queue_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, etag: string}>>;
 
 /** @deprecated */
 export type QueueGetQueueWorkersTqidWithLastDateActiveDeprecatedFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_queue_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, etag: string}>>;
 
 /** @deprecated */
@@ -1433,10 +1433,10 @@ export type QueueGetTaskQueueFn = (
 ) => Promise<Array<{task_queue_id: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 export type QueueGetTaskQueuesFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_queue_id: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 /** @deprecated */
@@ -1447,21 +1447,21 @@ export type QueueGetTaskTqidDeprecatedFn = (
 /** @deprecated */
 export type QueueGetTasksByTaskGroupDeprecatedFn = (
   task_group_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_id: string, provisioner_id: string, worker_type: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueGetTasksByTaskGroupProjidFn = (
   task_group_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 /** @deprecated */
 export type QueueGetTasksByTaskGroupTqidDeprecatedFn = (
   task_group_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueIsTaskBlockedFn = (
@@ -2177,8 +2177,8 @@ export type SecretsGetSecretFn = (
 ) => Promise<Array<{name: string, encrypted_secret: JsonB, expires: Date}>>;
 
 export type SecretsGetSecretsFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{name: string}>>;
 
 /** @deprecated */
@@ -2580,61 +2580,61 @@ export type WorkerManagerExpireWorkersFn = (
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkersDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date}>>;
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkers2DeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkersQuntilDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date}>>;
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkersQuntilProvidersDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  providers_filter_cond: string,
-  providers_filter_value: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  providers_filter_cond: string | null,
+  providers_filter_value: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date}>>;
 
 /** @deprecated */
 export type WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  providers_filter_cond: string,
-  providers_filter_value: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  providers_filter_cond: string | null,
+  providers_filter_value: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 
 export type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  providers_filter_cond: string,
-  providers_filter_value: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  providers_filter_cond_in: string | null,
+  providers_filter_value_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 
 export type WorkerManagerGetQueueWorkerWithWmDataFn = (
@@ -2661,51 +2661,51 @@ export type WorkerManagerGetQueueWorkerWithWmJoin2DeprecatedFn = (
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, quarantine_details: JsonB, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
 export type WorkerManagerGetQueueWorkersWithWmDataFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  worker_state_in: string,
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  worker_state_in: string | null,
   only_quarantined_in: boolean,
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string, launch_config_id: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetQueueWorkersWithWmJoinDeprecatedFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetQueueWorkersWithWmJoinQuarantinedDeprecatedFn = (
-  task_queue_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetQueueWorkersWithWmJoinQuarantined2DeprecatedFn = (
-  task_queue_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetQueueWorkersWithWmJoinStateDeprecatedFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number,
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null,
   worker_state_in: string
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string}>>;
 
 /** @deprecated */
 export type WorkerManagerGetTaskQueueWmDeprecatedFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_queue_id: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 export type WorkerManagerGetTaskQueueWm2Fn = (
@@ -2714,10 +2714,10 @@ export type WorkerManagerGetTaskQueueWm2Fn = (
 ) => Promise<Array<{task_queue_id: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 export type WorkerManagerGetTaskQueuesWmFn = (
-  task_queue_id_in: string,
-  expires_in: Date,
-  page_size_in: number,
-  page_offset_in: number
+  task_queue_id_in: string | null,
+  expires_in: Date | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{task_queue_id: string, expires: Date, last_date_active: Date, description: string, stability: string, etag: string}>>;
 
 /** @deprecated */
@@ -2742,21 +2742,21 @@ export type WorkerManagerGetWorker3Fn = (
 
 /** @deprecated */
 export type WorkerManagerGetWorkerManagerWorkersDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  state_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  state_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date}>>;
 
 export type WorkerManagerGetWorkerManagerWorkers2Fn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  state_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  state_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date, launch_config_id: string}>>;
 
 /** @deprecated */
@@ -2775,7 +2775,7 @@ export type WorkerManagerGetWorkerPoolErrorDeprecatedFn = (
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 
 export type WorkerManagerGetWorkerPoolErrorCodesFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{code: string, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = (
@@ -2784,45 +2784,45 @@ export type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = (
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 
 export type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{hour: Date, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{day: Date, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorTitlesFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{title: string, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorWorkerPoolsFn = (
-  worker_pool_id_in: string
+  worker_pool_id_in: string | null
 ) => Promise<Array<{worker_pool: string, count: number}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolErrorsDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolErrorsForWorkerPoolDeprecatedFn = (
-  error_id_in: string,
-  worker_pool_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  error_id_in: string | null,
+  worker_pool_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 
 export type WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn = (
-  error_id_in: string,
-  worker_pool_id_in: string,
-  launch_config_id_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  error_id_in: string | null,
+  worker_pool_id_in: string | null,
+  launch_config_id_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 
 export type WorkerManagerGetWorkerPoolLaunchConfigStatsFn = (
@@ -2831,9 +2831,9 @@ export type WorkerManagerGetWorkerPoolLaunchConfigStatsFn = (
 
 export type WorkerManagerGetWorkerPoolLaunchConfigsFn = (
   worker_pool_id_in: string,
-  is_archived_in: boolean,
-  page_size_in: number,
-  page_offset_in: number
+  is_archived_in: boolean | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{launch_config_id: string, worker_pool_id: string, is_archived: boolean, configuration: JsonB, created: any, last_modified: any}>>;
 
 /** @deprecated */
@@ -2852,50 +2852,50 @@ export type WorkerManagerGetWorkerPoolWithLaunchConfigsFn = (
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolsDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
 
 export type WorkerManagerGetWorkerPoolsCountsAndCapacityFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolsWithCapacityDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkerPoolsWithCapacityAndCountsByStateDeprecatedFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB, current_capacity: number, requested_count: number, running_count: number, stopping_count: number, stopped_count: number, requested_capacity: number, running_capacity: number, stopping_capacity: number, stopped_capacity: number}>>;
 
 export type WorkerManagerGetWorkerPoolsWithLaunchConfigsFn = (
-  page_size_in: number,
-  page_offset_in: number
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, provider_id: string, previous_provider_ids: JsonB, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, provider_data: JsonB}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkersDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  state_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  state_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date}>>;
 
 /** @deprecated */
 export type WorkerManagerGetWorkersWithoutProviderDataDeprecatedFn = (
-  worker_pool_id_in: string,
-  worker_group_in: string,
-  worker_id_in: string,
-  state_in: string,
-  page_size_in: number,
-  page_offset_in: number
+  worker_pool_id_in: string | null,
+  worker_group_in: string | null,
+  worker_id_in: string | null,
+  state_in: string | null,
+  page_size_in: number | null,
+  page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date}>>;
 
 export type WorkerManagerRemoveWorkerPoolPreviousProviderIdFn = (

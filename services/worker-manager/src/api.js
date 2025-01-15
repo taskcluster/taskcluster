@@ -175,7 +175,7 @@ builder.declare({
     }
     const message = err.message.includes('Launch config') ?
       err.message :
-      'Worker pool already exists'
+      'Worker pool already exists';
     return res.reportError('RequestConflict', message, {});
   }
 
