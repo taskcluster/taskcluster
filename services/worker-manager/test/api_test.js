@@ -386,6 +386,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /ResourceNotFound/,
     );
   });
+  test('launchConfigIds can be non unique across different worker pools', async function () {
+    await helper.workerManager.createWorkerPool('wp/p1', {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' })],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    await helper.workerManager.createWorkerPool('wp/p2', {
+      providerId: 'aws',
+      description: 'bar',
+      config: {
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' })],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    const { workerPools: pools } = await helper.workerManager.listWorkerPools();
+    assert.equal(pools.length, 2);
+    assert.equal(pools[0].config.launchConfigs[0].workerManager.launchConfigId, 'lc1');
+    assert.equal(pools[1].config.launchConfigs[0].workerManager.launchConfigId, 'lc1');
+  });
 
   test('update worker pool fails when pulse publish fails', async function () {
     const input = {
