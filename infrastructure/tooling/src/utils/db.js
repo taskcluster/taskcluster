@@ -313,6 +313,7 @@ export const generateDbTypes = async (schema) => {
         output.push(`export type ${typeName(serviceName, method.name, 'Fn')} = (`);
       }
       if (args.length > 0) {
+        // TODO: most args are optional, and the only way to tell is to analyze the function body
         args.forEach((arg, i) => {
           output.push(`  ${arg.name}: ${arg.type}${i < args.length - 1 ? ',' : ''}`);
         });
