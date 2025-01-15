@@ -291,8 +291,8 @@ export const generateDbTypes = async (schema) => {
       // Parse return type
       let returnType = 'void';
       if (method.returns !== 'void') {
-        if (method.returns.startsWith('table')) {
-          const tableMatch = /table *\((.*)\)/.exec(method.returns);
+        if (method.returns.match(/^\s*table/)) {
+          const tableMatch = /table\s*\(([^)]+)\)/.exec(method.returns);
           if (tableMatch) {
             const columns = tableMatch[1].split(',').map(col => {
               const [name, type] = col.trim().split(' ');

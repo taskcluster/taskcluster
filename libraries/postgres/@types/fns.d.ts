@@ -66,13 +66,13 @@ export type AuthExpireClientsFn = (
 
 export type AuthGetClientFn = (
   client_id_in: string
-) => Promise<void>;
+) => Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 
 export type AuthGetClientsFn = (
   prefix_in: string,
   page_size_in: number,
   page_offset_in: number
-) => Promise<void>;
+) => Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 
 export type AuthGetRolesFn = (
 ) => Promise<Array<{role_id: string, scopes: JsonB, created: Date, description: string, last_modified: Date, etag: string}>>;
@@ -129,7 +129,7 @@ export type AuthUpdateClientFn = (
   disabled_in: boolean,
   scopes_in: JsonB,
   delete_on_expiration_in: boolean
-) => Promise<void>;
+) => Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 
 export type AuthUpdateClientLastUsedFn = (
   client_id_in: string
@@ -206,7 +206,7 @@ export type GithubGetGithubBuildsPrFn = (
 export type GithubGetGithubCheckByRunIdFn = (
   check_suite_id_in: string,
   check_run_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_group_id: string, task_id: string, check_suite_id: string, check_run_id: string}>>;
 
 export type GithubGetGithubCheckByTaskGroupAndTaskIdFn = (
   task_group_id_in: string,
@@ -1065,7 +1065,7 @@ export type QueueCancelTaskFn = (
 export type QueueCancelTaskGroupFn = (
   task_group_id_in: string,
   reason: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, project_id: string, scheduler_id: string, task_group_id: string, deadline: Date, expires: Date, retries_left: number, routes: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueCheckTaskClaimFn = (
   task_id: string,
@@ -1273,7 +1273,7 @@ export type QueueGetClaimedTasksByTaskQueueIdFn = (
   page_size_in: number,
   after_claimed_in: Date,
   after_task_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, worker_group: string, worker_id: string, claimed: Date}>>;
 
 export type QueueGetDependentTasksFn = (
   required_task_id_in: string,
@@ -1292,14 +1292,14 @@ export type QueueGetMultipleTasksFn = (
   tasks_in: JsonB,
   page_size_in: number,
   page_offset_in: number
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueGetPendingTasksByTaskQueueIdFn = (
   task_queue_id_in: string,
   page_size_in: number,
   after_inserted_in: Date,
   after_task_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, inserted: Date}>>;
 
 export type QueueGetQueueArtifactFn = (
   task_id_in: string,
@@ -1408,12 +1408,12 @@ export type QueueGetQueueWorkersTqidWithLastDateActiveDeprecatedFn = (
 /** @deprecated */
 export type QueueGetTaskDeprecatedFn = (
   task_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, provisioner_id: string, worker_type: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 /** @deprecated */
 export type QueueGetTaskGroupDeprecatedFn = (
   task_group_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_group_id: string, scheduler_id: string, expires: Date}>>;
 
 export type QueueGetTaskGroupSizeFn = (
   task_group_id_in: string
@@ -1421,11 +1421,11 @@ export type QueueGetTaskGroupSizeFn = (
 
 export type QueueGetTaskGroup2Fn = (
   task_group_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_group_id: string, scheduler_id: string, expires: Date, sealed: Date}>>;
 
 export type QueueGetTaskProjidFn = (
   task_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueGetTaskQueueFn = (
   task_queue_id_in: string,
@@ -1442,27 +1442,27 @@ export type QueueGetTaskQueuesFn = (
 /** @deprecated */
 export type QueueGetTaskTqidDeprecatedFn = (
   task_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 /** @deprecated */
 export type QueueGetTasksByTaskGroupDeprecatedFn = (
   task_group_id_in: string,
   page_size_in: number,
   page_offset_in: number
-) => Promise<void>;
+) => Promise<Array<{task_id: string, provisioner_id: string, worker_type: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueGetTasksByTaskGroupProjidFn = (
   task_group_id_in: string,
   page_size_in: number,
   page_offset_in: number
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 /** @deprecated */
 export type QueueGetTasksByTaskGroupTqidDeprecatedFn = (
   task_group_id_in: string,
   page_size_in: number,
   page_offset_in: number
-) => Promise<void>;
+) => Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date}>>;
 
 export type QueueIsTaskBlockedFn = (
   dependent_task_id_in: string
@@ -2086,7 +2086,7 @@ export type QueueScheduleTaskFn = (
 
 export type QueueSealTaskGroupFn = (
   task_group_id_in: string
-) => Promise<void>;
+) => Promise<Array<{task_group_id: string, scheduler_id: string, expires: Date, sealed: Date}>>;
 
 export type QueueTaskQueueSeenFn = (
   task_queue_id_in: string,
@@ -2982,7 +2982,7 @@ export type WorkerManagerUpdateWorkerPoolWithLaunchConfigsFn = (
   last_modified_in: Date,
   owner_in: string,
   email_on_error_in: boolean
-) => Promise<void>;
+) => Promise<Array<{worker_pool_id: string, provider_id: string, description: string, config: JsonB, created: Date, last_modified: Date, owner: string, email_on_error: boolean, previous_provider_id: string, updated_launch_configs: any, created_launch_configs: any, archived_launch_configs: any}>>;
 
 export type WorkerManagerUpsertWorkerPoolLaunchConfigsFn = (
   worker_pool_id_in: string,
