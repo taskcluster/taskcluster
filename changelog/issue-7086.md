@@ -1,5 +1,5 @@
 audience: worker-deployers
-level: very major not very breaking
+level: major
 reference: issue 7086
 ---
 

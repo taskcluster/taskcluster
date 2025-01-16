@@ -8151,7 +8151,8 @@ begin
 
     IF existing_config IS NOT NULL THEN
       -- Config exists, check if content matches
-      IF existing_config != config THEN
+
+      IF (existing_config - 'workerManager') != (config - 'workerManager') THEN
         RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',
           wp_launch_config_id
           USING ERRCODE = 'unique_violation';
