@@ -6911,7 +6911,7 @@ begin
       case
         when providers_filter_cond_in = '='
           then workers.provider_id = ANY(string_to_array(providers_filter_value_in, ','))
-        when providers_filter_cond = '<>'
+        when providers_filter_cond_in = '<>'
           then workers.provider_id <> ALL(string_to_array(providers_filter_value_in, ','))
       end
       )
