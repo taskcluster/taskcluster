@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v77/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v78/tools/d2g/genericworker"
 )
 
 func (idi *IndexedDockerImage) FileMounts(tool string) ([]genericworker.FileMount, error) {

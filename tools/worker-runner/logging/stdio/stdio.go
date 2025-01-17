@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v77/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v77/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v78/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v78/tools/worker-runner/logging/logging"
 )
 
 type stdioLogDestination struct {

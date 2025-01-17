@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v77/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v78/clients/client-shell/config"
 )
 
 func init() {

@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v77/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v77/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v77/internal/mocktc/mocks3"
+	"github.com/taskcluster/taskcluster/v78/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v78/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v78/internal/mocktc/mocks3"
 )
 
 type mock struct {

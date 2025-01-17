@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v77/clients/client-go"
-	"github.com/taskcluster/taskcluster/v77/tools/d2g/dockerworker"
+	tcclient "github.com/taskcluster/taskcluster/v78/clients/client-go"
+	"github.com/taskcluster/taskcluster/v78/tools/d2g/dockerworker"
 )
 
 func TestWithValidDockerWorkerPayload(t *testing.T) {

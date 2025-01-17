@@ -13,9 +13,9 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v77/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v77/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v77/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v78/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v78/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v78/workers/generic-worker/process"
 )
 
 const (

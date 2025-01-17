@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v78.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.13.0, rust v1.84.0, and yarn v4.6.0.
+
+▶ [patch]
+Upgrades to go1.23.5 (SECURITY).
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7443](https://github.com/taskcluster/taskcluster/issues/7443)
+Worker-pool's lifecycle `queueInactivityTimeout` minimum allowed value is increased
+to `1200` (20min) to avoid having workers being incorrectly considered idling
+while they were working on a task.
+
+### USERS
+
+▶ [minor]
+Generic Worker: Improve cache mounting speed on linux, especially when they contain a lot of tiny files
+
 ## v77.3.1
 
 ### WORKER-DEPLOYERS
