@@ -25,7 +25,11 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 	payload := dockerworker.DockerWorkerPayload{
-		Command:    []string{"/bin/bash", "-c", "echo hello world > testWithoutExpiresPath && echo bye > testWithExpiresPath"},
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world > testWithoutExpiresPath && echo bye > testWithExpiresPath",
+		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
 		Artifacts: map[string]dockerworker.Artifact{
@@ -88,8 +92,12 @@ func TestWithInvalidDockerWorkerPayload(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 	payload := dockerworker.DockerWorkerPayload{
-		Command: []string{"/bin/bash", "-c", "echo hello world"},
-		Image:   json.RawMessage(imageBytes),
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world",
+		},
+		Image: json.RawMessage(imageBytes),
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
@@ -101,8 +109,12 @@ func TestWithInvalidDockerWorkerPayload(t *testing.T) {
 func TestIssue6789(t *testing.T) {
 	setup(t)
 	payload := dockerworker.DockerWorkerPayload{
-		Command: []string{"/bin/bash", "-c", "URL=\"${TASKCLUSTER_PROXY_URL}/api/queue/v1/task/${TASK_ID}\"\ncurl -v \"${URL}\"\ncurl -sf \"${URL}\""},
-		Image:   json.RawMessage(`"denolehov/curl"`),
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"URL=\"${TASKCLUSTER_PROXY_URL}/api/queue/v1/task/${TASK_ID}\"\ncurl -v \"${URL}\"\ncurl -sf \"${URL}\"",
+		},
+		Image: json.RawMessage(`"denolehov/curl"`),
 		Features: dockerworker.FeatureFlags{
 			TaskclusterProxy: true,
 		},
@@ -142,7 +154,11 @@ func TestDockerWorkerPayloadWithValidScopes(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 	payload := dockerworker.DockerWorkerPayload{
-		Command:    []string{"/bin/bash", "-c", "echo hello world"},
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world",
+		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 10,
 		Capabilities: dockerworker.Capabilities{
@@ -192,7 +208,11 @@ func TestDockerWorkerPayloadWithInvalidScopes(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 	payload := dockerworker.DockerWorkerPayload{
-		Command:    []string{"/bin/bash", "-c", "echo hello world"},
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world",
+		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 10,
 		Capabilities: dockerworker.Capabilities{
@@ -212,6 +232,277 @@ func TestDockerWorkerPayloadWithInvalidScopes(t *testing.T) {
 		t.Log(logtext)
 		if !strings.Contains(logtext, "docker-worker:capability:privileged:"+td.ProvisionerID+"/"+td.WorkerType) || !strings.Contains(logtext, "docker-worker:capability:privileged") {
 			t.Fatalf("Expected log file to contain missing scopes, but it didn't")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestLoopbackVideoDevice(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"ls /dev && test -c ${TASKCLUSTER_VIDEO_DEVICE} || { echo 'Device not found' ; exit 1; }",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackVideo: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackVideo",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"ls /dev && test -c ${TASKCLUSTER_VIDEO_DEVICE} || { echo 'Device not found' ; exit 1; }",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackVideo: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackVideo:" + td.ProvisionerID + "/" + td.WorkerType,
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestLoopbackAudioDevice(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`ls /dev/snd && test -c /dev/snd/controlC16 \
+			-a -c /dev/snd/pcmC16D0c -a -c /dev/snd/pcmC16D0p \
+			-a -c /dev/snd/pcmC16D1c -a -c /dev/snd/pcmC16D1p \
+			|| { echo 'Device not found' ; exit 1; }`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackAudio: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackAudio",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`ls /dev/snd && test -c /dev/snd/controlC16 \
+			-a -c /dev/snd/pcmC16D0c -a -c /dev/snd/pcmC16D0p \
+			-a -c /dev/snd/pcmC16D1c -a -c /dev/snd/pcmC16D1p \
+			|| { echo 'Device not found' ; exit 1; }`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackAudio: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackAudio:" + td.ProvisionerID + "/" + td.WorkerType,
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestDevicesWithoutAllScopes(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"ls /dev && test -c ${TASKCLUSTER_VIDEO_DEVICE} || { echo 'Device not found' ; exit 1; }",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackAudio: true,
+				LoopbackVideo: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackVideo",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+}
+
+func TestHostSharedMemory(t *testing.T) {
+	setup(t)
+	image := map[string]interface{}{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"mount | grep dev/shm && mount | grep dev/shm | grep -vq size= || { echo '/dev/shm should not contain size'; exit 1; }",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				HostSharedMemory: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:hostSharedMemory:" + td.ProvisionerID + "/" + td.WorkerType,
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
