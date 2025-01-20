@@ -27,6 +27,19 @@ export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
  * properly by never returning a failed provider.
  */
 export class Providers {
+  /**
+   * @param {object} opts
+   * @param {Record<string, any>} opts.cfg
+   * @param {object} opts.monitor
+   * @param {object} opts.notify
+   * @param {import('taskcluster-lib-postgres').Database} opts.db
+   * @param {import('../estimator.js').Estimator} opts.estimator
+   * @param {import('../data.js').Worker} opts.Worker
+   * @param {import('../data.js').WorkerPoolError} opts.WorkerPoolError
+   * @param {Function} opts.validator
+   * @param {import('taskcluster-lib-pulse').PulsePublisher} opts.publisher
+   * @param {import('../launch-config-selector.js').LaunchConfigSelector} opts.launchConfigSelector
+   */
   async setup({
     cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
   }) {

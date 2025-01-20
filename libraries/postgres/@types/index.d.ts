@@ -3,7 +3,8 @@ import { MonitorManager } from 'taskcluster-lib-monitor';
 import Keyring from '../src/Keyring.js';
 import { CryptoKey } from '../src/Keyring.js';
 import type { DbFunctions, DeprecatedDbFunctions } from './fns.d.ts';
-import { paginatedIterator } from '../src/util.js';
+
+export { paginatedIterator } from '../src/util.js';
 
 import Schema from '../src/Schema.js';
 export * from '../src/Schema.js';
@@ -15,7 +16,6 @@ export default Database;
 export {
   Database,
   Schema,
-  paginatedIterator,
 }
 
 export type DbAccessMode = 'read' | 'write' | 'admin';

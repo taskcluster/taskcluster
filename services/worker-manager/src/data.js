@@ -28,6 +28,8 @@ export class WorkerPool {
   workerPoolId;
   /** @type {string} */
   providerId;
+  /** @type {string[]} */
+  previousProviderIds;
   /** @type {string} */
   description;
   /** @type {Date} */

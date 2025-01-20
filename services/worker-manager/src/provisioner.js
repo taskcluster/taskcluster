@@ -95,6 +95,7 @@ export class Provisioner {
     // track the providerIds seen for each worker pool, so they can be removed
     // from the list of previous provider IDs
     const providersByPool = new Map();
+    /** @param {Worker} worker */
     const seen = worker => {
       let v = providersByPool.get(worker.workerPoolId);
       if (!v) {
