@@ -76,7 +76,7 @@ export class AwsProvider extends Provider {
       }
     });
 
-    const cloud = new CloudAPI({
+    this.cloudApi = new CloudAPI({
       types: Object.keys(requestTypes),
       apiRateLimits: requestTypes,
       intervalDefault: this.providerConfig.intervalDefault,
@@ -91,8 +91,9 @@ export class AwsProvider extends Provider {
         }
         throw err;
       },
+      collectMetrics: true,
     });
-    this._enqueue = cloud.enqueue.bind(cloud);
+    this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
   }
 
   async provision({ workerPool, workerInfo }) {
@@ -430,6 +431,15 @@ export class AwsProvider extends Provider {
       seen: this.seen,
       total: Provider.calcSeenTotal(this.seen),
     });
+
+    this.cloudApi?.logAndResetMetrics();
+  }
+
+  /**
+   * This is called at the end of the provision loop
+   */
+  async cleanup() {
+    this.cloudApi?.logAndResetMetrics();
   }
 
   /**
