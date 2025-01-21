@@ -8,6 +8,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v80/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v80/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v80/tools/d2g"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
 )
@@ -45,6 +46,7 @@ type (
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
 		featureArtifacts map[string]string
+		D2GInfo          *d2g.ConversionInfo `json:"-"`
 	}
 
 	TaskStatus       string

@@ -41,7 +41,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	}
 
 	// Convert dwPayload to gwPayload
-	gwPayload, _, err := d2g.ConvertPayload(dwPayload, config.PublicPlatformConfig.D2GConfig)
+	gwPayload, conversionInfo, err := d2g.ConvertPayload(dwPayload, config.PublicPlatformConfig.D2GConfig)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}
@@ -101,6 +101,8 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	if config.PublicPlatformConfig.LogD2GTranslation() {
 		task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
 	}
+
+	task.D2GInfo = &conversionInfo
 
 	return nil
 }
