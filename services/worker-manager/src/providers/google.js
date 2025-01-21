@@ -29,7 +29,7 @@ export class GoogleProvider extends Provider {
 
     // There are different rate limits per type of request
     // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
-    const cloud = new CloudAPI({
+    this.cloudApi = new CloudAPI({
       types: ['query', 'get', 'list', 'opRead'],
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
@@ -49,8 +49,9 @@ export class GoogleProvider extends Provider {
         // calling code figure out what to do
         throw err;
       },
+      collectMetrics: true,
     });
-    this._enqueue = cloud.enqueue.bind(cloud);
+    this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
 
     // If creds are a string or a base64d string, parse them
     if (_.isString(creds)) {
@@ -438,7 +439,7 @@ export class GoogleProvider extends Provider {
     }
   }
 
-  /*
+  /**
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
@@ -447,6 +448,7 @@ export class GoogleProvider extends Provider {
       seen: this.seen,
       total: Provider.calcSeenTotal(this.seen),
     });
+    this.cloudApi?.logAndResetMetrics();
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
@@ -457,6 +459,13 @@ export class GoogleProvider extends Provider {
         await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
     }));
+  }
+
+  /**
+   * This is called at the end of the provision loop
+   */
+  async cleanup() {
+    this.cloudApi?.logAndResetMetrics();
   }
 
   /**

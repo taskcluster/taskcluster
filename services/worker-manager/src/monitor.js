@@ -161,6 +161,29 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'cloudApiMetrics',
+  title: 'Cloud API call metrics',
+  type: 'cloud-api-metrics',
+  version: 1,
+  level: 'notice',
+  description: 'Metrics for cloud api calls',
+  fields: {
+    providerId: 'Metrics for the given provider',
+    total: 'Total number of API calls made',
+    success: 'Number of successful API calls',
+    failed: 'Number of failed API calls',
+    retries: 'Number of retried API calls',
+    byStatus: 'Map of HTTP status codes to counts',
+    min: 'Minimum API call duration in milliseconds',
+    max: 'Maximum API call duration in milliseconds',
+    avg: 'Average API call duration in milliseconds',
+    median: 'Median API call duration in milliseconds',
+    p95: '95th percentile API call duration in milliseconds',
+    p99: '99th percentile API call duration in milliseconds',
+  },
+});
+
+MonitorManager.register({
   name: 'registrationErrorWarning',
   title: 'Registration Error Warning',
   type: 'registration-error-warning',

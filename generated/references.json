@@ -14616,6 +14616,28 @@
           "version": 1
         },
         {
+          "description": "Metrics for cloud api calls",
+          "fields": {
+            "avg": "Average API call duration in milliseconds",
+            "byStatus": "Map of HTTP status codes to counts",
+            "failed": "Number of failed API calls",
+            "max": "Maximum API call duration in milliseconds",
+            "median": "Median API call duration in milliseconds",
+            "min": "Minimum API call duration in milliseconds",
+            "p95": "95th percentile API call duration in milliseconds",
+            "p99": "99th percentile API call duration in milliseconds",
+            "providerId": "Metrics for the given provider",
+            "retries": "Number of retried API calls",
+            "success": "Number of successful API calls",
+            "total": "Total number of API calls made"
+          },
+          "level": "notice",
+          "name": "cloudApiMetrics",
+          "title": "Cloud API call metrics",
+          "type": "cloud-api-metrics",
+          "version": 1
+        },
+        {
           "description": "Rate limiting engaged for a cloud api",
           "fields": {
             "duration": "Length of time the queue is paused for in ms.",

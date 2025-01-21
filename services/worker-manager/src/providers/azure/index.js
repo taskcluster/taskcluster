@@ -173,6 +173,7 @@ export class AzureProvider extends Provider {
 
     this.seen = {};
     this.errors = {};
+    this.cloudApi = null;
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -234,7 +235,7 @@ export class AzureProvider extends Provider {
 
     // Azure SDK has builtin retry logic: https://docs.microsoft.com/en-us/azure/architecture/best-practices/retry-service-specific
     // compute rate limiting: https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors
-    const cloud = new CloudAPI({
+    this.cloudApi = new CloudAPI({
       types: ['query', 'get', 'list', 'opRead'],
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
@@ -253,8 +254,9 @@ export class AzureProvider extends Provider {
         // calling code figure out what to do
         throw err;
       },
+      collectMetrics: true,
     });
-    this._enqueue = cloud.enqueue.bind(cloud);
+    this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
 
     // Load root certificates from Node, which get them from the Mozilla CA store.
     // As of node v12.19.0 (Nov. 2020), this includes 117 certs that node-forge
@@ -1047,6 +1049,7 @@ export class AzureProvider extends Provider {
     return { provisioningState, vmId };
   }
 
+  /** @param {{ worker: Worker }} opts */
   async checkWorker({ worker }) {
     const monitor = this.workerMonitor({
       worker,
@@ -1207,6 +1210,8 @@ export class AzureProvider extends Provider {
       total: Provider.calcSeenTotal(this.seen),
     });
 
+    this.cloudApi?.logAndResetMetrics();
+
     await Promise.all(Object.entries(this.errors).filter(([workerPoolId, errors]) => errors.length > 0).map(
       async ([workerPoolId, errors]) => {
         const workerPool = await WorkerPool.get(this.db, workerPoolId);
@@ -1218,6 +1223,13 @@ export class AzureProvider extends Provider {
         await Promise.all(errors.map(error => this.reportError({ workerPool, ...error })));
       }),
     );
+  }
+
+  /**
+   * This is called at the end of the provision loop
+   */
+  async cleanup() {
+    this.cloudApi?.logAndResetMetrics();
   }
 
   /*

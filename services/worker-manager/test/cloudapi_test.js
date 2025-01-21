@@ -16,8 +16,8 @@ suite(testing.suiteName(), function() {
       apiRateLimits: {},
       intervalDefault: 100 * 1000,
       intervalCapDefault: 2000,
-      ...options,
       monitor: await helper.load('monitor'),
+      ...options,
       providerId: 'fake-provider',
       errorHandler: ({ err, tries }) => {
         if (err.code === 403) { // for testing purposes, 403 = rate limit
@@ -101,5 +101,53 @@ suite(testing.suiteName(), function() {
       return;
     }
     assert.equal(remote.callCount, 1);
+  });
+
+  test('metrics not counted if not enabled', async function() {
+    cloud = await initCloudApi({ collectMetrics: false });
+    await cloud.enqueue('query', () => 5);
+    assert.equal(cloud.metrics.total, 0);
+  });
+
+  test('metrics should be collected and logged', async function () {
+    const monitor = await helper.load('monitor');
+    cloud = await initCloudApi({ collectMetrics: true, monitor });
+
+    const remote = sinon.stub();
+    remote.onCall(0).throws({ code: 500 });
+    remote.onCall(1).returns(1);
+    remote.onCall(2).throws({ code: 500 });
+    remote.onCall(3).returns(1);
+    remote.returns(1);
+
+    await cloud.enqueue('query', () => remote());
+    await cloud.enqueue('query', () => remote());
+    await cloud.enqueue('query', () => remote());
+
+    assert.equal(cloud.metrics.total, 5);
+    assert.equal(cloud.metrics.success, 3);
+    assert.equal(cloud.metrics.failed, 2);
+    assert.equal(cloud.metrics.retries, 2);
+    assert.equal(cloud.metrics.durations.length, 5);
+    assert.ok(cloud.metrics.elapsed > 0);
+    assert.deepEqual(cloud.metrics.byStatus, {
+      500: 2,
+      200: 3,
+    });
+
+    cloud.logAndResetMetrics();
+    assert.equal(cloud.metrics.total, 0);
+
+    const logged = monitor.manager.messages.find(msg => msg.Type === 'cloud-api-metrics');
+    assert.ok(logged?.Fields);
+    assert.deepEqual(logged.Fields.byStatus, { 500: 2, 200: 3 });
+    assert.equal(logged.Fields.total, 5);
+    assert.equal(logged.Fields.success, 3);
+    assert.ok(logged.Fields.max >= 0);
+    assert.ok(logged.Fields.min >= 0);
+    assert.ok(logged.Fields.avg >= 0);
+    assert.ok(logged.Fields.median >= 0);
+    assert.ok(logged.Fields.p95 >= 0);
+    assert.ok(logged.Fields.p99 >= 0);
   });
 });
