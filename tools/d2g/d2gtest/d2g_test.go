@@ -145,7 +145,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
 		}
-		actualGWPayload, err := d2g.ConvertPayload(&dwPayload, d2gConfigMap)
+		actualGWPayload, _, err := d2g.ConvertPayload(&dwPayload, d2gConfigMap)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
