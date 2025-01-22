@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
+	"github.com/taskcluster/taskcluster/v80/tools/d2g"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
@@ -26,7 +27,7 @@ func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }
 
-func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
 	var processCmd *process.Command
 	var err error
 
@@ -37,6 +38,23 @@ func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd,
 		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars)
 	} else {
 		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars)
+	}
+
+	return processCmd.Cmd, err
+}
+
+func (task *TaskRun) generateInteractiveWaitCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	var processCmd *process.Command
+	var err error
+
+	var envVars = task.EnvVars()
+	envVars = append(envVars, "TERM=hterm-256color")
+	cmd := []string{"docker", "wait", "--condition", "running", d2gConversionInfo.ContainerName}
+
+	if ctx == nil {
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, envVars)
+	} else {
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, envVars)
 	}
 
 	return processCmd.Cmd, err

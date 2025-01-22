@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
+	"github.com/taskcluster/taskcluster/v80/tools/d2g"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v80/workers/generic-worker/runtime"
@@ -50,17 +51,41 @@ func (task *TaskRun) generateCommand(index int) error {
 	return nil
 }
 
-func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
 	var processCmd *process.Command
 	var err error
 
 	var envVars = task.EnvVars()
 	envVars = append(envVars, "TERM=hterm-256color")
 
-	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars, taskContext.pd)
+	var cmd []string
+	if d2gConversionInfo != nil {
+		cmd = []string{"docker", "exec", "-it", d2gConversionInfo.ContainerName, "/bin/bash"}
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars, taskContext.pd)
+		cmd = []string{"bash"}
+	}
+
+	if ctx == nil {
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, envVars, taskContext.pd)
+	} else {
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, envVars, taskContext.pd)
+	}
+
+	return processCmd.Cmd, err
+}
+
+func (task *TaskRun) generateInteractiveWaitCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	var processCmd *process.Command
+	var err error
+
+	var envVars = task.EnvVars()
+	envVars = append(envVars, "TERM=hterm-256color")
+	cmd := []string{"docker", "wait", "--condition", "running", d2gConversionInfo.ContainerName}
+
+	if ctx == nil {
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, envVars, taskContext.pd)
+	} else {
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, envVars, taskContext.pd)
 	}
 
 	return processCmd.Cmd, err
