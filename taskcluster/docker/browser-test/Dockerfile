@@ -1,4 +1,4 @@
-FROM node:22.13.0-bookworm
+FROM node:22.13.1-bookworm
 RUN apt-get update && apt-get install -y \
     firefox-esr \
     xvfb && \
