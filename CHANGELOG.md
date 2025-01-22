@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v78.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.13.1 (SECURITY).
+
+### WORKER-DEPLOYERS
+
+▶ [minor]
+Worker-manager scanner and provisioner logs cloud api call times and statistics.
+New metric will be logged with 'cloud-api-metrics' type at the end of each scan and provision loop.
+
 ## v78.0.0
 
 ### GENERAL
