@@ -21,7 +21,11 @@ func TestInteractive(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
-	interactive, err := New(53765, cmd, ctx)
+	interactiveCommands := InteractiveCommands {
+		WaitCmd: nil,
+		InteractiveCmd: cmd,
+	}
+	interactive, err := New(53765, interactiveCommands, ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
