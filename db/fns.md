@@ -8149,10 +8149,14 @@ begin
     FROM worker_pool_launch_configs
     WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id;
 
+    -- check for  uniqueness
     IF existing_config IS NOT NULL THEN
       -- Config exists, check if content matches
-
-      IF (existing_config - 'workerManager') != (config - 'workerManager') THEN
+      IF (
+        jsonb_typeof(existing_config) = 'object'
+        AND jsonb_typeof(config) = 'object'
+        AND (existing_config - 'workerManager') != (config - 'workerManager')
+      ) THEN
         RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',
           wp_launch_config_id
           USING ERRCODE = 'unique_violation';
