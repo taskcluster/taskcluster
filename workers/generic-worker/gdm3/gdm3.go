@@ -7,26 +7,9 @@ import (
 )
 
 var (
-	automaticLogin        = regexp.MustCompile(`^\s*AutomaticLogin\s*=`)
-	automaticLoginEnable  = regexp.MustCompile(`^\s*AutomaticLoginEnable\s*=`)
-	automaticLoginReplace = regexp.MustCompile(`^\s*AutomaticLogin\s*=\s*(\S*)\s*$`)
+	automaticLogin       = regexp.MustCompile(`^\s*AutomaticLogin\s*=`)
+	automaticLoginEnable = regexp.MustCompile(`^\s*AutomaticLoginEnable\s*=`)
 )
-
-// AutoLogonUser interprets source as the contents of the gdm3 custom.conf
-// file, and parses it to look for an auto login user, and returns it if found,
-// otherwise it returns the empty string.
-func AutoLogonUser(source []byte) (username string) {
-	iniFileLineHandler(source, func(section, line string) {
-		if section == "daemon" {
-			u := automaticLoginReplace.ReplaceAllString(line, "${1}")
-			if u != line {
-				username = u
-				return
-			}
-		}
-	})
-	return
-}
 
 // SetAutoLogin interprets source as the contents of the gdm3 custom.conf file,
 // and returns an updated version of it with the automatic desktop login

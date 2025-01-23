@@ -54,6 +54,7 @@ func WaitForLoginCompletion(timeout time.Duration, username string) (err error) 
 		}
 		if interactiveUsername != username {
 			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			cachedInteractiveUsername = ""
 			time.Sleep(time.Second)
 			continue
 		}
@@ -94,12 +95,4 @@ func SetAutoLogin(user *OSUser) error {
 		return fmt.Errorf("error overwriting file %v: %v", gdm3CustomConfFile, err)
 	}
 	return nil
-}
-
-func AutoLogonUser() (username string) {
-	source, err := os.ReadFile(gdm3CustomConfFile)
-	if err != nil {
-		return ""
-	}
-	return gdm3.AutoLogonUser(source)
 }

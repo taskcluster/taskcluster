@@ -85,6 +85,7 @@ func WaitForLoginCompletion(timeout time.Duration, username string) (err error) 
 		}
 		if interactiveUsername != username {
 			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			cachedInteractiveUsername = ""
 			time.Sleep(time.Second)
 			continue
 		}
@@ -135,15 +136,6 @@ func InteractiveUsername() (string, error) {
 	}
 	cachedInteractiveUsername = output[:strings.Index(output, " ")]
 	return cachedInteractiveUsername, nil
-}
-
-func AutoLogonUser() (username string) {
-	var err error
-	username, err = kc.AutoLoginUsername()
-	if err != nil {
-		log.Print("error fetching auto-logon username: " + err.Error())
-	}
-	return
 }
 
 func SetAutoLogin(user *OSUser) error {
