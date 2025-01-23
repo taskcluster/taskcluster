@@ -130,7 +130,7 @@ testSuite:
 
               docker save taskcontainer | gzip > image.tar.gz
 
-              docker rm taskcontainer
+              docker rm -v taskcontainer
 
               exit "${exit_code}"
         env:

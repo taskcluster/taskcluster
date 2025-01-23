@@ -49,7 +49,7 @@ testSuite:
 
               docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
 
-              docker rm taskcontainer
+              docker rm -v taskcontainer
 
               exit "${exit_code}"
         maxRunTime: 4500

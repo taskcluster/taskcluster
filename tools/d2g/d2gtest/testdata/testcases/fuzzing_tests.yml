@@ -45,7 +45,7 @@ testSuite:
             -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
             -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
             -e TASK_ID \"${IMAGE_ID}\" \nexit_code=$?\ndocker cp taskcontainer:/bugmon-artifacts/
-            artifact0\ndocker rm taskcontainer\nexit \"${exit_code}\""
+            artifact0\ndocker rm -v taskcontainer\nexit \"${exit_code}\""
         env:
           BUG_ACTION: process
           MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
