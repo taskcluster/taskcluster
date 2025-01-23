@@ -362,7 +362,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, tool st
 	if containerName != "" {
 		commands = append(
 			commands,
-			tool+" rm "+containerName,
+			tool+" rm -v "+containerName,
 			`exit "${exit_code}"`,
 		)
 	}
