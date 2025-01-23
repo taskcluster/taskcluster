@@ -97,6 +97,7 @@ export class Provisioner {
     // from the list of previous provider IDs
     /** @type {Map<string, WorkerPoolStats>} */
     const workerPoolsStats = new Map();
+
     /** @param {Worker} worker */
     const seen = worker => {
       let v = workerPoolsStats.get(worker.workerPoolId);
@@ -108,19 +109,24 @@ export class Provisioner {
       v.updateFromWorker(worker);
     };
 
-    /**
-     * Check the state of workers (state is updated by worker-scanner)
-     *
-     * @param {number} size
-     * @param {number|Map<string, unknown>|null} offset
-     */
-    const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        null, null, null, null, null, size, offset);
-    for await (let row of paginatedIterator({ fetch })) {
-      const worker = Worker.fromDb(row);
-      seen(worker);
-    }
+    /** @param {string} workerPoolId */
+    const scanWorkersInPool = async (workerPoolId) => {
+      /**
+       * @param {number} size
+       * @param {number|Map<string, unknown>|null} offset
+       */
+      const fetch = async (size, offset) =>
+        await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
+          workerPoolId, null, null, null, null, size, offset,
+        );
+
+      for await (let row of paginatedIterator({ fetch })) {
+        const worker = Worker.fromDb(row);
+        seen(worker);
+      }
+
+      return workerPoolsStats.get(workerPoolId) || new WorkerPoolStats(workerPoolId);
+    };
 
     // Now for each worker pool we ask the providers to do stuff
     const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null))
@@ -128,6 +134,7 @@ export class Provisioner {
     for (const workerPool of workerPools) {
       const elapsedTime = measureTime(1e9);
       const { providerId, previousProviderIds, workerPoolId } = workerPool;
+
       const provider = this.providers.get(providerId);
       if (!provider) {
         this.monitor.warning(
@@ -138,20 +145,10 @@ export class Provisioner {
         continue;
       }
 
-      const providerByPool = workerPoolsStats.get(workerPoolId) || {
-        providers: new Set(),
-        existingCapacity: 0,
-        requestedCapacity: 0,
-        stoppingCapacity: 0,
-      };
+      const wpStats = await scanWorkersInPool(workerPoolId); // populate workerPoolsStats
 
       try {
-        const workerInfo = {
-          existingCapacity: providerByPool.existingCapacity,
-          requestedCapacity: providerByPool.requestedCapacity,
-          stoppingCapacity: providerByPool.stoppingCapacity,
-        };
-        await provider.provision({ workerPool, workerInfo });
+        await provider.provision({ workerPool, workerInfo: wpStats.forProvision() });
       } catch (err) {
         this.monitor.reportError(err,
           {
@@ -181,7 +178,7 @@ export class Provisioner {
 
         // Now if this provider is no longer a provider for any workers that exist
         // in this pool, remove it from the previous providers list
-        if (!providerByPool.providers.has(pId)) {
+        if (!wpStats.providers.has(pId)) {
           await this.db.fns.remove_worker_pool_previous_provider_id(workerPoolId, pId);
         }
 

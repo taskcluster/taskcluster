@@ -224,6 +224,14 @@ export class WorkerPoolStats {
     this.quarantinedCapacity = 0;
   }
 
+  forProvision() {
+    return {
+      existingCapacity: this.existingCapacity,
+      requestedCapacity: this.requestedCapacity,
+      stoppingCapacity: this.stoppingCapacity,
+    };
+  }
+
   /** @param {Worker} worker */
   updateFromWorker(worker) {
     if (worker.state === Worker.states.STOPPING) {
