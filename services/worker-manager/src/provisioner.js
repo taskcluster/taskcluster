@@ -3,6 +3,7 @@ import Iterate from 'taskcluster-lib-iterate';
 import { paginatedIterator } from 'taskcluster-lib-postgres';
 import { WorkerPool, Worker } from './data.js';
 import { ApiError } from './providers/provider.js';
+import { measureTime } from './util.js';
 
 /**
  * Run all provisioning logic
@@ -150,7 +151,7 @@ export class Provisioner {
     const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null))
       .map(row => WorkerPool.fromDb(row));
     for (const workerPool of workerPools) {
-      const start = process.hrtime.bigint();
+      const elapsedTime = measureTime(1e9);
       const { providerId, previousProviderIds, workerPoolId } = workerPool;
       const provider = this.providers.get(providerId);
       if (!provider) {
@@ -216,12 +217,10 @@ export class Provisioner {
 
       }));
 
-      const duration = Number(process.hrtime.bigint() - start) / 1e9;
-
       this.monitor.log.workerPoolProvisioned({
         workerPoolId: workerPool.workerPoolId,
         providerId: workerPool.providerId,
-        duration,
+        duration: elapsedTime(),
       });
     }
   }
