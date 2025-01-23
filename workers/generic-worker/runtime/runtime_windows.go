@@ -119,23 +119,6 @@ func WaitForLoginCompletion(timeout time.Duration, username string) error {
 	return nil
 }
 
-func AutoLogonUser() (username string) {
-	// Set flag registry.WOW64_64KEY since Windows 10 ARM machines will otherwise read from:
-	// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Winlogon
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`, registry.QUERY_VALUE|registry.WOW64_64KEY)
-	if err != nil {
-		log.Printf("Hit error reading Winlogon registry key - assume no autologon set: %v", err)
-		return
-	}
-	defer k.Close()
-	username, _, err = k.GetStringValue("DefaultUserName")
-	if err != nil {
-		log.Printf("Hit error reading winlogon DefaultUserName registry value - assume no autologon set: %v", err)
-		return
-	}
-	return
-}
-
 func SetAutoLogin(user *OSUser) error {
 	// Set flag registry.WOW64_64KEY since Windows 10 ARM machines will otherwise write to:
 	// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Winlogon
