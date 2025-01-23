@@ -212,6 +212,39 @@ export class WorkerPool {
   }
 }
 
+export class WorkerPoolStats {
+  /** @param {string} workerPoolId */
+  constructor(workerPoolId) {
+    this.workerPoolId = workerPoolId;
+    /** @type {Set<string>} */
+    this.providers = new Set([]);
+    this.existingCapacity = 0;
+    this.requestedCapacity = 0;
+    this.stoppingCapacity = 0;
+    this.quarantinedCapacity = 0;
+  }
+
+  /** @param {Worker} worker */
+  updateFromWorker(worker) {
+    if (worker.state === Worker.states.STOPPING) {
+      this.stoppingCapacity += worker.capacity;
+    } else {
+      const isRequested = worker.state === Worker.states.REQUESTED;
+      const requestedCapacity = isRequested ? worker.capacity : 0;
+
+      const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+      const existingCapacity = isQuarantined ? 0 : worker.capacity;
+
+      if (isQuarantined) {
+        this.quarantinedCapacity += existingCapacity;
+      }
+
+      this.existingCapacity += existingCapacity;
+      this.requestedCapacity += requestedCapacity;
+    }
+  }
+}
+
 export class WorkerPoolLaunchConfig {
   /** @type {string} */
   launchConfigId;

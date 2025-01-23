@@ -1,7 +1,7 @@
 import process from 'process';
 import Iterate from 'taskcluster-lib-iterate';
 import { paginatedIterator } from 'taskcluster-lib-postgres';
-import { WorkerPool, Worker } from './data.js';
+import { WorkerPool, Worker, WorkerPoolStats } from './data.js';
 import { ApiError } from './providers/provider.js';
 import { measureTime } from './util.js';
 
@@ -95,36 +95,17 @@ export class Provisioner {
   async _provisionLoop() {
     // track the providerIds seen for each worker pool, so they can be removed
     // from the list of previous provider IDs
-    const providersByPool = new Map();
+    /** @type {Map<string, WorkerPoolStats>} */
+    const workerPoolsStats = new Map();
     /** @param {Worker} worker */
     const seen = worker => {
-      let v = providersByPool.get(worker.workerPoolId);
+      let v = workerPoolsStats.get(worker.workerPoolId);
       if (!v) {
-        v = {
-          providers: new Set([]),
-          existingCapacity: 0,
-          requestedCapacity: 0,
-          stoppingCapacity: 0,
-        };
-        providersByPool.set(worker.workerPoolId, v);
+        v = new WorkerPoolStats(worker.workerPoolId);
+        workerPoolsStats.set(worker.workerPoolId, v);
       }
       v.providers.add(worker.providerId);
-
-      if (worker.state === Worker.states.STOPPING) {
-        v.stoppingCapacity += worker.capacity;
-      } else {
-        // compute the number of instances that have not yet called "registerWorker"
-        const isRequested = worker.state === Worker.states.REQUESTED;
-        const requestedCapacity = isRequested ? worker.capacity : 0;
-
-        // check for quarantined workers and do not consider them in the existing
-        // capacity
-        const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
-        const existingCapacity = isQuarantined ? 0 : worker.capacity;
-
-        v.existingCapacity += existingCapacity;
-        v.requestedCapacity += requestedCapacity;
-      }
+      v.updateFromWorker(worker);
     };
 
     /**
@@ -157,7 +138,7 @@ export class Provisioner {
         continue;
       }
 
-      const providerByPool = providersByPool.get(workerPoolId) || {
+      const providerByPool = workerPoolsStats.get(workerPoolId) || {
         providers: new Set(),
         existingCapacity: 0,
         requestedCapacity: 0,
