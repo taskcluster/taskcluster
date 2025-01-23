@@ -141,12 +141,6 @@ export class Provisioner {
       seen(worker);
     }
 
-    // We keep track of which providers are actively managing
-    // each workerpool so that the provider can update the
-    // pool even if 0 non-STOPPED instances of the worker
-    // currently exist
-    const poolsByProvider = new Map();
-
     // Now for each worker pool we ask the providers to do stuff
     const workerPools = (await this.db.fns.get_worker_pools_with_launch_configs(null, null))
       .map(row => WorkerPool.fromDb(row));
@@ -162,11 +156,6 @@ export class Provisioner {
         // ignore provisioning for providers that have not been setup correctly
         continue;
       }
-
-      if (!poolsByProvider.has(providerId)) {
-        poolsByProvider.set(providerId, new Set());
-      }
-      poolsByProvider.get(providerId).add(workerPoolId);
 
       const providerByPool = providersByPool.get(workerPoolId) || {
         providers: new Set(),
