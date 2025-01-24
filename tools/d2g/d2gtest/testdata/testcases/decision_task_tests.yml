@@ -81,6 +81,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06'
+
               timeout -s KILL 3600 docker run -t --name taskcontainer
               --memory-swap -1 --pids-limit -1 --privileged
               -v "$(pwd)/cache0:/builds/worker/checkouts"

@@ -21,6 +21,8 @@ testSuite:
           - - bash
             - "-cx"
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --cap-add=SYS_PTRACE --security-opt=seccomp=unconfined
               --add-host=taskcluster:127.0.0.1 --net=host
@@ -63,6 +65,8 @@ testSuite:
           - - bash
             - "-cx"
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -99,6 +103,8 @@ testSuite:
           - - bash
             - "-cx"
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1 --privileged
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -131,6 +137,8 @@ testSuite:
           - - bash
             - "-cx"
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE

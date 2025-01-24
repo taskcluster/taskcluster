@@ -19,6 +19,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -v /dev/shm:/dev/shm
               -e RUN_ID
@@ -53,6 +55,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -87,6 +91,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --device=/dev/kvm
               -e RUN_ID
@@ -123,6 +129,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -157,6 +165,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --device="${TASKCLUSTER_VIDEO_DEVICE}"
               -e RUN_ID
@@ -193,6 +203,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -227,6 +239,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --device=/dev/snd
               -e RUN_ID
@@ -263,6 +277,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -293,6 +309,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --gpus all
               -e RUN_ID
@@ -324,6 +342,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
               -e RUN_ID
