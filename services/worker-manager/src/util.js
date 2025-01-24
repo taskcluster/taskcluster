@@ -63,7 +63,6 @@ export const sanitizeRegisterWorkerPayload = (obj = {}) => {
   }, {});
 };
 
-
 /**
  * Start measuring execution time and return a function
  * that returns the time elapsed since the start.

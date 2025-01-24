@@ -212,6 +212,9 @@ export class WorkerPool {
   }
 }
 
+/**
+ * Stats collected for provisioning
+ */
 export class WorkerPoolStats {
   /** @param {string} workerPoolId */
   constructor(workerPoolId) {
