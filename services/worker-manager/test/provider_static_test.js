@@ -33,6 +33,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       staticSecret: 'good',
     },
   };
+  const defaultWorkerPool = {
+    workerPoolId,
+    providerId,
+    description: 'none',
+    previousProviderIds: [],
+    created: new Date(),
+    lastModified: new Date(),
+    config: {
+      lifecycle: {
+        reregistrationTimeout: 3600,
+      },
+    },
+    owner: 'whatever@example.com',
+    providerData: {},
+    emailOnError: false,
+  };
 
   setup(async function() {
     provider = new StaticProvider({
@@ -50,22 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {},
     });
-    workerPool = WorkerPool.fromApi({
-      workerPoolId,
-      providerId,
-      description: 'none',
-      previousProviderIds: [],
-      created: new Date(),
-      lastModified: new Date(),
-      config: {
-        lifecycle: {
-          reregistrationTimeout: 3600,
-        },
-      },
-      owner: 'whatever@example.com',
-      providerData: {},
-      emailOnError: false,
-    });
+    workerPool = WorkerPool.fromApi(defaultWorkerPool);
     await workerPool.create(helper.db);
     await provider.setup();
   });
@@ -139,17 +140,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('successful registration', async function() {
-      const worker = await createWorker({
-        state: 'running',
-        providerData: {
-          staticSecret: 'good',
+      const pool = WorkerPool.fromApi({
+        ...defaultWorkerPool,
+        workerPoolId: 'pool/config',
+        config: {
+          lifecycle: {
+            reregistrationTimeout: 3600,
+          },
           workerConfig: {
             "someKey": "someValue",
           },
         },
       });
+      await pool.create(helper.db);
+      const worker = await createWorker({
+        workerPoolId: pool.workerPoolId,
+        state: 'running',
+        providerData: {
+          staticSecret: 'good',
+        },
+      });
       const workerIdentityProof = { staticSecret: 'good' };
-      const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
+      const res = await provider.registerWorker({ workerPool: pool, worker, workerIdentityProof });
       const expectedExpires = new Date(Date.now() + 3600 * 1000);
       // allow +- 10 seconds since time passes while the test executes
       assert(Math.abs(res.expires - expectedExpires) < 10000,
