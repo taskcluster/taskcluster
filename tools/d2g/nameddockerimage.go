@@ -1,6 +1,8 @@
 package d2g
 
 import (
+	"fmt"
+
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/taskcluster/v78/tools/d2g/genericworker"
 )
@@ -14,5 +16,8 @@ func (ndi *NamedDockerImage) String(tool string) (string, error) {
 }
 
 func (ndi *NamedDockerImage) LoadCommands(tool string) []string {
-	return []string{}
+	image, _ := ndi.String(tool)
+	return []string{
+		fmt.Sprintf("%s pull %s", tool, image),
+	}
 }

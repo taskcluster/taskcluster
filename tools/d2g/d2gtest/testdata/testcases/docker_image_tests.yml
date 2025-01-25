@@ -15,6 +15,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -46,6 +48,8 @@ testSuite:
           - - bash
             - '-cx'
             - >-
+              docker pull ubuntu
+
               docker run -t --rm --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
