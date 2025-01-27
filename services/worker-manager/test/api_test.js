@@ -777,6 +777,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         }), /workerGroup.*must match regular/);
     });
 
+    test('create a worker with existing workerId', async function () {
+      await createWorkerPool({
+        providerId: 'static',
+      });
+
+      let staticSecret = `${taskcluster.slugid()}${taskcluster.slugid()}`;
+      const expires = taskcluster.fromNow('1 hour');
+      await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+        expires,
+        providerInfo: { staticSecret },
+      });
+      await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
+
+      await assert.rejects(async () => helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+        expires: taskcluster.fromNow('1 hour'),
+        providerInfo: { staticSecret },
+      }), err => {
+        assert.equal(err.statusCode, 409);
+        assert.equal(err.code, 'RequestConflict');
+        assert.match(err.body.message, /Worker already exists/);
+        return true;
+      });
+    });
     test('create a worker for a provider that does want it', async function () {
       await createWorkerPool({
         providerData: { allowCreateWorker: true },

@@ -603,6 +603,9 @@ declareWithTrailingColon({
       },
     });
   } catch (err) {
+    if (err.code === UNIQUE_VIOLATION) {
+      return res.reportError('RequestConflict', 'Worker already exists', {});
+    }
     if (!(err instanceof ApiError)) {
       throw err;
     }
