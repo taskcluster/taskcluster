@@ -6,9 +6,9 @@ import (
 	"regexp"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v78/tools/d2g"
-	"github.com/taskcluster/taskcluster/v78/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v78/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v79/tools/d2g"
+	"github.com/taskcluster/taskcluster/v79/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v79/tools/jsonschema2go/text"
 
 	"sigs.k8s.io/yaml"
 )

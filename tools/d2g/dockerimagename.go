@@ -5,7 +5,7 @@ import (
 
 	"github.com/taskcluster/shell"
 
-	"github.com/taskcluster/taskcluster/v78/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v79/tools/d2g/genericworker"
 )
 
 func (din *DockerImageName) FileMounts(tool string) ([]genericworker.FileMount, error) {

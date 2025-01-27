@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v79.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7464](https://github.com/taskcluster/taskcluster/issues/7464)
+Static workers always receive workerPool's workerConfig.
+Previously workerConfig was stored in the worker.providerData,
+which made it impossible to update config without creating new worker
+
+▶ [minor] [#7465](https://github.com/taskcluster/taskcluster/issues/7465)
+`WorkerManager.createWorker()` API call handles non-unique errors and responds with `409`
+if worker with same `workerId` already exists in the pool
+
+▶ [patch] [#7463](https://github.com/taskcluster/taskcluster/issues/7463)
+D2G: Pull docker image as initial command to ensure latest image version is used during task execution.
+
 ## v78.2.0
 
 ### WORKER-DEPLOYERS

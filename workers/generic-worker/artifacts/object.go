@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v78/clients/client-go"
-	"github.com/taskcluster/taskcluster/v78/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v78/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v78/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v79/clients/client-go"
+	"github.com/taskcluster/taskcluster/v79/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v79/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v79/workers/generic-worker/gwconfig"
 )
 
 type ObjectArtifact struct {

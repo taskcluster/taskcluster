@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-object",
-  "version": "78.2.0",
+  "version": "79.0.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

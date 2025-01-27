@@ -1,9 +1,9 @@
 package artifacts
 
 import (
-	"github.com/taskcluster/taskcluster/v78/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v78/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v78/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v79/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v79/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v79/workers/generic-worker/gwconfig"
 )
 
 type LinkArtifact struct {
