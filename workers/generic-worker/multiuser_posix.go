@@ -52,35 +52,29 @@ func (task *TaskRun) generateCommand(index int) error {
 }
 
 func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
-	var processCmd *process.Command
-	var err error
-
-	var envVars = task.EnvVars()
-	envVars = append(envVars, "TERM=hterm-256color")
-
 	var cmd []string
+
 	if d2gConversionInfo != nil {
 		cmd = []string{"docker", "exec", "-it", d2gConversionInfo.ContainerName, "/bin/bash"}
 	} else {
 		cmd = []string{"bash"}
 	}
 
-	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, envVars, taskContext.pd)
-	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, envVars, taskContext.pd)
-	}
-
-	return processCmd.Cmd, err
+	return task.newCommandForInteractive(cmd, ctx)
 }
 
-func (task *TaskRun) generateInteractiveWaitCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`/usr/bin/docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
+
+	return task.newCommandForInteractive(cmd, ctx)
+}
+
+func (task *TaskRun) newCommandForInteractive(cmd []string, ctx context.Context) (*exec.Cmd, error) {
 	var processCmd *process.Command
 	var err error
 
 	var envVars = task.EnvVars()
 	envVars = append(envVars, "TERM=hterm-256color")
-	cmd := []string{"docker", "wait", "--condition", "running", d2gConversionInfo.ContainerName}
 
 	if ctx == nil {
 		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, envVars, taskContext.pd)

@@ -71,15 +71,15 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 		return it.task.generateInteractiveCommand(it.task.D2GInfo, ctx)
 	}
 
-	waitCmd := interactive.CreateInteractiveWaitProcess(nil)
+	isReadyCmd := interactive.CreateInteractiveIsReadyProcess(nil)
 	if it.task.D2GInfo != nil {
-		waitCmd = func() (*exec.Cmd, error) {
-			return it.task.generateInteractiveWaitCommand(it.task.D2GInfo, ctx)
+		isReadyCmd = func() (*exec.Cmd, error) {
+			return it.task.generateInteractiveIsReadyCommand(it.task.D2GInfo, ctx)
 		}
 	}
 
 	interactiveCommands := interactive.InteractiveCommands{
-		WaitCmd:        waitCmd,
+		IsReadyCmd:     isReadyCmd,
 		InteractiveCmd: interactiveCmd,
 	}
 

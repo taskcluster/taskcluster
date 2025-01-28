@@ -22,7 +22,7 @@ func TestInteractive(t *testing.T) {
 	defer cancel()
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
 	interactiveCommands := InteractiveCommands {
-		WaitCmd: nil,
+		IsReadyCmd: nil,
 		InteractiveCmd: cmd,
 	}
 	interactive, err := New(53765, interactiveCommands, ctx)

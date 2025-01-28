@@ -18,9 +18,9 @@ import (
 )
 
 type CreateInteractiveProcess func() (*exec.Cmd, error)
-type CreateInteractiveWaitProcess func() (*exec.Cmd, error)
+type CreateInteractiveIsReadyProcess func() (*exec.Cmd, error)
 type InteractiveCommands struct {
-	WaitCmd CreateInteractiveWaitProcess
+	IsReadyCmd CreateInteractiveIsReadyProcess
 	InteractiveCmd CreateInteractiveProcess
 }
 
@@ -69,7 +69,7 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = it.runWaitCommand(conn)
+	err = it.waitUntilReady(conn)
 	if err != nil {
 		log.Printf("Failed while waiting to create an interactive job, closing connection. %v", err)
 		http.Error(w, "Failed to start interactive command", http.StatusInternalServerError)
@@ -93,25 +93,26 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (it *Interactive) runWaitCommand(conn *websocket.Conn) (err error){
-	if it.interactiveCommands.WaitCmd == nil {
+// If the interactive task has a `IsReadyCmd` declared, run that command until it succeeds or until timeout.
+func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error){
+	if it.interactiveCommands.IsReadyCmd == nil {
 		return nil
 	}
 	conn.WriteMessage(websocket.BinaryMessage, []byte("Waiting for task to be ready."))
 
 	last_output := []byte("")
-	for i := 0; i < 10; i++ {
-		var waitCmd *exec.Cmd
-		waitCmd, err = it.interactiveCommands.WaitCmd()
+	for i := 0; i < 20; i++ {
+		var isReadyCmd *exec.Cmd
+		isReadyCmd, err = it.interactiveCommands.IsReadyCmd()
 		if err != nil {
-			conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task wait command. This is a bug.\r\n"))
+			conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task ready command. This is a bug.\r\n"))
 			return err
 		}
 
-		last_output, err = waitCmd.Output()
+		last_output, err = isReadyCmd.CombinedOutput()
 		if err != nil {
 			conn.WriteMessage(websocket.BinaryMessage, []byte("."))
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 			continue
 		}
 
