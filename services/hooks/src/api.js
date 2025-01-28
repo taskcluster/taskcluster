@@ -446,7 +446,7 @@ builder.declare({
 
   await req.authorize({ hookGroupId, hookId });
 
-  const payload = req.body;
+  const payload = { ...req.body, queryParameters: req.query };
   const clientId = await req.clientId();
   const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
 
@@ -554,7 +554,7 @@ builder.declare({
     'task template.',
   ].join('\n'),
 }, async function(req, res) {
-  const payload = req.body;
+  const payload = { ...req.body, queryParameters: req.query };
   const { hookGroupId, hookId } = req.params;
 
   const hook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
