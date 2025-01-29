@@ -563,7 +563,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: { firedBy: 'triggerHook', clientId: 'test-client', payload: { location: 'Belo Horizonte, MG', foo: 'triggerHook', queryParameters: {} } },
+        context: { firedBy: 'triggerHook', clientId: 'test-client', payload: { location: 'Belo Horizonte, MG', foo: 'triggerHook' } },
         options: {},
       }]);
     });
@@ -756,7 +756,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand', queryParameters: {} } },
+        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand' } },
         options: {},
       }]);
     });
@@ -800,7 +800,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: { firedBy: 'triggerHookWithToken', payload: { a: 'payload', queryParameters: {} } },
+        context: { firedBy: 'triggerHookWithToken', payload },
         options: {},
       }]);
     });
