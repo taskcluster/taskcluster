@@ -20,7 +20,7 @@ import (
 type CreateInteractiveProcess func() (*exec.Cmd, error)
 type CreateInteractiveIsReadyProcess func() (*exec.Cmd, error)
 type InteractiveCommands struct {
-	IsReadyCmd CreateInteractiveIsReadyProcess
+	IsReadyCmd     CreateInteractiveIsReadyProcess
 	InteractiveCmd CreateInteractiveProcess
 }
 
@@ -31,19 +31,19 @@ var upgrader = &websocket.Upgrader{
 }
 
 type Interactive struct {
-	TCPPort uint16
-	GetURL  string
-	secret  string
-	ctx     context.Context
+	TCPPort             uint16
+	GetURL              string
+	secret              string
+	ctx                 context.Context
 	interactiveCommands InteractiveCommands
 }
 
 func New(port uint16, interactiveCommands InteractiveCommands, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
-		TCPPort: port,
-		secret:  slugid.Nice(),
+		TCPPort:             port,
+		secret:              slugid.Nice(),
 		interactiveCommands: interactiveCommands,
-		ctx:     ctx,
+		ctx:                 ctx,
 	}
 
 	it.setRequestURL()
@@ -94,24 +94,30 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 // If the interactive task has a `IsReadyCmd` declared, run that command until it succeeds or until timeout.
-func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error){
+func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error) {
 	if it.interactiveCommands.IsReadyCmd == nil {
 		return nil
 	}
-	conn.WriteMessage(websocket.BinaryMessage, []byte("Waiting for task to be ready."))
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("Waiting for task to be ready."))
+	if err != nil {
+		return err
+	}
 
 	last_output := []byte("")
 	for i := 0; i < 20; i++ {
 		var isReadyCmd *exec.Cmd
 		isReadyCmd, err = it.interactiveCommands.IsReadyCmd()
 		if err != nil {
-			conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task ready command. This is a bug.\r\n"))
+			_ = conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task ready command. This is a bug.\r\n"))
 			return err
 		}
 
 		last_output, err = isReadyCmd.CombinedOutput()
 		if err != nil {
-			conn.WriteMessage(websocket.BinaryMessage, []byte("."))
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte("."))
+			if err != nil {
+				return err
+			}
 			time.Sleep(1 * time.Second)
 			continue
 		}
@@ -119,15 +125,15 @@ func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error){
 		break
 	}
 
-	conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"))
 	if err != nil {
 		msg := fmt.Sprintf("Error while waiting for task to be ready: %v. Output:\r\n%s", err, last_output)
 		log.Print(msg)
-		conn.WriteMessage(websocket.BinaryMessage, []byte(msg))
+		_ = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"+msg))
 		return err
 	}
 
-	return nil
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"))
+	return err
 }
 
 func (it *Interactive) ListenAndServe(ctx context.Context) error {

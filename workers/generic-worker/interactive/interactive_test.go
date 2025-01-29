@@ -27,8 +27,8 @@ func TestInteractiveWithReadyCommand(t *testing.T) {
 		return exec.CommandContext(ctx, "true"), nil
 	}
 
-	interactiveCommands := InteractiveCommands {
-		IsReadyCmd: isReadyCmd,
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     isReadyCmd,
 		InteractiveCmd: cmd,
 	}
 
@@ -44,8 +44,8 @@ func TestInteractiveNormal(t *testing.T) {
 	defer cancel()
 
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
-	interactiveCommands := InteractiveCommands {
-		IsReadyCmd: nil,
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     nil,
 		InteractiveCmd: cmd,
 	}
 
