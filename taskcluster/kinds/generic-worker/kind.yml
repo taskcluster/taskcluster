@@ -226,9 +226,9 @@ tasks:
       env:
         ENGINE: insecure
     copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
-  build/test-multiuser-macos-13-arm64:
-    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13
-    worker-type: gw-ci-macos-13
+  build/test-multiuser-macos-arm64:
+    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS
+    worker-type: gw-ci-macos
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -251,9 +251,9 @@ tasks:
         ENGINE: multiuser
         GW_TESTS_RUN_AS_CURRENT_USER: ''
     copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
-  build/test-multiuser-current-user-macos-13-arm64:
-    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS Ventura 13 as the current user
-    worker-type: gw-ci-macos-13
+  build/test-multiuser-current-user-macos-arm64:
+    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS as the current user
+    worker-type: gw-ci-macos
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
