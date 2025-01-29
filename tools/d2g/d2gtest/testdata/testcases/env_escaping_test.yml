@@ -21,7 +21,7 @@ testSuite:
             - >-
               docker pull ubuntu
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e ' test123 --help  ; whoami ; '
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -30,6 +30,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         env:
           ' test123 --help  ; whoami ; ': testing
         maxRunTime: 3600

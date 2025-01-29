@@ -17,7 +17,7 @@ testSuite:
             - >-
               docker pull ubuntu
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -25,6 +25,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         maxRunTime: 3600
         onExitStatus:
           retry:
@@ -50,7 +56,7 @@ testSuite:
             - >-
               docker pull ubuntu
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -58,6 +64,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               ubuntu 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         maxRunTime: 3600
         onExitStatus:
           retry:
@@ -84,7 +96,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -92,6 +104,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         maxRunTime: 3600
         mounts:
           - content:
@@ -125,7 +143,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -133,6 +151,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         maxRunTime: 3600
         mounts:
           - content:
@@ -167,7 +191,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -175,6 +199,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         maxRunTime: 3600
         mounts:
           - content:
@@ -208,7 +238,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -216,6 +246,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path
@@ -247,7 +283,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -255,6 +291,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path.lz4
@@ -287,7 +329,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL
@@ -295,6 +337,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         mounts:
           - content:
               artifact: public/test/path.zst
@@ -328,7 +376,7 @@ testSuite:
             - >-
               IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
 
-              docker run -t --rm --memory-swap -1 --pids-limit -1
+              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
               -v "$(pwd)/cache0:/builds/worker/checkouts"
               -e RUN_ID
               -e TASKCLUSTER_INSTANCE_TYPE
@@ -337,6 +385,12 @@ testSuite:
               -e TASK_GROUP_ID
               -e TASK_ID
               "${IMAGE_ID}" 'echo "Hello world"'
+
+              exit_code=$?
+
+              docker rm -v taskcontainer
+
+              exit "${exit_code}"
         mounts:
           - cacheName: gecko-level-3-checkouts-sparse-v3
             directory: cache0
