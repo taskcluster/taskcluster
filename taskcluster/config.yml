@@ -31,11 +31,11 @@ workers:
       os: linux
       implementation: generic-worker
       worker-type: gw-ci-ubuntu-24-04
-    gw-ci-macos-13:
+    gw-ci-macos:
       provisioner: proj-taskcluster
       os: macosx
       implementation: generic-worker
-      worker-type: gw-ci-macos-13
+      worker-type: gw-ci-macos
     gw-windows-2022:
       provisioner: proj-taskcluster
       os: windows
