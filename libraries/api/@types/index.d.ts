@@ -5,7 +5,7 @@ import { APIBuilder, ErrorReply } from '../src/index.js';
 export type StabilityLevel = 'deprecated' | 'experimental' | 'stable';
 
 export type ValidationMap = {
-  [key: string]: RegExp | ((val: string) => string | null);
+  [key: string | Symbol]: RegExp | ((val: string) => string | null);
 };
 
 export type ErrorCodes = Record<string, number>;

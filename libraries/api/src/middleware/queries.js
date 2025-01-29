@@ -1,3 +1,5 @@
+export const QUERY_WILDCARD = Symbol('query-wildcard');
+
 /**
  * Validate query-string against query.
  *
@@ -13,14 +15,30 @@
 export const queryValidator = ({ entry }) => {
   const { query = {} } = entry;
 
+  const wildcardPattern = query[QUERY_WILDCARD];
+
   return (req, res, next) => {
     /** @type {string[]} */
     const errors = [];
     Object.entries(req.query || {}).forEach(([key, value]) => {
       const pattern = query[key];
       if (!pattern) {
+        if (wildcardPattern) {
+          // allow any query parameter if wildcard pattern is set
+          if (wildcardPattern instanceof RegExp) {
+            if (!wildcardPattern.test(value)) {
+              delete req.query[key];
+              errors.push(`Query-string parameter: ${key}="${value}" does not match wildcard pattern: ${wildcardPattern.toString()}`);
+            }
+          } else if (wildcardPattern instanceof Function) {
+            const msg = wildcardPattern.call(req.tcContext, value, key);
+            if (typeof msg === 'string') {
+              delete req.query[key];
+              errors.push(`Query-string parameter: ${key}="${value}" is not valid, error: ${msg}`);
+            }
+          }
+        } else if (key !== 'bewit') {
         // Allow the bewit key, it's used in signed strings
-        if (key !== 'bewit') {
           errors.push('Query-string parameter: ' + key + ' is not supported!');
         }
         return;
