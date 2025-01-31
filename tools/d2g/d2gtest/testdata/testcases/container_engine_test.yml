@@ -34,36 +34,4 @@ testSuite:
         osGroups:
           - docker
       d2gConfig: {}
-
-    - name: Set to podman container engine test
-      description: >-
-        Tests that podman should be set as the container engine in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          containerEngine: podman
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              podman pull ubuntu
-
-              podman run -t --rm --memory-swap -1 --pids-limit -1 --ulimit host
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-      d2gConfig: {}
   taskDefTests: []

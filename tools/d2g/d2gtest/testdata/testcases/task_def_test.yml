@@ -226,7 +226,6 @@ testSuite:
             - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
           maxRunTime: 630
           capabilities:
-            containerEngine: podman
             devices:
               kvm: true
         metadata:
@@ -253,11 +252,10 @@ testSuite:
           - - bash
             - -cx
             - >-
-              podman pull ubuntu:latest
+              docker pull ubuntu:latest
 
-              podman run -t --rm --memory-swap -1 --pids-limit -1
-              --ulimit host --device=/dev/kvm
-              -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+              docker run -t --rm --memory-swap -1 --pids-limit -1
+              --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
               -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
               -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
               /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
@@ -275,6 +273,7 @@ testSuite:
           osGroups:
             - kvm
             - libvirt
+            - docker
         priority: lowest
         projectId: none
         provisionerId: proj-taskcluster
@@ -286,6 +285,7 @@ testSuite:
           - docker-worker:apples
           - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
           - generic-worker:apples
+          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
           - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
         tags: {}

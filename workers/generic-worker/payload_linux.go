@@ -35,7 +35,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	// Validate that the required docker worker scopes
 	// are present for the given docker worker payload
 	// and then convert dwScopes to gwScopes
-	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, dwPayload, taskQueueID, config.PublicPlatformConfig.D2GConfig["containerEngine"].(string), serviceFactory.Auth(config.Credentials(), config.RootURL))
+	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, dwPayload, taskQueueID, serviceFactory.Auth(config.Credentials(), config.RootURL))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}

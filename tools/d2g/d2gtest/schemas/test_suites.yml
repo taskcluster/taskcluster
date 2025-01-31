@@ -155,12 +155,6 @@ definitions:
       allowTaskclusterProxy:
         type: boolean
         default: true
-      containerEngine:
-        type: string
-        default: docker
-        enum:
-          - docker
-          - podman
       gpus:
         type: string
         default: all

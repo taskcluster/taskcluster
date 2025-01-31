@@ -27,7 +27,6 @@ func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 			"allowPrivileged":       true,
 			"allowPtrace":           true,
 			"allowTaskclusterProxy": true,
-			"containerEngine":       "docker",
 			"gpus":                  "all",
 			"logTranslation":        true,
 		},

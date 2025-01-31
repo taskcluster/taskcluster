@@ -180,10 +180,6 @@ and reports back results to the queue.
                                               * allowPrivileged - Allows Privileged. [default: true]
                                               * allowPtrace - Allows Ptrace. [default: true]
                                               * allowTaskclusterProxy - Allows Taskcluster Proxy. [default: true]
-                                              * containerEngine - The default container engine to use for translated
-                                                Docker Worker tasks when not specified in the Docker Worker task payload
-                                                (property capabilities.containerEngine). Accepted values: "docker" or "podman".
-                                                [default: "docker"]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
                                                 Only used if allowGPUs is true. [default: "all"]
                                               * logTranslation - Logs the D2G-translated task definition to the task logs.

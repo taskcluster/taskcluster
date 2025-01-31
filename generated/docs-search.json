@@ -3241,13 +3241,6 @@
     "title": "Capabilities"
   },
   {
-    "element": "h2",
-    "id": "container-engine",
-    "path": "/reference/workers/docker-worker/capabilities",
-    "subtitle": "Container Engine",
-    "title": "Capabilities"
-  },
-  {
     "element": "h3",
     "id": "cpu",
     "path": "/reference/workers/docker-worker/capabilities",
