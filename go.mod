@@ -32,7 +32,7 @@ require (
 	github.com/sergi/go-diff v1.3.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.6
 	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.10.0
 	github.com/taskcluster/go-got v0.0.0-20190401132811-c63e3293a290
@@ -43,10 +43,10 @@ require (
 	github.com/taskcluster/taskcluster-lib-urls v13.0.1+incompatible
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.33.0
-	golang.org/x/sys v0.28.0
-	golang.org/x/tools v0.28.0
+	golang.org/x/crypto v0.32.0
+	golang.org/x/net v0.34.0
+	golang.org/x/sys v0.29.0
+	golang.org/x/tools v0.29.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/yaml v1.4.0
