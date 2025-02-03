@@ -9,6 +9,8 @@ import { ApiError, Provider } from './provider.js';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
 
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
 export class GoogleProvider extends Provider {
 
   constructor({
@@ -189,8 +191,12 @@ export class GoogleProvider extends Provider {
     }
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(

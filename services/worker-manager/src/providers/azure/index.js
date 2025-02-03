@@ -18,6 +18,8 @@ import msRestAzure from '@azure/ms-rest-azure-js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 
+/** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
+
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/states-billing
 const failPowerStates = new Set([
@@ -295,8 +297,12 @@ export class AzureProvider extends Provider {
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       ...workerPool.config,

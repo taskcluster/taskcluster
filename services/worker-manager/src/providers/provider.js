@@ -6,6 +6,9 @@ import slugid from 'slugid';
 import yaml from 'js-yaml';
 import { Worker, WorkerPoolError } from '../data.js';
 
+/** @typedef {import('../data.js').WorkerPool} WorkerPool */
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
 /**
  * The parent class for all providers.
  *
@@ -66,7 +69,10 @@ export class Provider {
   async prepare() {
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
   }
 
   async deprovision({ workerPool }) {
@@ -91,9 +97,9 @@ export class Provider {
   /**
    * Get active launch configs to spawn workers
    * @param {Object} options
-   * @param {String} options.workerPool - worker pool id
+   * @param {WorkerPool} options.workerPool - worker pool
    * @param {Number} options.toSpawn - number of workers to spawn
-   * @param {Boolean} options.returnAll - return all launch configs
+   * @param {Boolean} [options.returnAll] - return all launch configs
    */
   async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');

@@ -7,7 +7,7 @@ import testing from 'taskcluster-lib-testing';
 import fs from 'fs';
 import path from 'path';
 import taskcluster from 'taskcluster-client';
-import { WorkerPool, Worker } from '../src/data.js';
+import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -128,8 +128,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
         const workerPool = await makeWorkerPool({ config });
-        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
-        await provider.provision({ workerPool, workerInfo });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+        await provider.provision({ workerPool, workerPoolStats });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);

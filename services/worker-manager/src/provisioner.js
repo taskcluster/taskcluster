@@ -138,7 +138,7 @@ export class Provisioner {
       const wpStats = await this.#scanWorkersInPool(workerPoolId); // populate workerPoolsStats
 
       try {
-        await provider.provision({ workerPool, workerInfo: wpStats.forProvision() });
+        await provider.provision({ workerPool, workerPoolStats: wpStats });
       } catch (err) {
         this.monitor.reportError(err,
           {

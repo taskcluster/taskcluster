@@ -9,7 +9,7 @@ import testing from 'taskcluster-lib-testing';
 import forge from 'node-forge';
 import fs from 'fs';
 import path from 'path';
-import { WorkerPool, Worker } from '../src/data.js';
+import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import Debug from 'debug';
 
 const debug = Debug('provider_azure_test');
@@ -267,11 +267,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         providerData: {},
         emailOnError: false,
       });
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({ workerPool, workerInfo });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       const worker = workers[0];
@@ -454,11 +451,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           capacityPerInstance: 1,
         },
       });
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({ workerPool, workerInfo });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
@@ -656,11 +650,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const prepareProvision = async (cfg) => {
       const workerPool = await makeWorkerPool({}, cfg);
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
-      await provider.provision({ workerPool, workerInfo });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
@@ -741,15 +732,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     setup('create un-provisioned worker', async function() {
       const workerPool = await makeWorkerPool();
-      const workerInfo = {
-        existingCapacity: 0,
-        requestedCapacity: 0,
-      };
+      const workerPoolStats = new WorkerPoolStats('wpid');
 
       // prevent the worker from being immediately provisioned
       sandbox.stub(provider, 'checkWorker').returns('ok');
 
-      await provider.provision({ workerPool, workerInfo });
+      await provider.provision({ workerPool, workerPoolStats });
 
       sandbox.restore();
 

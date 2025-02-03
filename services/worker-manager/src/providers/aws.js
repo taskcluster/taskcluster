@@ -14,6 +14,8 @@ import _ from 'lodash';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
 
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
 const __dirname = new URL('.', import.meta.url).pathname;
 
 export class AwsProvider extends Provider {
@@ -72,8 +74,12 @@ export class AwsProvider extends Provider {
     this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
