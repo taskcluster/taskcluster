@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v79/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v80/clients/client-go/tcqueue"
 )
 
 func TestNoTaskNoScopes(t *testing.T) {

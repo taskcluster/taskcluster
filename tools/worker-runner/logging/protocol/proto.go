@@ -1,8 +1,8 @@
 package logging
 
 import (
-	"github.com/taskcluster/taskcluster/v79/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v79/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v80/tools/worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v80/tools/workerproto"
 )
 
 func SetProtocol(proto *workerproto.Protocol) {

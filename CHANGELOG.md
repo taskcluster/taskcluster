@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v80.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+D2G: Drop support for `podman`. Docker worker `payload.capabilities.containerEngine` is removed. Generic Worker config `d2gConfig.containerEngine` is removed.
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-node-deps group (76b590caa)
+* build(deps): bump taskcluster from 77.0.0 to 79.0.0 in /taskcluster (17fa89a7e)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (3cd394e86)
+* build(deps): bump the node-deps group with 23 updates (f2915637d)
+* build(deps): bump the go-deps group with 5 updates (4ebb48d43)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (abda5e681)
+
+</details>
+
 ## v79.0.0
 
 ### WORKER-DEPLOYERS

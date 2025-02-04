@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v79/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v80/tools/websocktunnel/util"
 )
 
 // utils
