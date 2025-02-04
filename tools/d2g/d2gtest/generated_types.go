@@ -43,13 +43,6 @@ type (
 		// Default:    true
 		AllowTaskclusterProxy bool `json:"allowTaskclusterProxy" default:"true"`
 
-		// Possible values:
-		//   * "docker"
-		//   * "podman"
-		//
-		// Default:    "docker"
-		ContainerEngine string `json:"containerEngine" default:"docker"`
-
 		// Default:    "all"
 		Gpus string `json:"gpus" default:"all"`
 	}
@@ -200,14 +193,6 @@ func JSONSchema() string {
         "allowTaskclusterProxy": {
           "default": true,
           "type": "boolean"
-        },
-        "containerEngine": {
-          "default": "docker",
-          "enum": [
-            "docker",
-            "podman"
-          ],
-          "type": "string"
         },
         "gpus": {
           "default": "all",

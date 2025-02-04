@@ -37,7 +37,7 @@ func ExampleConvertScopes_mixture() {
 	}
 	dwPayload := dockerworker.DockerWorkerPayload{}
 	defaults.SetDefaults(&dwPayload)
-	gwScopes, err := d2g.ConvertScopes(dwScopes, &dwPayload, "proj-misc/tutorial", "docker", scopes.DummyExpander())
+	gwScopes, err := d2g.ConvertScopes(dwScopes, &dwPayload, "proj-misc/tutorial", scopes.DummyExpander())
 	if err != nil {
 		fmt.Print(err)
 	}

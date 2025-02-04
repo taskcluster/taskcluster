@@ -89,19 +89,3 @@ payload:
 
 It must also have scope `docker-worker:capability:privileged` or scope `docker-worker:capability:privileged:<workerPoolId>`.
 The second form is preferred, as it is specific to a single worker pool.
-
-## Container Engine
-
-This capability is strictly meant for use within D2G (Docker Worker to Generic Worker payload translator tool).
-It's a `docker`/`podman` toggle for the resulting d2g-translated payload.
-
-```yaml
-payload:
-  capabilities:
-    containerEngine: podman
-```
-
-If specified, this configuration will take priority over the `containerEngine` worker config option within Generic Worker.
-Generic Worker defaults to `docker` and this payload option does not have a default.
-
-Note: D2G needs to be enabled with the config option `d2gConfig.enableD2G` in Generic Worker for this to work.

@@ -213,9 +213,6 @@ tasks:
               --head-tag='${head_tag}' &&
               rm artifacts/actions.json # taskcluster is not using actions.json
 
-          capabilities:
-            containerEngine: podman
-
           artifacts:
             "public":
               type: "directory"

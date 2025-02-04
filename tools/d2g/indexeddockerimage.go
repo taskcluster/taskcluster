@@ -9,7 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster/v79/tools/d2g/genericworker"
 )
 
-func (idi *IndexedDockerImage) FileMounts(tool string) ([]genericworker.FileMount, error) {
+func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	indexedContent := genericworker.IndexedContent{
 		Artifact:  idi.Path,
 		Namespace: idi.Namespace,
@@ -29,37 +29,25 @@ func (idi *IndexedDockerImage) FileMounts(tool string) ([]genericworker.FileMoun
 	}
 	// docker can load images compressed with gzip, bzip2, xz, or zstd
 	// https://docs.docker.com/reference/cli/docker/image/load/
-	if tool == "docker" {
-		for _, ext := range []string{"gz", "bz2", "xz", "zst"} {
-			// explicity set to the empty string so generic worker
-			// does not decompress the image before running `docker load`
-			if ext == fm.Format {
-				fm.Format = ""
-				break
-			}
+	for _, ext := range []string{"gz", "bz2", "xz", "zst"} {
+		// explicity set to the empty string so generic worker
+		// does not decompress the image before running `docker load`
+		if ext == fm.Format {
+			fm.Format = ""
+			break
 		}
 	}
 	return []genericworker.FileMount{fm}, nil
 }
 
-func (idi *IndexedDockerImage) LoadCommands(tool string) []string {
-	switch tool {
-	case "docker":
-		return []string{
-			`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
-		}
-	default:
-		return []string{}
+func (idi *IndexedDockerImage) LoadCommands() []string {
+	return []string{
+		`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
 	}
 }
 
-func (idi *IndexedDockerImage) String(tool string) (string, error) {
-	switch tool {
-	case "docker":
-		return `"${IMAGE_ID}"`, nil
-	default:
-		return "docker-archive:dockerimage", nil
-	}
+func (idi *IndexedDockerImage) String() (string, error) {
+	return `"${IMAGE_ID}"`, nil
 }
 
 func fileExtension(path string) string {
