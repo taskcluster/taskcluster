@@ -15,6 +15,8 @@ import { Worker, WorkerPoolError } from '../data.js';
  * See ../../providers.md for information on writing providers.
  */
 export class Provider {
+  setupFailed = false;
+
   constructor({
     providerId,
     notify,
@@ -75,9 +77,15 @@ export class Provider {
   async provision({ workerPool, workerPoolStats }) {
   }
 
+  /**
+   * @param {{ workerPool: WorkerPool }} opts
+   */
   async deprovision({ workerPool }) {
   }
 
+  /**
+   * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
+   */
   async registerWorker({ worker, workerPool, workerIdentityProof }) {
     throw new ApiError('not supported for this provider');
   }
@@ -88,6 +96,9 @@ export class Provider {
   async scanPrepare() {
   }
 
+  /**
+   * @param {{ worker: Worker }} opts
+   */
   async checkWorker({ worker }) {
   }
 
@@ -113,10 +124,16 @@ export class Provider {
     return configSelector.selectCapacity(toSpawn);
   }
 
+  /**
+   * @param {{ workerPool: WorkerPool, workerId: string, workerGroup: string, input: object }} opts
+   */
   async createWorker({ workerPool, workerGroup, workerId, input }) {
     throw new ApiError('not supported for this provider');
   }
 
+  /**
+   * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
+   */
   async updateWorker({ workerPool, worker, input }) {
     throw new ApiError('not supported for this provider');
   }
