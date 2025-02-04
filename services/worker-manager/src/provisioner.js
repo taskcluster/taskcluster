@@ -113,6 +113,9 @@ export class Provisioner {
       stats.updateFromWorker(worker);
     }
 
+    // TODO: fill the rest of the WorkerPoolStats that would be passed to the
+    // wplc selector and dynamic weight adjustments
+
     return stats;
   }
 

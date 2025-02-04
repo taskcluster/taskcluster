@@ -217,7 +217,7 @@ export class GoogleProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn });
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
     await Promise.all(cfgs.map(async launchConfig => {
       const cfg = launchConfig.configuration;

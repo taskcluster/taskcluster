@@ -3,10 +3,10 @@ import assert from 'assert';
 import { WorkerPoolLaunchConfig } from './data.js';
 
 /**
-* A class to select a launch config based on a weighted random selection.
-* The weight of each launch config is determined by the initial weight.
-* The higher the initial weight, the more likely the launch config will be selected.
-*/
+ * A class to select a launch config based on a weighted random selection.
+ * The weight of each launch config is determined by the initial weight.
+ * The higher the initial weight, the more likely the launch config will be selected.
+ */
 class WeightedRandomConfig {
   /** @type {object[]} */
   configs;
@@ -15,7 +15,7 @@ class WeightedRandomConfig {
   totalWeight;
 
   /**
-   * @param {object[]} launchConfigs
+   * @param {WorkerPoolLaunchConfig[]} launchConfigs
    */
   constructor(launchConfigs = []) {
     this.configs = [];
@@ -23,7 +23,7 @@ class WeightedRandomConfig {
 
     if (launchConfigs.length) {
       for (const config of launchConfigs) {
-        this.addConfig(config, config?.workerManager?.initialWeight || 1);
+        this.addConfig(config, config.configuration?.workerManager?.initialWeight || 1);
       }
     }
   }
@@ -31,7 +31,7 @@ class WeightedRandomConfig {
   /**
    * Adds a config with a weight to the weighted random config list.
    *
-   * @param {import('./data.js').WorkerPoolLaunchConfig} config The launch config to add
+   * @param {WorkerPoolLaunchConfig} config The launch config to add
    * @param {number} weight The weight to assign to this config
    */
   addConfig(config, weight) {
@@ -41,7 +41,7 @@ class WeightedRandomConfig {
   }
 
   /**
-   * @returns {import('./data.js').WorkerPoolLaunchConfig | null}
+   * @returns {WorkerPoolLaunchConfig | null}
    */
   getRandomConfig() {
     if (this.totalWeight === 0) {
@@ -67,7 +67,7 @@ class WeightedRandomConfig {
 
   /**
    * @param {number} toSpawn
-   * @returns {import('./data.js').WorkerPoolLaunchConfig[]}
+   * @returns {WorkerPoolLaunchConfig[]}
    */
   selectCapacity(toSpawn) {
     // during selection, should we adjust the weights as we go?
@@ -88,9 +88,9 @@ class WeightedRandomConfig {
 }
 
 /**
-* A class to load launch configs for particular worker pool
-* and prepare them for selection based on weighted random selection.
-*/
+ * A class to load launch configs for particular worker pool
+ * and prepare them for selection based on weighted random selection.
+ */
 export class LaunchConfigSelector {
   /**
    * @param {object} options
@@ -110,6 +110,7 @@ export class LaunchConfigSelector {
    * @returns {Promise<WeightedRandomConfig>}
    */
   async forWorkerPool(workerPool) {
+    console.log('>> im a LaunchConfigSelector.forWorkerPool', workerPool.workerPoolId);
     // this is called in the provider.provision() method
     // before that estimator.simple() is running to determine how many instances to start
     // more calculations and workers counting done in the provisioner
@@ -130,7 +131,7 @@ export class LaunchConfigSelector {
 
   /**
    * @param {import('./data.js').WorkerPool} workerPool
-   * @returns {Promise<import('./data.js').WorkerPoolLaunchConfig[]>}
+   * @returns {Promise<WorkerPoolLaunchConfig[]>}
    */
   async loadLaunchConfigs(workerPool) {
     const launchConfigs = await WorkerPoolLaunchConfig.load(

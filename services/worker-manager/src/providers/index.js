@@ -31,17 +31,18 @@ export class Providers {
   _providers = {};
 
   /**
-   * @param {object} opts
-   * @param {Record<string, any>} opts.cfg
-   * @param {object} opts.monitor
-   * @param {object} opts.notify
-   * @param {import('taskcluster-lib-postgres').Database} opts.db
-   * @param {import('../estimator.js').Estimator} opts.estimator
-   * @param {import('../data.js').Worker} opts.Worker
-   * @param {import('../data.js').WorkerPoolError} opts.WorkerPoolError
-   * @param {Function} opts.validator
-   * @param {import('taskcluster-lib-pulse').PulsePublisher} opts.publisher
-   * @param {import('../launch-config-selector.js').LaunchConfigSelector} opts.launchConfigSelector
+   * @param {{
+   *   cfg: Record<string, any>,
+   *   monitor: object,
+   *   notify: object,
+   *   db: import('taskcluster-lib-postgres').Database,
+   *   estimator: import('../estimator.js').Estimator,
+   *   Worker: import('../data.js').Worker,
+   *   WorkerPoolError: import('../data.js').WorkerPoolError,
+   *   validator: Function,
+   *   publisher: import('taskcluster-lib-pulse').PulsePublisher,
+   *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+   * }} opts
    */
   async setup({
     cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
@@ -71,7 +72,6 @@ export class Providers {
         Worker,
         WorkerPoolError,
         validator,
-        providerConfig,
         providerType: providerConfig.providerType,
         publisher,
         launchConfigSelector,
@@ -142,13 +142,14 @@ export class Providers {
    * It is up to the caller to verify this property.
    *
    * @param {string} providerId
-   * @returns {{setupFailed: boolean} | import('./provider.js').Provider}
+   * @returns {import('./provider.js').Provider}
    */
   get(providerId) {
     const p = this._providers[providerId];
     if (p && p.setupFailed) {
       // If setup failed, we do not return the provider, but just an empty object.  This
       // avoids mistakes where the caller does not check for failed setup.
+      // @ts-ignore
       return { setupFailed: true };
     }
     return p;

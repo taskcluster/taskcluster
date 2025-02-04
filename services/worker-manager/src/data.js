@@ -36,12 +36,17 @@ export class WorkerPool {
   created;
   /** @type {Date} */
   lastModified;
-  /** @type {Object} */
+  /** @type {{
+   *  launchConfigs: WorkerPoolLaunchConfig[],
+   *  lifecycle: { terminateAfter: Number, reregistrationTimeout: Number, queueInactivityTimeout: Number }}
+   * }} */
   config;
   /** @type {string} */
   owner;
   /** @type {Boolean} */
   emailOnError;
+  /** @type {Record<string, any>} */
+  providerData;
 
   // (private constructor)
   constructor(props) {
@@ -256,6 +261,7 @@ export class WorkerPoolStats {
   }
 }
 
+/** @typedef {import('../@types/index.d.ts').CloudLaunchConfig} CloudLaunchConfig */
 export class WorkerPoolLaunchConfig {
   /** @type {string} */
   launchConfigId;
@@ -263,7 +269,7 @@ export class WorkerPoolLaunchConfig {
   workerPoolId;
   /** @type {Boolean} */
   isArchived;
-  /** @type {Object} */
+  /** @type {CloudLaunchConfig} */
   configuration;
   /** @type {Date} */
   created;

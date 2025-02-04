@@ -17,6 +17,22 @@ import { Worker, WorkerPoolError } from '../data.js';
 export class Provider {
   setupFailed = false;
 
+  /**
+   * @param {{
+   *   monitor: object,
+   *   notify: object,
+   *   rootUrl: string,
+   *   providerId: string,
+   *   providerType: string,
+   *   db: import('taskcluster-lib-postgres').Database,
+   *   estimator: import('../estimator.js').Estimator,
+   *   Worker: import('../data.js').Worker,
+   *   WorkerPoolError: import('../data.js').WorkerPoolError,
+   *   validator: Function,
+   *   publisher: import('taskcluster-lib-pulse').PulsePublisher,
+   *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+   * }} opts
+   */
   constructor({
     providerId,
     notify,
@@ -25,7 +41,6 @@ export class Provider {
     rootUrl,
     estimator,
     validator,
-    providerConfig,
     providerType,
     publisher,
     launchConfigSelector,
@@ -51,6 +66,7 @@ export class Provider {
     this.publisher = publisher;
     this.launchConfigSelector = launchConfigSelector;
 
+    /** @type {string[]} */
     this.emailCache = [];
   }
 
@@ -107,12 +123,15 @@ export class Provider {
 
   /**
    * Get active launch configs to spawn workers
+   *
+   *
    * @param {Object} options
    * @param {WorkerPool} options.workerPool - worker pool
    * @param {Number} options.toSpawn - number of workers to spawn
+   * @param {WorkerPoolStats} options.workerPoolStats - provisioning stats
    * @param {Boolean} [options.returnAll] - return all launch configs
    */
-  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll = false }) {
+  async selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats, returnAll = false }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
 
     const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool);
@@ -132,12 +151,15 @@ export class Provider {
   }
 
   /**
-   * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
+   * @param {{ workerPool: WorkerPool, worker: Worker, input: object }} opts
    */
   async updateWorker({ workerPool, worker, input }) {
     throw new ApiError('not supported for this provider');
   }
 
+  /**
+   * @param {{ worker: Worker, reason: string }} opts
+   */
   async removeWorker({ worker, reason }) {
     throw new ApiError('not supported for this provider');
   }
