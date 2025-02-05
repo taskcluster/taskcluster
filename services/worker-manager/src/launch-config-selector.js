@@ -2,41 +2,38 @@ import assert from 'assert';
 
 import { WorkerPoolLaunchConfig } from './data.js';
 
+/** @typedef {{ launchConfig: WorkerPoolLaunchConfig, weight: number }} WeightedConfig */
+
 /**
  * A class to select a launch config based on a weighted random selection.
  * The weight of each launch config is determined by the initial weight.
  * The higher the initial weight, the more likely the launch config will be selected.
  */
 class WeightedRandomConfig {
-  /** @type {object[]} */
-  configs;
+  /** @type {WeightedConfig[]} */
+  configs = [];
 
   /** @type {Number} */
-  totalWeight;
+  totalWeight = 0;
 
   /**
-   * @param {WorkerPoolLaunchConfig[]} launchConfigs
+   * @param {WeightedConfig[]} cfgs
    */
-  constructor(launchConfigs = []) {
-    this.configs = [];
-    this.totalWeight = 0;
-
-    if (launchConfigs.length) {
-      for (const config of launchConfigs) {
-        this.addConfig(config, config.configuration?.workerManager?.initialWeight || 1);
+  constructor(cfgs = []) {
+    for (const config of cfgs) {
+      if (config.weight > 0) {
+        this.addConfig(config);
       }
     }
   }
 
   /**
-   * Adds a config with a weight to the weighted random config list.
-   *
-   * @param {WorkerPoolLaunchConfig} config The launch config to add
-   * @param {number} weight The weight to assign to this config
+   * @param {WeightedConfig} config
    */
-  addConfig(config, weight) {
-    this.totalWeight += weight;
+  addConfig(config) {
+    this.totalWeight += config.weight;
     this.configs.push(config);
+    // sorting is needed for the algorithm to select random based on cumulative weight
     this.configs.sort((a, b) => a.weight - b.weight);
   }
 
@@ -53,12 +50,12 @@ class WeightedRandomConfig {
     for (const config of this.configs) {
       cumulativeWeight += config.weight;
       if (random < cumulativeWeight) {
-        return config;
+        return config.launchConfig;
       }
     }
 
     // likely not to happen but just in case
-    return this.configs[this.configs.length - 1];
+    return this.configs[this.configs.length - 1].launchConfig;
   }
 
   getAll() {
@@ -81,7 +78,7 @@ class WeightedRandomConfig {
       }
 
       configs.push(cfg);
-      toSpawn -= cfg?.workerManager?.capacityPerInstance ?? cfg?.capacityPerInstance ?? 1;
+      toSpawn -= cfg.configuration.workerManager?.capacityPerInstance ?? cfg?.configuration.capacityPerInstance ?? 1;
     }
     return configs;
   }
@@ -106,27 +103,48 @@ export class LaunchConfigSelector {
   }
 
   /**
+   * Fetch all launch configurations for a worker pool
+   * and return a weighted random config selector
+   * that would return launch configs with probability
+   * that is proportional to its weight (initialWeight + adjustedWeight)
+   *
+   * If workerPoolStats object is passed, launch config's
+   * initial weights would be adjusted
+   *
+   * Launch configs with initial or adjusted weight of 0 would not be returned
+   *
    * @param {import('./data.js').WorkerPool} workerPool
-   * @returns {Promise<WeightedRandomConfig>}
+   * @param {import('./data.js').WorkerPoolStats} [workerPoolStats]
    */
-  async forWorkerPool(workerPool) {
+  async forWorkerPool(workerPool, workerPoolStats) {
     console.log('>> im a LaunchConfigSelector.forWorkerPool', workerPool.workerPoolId);
-    // this is called in the provider.provision() method
-    // before that estimator.simple() is running to determine how many instances to start
-    // more calculations and workers counting done in the provisioner
-    // ideas:
-    //  combine calculations and aggreagations for both estimator and selector?
-    //  make selector part of the estimator?
 
     const launchConfigs = await this.loadLaunchConfigs(workerPool);
+    const configsWithWeights = launchConfigs.map((launchConfig) => ({
+      launchConfig,
+      weight: launchConfig.initialWeight,
+    }));
 
-    // TODO: fetch workers stats - launchConfig/state/count information
-    //    to take into account for maxCapacity
-    //    to increase weight for the ones with lower existing capacity
-    // TODO: fetch worker pool errors - launchConfigs/errors counts for the past X minutes ( XXX??? )
-    // TODO: sort by initalWeight
+    // if stats are given we can adjust weights accordingly
+    if (workerPoolStats !== undefined) {
+      for (const cfg of configsWithWeights) {
+        // Lower the weight if max capacity is set
+        const maxCapacity = cfg.launchConfig.maxCapacity;
+        const existingCapacity = workerPoolStats.capacityByLaunchConfig.get(workerPool.workerPoolId) || 0;
+        if (maxCapacity > 0 && existingCapacity > 0) {
+          cfg.weight -= existingCapacity / maxCapacity;
+        }
 
-    return new WeightedRandomConfig(launchConfigs);
+        const errorsCount = workerPoolStats.errorsByLaunchConfig.get(workerPool.workerPoolId) || 0;
+        const totalErrors = workerPoolStats.totalErrors;
+        if (errorsCount > 0 && totalErrors > 0) {
+          // decrease likelihood proportionally to the errors count
+          cfg.weight -= errorsCount / totalErrors;
+        }
+      }
+    }
+
+    return new WeightedRandomConfig(configsWithWeights);
   }
 
   /**

@@ -102,7 +102,12 @@ export class AwsProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, returnAll: true });
+    const cfgs = await this.selectLaunchConfigsForSpawn({
+      workerPool,
+      toSpawn,
+      workerPoolStats,
+      returnAll: true,
+    });
     const shuffledConfigs = _.shuffle(cfgs);
     const toSpawnPerConfig = Math.ceil(toSpawn / shuffledConfigs.length);
 

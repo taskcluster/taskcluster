@@ -113,3 +113,8 @@ export type CloudLaunchConfig =
   | AWSLaunchConfig
   | GoogleLaunchConfig
   | AzureLaunchConfig
+
+export type WorkerPoolConfig =
+  | AWSConfigSchema
+  | AzureConfigSchema
+  | GoogleConfigSchema

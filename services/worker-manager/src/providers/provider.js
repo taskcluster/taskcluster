@@ -123,7 +123,15 @@ export class Provider {
 
   /**
    * Get active launch configs to spawn workers
+   * This is using launch config selector that loads all active launch configs for a given worker pool
+   * and then uses a weighted random config helper to select launch random configs
+   * with probabilities adjusted with `initialWeight` and WorkerPoolStats that were collected at
+   * provisioning time, which includes total number of workers and their states, and the errors
    *
+   * Some providers like AWS uses different approach to provision, as it can launch multiple instances
+   * of the same kind at once, so we return all launch configs and let it select the options.
+   *
+   * Launch configs with weight = 0 would not be selected
    *
    * @param {Object} options
    * @param {WorkerPool} options.workerPool - worker pool
@@ -134,7 +142,7 @@ export class Provider {
   async selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats, returnAll = false }) {
     assert(toSpawn >= 0, 'toSpawn capacity must be a positive number');
 
-    const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool);
+    const configSelector = await this.launchConfigSelector.forWorkerPool(workerPool, workerPoolStats);
 
     if (returnAll) {
       return configSelector.getAll();

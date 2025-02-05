@@ -36,10 +36,7 @@ export class WorkerPool {
   created;
   /** @type {Date} */
   lastModified;
-  /** @type {{
-   *  launchConfigs: WorkerPoolLaunchConfig[],
-   *  lifecycle: { terminateAfter: Number, reregistrationTimeout: Number, queueInactivityTimeout: Number }}
-   * }} */
+  /** @type {import('../@types/index.d.ts').WorkerPoolConfig } */
   config;
   /** @type {string} */
   owner;
@@ -230,6 +227,10 @@ export class WorkerPoolStats {
     this.requestedCapacity = 0;
     this.stoppingCapacity = 0;
     this.quarantinedCapacity = 0;
+
+    this.totalErrors = 0;
+    this.capacityByLaunchConfig = new Map();
+    this.errorsByLaunchConfig = new Map();
   }
 
   forProvision() {
@@ -242,13 +243,14 @@ export class WorkerPoolStats {
 
   /** @param {Worker} worker */
   updateFromWorker(worker) {
-    if (worker.state === Worker.states.STOPPING) {
+    const isStopping = worker.state === Worker.states.STOPPING;
+    const isRequested = worker.state === Worker.states.REQUESTED;
+    const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+
+    if (isStopping) {
       this.stoppingCapacity += worker.capacity;
     } else {
-      const isRequested = worker.state === Worker.states.REQUESTED;
       const requestedCapacity = isRequested ? worker.capacity : 0;
-
-      const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
       const existingCapacity = isQuarantined ? 0 : worker.capacity;
 
       if (isQuarantined) {
@@ -257,6 +259,13 @@ export class WorkerPoolStats {
 
       this.existingCapacity += existingCapacity;
       this.requestedCapacity += requestedCapacity;
+    }
+
+    if (worker.launchConfigId) {
+      this.capacityByLaunchConfig.set(
+        worker.launchConfigId,
+        this.capacityByLaunchConfig.get(worker.launchConfigId) + 1 || 1,
+      );
     }
   }
 }
@@ -280,6 +289,14 @@ export class WorkerPoolLaunchConfig {
     Object.assign(this, props);
   }
 
+  get initialWeight() {
+    return this.configuration?.workerManager?.initialWeight || 1;
+  }
+
+  get maxCapacity() {
+    return this.configuration?.workerManager?.maxCapacity || -1;
+  }
+
   static fromDb(row) {
     return new WorkerPoolLaunchConfig({
       launchConfigId: row.launch_config_id,
@@ -294,6 +311,7 @@ export class WorkerPoolLaunchConfig {
   /**
    * @param {Object} db
    * @param {string} workerPoolId
+   * @returns {Promise<WorkerPoolLaunchConfig[]>}
    */
   static async load(db, workerPoolId) {
     const isArchived = false;

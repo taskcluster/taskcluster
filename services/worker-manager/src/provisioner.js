@@ -113,8 +113,12 @@ export class Provisioner {
       stats.updateFromWorker(worker);
     }
 
-    // TODO: fill the rest of the WorkerPoolStats that would be passed to the
-    // wplc selector and dynamic weight adjustments
+    // add information about errors in the past X minutes
+    const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId);
+    for (let row of errorsByLc) {
+      stats.totalErrors += row.count;
+      stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);
+    }
 
     return stats;
   }
