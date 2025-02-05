@@ -73,6 +73,7 @@ export class Providers {
         WorkerPoolError,
         validator,
         providerType: providerConfig.providerType,
+        providerConfig, // used in testing provider
         publisher,
         launchConfigSelector,
       });
