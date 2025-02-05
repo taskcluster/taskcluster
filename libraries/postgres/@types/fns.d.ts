@@ -2784,7 +2784,8 @@ export type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = (
 ) => Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 
 export type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = (
-  worker_pool_id_in: string | null
+  worker_pool_id_in: string | null,
+  reported_since_in: Date | null
 ) => Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
 
 export type WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn = (

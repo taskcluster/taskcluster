@@ -7389,6 +7389,7 @@ end
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
+  * `reported_since_in timestamptz`
 * *Returns*: `table`
   * `worker_pool text`
   * `launch_config_id text`
@@ -7406,7 +7407,8 @@ begin
   SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int
   FROM worker_pool_errors
   WHERE
-    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (worker_pool_errors.reported > reported_since_in or reported_since_in is null)
   GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;
 end
 ```

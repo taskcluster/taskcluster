@@ -37,9 +37,6 @@ class WeightedRandomConfig {
     this.configs.sort((a, b) => a.weight - b.weight);
   }
 
-  /**
-   * @returns {WorkerPoolLaunchConfig | null}
-   */
   getRandomConfig() {
     if (this.totalWeight === 0) {
       return null;
@@ -59,7 +56,7 @@ class WeightedRandomConfig {
   }
 
   getAll() {
-    return this.configs;
+    return this.configs.map(({ launchConfig }) => launchConfig);
   }
 
   /**
@@ -108,8 +105,9 @@ export class LaunchConfigSelector {
    * that would return launch configs with probability
    * that is proportional to its weight (initialWeight + adjustedWeight)
    *
-   * If workerPoolStats object is passed, launch config's
-   * initial weights would be adjusted
+   * If workerPoolStats are passed, launch config's
+   * initial weights would be adjusted proportionally to the number
+   * of errors and existing capacity
    *
    * Launch configs with initial or adjusted weight of 0 would not be returned
    *
@@ -117,8 +115,6 @@ export class LaunchConfigSelector {
    * @param {import('./data.js').WorkerPoolStats} [workerPoolStats]
    */
   async forWorkerPool(workerPool, workerPoolStats) {
-    console.log('>> im a LaunchConfigSelector.forWorkerPool', workerPool.workerPoolId);
-
     const launchConfigs = await this.loadLaunchConfigs(workerPool);
     const configsWithWeights = launchConfigs.map((launchConfig) => ({
       launchConfig,

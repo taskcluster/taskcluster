@@ -7446,8 +7446,8 @@
           "serviceName": "worker_manager"
         },
         "get_worker_pool_error_launch_configs": {
-          "args": "worker_pool_id_in text",
-          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;\nend",
+          "args": "worker_pool_id_in text, reported_since_in timestamptz",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (worker_pool_errors.reported > reported_since_in or reported_since_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;\nend",
           "deprecated": false,
           "description": "Returns errors grouped by launch config\n",
           "mode": "read",

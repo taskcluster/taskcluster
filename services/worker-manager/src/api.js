@@ -525,7 +525,7 @@ builder.declare({
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
     this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
-    this.db.fns.get_worker_pool_error_launch_configs(workerPoolId || null),
+    this.db.fns.get_worker_pool_error_launch_configs(workerPoolId || null, null),
   ]);
 
   for (const row of daily) {
