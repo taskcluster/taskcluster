@@ -9,7 +9,7 @@ import { WorkerPoolLaunchConfig } from './data.js';
  * The weight of each launch config is determined by the initial weight.
  * The higher the initial weight, the more likely the launch config will be selected.
  */
-class WeightedRandomConfig {
+export class WeightedRandomConfig {
   /** @type {WeightedConfig[]} */
   configs = [];
 
@@ -89,7 +89,7 @@ export class LaunchConfigSelector {
   /**
    * @param {object} options
    * @param {object} options.db
-   * @param {{ alert: Function } &object} options.monitor
+   * @param {{ debug: Function } &object} options.monitor
    */
   constructor({ db, monitor }) {
     assert(db, 'db is required');
@@ -115,7 +115,7 @@ export class LaunchConfigSelector {
    * @param {import('./data.js').WorkerPoolStats} [workerPoolStats]
    */
   async forWorkerPool(workerPool, workerPoolStats) {
-    const launchConfigs = await this.loadLaunchConfigs(workerPool);
+    const launchConfigs = await this.#loadLaunchConfigs(workerPool);
     const configsWithWeights = launchConfigs.map((launchConfig) => ({
       launchConfig,
       weight: launchConfig.initialWeight,
@@ -126,12 +126,12 @@ export class LaunchConfigSelector {
       for (const cfg of configsWithWeights) {
         // Lower the weight if max capacity is set
         const maxCapacity = cfg.launchConfig.maxCapacity;
-        const existingCapacity = workerPoolStats.capacityByLaunchConfig.get(workerPool.workerPoolId) || 0;
+        const existingCapacity = workerPoolStats.capacityByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;
         if (maxCapacity > 0 && existingCapacity > 0) {
           cfg.weight -= existingCapacity / maxCapacity;
         }
 
-        const errorsCount = workerPoolStats.errorsByLaunchConfig.get(workerPool.workerPoolId) || 0;
+        const errorsCount = workerPoolStats.errorsByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;
         const totalErrors = workerPoolStats.totalErrors;
         if (errorsCount > 0 && totalErrors > 0) {
           // decrease likelihood proportionally to the errors count
@@ -147,14 +147,14 @@ export class LaunchConfigSelector {
    * @param {import('./data.js').WorkerPool} workerPool
    * @returns {Promise<WorkerPoolLaunchConfig[]>}
    */
-  async loadLaunchConfigs(workerPool) {
+  async #loadLaunchConfigs(workerPool) {
     const launchConfigs = await WorkerPoolLaunchConfig.load(
       this.db,
       workerPool.workerPoolId,
     );
 
     if (launchConfigs.length === 0) {
-      this.monitor.alert('No launch configs found for worker pool');
+      this.monitor.debug(`No launch configs found for worker pool ${workerPool.workerPoolId}`);
     }
     return launchConfigs;
   }

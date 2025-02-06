@@ -290,11 +290,11 @@ export class WorkerPoolLaunchConfig {
   }
 
   get initialWeight() {
-    return this.configuration?.workerManager?.initialWeight || 1;
+    return this.configuration?.workerManager?.initialWeight ?? 1;
   }
 
   get maxCapacity() {
-    return this.configuration?.workerManager?.maxCapacity || -1;
+    return this.configuration?.workerManager?.maxCapacity ?? -1;
   }
 
   static fromDb(row) {
