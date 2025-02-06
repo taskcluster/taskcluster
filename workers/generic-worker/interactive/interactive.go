@@ -11,10 +11,18 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/slugid-go/slugid"
 )
+
+type CreateInteractiveProcess func() (*exec.Cmd, error)
+type CreateInteractiveIsReadyProcess func() (*exec.Cmd, error)
+type InteractiveCommands struct {
+	IsReadyCmd     CreateInteractiveIsReadyProcess
+	InteractiveCmd CreateInteractiveProcess
+}
 
 var upgrader = &websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -23,21 +31,19 @@ var upgrader = &websocket.Upgrader{
 }
 
 type Interactive struct {
-	TCPPort uint16
-	GetURL  string
-	secret  string
-	ctx     context.Context
-	cmd     CreateInteractiveProcess
+	TCPPort             uint16
+	GetURL              string
+	secret              string
+	ctx                 context.Context
+	interactiveCommands InteractiveCommands
 }
 
-type CreateInteractiveProcess func() (*exec.Cmd, error)
-
-func New(port uint16, cmd CreateInteractiveProcess, ctx context.Context) (it *Interactive, err error) {
+func New(port uint16, interactiveCommands InteractiveCommands, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
-		TCPPort: port,
-		secret:  slugid.Nice(),
-		cmd:     cmd,
-		ctx:     ctx,
+		TCPPort:             port,
+		secret:              slugid.Nice(),
+		interactiveCommands: interactiveCommands,
+		ctx:                 ctx,
 	}
 
 	it.setRequestURL()
@@ -63,7 +69,13 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	itj, err := CreateInteractiveJob(it.cmd, conn, it.ctx)
+	err = it.waitUntilReady(conn)
+	if err != nil {
+		log.Printf("Failed while waiting to create an interactive job, closing connection. %v", err)
+		http.Error(w, "Failed to start interactive command", http.StatusInternalServerError)
+		return
+	}
+	itj, err := CreateInteractiveJob(it.interactiveCommands.InteractiveCmd, conn, it.ctx)
 	if err != nil {
 		log.Printf("Error while spawning interactive job: %v", err)
 		return
@@ -79,6 +91,49 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 	case <-it.ctx.Done():
 	case <-itj.done:
 	}
+}
+
+// If the interactive task has a `IsReadyCmd` declared, run that command until it succeeds or until timeout.
+func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error) {
+	if it.interactiveCommands.IsReadyCmd == nil {
+		return nil
+	}
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("Waiting for task to be ready."))
+	if err != nil {
+		return err
+	}
+
+	last_output := []byte("")
+	for i := 0; i < 20; i++ {
+		var isReadyCmd *exec.Cmd
+		isReadyCmd, err = it.interactiveCommands.IsReadyCmd()
+		if err != nil {
+			_ = conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task ready command. This is a bug.\r\n"))
+			return err
+		}
+
+		last_output, err = isReadyCmd.CombinedOutput()
+		if err != nil {
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte("."))
+			if err != nil {
+				return err
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		break
+	}
+
+	if err != nil {
+		msg := fmt.Sprintf("Error while waiting for task to be ready: %v. Output:\r\n%s", err, last_output)
+		log.Print(msg)
+		_ = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"+msg))
+		return err
+	}
+
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"))
+	return err
 }
 
 func (it *Interactive) ListenAndServe(ctx context.Context) error {

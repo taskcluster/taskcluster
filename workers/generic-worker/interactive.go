@@ -67,11 +67,23 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
 	ctx, cancel := context.WithCancel(context.Background())
-	cmd := func() (*exec.Cmd, error) {
-		return it.task.generateInteractiveCommand(ctx)
+	interactiveCmd := func() (*exec.Cmd, error) {
+		return it.task.generateInteractiveCommand(it.task.D2GInfo, ctx)
 	}
 
-	interactive, err := interactive.New(config.InteractivePort, cmd, ctx)
+	isReadyCmd := interactive.CreateInteractiveIsReadyProcess(nil)
+	if it.task.D2GInfo != nil {
+		isReadyCmd = func() (*exec.Cmd, error) {
+			return it.task.generateInteractiveIsReadyCommand(it.task.D2GInfo, ctx)
+		}
+	}
+
+	interactiveCommands := interactive.InteractiveCommands{
+		IsReadyCmd:     isReadyCmd,
+		InteractiveCmd: interactiveCmd,
+	}
+
+	interactive, err := interactive.New(config.InteractivePort, interactiveCommands, ctx)
 	if err != nil {
 		it.task.Warnf("[interactive] could not create interactive session: %v", err)
 		cancel()

@@ -16,12 +16,46 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TestInteractive(t *testing.T) {
-	// Start an interactive session on a test server
+func TestInteractiveWithReadyCommand(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	isReadyCreated := false
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
-	interactive, err := New(53765, cmd, ctx)
+	isReadyCmd := func() (*exec.Cmd, error) {
+		isReadyCreated = true
+		return exec.CommandContext(ctx, "true"), nil
+	}
+
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     isReadyCmd,
+		InteractiveCmd: cmd,
+	}
+
+	testInteractive(t, 53766, interactiveCommands, ctx)
+
+	if !isReadyCreated {
+		t.Fatalf("The isReady command never got created")
+	}
+}
+
+func TestInteractiveNormal(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     nil,
+		InteractiveCmd: cmd,
+	}
+
+	testInteractive(t, 53765, interactiveCommands, ctx)
+}
+
+func testInteractive(t *testing.T, port uint16, interactiveCommands InteractiveCommands, ctx context.Context) {
+	t.Helper()
+	// Start an interactive session on a test server
+	interactive, err := New(port, interactiveCommands, ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
@@ -85,7 +119,4 @@ func TestInteractive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error closing WebSocket connection: %v", err)
 	}
-
-	// Terminate the interactive session
-	cancel()
 }

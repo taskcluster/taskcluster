@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
+	"github.com/taskcluster/taskcluster/v80/tools/d2g"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
@@ -26,17 +27,41 @@ func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }
 
-func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	var cmd []string
+	var env []string
+
+	if d2gConversionInfo != nil {
+		pathEnv := os.Getenv("PATH")
+		env = []string{"PATH=" + pathEnv}
+
+		cmd = []string{"docker", "exec", "-it", d2gConversionInfo.ContainerName, "/bin/bash"}
+	} else {
+		env = task.EnvVars()
+		cmd = []string{"bash"}
+	}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	pathEnv := os.Getenv("PATH")
+	env := []string{"PATH=" + pathEnv}
+	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx context.Context) (*exec.Cmd, error) {
 	var processCmd *process.Command
 	var err error
 
-	var envVars = task.EnvVars()
-	envVars = append(envVars, "TERM=hterm-256color")
+	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars)
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars)
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env)
 	}
 
 	return processCmd.Cmd, err

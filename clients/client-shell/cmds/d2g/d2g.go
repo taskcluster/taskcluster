@@ -137,7 +137,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, err := d2g.ConvertPayload(dwPayload, d2gConfig)
+		gwPayload, _, err := d2g.ConvertPayload(dwPayload, d2gConfig)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}
