@@ -71,7 +71,7 @@ func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.Conversio
 func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
 	pathEnv := os.Getenv("PATH")
 	env := []string{"PATH=" + pathEnv}
-	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`/usr/bin/docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
+	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
 
 	return task.newCommandForInteractive(cmd, env, ctx)
 }

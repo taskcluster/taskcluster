@@ -337,14 +337,8 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	commands = append(
 		commands,
 		runString,
+		"exit_code=$?",
 	)
-
-	if containerName != "" {
-		commands = append(
-			commands,
-			"exit_code=$?",
-		)
-	}
 
 	commands = append(
 		commands,
@@ -358,13 +352,11 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		)
 	}
 
-	if containerName != "" {
-		commands = append(
-			commands,
-			"docker rm -v "+containerName,
-			`exit "${exit_code}"`,
-		)
-	}
+	commands = append(
+		commands,
+		"docker rm -v "+containerName,
+		`exit "${exit_code}"`,
+	)
 
 	return [][]string{
 		{
@@ -379,12 +371,8 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	switch containerName {
-	case "":
-		command.WriteString("docker run -t --rm")
-	default:
-		command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run -t --name %v", dwPayload.MaxRunTime, containerName))
-	}
+	command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run -t --name %v", dwPayload.MaxRunTime, containerName))
+
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
 	command.WriteString(" --memory-swap -1 --pids-limit -1")
