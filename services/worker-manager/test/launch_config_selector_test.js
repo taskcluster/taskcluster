@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       config: {
         launchConfigs,
         minCapacity: 1,
-        maxCapacity: 1,
+        maxCapacity: 1000,
       },
       owner: 'example@example.com',
       emailOnError: false,
@@ -86,7 +86,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(wrc.getAll().length, 1);
     assert.equal(wrc.totalWeight, 1);
 
-    assert.equal(wrc.getRandomConfig()?.launchConfigId, 'lc1');
+    assert.equal(wrc.getRandomConfig()?.launchConfig?.launchConfigId, 'lc1');
   });
 
   test('respects weights in random selection', async function () {
@@ -145,5 +145,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
     const counts = getDistribution(wrc, 100);
     assert.equal(counts.lc2, 100);
+  });
+
+  test('select capacity should respect individual max capacity', async function () {
+    const wp = await createWorkerPool([
+      genAwsLaunchConfig({ launchConfigId: 'lc1', initialWeight: 1, maxCapacity: 1 }),
+      genAwsLaunchConfig({ launchConfigId: 'lc2', initialWeight: 1, maxCapacity: 2 }),
+      genAwsLaunchConfig({ launchConfigId: 'lc3', initialWeight: 1 }),
+    ]);
+
+    const workerPoolStats = new WorkerPoolStats(wp.workerPoolId);
+
+    const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
+    const counts = getDistribution(wrc, 100);
+    assert.equal(counts.lc1, 1);
+    assert.equal(counts.lc2, 2);
+    assert.equal(counts.lc3, 97);
   });
 });

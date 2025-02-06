@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { WorkerPoolLaunchConfig } from './data.js';
 
-/** @typedef {{ launchConfig: WorkerPoolLaunchConfig, weight: number }} WeightedConfig */
+/** @typedef {{ launchConfig: WorkerPoolLaunchConfig, weight: number, remainingCapacity: number }} WeightedConfig */
 
 /**
  * A class to select a launch config based on a weighted random selection.
@@ -47,12 +47,24 @@ export class WeightedRandomConfig {
     for (const config of this.configs) {
       cumulativeWeight += config.weight;
       if (random < cumulativeWeight) {
-        return config.launchConfig;
+        return config;
       }
     }
 
     // likely not to happen but just in case
-    return this.configs[this.configs.length - 1].launchConfig;
+    return this.configs[this.configs.length - 1];
+  }
+
+  /**
+   * During selection config might exceed maxCapacity and would have to be removed from the list
+   * @param {WeightedConfig} config
+   */
+  #removeConfig(config) {
+    // delete config from the list
+    // and adjust the total weight
+    const index = this.configs.indexOf(config);
+    this.totalWeight -= config.weight;
+    this.configs.splice(index, 1);
   }
 
   getAll() {
@@ -74,8 +86,17 @@ export class WeightedRandomConfig {
         break;
       }
 
-      configs.push(cfg);
-      toSpawn -= cfg.configuration.workerManager?.capacityPerInstance ?? cfg?.configuration.capacityPerInstance ?? 1;
+      const lc = cfg.launchConfig;
+      configs.push(lc);
+      const selectedCapacity = lc.configuration.workerManager?.capacityPerInstance
+        ?? lc?.configuration.capacityPerInstance
+        ?? 1;
+      toSpawn -= selectedCapacity;
+      cfg.remainingCapacity -= selectedCapacity;
+
+      if (cfg.remainingCapacity <= 0) {
+        this.#removeConfig(cfg);
+      }
     }
     return configs;
   }
@@ -116,19 +137,27 @@ export class LaunchConfigSelector {
    */
   async forWorkerPool(workerPool, workerPoolStats) {
     const launchConfigs = await this.#loadLaunchConfigs(workerPool);
+    const wpMaxCapacity = workerPool.config.maxCapacity;
     const configsWithWeights = launchConfigs.map((launchConfig) => ({
       launchConfig,
       weight: launchConfig.initialWeight,
+      remainingCapacity: wpMaxCapacity,
     }));
 
     // if stats are given we can adjust weights accordingly
     if (workerPoolStats !== undefined) {
       for (const cfg of configsWithWeights) {
         // Lower the weight if max capacity is set
-        const maxCapacity = cfg.launchConfig.maxCapacity;
+        const maxCapacity = cfg.launchConfig.configuration?.workerManager?.maxCapacity ?? wpMaxCapacity;
         const existingCapacity = workerPoolStats.capacityByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;
         if (maxCapacity > 0 && existingCapacity > 0) {
           cfg.weight -= existingCapacity / maxCapacity;
+        } else if (maxCapacity > 0) {
+          // to respect maxCapacity we need to know how much more we can spawn
+          // unlike the estimator, which allows slight over-provision for the whole worker pool
+          // this limit is hard for the given launch config
+          // So if all launch configs in a worker pool have maxCapacity set, it would unlikely to over-provision
+          cfg.remainingCapacity = Math.max(0, maxCapacity - existingCapacity);
         }
 
         const errorsCount = workerPoolStats.errorsByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;

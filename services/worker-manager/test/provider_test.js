@@ -315,7 +315,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ({ Type }) => Type === 'monitor.generic',
       ) || [];
       assert.equal(monitorErrors.length, 1);
-      assert.equal(monitorErrors[0].Fields.message, 'No launch configs found for worker pool');
+      assert.equal(monitorErrors[0].Fields.message, `No launch configs found for worker pool ${workerPool.workerPoolId}`);
       monitor.manager.reset();
     });
   });

@@ -293,10 +293,6 @@ export class WorkerPoolLaunchConfig {
     return this.configuration?.workerManager?.initialWeight ?? 1;
   }
 
-  get maxCapacity() {
-    return this.configuration?.workerManager?.maxCapacity ?? -1;
-  }
-
   static fromDb(row) {
     return new WorkerPoolLaunchConfig({
       launchConfigId: row.launch_config_id,
