@@ -256,7 +256,7 @@ lc-capacity-per-instance:
   description: The number of tasks a single worker of this type can run at any given time.
 lc-initial-weight:
   title: Initial Weight
-  type: integer
+  type: number
   minimum: 0.0
   maximum: 1.0
   description: |-

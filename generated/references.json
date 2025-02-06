@@ -1906,7 +1906,7 @@
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
-                    "type": "integer"
+                    "type": "number"
                   },
                   "launchConfigId": {
                     "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
@@ -2172,7 +2172,7 @@
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
-                    "type": "integer"
+                    "type": "number"
                   },
                   "launchConfigId": {
                     "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
@@ -2338,7 +2338,7 @@
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
-                    "type": "integer"
+                    "type": "number"
                   },
                   "launchConfigId": {
                     "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
