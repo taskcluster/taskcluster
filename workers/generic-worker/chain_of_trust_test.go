@@ -337,3 +337,48 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		}
 	}
 }
+
+func TestChainOfTrustAdditionalData(t *testing.T) {
+
+	setup(t)
+
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile(additionalDataPath)...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			ChainOfTrust: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	if config.RunTasksAsCurrentUser {
+		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+		return
+	}
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	cotUnsignedBytes := getArtifactContent(t, taskID, "public/chain-of-trust.json")
+	cotCert := map[string]interface{}{}
+	err := json.Unmarshal(cotUnsignedBytes, &cotCert)
+	if err != nil {
+		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
+	}
+	foo, exists := cotCert["foo"]
+	if !exists {
+		t.Fatalf("Was expecting cot cert to contain field 'foo' since it is present in json file chain-of-trust-additional-data.json")
+	}
+	if foo != "bar" {
+		t.Fatalf("Was expecting property foo to be \"bar\" but it is %#v", foo)
+	}
+	// check a standard field, to make sure the json was merged
+	if _, exists := cotCert["task"]; !exists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
+	}
+}
