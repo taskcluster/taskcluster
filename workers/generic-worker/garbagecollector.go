@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
+)
 
 // A resource is something that can be deleted. Rating provides an indication
 // of how "valuable" it is. A higher value means it should be preserved in
@@ -61,7 +65,19 @@ func runGarbageCollection(r Resources) error {
 		}
 		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		}
+	}
+	if currentFreeSpace < requiredFreeSpace {
+		if config.PublicPlatformConfig.D2GEnabled() {
+			err := host.Run("/usr/bin/env", "bash", "-c", "docker image prune --all --force")
+			if err != nil {
+				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)
+			}
+			currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+			if err != nil {
+				return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			}
 		}
 	}
 	if currentFreeSpace < requiredFreeSpace {
