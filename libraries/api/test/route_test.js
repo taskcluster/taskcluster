@@ -1,6 +1,6 @@
 import request from 'superagent';
 import assert from 'assert';
-import { APIBuilder } from '../src/index.js';
+import { APIBuilder, QUERY_WILDCARD } from '../src/index.js';
 import slugid from 'slugid';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
@@ -63,6 +63,43 @@ suite(testing.suiteName(), function() {
     scopes: null,
   }, function(req, res) {
     res.status(200).send(req.query.nextPage || 'empty');
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/query-accept-any/',
+    query: {
+      [QUERY_WILDCARD]: /^[0-9a-z]+$/,
+    },
+    name: 'testQueryParamsAll',
+    title: 'Test End-Point',
+    category: 'API Library',
+    description: 'Place we can call to test something',
+    scopes: null,
+  }, function(req, res) {
+    res.status(200).send(JSON.stringify(req.query) || 'empty');
+  });
+
+  builder.declare({
+    method: 'get',
+    route: '/query-accept-any-fn/',
+    query: {
+      [QUERY_WILDCARD]: function(val, key) {
+        if (!key.startsWith('expected_')) {
+          return 'uhoh: query name is not valid';
+        }
+        if (val !== this.expectedValidatedQuery) {
+          return 'uhoh: query not valid';
+        }
+      },
+    },
+    name: 'testQueryParamsAllFn',
+    title: 'Test End-Point',
+    category: 'API Library',
+    description: 'Place we can call to test something',
+    scopes: null,
+  }, function(req, res) {
+    res.status(200).send(JSON.stringify(req.query) || 'empty');
   });
 
   builder.declare({
@@ -261,6 +298,54 @@ suite(testing.suiteName(), function() {
       .catch(function(res) {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
+      });
+  });
+
+  test('query parameter wildcard', function() {
+    const url = u('/query-accept-any/');
+    const q = { arg1: 'one', arg2: '2' };
+    return request
+      .get(url)
+      .query(q)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert(res.text === JSON.stringify(q), 'Got wrong value');
+      });
+  });
+  test('query parameter wildcard (invalid)', function() {
+    const url = u('/query-accept-any/');
+    const q = { arg1: '---', arg2: '...' };
+    return request
+      .get(url)
+      .query(q)
+      .catch(function(res) {
+        assert(!res.ok, 'Expected request failure');
+        assert(res.status === 400, 'Expected a 400 error');
+        assert(res.response.body.message.includes('does not match wildcard pattern'), 'Expected error');
+      });
+  });
+
+  test('query parameter wildcard function', function() {
+    const url = u('/query-accept-any-fn/');
+    const q = { expected_arg1: 'abracadabra', expected_arg2: 'abracadabra' };
+    return request
+      .get(url)
+      .query(q)
+      .then(function(res) {
+        assert(res.ok, 'Request failed');
+        assert(res.text === JSON.stringify(q), 'Got wrong value');
+      });
+  });
+  test('query parameter wildcard function (invalid)', function() {
+    const url = u('/query-accept-any/');
+    const q = { arg1: '---', expected_arg2: 'abracadabra' };
+    return request
+      .get(url)
+      .query(q)
+      .catch(function(res) {
+        assert(!res.ok, 'Expected request failure');
+        assert(res.status === 400, 'Expected a 400 error');
+        assert(res.response.body.message.includes('does not match wildcard pattern'), 'Expected error');
       });
   });
 

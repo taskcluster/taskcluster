@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import * as middleware from './middleware/index.js';
 
+export { QUERY_WILDCARD } from './middleware/queries.js';
 export * from './pagination.js';
 export * from './error-reply.js';
 
@@ -157,7 +158,7 @@ export class APIBuilder {
 
   /**
    * Declare an API end-point entry, where options is on the following form:
-   *
+   * @example
    * {
    *   method:   'post|head|put|get|delete',
    *   route:    '/object/:id/action/:param',      // URL pattern with parameters
@@ -171,6 +172,7 @@ export class APIBuilder {
    *     offset: /.../,                            // Reg-exp pattern
    *     limit(n) { return "..." }                 // Function, returns message
    *                                               // if value is invalid
+   *     [QUERY_WILDCARD]: /.../,                  // Allow any query-string parameter
    *     // Query-string options are always optional (at-least in this iteration)
    *   },
    *   name:     'identifierForLibraries',         // identifier for client libraries

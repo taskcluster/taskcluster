@@ -147,6 +147,28 @@ Examples:
   }
 ```
 
+If an endpoint doesn't know exactly which query parameters can be passed to it,
+wildcard query can be used. This will allow any query parameter to be passed to
+the endpoint with validation of the value (if RegExp is used, or also key if function):
+
+```js
+// import { QUERY_WILDCARD } from 'taskcluster-lib-api';
+  query: {
+    [QUERY_WILDCARD]: /.*/,  // would allow any query paramters
+  }
+// or
+  query: {
+    [QUERY_WILDCARD]: (value, key) => {
+      if (!key.startsWith('pref_')) {
+        return 'foo is not allowed';
+      }
+      if (!validFilterExpression(value)) {
+        return "invalid filter expression";
+      }
+    }
+  }
+```
+
 ### Scopes
 
 Scopes should be specified in
