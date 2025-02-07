@@ -64,6 +64,8 @@ auth:
       cpu: 10m
     purgeExpiredClients:
       cpu: 10m
+    purgeAuditHistory:
+      cpu: 10m
 built_in_workers:
   taskcluster_access_token: ...
   procs:

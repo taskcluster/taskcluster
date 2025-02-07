@@ -87,6 +87,23 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-client-request.json#",
 			},
 			definitions.Entry{
+				Name:        "getEntityHistory",
+				Title:       "Get Entity History",
+				Description: "Get entity history based on entity type and entity name",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/audit/<entityType>/<entityId>",
+				Args: []string{
+					"entityType",
+					"entityId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "resetAccessToken",
 				Title:       "Reset `accessToken`",
 				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",

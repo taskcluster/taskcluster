@@ -1,6 +1,13 @@
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  SECRET: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
 const secretToJson = (db, item) => ({
   secret: _.cloneDeep(JSON.parse(db.decrypt({ value: item.encrypted_secret }).toString('utf8'))),
   expires: item.expires.toJSON(),
@@ -50,9 +57,20 @@ builder.declare({
 }, async function(req, res) {
   const { name } = req.params;
   const { secret, expires } = req.body;
+
+  const [item] = await this.db.fns.get_secret(name);
+
   await this.db.fns.upsert_secret(name, this.db.encrypt({
     value: Buffer.from(JSON.stringify(secret), 'utf8'),
   }), new Date(expires));
+
+  await this.db.fns.insert_secrets_audit_history(
+    name,
+    'secret',
+    await req.clientId(),
+    item === undefined ? AUDIT_ENTRY_TYPE.SECRET.CREATED : AUDIT_ENTRY_TYPE.SECRET.UPDATED,
+  );
+
   res.reply({});
 });
 
@@ -69,7 +87,16 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { name } = req.params;
+
   await this.db.fns.delete_secret(name);
+
+  await this.db.fns.insert_secrets_audit_history(
+    name,
+    'secret',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.SECRET.DELETED,
+  );
+
   res.reply({});
 });
 

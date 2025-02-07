@@ -16,6 +16,13 @@ services:
       - cron
       - auth
       - auth-cron
+  auth-cron-purgeAuditHistory:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - auth
+      - auth-cron
   built-in-workers-server:
     environment:
       NODE_ENV: production

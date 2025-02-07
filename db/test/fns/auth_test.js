@@ -361,4 +361,84 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(clients.map(c => c.client_id), ['new', 'new-keep', 'old-keep']);
     });
   });
+
+  suite('audit history', function() {
+    setup('truncate audit_history', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate audit_history');
+      });
+    });
+
+    helper.dbTest('insert and get audit history', async function(db) {
+      await db.fns.insert_auth_audit_history(
+        'client-1',
+        'client',
+        'test-client',
+        'created',
+      );
+
+      const results = await db.fns.get_audit_history(
+        'client-1',
+        'client',
+        10,
+        0,
+      );
+
+      assert.equal(results.length, 1);
+      assert.equal(results[0].client_id, 'test-client');
+      assert.equal(results[0].action_type, 'created');
+      assert(results[0].created instanceof Date);
+    });
+
+    helper.dbTest('get_audit_history with pagination', async function(db) {
+
+      for (let i = 0; i < 5; i++) {
+        await db.fns.insert_auth_audit_history(
+          'client-1',
+          'client',
+          `test-client-${i}`,
+          'updated',
+        );
+      }
+
+      const page1 = await db.fns.get_audit_history('client-1', 'client', 2, 0);
+      assert.equal(page1.length, 2);
+      assert.equal(page1[0].client_id, 'test-client-0');
+      assert.equal(page1[1].client_id, 'test-client-1');
+
+      const page2 = await db.fns.get_audit_history('client-1', 'client', 2, 2);
+      assert.equal(page2.length, 2);
+      assert.equal(page2[0].client_id, 'test-client-2');
+      assert.equal(page2[1].client_id, 'test-client-3');
+    });
+
+    helper.dbTest('purge_audit_history', async function(db) {
+
+      await helper.withDbClient(async client => {
+        await client.query(`
+          INSERT INTO audit_history (entity_id, entity_type, client_id, action_type, created)
+          VALUES
+            ('client-1', 'client', 'test-client', 'created', NOW() - INTERVAL '2 days'),
+            ('client-1', 'client', 'test-client', 'updated', NOW())
+        `);
+      });
+
+      await db.fns.purge_audit_history(taskcluster.fromNow('-1 day'));
+
+      // Should only have one entry left
+      const results = await db.fns.get_audit_history('client-1', 'client', 10, 0);
+      assert.equal(results.length, 1);
+      assert.equal(results[0].action_type, 'updated');
+    });
+
+    helper.dbTest('get_audit_history with non-existent entity', async function(db) {
+      const results = await db.fns.get_audit_history(
+        'non-existent',
+        'client',
+        10,
+        0,
+      );
+      assert.equal(results.length, 0);
+    });
+  });
 });

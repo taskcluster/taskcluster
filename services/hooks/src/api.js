@@ -8,6 +8,14 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { hookUtils } from './utils.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  HOOK: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
 const builder = new APIBuilder({
   title: 'Hooks Service',
   description: [
@@ -273,6 +281,13 @@ builder.declare({
       hook.nextScheduledDate,
       hook.triggerSchema,
     );
+
+    await this.db.fns.insert_hooks_audit_history(
+      hookId,
+      'hook',
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.HOOK.CREATED,
+    );
   } catch (err) {
     if (!err || err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -389,6 +404,13 @@ builder.declare({
     ),
   );
 
+  await this.db.fns.insert_hooks_audit_history(
+    hookId,
+    'hook',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.UPDATED,
+  );
+
   let definition = hookUtils.definition(hook);
   await this.publisher.hookUpdated({ hookGroupId, hookId });
 
@@ -416,6 +438,13 @@ builder.declare({
 
   // Remove the resource if it exists
   await this.db.fns.delete_hook(hookGroupId, hookId);
+
+  await this.db.fns.insert_hooks_audit_history(
+    hookId,
+    'hook',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.DELETED,
+  );
   await this.publisher.hookDeleted({ hookGroupId, hookId });
 
   await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);
