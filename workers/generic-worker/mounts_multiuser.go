@@ -18,7 +18,7 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 }
 
 func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
-	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
+	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
 	newOwnerUsername := taskContext.User.Name
 	newOwnerUID, err := taskContext.User.ID()
@@ -39,7 +39,7 @@ func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) 
 }
 
 func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, filetype string, recurse bool) error {
-	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
+	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
 	// However, if running as current user, taskContext.pd is not set, so use
 	// taskContext.User.Name instead of credentials inside taskContext.pd.

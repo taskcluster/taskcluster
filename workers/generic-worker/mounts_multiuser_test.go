@@ -54,10 +54,6 @@ func updateOwnership(t *testing.T) []string {
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	setup(t)
 
-	if config.RunTasksAsCurrentUser {
-		t.Skip("This test is only relevant when running as task user")
-	}
-
 	dir, err := os.MkdirTemp(taskContext.TaskDir, t.Name())
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
@@ -116,7 +112,7 @@ func TestHardLinksInArchive(t *testing.T) {
 
 	// task users on windows do not have permission to create hard links
 	// they are missing the SeCreateSymbolicLinkPrivilege privilege
-	if runtime.GOOS == "windows" && !config.RunTasksAsCurrentUser {
+	if runtime.GOOS == "windows" {
 		_ = submitAndAssert(t, td, payload, "failed", "failed")
 	} else {
 		_ = submitAndAssert(t, td, payload, "completed", "completed")

@@ -59,11 +59,11 @@ oneOf:
           * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
             taskcluster authentication proxy for making unauthenticated taskcluster
             API calls
-          * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-            `true` in `generic-worker.config` file - the absolute file location of a
+          * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+            `true` in the task definition - the absolute file location of a
             json file containing the current task OS user account name and password.
             This is only useful for the generic-worker multiuser CI tasks, where
-            `runTasksAsCurrentUser` is set to `true`.
+            `runTaskAsCurrentUser` is set to `true`.
           * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
           * `TASKCLUSTER_WORKER_LOCATION`. See
             [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
@@ -303,6 +303,22 @@ oneOf:
             `exception/malformed-payload`.
 
             Since: generic-worker 54.5.0
+        runTaskAsCurrentUser:
+          type: boolean
+          title: Run task as current user
+          description: |-
+            If `true`, task commands will be executed as the
+            user currently running Generic Worker (typically
+            `root` or `LocalSystem`), rather than as the
+            dedicated task user created for the task. The task
+            user account will still be created, and is
+            available for the task to use.
+
+            Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+            Tasks submitted without this scope will be resolved
+            as `exception/malformed-payload`.
+
+            Since: generic-worker 81.0.0
     mounts:
       type: array
       description: |-

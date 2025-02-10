@@ -3,6 +3,6 @@
 package gwconfig
 
 type PublicEngineConfig struct {
-	HeadlessTasks         bool `json:"headlessTasks"`
-	RunTasksAsCurrentUser bool `json:"runTasksAsCurrentUser"`
+	EnableRunTaskAsCurrentUser bool `json:"enableRunTaskAsCurrentUser"`
+	HeadlessTasks              bool `json:"headlessTasks"`
 }
