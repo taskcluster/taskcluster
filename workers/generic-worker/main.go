@@ -1017,6 +1017,9 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	}
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
+	// reset platform data if needed (running tasks as current OS user)
+	task.ensurePlatformData()
+
 	task.Commands = make([]*process.Command, len(task.Payload.Command))
 	// generate commands, in case features want to modify them
 	for i := range task.Payload.Command {

@@ -17,10 +17,6 @@ func TestAppDataNotShared(t *testing.T) {
 
 	setup(t)
 
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Not running, since APPDATA does not change when running as current user")
-	}
-
 	// Run two tasks in sequence...
 
 	// First task:
@@ -72,9 +68,6 @@ func TestNoCreateFileMappingError(t *testing.T) {
 		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
 	}
 	setup(t)
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
-	}
 
 	payload := GenericWorkerPayload{
 		// run several bash commands, as running one is horribly slow, but
@@ -113,9 +106,6 @@ func TestDesktopResizeAndMovePointer(t *testing.T) {
 		t.Helper()
 		setup(t)
 		config.HeadlessTasks = headless
-		if config.RunTasksAsCurrentUser {
-			t.Skip("Skipping since running as current user...")
-		}
 		commands := copyTestdataFile("mouse_and_screen_resolution.py")
 		commands = append(commands, copyTestdataFile("machine-configuration.json")...)
 		commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")

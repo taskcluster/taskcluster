@@ -51,7 +51,7 @@ func (l *RunAsAdministratorTask) RequiredScopes() scopes.Required {
 }
 
 func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
-	if config.RunTasksAsCurrentUser {
+	if l.task.Payload.Features.RunTaskAsCurrentUser {
 		// already running as LocalSystem with UAC elevation
 		return nil
 	}

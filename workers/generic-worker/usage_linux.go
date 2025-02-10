@@ -32,16 +32,6 @@ func d2gConfig() string {
                                                 [default: true]`
 }
 
-func enableTaskFeatures() string {
-	return `
-          enableInteractive                 Enables the Interactive feature to be used in the
-                                            task payload. [default: true]
-          enableLoopbackAudio               Enables the Loopback Audio feature to be used in the
-                                            task payload. [default: true]
-          enableLoopbackVideo               Enables the Loopback Video feature to be used in the
-                                            task payload. [default: true]`
-}
-
 func loopbackDeviceNumbers() string {
 	return `
           loopbackAudioDeviceNumber         The audio loopback device number. The resulting devices inside /dev/snd

@@ -200,6 +200,8 @@ and reports back results to the queue.
                                             task payload. [default: true]
           enableLoopbackVideo               Enables the Loopback Video feature to be used in the
                                             task payload. [default: true]
+          enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
+                                            used in the task payload. [default: true]
           headlessTasks                     If true, no dedicated graphical session will be available to tasks.
                                             There will also be no reboots between tasks and multiple workers
                                             can be run on the same host. Useful for tasks that don't require
@@ -260,11 +262,10 @@ and reports back results to the queue.
                                             tasks) and be run as the task user itself. This
                                             option does *not* support running a command as
                                             Administrator. Furthermore, even if
-                                            runTasksAsCurrentUser is true, the script will still
-                                            be executed as the task user, rather than the
-                                            current user (that runs the generic-worker process).
-          runTasksAsCurrentUser             If true, users will still be created for tasks, but
-                                            tasks will be executed as the current OS user. [default: false]
+                                            payload.features.runTaskAsCurrentUser is true,
+                                            the script will still be executed as the task user,
+                                            rather than the current user (that runs the
+                                            generic-worker process).
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -400,7 +401,7 @@ Then cd into the source directory, and run:
 ./build.sh -t
 ```
 
-Note that this will require `sudo` access on Linux, unless you set `GW_TESTS_RUN_AS_CURRENT_USER` (see below).
+Note that this will require `sudo` access on Linux.
 
 Most tests run without needing credentials, but some will skip or fail in that circumstance.
 To run all tests, you will need to provide Taskcluster credentials.

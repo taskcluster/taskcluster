@@ -23,12 +23,7 @@ type PlatformData struct {
 	LoginInfo          *LoginInfo
 }
 
-func NewPlatformData(currentUser bool, headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
-	if currentUser {
-		return &PlatformData{
-			LoginInfo: &LoginInfo{},
-		}, nil
-	}
+func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
 	pd, err = TaskUserPlatformData(user, headlessTasks)
 	if err != nil {
 		return

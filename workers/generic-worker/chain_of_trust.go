@@ -130,8 +130,7 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 	// Return an error if the task user can read the private key file.
 	// We shouldn't be able to read the private key, if we can let's raise
 	// MalformedPayloadError, as it could be a problem with the task definition
-	// (for example, enabling chainOfTrust on a worker type that has
-	// runTasksAsCurrentUser enabled).
+	// (for example, enabling chainOfTrust when runTaskAsCurrentUser is enabled).
 	err := feature.ensureTaskUserCantReadPrivateCotKey()
 	if err != nil {
 		feature.disabled = true

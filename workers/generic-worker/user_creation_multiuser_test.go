@@ -13,7 +13,7 @@ import (
 func TestRunAfterUserCreation(t *testing.T) {
 
 	// IMPORTANT - see https://bugzil.la/1559210 - this test is independent of
-	// whether config.RunTasksAsCurrentUser is true or false.
+	// whether payload.features.runTaskAsCurrentUser is true or false.
 
 	setup(t)
 	script := "run-after-user.sh"

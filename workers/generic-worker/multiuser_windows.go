@@ -29,6 +29,7 @@ func platformFeatures() []Feature {
 	return []Feature{
 		&RDPFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
+		&RunTaskAsCurrentUserFeature{},
 		// keep chain of trust as low down as possible, as it checks permissions
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible
@@ -110,7 +111,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
 		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
-		if config.RunTasksAsCurrentUser {
+		if task.Payload.Features.RunTaskAsCurrentUser {
 			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
 		}
 		if config.WorkerLocation != "" {
@@ -548,4 +549,12 @@ func convertNilToEmptyString(val interface{}) string {
 		return ""
 	}
 	return val.(string)
+}
+
+func (task *TaskRun) ensurePlatformData() {
+	if task.Payload.Features.RunTaskAsCurrentUser {
+		taskContext.pd = &process.PlatformData{
+			LoginInfo: &process.LoginInfo{},
+		}
+	}
 }

@@ -217,3 +217,6 @@ func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 
 func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
 }
+
+func (task *TaskRun) ensurePlatformData() {
+}

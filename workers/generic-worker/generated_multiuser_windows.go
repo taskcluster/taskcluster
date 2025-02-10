@@ -212,6 +212,20 @@ type (
 		// Since: generic-worker 10.11.0
 		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
 
+		// If `true`, task commands will be executed as the
+		// user currently running Generic Worker (typically
+		// `root` or `LocalSystem`), rather than as the
+		// dedicated task user created for the task. The task
+		// user account will still be created, and is
+		// available for the task to use.
+		//
+		// Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+		// Tasks submitted without this scope will be resolved
+		// as `exception/malformed-payload`.
+		//
+		// Since: generic-worker 81.0.0
+		RunTaskAsCurrentUser bool `json:"runTaskAsCurrentUser,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -292,11 +306,11 @@ type (
 		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
 		//      taskcluster authentication proxy for making unauthenticated taskcluster
 		//      API calls
-		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-		//     `true` in `generic-worker.config` file - the absolute file location of a
+		//   * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+		//     `true` in the task definition - the absolute file location of a
 		//     json file containing the current task OS user account name and password.
 		//     This is only useful for the generic-worker multiuser CI tasks, where
-		//     `runTasksAsCurrentUser` is set to `true`.
+		//     `runTaskAsCurrentUser` is set to `true`.
 		//   * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
 		//   * `TASKCLUSTER_WORKER_LOCATION`. See
 		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
@@ -846,7 +860,7 @@ func JSONSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASK_WORKDIR` + "`" + ` - the working directory of the currently running task\n  * ` + "`" + `TASK_GROUP_ID` + "`" + ` - the task group ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_INSTANCE_TYPE` + "`" + ` - the cloud instance type of the worker (optional, not all workers run in a cloud)\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASK_WORKDIR` + "`" + ` - the working directory of the currently running task\n  * ` + "`" + `TASK_GROUP_ID` + "`" + ` - the task group ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if payload feature ` + "`" + `runTaskAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in the task definition - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTaskAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_INSTANCE_TYPE` + "`" + ` - the cloud instance type of the worker (optional, not all workers run in a cloud)\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
       "title": "Env vars",
       "type": "object"
     },
@@ -874,6 +888,11 @@ func JSONSchema() string {
         "runAsAdministrator": {
           "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the ` + "`" + `Administrators` + "`" + `\ngroup - see the ` + "`" + `osGroups` + "`" + ` property for that. Typically\n` + "`" + `task.payload.osGroups` + "`" + ` should include an Administrative group, such\nas ` + "`" + `Administrators` + "`" + `, when setting to true.\n\nFor security, ` + "`" + `runAsAdministrator` + "`" + ` feature cannot be used in\nconjunction with ` + "`" + `chainOfTrust` + "`" + ` feature.\n\nRequires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\n\nSince: generic-worker 10.11.0",
           "title": "Run commands with UAC process elevation",
+          "type": "boolean"
+        },
+        "runTaskAsCurrentUser": {
+          "description": "If ` + "`" + `true` + "`" + `, task commands will be executed as the\nuser currently running Generic Worker (typically\n` + "`" + `root` + "`" + ` or ` + "`" + `LocalSystem` + "`" + `), rather than as the\ndedicated task user created for the task. The task\nuser account will still be created, and is\navailable for the task to use.\n\nRequires scope ` + "`" + `generic-worker:run-task-as-current-user:\u003cprovisionerID\u003e/\u003cworkerType\u003e` + "`" + `.\nTasks submitted without this scope will be resolved\nas ` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 81.0.0",
+          "title": "Run task as current user",
           "type": "boolean"
         },
         "taskclusterProxy": {
