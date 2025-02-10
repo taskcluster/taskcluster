@@ -34,10 +34,8 @@ var (
 )
 
 func secure(configFile string) {
-	if !config.RunTasksAsCurrentUser {
-		secureError := fileutil.SecureFiles(configFile)
-		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
-	}
+	secureError := fileutil.SecureFiles(configFile)
+	exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
 }
 
 func rebootBetweenTasks() bool {
@@ -45,7 +43,7 @@ func rebootBetweenTasks() bool {
 }
 
 func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) {
-	pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser, config.HeadlessTasks, taskUserCredentials)
+	pd, err := process.NewPlatformData(config.HeadlessTasks, taskUserCredentials)
 	if err != nil {
 		panic(err)
 	}
@@ -297,7 +295,6 @@ func featureInitFailure(err error) (exitCode ExitCode) {
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 	// sentry requires string values...
 	m["headlessTasks"] = strconv.FormatBool(c.HeadlessTasks)
-	m["runTasksAsCurrentUser"] = strconv.FormatBool(c.RunTasksAsCurrentUser)
 }
 
 func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
@@ -307,5 +304,4 @@ func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
 		m["config"] = map[string]interface{}{}
 	}
 	m["config"].(map[string]interface{})["headlessTasks"] = c.HeadlessTasks
-	m["config"].(map[string]interface{})["runTasksAsCurrentUser"] = c.RunTasksAsCurrentUser
 }

@@ -151,12 +151,12 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
-	if config.RunTasksAsCurrentUser {
+	if task.Payload.Features.RunTaskAsCurrentUser {
 		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
 	}
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
-		if !config.RunTasksAsCurrentUser {
+		if !task.Payload.Features.RunTaskAsCurrentUser {
 			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))
 		}
 	}

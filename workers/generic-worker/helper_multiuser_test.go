@@ -3,7 +3,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -40,14 +39,13 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	t.Helper()
 	runningTests = true
 	testConfig.HeadlessTasks = true
-	testConfig.RunTasksAsCurrentUser = os.Getenv("GW_TESTS_RUN_AS_CURRENT_USER") != ""
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
 	if err != nil {
 		t.Fatalf("Could not fetch task user credentials: %v", err)
 	}
-	pd, err := process.NewPlatformData(testConfig.RunTasksAsCurrentUser, testConfig.HeadlessTasks, taskUserCredentials)
+	pd, err := process.NewPlatformData(testConfig.HeadlessTasks, taskUserCredentials)
 	if err != nil {
 		t.Fatalf("Could not create platform data: %v", err)
 	}

@@ -12,13 +12,30 @@ import (
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
 )
 
-// TestWhoAmI tests that the correct user is running the task, based on value of config setting RunTasksAsCurrentUser
+// TestWhoAmI tests that the correct user is running the task, based on value of payload feature toggle RunTaskAsCurrentUser
 func TestWhoAmI(t *testing.T) {
 	setup(t)
 
 	payload := GenericWorkerPayload{
-		Command:    goRun("whoami.go", strconv.FormatBool(config.RunTasksAsCurrentUser)),
+		Command:    goRun("whoami.go", strconv.FormatBool(false)),
 		MaxRunTime: 180,
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestWhoAmIAsCurrentUser(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("whoami.go", strconv.FormatBool(true)),
+		MaxRunTime: 180,
+		Features: FeatureFlags{
+			RunTaskAsCurrentUser: true,
+		},
 	}
 	defaults.SetDefaults(&payload)
 
@@ -29,10 +46,6 @@ func TestWhoAmI(t *testing.T) {
 
 func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 	setup(t)
-
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since we're testing if the generic-worker binary is executable by the task user.")
-	}
 
 	goPath, err := host.CombinedOutput("go", "env", "GOPATH")
 	if err != nil {
