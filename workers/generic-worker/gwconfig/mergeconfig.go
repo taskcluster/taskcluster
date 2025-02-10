@@ -8,7 +8,7 @@ import (
 
 // MergeInJSON merges config embedded inside a json.RawMessage into c.
 //
-// It does this by converting c to a map[string]interface, convering data to a
+// It does this by converting c to a map[string]interface, converting data to a
 // map[string]interface and calling extract against the result to return a
 // map[string]interface for its config portion, then merging the two
 // map[string]interfaces together and unmarshaling back into c.
