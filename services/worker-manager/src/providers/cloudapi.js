@@ -1,11 +1,6 @@
-import { hrtime } from 'process';
 import pqueue from 'p-queue';
+import { measureTime } from '../util.js';
 const PQueue = pqueue.default;
-
-export const measureTime = () => {
-  const start = hrtime.bigint();
-  return () => Number(hrtime.bigint() - start) / 1e6;
-};
 
 const defaultMetrics = () => ({
   total: 0,
