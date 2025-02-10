@@ -1309,6 +1309,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     ]);
   });
 
+  test('get worker pool errors - query filters', async function () {
+    const workerPoolId = 'foobar/baz';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    const res1 = await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'something-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about Something',
+      description: 'WHO KNOWS',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {
+        foo: 'bar-123-456',
+      },
+    });
+
+    await createWorker({ launchConfigId: 'lcid', workerPoolId, workerGroup: 'wg', workerId: 'wid' });
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'another-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'And Error about another something',
+      description: 'huh',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    let byId = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { errorId: res1.errorId });
+    assert.ok(byId.workerPoolErrors);
+    assert.equal(byId.workerPoolErrors.length, 1);
+
+    let byLc = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { launchConfigId: 'lcid' });
+    assert.ok(byLc.workerPoolErrors);
+    assert.equal(byLc.workerPoolErrors.length, 1);
+
+  });
+
   test('get worker pool errors - multiple', async function () {
     const workerPoolId = 'foobar/baz';
     const input = {

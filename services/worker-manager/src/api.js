@@ -546,7 +546,7 @@ builder.declare({
   route: '/worker-pool-errors/:workerPoolId(*)',
   query: {
     ...paginateResults.query,
-    errorId: /^[0-9]+$/,
+    errorId: /^[a-zA-Z0-9-_]+$/,
     launchConfigId: /^[a-zA-Z0-9-]+$/,
   },
   name: 'listWorkerPoolErrors',
@@ -559,13 +559,14 @@ builder.declare({
     'Get the list of worker pool errors.',
   ].join('\n'),
 }, async function(req, res) {
-  const { errorId, workerPoolId, launchConfigId } = req.params;
+  const { workerPoolId } = req.params;
+  const { errorId, launchConfigId } = req.query;
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool2(
-      errorId || null,
+      errorId ? String(errorId) : null,
       workerPoolId || null,
-      launchConfigId || null,
+      launchConfigId ? String(launchConfigId) : null,
       size,
       offset,
     ),
