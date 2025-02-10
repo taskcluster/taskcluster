@@ -3,7 +3,6 @@ import helper from './helper.js';
 import testing from 'taskcluster-lib-testing';
 import { WorkerPoolStats } from '../src/data.js';
 
-
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -23,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     capacityPerInstance: 1,
   });
 
-  const createWorkerPool = async (launchConfigs = [], workerPoolId='wp/id') => {
+  const createWorkerPool = async (launchConfigs = [], workerPoolId = 'wp/id') => {
     const input = {
       providerId: 'aws',
       description: 'bar',
@@ -36,7 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       emailOnError: false,
     };
     return await helper.workerManager.createWorkerPool(workerPoolId, input);
-  }
+  };
 
   /**
    * @param {import('../src/launch-config-selector.js').WeightedRandomConfig} weightedRandomConfig
@@ -51,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       counts[key] = counts[key] ? counts[key] + 1 : 1;
     });
     return counts;
-  }
+  };
 
   setup(async function() {
     launchConfigSelector = await helper.load('launchConfigSelector');

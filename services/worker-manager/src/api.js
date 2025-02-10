@@ -605,6 +605,7 @@ declareWithTrailingColon({
       workerGroup,
       null,
       null,
+      null,
       size,
       offset),
   });

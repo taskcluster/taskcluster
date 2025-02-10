@@ -305,7 +305,7 @@ export class WorkerPoolLaunchConfig {
   }
 
   /**
-   * @param {Object} db
+   * @param {Database} db
    * @param {string} workerPoolId
    * @returns {Promise<WorkerPoolLaunchConfig[]>}
    */
@@ -565,7 +565,7 @@ export class Worker {
    * If there are no workers to show, the response will have the
    * `rows` field set to an empty array.
    *
-   * @param {Object} db
+   * @param {Database} db
    * @param {{workerPoolId?: string, expires?: Date}} params - Parameters object
    * @param {{ workerState?: string, launchConfigId?: string, quarantined?: string }} [queryIn]
    * @returns {Promise<{rows: Worker[], continuationToken: string}>}

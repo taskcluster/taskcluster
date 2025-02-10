@@ -420,7 +420,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkers',
             'output': 'v1/list-workers-response.json#',
-            'query': ['continuationToken', 'limit', 'quarantined', 'workerState'],
+            'query': ['continuationToken', 'limit', 'launchConfigId', 'quarantined', 'workerState'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
         },

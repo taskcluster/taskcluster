@@ -234,7 +234,6 @@ export const generateDbTypes = async (schema) => {
   const serviceNames = [...new Set([...methods].map(({ serviceName }) => serviceName).sort())];
   const services = new Map();
 
-  // Helper to convert Postgres types to TypeScript types
   const pgToTs = (pgType) => {
     const typeMap = {
       'text': 'string',
@@ -264,11 +263,9 @@ export const generateDbTypes = async (schema) => {
 
   let output = [];
 
-  // File header
   output.push('// Generated type definitions for DB functions');
   output.push('// DO NOT EDIT MANUALLY\n');
 
-  // Common types
   output.push('export type DbFunctionMode = "read" | "write";');
   output.push('export type JsonB = any; // PostgreSQL JSONB type');
   output.push('export type TaskRequires = string; // Enum type from DB');
@@ -316,19 +313,32 @@ export const generateDbTypes = async (schema) => {
         }
       }
 
-      // Generate function signature
+      // Generate function signature for calls fn(arg1, arg2..)
       if (method.deprecated) {
-        output.push(`/** @deprecated */\nexport type ${typeName(serviceName, method.name, 'DeprecatedFn')} = (`);
+        output.push(`/** @deprecated */\ntype ${typeName(serviceName, method.name, 'DeprecatedFn')} = {`);
       } else {
-        output.push(`export type ${typeName(serviceName, method.name, 'Fn')} = (`);
+        output.push(`type ${typeName(serviceName, method.name, 'Fn')} = {`);
       }
+      output.push(' ('); // union
       if (args.length > 0) {
         args.forEach((arg, i) => {
           const argType = `${arg.type}${isArgOptional(arg.name, method.body) ? ' | null' : ''}`;
-          output.push(`  ${arg.name}: ${argType}${i < args.length - 1 ? ',' : ''}`);
+          output.push(`   ${arg.name}: ${argType}${i < args.length - 1 ? ',' : ''}`);
         });
       }
-      output.push(`) => Promise<${returnType}>;\n`);
+      output.push(` ): Promise<${returnType}>;`);
+      output.push(` (params: {`);
+      if (args.length > 0) {
+        args.forEach((arg, i) => {
+          const isOptional = isArgOptional(arg.name, method.body);
+          const argType = `${arg.type}${isOptional ? ' | null' : ''}`;
+          output.push(`  ${arg.name}${isOptional ? '?' : ''}: ${argType};`);
+        });
+      }
+
+      output.push(` }): Promise<${returnType}>;`);
+      output.push('};');
+
     }
   }
 

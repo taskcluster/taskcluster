@@ -2432,6 +2432,7 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"launchConfigId",
 					"quarantined",
 					"workerState",
 				},

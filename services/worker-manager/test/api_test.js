@@ -2183,23 +2183,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('get workers with queue metadata and filters', async function () {
-      const workerPoolId3 = 'pp/ee3';
-      const workerGroup3 = 'wg3';
-      const workerId3 = 'wi3';
-      const launchConfigId = 'lcId1';
+      const workerPoolId4 = 'pp/ee4';
+      const workerGroup4 = 'wg4';
+      const workerId4 = 'wi4';
+      const launchConfigId = 'lcId2';
 
-      await createWorkerPool({ workerPoolId: workerPoolId3, workerGroup: workerGroup3 });
+      await createWorkerPool({ workerPoolId: workerPoolId4, workerGroup: workerGroup4 });
       await createWorker({
-        workerPoolId: workerPoolId3,
-        workerGroup: workerGroup3,
-        workerId: workerId3,
+        workerPoolId: workerPoolId4,
+        workerGroup: workerGroup4,
+        workerId: workerId4,
         launchConfigId,
         state: Worker.states.REQUESTED,
       });
 
-      await makeQueueVisible(workerPoolId3, workerGroup3, workerId3);
+      await makeQueueVisible(workerPoolId4, workerGroup4, workerId4);
 
-      const [provisionerId, workerType] = workerPoolId3.split('/');
+      const [provisionerId, workerType] = workerPoolId4.split('/');
 
       const filters = [
         { quarantined: 'false' },
@@ -2210,8 +2210,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       for (const filter of filters) {
         const { workers } = await helper.workerManager.listWorkers(provisionerId, workerType, filter);
         assert.equal(workers.length, 1);
-        assert.equal(workers[0].workerPoolId, workerPoolId3);
-        assert.equal(workers[0].workerId, workerId3);
+        assert.equal(workers[0].workerPoolId, workerPoolId4);
+        assert.equal(workers[0].workerId, workerId4);
       }
 
       const noWorkersFilters = [

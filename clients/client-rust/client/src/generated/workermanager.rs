@@ -653,28 +653,28 @@ impl WorkerManager {
     /// should call the end-point again with the `continuationToken` as a query-string
     /// option. By default this end-point will list up to 1000 workers in a single
     /// page. You may limit this with the query-string parameter `limit`.
-    pub async fn listWorkers(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>) -> Result<Value, Error> {
+    pub async fn listWorkers(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, launchConfigId: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, workerState);
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, launchConfigId, quarantined, workerState);
         let body = None;
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listWorkers endpoint
-    pub fn listWorkers_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, workerState);
+    pub fn listWorkers_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, launchConfigId: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, launchConfigId, quarantined, workerState);
         self.client.make_url(&path, query)
     }
 
     /// Generate a signed URL for the listWorkers endpoint
-    pub fn listWorkers_signed_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, quarantined, workerState);
+    pub fn listWorkers_signed_url(&self, provisionerId: &str, workerType: &str, continuationToken: Option<&str>, limit: Option<&str>, launchConfigId: Option<&str>, quarantined: Option<&str>, workerState: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkers_details(provisionerId, workerType, continuationToken, limit, launchConfigId, quarantined, workerState);
         self.client.make_signed_url(&path, query, ttl)
     }
 
     /// Determine the HTTP request details for listWorkers
-    fn listWorkers_details<'a>(provisionerId: &'a str, workerType: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, quarantined: Option<&'a str>, workerState: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn listWorkers_details<'a>(provisionerId: &'a str, workerType: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, launchConfigId: Option<&'a str>, quarantined: Option<&'a str>, workerState: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("provisioners/{}/worker-types/{}/workers", urlencode(provisionerId), urlencode(workerType));
         let mut query = None;
         if let Some(q) = continuationToken {
@@ -682,6 +682,9 @@ impl WorkerManager {
         }
         if let Some(q) = limit {
             query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = launchConfigId {
+            query.get_or_insert_with(Vec::new).push(("launchConfigId", q));
         }
         if let Some(q) = quarantined {
             query.get_or_insert_with(Vec::new).push(("quarantined", q));

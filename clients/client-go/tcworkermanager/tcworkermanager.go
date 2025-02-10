@@ -619,10 +619,13 @@ func (workerManager *WorkerManager) ReregisterWorker(payload *ReregisterWorkerRe
 //	worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See #listWorkers
-func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, limit, quarantined, workerState string) (*ListWorkersResponse, error) {
+func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, continuationToken, launchConfigId, limit, quarantined, workerState string) (*ListWorkersResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
+	}
+	if launchConfigId != "" {
+		v.Add("launchConfigId", launchConfigId)
 	}
 	if limit != "" {
 		v.Add("limit", limit)
@@ -645,10 +648,13 @@ func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, conti
 //	worker-manager:list-workers:<provisionerId>/<workerType>
 //
 // See ListWorkers for more details.
-func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, limit, quarantined, workerState string, duration time.Duration) (*url.URL, error) {
+func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerType, continuationToken, launchConfigId, limit, quarantined, workerState string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
+	}
+	if launchConfigId != "" {
+		v.Add("launchConfigId", launchConfigId)
 	}
 	if limit != "" {
 		v.Add("limit", limit)

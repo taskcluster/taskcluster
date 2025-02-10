@@ -4339,6 +4339,7 @@ export default {
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "quarantined",
             "workerState"
           ],
