@@ -30,44 +30,47 @@ var (
 	unsignedCertName      = "public/chain-of-trust.json"
 	ed25519SignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json.sig")
 	ed25519SignedCertName = "public/chain-of-trust.json.sig"
+	additionalDataPath    = "chain-of-trust-additional-data.json"
 )
 
-type ChainOfTrustFeature struct {
-	Ed25519PrivateKey ed25519.PrivateKey
-}
+type (
+	ChainOfTrustFeature struct {
+		Ed25519PrivateKey ed25519.PrivateKey
+	}
 
-type ArtifactHash struct {
-	SHA256 string `json:"sha256"`
-}
+	ArtifactHash struct {
+		SHA256 string `json:"sha256"`
+	}
 
-type CoTEnvironment struct {
-	PublicIPAddress  string `json:"publicIpAddress,omitempty"`
-	PrivateIPAddress string `json:"privateIpAddress"`
-	InstanceID       string `json:"instanceId"`
-	InstanceType     string `json:"instanceType"`
-	Region           string `json:"region"`
-}
+	CoTEnvironment struct {
+		PublicIPAddress  string `json:"publicIpAddress,omitempty"`
+		PrivateIPAddress string `json:"privateIpAddress"`
+		InstanceID       string `json:"instanceId"`
+		InstanceType     string `json:"instanceType"`
+		Region           string `json:"region"`
+	}
 
-type ChainOfTrustData struct {
-	Version     int                            `json:"chainOfTrustVersion"`
-	Artifacts   map[string]ArtifactHash        `json:"artifacts"`
-	Task        tcqueue.TaskDefinitionResponse `json:"task"`
-	TaskID      string                         `json:"taskId"`
-	RunID       uint                           `json:"runId"`
-	WorkerGroup string                         `json:"workerGroup"`
-	WorkerID    string                         `json:"workerId"`
-	Environment CoTEnvironment                 `json:"environment"`
-}
+	ChainOfTrustData struct {
+		Version     int                            `json:"chainOfTrustVersion"`
+		Artifacts   map[string]ArtifactHash        `json:"artifacts"`
+		Task        tcqueue.TaskDefinitionResponse `json:"task"`
+		TaskID      string                         `json:"taskId"`
+		RunID       uint                           `json:"runId"`
+		WorkerGroup string                         `json:"workerGroup"`
+		WorkerID    string                         `json:"workerId"`
+		Environment CoTEnvironment                 `json:"environment"`
+	}
 
-type ChainOfTrustTaskFeature struct {
-	task           *TaskRun
-	ed25519PrivKey ed25519.PrivateKey
-	disabled       bool
-}
+	ChainOfTrustTaskFeature struct {
+		task           *TaskRun
+		ed25519PrivKey ed25519.PrivateKey
+		disabled       bool
+	}
 
-type MissingED25519PrivateKey struct {
-	Err error
-}
+	MissingED25519PrivateKey struct {
+		Err error
+	}
+)
 
 func (m *MissingED25519PrivateKey) Error() string {
 	return fmt.Sprintf("Missing ED25519 Private Key: %v", m.Err)
@@ -199,6 +202,12 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
+
+	certBytes, e = feature.MergeAdditionalData(certBytes)
+	if e != nil {
+		panic(e)
+	}
+
 	// create unsigned chain-of-trust.json
 	e = os.WriteFile(unsignedCert, certBytes, 0644)
 	if e != nil {
@@ -237,4 +246,41 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 		return errors.New(ChainOfTrustKeyNotSecureMessage)
 	}
 	return nil
+}
+
+func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (mergedCert []byte, err error) {
+	additionalDataFile := filepath.Join(taskContext.TaskDir, additionalDataPath)
+
+	// Additional data is optional, if file hasn't been created by task, just return the original data
+	if _, err = os.Stat(additionalDataFile); errors.Is(err, os.ErrNotExist) {
+		return certBytes, nil
+	}
+
+	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
+	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile)
+	if err != nil {
+		return
+	}
+
+	var additionalDataBytes []byte
+	additionalDataBytes, err = os.ReadFile(tempPath)
+	if err != nil {
+		return
+	}
+
+	combinedData := map[string]interface{}{}
+
+	// Unmarshal additional data first so the task can't override this feature's generated data
+	err = json.Unmarshal(additionalDataBytes, &combinedData)
+	if err != nil {
+		// If for any reason the task-generated file isn't valid json, this should generate an error
+		return
+	}
+
+	err = json.Unmarshal(certBytes, &combinedData)
+	if err != nil {
+		return
+	}
+
+	return json.MarshalIndent(combinedData, "", "  ")
 }
