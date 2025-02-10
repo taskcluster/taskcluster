@@ -891,6 +891,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert.deepStrictEqual(data.workers, input);
   });
 
+  test('get workers for a given worker pool with filters', async function () {
+    let input = [
+      {
+        workerPoolId,
+        providerId: 'google',
+        workerGroup: 'rust-workers',
+        workerId: 's-3434',
+        created: taskcluster.fromNow('-1 seconds'),
+        lastModified: new Date(),
+        lastChecked: new Date(),
+        expires: taskcluster.fromNow('1 week'),
+        state: Worker.states.RUNNING,
+        capacity: 1,
+        providerData: {},
+        secret: null,
+        launchConfigId: 'lc-w1',
+      },
+      {
+        workerPoolId,
+        providerId: 'google',
+        workerGroup: 'rust-workers',
+        workerId: 's-555',
+        created: taskcluster.fromNow('-2 seconds'),
+        lastModified: new Date(),
+        lastChecked: new Date(),
+        expires: taskcluster.fromNow('1 week'),
+        state: Worker.states.STOPPED,
+        capacity: 1,
+        providerData: {},
+        secret: null,
+      },
+    ];
+
+    await createWorkerPool();
+
+    await createWorker(input[0]);
+    await createWorker(input[1]);
+
+    let byState = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { state: Worker.states.STOPPED });
+    assert.equal(byState.workers.length, 1);
+    assert.equal(byState.workers[0].workerId, input[1].workerId);
+
+    let byLc = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { launchConfigId: 'lc-w1' });
+    assert.equal(byLc.workers.length, 1);
+    assert.equal(byLc.workers[0].workerId, input[0].workerId);
+  });
+
   test('get workers for a given worker pool - no workers', async function () {
     await createWorkerPool();
     let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
@@ -2133,6 +2180,49 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(workers.length, 1);
       assert.equal(workers[0].workerPoolId, workerPoolId3);
       assert.equal(workers[0].workerId, workerId3);
+    });
+
+    test('get workers with queue metadata and filters', async function () {
+      const workerPoolId3 = 'pp/ee3';
+      const workerGroup3 = 'wg3';
+      const workerId3 = 'wi3';
+      const launchConfigId = 'lcId1';
+
+      await createWorkerPool({ workerPoolId: workerPoolId3, workerGroup: workerGroup3 });
+      await createWorker({
+        workerPoolId: workerPoolId3,
+        workerGroup: workerGroup3,
+        workerId: workerId3,
+        launchConfigId,
+        state: Worker.states.REQUESTED,
+      });
+
+      await makeQueueVisible(workerPoolId3, workerGroup3, workerId3);
+
+      const [provisionerId, workerType] = workerPoolId3.split('/');
+
+      const filters = [
+        { quarantined: 'false' },
+        { workerState: Worker.states.REQUESTED },
+        { launchConfigId: launchConfigId },
+      ];
+
+      for (const filter of filters) {
+        const { workers } = await helper.workerManager.listWorkers(provisionerId, workerType, filter);
+        assert.equal(workers.length, 1);
+        assert.equal(workers[0].workerPoolId, workerPoolId3);
+        assert.equal(workers[0].workerId, workerId3);
+      }
+
+      const noWorkersFilters = [
+        { quarantined: 'true' },
+        { workerState: Worker.states.STOPPING },
+        { launchConfigId: 'NoSuchId1' },
+      ];
+      for (const filter of noWorkersFilters) {
+        const { workers } = await helper.workerManager.listWorkers(provisionerId, workerType, filter);
+        assert.equal(workers.length, 0);
+      }
     });
   });
 });

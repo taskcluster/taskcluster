@@ -6994,6 +6994,7 @@ begin
   * `expires_in timestamptz`
   * `worker_state_in text`
   * `only_quarantined_in boolean`
+  * `launch_config_id_in text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -7060,6 +7061,10 @@ begin
     and (
       workers.state = worker_state_in
       or worker_state_in is null
+    )
+    and (
+      workers.launch_config_id = launch_config_id_in
+      or launch_config_id_in is null
     )
   order by worker_pool_id, worker_group, worker_id
   limit get_page_limit(page_size_in)
@@ -7216,6 +7221,7 @@ end
   * `worker_group_in text`
   * `worker_id_in text`
   * `state_in text`
+  * `launch_config_id_in text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -7260,6 +7266,7 @@ begin
     (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
     (workers.worker_group = worker_group_in or worker_group_in is null) and
     (workers.worker_id = worker_id_in or worker_id_in is null) and
+    (workers.launch_config_id = launch_config_id_in or launch_config_id_in is null) and
     (workers.state = state_in or state_in is null)
   order by created desc
   limit get_page_limit(page_size_in)

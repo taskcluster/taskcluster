@@ -523,10 +523,13 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 //	worker-manager:list-workers:<workerPoolId>
 //
 // See #listWorkersForWorkerPool
-func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, limit, state string) (*WorkerListInAGivenWorkerPool, error) {
+func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, continuationToken, launchConfigId, limit, state string) (*WorkerListInAGivenWorkerPool, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
+	}
+	if launchConfigId != "" {
+		v.Add("launchConfigId", launchConfigId)
 	}
 	if limit != "" {
 		v.Add("limit", limit)
@@ -546,10 +549,13 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 //	worker-manager:list-workers:<workerPoolId>
 //
 // See ListWorkersForWorkerPool for more details.
-func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, limit, state string, duration time.Duration) (*url.URL, error) {
+func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoolId, continuationToken, launchConfigId, limit, state string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
 	if continuationToken != "" {
 		v.Add("continuationToken", continuationToken)
+	}
+	if launchConfigId != "" {
+		v.Add("launchConfigId", launchConfigId)
 	}
 	if limit != "" {
 		v.Add("limit", limit)

@@ -567,10 +567,10 @@ export class Worker {
    *
    * @param {Object} db
    * @param {{workerPoolId?: string, expires?: Date}} params - Parameters object
-   * @param {{query?: Record<string, string>}} [options] - Optional options object
+   * @param {{ workerState?: string, launchConfigId?: string, quarantined?: string }} [queryIn]
    * @returns {Promise<{rows: Worker[], continuationToken: string}>}
    */
-  static async getWorkers(db, { workerPoolId, expires }, { query: queryIn } = {}) {
+  static async getWorkers(db, { workerPoolId, expires }, queryIn = {}) {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
@@ -578,12 +578,9 @@ export class Worker {
           return db.fns.get_queue_workers_with_wm_data(
             workerPoolId || null,
             expires || null,
-            (Object.keys(query).includes("workerState") &&
-              Object.values(Worker.states).includes(query.workerState))
-              ? query.workerState
-              : null,
-            // only_quarantined_in
-            query.quarantined === 'true',
+            query.workerState && Object.values(Worker.states).includes(query.workerState) ? query.workerState : null,
+            query.quarantined === 'true', // only_quarantined_in
+            query.launchConfigId ?? null,
             size,
             offset,
           );

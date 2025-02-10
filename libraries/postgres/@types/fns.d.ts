@@ -2665,6 +2665,7 @@ export type WorkerManagerGetQueueWorkersWithWmDataFn = (
   expires_in: Date | null,
   worker_state_in: string | null,
   only_quarantined_in: boolean,
+  launch_config_id_in: string | null,
   page_size_in: number | null,
   page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, quarantine_until: Date, expires: Date, first_claim: Date, recent_tasks: JsonB, last_date_active: Date, state: string, capacity: any, provider_id: string, etag: string, launch_config_id: string}>>;
@@ -2755,6 +2756,7 @@ export type WorkerManagerGetWorkerManagerWorkers2Fn = (
   worker_group_in: string | null,
   worker_id_in: string | null,
   state_in: string | null,
+  launch_config_id_in: string | null,
   page_size_in: number | null,
   page_offset_in: number | null
 ) => Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date, launch_config_id: string}>>;

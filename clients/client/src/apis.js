@@ -4166,8 +4166,8 @@ export default {
           "query": [
             "continuationToken",
             "limit",
-            "errorId",
-            "launchConfigId"
+            "launchConfigId",
+            "errorId"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
@@ -4284,6 +4284,7 @@ export default {
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "state"
           ],
           "route": "/workers/<workerPoolId>",

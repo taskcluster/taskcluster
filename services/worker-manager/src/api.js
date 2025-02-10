@@ -80,6 +80,10 @@ const publishLaunchConfigEvents = async ({
   }
 };
 
+const launchConfigIdQuery = {
+  launchConfigId: /^[a-zA-Z0-9-]{1,38}$/,
+};
+
 builder.declare({
   method: 'get',
   route: '/providers',
@@ -546,8 +550,8 @@ builder.declare({
   route: '/worker-pool-errors/:workerPoolId(*)',
   query: {
     ...paginateResults.query,
+    ...launchConfigIdQuery,
     errorId: /^[a-zA-Z0-9-_]+$/,
-    launchConfigId: /^[a-zA-Z0-9-]+$/,
   },
   name: 'listWorkerPoolErrors',
   scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
@@ -827,6 +831,7 @@ builder.declare({
   route: '/workers/:workerPoolId(*)',
   query: {
     ...paginateResults.query,
+    ...launchConfigIdQuery,
     state: /^(requested|running|stopping|stopped|standalone)$/,
   },
   name: 'listWorkersForWorkerPool',
@@ -847,13 +852,16 @@ builder.declare({
       `Worker Pool does not exist`, {});
   }
 
+  const { state, launchConfigId } = req.query;
+
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_worker_manager_workers2({
       worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,
-      state_in: req.query.state || null,
+      state_in: state || null,
+      launch_config_id_in: launchConfigId || null,
       page_size_in: size,
       page_offset_in: offset,
     }),
@@ -1054,6 +1062,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
     ...paginateResults.query,
+    ...launchConfigIdQuery,
     quarantined: /^(true|false)$/,
     workerState: /^(requested|running|stopping|stopped)$/,
   },
@@ -1083,7 +1092,7 @@ builder.declare({
   const { rows: workers, continuationToken } = await Worker.getWorkers(
     this.db,
     { workerPoolId },
-    { query: req.query },
+    req.query,
   );
 
   const result = {
