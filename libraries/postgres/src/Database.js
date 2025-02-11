@@ -110,12 +110,12 @@ class Database {
     this.fns = /** @type {DbFunctions} */({});
     this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
     schema.allMethods().forEach(method => {
-      /** @type {DbFunctions | DeprecatedDbFunctions | Record<string, any>} */
-      let collection = this.fns;
+      let collection = /** @type {DbFunctions | DeprecatedDbFunctions} */(this.fns);
       if (method.deprecated && this.deprecatedFns) {
         collection = this.deprecatedFns;
       }
 
+      // @ts-ignore method name is known to be correct for DbFunctions
       collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
@@ -126,6 +126,7 @@ class Database {
 
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
+        /** @param {string} key */
         const validNamedArgument = key => /^[a-z0-9_]+_in$/.test(key);
         const hasNamedArguments = args.length === 1
           && _.isPlainObject(args[0])
@@ -621,7 +622,7 @@ class Database {
    * @private
    * @param {DbAccessMode} mode
    * @param {(context: { query: (query: string, ...args: any[]) => Promise<pg.QueryResult> }) => Promise<any>} cb
-   * @returns {Promise<pg.Client>}
+   * @returns {Promise<pg.QueryResult>}
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
