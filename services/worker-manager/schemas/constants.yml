@@ -204,3 +204,69 @@ quarantine-details-item:
     - quarantineUntil
     - quarantineInfo
   additionalProperties: false
+
+min-capacity:
+  title: Minimum Capacity
+  type: integer
+  minimum: 0
+  description: |
+    The minimum amount of capacity that worker-manager should make
+    available at any given time for the entire workerpool.
+max-capacity:
+  title: Maximum Capacity
+  type: integer
+  minimum: 0
+  description: |
+    The maximum amount of capacity that worker-manager should make
+    available at any given time for the entire workerpool.
+scaling-ratio:
+  title: Scaling Ratio
+  type: number
+  minimum: 0.0
+  maximum: 1.0
+  description: |
+    The scaling ratio is a ratio of worker capacity to pending tasks - a ratio
+    of 1.0 means that 1 capacity will be added for each pending task
+
+launch-config-id:
+  title: Launch Configuration ID
+  type: string
+  pattern: {$const: identifier-pattern}
+  minLength: {$const: identifier-min-length}
+  maxLength: {$const: identifier-max-length}
+  description: |
+    The ID of the launch configuration. Must be unique forever within the worker pool.
+    Any change to the launch configuration (except `workerManager` fields) must use a new ID
+    to ensure proper tracking of configuration metrics.
+    If not provided, worker-manager will generate a unique ID.
+    Must be between 1 and 38 characters long and contain only alphanumeric
+    characters, dashes, and underscores.
+lc-max-capacity:
+  title: Max Capacity
+  type: integer
+  minimum: 0
+  description: |-
+    The maximum capacity of workers of this type (launch configuration)
+    that can be running at any given time.
+    This cannot exceed worker pool's `maxCapacity`.
+lc-capacity-per-instance:
+  title: Capacity Per Instance
+  type: integer
+  minimum: 1
+  description: The number of tasks a single worker of this type can run at any given time.
+lc-initial-weight:
+  title: Initial Weight
+  type: number
+  minimum: 0.0
+  maximum: 1.0
+  description: |-
+    The initial weight of the launch configuration at the provisionining time.
+    Launch configurations with higher weight will be more likely to be selected.
+    If not specified, the default weight is `0.5`.
+    Specifying a weight of `0.0` will prevent the launch configuration from being selected.
+    Whena all launch configurations have same weight, they will be selected in a round-robin fashion.
+capacity-per-instance-deprecated:
+  title: Capacity Per Instance (Deprecated)
+  type: integer
+  minimum: 1
+  description: Deprecated - please use `workerManager.capacityPerInstance` instead
