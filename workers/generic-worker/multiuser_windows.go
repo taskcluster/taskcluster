@@ -27,9 +27,9 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&RunTaskAsCurrentUserFeature{},
 		&RDPFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
-		&RunTaskAsCurrentUserFeature{},
 		// keep chain of trust as low down as possible, as it checks permissions
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible

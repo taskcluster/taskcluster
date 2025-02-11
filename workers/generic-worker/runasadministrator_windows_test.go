@@ -147,8 +147,9 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
 		Features: FeatureFlags{
-			ChainOfTrust:       true,
-			RunAsAdministrator: false, // FALSE !!!!
+			ChainOfTrust:         true,
+			RunAsAdministrator:   false, // FALSE !!!!
+			RunTaskAsCurrentUser: false,
 		},
 	}
 	defaults.SetDefaults(&payload)

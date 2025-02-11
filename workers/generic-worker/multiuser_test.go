@@ -3,7 +3,6 @@
 package main
 
 import (
-	"strconv"
 	"strings"
 	"testing"
 
@@ -17,7 +16,7 @@ func TestWhoAmI(t *testing.T) {
 	setup(t)
 
 	payload := GenericWorkerPayload{
-		Command:    goRun("whoami.go", strconv.FormatBool(false)),
+		Command:    goRun("whoami.go", "false"),
 		MaxRunTime: 180,
 	}
 	defaults.SetDefaults(&payload)
@@ -32,7 +31,7 @@ func TestWhoAmIAsCurrentUser(t *testing.T) {
 	config.EnableRunTaskAsCurrentUser = true
 
 	payload := GenericWorkerPayload{
-		Command:    goRun("whoami.go", strconv.FormatBool(true)),
+		Command:    goRun("whoami.go", "true"),
 		MaxRunTime: 180,
 		Features: FeatureFlags{
 			RunTaskAsCurrentUser: true,
