@@ -4,7 +4,7 @@ import helper from './helper.js';
 import { FakeGoogle } from './fakes/index.js';
 import { GoogleProvider } from '../src/providers/google.js';
 import testing from 'taskcluster-lib-testing';
-import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -30,6 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator: await helper.load('estimator'),
       publisher: await helper.load('publisher'),
       validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: WorkerPoolError,
       providerConfig: {
@@ -47,7 +48,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   const defaultLaunchConfig = {
-    capacityPerInstance: 1,
+    workerManager: {
+      capacityPerInstance: 1,
+    },
     machineType: 'n1-standard-2',
     region: 'us-east1',
     zone: 'us-east1-a',
@@ -104,6 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         publisher: await helper.load('publisher'),
         rootUrl: helper.rootUrl,
         WorkerPoolError: helper.WorkerPoolError,
+        launchConfigSelector: await helper.load('launchConfigSelector'),
         providerConfig: {
           project,
           instancePermissions: [],
@@ -122,8 +126,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
         const workerPool = await makeWorkerPool({ config });
-        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
-        await provider.provision({ workerPool, workerInfo });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+        await provider.provision({ workerPool, workerPoolStats });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
@@ -159,6 +163,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
+        'launch-config-id': worker.launchConfigId,
       });
       assert.equal(parameters.requestBody.description, 'none');
       assert.deepEqual(parameters.requestBody.disks, []);
@@ -234,6 +239,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
         'color': 'red',
+        'launch-config-id': workers[0].launchConfigId,
       });
     });
 
@@ -263,6 +269,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },
@@ -318,6 +325,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
               'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
             },
           },
         },
@@ -397,13 +405,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('failure from compute.insert', async function() {
       const workerPool = await makeWorkerPool();
-      const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
+      const workerPoolStats = new WorkerPoolStats('wpid');
 
       // replicate the shape of an error from the google API
       fake.compute.instances.failFakeInsertWith = fake.makeError('uhoh', 400);
 
-      await provider.provision({ workerPool, workerInfo });
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      await provider.provision({ workerPool, workerPoolStats });
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       const workers = await helper.getWorkers();
@@ -412,14 +420,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('rate-limiting from compute.insert', async function() {
       const workerPool = await makeWorkerPool();
-      const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
+      const workerPoolStats = new WorkerPoolStats('wpid');
 
       // replicate the shape of an error from the google API
       fake.compute.instances.failFakeInsertWith = fake.makeError('back off', 403);
 
-      await provider.provision({ workerPool, workerInfo });
+      await provider.provision({ workerPool, workerPoolStats });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 0);
 
       // called twice, retrying automatically
@@ -565,7 +573,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation } });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       assert.equal(errors[0].title, 'Operation Error');
