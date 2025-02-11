@@ -79,8 +79,8 @@ func enableTaskFeatures() string {
                                             payload. [default: true]
           enableRunAsAdministrator          Enables the RunAsAdministrator feature to be used in
                                             the task payload. [default: true]
-          enableRunTaskAsCurrentUser		Enables the Run Task As Current User feature to be
-		  									used in the task payload. [default: true]`
+          enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
+                                            used in the task payload. [default: true]`
 }
 
 func loopbackDeviceNumbers() string {

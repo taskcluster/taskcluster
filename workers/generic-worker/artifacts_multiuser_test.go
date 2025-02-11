@@ -15,24 +15,6 @@ import (
 )
 
 func TestPrivilegedFileUpload(t *testing.T) {
-	// This test shouldn't use an external taskcluster instance,
-	// as it depends on an updated queue service.
-	// Otherwise, the test will run into a schema validation
-	// failure due to fact that the post-artifact-request.yml
-	// schema on Community-TC doesn't have "file-not-readable-on-worker"
-	// reason as a valid option during the development of PR #6673.
-	useExternalTC := os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
-	err := os.Unsetenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
-	if err != nil {
-		t.Fatalf("Could not unset the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable: %v", err)
-	}
-	defer func() {
-		err := os.Setenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER", useExternalTC)
-		if err != nil {
-			t.Fatalf("Could not set the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable back to original value: %v", err)
-		}
-	}()
-
 	setup(t)
 
 	tempFile, err := os.CreateTemp(testdataDir, t.Name())
@@ -69,24 +51,6 @@ func TestPrivilegedFileUpload(t *testing.T) {
 }
 
 func TestPrivilegedFileUploadAsCurrentUser(t *testing.T) {
-	// This test shouldn't use an external taskcluster instance,
-	// as it depends on an updated queue service.
-	// Otherwise, the test will run into a schema validation
-	// failure due to fact that the post-artifact-request.yml
-	// schema on Community-TC doesn't have "file-not-readable-on-worker"
-	// reason as a valid option during the development of PR #6673.
-	useExternalTC := os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
-	err := os.Unsetenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER")
-	if err != nil {
-		t.Fatalf("Could not unset the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable: %v", err)
-	}
-	defer func() {
-		err := os.Setenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER", useExternalTC)
-		if err != nil {
-			t.Fatalf("Could not set the GW_TESTS_USE_EXTERNAL_TASKCLUSTER environment variable back to original value: %v", err)
-		}
-	}()
-
 	setup(t)
 	config.EnableRunTaskAsCurrentUser = true
 

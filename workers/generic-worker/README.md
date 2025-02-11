@@ -261,11 +261,7 @@ and reports back results to the queue.
                                             should apply to all generated users (and thus all
                                             tasks) and be run as the task user itself. This
                                             option does *not* support running a command as
-                                            Administrator. Furthermore, even if
-                                            payload.features.runTaskAsCurrentUser is true,
-                                            the script will still be executed as the task user,
-                                            rather than the current user (that runs the
-                                            generic-worker process).
+                                            Administrator.
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
