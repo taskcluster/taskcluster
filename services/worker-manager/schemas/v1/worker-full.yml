@@ -80,6 +80,8 @@ properties:
     type: integer
     minimum: 1
 
+  launchConfigId: { $const: launch-config-id }
+
 additionalProperties: false
 required:
   - workerPoolId

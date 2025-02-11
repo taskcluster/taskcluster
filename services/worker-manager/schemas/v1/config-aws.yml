@@ -10,6 +10,19 @@ properties:
     items:
       type: object
       properties:
+        workerManager:
+          title: Worker Manager Config
+          type: object
+          description: |-
+            Worker Manager's own configuration settings per launch configuration.
+            The other properties of the launch configuration section are passed directly through to
+            AWS APIs, whereas this section is interpreted directly by Worker Manager.
+          properties:
+            launchConfigId: { $const: launch-config-id }
+            capacityPerInstance: { $const: lc-capacity-per-instance }
+            initialWeight: { $const: lc-initial-weight }
+            maxCapacity: { $const: lc-max-capacity }
+          additionalProperties: false
         region:
           title: Region
           type: string
@@ -46,11 +59,7 @@ properties:
             workerConfig: {not: {}}
           required: []
           additionalProperties: true
-        capacityPerInstance:
-          title: Capacity Per Instance
-          type: integer
-          minimum: 1
-          description: The number of tasks a single worker of this type can run at any given time.
+        capacityPerInstance: { $const: capacity-per-instance-deprecated }
         workerConfig:
           title: Worker Config
           type: object
@@ -65,23 +74,10 @@ properties:
       required:
         - region
         - launchConfig
-        - capacityPerInstance
   lifecycle: {$ref: 'worker-lifecycle.json#'}
-  minCapacity:
-    title: Minimum Capacity
-    type: integer
-    description: Minimum capacity necessary to maintain at any given time for the entire workerpool
-  maxCapacity:
-    title: Maximum Capacity
-    type: integer
-    description: Maximum capacity that should not be exceeded at any given time for the entire workerpool
-  scalingRatio:
-    title: Scaling Ratio
-    type: number
-    minimum: 0.0
-    maximum: 1.0
-    description: |
-      The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task
+  minCapacity: { $const: min-capacity }
+  maxCapacity: { $const: max-capacity }
+  scalingRatio: { $const: scaling-ratio }
 additionalProperties: false
 required:
   - launchConfigs
