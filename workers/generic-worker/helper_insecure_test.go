@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v80/workers/generic-worker/runtime"
 )
 
@@ -17,6 +16,5 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	taskContext = &TaskContext{
 		User:    &gwruntime.OSUser{},
 		TaskDir: testdataDir,
-		pd:      &process.PlatformData{},
 	}
 }

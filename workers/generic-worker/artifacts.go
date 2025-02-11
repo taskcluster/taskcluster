@@ -19,6 +19,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster/v80/clients/client-go"
 	"github.com/taskcluster/taskcluster/v80/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
 )
 
 var (
@@ -51,9 +52,9 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 		}
 		switch artifact.Type {
 		case "file":
-			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding))
+			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd))
 		case "directory":
-			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				continue
 			}
@@ -94,11 +95,11 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 						},
 					)
 				case d.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
 				default:
-					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding))
+					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd))
 				}
 				return nil
 			}
@@ -119,7 +120,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *artifacts.BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) artifacts.TaskArtifact {
+func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData) artifacts.TaskArtifact {
 	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
@@ -162,7 +163,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType string, path string, con
 		return nil
 	}
 
-	tempPath, err := copyToTempFileAsTaskUser(fullPath)
+	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd)
 	if err != nil {
 		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
@@ -361,8 +362,8 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	return nil
 }
 
-func copyToTempFileAsTaskUser(filePath string) (tempFilePath string, err error) {
-	tempFilePath, err = gwCopyToTempFile(filePath)
+func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {
+	tempFilePath, err = gwCopyToTempFile(filePath, pd)
 
 	if runtime.GOOS == "windows" {
 		// Windows syscall logs are sent to stdout, even though the code appears

@@ -41,8 +41,8 @@ func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) 
 func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, filetype string, recurse bool) error {
 	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
-	// However, if running as current user, taskContext.pd is not set, so use
-	// taskContext.User.Name instead of credentials inside taskContext.pd.
+	// However, if running as current user, taskMount.task.pd is not set, so use
+	// taskContext.User.Name instead of credentials inside taskMount.task.pd.
 	taskMount.Infof("Granting %v full control of %v '%v'", taskContext.User.Name, filetype, fileOrDirectory)
 	err := makeFileOrDirReadWritableForUser(recurse, fileOrDirectory, taskContext.User)
 	if err != nil {
@@ -51,8 +51,8 @@ func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, f
 	return nil
 }
 
-func unarchive(source, destination, format string) error {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, taskContext.TaskDir, []string{}, taskContext.pd)
+func unarchive(source, destination, format string, pd *process.PlatformData) error {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, taskContext.TaskDir, []string{}, pd)
 	if err != nil {
 		return fmt.Errorf("cannot create process to unarchive %v to %v as task user %v from directory %v: %v", source, destination, taskContext.User.Name, taskContext.TaskDir, err)
 	}
