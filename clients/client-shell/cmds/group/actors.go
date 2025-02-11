@@ -51,7 +51,7 @@ func init() {
 	listCmd.Flags().BoolP("running", "r", false, "Include running tasks.")
 	listCmd.Flags().BoolP("failed", "f", false, "Include failed tasks.")
 	listCmd.Flags().BoolP("exception", "e", false, "Include exception tasks.")
-	listCmd.Flags().BoolP("complete", "c", false, "Include complete tasks.")
+	listCmd.Flags().BoolP("completed", "c", false, "Include completed tasks.")
 	listCmd.Flags().BoolP("unscheduled", "u", false, "Include unscheduled tasks.")
 	listCmd.Flags().BoolP("pending", "p", false, "Include pending tasks.")
 
