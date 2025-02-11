@@ -37,20 +37,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_scanner(
+    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner(
       null, null, null, null, null, 10, 0));
 
-    // remove properties that come from queue_workers table
-    delete fetched.firstClaim;
-    delete fetched.recentTasks;
-    delete fetched.lastDateActive;
-    delete fetched.quarantineDetails;
-    delete fetched._properties.firstClaim;
-    delete fetched._properties.recentTasks;
-    delete fetched._properties.lastDateActive;
-    delete fetched._properties.quarantineDetails;
-
-    assert.deepEqual(fetched, w);
+    assert.deepEqual(fetched.serializable(), w.serializable());
 
     // now we update the worker as if registerWorker happened
     const now = new Date();

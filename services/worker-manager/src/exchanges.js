@@ -51,6 +51,11 @@ let buildCommonRoutingKey = (options) => {
       required: options?.hasWorker || false,
       maxSize: 38,
     }, {
+      name: 'launchConfigId',
+      summary: 'ID of the launch configuration',
+      required: false,
+      maxSize: 38,
+    }, {
       name: 'reserved',
       summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
@@ -70,6 +75,7 @@ let commonRoutingKeyBuilder = function(message, routing) {
     workerGroup: message.workerGroup,
     providerId: message.providerId,
     workerId: message.workerId,
+    launchConfigId: message.launchConfigId,
   };
 
   if (message.provisionerId && message.workerType) {
@@ -194,6 +200,51 @@ exchanges.declare({
   schema: 'pulse-worker-removed-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey({ hasWorker: true }),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'launch-config-created',
+  name: 'launchConfigCreated',
+  title: 'Launch Config Created Messages',
+  description: [
+    'Whenever a new launch configuration is created for a worker pool,',
+    'a message is posted to this exchange.',
+  ].join('\n'),
+  schema: 'pulse-launch-config-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey(),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'launch-config-updated',
+  name: 'launchConfigUpdated',
+  title: 'Launch Config Updated Messages',
+  description: [
+    'Whenever a launch configuration is updated for a worker pool,',
+    'a message is posted to this exchange.',
+  ].join('\n'),
+  schema: 'pulse-launch-config-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey(),
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
+});
+
+exchanges.declare({
+  exchange: 'launch-config-archived',
+  name: 'launchConfigArchived',
+  title: 'Launch Config Archived Messages',
+  description: [
+    'Whenever a launch configuration is archived for a worker pool,',
+    'a message is posted to this exchange.',
+  ].join('\n'),
+  schema: 'pulse-launch-config-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: commonRoutingKeyBuilder,
   CCBuilder: () => [],
 });

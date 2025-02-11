@@ -42,4 +42,22 @@ suite(testing.suiteName(), function () {
       assert.deepEqual(util.sanitizeRegisterWorkerPayload(pair[0]), pair[1]);
     }));
   });
+
+  suite('measureTime', function () {
+    test('measureTime returns function that returns total time', function () {
+      const start = util.measureTime();
+      const total = start();
+      assert(total > 0);
+    });
+    test('measureTime uses different precision', function () {
+      const start1 = util.measureTime(1e9);
+      const start2 = util.measureTime(1e6);
+
+      const total1 = start1();
+      const total2 = start2();
+      assert(total1 > 0);
+      assert(total2 > 0);
+      assert(total2 > total1);
+    });
+  });
 });

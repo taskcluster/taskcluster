@@ -8,21 +8,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('expireWorkerPools', function() {
-    const makeWP = async values => {
-      const workerPool = WorkerPool.fromApi({
-        description: 'wp',
-        config: {},
-        owner: 'me',
-        emailOnError: false,
-        ...values,
-      });
-      await workerPool.create(helper.db);
-    };
+  const makeWP = async values => {
+    const workerPool = WorkerPool.fromApi({
+      description: 'wp',
+      config: {},
+      owner: 'me',
+      emailOnError: false,
+      ...values,
+    });
+    await workerPool.create(helper.db);
+  };
 
+  const makeWorker = async values => {
+    const worker = Worker.fromApi({
+      workerPoolId: 'pp/wt',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      providerId: 'testing',
+      capacity: 1,
+      state: 'running',
+      providerData: {},
+      ...values,
+    });
+    await worker.create(helper.db);
+  };
+
+  suite('expireWorkerPools', function() {
     const checkWP = async workerPoolId => {
       return WorkerPool.fromDbRows(
-        await helper.db.fns.get_worker_pool_with_capacity_and_counts_by_state(workerPoolId));
+        await helper.db.fns.get_worker_pool_with_launch_configs(workerPoolId));
     };
 
     setup(function() {
@@ -52,21 +66,75 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('expireWorkers', function() {
-    const makeWorker = async values => {
-      const worker = Worker.fromApi({
-        workerPoolId: 'pp/wt',
-        workerGroup: 'wg',
-        workerId: 'wid',
-        providerId: 'testing',
-        capacity: 1,
-        state: 'running',
-        providerData: {},
-        ...values,
-      });
-      await worker.create(helper.db);
+  suite('expireLaunchConfigs', function () {
+    const getWPLCs = async (workerPoolId, providerId) => {
+      return helper.db.fns.get_worker_pool_launch_configs(workerPoolId, null, null, null);
     };
 
+    const updateWP = async (workerPoolId, providerId, config) => {
+      await helper.db.fns.update_worker_pool_with_launch_configs(
+        workerPoolId,
+        providerId,
+        'description',
+        config,
+        new Date(),
+        'test@tc.tc',
+        false);
+    };
+
+    setup(function() {
+      helper.load.remove('expireLaunchConfigs');
+    });
+
+    test('nothing to remove', async function() {
+      await helper.load('expireLaunchConfigs');
+    });
+
+    test('does not remove active launch configs', async function () {
+      const workerPoolId = 'pp/wt';
+      const providerId = 'testing';
+
+      await makeWP({
+        workerPoolId,
+        providerId,
+        config: {
+          launchConfigs: ['lc1', 'lc2', 'lc3'],
+        },
+      });
+      const configs = (await getWPLCs(workerPoolId, providerId)).map(c => c.configuration).sort();
+      assert.deepEqual(configs, ['lc1', 'lc2', 'lc3']);
+
+      // updating pool would mark some as archived
+      await updateWP(workerPoolId, providerId, {
+        launchConfigs: ['lc3', 'lc4'],
+      });
+
+      await helper.load('expireLaunchConfigs');
+      const configs2 = (await getWPLCs(workerPoolId, providerId)).map(c => c.configuration).sort();
+      assert.deepEqual(configs2, ['lc3', 'lc4']);
+    });
+    test('does not remove archived launch configs with workers', async function () {
+      const workerPoolId = 'pp/wt';
+      const providerId = 'testing';
+
+      await makeWP({ workerPoolId, providerId, config: {
+        launchConfigs: ['lc1', 'lc2', 'lc3'],
+      } });
+
+      const lc1 = (await getWPLCs(workerPoolId, providerId)).filter(c => c.configuration === 'lc1').pop();
+
+      await updateWP(workerPoolId, providerId, {
+        launchConfigs: ['lc3', 'lc4'],
+      });
+      await makeWorker({ workerPoolId, providerId, expires: taskcluster.fromNow('1 hour'), launchConfigId: lc1.launch_config_id });
+
+      await helper.load('expireLaunchConfigs');
+      const configs2 = (await getWPLCs(workerPoolId, providerId)).map(c => c.configuration).sort();
+      assert.deepEqual(configs2, ['lc1', 'lc3', 'lc4']);
+    });
+  });
+
+  suite('expireWorkers', function() {
     const checkWorker = async (workerPoolId = 'pp/wt', workerGroup = 'wg', workerId = 'wid') => {
       return await Worker.get(helper.db, { workerPoolId, workerGroup, workerId });
     };
@@ -110,7 +178,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
 
     const checkWPE = async (workerPoolId = 'pp/wt', errorId = eid) => {
-      return await helper.db.fns.get_worker_pool_errors_for_worker_pool(eid, 'pp/wt', null, null);
+      return await helper.db.fns.get_worker_pool_errors_for_worker_pool2(eid, 'pp/wt', null, null, null);
     };
 
     const expireWithRetentionDays = async retentionDays => {
