@@ -118,8 +118,8 @@ const postJsoneProcessing = (rendered, replacements) => {
     .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
 };
 
-const wrapConditionalResource = (rendered, condition) => {
-  return `{{- if ${condition} -}}
+const wrapConditionalResource = (rendered, resourceName) => {
+  return `{{- if not (has "${resourceName}" .Values.skipResourceTypes) -}}
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
@@ -146,10 +146,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
     });
 
     const file = `taskcluster-${name}-${resource}.yaml`;
-    await writeRepoFile(
-      path.join(TMPL_DIR, file),
-      wrapConditionalResource(rendered, `not (has "${resource}" .Values.skipResourceTypes)`),
-    );
+    await writeRepoFile(path.join(TMPL_DIR, file), wrapConditionalResource(rendered, resource));
   }
 
   const ingresses = [];
@@ -299,7 +296,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
 });
 
 tasks.push({
-  title: `Generate ingress and backend-config`,
+  title: `Generate ingress`,
   requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
   provides: [],
   run: async (requirements, utils) => {
@@ -321,18 +318,8 @@ tasks.push({
       ingresses,
       labels: labels(`taskcluster-ingress`, 'ingress'),
     });
-    await writeRepoFile(
-      path.join(TMPL_DIR, 'ingress.yaml'),
-      wrapConditionalResource(rendered, 'not (has "ingress" .Values.skipResourceTypes)'),
-    );
-
-    const backendConfig = jsone(templates['backendconfig'], {
-      labels: labels('taskcluster-backendconfig', 'backendconfig'),
-    });
-    await writeRepoFile(
-      path.join(TMPL_DIR, 'backendconfig.yaml'),
-      wrapConditionalResource(backendConfig, '.Values.cloudArmorPolicy'),
-    );
+    const processed = wrapConditionalResource(rendered, 'ingress');
+    await writeRepoFile(path.join(TMPL_DIR, 'ingress.yaml'), processed);
   },
 });
 
@@ -395,10 +382,6 @@ tasks.push({
             type: 'string',
             enum: ['configmap', 'secret', 'ingress', 'serviceaccount'],
           },
-        },
-        cloudArmorPolicy: {
-          type: 'string',
-          description: 'Name of the cloud armor policy to use for the backendconfig',
         },
 
         useKubernetesDnsServiceDiscovery: {
