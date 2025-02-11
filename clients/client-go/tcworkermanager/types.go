@@ -359,6 +359,11 @@ type (
 		// Additional properties allowed
 		Hourly json.RawMessage `json:"hourly"`
 
+		// Breakdown by launchConfigId where available
+		//
+		// Additional properties allowed
+		LaunchConfigID json.RawMessage `json:"launchConfigId"`
+
 		// Breakdown by title
 		//
 		// Additional properties allowed
@@ -396,7 +401,7 @@ type (
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date of the first time this worker claimed a task.
-		FirstClaim tcclient.Time `json:"firstClaim"`
+		FirstClaim tcclient.Time `json:"firstClaim,omitempty"`
 
 		// Date of the last time this worker was seen active. Updated each time a worker calls
 		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
@@ -408,6 +413,18 @@ type (
 
 		// A run of a task.
 		LatestTask TaskRun `json:"latestTask,omitempty"`
+
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -612,6 +629,18 @@ type (
 		// Date and time when this worker last changed state
 		LastModified tcclient.Time `json:"lastModified"`
 
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
 		//
@@ -771,6 +800,13 @@ type (
 		// Syntax:     [-a-z0-9]+
 		// Max length: 128
 		Kind string `json:"kind"`
+
+		// The launch config ID that was used when the error occurred.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// Date and time when this error was reported
 		Reported tcclient.Time `json:"reported"`
@@ -945,6 +981,18 @@ type (
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
 		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.

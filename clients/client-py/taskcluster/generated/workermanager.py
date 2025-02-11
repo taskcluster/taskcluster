@@ -107,6 +107,7 @@ class WorkerManager(BaseClient):
         Mark a worker pool for deletion.  This is the same as updating the pool to
         set its providerId to `"null-provider"`, but does not require scope
         `worker-manager:provider:null-provider`.
+        This will also mark all launch configurations as archived.
 
         This method is ``stable``
         """
@@ -401,7 +402,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkerPoolErrors',
             'output': 'v1/worker-pool-error-list.json#',
-            'query': ['continuationToken', 'limit'],
+            'query': ['continuationToken', 'limit', 'launchConfigId', 'errorId'],
             'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'stable',
         },
@@ -419,7 +420,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkers',
             'output': 'v1/list-workers-response.json#',
-            'query': ['continuationToken', 'limit', 'quarantined', 'workerState'],
+            'query': ['continuationToken', 'limit', 'launchConfigId', 'quarantined', 'workerState'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
         },
@@ -437,7 +438,7 @@ class WorkerManager(BaseClient):
             'method': 'get',
             'name': 'listWorkersForWorkerPool',
             'output': 'v1/worker-list.json#',
-            'query': ['continuationToken', 'limit', 'state'],
+            'query': ['continuationToken', 'limit', 'launchConfigId', 'state'],
             'route': '/workers/<workerPoolId>',
             'stability': 'stable',
         },

@@ -3369,13 +3369,35 @@
                 },
                 "name": "static",
                 "next": {
-                  "path": "reference/core/worker-manager/worker-interaction",
-                  "title": "Worker-Manager - Worker Interaction"
+                  "path": "reference/core/worker-manager/launch-configurations",
+                  "title": "Worker-Manager - Launch Configurations"
                 },
                 "path": "reference/core/worker-manager/static",
                 "prev": {
                   "path": "reference/core/worker-manager/aws",
                   "title": "AWS Provider Type"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 100,
+                  "title": "Worker-Manager - Launch Configurations"
+                },
+                "name": "launch-configurations",
+                "next": {
+                  "path": "reference/core/worker-manager/worker-interaction",
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "path": "reference/core/worker-manager/launch-configurations",
+                "prev": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3396,8 +3418,8 @@
                 },
                 "path": "reference/core/worker-manager/worker-interaction",
                 "prev": {
-                  "path": "reference/core/worker-manager/static",
-                  "title": "Static Provider Type"
+                  "path": "reference/core/worker-manager/launch-configurations",
+                  "title": "Worker-Manager - Launch Configurations"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
