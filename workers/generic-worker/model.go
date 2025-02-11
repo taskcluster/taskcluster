@@ -30,6 +30,7 @@ type (
 		// not exported
 		logMux         sync.RWMutex
 		logWriter      io.Writer
+		pd             *process.PlatformData
 		queueMux       sync.RWMutex
 		result         *process.Result
 		Queue          tc.Queue           `json:"-"`

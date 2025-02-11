@@ -2,6 +2,8 @@
 
 package main
 
-func gwCopyToTempFile(filePath string) (string, error) {
+import "github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
+
+func gwCopyToTempFile(filePath string, pd *process.PlatformData) (string, error) {
 	return filePath, nil
 }

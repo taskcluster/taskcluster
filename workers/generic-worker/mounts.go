@@ -160,7 +160,7 @@ func (feature *MountsFeature) PersistState() (err error) {
 
 func MkdirAll(taskMount *TaskMount, dir string) error {
 	taskMount.Infof("Creating directory %v", dir)
-	return MkdirAllTaskUser(dir)
+	return MkdirAllTaskUser(dir, taskMount.task.pd)
 }
 
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -766,7 +766,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	taskMount.Infof("Extracting %v file %v to '%v'", format, copyToPath, dir)
 	// Useful for worker logs too (not just task logs)
 	log.Printf("[mounts] Extracting %v file %v to '%v'", format, copyToPath, dir)
-	return unarchive(copyToPath, dir, format)
+	return unarchive(copyToPath, dir, format, taskMount.task.pd)
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
@@ -801,7 +801,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
-		dst, err := CreateFileAsTaskUser(file)
+		dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
 		if err != nil {
 			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
@@ -831,7 +831,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	dst, err := CreateFileAsTaskUser(file)
+	dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
 	if err != nil {
 		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}

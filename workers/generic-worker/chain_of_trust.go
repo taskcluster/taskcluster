@@ -256,7 +256,7 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	}
 
 	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
-	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile)
+	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd)
 	if err != nil {
 		return
 	}

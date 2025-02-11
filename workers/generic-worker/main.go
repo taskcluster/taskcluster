@@ -426,7 +426,8 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
-	err = validateGenericWorkerBinary()
+	pdTaskUser := currentPlatformData()
+	err = validateGenericWorkerBinary(pdTaskUser)
 	if err != nil {
 		log.Printf("Invalid generic-worker binary: %v", err)
 		return INTERNAL_ERROR
@@ -462,6 +463,7 @@ func RunWorker() (exitCode ExitCode) {
 			logEvent("taskQueued", task, time.Time(task.Definition.Created))
 			logEvent("taskStart", task, time.Now())
 
+			task.pd = pdTaskUser
 			errors := task.Run()
 
 			logEvent("taskFinish", task, time.Now())
@@ -732,8 +734,8 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 // internally during the artifact upload process. The version string
 // is not returned, since it is not needed. A non-nil error is returned
 // if the `generic-worker --version` command cannot be run successfully.
-func validateGenericWorkerBinary() error {
-	cmd, err := gwVersion()
+func validateGenericWorkerBinary(pd *process.PlatformData) error {
+	cmd, err := gwVersion(pd)
 	if err != nil {
 		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
@@ -1017,9 +1019,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	}
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
-	// reset platform data if needed (running tasks as current OS user)
-	task.ensurePlatformData()
-
 	task.Commands = make([]*process.Command, len(task.Payload.Command))
 	// generate commands, in case features want to modify them
 	for i := range task.Payload.Command {
@@ -1270,13 +1269,12 @@ func taskDirsIn(parentDir string) ([]string, error) {
 }
 
 func (task *TaskRun) ReleaseResources() error {
-	return taskContext.pd.ReleaseResources()
+	return task.pd.ReleaseResources()
 }
 
 type TaskContext struct {
 	TaskDir string
 	User    *gwruntime.OSUser
-	pd      *process.PlatformData
 }
 
 // deleteTaskDirs deletes all task directories (directories whose name starts

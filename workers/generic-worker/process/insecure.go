@@ -8,10 +8,19 @@ import (
 	"os/exec"
 	"syscall"
 
+	gwruntime "github.com/taskcluster/taskcluster/v80/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
 
 type PlatformData struct {
+}
+
+func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
+	return TaskUserPlatformData(user, headlessTasks)
+}
+
+func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
+	return &PlatformData{}, nil
 }
 
 func (pd *PlatformData) ReleaseResources() error {
