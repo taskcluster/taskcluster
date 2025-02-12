@@ -82,6 +82,17 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	return false
 }
 
+// Helper function used to get the current task user's
+// platform data. Useful for initially setting up the
+// TaskRun struct's data.
+func currentPlatformData() *process.PlatformData {
+	pd, err := process.TaskUserPlatformData(taskContext.User, false)
+	if err != nil {
+		panic(err)
+	}
+	return pd
+}
+
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
 	err := host.Run("/bin/chmod", "-R", "u+w", path)

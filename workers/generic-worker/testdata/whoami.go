@@ -15,13 +15,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not determine current user: %v", err)
 	}
-	runTasksAsCurrentUser, err := strconv.ParseBool(os.Args[1])
+	runTaskAsCurrentUser, err := strconv.ParseBool(os.Args[1])
 	if err != nil {
-		log.Fatalf("Cannot parse bool argument to whoami.go to determine value of runTasksAsCurrentUser: %v", err)
+		log.Fatalf("Cannot parse bool argument to whoami.go to determine value of runTaskAsCurrentUser: %v", err)
 	}
 	username := user.Username
 
-	if runTasksAsCurrentUser {
+	if runTaskAsCurrentUser {
 		expectedUsername := "root"
 		if runtime.GOOS == "windows" {
 			expectedUsername = `NT AUTHORITY\SYSTEM`

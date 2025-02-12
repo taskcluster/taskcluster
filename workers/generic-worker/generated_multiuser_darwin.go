@@ -425,6 +425,20 @@ type (
 		// Since: generic-worker 53.1.0
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 
+		// If `true`, task commands will be executed as the
+		// user currently running Generic Worker (typically
+		// `root` or `LocalSystem`), rather than as the
+		// dedicated task user created for the task. The task
+		// user account will still be created, and is
+		// available for the task to use.
+		//
+		// Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+		// Tasks submitted without this scope will be resolved
+		// as `exception/malformed-payload`.
+		//
+		// Since: generic-worker 81.0.0
+		RunTaskAsCurrentUser bool `json:"runTaskAsCurrentUser,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -506,11 +520,11 @@ type (
 		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
 		//     taskcluster authentication proxy for making unauthenticated taskcluster
 		//     API calls
-		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-		//     `true` in `generic-worker.config` file - the absolute file location of a
+		//   * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+		//     `true` in the task definition - the absolute file location of a
 		//     json file containing the current task OS user account name and password.
 		//     This is only useful for the generic-worker multiuser CI tasks, where
-		//     `runTasksAsCurrentUser` is set to `true`.
+		//     `runTaskAsCurrentUser` is set to `true`.
 		//   * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
 		//   * `TASKCLUSTER_WORKER_LOCATION`. See
 		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
@@ -1107,7 +1121,7 @@ func JSONSchema() string {
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * ` + "`" + `HOME` + "`" + ` - the home directory of the task user\n  * ` + "`" + `PATH` + "`" + ` - ` + "`" + `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` + "`" + `\n  * ` + "`" + `USER` + "`" + ` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * ` + "`" + `DISPLAY` + "`" + ` - ` + "`" + `:0` + "`" + ` (Linux only, and only when ` + "`" + `headlessTasks` + "`" + ` is ` + "`" + `false` + "`" + `)\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASK_WORKDIR` + "`" + ` - the working directory of the currently running task\n  * ` + "`" + `TASK_GROUP_ID` + "`" + ` - the task group ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n    taskcluster authentication proxy for making unauthenticated taskcluster\n    API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_INSTANCE_TYPE` + "`" + ` - the cloud instance type of the worker (optional, not all workers run in a cloud)\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+          "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\",\n  \"GOOS\": \"darwin\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands, but may be overridden by environment variables in the task payload:\n  * ` + "`" + `HOME` + "`" + ` - the home directory of the task user\n  * ` + "`" + `PATH` + "`" + ` - ` + "`" + `/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin` + "`" + `\n  * ` + "`" + `USER` + "`" + ` - the name of the task user\n\nThe following environment variables will automatically be set in the task\ncommands, and may not be overridden by environment variables in the task payload:\n  * ` + "`" + `DISPLAY` + "`" + ` - ` + "`" + `:0` + "`" + ` (Linux only, and only when ` + "`" + `headlessTasks` + "`" + ` is ` + "`" + `false` + "`" + `)\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASK_WORKDIR` + "`" + ` - the working directory of the currently running task\n  * ` + "`" + `TASK_GROUP_ID` + "`" + ` - the task group ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n    taskcluster authentication proxy for making unauthenticated taskcluster\n    API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if payload feature ` + "`" + `runTaskAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in the task definition - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTaskAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_INSTANCE_TYPE` + "`" + ` - the cloud instance type of the worker (optional, not all workers run in a cloud)\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
           "title": "Env vars",
           "type": "object"
         },
@@ -1145,6 +1159,11 @@ func JSONSchema() string {
             "loopbackVideo": {
               "description": "Video loopback device created using v4l2loopback.\nA video device will be available for the task. Its\nlocation will be passed to the task via environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + `. The\nlocation will be ` + "`" + `/dev/video\u003cN\u003e` + "`" + ` where ` + "`" + `\u003cN\u003e` + "`" + ` is\nan integer between 0 and 255. The value of ` + "`" + `\u003cN\u003e` + "`" + `\nis not static, and therefore either the environment\nvariable should be used, or ` + "`" + `/dev` + "`" + ` should be\nscanned in order to determine the correct location.\nTasks should not assume a constant value.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 53.1.0",
               "title": "Loopback Video device",
+              "type": "boolean"
+            },
+            "runTaskAsCurrentUser": {
+              "description": "If ` + "`" + `true` + "`" + `, task commands will be executed as the\nuser currently running Generic Worker (typically\n` + "`" + `root` + "`" + ` or ` + "`" + `LocalSystem` + "`" + `), rather than as the\ndedicated task user created for the task. The task\nuser account will still be created, and is\navailable for the task to use.\n\nRequires scope ` + "`" + `generic-worker:run-task-as-current-user:\u003cprovisionerID\u003e/\u003cworkerType\u003e` + "`" + `.\nTasks submitted without this scope will be resolved\nas ` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 81.0.0",
+              "title": "Run task as current user",
               "type": "boolean"
             },
             "taskclusterProxy": {

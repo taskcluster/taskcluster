@@ -58,13 +58,6 @@ func TestChainOfTrustUpload(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	// Chain of trust is not allowed when running as current user
-	// since signing key cannot be secured
-	if config.RunTasksAsCurrentUser {
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-	}
-
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	// some required substrings - not all, just a selection
@@ -225,6 +218,49 @@ func TestChainOfTrustUpload(t *testing.T) {
 	}
 }
 
+func TestChainOfTrustUploadAsCurrentUser(t *testing.T) {
+
+	setup(t)
+	config.EnableRunTaskAsCurrentUser = true
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/b/c/d.jpg")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: expires,
+				Type:    "file",
+				Name:    "public/build/X.txt",
+			},
+			{
+				Path:    "SampleArtifacts/b/c/d.jpg",
+				Expires: expires,
+				Type:    "file",
+			},
+		},
+		Features: FeatureFlags{
+			ChainOfTrust:         true,
+			RunTaskAsCurrentUser: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes,
+		"generic-worker:run-task-as-current-user:"+td.ProvisionerID+"/"+td.WorkerType,
+	)
+
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+}
+
 func TestProtectedArtifactsReplaced(t *testing.T) {
 
 	setup(t)
@@ -287,13 +323,6 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	// Chain of trust is not allowed when running as current user
-	// since signing key cannot be secured
-	if config.RunTasksAsCurrentUser {
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-	}
-
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	queue := serviceFactory.Queue(nil, config.RootURL)
@@ -338,6 +367,78 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	}
 }
 
+func TestProtectedArtifactsReplacedAsCurrentUser(t *testing.T) {
+
+	setup(t)
+	config.EnableRunTaskAsCurrentUser = true
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/live.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chain-of-trust.json")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chain-of-trust.json.sig")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/X.txt")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/Y.txt")...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:    "public/logs/live.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/logs/live_backing.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/logs/certified.log",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/chain-of-trust.json",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/chain-of-trust.json.sig",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/X.txt",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/Y.txt",
+				Expires: expires,
+				Type:    "file",
+			},
+		},
+		Features: FeatureFlags{
+			ChainOfTrust:         true,
+			RunTaskAsCurrentUser: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes,
+		"generic-worker:run-task-as-current-user:"+td.ProvisionerID+"/"+td.WorkerType,
+	)
+
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+}
+
 func TestChainOfTrustAdditionalData(t *testing.T) {
 
 	setup(t)
@@ -354,13 +455,6 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-
-	// Chain of trust is not allowed when running as current user
-	// since signing key cannot be secured
-	if config.RunTasksAsCurrentUser {
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-	}
 
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -381,4 +475,31 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	if _, exists := cotCert["task"]; !exists {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
 	}
+}
+
+func TestChainOfTrustAdditionalDataAsCurrentUser(t *testing.T) {
+
+	setup(t)
+	config.EnableRunTaskAsCurrentUser = true
+
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile(additionalDataPath)...)
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			ChainOfTrust:         true,
+			RunTaskAsCurrentUser: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes,
+		"generic-worker:run-task-as-current-user:"+td.ProvisionerID+"/"+td.WorkerType,
+	)
+
+	// Chain of trust is not allowed when running as current user
+	// since signing key cannot be secured
+	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
 }

@@ -2,10 +2,6 @@
 
 package main
 
-func runTasksAsCurrentUserUsage() string {
-	return ``
-}
-
 func headlessTasksUsage() string {
 	return ``
 }
