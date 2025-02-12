@@ -110,7 +110,7 @@ export class LaunchConfigSelector {
   /**
    * @param {object} options
    * @param {import('taskcluster-lib-postgres').Database} options.db
-   * @param {{ debug: Function } &object} options.monitor
+   * @param {{ debug: Function, log: { launchConfigSelectorsDebug: Function } } &object} options.monitor
    */
   constructor({ db, monitor }) {
     assert(db, 'db is required');
@@ -152,7 +152,7 @@ export class LaunchConfigSelector {
         const existingCapacity = workerPoolStats.capacityByLaunchConfig.get(cfg.launchConfig.launchConfigId) || 0;
         if (maxCapacity > 0 && existingCapacity > 0) {
           cfg.weight -= existingCapacity / maxCapacity;
-        } else if (maxCapacity > 0) {
+
           // to respect maxCapacity we need to know how much more we can spawn
           // unlike the estimator, which allows slight over-provision for the whole worker pool
           // this limit is hard for the given launch config
@@ -168,6 +168,16 @@ export class LaunchConfigSelector {
         }
       }
     }
+
+    this.monitor.log.launchConfigSelectorsDebug({
+      workerPoolId: workerPool.workerPoolId,
+      weights: Object.fromEntries(configsWithWeights.map(
+        ({ launchConfig, weight }) => [launchConfig.launchConfigId, weight]),
+      ),
+      remainingCapacity: Object.fromEntries(configsWithWeights.map(
+        ({ launchConfig, remainingCapacity }) => [launchConfig.launchConfigId, remainingCapacity]),
+      ),
+    });
 
     return new WeightedRandomConfig(configsWithWeights);
   }
