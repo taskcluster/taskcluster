@@ -17,8 +17,7 @@ import (
 )
 
 func TestInteractiveWithReadyCommand(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	isReadyCreated := false
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
@@ -40,8 +39,7 @@ func TestInteractiveWithReadyCommand(t *testing.T) {
 }
 
 func TestInteractiveNormal(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
 	interactiveCommands := InteractiveCommands{
