@@ -334,10 +334,12 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		dwImage.LoadCommands()...,
 	)
 
-	commands = append(
-		commands,
-		`echo '{"environment":{"imageArtifactHash":"'"${IMAGE_ID}"'"}}' > chain-of-trust-additional-info.json`,
-	)
+	if dwPayload.Features.ChainOfTrust {
+		commands = append(
+			commands,
+			`echo '{"environment":{"imageArtifactHash":"'"${IMAGE_ID}"'"}}' > chain-of-trust-additional-info.json`,
+		)
+	}
 
 	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, config)
 	if err != nil {
