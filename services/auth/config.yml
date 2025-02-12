@@ -33,6 +33,8 @@ defaults:
     # Similarly, delay before deleting expired clients
     clientExpirationDelay:      '-1 hour'
 
+    auditHistoryRetentionDays:  '-30d'
+
     websocktunnel:
       secret:                   !env:secret:optional WEBSOCKTUNNEL_SECRET
 

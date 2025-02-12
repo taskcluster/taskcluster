@@ -64,6 +64,13 @@ export type AuthDeleteClientFn = (
 export type AuthExpireClientsFn = (
 ) => Promise<number>;
 
+export type AuthGetAuditHistoryFn = (
+  entity_id_in: string,
+  entity_type_in: string,
+  page_size_in: number,
+  page_offset_in: number
+) => Promise<Array<{client_id: string, action_type: string, created: Date}>>;
+
 export type AuthGetClientFn = (
   client_id_in: string
 ) => Promise<void>;
@@ -77,9 +84,20 @@ export type AuthGetClientsFn = (
 export type AuthGetRolesFn = (
 ) => Promise<Array<{role_id: string, scopes: JsonB, created: Date, description: string, last_modified: Date, etag: string}>>;
 
+export type AuthInsertAuthAuditHistoryFn = (
+  entity_id_in: string,
+  entity_type_in: string,
+  client_id_in: string,
+  action_type_in: string
+) => Promise<void>;
+
 export type AuthModifyRolesFn = (
   roles_in: JsonB,
   old_etag_in: string
+) => Promise<void>;
+
+export type AuthPurgeAuditHistoryFn = (
+  cutoff_date_in: Date
 ) => Promise<void>;
 
 /** @deprecated */
@@ -534,6 +552,13 @@ export type HooksHooksEntitiesScanDeprecatedFn = (
   size: number,
   page: number
 ) => Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
+
+export type HooksInsertHooksAuditHistoryFn = (
+  entity_id_in: string,
+  entity_type_in: string,
+  client_id_in: string,
+  action_type_in: string
+) => Promise<void>;
 
 /** @deprecated */
 export type HooksLastFire3EntitiesCreateDeprecatedFn = (
@@ -2181,6 +2206,13 @@ export type SecretsGetSecretsFn = (
   page_offset_in: number
 ) => Promise<Array<{name: string}>>;
 
+export type SecretsInsertSecretsAuditHistoryFn = (
+  entity_id_in: string,
+  entity_type_in: string,
+  client_id_in: string,
+  action_type_in: string
+) => Promise<void>;
+
 /** @deprecated */
 export type SecretsSecretsEntitiesCreateDeprecatedFn = (
   pk: string,
@@ -2939,10 +2971,13 @@ export interface DbFunctions {
   create_client: AuthCreateClientFn;
   delete_client: AuthDeleteClientFn;
   expire_clients: AuthExpireClientsFn;
+  get_audit_history: AuthGetAuditHistoryFn;
   get_client: AuthGetClientFn;
   get_clients: AuthGetClientsFn;
   get_roles: AuthGetRolesFn;
+  insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;
   modify_roles: AuthModifyRolesFn;
+  purge_audit_history: AuthPurgeAuditHistoryFn;
   update_client: AuthUpdateClientFn;
   update_client_last_used: AuthUpdateClientLastUsedFn;
 
@@ -2974,6 +3009,7 @@ export interface DbFunctions {
   get_hooks_queues: HooksGetHooksQueuesFn;
   get_last_fire: HooksGetLastFireFn;
   get_last_fires_with_task_state: HooksGetLastFiresWithTaskStateFn;
+  insert_hooks_audit_history: HooksInsertHooksAuditHistoryFn;
   update_hook: HooksUpdateHookFn;
   update_hooks_queue_bindings: HooksUpdateHooksQueueBindingsFn;
 
@@ -3088,6 +3124,7 @@ export interface DbFunctions {
   expire_secrets: SecretsExpireSecretsFn;
   get_secret: SecretsGetSecretFn;
   get_secrets: SecretsGetSecretsFn;
+  insert_secrets_audit_history: SecretsInsertSecretsAuditHistoryFn;
   upsert_secret: SecretsUpsertSecretFn;
 
   // WebServer
