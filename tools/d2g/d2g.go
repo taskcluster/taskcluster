@@ -328,7 +328,17 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}
 
 	commands := []string{}
-	commands = append(commands, dwImage.LoadCommands()...)
+
+	commands = append(
+		commands,
+		dwImage.LoadCommands()...,
+	)
+
+	commands = append(
+		commands,
+		`echo '{"environment":{"imageArtifactHash":"'"${IMAGE_ID}"'"}}' > chain-of-trust-additional-info.json`,
+	)
+
 	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, config)
 	if err != nil {
 		return nil, containerName, fmt.Errorf("could not form docker run command: %w", err)
