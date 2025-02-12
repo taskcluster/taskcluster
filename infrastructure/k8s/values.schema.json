@@ -1800,6 +1800,22 @@
               ],
               "type": "object"
             },
+            "expire_launch_configs": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
             "expire_worker_pools": {
               "additionalProperties": false,
               "properties": {
@@ -1920,6 +1936,7 @@
             "workerscanner_azure",
             "expire_workers",
             "expire_worker_pools",
+            "expire_launch_configs",
             "expire_errors"
           ],
           "title": "Process settings for this service",

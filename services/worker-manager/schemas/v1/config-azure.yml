@@ -5,28 +5,10 @@ description: |
   Much of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'
 type: object
 properties:
-  minCapacity:
-    title: Minimum Capacity
-    type: integer
-    minimum: 0
-    description: |
-      The minimum amount of capacity that worker-manager should make
-      available at any given time.
-  maxCapacity:
-    title: Maximum Capacity
-    type: integer
-    minimum: 0
-    description: |
-      The maximum amount of capacity that worker-manager should make
-      available at any given time.
-  scalingRatio:
-    title: Scaling Ratio
-    type: number
-    minimum: 0.0
-    maximum: 1.0
-    description: |
-      The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task
-  lifecycle: {$ref: 'worker-lifecycle.json#'}
+  minCapacity: { $const: min-capacity }
+  maxCapacity: { $const: max-capacity }
+  scalingRatio: { $const: scaling-ratio }
+  lifecycle: { $ref: 'worker-lifecycle.json#' }
   launchConfigs:
     type: array
     title: Choices
@@ -37,15 +19,11 @@ properties:
       api method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`
       properties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
       metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
-    uniqueItems: false
+    uniqueItems: true
     items:
       type: object
       properties:
-        capacityPerInstance:
-          title: Capacity Per Instance
-          type: integer
-          minimum: 1
-          description: The number of tasks a single worker of this type can run at any given time.
+        capacityPerInstance: { $const: capacity-per-instance-deprecated }
         workerManager:
           title: Worker Manager Config
           type: object
@@ -54,6 +32,10 @@ properties:
             The other properties of the launch configuration section are passed directly through to
             Azure APIs, whereas this section is interpreted directly by Worker Manager.
           properties:
+            launchConfigId: { $const: launch-config-id }
+            capacityPerInstance: { $const: lc-capacity-per-instance }
+            initialWeight: { $const: lc-initial-weight }
+            maxCapacity: { $const: lc-max-capacity }
             publicIp:
               title: Public IP
               type: boolean
@@ -61,6 +43,16 @@ properties:
                 If `true`, Worker Manager will request a public IPv4 address for the worker.
                 This is set to `false` by default. It is typically only needed for Windows
                 workers that should allow incoming RDP connections from the public internet.
+            ignoreFailedProvisioningStates:
+              title: "Ignore failed provisioningStates"
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+              description: |
+                A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
+                should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
+                to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
           additionalProperties: false
         workerConfig:
           title: Worker Config
@@ -78,10 +70,7 @@ properties:
           uniqueItems: true
           items:
             type: string
-          description: |
-            A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
-            should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
-            to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
+          description: Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead
         location:
           title: Location
           type: string
@@ -195,7 +184,6 @@ properties:
                   primary:
                     type: boolean
       required:
-        - capacityPerInstance
         - workerConfig
         - location
         - subnetId

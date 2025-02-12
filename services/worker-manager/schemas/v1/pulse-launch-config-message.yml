@@ -1,0 +1,13 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Launch Config Pulse Message
+description: The message that is emitted when worker pool launch configs are created/changed/archived.
+type: object
+properties:
+  workerPoolId: {$ref: "worker-pool-full.json#/properties/workerPoolId"}
+  providerId: {$ref: "worker-pool-full.json#/properties/providerId"}
+  launchConfigId: { $const: launch-config-id }
+additionalProperties: false
+required:
+  - launchConfigId
+  - workerPoolId
+  - providerId

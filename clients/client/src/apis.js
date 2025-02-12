@@ -4067,7 +4067,7 @@ export default {
             "workerPoolId"
           ],
           "category": "Worker Pools",
-          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
           "method": "delete",
           "name": "deleteWorkerPool",
           "output": "v1/worker-pool-full.json#",
@@ -4165,7 +4165,9 @@ export default {
           "output": "v1/worker-pool-error-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "launchConfigId",
+            "errorId"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
@@ -4282,6 +4284,7 @@ export default {
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "state"
           ],
           "route": "/workers/<workerPoolId>",
@@ -4336,6 +4339,7 @@ export default {
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "quarantined",
             "workerState"
           ],
@@ -4434,6 +4438,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4485,6 +4495,12 @@ export default {
               "name": "workerId",
               "required": false,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4540,6 +4556,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4591,6 +4613,12 @@ export default {
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4646,6 +4674,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4697,6 +4731,12 @@ export default {
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4752,6 +4792,12 @@ export default {
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4760,6 +4806,183 @@ export default {
           ],
           "schema": "v1/pulse-worker-removed-message.json#",
           "title": "Worker Removed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a new launch configuration is created for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-created",
+          "name": "launchConfigCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is updated for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-updated",
+          "name": "launchConfigUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is archived for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-archived",
+          "name": "launchConfigArchived",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Archived Messages",
           "type": "topic-exchange"
         }
       ],

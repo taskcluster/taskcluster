@@ -1,0 +1,72 @@
+---
+title: Worker-Manager - Launch Configurations
+order: 100
+---
+
+# Worker-Manager - Launch Configurations
+
+Launch configurations define how Worker-Manager should create and manage cloud instances for worker pools.
+This feature is supported by the following cloud providers:
+- [AWS Provider](/docs/reference/core/worker-manager/aws.mdx)
+- [Azure Provider](/docs/reference/core/worker-manager/azure.mdx)
+- [Google Provider](/docs/reference/core/worker-manager/google.mdx)
+
+## Configuration
+
+Each launch configuration _may_ include a `workerManager` object that controls how instances are provisioned:
+
+```yaml
+workerManager:
+  launchConfigId: 'unique-config-id'      # Optional: Unique identifier for this configuration
+  capacityPerInstance: 1                  # Number of workers per instance
+  initialWeight: 0.5                      # Float between 0 and 1 (default: 1)
+  maxCapacity: 100                        # Optional: Maximum number of instances per launch configuration
+```
+
+### Properties
+
+- `launchConfigId`: A unique identifier for the launch configuration within a worker pool. If not specified, Worker-Manager generates one automatically. Identical configurations should use the same ID.
+- `capacityPerInstance`: Indicates how many concurrent tasks a single instance can handle.
+- `initialWeight`: A value between `0` and `1` that determines the likelihood of this configuration being used. A value of `0` effectively disables the configuration.
+- `maxCapacity`: Optional hard limit on the number of running instances for this configuration. Falls back to the worker pool's maxCapacity if not specified.
+
+## Improved Provisioning
+
+Worker-Manager implements improved provisioning strategies to:
+1. Balance load across launch configurations
+2. Respect capacity limits
+3. Adapt to failures and errors
+
+### Weight Adjustment
+
+The actual weight used for provisioning is dynamically adjusted based on:
+- Current capacity vs maxCapacity
+- Recent error rates (within the last hour)
+
+The adjustment follows these rules:
+
+1. **Capacity-based adjustment**:
+   ```
+   adjustedWeight = initialWeight - (existingCapacity/maxCapacity)
+   ```
+
+2. **Error-based adjustment**:
+   ```
+   adjustedWeight = initialWeight - (configErrors/totalErrors)
+   ```
+
+This ensures that:
+- Configurations approaching their capacity limit are used less frequently
+- Configurations experiencing errors receive reduced priority
+- Configurations with persistent failures are temporarily avoided
+
+### Error Recovery
+
+Worker-Manager uses a 1-hour sliding window for error tracking, allowing configurations to automatically recover from temporary issues.
+This prevents permanent exclusion while maintaining system reliability.
+
+## Usage Tracking
+
+Worker-Manager maintains a history of launch configurations and their associated workers.
+This history is preserved as long as there are active workers created from a configuration.
+The `launchConfigId` is included in API responses for workers and errors, enabling detailed tracking and troubleshooting.
