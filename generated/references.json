@@ -14717,6 +14717,19 @@
           "version": 1
         },
         {
+          "description": "During worker pool provisioning, launch config selector may change config weight\nbased on current state of the system and initial data.\nThis event may help to understand how launch configs were used at selection time\nand what their adjusted weights were.",
+          "fields": {
+            "remainingCapacity": "An object with launchConfigId as a key and remaining capacity",
+            "weights": "An object with launchConfigId as a key and adjusted weight as value",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "debug",
+          "name": "launchConfigSelectorsDebug",
+          "title": "Launch Config Selector Debug Information",
+          "type": "launch-config-selector-debug",
+          "version": 1
+        },
+        {
           "description": "An internal type for reporting malformed logging calls.",
           "fields": {
           },
