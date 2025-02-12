@@ -16,6 +16,7 @@ func defaultTasksDir() string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&RunTaskAsCurrentUserFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},
 		&LoopbackVideoFeature{},

@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"runtime"
 	"testing"
@@ -27,8 +26,8 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	td := testTask(t)
 	config.PublicPlatformConfig.EnableD2G(t)
 
-	switch fmt.Sprintf("%s:%v", runtime.GOOS, config.RunTasksAsCurrentUser) {
-	case "linux:false":
+	switch runtime.GOOS {
+	case "linux":
 		taskID := submitAndAssert(t, td, payload, "completed", "completed")
 		t.Log(LogText(t))
 		cotUnsignedBytes := getArtifactContent(t, taskID, "public/chain-of-trust.json")

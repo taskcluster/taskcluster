@@ -34,10 +34,8 @@ var (
 )
 
 func secure(configFile string) {
-	if !config.RunTasksAsCurrentUser {
-		secureError := fileutil.SecureFiles(configFile)
-		exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
-	}
+	secureError := fileutil.SecureFiles(configFile)
+	exitOnError(CANT_SECURE_CONFIG, secureError, "Not able to secure config file %q", configFile)
 }
 
 func rebootBetweenTasks() bool {
@@ -45,21 +43,16 @@ func rebootBetweenTasks() bool {
 }
 
 func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) {
-	pd, err := process.NewPlatformData(config.RunTasksAsCurrentUser, config.HeadlessTasks, taskUserCredentials)
-	if err != nil {
-		panic(err)
-	}
 	taskContext = &TaskContext{
 		User:    taskUserCredentials,
 		TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
-		pd:      pd,
 	}
 	// At this point, we know we have already booted into the new task user, and the user
 	// is logged in.
 	// Note we don't create task directory before logging in, since
 	// if the task directory is also the user profile home, this
 	// would mess up the windows logon process.
-	err = os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
+	err := os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
 	if err != nil {
 		panic(err)
 	}
@@ -191,6 +184,17 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	return
 }
 
+// Helper function used to get the current task user's
+// platform data. Useful for initially setting up the
+// TaskRun struct's data.
+func currentPlatformData() *process.PlatformData {
+	pd, err := process.TaskUserPlatformData(taskContext.User, config.HeadlessTasks)
+	if err != nil {
+		panic(err)
+	}
+	return pd
+}
+
 // Only return critical errors
 func purgeOldTasks() error {
 	if !config.CleanUpTaskDirs {
@@ -247,9 +251,9 @@ func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
 	return &user, nil
 }
 
-func MkdirAllTaskUser(dir string) error {
+func MkdirAllTaskUser(dir string, pd *process.PlatformData) error {
 	if info, err := os.Stat(dir); err == nil && info.IsDir() {
-		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()))
+		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), pd)
 		if err != nil {
 			return err
 		}
@@ -260,7 +264,7 @@ func MkdirAllTaskUser(dir string) error {
 		return os.Remove(file.Name())
 	}
 
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, pd)
 	if err != nil {
 		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
 	}
@@ -271,8 +275,8 @@ func MkdirAllTaskUser(dir string) error {
 	return nil
 }
 
-func CreateFileAsTaskUser(file string) (*os.File, error) {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskContext.TaskDir, []string{}, taskContext.pd)
+func CreateFileAsTaskUser(file string, pd *process.PlatformData) (*os.File, error) {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskContext.TaskDir, []string{}, pd)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, err)
 	}
@@ -297,7 +301,6 @@ func featureInitFailure(err error) (exitCode ExitCode) {
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 	// sentry requires string values...
 	m["headlessTasks"] = strconv.FormatBool(c.HeadlessTasks)
-	m["runTasksAsCurrentUser"] = strconv.FormatBool(c.RunTasksAsCurrentUser)
 }
 
 func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
@@ -307,5 +310,4 @@ func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
 		m["config"] = map[string]interface{}{}
 	}
 	m["config"].(map[string]interface{})["headlessTasks"] = c.HeadlessTasks
-	m["config"].(map[string]interface{})["runTasksAsCurrentUser"] = c.RunTasksAsCurrentUser
 }

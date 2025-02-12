@@ -41,7 +41,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), task.pd)
 	if err != nil {
 		return err
 	}
@@ -83,9 +83,9 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env, taskContext.pd)
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env, task.pd)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env, taskContext.pd)
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env, task.pd)
 	}
 
 	return processCmd.Cmd, err
@@ -151,14 +151,9 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
-	if config.RunTasksAsCurrentUser {
-		taskEnv["TASK_USER_CREDENTIALS"] = ctuPath
-	}
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
-		if !config.RunTasksAsCurrentUser {
-			taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(taskContext.pd.SysProcAttr.Credential.Uid))
-		}
+		taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(task.pd.SysProcAttr.Credential.Uid))
 	}
 	if config.WorkerLocation != "" {
 		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation

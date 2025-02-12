@@ -27,6 +27,7 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&RunTaskAsCurrentUserFeature{},
 		&RDPFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
 		// keep chain of trust as low down as possible, as it checks permissions
@@ -60,7 +61,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, taskContext.pd)
+	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
 	if err != nil {
 		return err
 	}
@@ -110,9 +111,6 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
 		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
-		if config.RunTasksAsCurrentUser {
-			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
-		}
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
