@@ -813,7 +813,7 @@ func (task *TaskRun) Log(prefix, message string) {
 	task.logMux.Lock()
 	defer task.logMux.Unlock()
 	if task.logWriter != nil {
-		for _, line := range strings.Split(message, "\n") {
+		for line := range strings.SplitSeq(message, "\n") {
 			_, _ = task.logWriter.Write([]byte(prefix + line + "\n"))
 		}
 	} else {
