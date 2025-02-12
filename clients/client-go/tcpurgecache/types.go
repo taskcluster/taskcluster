@@ -3,7 +3,7 @@
 package tcpurgecache
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v80/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v81/clients/client-go"
 )
 
 type (

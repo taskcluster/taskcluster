@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v81.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.23.6 and golangci-lint 1.63.4
+
+### DEPLOYERS
+
+▶ [minor] [#7508](https://github.com/taskcluster/taskcluster/issues/7508)
+Removes Cloud Armor specific policy config from deployment templates as it was applied incorrectly.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+Generic Worker: feature `runTaskAsCurrentUser` (note: `Task` not `Tasks`) has been added to replace the previous global task config setting `runTasksAsCurrentUser` (which is no longer supported). Worker pools can elect to enable or disable the feature with boolean config setting `enableRunTaskAsCurrentUser`. Tasks with the feature enabled (`task.payload.features.runTaskAsCurrentUser = true`) require scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+
+This change was introduced in order that access to this privileged feature are guarded not only by worker config settings, but also by task scopes, and furthermore the feature must be explicitly requested, in order that tasks do not unintentionally inherit the feature by virtue of overgenerous scopes or unintentionally running on a pool with the feature enabled.
+
+▶ [patch] [#7462](https://github.com/taskcluster/taskcluster/issues/7462)
+Generic Worker (D2G): prune docker images during garbage collection, if needed.
+
+### USERS
+
+▶ [MAJOR]
+The interactive feature will now drop users in the task container instead of the host
+
+▶ [minor] [#7506](https://github.com/taskcluster/taskcluster/issues/7506)
+Generic Worker Chain Of Trust feature now allows tasks to inject additional
+data into `public/chain-of-trust.json`. Tasks wishing to add additional fields
+should write them as json to the file `chain-of-trust-additional-data.json` in
+the task directory. In this initial release, there are no provisions to
+customise the name or path of the file. The file contents will be merged with
+the default chain of trust certificate, with the default field values taking
+precedence over any provided in `chain-of-trust-additional-data.json`. If the
+file is not created by the task, no merging will take place, and the feature
+will operate as before.
+
+▶ [minor]
+Set TASK_WORKDIR environment variable for generic-worker tasks.
+
+▶ [patch]
+Fixed the `--completed` flag for `taskcluster group list` so it actually works instead of returning an empty list all the time
+
 ## v80.0.0
 
 ### WORKER-DEPLOYERS

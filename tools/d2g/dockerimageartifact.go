@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v80/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v81/tools/d2g/genericworker"
 )
 
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {

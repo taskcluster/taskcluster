@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v80/tools/d2g"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v81/tools/d2g"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/process"
 )
 
 const (

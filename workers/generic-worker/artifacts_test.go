@@ -10,9 +10,9 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v80/clients/client-go"
-	"github.com/taskcluster/taskcluster/v80/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v81/clients/client-go"
+	"github.com/taskcluster/taskcluster/v81/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/artifacts"
 )
 
 var (

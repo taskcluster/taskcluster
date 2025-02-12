@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v80/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v80/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v80/tools/worker-runner/util"
-	"github.com/taskcluster/taskcluster/v80/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v80/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/util"
+	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v81/tools/workerproto"
 )
 
 type dockerworkerConfig struct {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/gwconfig"
 )
 
 type Metadata struct {

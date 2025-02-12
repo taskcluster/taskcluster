@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/process"
 )
 
 func (r *RunTaskAsCurrentUserTask) resetPlatformData() {

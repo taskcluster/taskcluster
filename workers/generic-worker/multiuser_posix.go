@@ -13,10 +13,10 @@ import (
 	"strconv"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v80/tools/d2g"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v80/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v80/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v81/tools/d2g"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v81/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
