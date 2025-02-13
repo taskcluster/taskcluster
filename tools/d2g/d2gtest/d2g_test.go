@@ -110,17 +110,22 @@ func testSuite(schema string, path string) func(t *testing.T) {
 		// not being applied to slices
 		defaults.SetDefaults(&d)
 		unmarshalYAML(t, &d, path)
-		for _, tc := range d.TestSuite.PayloadTests {
+		for i := range d.TestSuite.PayloadTests {
+			tc := &d.TestSuite.PayloadTests[i]
 			t.Run(
 				tc.Name,
 				tc.TestTaskPayloadCase(),
 			)
 		}
-		for _, tc := range d.TestSuite.TaskDefTests {
+		for i := range d.TestSuite.TaskDefTests {
+			tc := &d.TestSuite.TaskDefTests[i]
 			t.Run(
 				tc.Name,
 				tc.TestTaskDefinitionCase(),
 			)
+		}
+		if os.Getenv("D2G_UPDATE_TEST_EXPECTATIONS") != "" {
+			marshalYAML(t, d, path)
 		}
 	}
 }
@@ -166,6 +171,9 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if string(formattedExpectedGWPayload) != string(formattedActualGWPayload) {
 			dmp := diffmatchpatch.New()
 			diff := dmp.DiffMain(string(formattedExpectedGWPayload), string(formattedActualGWPayload), false)
+			if os.Getenv("D2G_UPDATE_TEST_EXPECTATIONS") != "" {
+				tc.GenericWorkerTaskPayload = formattedActualGWPayload
+			}
 			t.Fatalf("Converted task does not match expected value.\nDiff:%v", dmp.DiffPrettyText(diff))
 		}
 	}
@@ -202,6 +210,9 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		if string(formattedExpectedGWTaskDef) != string(formattedActualGWTaskDef) {
 			dmp := diffmatchpatch.New()
 			diff := dmp.DiffMain(string(formattedExpectedGWTaskDef), string(formattedActualGWTaskDef), false)
+			if os.Getenv("D2G_UPDATE_TEST_EXPECTATIONS") != "" {
+				tc.GenericWorkerTaskDefinition = formattedActualGWTaskDef
+			}
 			t.Fatalf("Converted task does not match expected value.\nDiff:%v", dmp.DiffPrettyText(diff))
 		}
 	}
@@ -236,6 +247,24 @@ func unmarshalYAML(t *testing.T, dest interface{}, path string) {
 	t.Helper()
 	j := yamlToJSON(t, path)
 	err := json.Unmarshal(j, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func marshalYAML(t *testing.T, src interface{}, path string) {
+	t.Helper()
+	j, err := json.Marshal(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := yaml.JSONToYAML(j)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.WriteFile(path, result, 0644)
 	if err != nil {
 		t.Fatal(err)
 	}

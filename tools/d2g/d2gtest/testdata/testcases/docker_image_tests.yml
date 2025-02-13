@@ -1,409 +1,458 @@
----
 testSuite:
-  name: Tests all the possible docker image types
   description: Test all the possible docker image types (DockerImageName|NamedDockerImage|IndexedDockerImage|DockerImageArtifact).
+  name: Tests all the possible docker image types
   payloadTests:
-    - name: DockerImageName
-      description: Test DockerImageName
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: NamedDockerImage
-      description: Test NamedDockerImage
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
-          name: ubuntu
-          type: docker-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: IndexedDockerImage
-      description: Test IndexedDockerImage
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test DockerImageName
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: DockerImageName
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test NamedDockerImage
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        name: ubuntu
+        type: docker-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: NamedDockerImage
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test IndexedDockerImage
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        namespace: test.namespace
+        path: test/path
+        type: indexed-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: test/path
           namespace: test.namespace
-          path: test/path
-          type: indexed-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        mounts:
-          - content:
-              artifact: test/path
-              namespace: test.namespace
-            file: dockerimage
-        features:
-          taskclusterProxy: true
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: IndexedDockerImage with .lz4 extension
-      description: Test IndexedDockerImage with .lz4 extension
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: IndexedDockerImage
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test IndexedDockerImage with .lz4 extension
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        namespace: test.namespace
+        path: test/path.lz4
+        type: indexed-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: test/path.lz4
           namespace: test.namespace
-          path: test/path.lz4
-          type: indexed-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        mounts:
-          - content:
-              artifact: test/path.lz4
-              namespace: test.namespace
-            file: dockerimage
-            format: lz4
-        features:
-          taskclusterProxy: true
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: IndexedDockerImage with .zst extension
-      description: Test IndexedDockerImage with .zst extension
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
+        file: dockerimage
+        format: lz4
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: IndexedDockerImage with .lz4 extension
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test IndexedDockerImage with .zst extension
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        namespace: test.namespace
+        path: test/path.zst
+        type: indexed-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: test/path.zst
           namespace: test.namespace
-          path: test/path.zst
-          type: indexed-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        mounts:
-          - content:
-              artifact: test/path.zst
-              namespace: test.namespace
-            file: dockerimage
-        features:
-          taskclusterProxy: true
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: DockerImageArtifact
-      description: Test DockerImageArtifact
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
-          path: public/test/path
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: IndexedDockerImage with .zst extension
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test DockerImageArtifact
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        path: public/test/path
+        taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+        type: task-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: public/test/path
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-          type: task-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        mounts:
-          - content:
-              artifact: public/test/path
-              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: dockerimage
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: DockerImageArtifact with .lz4 extension
-      description: Test DockerImageArtifact with .lz4 extension
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
-          path: public/test/path.lz4
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: DockerImageArtifact
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test DockerImageArtifact with .lz4 extension
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        path: public/test/path.lz4
+        taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+        type: task-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: public/test/path.lz4
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-          type: task-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        mounts:
-          - content:
-              artifact: public/test/path.lz4
-              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: dockerimage
-            format: lz4
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: DockerImageArtifact with .zst extension
-      description: Test DockerImageArtifact with .zst extension
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image:
-          path: public/test/path.zst
+        file: dockerimage
+        format: lz4
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: DockerImageArtifact with .lz4 extension
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test DockerImageArtifact with .zst extension
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image:
+        path: public/test/path.zst
+        taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+        type: task-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-          type: task-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        mounts:
-          - content:
-              artifact: public/test/path.zst
-              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: dockerimage
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: DockerImage with cache
-      description: Test DockerImage with cache
-      dockerWorkerTaskPayload:
-        cache:
-          gecko-level-3-checkouts-sparse-v3: /builds/worker/checkouts
-        command:
-          - echo "Hello world"
-        image:
-          path: public/test/path.zst
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: DockerImageArtifact with .zst extension
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test DockerImage with cache
+    dockerWorkerTaskPayload:
+      cache:
+        gecko-level-3-checkouts-sparse-v3: /builds/worker/checkouts
+      command:
+      - echo "Hello world"
+      image:
+        path: public/test/path.zst
+        taskId: 2JGiKFtpRnGbVczc6-OJ1Q
+        type: task-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/cache0:/builds/worker/checkouts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - cacheName: gecko-level-3-checkouts-sparse-v3
+        directory: cache0
+      - content:
+          artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-          type: task-image
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -v "$(pwd)/cache0:/builds/worker/checkouts"
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              "${IMAGE_ID}" 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        mounts:
-          - cacheName: gecko-level-3-checkouts-sparse-v3
-            directory: cache0
-          - content:
-              artifact: public/test/path.zst
-              taskId: 2JGiKFtpRnGbVczc6-OJ1Q
-            file: dockerimage
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-  taskDefTests: []
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: DockerImage with cache
