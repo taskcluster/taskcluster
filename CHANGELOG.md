@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v81.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7517](https://github.com/taskcluster/taskcluster/issues/7517)
+Generic Worker: fixes `fork/exec` issue on headless, multiuser engine introduced in v81.0.0.
+
 ## v81.0.0
 
 ### GENERAL
