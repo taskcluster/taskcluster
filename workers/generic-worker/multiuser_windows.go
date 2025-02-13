@@ -111,6 +111,9 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
 		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
+		if task.Payload.Features.RunTaskAsCurrentUser {
+			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
+		}
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
