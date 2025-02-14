@@ -476,7 +476,7 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
 	}
 	// now check it contains an original property
-	task := t.(map[string]interface{});
+	task := t.(map[string]interface{})
 	if instanceID, exists := task["instanceId"]; !exists {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.instanceId Contents: %v", string(cotUnsignedBytes))
 	}
