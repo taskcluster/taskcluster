@@ -15,5 +15,6 @@ func (r *RunTaskAsCurrentUserTask) resetPlatformData() {
 	}
 }
 
-func (r *RunTaskAsCurrentUserTask) platformSpecificActions() {
+func (r *RunTaskAsCurrentUserTask) platformSpecificActions() *CommandExecutionError {
+	return nil
 }

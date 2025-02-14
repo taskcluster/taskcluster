@@ -111,7 +111,6 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 // the payload never actually runs, so we don't need to also cover ed25519.
 func TestChainOfTrustWithRunAsAdministratorAsCurrentUser(t *testing.T) {
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
@@ -168,7 +167,6 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 
 func TestChainOfTrustWithoutRunAsAdministratorAsCurrentUser(t *testing.T) {
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
