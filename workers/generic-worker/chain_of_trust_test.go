@@ -462,16 +462,51 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
 	}
-	foo, exists := cotCert["foo"]
-	if !exists {
-		t.Fatalf("Was expecting cot cert to contain field 'foo' since it is present in json file chain-of-trust-additional-data.json")
+	topLevelFoo, topLevelFooExists := cotCert["foo"]
+	if !topLevelFooExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property foo. Contents: %v", string(cotUnsignedBytes))
 	}
-	if foo != "bar" {
-		t.Fatalf("Was expecting property foo to be \"bar\" but it is %#v", foo)
+	if topLevelFoo != "bar1" {
+		t.Fatalf("Was expecting property foo to be \"bar1\" but it is %#v. Contents: %v", topLevelFoo, string(cotUnsignedBytes))
 	}
-	// check a standard field, to make sure the json was merged
-	if _, exists := cotCert["task"]; !exists {
+	// check a common ancestor between chain of trust cert and merged cert, to make sure the json was merged
+	taskMap, taskExists := cotCert["task"]
+	if !taskExists {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
+	}
+	// check it is an object rather than a string or int etc
+	task, taskIsMapStringInterface := taskMap.(map[string]interface{})
+	if !taskIsMapStringInterface {
+		t.Fatalf("Expected taskMap to be of type map[string]interface{}, but got %T", taskMap)
+	}
+	// now check it contains a property from the standard chain of trust cert
+	provisionerID, provisionerIDExists := task["provisionerId"]
+	if !provisionerIDExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.provisionerId Contents: %v", string(cotUnsignedBytes))
+	}
+	if provisionerID != "test-provisioner" {
+		t.Fatalf("Was expecting property task.provisionerId to be \"test-provisioner\" but it is %#v. Contents: %v", provisionerID, string(cotUnsignedBytes))
+	}
+	// now check that existing cert properties cannot be overwritten by fake values in chain-of-trust-additional-data.json
+	schedulerID, schedulerIDExists := task["schedulerId"]
+	if !schedulerIDExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.schedulerId Contents: %v", string(cotUnsignedBytes))
+	}
+	if schedulerID != "test-scheduler" {
+		t.Fatalf("Was expecting property task.schedulerId to be \"test-scheduler\" but it is %#v. Contents: %v", schedulerID, string(cotUnsignedBytes))
+	}
+	// now check it contains the property foo that should have been added via
+	// the chain-of-trust-additional-data.json file specified in this test
+	taskFoo, taskFooExists := task["foo"]
+	if !taskFooExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.foo Contents: %v", string(cotUnsignedBytes))
+	}
+	if taskFoo != "bar2" {
+		t.Fatalf("Was expecting property task.foo to be \"bar2\" but it is %#v. Contents: %v", taskFoo, string(cotUnsignedBytes))
+	}
+	// now check a property in the cert that isn't in chain-of-trust-additional-data.json is also present
+	if _, environmentExists := cotCert["environment"]; !environmentExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property environment. Contents: %v", string(cotUnsignedBytes))
 	}
 }
 
