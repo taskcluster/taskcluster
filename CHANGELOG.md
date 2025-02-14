@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v81.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7521](https://github.com/taskcluster/taskcluster/issues/7521)
+Generic Worker: fixes an issue introduced in v81.0.0 where `TASK_USER_CREDENTIALS` env var wasn't written to the task's environment if `task.payload.features.runTaskAsCurrentUser` was enabled.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump elliptic from 6.6.0 to 6.6.1 in /ui (a0eb01744)
+* build(deps): bump elliptic from 6.6.0 to 6.6.1 in /clients/client-web (e17fc4ed4)
+
+</details>
+
 ## v81.0.1
 
 ### WORKER-DEPLOYERS
