@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 	"syscall"
@@ -17,13 +18,16 @@ func (r *RunTaskAsCurrentUserTask) resetPlatformData() {
 	}
 }
 
-func (r *RunTaskAsCurrentUserTask) platformSpecificActions() {
+func (r *RunTaskAsCurrentUserTask) platformSpecificActions() *CommandExecutionError {
 	if r.task.Payload.Env == nil {
 		r.task.Payload.Env = make(map[string]string)
 	}
 
 	r.task.Payload.Env["TASK_USER_CREDENTIALS"] = ctuPath
-	r.task.setVariable("TASK_USER_CREDENTIALS", ctuPath)
+	err := r.task.setVariable("TASK_USER_CREDENTIALS", ctuPath)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("could not set TASK_USER_CREDENTIALS environment variable: %v", err))
+	}
 
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		delete(r.task.Payload.Env, "XDG_RUNTIME_DIR")
@@ -37,4 +41,6 @@ func (r *RunTaskAsCurrentUserTask) platformSpecificActions() {
 		}
 		c.Env = newEnv
 	}
+
+	return nil
 }

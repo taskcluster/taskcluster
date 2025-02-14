@@ -51,8 +51,7 @@ func (r *RunTaskAsCurrentUserTask) RequiredScopes() scopes.Required {
 
 func (r *RunTaskAsCurrentUserTask) Start() *CommandExecutionError {
 	r.resetPlatformData()
-	r.platformSpecificActions()
-	return nil
+	return r.platformSpecificActions()
 }
 
 func (r *RunTaskAsCurrentUserTask) Stop(err *ExecutionErrors) {

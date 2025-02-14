@@ -221,7 +221,6 @@ func TestChainOfTrustUpload(t *testing.T) {
 func TestChainOfTrustUploadAsCurrentUser(t *testing.T) {
 
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -370,7 +369,6 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 func TestProtectedArtifactsReplacedAsCurrentUser(t *testing.T) {
 
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -480,7 +478,6 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 func TestChainOfTrustAdditionalDataAsCurrentUser(t *testing.T) {
 
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	command := helloGoodbye()
 	command = append(command, copyTestdataFile(additionalDataPath)...)
