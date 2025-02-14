@@ -56,6 +56,7 @@ worker-manager/workerscanner) exec node services/worker-manager/src/main.js work
 worker-manager/workerscanner-azure) exec node services/worker-manager/src/main.js workerScannerAzure;;
 worker-manager/expire-workers) exec node services/worker-manager/src/main.js expireWorkers;;
 worker-manager/expire-worker-pools) exec node services/worker-manager/src/main.js expireWorkerPools;;
+worker-manager/expire-launch-configs) exec node services/worker-manager/src/main.js expireLaunchConfigs;;
 worker-manager/expire-errors) exec node services/worker-manager/src/main.js expireErrors;;
 worker-manager/write-docs) exec node services/worker-manager/src/main.js writeDocs;;
 script/lint) shift; exec yarn run lint "${@}";;

@@ -2269,6 +2269,55 @@
   },
   {
     "element": "h1",
+    "id": "worker-manager---launch-configurations",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": null,
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h2",
+    "id": "configuration",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Configuration",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h3",
+    "id": "error-recovery",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Error Recovery",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h2",
+    "id": "improved-provisioning",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Improved Provisioning",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h3",
+    "id": "properties",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Properties",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h2",
+    "id": "usage-tracking",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Usage Tracking",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h3",
+    "id": "weight-adjustment",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Weight Adjustment",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h1",
     "id": "static-provider-type",
     "path": "/reference/core/worker-manager/static",
     "subtitle": null,

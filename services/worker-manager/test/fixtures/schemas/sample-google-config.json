@@ -5,7 +5,9 @@
         "ImageId": "banana"
       },
       "region": "us-west",
-      "capacityPerInstance": 1,
+      "workerManager": {
+        "capacityPerInstance": 1
+      },
       "workerConfig": {},
       "zone": "darkness",
       "machineType": "some-cool-type",

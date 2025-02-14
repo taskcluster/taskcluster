@@ -219,3 +219,22 @@ MonitorManager.register({
     url: 'The URL from which the certificate was downloaded',
   },
 });
+
+MonitorManager.register({
+  name: 'launchConfigSelectorsDebug',
+  title: 'Launch Config Selector Debug Information',
+  type: 'launch-config-selector-debug',
+  version: 1,
+  level: 'debug',
+  description: `
+    During worker pool provisioning, launch config selector may change config weight
+    based on current state of the system and initial data.
+    This event may help to understand how launch configs were used at selection time
+    and what their adjusted weights were.
+  `,
+  fields: {
+    workerPoolId: 'Worker Pool ID',
+    weights: 'An object with launchConfigId as a key and adjusted weight as value',
+    remainingCapacity: 'An object with launchConfigId as a key and remaining capacity',
+  },
+});
