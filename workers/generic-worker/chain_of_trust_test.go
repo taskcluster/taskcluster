@@ -468,12 +468,33 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	if !exists {
 		t.Fatalf("Was expecting cot cert to contain field 'foo' since it is present in json file chain-of-trust-additional-data.json")
 	}
-	if foo != "bar" {
-		t.Fatalf("Was expecting property foo to be \"bar\" but it is %#v", foo)
+	if foo != "bar1" {
+		t.Fatalf("Was expecting property foo to be \"bar1\" but it is %#v", foo)
 	}
-	// check a standard field, to make sure the json was merged
-	if _, exists := cotCert["task"]; !exists {
+	// check a common ancestor between chain of trust cert and merged cert, to make sure the json was merged
+	taskMap, taskExists := cotCert["task"]
+	if !taskExists {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
+	}
+	// now check it contains an original property
+	task := taskMap.(map[string]interface{})
+	provisionerID, provisionerIDExists := task["provisionerId"]
+	if !provisionerIDExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.provisionerId Contents: %v", string(cotUnsignedBytes))
+	}
+	if provisionerID != "test-provisioner" {
+		t.Fatalf("Was expecting property task.provisionerId to be \"test-provisioner\" but it is %#v. Contents: %v", provisionerID, string(cotUnisignedBytes))
+	}
+	// now check it contains a merged property
+	if foo, exists = task["foo"]; !exists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.foo Contents: %v", string(cotUnsignedBytes))
+	}
+	if foo != "bar2" {
+		t.Fatalf("Was expecting property task.foo to be \"bar2\" but it is %#v. Contents: %v", foo, string(cotUnisignedBytes))
+	}
+	// now check a field in the cert that isn't in the additional data is present
+	if _, exists = cotCert["environment"]; !exists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property environment. Contents: %v", string(cotUnsignedBytes))
 	}
 }
 
