@@ -478,19 +478,19 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	}
 	// now check it contains an original property
 	task := taskMap.(map[string]interface{})
-	instanceID, instanceIDExists := task["instanceId"]
-	if !instanceIDExists {
-		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.instanceId Contents: %v", string(cotUnsignedBytes))
+	provisionerID, provisionerIDExists := task["provisionerId"]
+	if !provisionerIDExists {
+		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.provisionerId Contents: %v", string(cotUnsignedBytes))
 	}
-	if instanceID != "12345" {
-		t.Fatalf("Was expecting property task.instanceId to be \"12345\" but it is %#v", foo)
+	if provisionerID != "test-provisioner" {
+		t.Fatalf("Was expecting property task.provisionerId to be \"test-provisioner\" but it is %#v. Contents: %v", provisionerID, string(cotUnisignedBytes))
 	}
 	// now check it contains a merged property
 	if foo, exists = task["foo"]; !exists {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task.foo Contents: %v", string(cotUnsignedBytes))
 	}
 	if foo != "bar2" {
-		t.Fatalf("Was expecting property task.foo to be \"bar2\" but it is %#v", foo)
+		t.Fatalf("Was expecting property task.foo to be \"bar2\" but it is %#v. Contents: %v", foo, string(cotUnisignedBytes))
 	}
 	// now check a field in the cert that isn't in the additional data is present
 	if _, exists = cotCert["environment"]; !exists {
