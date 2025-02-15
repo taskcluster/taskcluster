@@ -6,6 +6,14 @@ import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  WORKER_POOL: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
 /**
 * @type {APIBuilder<{
 *  cfg: object;
@@ -151,6 +159,12 @@ builder.declare({
     return res.reportError('RequestConflict', 'Worker pool already exists', {});
   }
 
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
+  );
+
   await this.publisher.workerPoolCreated({ workerPoolId, providerId });
   res.reply(workerPool.serializable());
 });
@@ -219,6 +233,12 @@ builder.declare({
 
   const workerPool = WorkerPool.fromDb(row);
 
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
+  );
+
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
@@ -264,6 +284,12 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
   workerPool = WorkerPool.fromDb(row);
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,
+  );
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
