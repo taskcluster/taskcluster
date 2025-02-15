@@ -376,6 +376,9 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
 	command.WriteString(" --memory-swap -1 --pids-limit -1")
+
+	// Mount /tmp as a rwx tmpfs
+	command.WriteString(" --tmpfs /tmp:exec")
 	if dwPayload.Capabilities.Privileged && config["allowPrivileged"].(bool) {
 		command.WriteString(" --privileged")
 	} else if dwPayload.Features.AllowPtrace && config["allowPtrace"].(bool) {
