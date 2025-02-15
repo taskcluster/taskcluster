@@ -1,68 +1,86 @@
----
 testSuite:
+  description: Tests features used by the Fuzzing team in the Community deployment
+    of Taskcluster.
   name: Community Fuzzing task tests
-  description: Tests features used by the Fuzzing team in the Community deployment of Taskcluster.
   payloadTests:
-    - name: Bugmon Processor disableSeccomp test task
-      description: >-
-        The Bugmon Processor tasks is based on a real production task that uses
-        the discontinued `disableSeccomp` capability property.
-      dockerWorkerTaskPayload:
-        artifacts:
-          project/fuzzing/bugmon:
-            path: /bugmon-artifacts/
-            type: directory
-        cache: {}
-        capabilities:
-          devices:
-            hostSharedMemory: true
-            loopbackAudio: true
-          disableSeccomp: true
-          privileged: true
-        env:
-          BUG_ACTION: process
-          MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
-          PROCESSOR_ARTIFACT: processor-result-1881157-dnCUWpVmTzC-dQguT0njPQ.json
-        features:
-          taskclusterProxy: true
-        image:
-          namespace: project.fuzzing.orion.bugmon.master
-          path: public/bugmon.tar.zst
-          type: indexed-image
-        maxRunTime: 14400
-      genericWorkerTaskPayload:
-        artifacts:
-        - name: project/fuzzing/bugmon
-          path: artifact0
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: The Bugmon Processor tasks is based on a real production task that
+      uses the discontinued `disableSeccomp` capability property.
+    dockerWorkerTaskPayload:
+      artifacts:
+        project/fuzzing/bugmon:
+          path: /bugmon-artifacts/
           type: directory
-        command:
-        - - bash
-          - "-cx"
-          - "IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image:
-            //p')\ntimeout -s KILL 14400 docker run -t --name taskcontainer
-            --memory-swap -1 --pids-limit -1 --privileged --security-opt=seccomp=unconfined
-            -v /dev/shm:/dev/shm --device=/dev/snd --add-host=taskcluster:127.0.0.1 --net=host
-            -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-            -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
-            -e TASK_ID \"${IMAGE_ID}\" \nexit_code=$?\ndocker cp taskcontainer:/bugmon-artifacts/
-            artifact0\ndocker rm -v taskcontainer\nexit \"${exit_code}\""
-        env:
-          BUG_ACTION: process
-          MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
-          PROCESSOR_ARTIFACT: processor-result-1881157-dnCUWpVmTzC-dQguT0njPQ.json
-        features:
+      cache: {}
+      capabilities:
+        devices:
+          hostSharedMemory: true
           loopbackAudio: true
-          taskclusterProxy: true
-        maxRunTime: 15300
-        mounts:
-        - content:
-            artifact: public/bugmon.tar.zst
-            namespace: project.fuzzing.orion.bugmon.master
-          file: dockerimage
-        onExitStatus:
-          retry:
-          - 125
-          - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
+        disableSeccomp: true
+        privileged: true
+      env:
+        BUG_ACTION: process
+        MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+        PROCESSOR_ARTIFACT: processor-result-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+      features:
+        taskclusterProxy: true
+      image:
+        namespace: project.fuzzing.orion.bugmon.master
+        path: public/bugmon.tar.zst
+        type: indexed-image
+      maxRunTime: 14400
+    genericWorkerTaskPayload:
+      artifacts:
+      - expires: "0001-01-01T00:00:00.000Z"
+        name: project/fuzzing/bugmon
+        path: artifact0
+        type: directory
+      command:
+      - - bash
+        - -cx
+        - "IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image:
+          /s/^Loaded image: //p')\ntimeout -s KILL 14400 docker run -t --name taskcontainer
+          --memory-swap -1 --pids-limit -1 --privileged --security-opt=seccomp=unconfined
+          -v /dev/shm:/dev/shm --device=/dev/snd --add-host=taskcluster:127.0.0.1
+          --net=host -e BUG_ACTION -e MONITOR_ARTIFACT -e PROCESSOR_ARTIFACT -e RUN_ID
+          -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL
+          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID \"${IMAGE_ID}\"
+          \nexit_code=$?\ndocker cp taskcontainer:/bugmon-artifacts/ artifact0\ndocker
+          rm -v taskcontainer\nexit \"${exit_code}\""
+      env:
+        BUG_ACTION: process
+        MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+        PROCESSOR_ARTIFACT: processor-result-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+      features:
+        backingLog: true
+        liveLog: true
+        loopbackAudio: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 15300
+      mounts:
+      - content:
+          artifact: public/bugmon.tar.zst
+          namespace: project.fuzzing.orion.bugmon.master
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Bugmon Processor disableSeccomp test task

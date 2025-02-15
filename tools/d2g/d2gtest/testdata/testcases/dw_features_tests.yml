@@ -1,183 +1,193 @@
----
 testSuite:
-  name: Docker Worker feature/capability tests
   description: Tests for docker-worker features/capabilities
+  name: Docker Worker feature/capability tests
   payloadTests:
-    - name: Allow ptrace, disableSeccomp, and taskclusterProxy
-      description: >-
-        Test when ptrace, disableSeccommp, and taskclusterProxy are enabled
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          disableSeccomp: true
-        features:
-          allowPtrace: true
-          taskclusterProxy: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - "-cx"
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --cap-add=SYS_PTRACE --security-opt=seccomp=unconfined
-              --add-host=taskcluster:127.0.0.1 --net=host
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_PROXY_URL
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        features:
-          backingLog: true
-          liveLog: true
-          taskclusterProxy: true
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: Allow ptrace, disableSeccomp, and taskclusterProxy disabled
-      description: >-
-        Test when ptrace, disableSeccomp, and taskclusterProxy are enabled but disabled in d2gConfig that it is not added to the generic worker task payload
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          disableSeccomp: true
-        features:
-          allowPtrace: true
-          taskclusterProxy: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - "-cx"
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowDisableSeccomp: false
-        allowPrivileged: false
-        allowPtrace: false
-        allowTaskclusterProxy: false
-
-    - name: Allow privileged
-      description: >-
-        Test when privileged is enabled
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          privileged: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - "-cx"
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: Allow privileged disabled
-      description: >-
-        Test when privileged is enabled but disabled in d2gConfig that it is not added to the generic worker task payload
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          privileged: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - "-cx"
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowPrivileged: false
-  taskDefTests: []
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test when ptrace, disableSeccommp, and taskclusterProxy are enabled
+    dockerWorkerTaskPayload:
+      capabilities:
+        disableSeccomp: true
+      command:
+      - echo "Hello world"
+      features:
+        allowPtrace: true
+        taskclusterProxy: true
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE --security-opt=seccomp=unconfined --add-host=taskcluster:127.0.0.1 --net=host -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Allow ptrace, disableSeccomp, and taskclusterProxy
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: false
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: false
+      allowPtrace: false
+      allowTaskclusterProxy: false
+      gpus: all
+    description: Test when ptrace, disableSeccomp, and taskclusterProxy are enabled
+      but disabled in d2gConfig that it is not added to the generic worker task payload
+    dockerWorkerTaskPayload:
+      capabilities:
+        disableSeccomp: true
+      command:
+      - echo "Hello world"
+      features:
+        allowPtrace: true
+        taskclusterProxy: true
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Allow ptrace, disableSeccomp, and taskclusterProxy disabled
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test when privileged is enabled
+    dockerWorkerTaskPayload:
+      capabilities:
+        privileged: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Allow privileged
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: false
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test when privileged is enabled but disabled in d2gConfig that it
+      is not added to the generic worker task payload
+    dockerWorkerTaskPayload:
+      capabilities:
+        privileged: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Allow privileged disabled

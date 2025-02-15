@@ -1,43 +1,49 @@
----
 testSuite:
+  description: Test that the container engine should be set properly in the resulting
+    generic worker task payload.
   name: Container engine tests
-  description: Test that the container engine should be set properly in the resulting generic worker task payload.
   payloadTests:
-    - name: Default container engine test
-      description: >-
-        Tests that docker should be set as the default container engine in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-  taskDefTests: []
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that docker should be set as the default container engine in
+      the resulting generic worker task payload.
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Default container engine test

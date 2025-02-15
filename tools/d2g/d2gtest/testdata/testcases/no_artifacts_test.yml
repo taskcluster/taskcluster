@@ -1,53 +1,55 @@
----
 testSuite:
+  description: Test that no artifacts will be created if disabled in the docker worker
+    payload.
   name: No artifacts test
-  description: Test that no artifacts will be created if disabled in the docker worker payload.
   payloadTests:
-    - name: No artifacts test
-      description: >-
-        If artifacts are disabled in the docker worker payload, no artifacts should be created
-        in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        artifacts:
-          public/fred:
-            type: directory
-            path: /home/worker/artifacts/fred
-        command:
-          - echo "Hello world"
-        features:
-          artifacts: false
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        features:
-          backingLog: false
-          liveLog: false
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-  taskDefTests: []
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: If artifacts are disabled in the docker worker payload, no artifacts
+      should be created in the resulting generic worker task payload.
+    dockerWorkerTaskPayload:
+      artifacts:
+        public/fred:
+          path: /home/worker/artifacts/fred
+          type: directory
+      command:
+      - echo "Hello world"
+      features:
+        artifacts: false
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: false
+        liveLog: false
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: No artifacts test
