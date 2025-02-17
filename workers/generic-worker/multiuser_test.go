@@ -3,6 +3,7 @@
 package main
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -28,10 +29,33 @@ func TestWhoAmI(t *testing.T) {
 
 func TestWhoAmIAsCurrentUser(t *testing.T) {
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	payload := GenericWorkerPayload{
 		Command:    goRun("whoami.go", "true"),
+		MaxRunTime: 180,
+		Features: FeatureFlags{
+			RunTaskAsCurrentUser: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	td.Scopes = append(td.Scopes,
+		"generic-worker:run-task-as-current-user:"+td.ProvisionerID+"/"+td.WorkerType,
+	)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command: goRun(
+			"check-env.go",
+			"TASK_USER_CREDENTIALS",
+			filepath.Join(cwd, "current-task-user.json"),
+		),
 		MaxRunTime: 180,
 		Features: FeatureFlags{
 			RunTaskAsCurrentUser: true,

@@ -52,7 +52,6 @@ func TestPrivilegedFileUpload(t *testing.T) {
 
 func TestPrivilegedFileUploadAsCurrentUser(t *testing.T) {
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	tempFile, err := os.CreateTemp(testdataDir, t.Name())
 	if err != nil {

@@ -114,7 +114,6 @@ func TestOSGroupsRespected(t *testing.T) {
 
 func TestOSGroupsRespectedAsCurrentUser(t *testing.T) {
 	setup(t)
-	config.EnableRunTaskAsCurrentUser = true
 
 	// create some new real OS groups that the test can use
 	newGroups := []string{

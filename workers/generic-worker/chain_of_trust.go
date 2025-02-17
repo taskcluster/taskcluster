@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/peterbourgon/mergemap"
 	"github.com/taskcluster/taskcluster/v81/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v81/internal/scopes"
 	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/artifacts"
@@ -267,19 +268,23 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 		return
 	}
 
-	combinedData := map[string]interface{}{}
+	initialCert := map[string]interface{}{}
+	additionalData := map[string]interface{}{}
 
-	// Unmarshal additional data first so the task can't override this feature's generated data
-	err = json.Unmarshal(additionalDataBytes, &combinedData)
+	err = json.Unmarshal(additionalDataBytes, &additionalData)
 	if err != nil {
 		// If for any reason the task-generated file isn't valid json, this should generate an error
 		return
 	}
 
-	err = json.Unmarshal(certBytes, &combinedData)
+	err = json.Unmarshal(certBytes, &initialCert)
 	if err != nil {
 		return
 	}
 
-	return json.MarshalIndent(combinedData, "", "  ")
+	// the order is important here - initialCert takes precedence over
+	// additionalData, in the case that they both contain the same property
+	mergedMap := mergemap.Merge(additionalData, initialCert)
+
+	return json.MarshalIndent(mergedMap, "", "  ")
 }

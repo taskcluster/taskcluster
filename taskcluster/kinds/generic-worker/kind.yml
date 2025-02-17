@@ -95,12 +95,13 @@ tasks:
         - test $(git status --porcelain | wc -l) == 0
   build/test-multiuser-ubuntu-24.04-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04
-    worker-type: gw-ci-ubuntu-24-04
+    worker-type: gw-ubuntu-24-04-gui
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
+      run-task-as-current-user: true
       artifacts:
         - path: gopath{go_version}/bin/generic-worker
           name: public/build/generic-worker-linux-amd64
@@ -175,12 +176,13 @@ tasks:
           ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
   build/test-insecure-ubuntu-24.04-amd64:
     description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 24.04
-    worker-type: gw-ci-ubuntu-24-04
+    worker-type: gw-ubuntu-24-04-gui
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
+      run-task-as-current-user: true
       artifacts:
         - path: gopath{go_version}/bin/generic-worker
           name: public/build/generic-worker-linux-amd64
@@ -205,6 +207,7 @@ tasks:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
+      run-task-as-current-user: true
       artifacts:
         - path: gopath{go_version}/bin/generic-worker
           name: public/build/generic-worker-darwin-arm64
@@ -223,12 +226,13 @@ tasks:
     copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
   build/test-multiuser-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
-    worker-type: gw-ci-windows-2022
+    worker-type: gw-windows-2022-gui
     scopes:
       - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
+      run-task-as-current-user: true
       artifacts:
         - path: gopath{go_version}/bin/generic-worker.exe
           name: public/build/generic-worker-windows-amd64.exe

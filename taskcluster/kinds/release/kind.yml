@@ -12,6 +12,7 @@ task-defaults:
   worker:
     max-run-time: 3600
     taskcluster-proxy: true
+    run-task-as-current-user: true
     artifacts:
       - path: taskcluster/release-debug-logs
         name: debug-logs # Note: this should never be public because who knows what is in here

@@ -4,4 +4,4 @@
 arrow
 pyyaml
 taskcluster
-taskcluster-taskgraph>=9.1
+taskcluster-taskgraph>=13.1.0
