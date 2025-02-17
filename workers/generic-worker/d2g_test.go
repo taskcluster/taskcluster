@@ -13,7 +13,7 @@ import (
 	"github.com/taskcluster/taskcluster/v81/tools/d2g/dockerworker"
 )
 
-func TestWithValidDockerWorkerPayload(t *testing.T) {
+func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	setup(t)
 	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
 	image := map[string]interface{}{
@@ -81,7 +81,7 @@ func TestWithValidDockerWorkerPayload(t *testing.T) {
 	}
 }
 
-func TestWithInvalidDockerWorkerPayload(t *testing.T) {
+func TestD2GWithInvalidDockerWorkerPayload(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -106,7 +106,7 @@ func TestWithInvalidDockerWorkerPayload(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
-func TestIssue6789(t *testing.T) {
+func TestD2GIssue6789(t *testing.T) {
 	setup(t)
 	payload := dockerworker.DockerWorkerPayload{
 		Command: []string{
@@ -143,7 +143,7 @@ func TestIssue6789(t *testing.T) {
 	}
 }
 
-func TestDockerWorkerPayloadWithValidScopes(t *testing.T) {
+func TestD2GWithValidScopes(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -197,7 +197,7 @@ func TestDockerWorkerPayloadWithValidScopes(t *testing.T) {
 	}
 }
 
-func TestDockerWorkerPayloadWithInvalidScopes(t *testing.T) {
+func TestD2GWithInvalidScopes(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -238,7 +238,7 @@ func TestDockerWorkerPayloadWithInvalidScopes(t *testing.T) {
 	}
 }
 
-func TestLoopbackVideoDevice(t *testing.T) {
+func TestD2GLoopbackVideoDevice(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -284,7 +284,7 @@ func TestLoopbackVideoDevice(t *testing.T) {
 	}
 }
 
-func TestLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
+func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -330,7 +330,7 @@ func TestLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 	}
 }
 
-func TestLoopbackAudioDevice(t *testing.T) {
+func TestD2GLoopbackAudioDevice(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -379,7 +379,7 @@ func TestLoopbackAudioDevice(t *testing.T) {
 	}
 }
 
-func TestLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
+func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -428,7 +428,7 @@ func TestLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 	}
 }
 
-func TestDevicesWithoutAllScopes(t *testing.T) {
+func TestD2GDevicesWithoutAllScopes(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
@@ -463,7 +463,7 @@ func TestDevicesWithoutAllScopes(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
-func TestHostSharedMemory(t *testing.T) {
+func TestD2GHostSharedMemory(t *testing.T) {
 	setup(t)
 	image := map[string]interface{}{
 		"name": "ubuntu:latest",
