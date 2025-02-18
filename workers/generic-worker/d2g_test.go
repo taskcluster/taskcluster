@@ -54,7 +54,6 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -117,7 +116,6 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -186,7 +184,6 @@ func TestD2GWithInvalidDockerWorkerPayload(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
@@ -211,7 +208,6 @@ func TestD2GIssue6789(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "docker-worker:cache:d2g-test")
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -265,7 +261,6 @@ func TestD2GWithValidScopes(t *testing.T) {
 		"docker-worker:capability:device:kvm:" + td.ProvisionerID + "/" + td.WorkerType,
 		"docker-worker:feature:allowPtrace",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -306,7 +301,6 @@ func TestD2GWithInvalidScopes(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	// don't set any scopes
 
@@ -352,7 +346,6 @@ func TestD2GLoopbackVideoDevice(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -398,7 +391,6 @@ func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackVideo:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -450,7 +442,6 @@ func TestD2GLoopbackVideoDeviceNonRootUserInVideoGroup(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -501,7 +492,6 @@ func TestD2GLoopbackVideoDeviceNonRootUserNotInVideoGroup(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -551,7 +541,6 @@ func TestD2GLoopbackAudioDevice(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -600,7 +589,6 @@ func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackAudio:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -654,7 +642,6 @@ func TestD2GLoopbackAudioDeviceNonRootUserInAudioGroup(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -707,7 +694,6 @@ func TestD2GLoopbackAudioDeviceNonRootUserNotInAudioGroup(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
@@ -755,7 +741,6 @@ func TestD2GDevicesWithoutAllScopes(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
@@ -789,11 +774,75 @@ func TestD2GHostSharedMemory(t *testing.T) {
 	td.Scopes = append(td.Scopes, []string{
 		"docker-worker:capability:device:hostSharedMemory:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestD2GTaskclusterProxy(t *testing.T) {
+	setup(t)
+
+	dependentTaskID := CreateArtifactFromFile(t, "SampleArtifacts/_/X.txt", "SampleArtifacts/_/X.txt")
+	artifactURL := fmt.Sprintf("${TASKCLUSTER_PROXY_URL}/queue/v1/task/%s/artifacts/SampleArtifacts/_/X.txt", dependentTaskID)
+
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			// sleep long enough to reclaim and get new credentials
+			fmt.Sprintf("sleep 12 && curl -v %s", artifactURL),
+		},
+		Image:      json.RawMessage(`"centos:latest"`),
+		MaxRunTime: 60,
+		Features: dockerworker.FeatureFlags{
+			TaskclusterProxy: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
+	td.Dependencies = []string{dependentTaskID}
+
+	reclaimEvery5Seconds = true
+	defer func() { reclaimEvery5Seconds = false }()
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+		expectedArtifacts := ExpectedArtifacts{
+			"public/logs/live_backing.log": {
+				Extracts: []string{
+					"Successfully refreshed taskcluster-proxy credentials",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					"Successfully refreshed taskcluster-proxy credentials",
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+		}
+
+		expectedArtifacts.Validate(t, taskID, 0)
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
@@ -960,7 +1009,6 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Dependencies = taskDependencies
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	var taskID string
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {

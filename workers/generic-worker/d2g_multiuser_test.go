@@ -24,7 +24,6 @@ func TestD2GWithChainOfTrust(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	config.PublicPlatformConfig.EnableD2G(t)
 
 	switch runtime.GOOS {
 	case "linux":
