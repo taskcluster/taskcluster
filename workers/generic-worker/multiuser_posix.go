@@ -172,12 +172,21 @@ func (task *TaskRun) EnvVars() []string {
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
-func changeOwnershipInDir(dir string, currentOwnerUID string, newOwnerUsername string) error {
+func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
+	if dir == "" || newOwnerUsername == "" || cache == nil {
+		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
+	}
+
+	// Do nothing if the current owner is the same as the new owner
+	if cache.OwnerUsername == newOwnerUsername {
+		return nil
+	}
+
 	switch runtime.GOOS {
 	case "darwin":
 		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
 	case "linux":
-		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", currentOwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
+		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", cache.OwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
 	case "freebsd":
 		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
 	}
