@@ -26,7 +26,7 @@ func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) 
 	if err != nil {
 		panic(fmt.Errorf("[mounts] Not able to look up UID for user %v: %w", taskContext.User.Name, err))
 	}
-	err = changeOwnershipInDir(dir, cache.OwnerUID, newOwnerUsername)
+	err = changeOwnershipInDir(dir, newOwnerUsername, cache)
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to update ownership of directory %v from %v (UID %v) to %v (UID %v): %w", dir, cache.OwnerUsername, cache.OwnerUID, newOwnerUsername, newOwnerUID, err)
 	}
