@@ -1,65 +1,67 @@
----
 testSuite:
-  name: Artifacts test
   description: Test that artifacts will be created.
+  name: Artifacts test
   payloadTests:
-    - name: Artifacts test
-      description: >-
-        Tests that artifacts will be created in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        artifacts:
-          public/fred:
-            type: file
-            path: /home/worker/artifacts/fred.txt
-          # Issue #6470
-          public/build.tar.gz:
-            path: /etc/passwd' artifact0; whoami; echo foo > /root/bar; cp 'foo
-            expires: '2024-05-28T16:12:56.693817Z'
-            type: file
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        artifacts:
-          - expires: '2024-05-28T16:12:56.693Z'
-            name: public/build.tar.gz
-            path: artifact0
-            type: file
-          - name: public/fred
-            path: artifact1.txt
-            type: file
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer
-              --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
-
-              docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 4500
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-  taskDefTests: []
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that artifacts will be created in the resulting generic worker
+      task payload.
+    dockerWorkerTaskPayload:
+      artifacts:
+        public/build.tar.gz:
+          expires: "2024-05-28T16:12:56.693817Z"
+          path: /etc/passwd' artifact0; whoami; echo foo > /root/bar; cp 'foo
+          type: file
+        public/fred:
+          path: /home/worker/artifacts/fred.txt
+          type: file
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      artifacts:
+      - expires: "2024-05-28T16:12:56.693Z"
+        name: public/build.tar.gz
+        path: artifact0
+        type: file
+      - expires: "0001-01-01T00:00:00.000Z"
+        name: public/fred
+        path: artifact1.txt
+        type: file
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
+          docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 4500
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Artifacts test

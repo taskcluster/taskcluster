@@ -1,426 +1,473 @@
----
 testSuite:
+  description: Test that devices should be mounted as volumes in the resulting generic
+    worker task payload.
   name: Devices tests
-  description: Test that devices should be mounted as volumes in the resulting generic worker task payload.
   payloadTests:
-    - name: Host Shared Memory
-      description: >-
-        Tests that host shared memory device is mounted as a volume in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            hostSharedMemory: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -v /dev/shm:/dev/shm
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: Host Shared Memory disabled
-      description: >-
-        Tests that host shared memory device isn't mounted as a volume in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            hostSharedMemory: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowHostSharedMemory: false
-
-    - name: KVM
-      description: >-
-        Tests that KVM device is mounted as a volume in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            kvm: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device=/dev/kvm
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - kvm
-          - libvirt
-          - docker
-      d2gConfig: {}
-
-    - name: KVM disabled
-      description: >-
-        Tests that KVM device isn't mounted as a volume in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            kvm: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowKVM: false
-
-    - name: Video Loopback
-      description: >-
-        Tests that loopbackVideo _capability_ in Docker Worker maps to Generic Worker _feature_ of the same name.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            loopbackVideo: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device="${TASKCLUSTER_VIDEO_DEVICE}"
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        features:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that host shared memory device is mounted as a volume in the
+      resulting generic worker task payload.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          hostSharedMemory: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v /dev/shm:/dev/shm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Host Shared Memory
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: false
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that host shared memory device isn't mounted as a volume in
+      the resulting generic worker task payload.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          hostSharedMemory: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Host Shared Memory disabled
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that KVM device is mounted as a volume in the resulting generic
+      worker task payload.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          kvm: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - kvm
+      - libvirt
+      - docker
+    name: KVM
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: false
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that KVM device isn't mounted as a volume in the resulting
+      generic worker task payload.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          kvm: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: KVM disabled
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that loopbackVideo _capability_ in Docker Worker maps to Generic
+      Worker _feature_ of the same name.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
           loopbackVideo: true
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: Video Loopback disabled
-      description: >-
-        Tests that loopbackVideo _capability_ in Docker Worker does not map to Generic Worker _feature_ of the same name.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            loopbackVideo: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowLoopbackVideo: false
-
-    - name: Audio Loopback
-      description: >-
-        Tests that loopbackAudio _capability_ in Docker Worker maps to Generic Worker _feature_ of the same name.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            loopbackAudio: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device=/dev/snd
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        features:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device="${TASKCLUSTER_VIDEO_DEVICE}" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        loopbackVideo: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Video Loopback
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: false
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that loopbackVideo _capability_ in Docker Worker does not map
+      to Generic Worker _feature_ of the same name.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          loopbackVideo: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Video Loopback disabled
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that loopbackAudio _capability_ in Docker Worker maps to Generic
+      Worker _feature_ of the same name.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
           loopbackAudio: true
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig: {}
-
-    - name: Audio Loopback disabled
-      description: >-
-        Tests that loopbackAudio _capability_ in Docker Worker does not map to Generic Worker _feature_ of the same name.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        capabilities:
-          devices:
-            loopbackAudio: true
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowLoopbackAudio: false
-    - name: GPUs
-      description: >-
-        Tests that GPUs are provided in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --gpus all
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowGPUs: true
-    - name: GPUs with custom device
-      description: >-
-        Tests that custom GPU is provided in the resulting generic worker task payload.
-      dockerWorkerTaskPayload:
-        command:
-          - echo "Hello world"
-        image: ubuntu
-        maxRunTime: 3600
-      genericWorkerTaskPayload:
-        command:
-          - - bash
-            - '-cx'
-            - >-
-              docker pull ubuntu
-
-              timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
-              -e RUN_ID
-              -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL
-              -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID
-              -e TASK_ID
-              ubuntu 'echo "Hello world"'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-        maxRunTime: 3600
-        onExitStatus:
-          retry:
-            - 125
-            - 128
-        osGroups:
-          - docker
-      d2gConfig:
-        allowGPUs: true
-        gpus: device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
-  taskDefTests: []
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/snd -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+        loopbackAudio: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Audio Loopback
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: false
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that loopbackAudio _capability_ in Docker Worker does not map
+      to Generic Worker _feature_ of the same name.
+    dockerWorkerTaskPayload:
+      capabilities:
+        devices:
+          loopbackAudio: true
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Audio Loopback disabled
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: true
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that GPUs are provided in the resulting generic worker task
+      payload.
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus all -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: GPUs
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: true
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a
+    description: Tests that custom GPU is provided in the resulting generic worker
+      task payload.
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: GPUs with custom device

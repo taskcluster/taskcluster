@@ -1,314 +1,321 @@
----
 testSuite:
+  description: Test that d2g can translate a Docker Worker task definition to a Generic
+    Worker task definition
   name: Task definition test
-  description: Test that d2g can translate a Docker Worker task definition to a Generic Worker task definition
   taskDefTests:
-    - name: Task definition test
-      description: >-
-        d2g should properly translate this Docker Worker task definition
-        into a valid Generic Worker task definition
-      dockerWorkerTaskDefinition:
-        provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        schedulerId: taskcluster-ui
-        projectId: none
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        dependencies: []
-        requires: all-completed
-        routes: []
-        priority: lowest
-        retries: 5
-        created: '2023-10-26T14:06:09.867Z'
-        deadline: '2023-10-26T17:06:09.867Z'
-        expires: '2024-10-26T17:06:09.867Z'
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
-        payload:
-          image: ubuntu:latest
-          command:
-            - /bin/bash
-            - '-c'
-            - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
-          maxRunTime: 630
-          capabilities:
-            devices:
-              kvm: true
-        metadata:
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-          description: An **example** task
-        tags: {}
-        extra: {}
-      genericWorkerTaskDefinition:
-        created: "2023-10-26T14:06:09.867Z"
-        deadline: "2023-10-26T17:06:09.867Z"
-        dependencies: []
-        expires: "2024-10-26T17:06:09.867Z"
-        extra: {}
-        metadata:
-          description: An **example** task
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-        payload:
-          command:
-          - - bash
-            - -cx
-            - >-
-              docker pull ubuntu:latest
-
-              timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-              /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-          features:
-            backingLog: true
-            liveLog: true
-          logs:
-            backing: public/logs/live_backing.log
-            live: public/logs/live.log
-          maxRunTime: 630
-          onExitStatus:
-            retry:
-            - 125
-            - 128
-          osGroups:
-            - kvm
-            - libvirt
-            - docker
-        priority: lowest
-        projectId: none
-        provisionerId: proj-taskcluster
-        requires: all-completed
-        retries: 5
-        routes: []
-        schedulerId: taskcluster-ui
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
-          - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
-        tags: {}
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        workerType: gw-ubuntu-24-04
-      d2gConfig: {}
-    - name: Task definition test without taskQueueId set
-      description: >-
-        d2g should properly translate this Docker Worker task definition
-        into a valid Generic Worker task definition, even if taskQueueId
-        is not set
-      dockerWorkerTaskDefinition:
-        provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
-        schedulerId: taskcluster-ui
-        projectId: none
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        dependencies: []
-        requires: all-completed
-        routes: []
-        priority: lowest
-        retries: 5
-        created: '2023-10-26T14:06:09.867Z'
-        deadline: '2023-10-26T17:06:09.867Z'
-        expires: '2024-10-26T17:06:09.867Z'
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm
-        payload:
-          image: ubuntu:latest
-          command:
-            - /bin/bash
-            - '-c'
-            - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
-          maxRunTime: 630
-          capabilities:
-            devices:
-              kvm: true
-        metadata:
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-          description: An **example** task
-        tags: {}
-        extra: {}
-      genericWorkerTaskDefinition:
-        created: "2023-10-26T14:06:09.867Z"
-        deadline: "2023-10-26T17:06:09.867Z"
-        dependencies: []
-        expires: "2024-10-26T17:06:09.867Z"
-        extra: {}
-        metadata:
-          description: An **example** task
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-        payload:
-          command:
-          - - bash
-            - -cx
-            - >-
-              docker pull ubuntu:latest
-
-              timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-              /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-          features:
-            backingLog: true
-            liveLog: true
-          logs:
-            backing: public/logs/live_backing.log
-            live: public/logs/live.log
-          maxRunTime: 630
-          onExitStatus:
-            retry:
-            - 125
-            - 128
-          osGroups:
-            - kvm
-            - libvirt
-            - docker
-        priority: lowest
-        projectId: none
-        provisionerId: proj-taskcluster
-        requires: all-completed
-        retries: 5
-        routes: []
-        schedulerId: taskcluster-ui
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm
-          - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
-        tags: {}
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        workerType: gw-ubuntu-24-04
-      d2gConfig: {}
-    - name: Task definition test with a new, fake field set, foo
-      description: >-
-        d2g should properly translate this Docker Worker task definition
-        into a valid Generic Worker task definition, with foo resulting
-        in an extra field in the Generic Worker task definition
-      dockerWorkerTaskDefinition:
-        foo: bar
-        provisionerId: proj-taskcluster
-        workerType: gw-ubuntu-24-04
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        schedulerId: taskcluster-ui
-        projectId: none
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        dependencies: []
-        requires: all-completed
-        routes: []
-        priority: lowest
-        retries: 5
-        created: '2023-10-26T14:06:09.867Z'
-        deadline: '2023-10-26T17:06:09.867Z'
-        expires: '2024-10-26T17:06:09.867Z'
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
-        payload:
-          image: ubuntu:latest
-          command:
-            - /bin/bash
-            - '-c'
-            - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
-          maxRunTime: 630
-          capabilities:
-            devices:
-              kvm: true
-        metadata:
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-          description: An **example** task
-        tags: {}
-        extra: {}
-      genericWorkerTaskDefinition:
-        created: "2023-10-26T14:06:09.867Z"
-        deadline: "2023-10-26T17:06:09.867Z"
-        dependencies: []
-        expires: "2024-10-26T17:06:09.867Z"
-        extra: {}
-        foo: bar
-        metadata:
-          description: An **example** task
-          name: example-task
-          owner: name@example.com
-          source: https://community-tc.services.mozilla.com/tasks/create
-        payload:
-          command:
-          - - bash
-            - -cx
-            - >-
-              docker pull ubuntu:latest
-
-              timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1
-              --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-              -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-              -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-              /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
-
-              exit_code=$?
-
-              docker rm -v taskcontainer
-
-              exit "${exit_code}"
-          features:
-            backingLog: true
-            liveLog: true
-          logs:
-            backing: public/logs/live_backing.log
-            live: public/logs/live.log
-          maxRunTime: 630
-          onExitStatus:
-            retry:
-            - 125
-            - 128
-          osGroups:
-            - kvm
-            - libvirt
-            - docker
-        priority: lowest
-        projectId: none
-        provisionerId: proj-taskcluster
-        requires: all-completed
-        retries: 5
-        routes: []
-        schedulerId: taskcluster-ui
-        scopes:
-          - docker-worker:apples
-          - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
-          - generic-worker:apples
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
-          - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
-        tags: {}
-        taskGroupId: PIxhISDQSDa98W9ppGUNsw
-        taskQueueId: proj-taskcluster/gw-ubuntu-24-04
-        workerType: gw-ubuntu-24-04
-      d2gConfig: {}
-  payloadTests: []
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: d2g should properly translate this Docker Worker task definition
+      into a valid Generic Worker task definition
+    dockerWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        capabilities:
+          devices:
+            kvm: true
+        command:
+        - /bin/bash
+        - -c
+        - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
+        image: ubuntu:latest
+        maxRunTime: 630
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+      workerType: gw-ubuntu-24-04
+    genericWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        command:
+        - - bash
+          - -cx
+          - |-
+            docker pull ubuntu:latest
+            timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            exit_code=$?
+            docker rm -v taskcontainer
+            exit "${exit_code}"
+        features:
+          backingLog: true
+          liveLog: true
+        logs:
+          backing: public/logs/live_backing.log
+          live: public/logs/live.log
+        maxRunTime: 630
+        onExitStatus:
+          retry:
+          - 125
+          - 128
+        osGroups:
+        - kvm
+        - libvirt
+        - docker
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
+      - generic-worker:apples
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+      workerType: gw-ubuntu-24-04
+    name: Task definition test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: d2g should properly translate this Docker Worker task definition
+      into a valid Generic Worker task definition, even if taskQueueId is not set
+    dockerWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        capabilities:
+          devices:
+            kvm: true
+        command:
+        - /bin/bash
+        - -c
+        - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
+        image: ubuntu:latest
+        maxRunTime: 630
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      workerType: gw-ubuntu-24-04
+    genericWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        command:
+        - - bash
+          - -cx
+          - |-
+            docker pull ubuntu:latest
+            timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            exit_code=$?
+            docker rm -v taskcontainer
+            exit "${exit_code}"
+        features:
+          backingLog: true
+          liveLog: true
+        logs:
+          backing: public/logs/live_backing.log
+          live: public/logs/live.log
+        maxRunTime: 630
+        onExitStatus:
+          retry:
+          - 125
+          - 128
+        osGroups:
+        - kvm
+        - libvirt
+        - docker
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm
+      - generic-worker:apples
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      workerType: gw-ubuntu-24-04
+    name: Task definition test without taskQueueId set
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: d2g should properly translate this Docker Worker task definition
+      into a valid Generic Worker task definition, with foo resulting in an extra
+      field in the Generic Worker task definition
+    dockerWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      foo: bar
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        capabilities:
+          devices:
+            kvm: true
+        command:
+        - /bin/bash
+        - -c
+        - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
+        image: ubuntu:latest
+        maxRunTime: 630
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+      workerType: gw-ubuntu-24-04
+    genericWorkerTaskDefinition:
+      created: "2023-10-26T14:06:09.867Z"
+      deadline: "2023-10-26T17:06:09.867Z"
+      dependencies: []
+      expires: "2024-10-26T17:06:09.867Z"
+      extra: {}
+      foo: bar
+      metadata:
+        description: An **example** task
+        name: example-task
+        owner: name@example.com
+        source: https://community-tc.services.mozilla.com/tasks/create
+      payload:
+        command:
+        - - bash
+          - -cx
+          - |-
+            docker pull ubuntu:latest
+            timeout -s KILL 630 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            exit_code=$?
+            docker rm -v taskcontainer
+            exit "${exit_code}"
+        features:
+          backingLog: true
+          liveLog: true
+        logs:
+          backing: public/logs/live_backing.log
+          live: public/logs/live.log
+        maxRunTime: 630
+        onExitStatus:
+          retry:
+          - 125
+          - 128
+        osGroups:
+        - kvm
+        - libvirt
+        - docker
+      priority: lowest
+      projectId: none
+      provisionerId: proj-taskcluster
+      requires: all-completed
+      retries: 5
+      routes: []
+      schedulerId: taskcluster-ui
+      scopes:
+      - docker-worker:apples
+      - docker-worker:capability:device:kvm:proj-taskcluster/gw-ubuntu-24-04
+      - generic-worker:apples
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/docker
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/kvm
+      - generic-worker:os-group:proj-taskcluster/gw-ubuntu-24-04/libvirt
+      tags: {}
+      taskGroupId: PIxhISDQSDa98W9ppGUNsw
+      taskQueueId: proj-taskcluster/gw-ubuntu-24-04
+      workerType: gw-ubuntu-24-04
+    name: Task definition test with a new, fake field set, foo
