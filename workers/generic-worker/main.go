@@ -218,6 +218,7 @@ func loadConfig(configFile *gwconfig.File) error {
 	// only one place if possible (defaults also declared in `usage`)
 	config = &gwconfig.Config{
 		PublicConfig: gwconfig.PublicConfig{
+			PublicEngineConfig:             *gwconfig.DefaultPublicEngineConfig(),
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
@@ -426,12 +427,6 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
-	pdTaskUser := currentPlatformData()
-	err = validateGenericWorkerBinary(pdTaskUser)
-	if err != nil {
-		log.Printf("Invalid generic-worker binary: %v", err)
-		return INTERNAL_ERROR
-	}
 	for {
 
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
@@ -452,6 +447,13 @@ func RunWorker() (exitCode ExitCode) {
 
 		if graceful.TerminationRequested() {
 			return WORKER_SHUTDOWN
+		}
+
+		pdTaskUser := currentPlatformData()
+		err = validateGenericWorkerBinary(pdTaskUser)
+		if err != nil {
+			log.Printf("Invalid generic-worker binary: %v", err)
+			return INTERNAL_ERROR
 		}
 
 		task := ClaimWork()

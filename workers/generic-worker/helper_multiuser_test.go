@@ -38,6 +38,7 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	t.Helper()
 	runningTests = true
 	testConfig.HeadlessTasks = true
+	testConfig.EnableRunTaskAsCurrentUser = true
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))

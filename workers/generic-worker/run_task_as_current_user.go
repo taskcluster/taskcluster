@@ -51,18 +51,8 @@ func (r *RunTaskAsCurrentUserTask) RequiredScopes() scopes.Required {
 
 func (r *RunTaskAsCurrentUserTask) Start() *CommandExecutionError {
 	r.resetPlatformData()
-	r.setTaskUserCredentialsEnvVar()
-	r.platformSpecificActions()
-	return nil
+	return r.platformSpecificActions()
 }
 
 func (r *RunTaskAsCurrentUserTask) Stop(err *ExecutionErrors) {
-}
-
-func (r *RunTaskAsCurrentUserTask) setTaskUserCredentialsEnvVar() {
-	if r.task.Payload.Env == nil {
-		r.task.Payload.Env = make(map[string]string)
-	}
-
-	r.task.Payload.Env["TASK_USER_CREDENTIALS"] = ctuPath
 }
