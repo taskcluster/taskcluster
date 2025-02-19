@@ -540,9 +540,9 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	}
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
+func changeOwnershipInDir(dir, newOwnerUsername, newOwnerUID string, cache *Cache) error {
+	if dir == "" || newOwnerUsername == "" || newOwnerUID == "" || cache == nil {
+		return fmt.Errorf("directory path, new owner username, new owner UID, and cache must not be empty")
 	}
 
 	// Do nothing if the current owner is the same as the new owner
@@ -550,16 +550,17 @@ func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
 		return nil
 	}
 
-	// Reset to inherited permissions only, recursively
-	err := host.Run("icacls", dir, "/reset", "/t")
-	if err != nil {
-		return fmt.Errorf("failed to reset permissions on dir %v: %v", dir, err)
-	}
-
-	// Grant full control to new owner, adding to inherited permissions
-	err = host.Run("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
-	if err != nil {
-		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v", newOwnerUsername, dir, err)
+	if cache.OwnerUsername != `NT AUTHORITY\SYSTEM` {
+		// Substitute old owner permissions with new owner
+		err := host.Run("icacls", dir, "/substitute", cache.OwnerUID, newOwnerUID)
+		if err != nil {
+			return fmt.Errorf("failed to substitue permissions from %v (UID %v) to %v (UID %v) on dir %v: %v", cache.OwnerUsername, cache.OwnerUID, newOwnerUsername, newOwnerUID, dir, err)
+		}
+	} else {
+		err := host.Run("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
+		if err != nil {
+			return fmt.Errorf("failed to grant full control to %v on dir %v: %v", newOwnerUsername, dir, err)
+		}
 	}
 
 	return nil

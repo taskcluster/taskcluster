@@ -22,11 +22,11 @@ func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) 
 	// because files inside task directory should be owned/managed by task user
 	newOwnerUsername := taskContext.User.Name
 	newOwnerUID, err := taskContext.User.ID()
-	taskMount.Infof("Updating ownership of files inside directory '%v' from %v to %v", dir, cache.OwnerUsername, newOwnerUsername)
 	if err != nil {
 		panic(fmt.Errorf("[mounts] Not able to look up UID for user %v: %w", taskContext.User.Name, err))
 	}
-	err = changeOwnershipInDir(dir, newOwnerUsername, cache)
+	taskMount.Infof("Updating ownership of files inside directory '%v' from %v to %v", dir, cache.OwnerUsername, newOwnerUsername)
+	err = changeOwnershipInDir(dir, newOwnerUsername, newOwnerUID, cache)
 	if err != nil {
 		return fmt.Errorf("[mounts] Not able to update ownership of directory %v from %v (UID %v) to %v (UID %v): %w", dir, cache.OwnerUsername, cache.OwnerUID, newOwnerUsername, newOwnerUID, err)
 	}
