@@ -2,6 +2,7 @@
   "access": {
     "auth": {
       "tables": {
+        "audit_history": "write",
         "clients": "write",
         "roles": "write"
       }
@@ -15,6 +16,7 @@
     },
     "hooks": {
       "tables": {
+        "audit_history": "write",
         "hooks": "write",
         "hooks_last_fires": "write",
         "hooks_queues": "write",
@@ -60,6 +62,7 @@
     },
     "secrets": {
       "tables": {
+        "audit_history": "write",
         "secrets": "write"
       }
     },
@@ -91,6 +94,13 @@
       "identity": "text not null",
       "identity_provider_id": "text not null",
       "redirect_uri": "text not null"
+    },
+    "audit_history": {
+      "action_type": "text not null",
+      "client_id": "text not null",
+      "created": "timestamp with time zone not null",
+      "entity_id": "text not null",
+      "entity_type": "text not null"
     },
     "authorization_codes": {
       "client_details": "jsonb not null",
@@ -7279,6 +7289,68 @@
         }
       },
       "version": 104
+    },
+    {
+      "description": "insert, fetch and purge audit history for auth, hooks and secrets",
+      "downgradeScript": "begin\n\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_auth;\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_hooks;\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_secrets;\n    DROP TABLE audit_history;\n\nend\n",
+      "methods": {
+        "get_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    audit_history.client_id,\n    audit_history.action_type,\n    audit_history.created\n  from audit_history\n  where audit_history.entity_id = entity_id_in\n  and audit_history.entity_type = entity_type_in\n  order by audit_history.created\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get Audit History against a entityId and entity type\n",
+          "mode": "read",
+          "returns": "table ( client_id text, action_type text, created timestamptz )",
+          "serviceName": "auth"
+        },
+        "insert_auth_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "insert_hooks_audit_history": {
+          "args": "hook_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    hook_id_in,\n    'hook',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "insert_secrets_audit_history": {
+          "args": "secret_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    secret_id_in,\n    'secret',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "insert_worker_manager_audit_history": {
+          "args": "worker_pool_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    worker_pool_id_in,\n    'worker_pool',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "worker_manager"
+        },
+        "purge_audit_history": {
+          "args": "cutoff_date_in timestamptz",
+          "body": "begin\n    DELETE FROM audit_history\n    WHERE created < cutoff_date_in;\nend",
+          "deprecated": false,
+          "description": "Purge audit history entries older than the specified date\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n\n  CREATE TABLE audit_history (\n    entity_id text not null,\n    entity_type text not null,\n    client_id text not null,\n    action_type text not null,\n    created timestamptz not null\n  );\n\n  ALTER TABLE audit_history add primary key (entity_id, entity_type, created);\n\n  GRANT select, insert, update, delete ON audit_history to $db_user_prefix$_auth;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_hooks;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_secrets;\n\nend\n",
+      "version": 105
     }
   ]
 }
