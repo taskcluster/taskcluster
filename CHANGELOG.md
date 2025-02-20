@@ -3,6 +3,47 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v81.0.3
+
+### GENERAL
+
+▶ [patch] [#7532](https://github.com/taskcluster/taskcluster/issues/7532)
+Generic Worker (windows): fix cache ownership issues. Clean up ACLs so prior task users aren't referenced anymore.
+
+### USERS
+
+▶ [patch] [#5727](https://github.com/taskcluster/taskcluster/issues/5727)
+Fixes an issue introduced in Generic Worker 81.0.0 where the Chain of Trust
+certificate would not contain all of the additional data specified in the
+task-provided `chain-of-trust-additional-data.json` file.
+
+Generic Worker 81.0.0 enhanced the Chain of Trust task payload feature to
+support adding arbitrary additional data to the `public/chain-of-trust.json`
+artifact. This was implemented in [PR
+#7507](https://github.com/taskcluster/taskcluster/pull/7507) by allowing the
+task to write additional data to the file `chain-of-trust-additional-data.json`
+in the task directory. The feature was meant to merge the content of this file
+with the generated `chain-of-trust.json` file before publishing it as an
+artifact. However, the merge of the two json objects was broken if they
+contained common ancestors.  For example, the generated `chain-of-trust.json`
+file contains a top level object property `environment`. If the task-provided
+`chain-of-trust-additional-data.json` file also contained a top level object
+property `environment` containing further properties, they would be omitted
+from the resulting `environment` property in the published Chain of Trust
+certificate.
+
+▶ [patch] [#7014](https://github.com/taskcluster/taskcluster/issues/7014)
+Generic Worker now adds `environment.imageHash` (always), and
+`environment.imageArtifactHash` (when present) to `public/chain-of-trust.json`
+when running Docker Worker Chain of Trust tasks, to match Docker Worker
+behaviour.
+
+### DEVELOPERS
+
+▶ [patch] [#7479](https://github.com/taskcluster/taskcluster/issues/7479)
+Add a way to update d2g test expectations by setting the
+`D2G_UPDATE_TEST_EXPECTATIONS` environment variable while running tests
+
 ## v81.0.2
 
 ### WORKER-DEPLOYERS
