@@ -55,7 +55,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-123", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"project-id":      "proj-1234",
 		"image":           "img-123",
 		"instance-type":   "most-of-the-cloud",
@@ -81,7 +81,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"token": "i-promise",
 	}, proof)
 }

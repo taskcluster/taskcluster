@@ -6,6 +6,8 @@ import (
 	"math"
 	"strings"
 
+	"maps"
+
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -16,26 +18,26 @@ import (
 // Treat this as a read-only data structure, replacing it as necessary
 // using the methods provided below.
 type WorkerConfig struct {
-	data map[string]interface{}
+	data map[string]any
 }
 
 // Normalize a JSON value, using the same types regardless of source
 //
 // Specifically, maps should be map[string]value, and numbers should
 // be float64s
-func normalize(value interface{}) interface{} {
-	strmap, ok := value.(map[string]interface{})
+func normalize(value any) any {
+	strmap, ok := value.(map[string]any)
 	if ok {
-		res := make(map[string]interface{})
+		res := make(map[string]any)
 		for key, value := range strmap {
 			res[key] = normalize(value)
 		}
 		return res
 	}
 
-	ifmap, ok := value.(map[interface{}]interface{})
+	ifmap, ok := value.(map[any]any)
 	if ok {
-		res := make(map[string]interface{})
+		res := make(map[string]any)
 		for key, value := range ifmap {
 			res[key.(string)] = normalize(value)
 		}
@@ -51,22 +53,22 @@ func normalize(value interface{}) interface{} {
 }
 
 func (wc *WorkerConfig) UnmarshalYAML(node *yaml.Node) error {
-	var res map[string]interface{}
+	var res map[string]any
 	err := node.Decode(&res)
 	if err != nil {
 		return err
 	}
-	wc.data = normalize(res).(map[string]interface{})
+	wc.data = normalize(res).(map[string]any)
 	return nil
 }
 
 func (wc *WorkerConfig) UnmarshalJSON(b []byte) error {
-	var res map[string]interface{}
+	var res map[string]any
 	err := json.Unmarshal(b, &res)
 	if err != nil {
 		return err
 	}
-	wc.data = normalize(res).(map[string]interface{})
+	wc.data = normalize(res).(map[string]any)
 	return nil
 }
 
@@ -78,15 +80,13 @@ func (wc *WorkerConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal(wc.data)
 }
 
-func merge(v1, v2 interface{}) interface{} {
+func merge(v1, v2 any) any {
 	// if both are maps, merge them
-	map1, map1ok := v1.(map[string]interface{})
-	map2, map2ok := v2.(map[string]interface{})
+	map1, map1ok := v1.(map[string]any)
+	map2, map2ok := v2.(map[string]any)
 	if map1ok && map2ok {
-		res := make(map[string]interface{})
-		for key, value := range map1 {
-			res[key] = value
-		}
+		res := make(map[string]any)
+		maps.Copy(res, map1)
 		for key, value := range map2 {
 			existing, ok := res[key]
 			if ok {
@@ -100,13 +100,13 @@ func merge(v1, v2 interface{}) interface{} {
 	}
 
 	// if both are arrays, concatenate them
-	arr1, arr1ok := v1.([]interface{})
-	arr2, arr2ok := v2.([]interface{})
+	arr1, arr1ok := v1.([]any)
+	arr2, arr2ok := v2.([]any)
 	if arr1ok && arr2ok {
 		if len(arr1) > math.MaxInt-len(arr2) {
 			panic(fmt.Sprintf("Arrays too large to merge: sizes are %v and %v", len(arr1), len(arr2)))
 		}
-		res := make([]interface{}, 0, len(arr1)+len(arr2))
+		res := make([]any, 0, len(arr1)+len(arr2))
 		res = append(res, arr1...)
 		res = append(res, arr2...)
 
@@ -135,29 +135,27 @@ func (wc *WorkerConfig) Merge(other *WorkerConfig) *WorkerConfig {
 	}
 
 	return &WorkerConfig{
-		data: merge(wc.data, other.data).(map[string]interface{}),
+		data: merge(wc.data, other.data).(map[string]any),
 	}
 }
 
-func set(key []string, i int, config interface{}, value interface{}) (interface{}, error) {
+func set(key []string, i int, config any, value any) (any, error) {
 	if i == len(key) {
 		return value, nil
 	}
 
-	configmap, ok := config.(map[string]interface{})
+	configmap, ok := config.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("%s is not an object in existing config", strings.Join(key[:i], "."))
 	}
 
-	clone := make(map[string]interface{})
-	for k, v := range configmap {
-		clone[k] = v
-	}
+	clone := make(map[string]any)
+	maps.Copy(clone, configmap)
 
 	k := key[i]
 	v, ok := clone[k]
 	if !ok {
-		v = make(map[string]interface{})
+		v = make(map[string]any)
 		clone[k] = v
 	}
 
@@ -173,7 +171,7 @@ func set(key []string, i int, config interface{}, value interface{}) (interface{
 // Set a value at the given dotted path.
 //
 // This returns a new WorkerConfig containing the updated value.
-func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error) {
+func (wc *WorkerConfig) Set(key string, value any) (*WorkerConfig, error) {
 	if key == "" {
 		return nil, fmt.Errorf("must specify a nonempty key")
 	}
@@ -188,20 +186,20 @@ func (wc *WorkerConfig) Set(key string, value interface{}) (*WorkerConfig, error
 		return nil, err
 	}
 	return &WorkerConfig{
-		data: data.(map[string]interface{}),
+		data: data.(map[string]any),
 	}, nil
 }
 
 // Get a value at the given dotted path
-func (wc *WorkerConfig) Get(key string) (interface{}, error) {
+func (wc *WorkerConfig) Get(key string) (any, error) {
 	if key == "" {
 		return nil, fmt.Errorf("must specify a nonempty key")
 	}
 
 	splitkey := strings.Split(key, ".")
-	val := interface{}(wc.data)
+	val := any(wc.data)
 	for _, k := range splitkey {
-		valmap, ok := val.(map[string]interface{})
+		valmap, ok := val.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("key %s not found", key)
 		}
@@ -214,7 +212,7 @@ func (wc *WorkerConfig) Get(key string) (interface{}, error) {
 }
 
 // Like Get, but panic on error (for tests)
-func (wc *WorkerConfig) MustGet(key string) interface{} {
+func (wc *WorkerConfig) MustGet(key string) any {
 	val, err := wc.Get(key)
 	if err != nil {
 		panic(err)
@@ -230,6 +228,6 @@ func (wc *WorkerConfig) Has(key string) bool {
 
 func NewWorkerConfig() *WorkerConfig {
 	return &WorkerConfig{
-		data: make(map[string]interface{}),
+		data: make(map[string]any),
 	}
 }

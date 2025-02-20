@@ -97,8 +97,8 @@ func TestPipeWriter(t *testing.T) {
 		}
 
 		require.Equal(t, []Message{
-			Message{Type: "abc", Properties: map[string]interface{}{}},
-			Message{Type: "bcdf", Properties: map[string]interface{}{"lengthy": "abc abc abc abc abc abc abc abc abc abc abc abc abc abc"}},
+			Message{Type: "abc", Properties: map[string]any{}},
+			Message{Type: "bcdf", Properties: map[string]any{"lengthy": "abc abc abc abc abc abc abc abc abc abc abc abc abc abc"}},
 		}, got, "should have gotten two messages")
 
 		require.Equal(t, []string{
@@ -136,9 +136,9 @@ func TestPipeReader(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	transp := NewPipeTransport(bytes.NewReader([]byte{}), output)
 
-	transp.Send(Message{Type: "abc", Properties: map[string]interface{}{}})
-	transp.Send(Message{Type: "def", Properties: map[string]interface{}{"x": true}})
-	transp.Send(Message{Type: "def", Properties: map[string]interface{}{"x": false}})
+	transp.Send(Message{Type: "abc", Properties: map[string]any{}})
+	transp.Send(Message{Type: "def", Properties: map[string]any{"x": true}})
+	transp.Send(Message{Type: "def", Properties: map[string]any{"x": false}})
 
 	require.Equal(t, `
 ~{"type":"abc"}

@@ -118,12 +118,12 @@ type (
 		AdditionalProperties *AdditionalProperties  `json:"additionalProperties,omitempty"`
 		AllOf                *Items                 `json:"allOf,omitempty"`
 		AnyOf                *Items                 `json:"anyOf,omitempty"`
-		Const                *interface{}           `json:"const,omitempty"`
-		Default              *interface{}           `json:"default,omitempty"`
+		Const                *any                   `json:"const,omitempty"`
+		Default              *any                   `json:"default,omitempty"`
 		Definitions          *Properties            `json:"definitions,omitempty"`
 		Dependencies         map[string]*Dependency `json:"dependencies,omitempty"`
 		Description          *string                `json:"description,omitempty"`
-		Enum                 []interface{}          `json:"enum,omitempty"`
+		Enum                 []any                  `json:"enum,omitempty"`
 		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum,omitempty"`
 		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum,omitempty"`
 		Format               *string                `json:"format,omitempty"`
@@ -370,7 +370,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 	}
 	switch typ {
 	case "array":
-		typ = "[]interface{}"
+		typ = "[]any"
 		if jsonSubSchema.Items != nil {
 			arrayComment, arrayType := jsonSubSchema.Items.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			typ = "[]" + arrayType
@@ -1180,7 +1180,7 @@ func (subSchema *JsonSubSchema) inferType() *string {
 	return nil
 }
 
-func jsonSchemaTypeFromValue(v interface{}) *string {
+func jsonSchemaTypeFromValue(v any) *string {
 	var inferredType string
 	switch t := v.(type) {
 	case bool:
@@ -1189,9 +1189,9 @@ func jsonSchemaTypeFromValue(v interface{}) *string {
 		inferredType = "number"
 	case string:
 		inferredType = "string"
-	case []interface{}:
+	case []any:
 		inferredType = "array"
-	case map[string]interface{}:
+	case map[string]any:
 		inferredType = "object"
 	case nil:
 		inferredType = "null"

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"slices"
+
 	"github.com/taskcluster/taskcluster/v81/tools/d2g/genericworker"
 )
 
@@ -29,13 +31,10 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	}
 	// docker can load images compressed with gzip, bzip2, xz, or zstd
 	// https://docs.docker.com/reference/cli/docker/image/load/
-	for _, ext := range []string{"gz", "bz2", "xz", "zst"} {
+	if slices.Contains([]string{"gz", "bz2", "xz", "zst"}, fm.Format) {
 		// explicity set to the empty string so generic worker
 		// does not decompress the image before running `docker load`
-		if ext == fm.Format {
-			fm.Format = ""
-			break
-		}
+		fm.Format = ""
 	}
 	return []genericworker.FileMount{fm}, nil
 }

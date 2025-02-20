@@ -81,7 +81,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, func()) {
 	}
 }
 
-func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
+func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
@@ -155,7 +155,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, logger Logger, s
 	return err
 }
 
-func (s3Artifact *S3Artifact) RequestObject() interface{} {
+func (s3Artifact *S3Artifact) RequestObject() any {
 	return &tcqueue.S3ArtifactRequest{
 		ContentType: s3Artifact.ContentType,
 		Expires:     s3Artifact.Expires,
@@ -163,7 +163,7 @@ func (s3Artifact *S3Artifact) RequestObject() interface{} {
 	}
 }
 
-func (s3Artifact *S3Artifact) ResponseObject() interface{} {
+func (s3Artifact *S3Artifact) ResponseObject() any {
 	return new(tcqueue.S3ArtifactResponse)
 }
 

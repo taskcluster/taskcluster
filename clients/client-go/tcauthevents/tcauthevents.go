@@ -43,7 +43,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcauthevents
 
 import (
@@ -66,7 +66,7 @@ func (binding ClientCreated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-created"
 }
 
-func (binding ClientCreated) NewPayloadObject() interface{} {
+func (binding ClientCreated) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -85,7 +85,7 @@ func (binding ClientUpdated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-updated"
 }
 
-func (binding ClientUpdated) NewPayloadObject() interface{} {
+func (binding ClientUpdated) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -104,7 +104,7 @@ func (binding ClientDeleted) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-deleted"
 }
 
-func (binding ClientDeleted) NewPayloadObject() interface{} {
+func (binding ClientDeleted) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -123,7 +123,7 @@ func (binding RoleCreated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-created"
 }
 
-func (binding RoleCreated) NewPayloadObject() interface{} {
+func (binding RoleCreated) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
@@ -142,7 +142,7 @@ func (binding RoleUpdated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-updated"
 }
 
-func (binding RoleUpdated) NewPayloadObject() interface{} {
+func (binding RoleUpdated) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
@@ -161,11 +161,11 @@ func (binding RoleDeleted) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-deleted"
 }
 
-func (binding RoleDeleted) NewPayloadObject() interface{} {
+func (binding RoleDeleted) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

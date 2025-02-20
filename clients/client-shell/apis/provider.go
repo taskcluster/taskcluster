@@ -256,7 +256,7 @@ func execute(
 func formatGotError(err error) error {
 	if res, ok := err.(got.BadResponseCodeError); ok {
 		if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
-			var body map[string]interface{}
+			var body map[string]any
 			if json.Unmarshal(res.Body, &body) == nil {
 				if message, ok := body["message"]; ok {
 					if code, ok := body["code"]; ok {

@@ -6,7 +6,7 @@ Are you writing a service in go that needs to interpret json data, and you alrea
 
 Typically, you would need to unmarshal the json into a go type in order to use the data. The go type could be:
 
-1. A generic `interface{}` ... ouch
+1. A generic `any` ... ouch
 2. A hand-crafted type ... not bad
 3. An auto-generated type ... even better!
 

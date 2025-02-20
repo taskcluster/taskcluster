@@ -11,7 +11,7 @@ func SetProtocol(proto *workerproto.Protocol) {
 	proto.Register("log", func(msg workerproto.Message) {
 		body, ok := msg.Properties["body"]
 		if ok {
-			logging.Destination.LogStructured(body.(map[string]interface{}))
+			logging.Destination.LogStructured(body.(map[string]any))
 		} else {
 			logging.Destination.LogUnstructured("received log message from worker lacking 'body' property")
 		}

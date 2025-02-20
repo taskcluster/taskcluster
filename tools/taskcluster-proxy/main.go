@@ -80,7 +80,7 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	if revision != "" {
 		fullversion += " (git revision " + revision + ")"
 	}
-	var arguments map[string]interface{}
+	var arguments map[string]any
 	arguments, err = docopt.ParseArgs(usage, argv, fullversion)
 	if err != nil {
 		return

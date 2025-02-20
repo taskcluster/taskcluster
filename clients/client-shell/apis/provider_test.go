@@ -175,7 +175,7 @@ func redirHandler(w http.ResponseWriter, r *http.Request) {
 func errorHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header()["Content-Type"] = []string{"application/json"}
 	w.WriteHeader(409)
-	body := map[string]interface{}{
+	body := map[string]any{
 		"code":    "ResourceConflict",
 		"message": "I'm sorry dave..\nI can't let you do that.",
 	}

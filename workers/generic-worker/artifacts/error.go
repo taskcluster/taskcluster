@@ -15,13 +15,13 @@ type ErrorArtifact struct {
 	Reason  string
 }
 
-func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
+func (errArtifact *ErrorArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
 	logger.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
 }
 
-func (errArtifact *ErrorArtifact) RequestObject() interface{} {
+func (errArtifact *ErrorArtifact) RequestObject() any {
 	return &tcqueue.ErrorArtifactRequest{
 		Expires:     errArtifact.Expires,
 		Message:     errArtifact.Message,
@@ -30,7 +30,7 @@ func (errArtifact *ErrorArtifact) RequestObject() interface{} {
 	}
 }
 
-func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
+func (errArtifact *ErrorArtifact) ResponseObject() any {
 	return new(tcqueue.ErrorArtifactResponse)
 }
 

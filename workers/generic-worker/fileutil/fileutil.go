@@ -13,7 +13,7 @@ import (
 	"github.com/mholt/archiver/v3"
 )
 
-func WriteToFileAsJSON(obj interface{}, filename string) error {
+func WriteToFileAsJSON(obj any, filename string) error {
 	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		return err

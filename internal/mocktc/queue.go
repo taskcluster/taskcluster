@@ -32,7 +32,7 @@ type Queue struct {
 	tasks map[string]*tcqueue.TaskDefinitionAndStatus
 
 	// artifacts["<taskId>:<runId>"]["<name>"]
-	artifacts map[string]map[string]interface{}
+	artifacts map[string]map[string]any
 
 	baseURL string
 }
@@ -42,7 +42,7 @@ func NewQueue(t *testing.T, baseURL string) *Queue {
 	return &Queue{
 		t:         t,
 		tasks:     map[string]*tcqueue.TaskDefinitionAndStatus{},
-		artifacts: map[string]map[string]interface{}{},
+		artifacts: map[string]map[string]any{},
 		baseURL:   baseURL,
 	}
 }
@@ -101,7 +101,7 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 
 func (queue *Queue) ensureArtifactMap(taskId, runId string) {
 	if _, mapAlreadyCreated := queue.artifacts[taskId+":"+runId]; !mapAlreadyCreated {
-		queue.artifacts[taskId+":"+runId] = map[string]interface{}{}
+		queue.artifacts[taskId+":"+runId] = map[string]any{}
 	}
 }
 
@@ -117,7 +117,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		queue.t.Fatalf("Error unmarshalling from json: %v", err)
 	}
 
-	var req, resp interface{}
+	var req, resp any
 	switch request.StorageType {
 	case "s3":
 		var s3Request tcqueue.S3ArtifactRequest
@@ -185,7 +185,7 @@ func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *tcqueue.
 	return nil
 }
 
-func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request interface{}) error {
+func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request any) error {
 	previousVersion, existed := queue.artifacts[taskId+":"+runId][name]
 	if !existed || reflect.DeepEqual(previousVersion, request) {
 		return nil

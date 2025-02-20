@@ -10,7 +10,7 @@ import (
 // plus any additional provider-specific properties.
 type LoggingConfig struct {
 	Implementation string
-	Data           map[string]interface{}
+	Data           map[string]any
 }
 
 func (lc *LoggingConfig) UnmarshalYAML(node *yaml.Node) error {

@@ -15,7 +15,7 @@ import (
 // Exchange represents the set of AMQP interfaces for a Taskcluster service
 type Exchange struct {
 	Schema         string          `json:"$schema"`
-	APIVersion     interface{}     `json:"apiVersion"`
+	APIVersion     any             `json:"apiVersion"`
 	Description    string          `json:"description"`
 	Entries        []ExchangeEntry `json:"entries"`
 	ExchangePrefix string          `json:"exchangePrefix"`
@@ -150,7 +150,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 	comment += "//  queueevents.TaskDefined{WorkerType: \"gaia\"}\n"
 	comment += "// \n"
 	comment += "// In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage\n"
-	comment += "// rather than just interface{}.\n"
+	comment += "// rather than just any.\n"
 	content := comment
 	content += "package " + exchange.apiDef.PackageName + "\n"
 	content += `
@@ -167,7 +167,7 @@ import (
 	}
 
 	content += `
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {
@@ -217,7 +217,7 @@ func (entry *ExchangeEntry) generateAPICode() string {
 	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (binding " + entry.typeName + ") NewPayloadObject() interface{} {\n"
+	content += "func (binding " + entry.typeName + ") NewPayloadObject() any {\n"
 	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.schemaURL).TypeName + ")\n"
 	content += "}\n"
 	content += "\n"

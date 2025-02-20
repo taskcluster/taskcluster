@@ -36,8 +36,8 @@ func (w *loggingWriter) Write(p []byte) (n int, err error) {
 	if WorkerRunnerProtocol.Capable("log") {
 		WorkerRunnerProtocol.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
-				"body": map[string]interface{}{
+			Properties: map[string]any{
+				"body": map[string]any{
 					"textPayload": message,
 				},
 			},

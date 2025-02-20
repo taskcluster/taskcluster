@@ -571,7 +571,7 @@ func TestGetResponseBody(t *testing.T) {
 			// Function to test
 			routes.RootHandler(res, req)
 
-			var body map[string]interface{}
+			var body map[string]any
 			err = json.Unmarshal(res.Body.Bytes(), &body)
 			if err != nil {
 				log.Fatal(err)

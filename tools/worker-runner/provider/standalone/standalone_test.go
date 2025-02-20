@@ -17,7 +17,7 @@ func TestConfigureRunNoOptional(t *testing.T) {
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "standalone",
-			Data: map[string]interface{}{
+			Data: map[string]any{
 				"rootURL":      "https://tc.example.com",
 				"clientID":     "testing",
 				"accessToken":  "at",
@@ -48,7 +48,7 @@ func TestConfigureRunNoOptional(t *testing.T) {
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "wi", state.WorkerID, "workerID is correct")
-	require.Equal(t, map[string]interface{}{}, state.ProviderMetadata, "providerMetadata is correct")
+	require.Equal(t, map[string]any{}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, true, state.WorkerConfig.MustGet("from-runner-cfg"), "value for from-runner-cfg")
 	require.Equal(t, "standalone", state.WorkerLocation["cloud"])
@@ -62,18 +62,18 @@ func TestConfigureRunAllOptional(t *testing.T) {
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "standalone",
-			Data: map[string]interface{}{
+			Data: map[string]any{
 				"rootURL":      "https://tc.example.com",
 				"clientID":     "testing",
 				"accessToken":  "at",
 				"workerPoolID": "w/p",
 				"workerGroup":  "wg",
 				"workerID":     "wi",
-				"workerLocation": map[string]interface{}{
+				"workerLocation": map[string]any{
 					"region": "underworld",
 					"zone":   "666",
 				},
-				"providerMetadata": map[string]interface{}{
+				"providerMetadata": map[string]any{
 					"public-ip": "1.2.3.4",
 					"secret-ip": "0.0.0.0",
 				},
@@ -122,14 +122,14 @@ func TestConfigureRunNonStringLocation(t *testing.T) {
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "standalone",
-			Data: map[string]interface{}{
+			Data: map[string]any{
 				"rootURL":      "https://tc.example.com",
 				"clientID":     "testing",
 				"accessToken":  "at",
 				"workerPoolID": "w/p",
 				"workerGroup":  "wg",
 				"workerID":     "wi",
-				"workerLocation": map[string]interface{}{
+				"workerLocation": map[string]any{
 					"region": 13,
 				},
 			},

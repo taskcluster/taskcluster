@@ -16,7 +16,7 @@ func (dst *stdioLogDestination) LogUnstructured(message string) {
 	dst.log.Println(message)
 }
 
-func (dst *stdioLogDestination) LogStructured(message map[string]interface{}) {
+func (dst *stdioLogDestination) LogStructured(message map[string]any) {
 	dst.log.Println(logging.ToUnstructured(message))
 }
 

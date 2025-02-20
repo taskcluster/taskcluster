@@ -15,7 +15,7 @@ import (
 
 func TestHandleMessage(t *testing.T) {
 	description := "this is a serious error"
-	extra := map[string]interface{}{
+	extra := map[string]any{
 		"foo": "bar",
 	}
 	kind := "severe"
@@ -38,7 +38,7 @@ func TestHandleMessage(t *testing.T) {
 	wkr.WorkerProtocol.Start(true)
 	wkr.WorkerProtocol.Send(workerproto.Message{
 		Type: "error-report",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"description": description,
 			"extra":       extra,
 			"kind":        kind,

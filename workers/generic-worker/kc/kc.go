@@ -79,7 +79,7 @@ func AutoLoginPassword() (password []byte, err error) {
 	return
 }
 
-func LoginWindowPList() (data map[string]interface{}, err error) {
+func LoginWindowPList() (data map[string]any, err error) {
 	loginWindowPListString, err := host.CombinedOutput("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
 	if err != nil {
 		return data, err

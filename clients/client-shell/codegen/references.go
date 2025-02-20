@@ -32,7 +32,7 @@ func LoadReferences() (*References, error) {
 	return r, nil
 }
 
-func (r *References) get(filename string, v interface{}) error {
+func (r *References) get(filename string, v any) error {
 	if filename[0] == '/' {
 		filename = filename[1:]
 	}

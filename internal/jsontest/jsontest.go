@@ -21,7 +21,7 @@ func JsonEqual(a []byte, b []byte) (bool, []byte, []byte, error) {
 // canonical representation of json (i.e. formatted with objects ordered).
 // Ugly and perhaps inefficient, but effective! :p
 func FormatJson(a []byte) ([]byte, error) {
-	tmpObj := new(interface{})
+	tmpObj := new(any)
 	err := json.Unmarshal(a, &tmpObj)
 	if err != nil {
 		return a, err

@@ -55,7 +55,7 @@ func init() {
 			Description: "Certificate as required if using temporary credentials (must be given as string).",
 			Default:     nil,
 			Env:         "TASKCLUSTER_CERTIFICATE",
-			Validate: func(value interface{}) error {
+			Validate: func(value any) error {
 				s, ok := value.(string)
 				if !ok {
 					return errors.New("must be a string containing certificate in JSON")
@@ -70,8 +70,8 @@ func init() {
 		"authorizedScopes": config.OptionDefinition{
 			Description: `Set of scopes to be used for authorizing requests, defaults to all the scopes you have.`,
 			Parse:       true,
-			Validate: func(value interface{}) error {
-				strs, ok := value.([]interface{})
+			Validate: func(value any) error {
+				strs, ok := value.([]any)
 				if ok {
 					for _, str := range strs {
 						if _, ok2 := str.(string); !ok2 {
@@ -97,7 +97,7 @@ func cmdConfig(cmd *cobra.Command, args []string) error {
 	}
 
 	// select formatter
-	var formatter func(interface{}) []byte
+	var formatter func(any) []byte
 	format, _ := cmd.Flags().GetString("format")
 
 	if format == "yaml" {

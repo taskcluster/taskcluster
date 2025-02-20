@@ -15,5 +15,5 @@ func TestUnmarshalLoggingYAML(t *testing.T) {
 		t.Fatalf("failed to load: %s", err)
 	}
 	require.Equal(t, "stdio", lc.Implementation)
-	require.Equal(t, map[string]interface{}{"foo": "bar"}, lc.Data)
+	require.Equal(t, map[string]any{"foo": "bar"}, lc.Data)
 }

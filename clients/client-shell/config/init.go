@@ -9,7 +9,7 @@ import (
 
 var (
 	// Configuration contains the current configuration values.
-	Configuration map[string]map[string]interface{}
+	Configuration map[string]map[string]any
 
 	// OptionsDefinitions is a map of all the OptionDefinitions, by command.
 	OptionsDefinitions = make(map[string]map[string]OptionDefinition)

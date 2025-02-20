@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 
+	"slices"
+
 	"github.com/taskcluster/taskcluster/v81/tools/jsonschema2go/text"
 )
 
@@ -285,7 +287,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 }
 
 func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCode, queryExpr string) {
-	inputArgs := append([]string{}, entry.Args...)
+	inputArgs := slices.Clone(entry.Args)
 
 	// add optional query parameters
 	queryCode = ""
@@ -478,7 +480,7 @@ func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 		return errors.New("ScopeExpressionTemplate: UnmarshalJSON on nil pointer")
 	}
 	m.RawMessage = append((m.RawMessage)[0:0], data...)
-	var tempObj interface{}
+	var tempObj any
 	err := json.Unmarshal(m.RawMessage, &tempObj)
 	if err != nil {
 		panic("Internal error: " + err.Error())
@@ -488,7 +490,7 @@ func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 		m.Type = "RequiredScope"
 		m.RequiredScope = new(RequiredScope)
 		*(m.RequiredScope) = RequiredScope(t)
-	case map[string]interface{}:
+	case map[string]any:
 		j, err := json.Marshal(t)
 		if err != nil {
 			panic("Internal error: " + err.Error())
@@ -517,13 +519,13 @@ func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 			panic("Internal error: " + err.Error())
 		}
 	// for old style scopesets [][]string (normal disjunctive form)
-	case []interface{}:
+	case []any:
 		m.Type = "AnyOf"
 		m.AnyOf = &Disjunction{
 			AnyOf: make([]ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
-			allOf := j.([]interface{})
+			allOf := j.([]any)
 			m.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{

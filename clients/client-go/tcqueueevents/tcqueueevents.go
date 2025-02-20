@@ -82,7 +82,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcqueueevents
 
 import (
@@ -119,7 +119,7 @@ func (binding TaskDefined) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-defined"
 }
 
-func (binding TaskDefined) NewPayloadObject() interface{} {
+func (binding TaskDefined) NewPayloadObject() any {
 	return new(TaskDefinedMessage)
 }
 
@@ -153,7 +153,7 @@ func (binding TaskPending) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-pending"
 }
 
-func (binding TaskPending) NewPayloadObject() interface{} {
+func (binding TaskPending) NewPayloadObject() any {
 	return new(TaskPendingMessage)
 }
 
@@ -182,7 +182,7 @@ func (binding TaskRunning) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-running"
 }
 
-func (binding TaskRunning) NewPayloadObject() interface{} {
+func (binding TaskRunning) NewPayloadObject() any {
 	return new(TaskRunningMessage)
 }
 
@@ -230,7 +230,7 @@ func (binding ArtifactCreated) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/artifact-created"
 }
 
-func (binding ArtifactCreated) NewPayloadObject() interface{} {
+func (binding ArtifactCreated) NewPayloadObject() any {
 	return new(ArtifactCreatedMessage)
 }
 
@@ -262,7 +262,7 @@ func (binding TaskCompleted) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-completed"
 }
 
-func (binding TaskCompleted) NewPayloadObject() interface{} {
+func (binding TaskCompleted) NewPayloadObject() any {
 	return new(TaskCompletedMessage)
 }
 
@@ -292,7 +292,7 @@ func (binding TaskFailed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-failed"
 }
 
-func (binding TaskFailed) NewPayloadObject() interface{} {
+func (binding TaskFailed) NewPayloadObject() any {
 	return new(TaskFailedMessage)
 }
 
@@ -326,7 +326,7 @@ func (binding TaskException) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-exception"
 }
 
-func (binding TaskException) NewPayloadObject() interface{} {
+func (binding TaskException) NewPayloadObject() any {
 	return new(TaskExceptionMessage)
 }
 
@@ -352,7 +352,7 @@ func (binding TaskGroupResolved) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-group-resolved"
 }
 
-func (binding TaskGroupResolved) NewPayloadObject() interface{} {
+func (binding TaskGroupResolved) NewPayloadObject() any {
 	return new(TaskGroupChangedMessage)
 }
 
@@ -375,11 +375,11 @@ func (binding TaskGroupSealed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-group-sealed"
 }
 
-func (binding TaskGroupSealed) NewPayloadObject() interface{} {
+func (binding TaskGroupSealed) NewPayloadObject() any {
 	return new(TaskGroupChangedMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"maps"
+
 	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tcclient "github.com/taskcluster/taskcluster/v81/clients/client-go"
@@ -251,9 +253,7 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 		if err != nil {
 			return nil, nil, fmt.Errorf("error constructing request: %s", err)
 		}
-		for k, v := range req.Header {
-			proxyreq.Header[k] = v
-		}
+		maps.Copy(proxyreq.Header, req.Header)
 
 		// for compatibility, if there is no request Content-Type and the body
 		// has nonzero length, we add a Content-Type header.  See #3521.

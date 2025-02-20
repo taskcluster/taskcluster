@@ -39,8 +39,8 @@ func TestLoggingProtocol(t *testing.T) {
 		defer logDest.Clear()
 		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
-				"body": map[string]interface{}{
+			Properties: map[string]any{
+				"body": map[string]any{
 					"metric": "foos",
 					"value":  10,
 				},
@@ -50,8 +50,8 @@ func TestLoggingProtocol(t *testing.T) {
 		waitForLogMessage()
 
 		require.Equal(t,
-			[]map[string]interface{}{
-				map[string]interface{}{
+			[]map[string]any{
+				map[string]any{
 					"metric": "foos",
 					"value":  10.0,
 				},
@@ -64,7 +64,7 @@ func TestLoggingProtocol(t *testing.T) {
 		defer logDest.Clear()
 		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
+			Properties: map[string]any{
 				"textPayload": "I forgot about the body property, oops",
 			},
 		})
@@ -72,8 +72,8 @@ func TestLoggingProtocol(t *testing.T) {
 		waitForLogMessage()
 
 		require.Equal(t,
-			[]map[string]interface{}{
-				map[string]interface{}{
+			[]map[string]any{
+				map[string]any{
 					"textPayload": "received log message from worker lacking 'body' property",
 				},
 			},

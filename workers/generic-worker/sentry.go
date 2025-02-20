@@ -6,7 +6,7 @@ import (
 	raven "github.com/getsentry/raven-go"
 )
 
-func ReportCrashToSentry(r interface{}) {
+func ReportCrashToSentry(r any) {
 	if config.SentryProject == "" {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return

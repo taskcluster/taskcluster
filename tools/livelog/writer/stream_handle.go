@@ -79,12 +79,7 @@ func (streamHandle *StreamHandle) WriteTo(target io.Writer) (n int64, err error)
 
 		// Determine how much to copy over based on the `Stop` value for this
 		// handle.
-		var offset int64
-		if streamHandle.Stop > streamOffset {
-			offset = streamOffset
-		} else {
-			offset = streamHandle.Stop
-		}
+		offset := min(streamHandle.Stop, streamOffset)
 
 		// Begin by copying the initial data from the sink...
 		written, copyErr := io.CopyN(target, file, offset)

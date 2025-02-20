@@ -12,7 +12,7 @@ import (
 // plus any additional worker implementation-specific properties.
 type WorkerImplementationConfig struct {
 	Implementation string
-	Data           map[string]interface{}
+	Data           map[string]any
 }
 
 func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -40,7 +40,7 @@ func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
 //
 // Structs should be tagged with `workerimpl:"name"`, with the name defaulting to the
 // lowercased version of the field name.
-func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
+func (pc *WorkerImplementationConfig) Unpack(out any) error {
 	outval := reflect.ValueOf(out)
 	if outval.Kind() != reflect.Ptr || outval.IsNil() {
 		return fmt.Errorf("expected a pointer, got %s", outval.Kind())

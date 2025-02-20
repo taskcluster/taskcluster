@@ -15,7 +15,7 @@ type RedirectArtifact struct {
 	ContentType string
 }
 
-func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
+func (redirectArtifact *RedirectArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
 	log := fmt.Sprintf("Uploading redirect artifact %v to ", redirectArtifact.Name)
 	if redirectArtifact.HideURL {
 		log += "(URL hidden) "
@@ -28,7 +28,7 @@ func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, 
 	return nil
 }
 
-func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
+func (redirectArtifact *RedirectArtifact) RequestObject() any {
 	return &tcqueue.RedirectArtifactRequest{
 		ContentType: redirectArtifact.ContentType,
 		Expires:     redirectArtifact.Expires,
@@ -37,6 +37,6 @@ func (redirectArtifact *RedirectArtifact) RequestObject() interface{} {
 	}
 }
 
-func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
+func (redirectArtifact *RedirectArtifact) ResponseObject() any {
 	return new(tcqueue.RedirectArtifactResponse)
 }

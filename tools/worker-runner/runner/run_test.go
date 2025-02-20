@@ -70,8 +70,8 @@ worker:
 	_, err = Run(configPath)
 	require.NoError(t, err)
 
-	require.Equal(t, []map[string]interface{}{
-		map[string]interface{}{"conversationLevel": "low", "textPayload": "workin hard or hardly workin, amirite?"},
+	require.Equal(t, []map[string]any{
+		{"conversationLevel": "low", "textPayload": "workin hard or hardly workin, amirite?"},
 	}, loggingDestination.Messages())
 
 	// sleep a short bit to let NTFS figure out that fake.exe isn't in use anymore
@@ -117,7 +117,7 @@ func TestDummyCached(t *testing.T) {
 	configPath := filepath.Join(dir, "runner.yaml")
 	cachePath := filepath.Join(dir, "cache.json")
 
-	err := os.WriteFile(configPath, []byte(fmt.Sprintf(`
+	err := os.WriteFile(configPath, fmt.Appendf(nil, `
 provider:
   providerType: standalone
   rootURL: https://tc.example.com
@@ -132,7 +132,7 @@ workerConfig:
   fromFirstRun: true
 worker:
   implementation: dummy
-`, cachePath)), 0755)
+`, cachePath), 0755)
 	require.NoError(t, err)
 
 	run, err := Run(configPath)
@@ -144,7 +144,7 @@ worker:
 	fmt.Printf("cache: %s", cache)
 
 	// slightly different config this time, omitting `fromFirstRun`:
-	err = os.WriteFile(configPath, []byte(fmt.Sprintf(`
+	err = os.WriteFile(configPath, fmt.Appendf(nil, `
 provider:
   providerType: standalone
   rootURL: https://tc.example.com
@@ -157,7 +157,7 @@ getSecrets: false
 cacheOverRestarts: %s
 worker:
   implementation: dummy
-`, cachePath)), 0755)
+`, cachePath), 0755)
 	require.NoError(t, err)
 
 	run, err = Run(configPath)

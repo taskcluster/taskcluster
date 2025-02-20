@@ -145,7 +145,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot marshal test suite D2GConfig: %v", err)
 		}
-		var d2gConfigMap map[string]interface{}
+		var d2gConfigMap map[string]any
 		err = json.Unmarshal(d2gConfigBytes, &d2gConfigMap)
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
@@ -187,7 +187,7 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot marshal test suite D2GConfig: %v", err)
 		}
-		var d2gConfigMap map[string]interface{}
+		var d2gConfigMap map[string]any
 		err = json.Unmarshal(d2gConfigBytes, &d2gConfigMap)
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
@@ -231,7 +231,7 @@ func yamlToJSON(t *testing.T, path string) []byte {
 	// Takes json []byte input, unmarshals and then marshals, in order to get a
 	// canonical representation of json (i.e. formatted with objects ordered).
 	// Ugly and perhaps inefficient, but effective! :p
-	tmpObj := new(interface{})
+	tmpObj := new(any)
 	err = json.Unmarshal(j, &tmpObj)
 	if err != nil {
 		t.Fatal(err)
@@ -243,7 +243,7 @@ func yamlToJSON(t *testing.T, path string) []byte {
 	return formatted
 }
 
-func unmarshalYAML(t *testing.T, dest interface{}, path string) {
+func unmarshalYAML(t *testing.T, dest any, path string) {
 	t.Helper()
 	j := yamlToJSON(t, path)
 	err := json.Unmarshal(j, dest)
@@ -252,7 +252,7 @@ func unmarshalYAML(t *testing.T, dest interface{}, path string) {
 	}
 }
 
-func marshalYAML(t *testing.T, src interface{}, path string) {
+func marshalYAML(t *testing.T, src any, path string) {
 	t.Helper()
 	j, err := json.Marshal(src)
 	if err != nil {
@@ -304,7 +304,7 @@ func (tc *TaskDefinitionTestCase) Validate(t *testing.T) {
 	var dwRaw json.RawMessage
 	var gwRaw json.RawMessage
 
-	var parsedDwTaskDef map[string]interface{}
+	var parsedDwTaskDef map[string]any
 	err := json.Unmarshal(tc.DockerWorkerTaskDefinition, &parsedDwTaskDef)
 	if err != nil {
 		t.Fatalf("cannot parse Docker Worker task definition: %v", err)
@@ -315,7 +315,7 @@ func (tc *TaskDefinitionTestCase) Validate(t *testing.T) {
 		t.Fatalf("Cannot marshal test suite Docker Worker payload %#v: %v", parsedDwTaskDef["payload"], err)
 	}
 
-	var parsedGwTaskDef map[string]interface{}
+	var parsedGwTaskDef map[string]any
 	err = json.Unmarshal(tc.GenericWorkerTaskDefinition, &parsedGwTaskDef)
 	if err != nil {
 		t.Fatalf("cannot parse Generic Worker task definition: %v", err)

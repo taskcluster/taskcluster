@@ -20,7 +20,7 @@ type AzureProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 	terminationTicker          *time.Ticker
 }
 
@@ -72,7 +72,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		"region": instanceData.Compute.Location,
 	}
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"vm-id":         instanceData.Compute.VMID,
 		"instance-type": instanceData.Compute.VMSize,
 		"region":        instanceData.Compute.Location,
@@ -89,14 +89,14 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document": interface{}(document),
+	p.workerIdentityProof = map[string]any{
+		"document": any(document),
 	}
 
 	return nil
 }
 
-func (p *AzureProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *AzureProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -127,7 +127,7 @@ func (p *AzureProvider) checkTerminationTime() bool {
 			if p.proto != nil && p.proto.Capable("graceful-termination") {
 				p.proto.Send(workerproto.Message{
 					Type: "graceful-termination",
-					Properties: map[string]interface{}{
+					Properties: map[string]any{
 						// termination generally doesn't leave time to finish
 						// tasks. We prefer to have the worker exit cleanly
 						// immediately, resolving tasks as

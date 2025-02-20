@@ -14,7 +14,7 @@ func CallConfigureRun(t *testing.T, state *run.State) {
 	runnercfg := &cfg.RunnerConfig{
 		WorkerImplementation: cfg.WorkerImplementationConfig{
 			Implementation: "generic-worker",
-			Data: map[string]interface{}{
+			Data: map[string]any{
 				"configPath": "/no/such/path",
 			},
 		},
@@ -30,7 +30,7 @@ func CallConfigureRun(t *testing.T, state *run.State) {
 func TestConfigureRunWithProviderMetadataConfig(t *testing.T) {
 	wc, err := cfg.NewWorkerConfig().Set(
 		"workerTypeMetadata",
-		map[string]interface{}{
+		map[string]any{
 			"from-worker-pool": "yup",
 		},
 	)
@@ -47,7 +47,7 @@ func TestConfigureRunWithProviderMetadataConfig(t *testing.T) {
 		WorkerPoolID: "prov/wt",
 		WorkerGroup:  "wg",
 		WorkerID:     "wi",
-		ProviderMetadata: map[string]interface{}{
+		ProviderMetadata: map[string]any{
 			"public-ipv4":       "1.2.3.4",
 			"local-ipv4":        "10.1.1.1",
 			"availability-zone": "mars",
@@ -73,7 +73,7 @@ func TestConfigureRunWithProviderMetadataConfig(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerConfig.MustGet("workerGroup"))
 	require.Equal(t, "wi", state.WorkerConfig.MustGet("workerId"))
 	require.Equal(t, "cert", state.WorkerConfig.MustGet("certificate"))
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"public-ipv4":       "1.2.3.4",
 		"local-ipv4":        "10.1.1.1",
 		"availability-zone": "mars",
@@ -96,7 +96,7 @@ func TestConfigureRunWithoutProviderMetadataConfig(t *testing.T) {
 		WorkerPoolID:     "prov/wt",
 		WorkerGroup:      "wg",
 		WorkerID:         "wi",
-		ProviderMetadata: map[string]interface{}{},
+		ProviderMetadata: map[string]any{},
 	}
 
 	CallConfigureRun(t, state)
@@ -115,5 +115,5 @@ func TestConfigureRunWithoutProviderMetadataConfig(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerConfig.MustGet("workerGroup"))
 	require.Equal(t, "wi", state.WorkerConfig.MustGet("workerId"))
 	require.Equal(t, "cert", state.WorkerConfig.MustGet("certificate"))
-	require.Equal(t, map[string]interface{}{}, state.WorkerConfig.MustGet("workerTypeMetadata"))
+	require.Equal(t, map[string]any{}, state.WorkerConfig.MustGet("workerTypeMetadata"))
 }

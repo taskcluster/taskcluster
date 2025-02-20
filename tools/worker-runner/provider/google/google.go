@@ -22,7 +22,7 @@ type GoogleProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 	terminationMsgSent         bool
 }
 
@@ -46,7 +46,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	state.WorkerGroup = userData.WorkerGroup
 	state.WorkerID = workerID
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"instance-id": workerID,
 	}
 	for _, f := range []struct {
@@ -90,14 +90,14 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	p.workerIdentityProof = map[string]interface{}{
-		"token": interface{}(proofToken),
+	p.workerIdentityProof = map[string]any{
+		"token": any(proofToken),
 	}
 
 	return nil
 }
 
-func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -117,7 +117,7 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					// preemption generally doesn't leave time to finish tasks
 					"finish-tasks": false,
 				},

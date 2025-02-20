@@ -35,7 +35,7 @@ func TestSendEmptyExtra(t *testing.T) {
 		assert.Contains(t, msg.Properties, "description")
 		assert.Equal(t, "test error", msg.Properties["description"].(string))
 		assert.Contains(t, msg.Properties, "extra")
-		assert.Equal(t, msg.Properties["extra"], map[string]interface{}{})
+		assert.Equal(t, msg.Properties["extra"], map[string]any{})
 		errorReported = true
 		lock.Unlock()
 	})
@@ -64,8 +64,8 @@ func TestSendExtra(t *testing.T) {
 		assert.Contains(t, msg.Properties, "extra")
 		assert.Contains(t, msg.Properties["extra"], "kangaroo")
 		assert.Contains(t, msg.Properties["extra"], "monster")
-		assert.Equal(t, "pouches", msg.Properties["extra"].(map[string]interface{})["kangaroo"].(string))
-		assert.Equal(t, "trucks", msg.Properties["extra"].(map[string]interface{})["monster"].(string))
+		assert.Equal(t, "pouches", msg.Properties["extra"].(map[string]any)["kangaroo"].(string))
+		assert.Equal(t, "trucks", msg.Properties["extra"].(map[string]any)["monster"].(string))
 		errorReported = true
 		lock.Unlock()
 	})

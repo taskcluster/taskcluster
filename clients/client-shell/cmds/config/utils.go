@@ -12,7 +12,7 @@ import (
 
 // getOptionFromKey returns the command, option, definition, value of a config option
 // this is the whole package, does everything
-func getOptionFromKey(key string) (string, string, config.OptionDefinition, interface{}, error) {
+func getOptionFromKey(key string) (string, string, config.OptionDefinition, any, error) {
 	command, option, err := parseKey(key)
 	if err != nil {
 		return "", "", config.OptionDefinition{}, "", err
@@ -36,7 +36,7 @@ func parseKey(key string) (string, string, error) {
 
 // getOption retrieves the definition, value of a config option
 // use if you don't need to parse the command and option
-func getOption(command string, option string) (config.OptionDefinition, interface{}, error) {
+func getOption(command string, option string) (config.OptionDefinition, any, error) {
 	// find map of options for specified command
 	options, ok := config.OptionsDefinitions[command]
 	if !ok {
@@ -53,14 +53,11 @@ func getOption(command string, option string) (config.OptionDefinition, interfac
 }
 
 func pad(s string, length int) string {
-	p := length - len(s)
-	if p < 0 {
-		p = 0
-	}
+	p := max(length-len(s), 0)
 	return s + strings.Repeat(" ", p)
 }
 
-func formatYAML(value interface{}) []byte {
+func formatYAML(value any) []byte {
 	data, err := yaml.Marshal(value)
 	if err != nil {
 		panic(fmt.Sprintf("Internal error rendering yaml, error: %s", err))
@@ -68,7 +65,7 @@ func formatYAML(value interface{}) []byte {
 	return data
 }
 
-func formatJSON(value interface{}) []byte {
+func formatJSON(value any) []byte {
 	data, err := json.MarshalIndent(value, "", "  ")
 	if err != nil {
 		panic(fmt.Sprintf("Internal error rendering json, error: %s", err))
@@ -76,7 +73,7 @@ func formatJSON(value interface{}) []byte {
 	return data
 }
 
-func isString(value interface{}) error {
+func isString(value any) error {
 	if _, ok := value.(string); !ok {
 		return errors.New("must be a string")
 	}

@@ -18,14 +18,14 @@ type (
 		//
 		// For example, this is a *tcqueue.S3ArtifactRequest for type
 		// S3Artifact.
-		RequestObject() interface{}
+		RequestObject() any
 
 		// ResponseObject returns a pointer to an empty go type for
 		// unmarshaling the result of a tcqueue.CreateArtifact API call into.
 		//
 		// For example, this would be new(tcqueue.RedirectArtifactRequest) for
 		// RedirectArtifact.
-		ResponseObject() interface{}
+		ResponseObject() any
 
 		// ProcessResponse is a callback for performing actions after
 		// tcqueue.CreateArtifact API is called. response is the object
@@ -38,10 +38,10 @@ type (
 		//
 		// ProcessResponse can be an empty method if no post
 		// tcqueue.CreateArtifact steps are required.
-		ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error
+		ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error
 
 		// FinishArtifact calls queue.FinishArtifact if necessary for the artifact type
-		FinishArtifact(response interface{}, queue tc.Queue, taskID, runID, name string) error
+		FinishArtifact(response any, queue tc.Queue, taskID, runID, name string) error
 
 		// Base returns a *BaseArtifact which stores the properties common to
 		// all implementations
@@ -64,6 +64,6 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 // This provides a default implementation that does not call
 // queue.FinishArtifact, as appropriate for link, redirect, error, and s3
 // artifact types.
-func (*BaseArtifact) FinishArtifact(response interface{}, queue tc.Queue, taskID, runID, name string) error {
+func (*BaseArtifact) FinishArtifact(response any, queue tc.Queue, taskID, runID, name string) error {
 	return nil
 }

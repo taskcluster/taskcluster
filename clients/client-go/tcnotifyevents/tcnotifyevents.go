@@ -38,7 +38,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcnotifyevents
 
 import (
@@ -68,11 +68,11 @@ func (binding Notify) ExchangeName() string {
 	return "exchange/taskcluster-notify/v1/notification"
 }
 
-func (binding Notify) NewPayloadObject() interface{} {
+func (binding Notify) NewPayloadObject() any {
 	return new(NotificationMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

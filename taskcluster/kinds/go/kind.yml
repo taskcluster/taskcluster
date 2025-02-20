@@ -68,3 +68,10 @@ tasks:
           git status
           test $(git status --porcelain | wc -l) == 0
           go install ./...
+  modernize:
+    description: ensure go code is modern
+    run:
+      command:
+        - |
+          GOFLAGS="-tags=insecure" go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
+          GOFLAGS="-tags=multiuser" go run -tags=multiuser golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...

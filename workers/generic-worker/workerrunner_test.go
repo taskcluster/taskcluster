@@ -51,7 +51,7 @@ func TestGracefulTermination(t *testing.T) {
 
 	runnerProto.Send(workerproto.Message{
 		Type: "graceful-termination",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"finish-tasks": true,
 		},
 	})
@@ -71,7 +71,7 @@ func TestNewCredentials(t *testing.T) {
 			config.ClientID = "old"
 			clientID := fmt.Sprintf("client-cert-%v", withCert)
 
-			properties := map[string]interface{}{
+			properties := map[string]any{
 				"client-id":    clientID,
 				"access-token": "big-secret",
 			}

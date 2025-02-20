@@ -3,6 +3,8 @@ package standalone
 import (
 	"fmt"
 
+	"maps"
+
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v81/tools/worker-runner/provider/provider"
@@ -45,7 +47,7 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 	}
 
 	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
-		for k, v := range workerLocation.(map[string]interface{}) {
+		for k, v := range workerLocation.(map[string]any) {
 			state.WorkerLocation[k], ok = v.(string)
 			if !ok {
 				return fmt.Errorf("workerLocation value %s is not a string", k)
@@ -53,18 +55,16 @@ func (p *StandaloneProvider) ConfigureRun(state *run.State) error {
 		}
 	}
 
-	state.ProviderMetadata = map[string]interface{}{}
+	state.ProviderMetadata = map[string]any{}
 
 	if providerMetadata, ok := p.runnercfg.Provider.Data["providerMetadata"]; ok {
-		for k, v := range providerMetadata.(map[string]interface{}) {
-			state.ProviderMetadata[k] = v
-		}
+		maps.Copy(state.ProviderMetadata, providerMetadata.(map[string]any))
 	}
 
 	return nil
 }
 
-func (p *StandaloneProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *StandaloneProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return nil, nil
 }
 

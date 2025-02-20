@@ -290,12 +290,12 @@ func TestNoFollowRedirects(t *testing.T) {
 		Authenticate: false,
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	res, cs, err := client.APICall(nil, "GET", "/whatever", &result, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 303, cs.HTTPResponse.StatusCode)
 	assert.Equal(t,
-		&map[string]interface{}{"url": "http://nosuch.example.com"},
+		&map[string]any{"url": "http://nosuch.example.com"},
 		res)
 }
 

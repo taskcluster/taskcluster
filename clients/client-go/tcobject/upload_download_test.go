@@ -24,7 +24,7 @@ func mockObjectServer(t *testing.T) (*httptest.Server, *mux.Router, *tcobject.Ob
 	r := mux.NewRouter().UseEncodedPath()
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
-		_, _ = w.Write([]byte(fmt.Sprintf("URL %v with method %v NOT FOUND\n", req.URL, req.Method)))
+		_, _ = w.Write(fmt.Appendf(nil, "URL %v with method %v NOT FOUND\n", req.URL, req.Method))
 	})
 	srv := httptest.NewServer(r)
 	mockobj := mocktc.NewObject(t, srv.URL)
