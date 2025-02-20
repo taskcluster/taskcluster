@@ -680,6 +680,23 @@ services:
       - worker-manager-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireWorkerPools"
+  worker-manager-cron-expire-launch-configs:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/worker-manager:/app/services/worker-manager
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireLaunchConfigs"
   worker-manager-cron-expire-errors:
     image: ${IMAGE_DEV}
     environment:

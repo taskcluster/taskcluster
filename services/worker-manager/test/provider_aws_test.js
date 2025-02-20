@@ -7,7 +7,7 @@ import testing from 'taskcluster-lib-testing';
 import fs from 'fs';
 import path from 'path';
 import taskcluster from 'taskcluster-client';
-import { WorkerPool, Worker } from '../src/data.js';
+import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -24,7 +24,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const workerPoolId = 'foo/bar';
   const defaultLaunchConfig = {
     region: 'us-west-2',
-    capacityPerInstance: 1,
+    workerManager: {
+      capacityPerInstance: 1,
+    },
     launchConfig: {
       ImageId: 'banana-123',
     },
@@ -49,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       region: actualWorkerIid.region,
       imageId: actualWorkerIid.imageId,
       instanceType: actualWorkerIid.instanceType,
-      instanceCapacity: defaultLaunchConfig.capacityPerInstance,
+      instanceCapacity: defaultLaunchConfig.workerManager.capacityPerInstance,
       architecture: actualWorkerIid.architecture,
       availabilityZone: actualWorkerIid.availabilityZone,
       privateIp: actualWorkerIid.privateIp,
@@ -69,6 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator: await helper.load('estimator'),
       publisher: await helper.load('publisher'),
       validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
@@ -108,7 +111,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     await workerPool.create(helper.db);
 
-    return workerPool;
+    // reload from db with launchConfigIds
+    return await WorkerPool.get(helper.db, workerPoolId);
   };
 
   const assertHasTag = (runInstanceCall, ResourceType, Key, Value) => {
@@ -124,8 +128,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
         const workerPool = await makeWorkerPool({ config });
-        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
-        await provider.provision({ workerPool, workerInfo });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+        await provider.provision({ workerPool, workerPoolStats });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
@@ -171,13 +175,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     provisionTest('spawns instances from across launch configs', {
       config: {
-        launchConfigs: [
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-        ],
+        // launch configs needs to be unique
+        launchConfigs: Array.from({ length: 5 }).map((_, i) => ({
+          ...defaultLaunchConfig,
+          launchConfig: {
+            ...defaultLaunchConfig.launchConfig,
+            TagSpecifications: [
+              { ResourceType: 'instance', Tags: [{ Key: 'uniqueKey', Value: `v${i}` }] },
+            ],
+          },
+          workerManager: {
+            capacityPerInstance: 6,
+          },
+        })),
         minCapacity: 34, // not a multiple of number of configs or capPerInstance
         maxCapacity: 34,
         scalingRatio: 1,
@@ -246,6 +256,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         fake.rgn('us-west-2').runInstancesCalls[0].UserData,
         'base64',
       ).toString());
+      const launchConfigId = workers[0].launchConfigId;
       assert.deepStrictEqual(decoded, {
         somethingImportant: 'apple',
         rootUrl: provider.rootUrl,
@@ -253,6 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         providerId: provider.providerId,
         workerGroup: 'us-west-2',
         workerConfig: { foo: 5 },
+        launchConfigId: launchConfigId,
       });
     });
   });
