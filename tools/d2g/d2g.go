@@ -30,11 +30,21 @@ type (
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
 		FileMounts() ([]genericworker.FileMount, error)
-		String() (string, error)
+		String() string
+		ImageLoader() ImageLoader
+	}
+	ImageLoader interface {
 		LoadCommands() []string
+		ChainOfTrustCommands() []string
 	}
 	ConversionInfo struct {
 		ContainerName string
+	}
+	FileImageLoader struct {
+		Image Image
+	}
+	RegistryImageLoader struct {
+		Image Image
 	}
 )
 
@@ -328,7 +338,21 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}
 
 	commands := []string{}
-	commands = append(commands, dwImage.LoadCommands()...)
+
+	imageLoader := dwImage.ImageLoader()
+
+	commands = append(
+		commands,
+		imageLoader.LoadCommands()...,
+	)
+
+	if dwPayload.Features.ChainOfTrust {
+		commands = append(
+			commands,
+			imageLoader.ChainOfTrustCommands()...,
+		)
+	}
+
 	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, config)
 	if err != nil {
 		return nil, containerName, fmt.Errorf("could not form docker run command: %w", err)
@@ -392,12 +416,8 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 		command.WriteString(" --gpus " + config["gpus"].(string))
 	}
 	command.WriteString(envMappings(dwPayload, config))
-	dockerImageString, err := dwImage.String()
-	if err != nil {
-		return "", fmt.Errorf("could not form docker image string: %w", err)
-	}
-	// note, dockerImageString is already shell escaped
-	command.WriteString(" " + dockerImageString)
+	// note, dwImage.String() is already shell escaped
+	command.WriteString(" " + dwImage.String())
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return command.String(), nil
 }
@@ -625,4 +645,28 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		envStrBuilder.WriteString(envSetting(envVarName))
 	}
 	return envStrBuilder.String()
+}
+
+func (fil *FileImageLoader) LoadCommands() []string {
+	return []string{
+		`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
+	}
+}
+
+func (fil *FileImageLoader) ChainOfTrustCommands() []string {
+	return []string{
+		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' ` + fil.Image.String() + `)"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json`,
+	}
+}
+
+func (ril *RegistryImageLoader) LoadCommands() []string {
+	return []string{
+		"docker pull " + ril.Image.String(),
+	}
+}
+
+func (ril *RegistryImageLoader) ChainOfTrustCommands() []string {
+	return []string{
+		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' ` + ril.Image.String() + `)"'"}}' > chain-of-trust-additional-data.json`,
+	}
 }

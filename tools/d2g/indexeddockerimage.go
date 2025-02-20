@@ -40,14 +40,14 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{fm}, nil
 }
 
-func (idi *IndexedDockerImage) LoadCommands() []string {
-	return []string{
-		`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
+func (idi *IndexedDockerImage) ImageLoader() ImageLoader {
+	return &FileImageLoader{
+		Image: idi,
 	}
 }
 
-func (idi *IndexedDockerImage) String() (string, error) {
-	return `"${IMAGE_ID}"`, nil
+func (idi *IndexedDockerImage) String() string {
+	return `"${IMAGE_ID}"`
 }
 
 func fileExtension(path string) string {

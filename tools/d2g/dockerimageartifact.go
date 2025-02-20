@@ -39,12 +39,12 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 	return []genericworker.FileMount{fm}, nil
 }
 
-func (dia *DockerImageArtifact) String() (string, error) {
-	return `"${IMAGE_ID}"`, nil
+func (dia *DockerImageArtifact) String() string {
+	return `"${IMAGE_ID}"`
 }
 
-func (dia *DockerImageArtifact) LoadCommands() []string {
-	return []string{
-		`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
+func (dia *DockerImageArtifact) ImageLoader() ImageLoader {
+	return &FileImageLoader{
+		Image: dia,
 	}
 }

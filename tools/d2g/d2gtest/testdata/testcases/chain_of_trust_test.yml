@@ -1,0 +1,244 @@
+testSuite:
+  description: These tests capture chain of trust covering the range of possible properties
+    that might get set.
+  name: Chain of Trust tests
+  payloadTests:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test for when the image is specified as a named docker image (image.type
+      = 'docker-image')
+    dockerWorkerTaskPayload:
+      command:
+      - foo
+      - bar
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        chainOfTrust: true
+      image:
+        name: my-little/pony:4.1
+        type: docker-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull 'my-little/pony:4.1'
+          echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' 'my-little/pony:4.1')"'"}}' > chain-of-trust-additional-data.json
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e HGI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        backingLog: true
+        chainOfTrust: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Named Docker Image Test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test for when the image is specified as an indexed docker image (image.type
+      = 'indexed-image')
+    dockerWorkerTaskPayload:
+      command:
+      - foo
+      - bar
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        chainOfTrust: true
+      image:
+        namespace: myimage
+        path: foo/bar
+        type: indexed-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' "${IMAGE_ID}")"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e HGI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        backingLog: true
+        chainOfTrust: true
+        liveLog: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: foo/bar
+          namespace: myimage
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Indexed Docker Image Test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test for when the image is specified as a docker image artifact (image.type
+      = 'task-image')
+    dockerWorkerTaskPayload:
+      command:
+      - foo
+      - bar
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        chainOfTrust: true
+      image:
+        path: public/my-image.tar.gz
+        taskId: P0fUGkj5Tte1Cicm9jDHww
+        type: task-image
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
+          echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' "${IMAGE_ID}")"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e HGI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        backingLog: true
+        chainOfTrust: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      mounts:
+      - content:
+          artifact: public/my-image.tar.gz
+          taskId: P0fUGkj5Tte1Cicm9jDHww
+        file: dockerimage
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Docker Image Artifact Test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Test for when the image is specified as a docker image name (image
+      = image name directly, no image.type)
+    dockerWorkerTaskPayload:
+      command:
+      - foo
+      - bar
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        chainOfTrust: true
+      image: my-little/pony:4.1
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull 'my-little/pony:4.1'
+          echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' 'my-little/pony:4.1')"'"}}' > chain-of-trust-additional-data.json
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e HGI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      env:
+        ABC: def
+        HGI: jkl
+      features:
+        backingLog: true
+        chainOfTrust: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Docker Image Name Test
