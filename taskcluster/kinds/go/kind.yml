@@ -23,7 +23,6 @@ task-defaults:
         go version
         go env
         if [ ! -d taskcluster/.git ]; then
-          rm -rf taskcluster
           git clone {head_repository} taskcluster
         fi
         cd taskcluster
@@ -35,6 +34,8 @@ task-defaults:
   worker:
     max-run-time: 600
     mounts:
+      - cache-name: checkouts
+        directory: taskcluster
       - content:
           url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
         directory: '{go_version}'
