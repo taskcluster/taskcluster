@@ -5,7 +5,14 @@ COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
 
 ENV GOPATH=/go
-ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
+
+VOLUME /builds/worker/checkouts
+
+# Add worker user
+RUN mkdir -p /builds && \
+    useradd -d /builds/worker -s /bin/bash -m worker && \
+    mkdir /builds/worker/artifacts && \
+    chown -R worker:worker /builds/worker
 
 # %include .golangci-lint-version
 ADD topsrcdir/.golangci-lint-version .
@@ -33,6 +40,10 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
     echo 'host all all ::1/128 trust' >> /etc/postgresql/15/main/pg_hba.conf
 
 ENV TEST_DB_URL=postgresql://postgres@localhost/postgres
+
+ENV SHELL=/bin/bash \
+    HOME=/builds/worker \
+    PATH="$GOPATH/bin:/usr/local/go/bin:/builds/worker/.local/bin:$PATH"
 
 # Set a default command useful for debugging
 CMD ["/bin/bash", "--login"]

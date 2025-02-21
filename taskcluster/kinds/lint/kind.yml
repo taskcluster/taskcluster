@@ -27,6 +27,9 @@ tasks:
     priority: very-high
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         corepack yarn &&

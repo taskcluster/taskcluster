@@ -19,6 +19,9 @@ task-defaults:
     using: bare
   worker:
     max-run-time: 1800
+    mounts:
+      - cache-name: checkouts
+        directory: taskcluster
 
 tasks:
   windows-worker-runner:
@@ -43,7 +46,9 @@ tasks:
         - git config --global core.autocrlf false
         - go version
         - go env
-        - git clone {head_repository} taskcluster
+        - if [ ! -d taskcluster/.git ]; then
+        -   git clone {head_repository} taskcluster
+        - fi
         - cd taskcluster
         - git config advice.detachedHead false
         - git checkout {head_rev}
@@ -74,7 +79,6 @@ tasks:
         - go version
         - go env
         - if [ ! -d taskcluster/.git ]; then
-        -   rm -rf taskcluster
         -   git clone {head_repository} taskcluster
         - fi
         - cd taskcluster
@@ -97,7 +101,6 @@ tasks:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04
     worker-type: gw-ubuntu-24-04-gui
     scopes:
-      - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
@@ -149,7 +152,6 @@ tasks:
           curl -s "${{TASKCLUSTER_PROXY_URL}}/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds" | sed -n 's/.*"b64_encoded_credentials_script": "\(.*\)".*/\1/p' | b64 > tc-creds.sh
           source tc-creds.sh
           if [ ! -d taskcluster/.git ]; then
-            rm -rf taskcluster
             git clone {head_repository} taskcluster
           fi
           cd taskcluster
@@ -178,7 +180,6 @@ tasks:
     description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 24.04
     worker-type: gw-ubuntu-24-04-gui
     scopes:
-      - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
@@ -203,7 +204,6 @@ tasks:
     description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS
     worker-type: gw-ci-macos
     scopes:
-      - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
@@ -228,7 +228,6 @@ tasks:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
     worker-type: gw-windows-2022-gui
     scopes:
-      - generic-worker:cache:generic-worker-checkout
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
@@ -288,7 +287,7 @@ tasks:
         - jq -r .secret.b64_encoded_credentials_batch_script ci-creds.json > tc-creds.bat.b64
         - certutil -decode tc-creds.bat.b64 tc-creds.bat
         - call tc-creds.bat 2>&1
-        - if not exist taskcluster git clone %GITHUB_CLONE_URL% taskcluster
+        - if not exist taskcluster\.git git clone %GITHUB_CLONE_URL% taskcluster
         - cd taskcluster
         - git fetch %GITHUB_CLONE_URL% +%GITHUB_SHA%:refs/heads/X%TASK_ID%
         - git checkout -f "X%TASK_ID%"

@@ -25,7 +25,7 @@ def bare_docker_worker(config, job, taskdesc):
     command = []
     if run.get("clone"):
         command.extend([
-          "git clone --quiet --depth=20 --no-single-branch {} taskcluster && ".format(params["head_repository"]),
+          "[ ! -d taskcluster/.git ] && git clone --quiet --depth=20 --no-single-branch {} taskcluster; ".format(params["head_repository"]),
           "cd taskcluster && ",
           "git checkout {} && ".format(params["head_rev"]),
         ])
