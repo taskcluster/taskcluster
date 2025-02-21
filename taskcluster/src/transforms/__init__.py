@@ -79,12 +79,13 @@ def parameterize_mounts(config, tasks):
         mounts = task.get("worker", {}).get("mounts")
         if mounts:
             for mount in mounts:
-                if mount["content"].get("url"):
-                    mount["content"]["url"] = mount["content"]["url"].format(
-                            go_version=go_version,
-                            golangci_lint_version=golangci_lint_version,
-                            rust_version=rust_version,
-                            node_version=node_version)
+                if "content" in mount:
+                    if mount["content"].get("url"):
+                        mount["content"]["url"] = mount["content"]["url"].format(
+                                go_version=go_version,
+                                golangci_lint_version=golangci_lint_version,
+                                rust_version=rust_version,
+                                node_version=node_version)
                 if mount.get("directory"):
                     mount["directory"] = mount["directory"].format(
                             go_version=go_version,

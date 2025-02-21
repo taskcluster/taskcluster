@@ -21,7 +21,7 @@ tasks:
   nodejs:
     description: nodejs client tests
     worker:
-      docker-image: node:{node_version}
+      docker-image: {in-tree: ci}
     run:
       command: >-
         {{ corepack yarn --immutable || exit 99; }} &&
@@ -33,7 +33,7 @@ tasks:
   nodejs-client-external-test:
     description: nodejs client external tests
     worker:
-      docker-image: node:{node_version}
+      docker-image: {in-tree: ci}
     run:
       command: >-
         {{ corepack yarn --immutable || exit 99; }} &&
@@ -44,7 +44,7 @@ tasks:
   go:
     description: golang client tests
     worker:
-      docker-image: golang:{go_version}-bookworm
+      docker-image: {in-tree: ci}
     run:
       command: >-
         eval $(python3 test/client-library-secrets.py) &&
@@ -53,7 +53,7 @@ tasks:
   shell:
     description: cli tests
     worker:
-      docker-image: golang:{go_version}-bookworm
+      docker-image: {in-tree: ci}
     run:
       command: >-
         eval $(python3 test/client-library-secrets.py) &&
