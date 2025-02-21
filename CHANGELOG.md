@@ -12,7 +12,7 @@ Generic Worker (windows): fix cache ownership issues. Clean up ACLs so prior tas
 
 ### USERS
 
-▶ [patch] [#5727](https://github.com/taskcluster/taskcluster/issues/5727)
+▶ [patch] [#7527](https://github.com/taskcluster/taskcluster/issues/7527)
 Fixes an issue introduced in Generic Worker 81.0.0 where the Chain of Trust
 certificate would not contain all of the additional data specified in the
 task-provided `chain-of-trust-additional-data.json` file.
