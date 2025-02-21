@@ -248,6 +248,9 @@ func TestChainOfTrustUploadAsCurrentUser(t *testing.T) {
 			ChainOfTrust:         true,
 			RunTaskAsCurrentUser: true,
 		},
+		OnExitStatus: ExitCodeHandling{
+			PurgeCaches: []int64{1234567},
+		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
