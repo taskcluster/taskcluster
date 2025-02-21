@@ -104,7 +104,7 @@ func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error) {
 	}
 
 	last_output := []byte("")
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		var isReadyCmd *exec.Cmd
 		isReadyCmd, err = it.interactiveCommands.IsReadyCmd()
 		if err != nil {

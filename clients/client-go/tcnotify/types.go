@@ -134,10 +134,10 @@ type (
 	SendSlackMessage struct {
 
 		// An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.
-		Attachments []interface{} `json:"attachments,omitempty"`
+		Attachments []any `json:"attachments,omitempty"`
 
 		// An array of Slack layout blocks. See https://api.slack.com/reference/block-kit/blocks.
-		Blocks []interface{} `json:"blocks,omitempty"`
+		Blocks []any `json:"blocks,omitempty"`
 
 		// The unique Slack channel ID, such as `C123456GZ`.
 		// In the app, this is the last section of the 'copy link' URL for a channel.

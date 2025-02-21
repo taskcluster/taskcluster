@@ -8,10 +8,10 @@ import (
 
 type TestLogDestination struct {
 	mutex    sync.Mutex
-	messages []map[string]interface{}
+	messages []map[string]any
 }
 
-func (dst *TestLogDestination) Messages() []map[string]interface{} {
+func (dst *TestLogDestination) Messages() []map[string]any {
 	dst.mutex.Lock()
 	messages := dst.messages
 	dst.mutex.Unlock()
@@ -20,7 +20,7 @@ func (dst *TestLogDestination) Messages() []map[string]interface{} {
 
 func (dst *TestLogDestination) Clear() {
 	dst.mutex.Lock()
-	dst.messages = []map[string]interface{}{}
+	dst.messages = []map[string]any{}
 	dst.mutex.Unlock()
 }
 
@@ -30,7 +30,7 @@ func (dst *TestLogDestination) LogUnstructured(message string) {
 	dst.mutex.Unlock()
 }
 
-func (dst *TestLogDestination) LogStructured(message map[string]interface{}) {
+func (dst *TestLogDestination) LogStructured(message map[string]any) {
 	dst.mutex.Lock()
 	dst.messages = append(dst.messages, message)
 	dst.mutex.Unlock()

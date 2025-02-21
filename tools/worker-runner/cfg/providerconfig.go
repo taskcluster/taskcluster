@@ -12,7 +12,7 @@ import (
 // plus any additional provider-specific properties.
 type ProviderConfig struct {
 	ProviderType string
-	Data         map[string]interface{}
+	Data         map[string]any
 }
 
 func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -40,7 +40,7 @@ func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
 //
 // Structs should be tagged with `provider:"name"`, with the name defaulting to the
 // lowercased version of the field name.
-func (pc *ProviderConfig) Unpack(out interface{}) error {
+func (pc *ProviderConfig) Unpack(out any) error {
 	outval := reflect.ValueOf(out)
 	if outval.Kind() != reflect.Ptr || outval.IsNil() {
 		return fmt.Errorf("expected a pointer, got %s", outval.Kind())

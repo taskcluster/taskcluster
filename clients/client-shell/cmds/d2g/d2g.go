@@ -46,7 +46,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	var dwTaskDef map[string]interface{}
+	var dwTaskDef map[string]any
 	var inputPayload json.RawMessage
 	if isTaskDef {
 		err = json.Unmarshal(input, &dwTaskDef)
@@ -79,7 +79,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to convert input to a docker worker payload definition: %v", err)
 	}
 
-	d2gConfig := map[string]interface{}{
+	d2gConfig := map[string]any{
 		"allowChainOfTrust":     true,
 		"allowDisableSeccomp":   true,
 		"allowHostSharedMemory": true,
@@ -111,7 +111,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		// Validate the JSON output against the schema
-		var gwTaskDef map[string]interface{}
+		var gwTaskDef map[string]any
 		err = json.Unmarshal(gwTaskDefJSON, &gwTaskDef)
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal generic worker task definition: %v", err)

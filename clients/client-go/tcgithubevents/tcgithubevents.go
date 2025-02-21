@@ -41,7 +41,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcgithubevents
 
 import (
@@ -69,7 +69,7 @@ func (binding PullRequest) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/pull-request"
 }
 
-func (binding PullRequest) NewPayloadObject() interface{} {
+func (binding PullRequest) NewPayloadObject() any {
 	return new(GitHubPullRequestMessage)
 }
 
@@ -92,7 +92,7 @@ func (binding Push) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/push"
 }
 
-func (binding Push) NewPayloadObject() interface{} {
+func (binding Push) NewPayloadObject() any {
 	return new(GitHubPushMessage)
 }
 
@@ -115,7 +115,7 @@ func (binding Release) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/release"
 }
 
-func (binding Release) NewPayloadObject() interface{} {
+func (binding Release) NewPayloadObject() any {
 	return new(GitHubReleaseMessage)
 }
 
@@ -139,7 +139,7 @@ func (binding Rerun) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/rerun"
 }
 
-func (binding Rerun) NewPayloadObject() interface{} {
+func (binding Rerun) NewPayloadObject() any {
 	return new(GitHubReRunRequestMessage)
 }
 
@@ -165,11 +165,11 @@ func (binding TaskGroupCreationRequested) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/task-group-creation-requested"
 }
 
-func (binding TaskGroupCreationRequested) NewPayloadObject() interface{} {
+func (binding TaskGroupCreationRequested) NewPayloadObject() any {
 	return new(TaskGroupDefinedCreateStatus)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

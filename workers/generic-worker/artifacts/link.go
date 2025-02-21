@@ -12,13 +12,13 @@ type LinkArtifact struct {
 	ContentType string
 }
 
-func (linkArtifact *LinkArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
+func (linkArtifact *LinkArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
 	logger.Infof("Uploading link artifact %v to artifact %v with expiry %v", linkArtifact.Name, linkArtifact.Artifact, linkArtifact.Expires)
 	// nothing to do
 	return nil
 }
 
-func (linkArtifact *LinkArtifact) RequestObject() interface{} {
+func (linkArtifact *LinkArtifact) RequestObject() any {
 	return &tcqueue.LinkArtifactRequest{
 		Expires:     linkArtifact.Expires,
 		StorageType: "link",
@@ -27,6 +27,6 @@ func (linkArtifact *LinkArtifact) RequestObject() interface{} {
 	}
 }
 
-func (linkArtifact *LinkArtifact) ResponseObject() interface{} {
+func (linkArtifact *LinkArtifact) ResponseObject() any {
 	return new(tcqueue.LinkArtifactResponse)
 }

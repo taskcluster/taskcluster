@@ -25,6 +25,8 @@ import (
 	"sync"
 	"time"
 
+	"slices"
+
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
@@ -248,7 +250,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			TasksDir:                       defaultTasksDir(),
 			WorkerGroup:                    "test-worker-group",
 			WorkerLocation:                 "",
-			WorkerTypeMetadata:             map[string]interface{}{},
+			WorkerTypeMetadata:             map[string]any{},
 		},
 	}
 
@@ -259,10 +261,10 @@ func loadConfig(configFile *gwconfig.File) error {
 	}
 
 	// Add useful worker config to worker metadata
-	config.WorkerTypeMetadata["config"] = map[string]interface{}{
+	config.WorkerTypeMetadata["config"] = map[string]any{
 		"deploymentId": config.DeploymentID,
 	}
-	gwMetadata := map[string]interface{}{
+	gwMetadata := map[string]any{
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
 		"go-version": runtime.Version(),
@@ -344,7 +346,7 @@ func UpdateTasksResolvedFile(t uint) error {
 // if it has valid credentials and a valid sentry project. The argument r is
 // the object returned by the recover call, thrown by the panic call that
 // caused the worker crash.
-func HandleCrash(r interface{}) {
+func HandleCrash(r any) {
 	log.Print(string(debug.Stack()))
 	log.Print(" *********** PANIC occurred! *********** ")
 	log.Printf("%v", r)
@@ -627,7 +629,7 @@ func (task *TaskRun) validatePayload() *CommandExecutionError {
 	if validateErr != nil {
 		return validateErr
 	}
-	payload := map[string]interface{}{}
+	payload := map[string]any{}
 	err := json.Unmarshal(jsonPayload, &payload)
 	if err != nil {
 		panic(err)
@@ -785,15 +787,15 @@ func Failure(err error) *CommandExecutionError {
 	return executionError("", failed, err)
 }
 
-func (task *TaskRun) Infof(format string, v ...interface{}) {
+func (task *TaskRun) Infof(format string, v ...any) {
 	task.Info(fmt.Sprintf(format, v...))
 }
 
-func (task *TaskRun) Warnf(format string, v ...interface{}) {
+func (task *TaskRun) Warnf(format string, v ...any) {
 	task.Warn(fmt.Sprintf(format, v...))
 }
 
-func (task *TaskRun) Errorf(format string, v ...interface{}) {
+func (task *TaskRun) Errorf(format string, v ...any) {
 	task.Error(fmt.Sprintf(format, v...))
 }
 
@@ -831,12 +833,7 @@ func (err *CommandExecutionError) Error() string {
 }
 
 func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
-	for _, code := range task.Payload.OnExitStatus.Retry {
-		if c == code {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(task.Payload.OnExitStatus.Retry, c)
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
@@ -1207,7 +1204,7 @@ If you do require this feature, please do one of two things:
 	return
 }
 
-func loadFromJSONFile(obj interface{}, filename string) (err error) {
+func loadFromJSONFile(obj any, filename string) (err error) {
 	var f *os.File
 	f, err = os.Open(filename)
 	if err != nil {
@@ -1316,7 +1313,7 @@ func RotateTaskEnvironment() (reboot bool) {
 	return false
 }
 
-func exitOnError(exitCode ExitCode, err error, logMessage string, args ...interface{}) {
+func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
 	if err == nil {
 		return
 	}

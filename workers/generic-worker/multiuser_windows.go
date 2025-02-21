@@ -231,7 +231,7 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	exePath, err := ExePath()
 	if err != nil {
 		return err
@@ -362,7 +362,7 @@ func UACEnabled() bool {
 	return enableLUA == 1
 }
 
-func platformTargets(arguments map[string]interface{}) ExitCode {
+func platformTargets(arguments map[string]any) ExitCode {
 	switch {
 	case arguments["grant-winsta-access"]:
 		sid := arguments["--sid"].(string)
@@ -565,7 +565,7 @@ func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
 	return nil
 }
 
-func convertNilToEmptyString(val interface{}) string {
+func convertNilToEmptyString(val any) string {
 	if val == nil {
 		return ""
 	}

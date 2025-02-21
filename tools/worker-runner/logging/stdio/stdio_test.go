@@ -29,6 +29,6 @@ func TestLogUnstructured(t *testing.T) {
 func TestLogStructured(t *testing.T) {
 	dst, buf := makeLogger()
 
-	dst.LogStructured(map[string]interface{}{"level": "bad"})
+	dst.LogStructured(map[string]any{"level": "bad"})
 	require.Equal(t, []byte("level: bad\n"), buf.Bytes())
 }

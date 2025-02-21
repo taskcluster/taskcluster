@@ -11,7 +11,7 @@ import (
 )
 
 type Metadata struct {
-	Document         func() interface{}
+	Document         func() any
 	Signature        string
 	AMIID            string
 	AvailabilityZone string
@@ -20,13 +20,13 @@ type Metadata struct {
 	PublicHostname   string
 	LocalIPv4        net.IP
 	PublicIPv4       net.IP
-	UserData         func() interface{}
+	UserData         func() any
 	Terminating      bool
-	WorkerConfig     map[string]interface{}
+	WorkerConfig     map[string]any
 }
 
 func (ec2 *Metadata) RegisterService(r *mux.Router) {
-	metadata := map[string]interface{}{
+	metadata := map[string]any{
 		"/latest/dynamic/instance-identity/signature":   ec2.Signature,
 		"/latest/meta-data/ami-id":                      ec2.AMIID,
 		"/latest/meta-data/placement/availability-zone": ec2.AvailabilityZone,
@@ -37,7 +37,7 @@ func (ec2 *Metadata) RegisterService(r *mux.Router) {
 		"/latest/meta-data/public-ipv4":                 ec2.PublicIPv4,
 	}
 
-	JSONor400 := func(data func() interface{}) func(w http.ResponseWriter, r *http.Request) {
+	JSONor400 := func(data func() any) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
 			bytes, err := json.Marshal(data())
 			if err != nil {
@@ -48,16 +48,16 @@ func (ec2 *Metadata) RegisterService(r *mux.Router) {
 		}
 	}
 
-	Sprintf := func(data func() interface{}) func(w http.ResponseWriter, r *http.Request) {
+	Sprintf := func(data func() any) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(fmt.Sprintf("%v", data())))
+			_, _ = w.Write(fmt.Appendf(nil, "%v", data()))
 		}
 	}
 
 	for i := range metadata {
 		r.HandleFunc(i, Sprintf(
-			func(i string) func() interface{} {
-				return func() interface{} {
+			func(i string) func() any {
+				return func() any {
 					return metadata[i]
 				}
 			}(i),
@@ -68,7 +68,7 @@ func (ec2 *Metadata) RegisterService(r *mux.Router) {
 	r.HandleFunc("/latest/dynamic/instance-identity/document", JSONor400(ec2.Document)).Methods("GET")
 }
 
-func New(publicConfig *gwconfig.PublicConfig, providerID string, publicFiles map[string]interface{}) *Metadata {
+func New(publicConfig *gwconfig.PublicConfig, providerID string, publicFiles map[string]any) *Metadata {
 	m := &Metadata{
 		Signature:        "test-signature",
 		AMIID:            "test-ami",
@@ -79,17 +79,17 @@ func New(publicConfig *gwconfig.PublicConfig, providerID string, publicFiles map
 		LocalIPv4:        net.IPv4(87, 65, 43, 21),
 		PublicIPv4:       net.IPv4(12, 34, 56, 78),
 	}
-	gwconf := map[string]interface{}{
+	gwconf := map[string]any{
 		"config": publicConfig,
 	}
 	if publicFiles != nil {
 		gwconf["files"] = publicFiles
 	}
-	m.WorkerConfig = map[string]interface{}{
+	m.WorkerConfig = map[string]any{
 		"genericWorker": gwconf,
 	}
-	m.UserData = func() interface{} {
-		return map[string]interface{}{
+	m.UserData = func() any {
+		return map[string]any{
 			"workerPoolId": publicConfig.ProvisionerID + "/" + publicConfig.WorkerType,
 			"providerId":   providerID,
 			"workerGroup":  publicConfig.WorkerGroup,
@@ -97,8 +97,8 @@ func New(publicConfig *gwconfig.PublicConfig, providerID string, publicFiles map
 			"workerConfig": m.WorkerConfig,
 		}
 	}
-	m.Document = func() interface{} {
-		return map[string]interface{}{
+	m.Document = func() any {
+		return map[string]any{
 			"availabilityZone": "outer-space",
 			"privateIp":        "87.65.43.21",
 			"version":          "2017-09-30",

@@ -36,7 +36,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcworkermanagerevents
 
 import (
@@ -67,7 +67,7 @@ func (binding WorkerPoolCreated) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-pool-created"
 }
 
-func (binding WorkerPoolCreated) NewPayloadObject() interface{} {
+func (binding WorkerPoolCreated) NewPayloadObject() any {
 	return new(WorkerTypePulseMessage)
 }
 
@@ -94,7 +94,7 @@ func (binding WorkerPoolUpdated) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-pool-updated"
 }
 
-func (binding WorkerPoolUpdated) NewPayloadObject() interface{} {
+func (binding WorkerPoolUpdated) NewPayloadObject() any {
 	return new(WorkerTypePulseMessage)
 }
 
@@ -122,7 +122,7 @@ func (binding WorkerPoolError) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-pool-error"
 }
 
-func (binding WorkerPoolError) NewPayloadObject() interface{} {
+func (binding WorkerPoolError) NewPayloadObject() any {
 	return new(WorkerTypePulseMessage1)
 }
 
@@ -148,7 +148,7 @@ func (binding WorkerRequested) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-requested"
 }
 
-func (binding WorkerRequested) NewPayloadObject() interface{} {
+func (binding WorkerRequested) NewPayloadObject() any {
 	return new(WorkerPulseMessage)
 }
 
@@ -175,7 +175,7 @@ func (binding WorkerRunning) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-running"
 }
 
-func (binding WorkerRunning) NewPayloadObject() interface{} {
+func (binding WorkerRunning) NewPayloadObject() any {
 	return new(WorkerPulseMessage)
 }
 
@@ -202,7 +202,7 @@ func (binding WorkerStopped) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-stopped"
 }
 
-func (binding WorkerStopped) NewPayloadObject() interface{} {
+func (binding WorkerStopped) NewPayloadObject() any {
 	return new(WorkerPulseMessage)
 }
 
@@ -230,11 +230,11 @@ func (binding WorkerRemoved) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-removed"
 }
 
-func (binding WorkerRemoved) NewPayloadObject() interface{} {
+func (binding WorkerRemoved) NewPayloadObject() any {
 	return new(WorkerRemovedPulseMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

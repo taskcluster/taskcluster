@@ -3,18 +3,18 @@ package gwconfig
 import "testing"
 
 type PublicPlatformConfig struct {
-	D2GConfig                 map[string]interface{} `json:"d2gConfig"`
-	DisableNativePayloads     bool                   `json:"disableNativePayloads"`
-	EnableInteractive         bool                   `json:"enableInteractive"`
-	EnableLoopbackAudio       bool                   `json:"enableLoopbackAudio"`
-	EnableLoopbackVideo       bool                   `json:"enableLoopbackVideo"`
-	LoopbackAudioDeviceNumber uint8                  `json:"loopbackAudioDeviceNumber"`
-	LoopbackVideoDeviceNumber uint8                  `json:"loopbackVideoDeviceNumber"`
+	D2GConfig                 map[string]any `json:"d2gConfig"`
+	DisableNativePayloads     bool           `json:"disableNativePayloads"`
+	EnableInteractive         bool           `json:"enableInteractive"`
+	EnableLoopbackAudio       bool           `json:"enableLoopbackAudio"`
+	EnableLoopbackVideo       bool           `json:"enableLoopbackVideo"`
+	LoopbackAudioDeviceNumber uint8          `json:"loopbackAudioDeviceNumber"`
+	LoopbackVideoDeviceNumber uint8          `json:"loopbackVideoDeviceNumber"`
 }
 
 func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 	return &PublicPlatformConfig{
-		D2GConfig: map[string]interface{}{
+		D2GConfig: map[string]any{
 			"enableD2G":             false,
 			"allowChainOfTrust":     true,
 			"allowDisableSeccomp":   true,

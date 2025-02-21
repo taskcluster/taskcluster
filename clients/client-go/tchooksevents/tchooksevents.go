@@ -36,7 +36,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tchooksevents
 
 import (
@@ -59,7 +59,7 @@ func (binding HookCreated) ExchangeName() string {
 	return "exchange/taskcluster-hooks/v1/hook-created"
 }
 
-func (binding HookCreated) NewPayloadObject() interface{} {
+func (binding HookCreated) NewPayloadObject() any {
 	return new(HookChangedMessage)
 }
 
@@ -78,7 +78,7 @@ func (binding HookUpdated) ExchangeName() string {
 	return "exchange/taskcluster-hooks/v1/hook-updated"
 }
 
-func (binding HookUpdated) NewPayloadObject() interface{} {
+func (binding HookUpdated) NewPayloadObject() any {
 	return new(HookChangedMessage)
 }
 
@@ -97,11 +97,11 @@ func (binding HookDeleted) ExchangeName() string {
 	return "exchange/taskcluster-hooks/v1/hook-deleted"
 }
 
-func (binding HookDeleted) NewPayloadObject() interface{} {
+func (binding HookDeleted) NewPayloadObject() any {
 	return new(HookChangedMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

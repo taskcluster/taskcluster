@@ -720,7 +720,7 @@ func fatalOnError(err error) {
 	}
 }
 
-func mustCompileToRawMessage(data interface{}) *json.RawMessage {
+func mustCompileToRawMessage(data any) *json.RawMessage {
 	bytes, err := json.Marshal(data)
 	fatalOnError(err)
 	var JSON json.RawMessage

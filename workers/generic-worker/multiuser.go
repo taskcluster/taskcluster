@@ -303,11 +303,11 @@ func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 	m["headlessTasks"] = strconv.FormatBool(c.HeadlessTasks)
 }
 
-func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
+func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 	// Create empty config entry if it doesn't exist already, so that if it does
 	// exist, entries are merged rather than entire map being replaced.
 	if _, exists := m["config"]; !exists {
-		m["config"] = map[string]interface{}{}
+		m["config"] = map[string]any{}
 	}
-	m["config"].(map[string]interface{})["headlessTasks"] = c.HeadlessTasks
+	m["config"].(map[string]any)["headlessTasks"] = c.HeadlessTasks
 }

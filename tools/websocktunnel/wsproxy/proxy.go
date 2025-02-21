@@ -15,6 +15,8 @@ import (
 	"github.com/taskcluster/taskcluster/v81/tools/websocktunnel/util"
 	"github.com/taskcluster/taskcluster/v81/tools/websocktunnel/wsmux"
 
+	"maps"
+
 	"github.com/sirupsen/logrus"
 	nullLog "github.com/sirupsen/logrus/hooks/test"
 )
@@ -298,9 +300,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	for k := range w.Header() {
 		w.Header().Del(k)
 	}
-	for k, v := range resp.Header {
-		w.Header()[k] = v
-	}
+	maps.Copy(w.Header(), resp.Header)
 
 	// dump headers
 	w.WriteHeader(resp.StatusCode)
@@ -340,7 +340,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		SkipClaimsValidation: true, // Claims will be verified if token can be decoded using secret
 	}
 
-	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrUnexpectedSigningMethod
 		}
@@ -351,7 +351,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		// log first error
 		p.logerrorf(id, "", "%v: trying with second secret", err)
 
-		token, err = parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err = parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, ErrUnexpectedSigningMethod
 			}
@@ -403,14 +403,14 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 // proxy logging utilities
 
 // NOTE: cannot use logrus methods
-func (p *proxy) logf(id string, remoteAddr string, format string, v ...interface{}) {
+func (p *proxy) logf(id string, remoteAddr string, format string, v ...any) {
 	p.logger.WithFields(logrus.Fields{
 		"tunnel-id":   id,
 		"remote-addr": remoteAddr,
 	}).Printf(format, v...)
 }
 
-func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...interface{}) {
+func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...any) {
 	p.logger.WithFields(logrus.Fields{
 		"tunnel-id":   id,
 		"remote-addr": remoteAddr,

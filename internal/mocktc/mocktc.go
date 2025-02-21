@@ -26,7 +26,7 @@ func Vars(r *http.Request) map[string]string {
 	return decodedVars
 }
 
-func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
+func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp any) {
 	t.Helper()
 	bytes, err := json.MarshalIndent(resp, "", "  ")
 	if err != nil {
@@ -38,7 +38,7 @@ func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 	}
 }
 
-func JSON(w http.ResponseWriter, resp interface{}, err error) {
+func JSON(w http.ResponseWriter, resp any, err error) {
 	if err != nil {
 		ReportError(w, err)
 		return
@@ -79,7 +79,7 @@ func NoBody(w http.ResponseWriter, err error) {
 	w.WriteHeader(200)
 }
 
-func Marshal(req *http.Request, payload interface{}) {
+func Marshal(req *http.Request, payload any) {
 	dec := json.NewDecoder(req.Body)
 	dec.DisallowUnknownFields()
 	err := dec.Decode(payload)

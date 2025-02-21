@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 
+	"maps"
+
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/taskcluster/v81/tools/d2g"
 	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/gwconfig"
@@ -145,7 +147,7 @@ func purgeOldTasks() error {
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	return nil
 }
 
@@ -164,7 +166,7 @@ func rebootBetweenTasks() bool {
 	return false
 }
 
-func platformTargets(arguments map[string]interface{}) ExitCode {
+func platformTargets(arguments map[string]any) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
 }
@@ -195,9 +197,7 @@ func (task *TaskRun) EnvVars() []string {
 			taskEnv[spl[0]] = spl[1]
 		}
 	}
-	for k, v := range task.Payload.Env {
-		taskEnv[k] = v
-	}
+	maps.Copy(taskEnv, task.Payload.Env)
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
 	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
@@ -226,5 +226,5 @@ func featureInitFailure(err error) ExitCode {
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 }
 
-func addEngineMetadata(m map[string]interface{}, c *gwconfig.Config) {
+func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 }

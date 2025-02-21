@@ -13,6 +13,8 @@ import (
 	"sort"
 	"time"
 
+	"slices"
+
 	"github.com/mholt/archiver/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
@@ -121,15 +123,15 @@ func (taskMount *TaskMount) ReservedArtifacts() []string {
 	return []string{}
 }
 
-func (taskMount *TaskMount) Infof(format string, v ...interface{}) {
+func (taskMount *TaskMount) Infof(format string, v ...any) {
 	taskMount.task.Infof("[mounts] "+format, v...)
 }
 
-func (taskMount *TaskMount) Warnf(format string, v ...interface{}) {
+func (taskMount *TaskMount) Warnf(format string, v ...any) {
 	taskMount.task.Warnf("[mounts] "+format, v...)
 }
 
-func (taskMount *TaskMount) Errorf(format string, v ...interface{}) {
+func (taskMount *TaskMount) Errorf(format string, v ...any) {
 	taskMount.task.Errorf("[mounts] "+format, v...)
 }
 
@@ -295,7 +297,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		//   * ReadOnlyDirectory
 		//   * FileMount
 		// We have to check keys to find out...
-		var m map[string]interface{}
+		var m map[string]any
 		if err := json.Unmarshal(taskMount, &m); err != nil {
 			tm.payloadError = fmt.Errorf("could not read task mount %v: %v\n%v", i, string(taskMount), err)
 			return tm
@@ -468,11 +470,15 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 }
 
 func (taskMount *TaskMount) shouldPurgeCaches() bool {
-	for _, code := range taskMount.task.Payload.OnExitStatus.PurgeCaches {
-		if int64(taskMount.task.result.ExitCode()) == code {
-			taskMount.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode())
-			return true
-		}
+	// task commands may not have run if the task
+	// feature resolved as malformed-payload
+	if taskMount.task.result == nil {
+		return false
+	}
+
+	if slices.Contains(taskMount.task.Payload.OnExitStatus.PurgeCaches, int64(taskMount.task.result.ExitCode())) {
+		taskMount.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode())
+		return true
 	}
 
 	return false
@@ -854,7 +860,7 @@ func FSContentFrom(c json.RawMessage) (FSContent, error) {
 	//   * RawContent
 	//   * Base64Content
 	// We have to check keys to find out...
-	var m map[string]interface{}
+	var m map[string]any
 	if err := json.Unmarshal(c, &m); err != nil {
 		return nil, err
 	}

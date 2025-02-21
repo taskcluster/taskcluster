@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strconv"
 
+	"maps"
+
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/taskcluster/v81/tools/d2g"
 	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/host"
@@ -104,7 +106,7 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	return nil
 }
 
@@ -114,7 +116,7 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func platformTargets(arguments map[string]interface{}) ExitCode {
+func platformTargets(arguments map[string]any) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
 }
@@ -141,9 +143,7 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 	taskEnv["USER"] = taskContext.User.Name
 
-	for k, v := range task.Payload.Env {
-		taskEnv[k] = v
-	}
+	maps.Copy(taskEnv, task.Payload.Env)
 
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID

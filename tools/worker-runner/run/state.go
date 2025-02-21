@@ -52,7 +52,7 @@ type State struct {
 	// but may fall onto undesirable defaults if these are not provided
 	// A bit more info on that here
 	// https://github.com/taskcluster/taskcluster-worker-runner/pull/30#pullrequestreview-277378260
-	ProviderMetadata map[string]interface{}
+	ProviderMetadata map[string]any
 
 	// the accumulated WorkerConfig for this run, including files to create
 	WorkerConfig *cfg.WorkerConfig

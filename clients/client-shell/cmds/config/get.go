@@ -25,7 +25,7 @@ func cmdGet(cmd *cobra.Command, args []string) error {
 	}
 
 	// select formatter
-	var formatter func(interface{}) []byte
+	var formatter func(any) []byte
 	format, _ := cmd.Flags().GetString("format")
 
 	switch format {

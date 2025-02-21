@@ -248,6 +248,12 @@ func TestChainOfTrustUploadAsCurrentUser(t *testing.T) {
 			ChainOfTrust:         true,
 			RunTaskAsCurrentUser: true,
 		},
+		OnExitStatus: ExitCodeHandling{
+			// This tests that OnExitStatus does not
+			// break when no task commands run, since
+			// task is resolved exception/malformed-payload
+			PurgeCaches: []int64{1234567},
+		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
@@ -457,7 +463,7 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 	cotUnsignedBytes := getArtifactContent(t, taskID, "public/chain-of-trust.json")
-	cotCert := map[string]interface{}{}
+	cotCert := map[string]any{}
 	err := json.Unmarshal(cotUnsignedBytes, &cotCert)
 	if err != nil {
 		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
@@ -475,9 +481,9 @@ func TestChainOfTrustAdditionalData(t *testing.T) {
 		t.Fatalf("Chain of trust cert invalid - doesn't contain property task. Contents: %v", string(cotUnsignedBytes))
 	}
 	// check it is an object rather than a string or int etc
-	task, taskIsMapStringInterface := taskMap.(map[string]interface{})
+	task, taskIsMapStringInterface := taskMap.(map[string]any)
 	if !taskIsMapStringInterface {
-		t.Fatalf("Expected taskMap to be of type map[string]interface{}, but got %T", taskMap)
+		t.Fatalf("Expected taskMap to be of type map[string]any, but got %T", taskMap)
 	}
 	// now check it contains a property from the standard chain of trust cert
 	provisionerID, provisionerIDExists := task["provisionerId"]

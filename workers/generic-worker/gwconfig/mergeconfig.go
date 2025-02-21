@@ -12,18 +12,18 @@ import (
 // map[string]interface and calling extract against the result to return a
 // map[string]interface for its config portion, then merging the two
 // map[string]interfaces together and unmarshaling back into c.
-func (c *Config) MergeInJSON(data json.RawMessage, extract func(map[string]interface{}) map[string]interface{}) error {
+func (c *Config) MergeInJSON(data json.RawMessage, extract func(map[string]any) map[string]any) error {
 	// This is all HORRIBLE
 	// but it seems about the only reasonable way to properly merge
 	// the json schemas such that json objects are recursively merged.
 	// Steps: convert c to json and then back to a go type, so that
-	// it is a map[string]interface{} and not a Config type. Get
-	// the json bytes also into a map[string]interface{} so that
-	// the two map[string]interface{} objects can be merged. Finally
+	// it is a map[string]any and not a Config type. Get
+	// the json bytes also into a map[string]any so that
+	// the two map[string]any objects can be merged. Finally
 	// convert the merge result to json again so that it can be
 	// marshaled back into the original Config type... Yuck!
-	m1 := make(map[string]interface{})
-	m2 := make(map[string]interface{})
+	m1 := make(map[string]any)
+	m2 := make(map[string]any)
 	m1bytes, err := json.Marshal(c)
 	if err != nil {
 		return err

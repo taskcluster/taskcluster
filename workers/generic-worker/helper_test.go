@@ -208,7 +208,7 @@ func submitAndAssert[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](
 	return taskID
 }
 
-func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
+func toMountArray(t *testing.T, x any) []json.RawMessage {
 	t.Helper()
 	b, err := json.Marshal(x)
 	if err != nil {
@@ -400,7 +400,7 @@ func GWTest(t *testing.T) *Test {
 			WorkerGroup:                    "test-worker-group",
 			WorkerID:                       "test-worker-id",
 			WorkerType:                     testWorkerType(),
-			WorkerTypeMetadata: map[string]interface{}{
+			WorkerTypeMetadata: map[string]any{
 				"generic-worker": map[string]string{
 					"go-arch":    runtime.GOARCH,
 					"go-os":      runtime.GOOS,
@@ -457,7 +457,7 @@ func GWTest(t *testing.T) *Test {
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
-		_, _ = w.Write([]byte(fmt.Sprintf("URL %v with method %v NOT FOUND\n", req.URL, req.Method)))
+		_, _ = w.Write(fmt.Appendf(nil, "URL %v with method %v NOT FOUND\n", req.URL, req.Method))
 	})
 
 	srv := &http.Server{

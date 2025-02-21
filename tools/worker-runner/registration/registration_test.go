@@ -30,7 +30,7 @@ func TestRegisterWorker(t *testing.T) {
 	runnercfg.WorkerImplementation.Implementation = "whatever-worker"
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
 
-	proof := map[string]interface{}{
+	proof := map[string]any{
 		"because": "I said so",
 	}
 

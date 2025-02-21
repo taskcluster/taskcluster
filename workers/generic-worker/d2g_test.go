@@ -18,7 +18,7 @@ import (
 func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	setup(t)
 	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -85,7 +85,7 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 
 func TestD2GWithInvalidDockerWorkerPayload(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -147,7 +147,7 @@ func TestD2GIssue6789(t *testing.T) {
 
 func TestD2GWithValidScopes(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -201,7 +201,7 @@ func TestD2GWithValidScopes(t *testing.T) {
 
 func TestD2GWithInvalidScopes(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -242,7 +242,7 @@ func TestD2GWithInvalidScopes(t *testing.T) {
 
 func TestD2GLoopbackVideoDevice(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -288,7 +288,7 @@ func TestD2GLoopbackVideoDevice(t *testing.T) {
 
 func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -334,7 +334,7 @@ func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 
 func TestD2GLoopbackAudioDevice(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -383,7 +383,7 @@ func TestD2GLoopbackAudioDevice(t *testing.T) {
 
 func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -432,7 +432,7 @@ func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 
 func TestD2GDevicesWithoutAllScopes(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}
@@ -467,7 +467,7 @@ func TestD2GDevicesWithoutAllScopes(t *testing.T) {
 
 func TestD2GHostSharedMemory(t *testing.T) {
 	setup(t)
-	image := map[string]interface{}{
+	image := map[string]any{
 		"name": "ubuntu:latest",
 		"type": "docker-image",
 	}

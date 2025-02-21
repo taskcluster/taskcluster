@@ -19,7 +19,7 @@ type ObjectArtifact struct {
 	ContentType string
 }
 
-func (a *ObjectArtifact) RequestObject() interface{} {
+func (a *ObjectArtifact) RequestObject() any {
 	return &tcqueue.ObjectArtifactRequest{
 		ContentType: a.ContentType,
 		Expires:     a.Expires,
@@ -27,11 +27,11 @@ func (a *ObjectArtifact) RequestObject() interface{} {
 	}
 }
 
-func (a *ObjectArtifact) ResponseObject() interface{} {
+func (a *ObjectArtifact) ResponseObject() any {
 	return new(tcqueue.ObjectArtifactResponse)
 }
 
-func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
+func (a *ObjectArtifact) ProcessResponse(resp any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.ObjectArtifactResponse)
 	logger.Infof("Uploading artifact %v from file %v with content type %q and expiry %v", a.Name, a.Path, a.ContentType, a.Expires)
 	creds := tcclient.Credentials{
@@ -50,7 +50,7 @@ func (a *ObjectArtifact) ProcessResponse(resp interface{}, logger Logger, servic
 	)
 }
 
-func (a *ObjectArtifact) FinishArtifact(resp interface{}, queue tc.Queue, taskID, runID, name string) error {
+func (a *ObjectArtifact) FinishArtifact(resp any, queue tc.Queue, taskID, runID, name string) error {
 	response := resp.(*tcqueue.ObjectArtifactResponse)
 	far := tcqueue.FinishArtifactRequest{
 		UploadID: response.UploadID,

@@ -39,7 +39,7 @@ type RegistrationManager struct {
 
 // Register this worker with the worker-manager, and update the state with the
 // results
-func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string]interface{}) error {
+func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string]any) error {
 	reg.state.Lock()
 	defer reg.state.Unlock()
 
@@ -194,7 +194,7 @@ func (reg *RegistrationManager) reregisterWorker() {
 
 	reg.proto.Send(workerproto.Message{
 		Type: "new-credentials",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"client-id":    res.Credentials.ClientID,
 			"access-token": res.Credentials.AccessToken,
 			"certificate":  res.Credentials.Certificate,
@@ -216,7 +216,7 @@ func (reg *RegistrationManager) terminateWorker() {
 	log.Printf("Taskcluster Credentials are expiring in %s; stopping worker", reg.untilExpires())
 	reg.proto.Send(workerproto.Message{
 		Type: "graceful-termination",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			// credentials are expiring, so no time to shut down..
 			"finish-tasks": false,
 		},
@@ -256,10 +256,7 @@ func renewBeforeExpire(expires time.Duration) time.Duration {
 	if renew < waitAtLeast {
 		renew = waitAtLeast
 		if renew > expires-minSetback {
-			renew = expires - minSetback
-			if renew < 0 {
-				renew = 0
-			}
+			renew = max(expires-minSetback, 0)
 		}
 	}
 

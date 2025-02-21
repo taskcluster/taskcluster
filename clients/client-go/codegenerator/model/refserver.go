@@ -53,12 +53,12 @@ func StartReferencesServer() error {
 			continue
 		}
 
-		var x map[string]interface{}
+		var x map[string]any
 		err := json.Unmarshal(ref.Content, &x)
 		if err != nil {
 			panic(err)
 		}
-		x["$id"] = interface{}(referencesServer.URL + x["$id"].(string))
+		x["$id"] = any(referencesServer.URL + x["$id"].(string))
 		ref.Content, err = json.Marshal(&x)
 		if err != nil {
 			panic(err)

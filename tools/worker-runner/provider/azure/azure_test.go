@@ -29,7 +29,7 @@ func TestConfigureRun(t *testing.T) {
 	workerGroup := "wg"
 
 	userData := &InstanceData{}
-	_ = json.Unmarshal([]byte(fmt.Sprintf(`{
+	_ = json.Unmarshal(fmt.Appendf(nil, `{
 		"compute": {
 			"customData": "",
 			"vmId": "df09142e-c0dd-43d9-a515-489f19829dfd",
@@ -65,7 +65,7 @@ func TestConfigureRun(t *testing.T) {
 		   	 }
 		   }]
         }
-      }`, workerPoolId, providerId, workerGroup)), userData)
+      }`, workerPoolId, providerId, workerGroup), userData)
 
 	attestedDocument := base64.StdEncoding.EncodeToString([]byte("trust me, it's cool --Bill"))
 
@@ -87,7 +87,7 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "vm-w-p-test", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"vm-id":         "df09142e-c0dd-43d9-a515-489f19829dfd",
 		"instance-type": "medium",
 		"region":        "uswest",
@@ -108,7 +108,7 @@ func TestConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"document": attestedDocument,
 	}, proof)
 }

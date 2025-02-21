@@ -268,8 +268,8 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 		return
 	}
 
-	initialCert := map[string]interface{}{}
-	additionalData := map[string]interface{}{}
+	initialCert := map[string]any{}
+	additionalData := map[string]any{}
 
 	err = json.Unmarshal(additionalDataBytes, &additionalData)
 	if err != nil {

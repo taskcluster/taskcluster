@@ -57,8 +57,8 @@ func (prot *Protocol) Register(messageType string, callback MessageCallback) {
 
 // convert an anymous interface into a list of strings; useful for parsing lists
 // out of messages
-func listOfStrings(val interface{}) []string {
-	aslist := val.([]interface{})
+func listOfStrings(val any) []string {
+	aslist := val.([]any)
 	rv := make([]string, 0, len(aslist))
 	for _, elt := range aslist {
 		rv = append(rv, elt.(string))
@@ -73,7 +73,7 @@ func (prot *Protocol) Start(asWorker bool) {
 			prot.remoteCapabilities = FromCapabilitiesList(listOfStrings(msg.Properties["capabilities"]))
 			prot.Send(Message{
 				Type: "hello",
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					"capabilities": prot.localCapabilities.List(),
 				},
 			})
@@ -89,7 +89,7 @@ func (prot *Protocol) Start(asWorker bool) {
 		go func() {
 			prot.Send(Message{
 				Type: "welcome",
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					"capabilities": prot.localCapabilities.List(),
 				},
 			})

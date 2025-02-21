@@ -31,7 +31,7 @@ func TestShutdownMessage(t *testing.T) {
 
 	wkr.WorkerProtocol.Send(workerproto.Message{
 		Type:       "shutdown",
-		Properties: map[string]interface{}{},
+		Properties: map[string]any{},
 	})
 	wkr.FlushMessagesToRunner()
 

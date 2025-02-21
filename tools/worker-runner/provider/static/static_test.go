@@ -13,18 +13,18 @@ func TestConfigureRun(t *testing.T) {
 	runnercfg := &cfg.RunnerConfig{
 		Provider: cfg.ProviderConfig{
 			ProviderType: "static",
-			Data: map[string]interface{}{
+			Data: map[string]any{
 				"rootURL":      "https://tc.example.com",
 				"providerID":   "static-1",
 				"workerPoolID": "w/p",
 				"workerGroup":  "wg",
 				"workerID":     "wi",
 				"staticSecret": "quiet",
-				"workerLocation": map[string]interface{}{
+				"workerLocation": map[string]any{
 					"region": "underworld",
 					"zone":   "666",
 				},
-				"providerMetadata": map[string]interface{}{
+				"providerMetadata": map[string]any{
 					"temperature": "24",
 				},
 			},
@@ -46,7 +46,7 @@ func TestConfigureRun(t *testing.T) {
 	require.Equal(t, "w/p", state.WorkerPoolID, "workerPoolID is correct")
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "wi", state.WorkerID, "workerID is correct")
-	require.Equal(t, map[string]interface{}{"temperature": "24"}, state.ProviderMetadata, "providerMetadata is correct")
+	require.Equal(t, map[string]any{"temperature": "24"}, state.ProviderMetadata, "providerMetadata is correct")
 
 	require.Equal(t, "static", state.WorkerLocation["cloud"])
 	require.Equal(t, "underworld", state.WorkerLocation["region"])
@@ -54,7 +54,7 @@ func TestConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"staticSecret": "quiet",
 	}, proof)
 }

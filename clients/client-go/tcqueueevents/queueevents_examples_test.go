@@ -16,7 +16,7 @@ func Example_taskclusterSniffer() {
 	conn := pulse.NewConnection("", "", "")
 	_, _ = conn.Consume(
 		"taskprocessing", // queue name
-		func(message interface{}, delivery amqp.Delivery) { // callback function to pass messages to
+		func(message any, delivery amqp.Delivery) { // callback function to pass messages to
 			switch t := message.(type) {
 			case *tcqueueevents.TaskDefinedMessage:
 				fmt.Println("Task " + t.Status.TaskID + " defined")
@@ -35,7 +35,7 @@ func Example_taskclusterSniffer() {
 		tcqueueevents.TaskRunning{WorkerType: "gaia", ProvisionerID: "aws-provisioner"})
 	_, _ = conn.Consume( // a second workflow to manage concurrently
 		"", // empty name implies anonymous queue
-		func(message interface{}, delivery amqp.Delivery) { // simpler callback than before
+		func(message any, delivery amqp.Delivery) { // simpler callback than before
 			fmt.Println("A buildbot message was received")
 			fmt.Println("===========")
 		},

@@ -14,7 +14,7 @@ func TestLocalTransport(t *testing.T) {
 		t.Helper()
 		a.Send(workerproto.Message{
 			Type: "test",
-			Properties: map[string]interface{}{
+			Properties: map[string]any{
 				"test": true,
 			},
 		})

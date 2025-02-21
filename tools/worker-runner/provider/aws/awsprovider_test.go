@@ -51,7 +51,7 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-55555nonesense5", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"instance-id":       "i-55555nonesense5",
 		"image":             "banana",
 		"instance-type":     "t2.micro",
@@ -76,7 +76,7 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"document":  "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}",
 		"signature": "thisisasignature",
 	}, proof)

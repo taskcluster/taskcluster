@@ -120,10 +120,10 @@ func (suite *FakeServerSuite) TestDefCommand() {
 	args := []string{fakeTaskID}
 	assert.NoError(suite.T(), runDef(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
-	var f interface{}
+	var f any
 	assert.NoError(suite.T(), json.Unmarshal(buf.Bytes(), &f))
-	m := f.(map[string]interface{})
-	m = m["metadata"].(map[string]interface{})
+	m := f.(map[string]any)
+	m = m["metadata"].(map[string]any)
 	suite.Equal("my-test", m["name"])
 }
 

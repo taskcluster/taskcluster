@@ -89,29 +89,29 @@ func (apiDef *APIDefinition) generateAPICode() string {
 }
 
 func (apiDef *APIDefinition) loadJSON(refRaw json.RawMessage) bool {
-	f := new(interface{})
+	f := new(any)
 	err = json.Unmarshal(refRaw, f)
 	exitOnFail(err)
-	schemaURL := (*f).(map[string]interface{})["$schema"].(string)
+	schemaURL := (*f).(map[string]any)["$schema"].(string)
 	apiDef.SchemaURL = schemaURL
 
 	schemaRaw := ReferencesServerGet(schemaURL[:len(schemaURL)-1])
 	if schemaRaw == nil {
 		panic("No schema")
 	}
-	var schema interface{}
+	var schema any
 	err = json.Unmarshal(*schemaRaw, &schema)
 	exitOnFail(err)
-	var x interface{}
+	var x any
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["name"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["name"]
 	schemaName := x.(string)
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["version"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["version"]
 	schemaVersion := int(x.(float64))
 
 	var m APIModel
