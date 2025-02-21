@@ -248,6 +248,12 @@ func TestChainOfTrustUploadAsCurrentUser(t *testing.T) {
 			ChainOfTrust:         true,
 			RunTaskAsCurrentUser: true,
 		},
+		OnExitStatus: ExitCodeHandling{
+			// This tests that OnExitStatus does not
+			// break when no task commands run, since
+			// task is resolved exception/malformed-payload
+			PurgeCaches: []int64{1234567},
+		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
