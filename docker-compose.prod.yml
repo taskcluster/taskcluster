@@ -245,6 +245,13 @@ services:
       - cron
       - worker-manager
       - worker-manager-cron
+  worker-manager-cron-expire-launch-configs:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
   worker-manager-cron-expire-errors:
     environment:
       NODE_ENV: production

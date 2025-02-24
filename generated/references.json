@@ -89,6 +89,14 @@
           "title": "Worker Last Date Active",
           "type": "string"
         },
+        "launchConfigId": {
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Configuration ID",
+          "type": "string"
+        },
         "providerId": {
           "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\nA providerId of \"none\" is used when the worker is not managed by worker manager.\n",
           "maxLength": 38,
@@ -401,6 +409,14 @@
           "title": "Kind",
           "type": "string"
         },
+        "launchConfigId": {
+          "description": "The launch config ID that was used when the error occurred.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Config ID",
+          "type": "string"
+        },
         "reported": {
           "description": "Date and time when this error was reported",
           "format": "date-time",
@@ -459,6 +475,12 @@
               "title": "Last 24 hours",
               "type": "object"
             },
+            "launchConfigId": {
+              "additionalProperties": true,
+              "description": "Breakdown by launchConfigId where available",
+              "title": "By launch config ID",
+              "type": "object"
+            },
             "title": {
               "additionalProperties": true,
               "description": "Breakdown by title",
@@ -482,7 +504,8 @@
             "daily",
             "hourly",
             "title",
-            "code"
+            "code",
+            "launchConfigId"
           ],
           "type": "object"
         },
@@ -635,6 +658,14 @@
           "description": "Date and time when this worker last changed state",
           "format": "date-time",
           "title": "Last Modified",
+          "type": "string"
+        },
+        "launchConfigId": {
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Configuration ID",
           "type": "string"
         },
         "providerId": {
@@ -1395,6 +1426,14 @@
         "kind": {
           "$ref": "worker-pool-error.json#/properties/kind"
         },
+        "launchConfigId": {
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Configuration ID",
+          "type": "string"
+        },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
         },
@@ -1471,6 +1510,38 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/pulse-worker-message.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/pulse-launch-config-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The message that is emitted when worker pool launch configs are created/changed/archived.",
+      "properties": {
+        "launchConfigId": {
+          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Launch Configuration ID",
+          "type": "string"
+        },
+        "providerId": {
+          "$ref": "worker-pool-full.json#/properties/providerId"
+        },
+        "workerPoolId": {
+          "$ref": "worker-pool-full.json#/properties/workerPoolId"
+        }
+      },
+      "required": [
+        "launchConfigId",
+        "workerPoolId",
+        "providerId"
+      ],
+      "title": "Launch Config Pulse Message",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/pulse-launch-config-message.json"
   },
   {
     "content": {
@@ -1559,6 +1630,14 @@
                 "description": "The most recent claimed task\n",
                 "title": "Most Recent Task"
               },
+              "launchConfigId": {
+                "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+                "maxLength": 38,
+                "minLength": 1,
+                "pattern": "^([a-zA-Z0-9-_]*)$",
+                "title": "Launch Configuration ID",
+                "type": "string"
+              },
               "providerId": {
                 "description": "The provider that had started the worker and responsible for managing it.\nCan be different from the provider that's currently in the worker pool config.\nA providerId of \"none\" is used when the worker is not managed by worker manager.\n",
                 "maxLength": 38,
@@ -1605,8 +1684,7 @@
             },
             "required": [
               "workerGroup",
-              "workerId",
-              "firstClaim"
+              "workerId"
             ],
             "title": "Worker",
             "type": "object"
@@ -1774,9 +1852,9 @@
             "additionalProperties": true,
             "properties": {
               "capacityPerInstance": {
-                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "disks": {
@@ -1813,6 +1891,41 @@
                 "title": "Worker Config",
                 "type": "object"
               },
+              "workerManager": {
+                "additionalProperties": false,
+                "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nGCP APIs, whereas this section is interpreted directly by Worker Manager.",
+                "properties": {
+                  "capacityPerInstance": {
+                    "description": "The number of tasks a single worker of this type can run at any given time.",
+                    "minimum": 1,
+                    "title": "Capacity Per Instance",
+                    "type": "integer"
+                  },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "number"
+                  },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
+                  },
+                  "maxCapacity": {
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "minimum": 0,
+                    "title": "Max Capacity",
+                    "type": "integer"
+                  }
+                },
+                "title": "Worker Manager Config",
+                "type": "object"
+              },
               "zone": {
                 "description": "The gcloud az this worker should be spawned in. This az must be included because many resources (such as\nmachine types and disk types) are az-specific.\n",
                 "title": "Availability Zone",
@@ -1820,7 +1933,6 @@
               }
             },
             "required": [
-              "capacityPerInstance",
               "workerConfig",
               "region",
               "zone",
@@ -1833,25 +1945,25 @@
           },
           "title": "Choices",
           "type": "array",
-          "uniqueItems": false
+          "uniqueItems": true
         },
         "lifecycle": {
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -1896,9 +2008,9 @@
                 "type": "object"
               },
               "capacityPerInstance": {
-                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "hardwareProfile": {
@@ -1917,7 +2029,7 @@
                 "type": "object"
               },
               "ignoreFailedProvisioningStates": {
-                "description": "A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that\nshould be ignored and treated as success if the VM is running.  The most common choice is `[\"OSProvisioningTimedOut\"]`, which ignores failure\nto start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.\n",
+                "description": "Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead",
                 "items": {
                   "type": "string"
                 },
@@ -2040,6 +2152,42 @@
                 "additionalProperties": false,
                 "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nAzure APIs, whereas this section is interpreted directly by Worker Manager.",
                 "properties": {
+                  "capacityPerInstance": {
+                    "description": "The number of tasks a single worker of this type can run at any given time.",
+                    "minimum": 1,
+                    "title": "Capacity Per Instance",
+                    "type": "integer"
+                  },
+                  "ignoreFailedProvisioningStates": {
+                    "description": "A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that\nshould be ignored and treated as success if the VM is running.  The most common choice is `[\"OSProvisioningTimedOut\"]`, which ignores failure\nto start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.\n",
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Ignore failed provisioningStates",
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "number"
+                  },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
+                  },
+                  "maxCapacity": {
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "minimum": 0,
+                    "title": "Max Capacity",
+                    "type": "integer"
+                  },
                   "publicIp": {
                     "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n",
                     "title": "Public IP",
@@ -2051,7 +2199,6 @@
               }
             },
             "required": [
-              "capacityPerInstance",
               "workerConfig",
               "location",
               "subnetId",
@@ -2062,25 +2209,25 @@
           },
           "title": "Choices",
           "type": "array",
-          "uniqueItems": false
+          "uniqueItems": true
         },
         "lifecycle": {
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time.\n",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
           "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -2137,9 +2284,9 @@
                 "type": "object"
               },
               "capacityPerInstance": {
-                "description": "The number of tasks a single worker of this type can run at any given time.",
+                "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                 "minimum": 1,
-                "title": "Capacity Per Instance",
+                "title": "Capacity Per Instance (Deprecated)",
                 "type": "integer"
               },
               "launchConfig": {
@@ -2175,12 +2322,46 @@
                 "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
                 "title": "Worker Config",
                 "type": "object"
+              },
+              "workerManager": {
+                "additionalProperties": false,
+                "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nAWS APIs, whereas this section is interpreted directly by Worker Manager.",
+                "properties": {
+                  "capacityPerInstance": {
+                    "description": "The number of tasks a single worker of this type can run at any given time.",
+                    "minimum": 1,
+                    "title": "Capacity Per Instance",
+                    "type": "integer"
+                  },
+                  "initialWeight": {
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "title": "Initial Weight",
+                    "type": "number"
+                  },
+                  "launchConfigId": {
+                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+                    "maxLength": 38,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9-_]*)$",
+                    "title": "Launch Configuration ID",
+                    "type": "string"
+                  },
+                  "maxCapacity": {
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "minimum": 0,
+                    "title": "Max Capacity",
+                    "type": "integer"
+                  }
+                },
+                "title": "Worker Manager Config",
+                "type": "object"
               }
             },
             "required": [
               "region",
-              "launchConfig",
-              "capacityPerInstance"
+              "launchConfig"
             ],
             "type": "object"
           },
@@ -2192,17 +2373,19 @@
           "$ref": "worker-lifecycle.json#"
         },
         "maxCapacity": {
-          "description": "Maximum capacity that should not be exceeded at any given time for the entire workerpool",
+          "description": "The maximum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Maximum Capacity",
           "type": "integer"
         },
         "minCapacity": {
-          "description": "Minimum capacity necessary to maintain at any given time for the entire workerpool",
+          "description": "The minimum amount of capacity that worker-manager should make\navailable at any given time for the entire workerpool.\n",
+          "minimum": 0,
           "title": "Minimum Capacity",
           "type": "integer"
         },
         "scalingRatio": {
-          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio of 1.0 means that 1 capacity will be added for each pending task\n",
+          "description": "The scaling ratio is a ratio of worker capacity to pending tasks - a ratio\nof 1.0 means that 1 capacity will be added for each pending task\n",
           "maximum": 1,
           "minimum": 0,
           "title": "Scaling Ratio",
@@ -12318,6 +12501,22 @@
                   ],
                   "type": "object"
                 },
+                "expire_launch_configs": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
                 "expire_worker_pools": {
                   "additionalProperties": false,
                   "properties": {
@@ -12438,6 +12637,7 @@
                 "workerscanner_azure",
                 "expire_workers",
                 "expire_worker_pools",
+                "expire_launch_configs",
                 "expire_errors"
               ],
               "title": "Process settings for this service",
@@ -15017,6 +15217,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15068,6 +15274,12 @@
               "name": "workerId",
               "required": false,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -15123,6 +15335,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15174,6 +15392,12 @@
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -15229,6 +15453,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15280,6 +15510,12 @@
               "name": "workerId",
               "required": true,
               "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -15335,6 +15571,12 @@
               "summary": "Worker ID"
             },
             {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -15343,6 +15585,183 @@
           ],
           "schema": "v1/pulse-worker-removed-message.json#",
           "title": "Worker Removed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a new launch configuration is created for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-created",
+          "name": "launchConfigCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is updated for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-updated",
+          "name": "launchConfigUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is archived for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-archived",
+          "name": "launchConfigArchived",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Archived Messages",
           "type": "topic-exchange"
         }
       ],
@@ -15469,7 +15888,7 @@
             "workerPoolId"
           ],
           "category": "Worker Pools",
-          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
           "method": "delete",
           "name": "deleteWorkerPool",
           "output": "v1/worker-pool-full.json#",
@@ -15567,7 +15986,9 @@
           "output": "v1/worker-pool-error-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "launchConfigId",
+            "errorId"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
@@ -15684,6 +16105,7 @@
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "state"
           ],
           "route": "/workers/<workerPoolId>",
@@ -15738,6 +16160,7 @@
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "quarantined",
             "workerState"
           ],
