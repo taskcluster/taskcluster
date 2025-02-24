@@ -248,7 +248,10 @@ lc-max-capacity:
   description: |-
     The maximum capacity of workers of this type (launch configuration)
     that can be running at any given time.
-    This cannot exceed worker pool's `maxCapacity`.
+    This value is independent from worker pool's `maxCapacity`, which
+    controls total number of workers for the whole pool.
+    Effective max capacity for the launch config would be
+    `min(workerPool.maxCapacity, launchConfigMaxCapacity)`.
 lc-capacity-per-instance:
   title: Capacity Per Instance
   type: integer
@@ -262,8 +265,8 @@ lc-initial-weight:
   description: |-
     The initial weight of the launch configuration at the provisionining time.
     Launch configurations with higher weight will be more likely to be selected.
-    If not specified, the default weight is `0.5`.
-    Specifying a weight of `0.0` will prevent the launch configuration from being selected.
+    If not specified, the default weight is `1`.
+    Specifying a weight of `0` will prevent the launch configuration from being selected.
     Whena all launch configurations have same weight, they will be selected in a round-robin fashion.
 capacity-per-instance-deprecated:
   title: Capacity Per Instance (Deprecated)

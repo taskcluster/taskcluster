@@ -1902,7 +1902,7 @@
                     "type": "integer"
                   },
                   "initialWeight": {
-                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `1`.\nSpecifying a weight of `0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
@@ -1917,7 +1917,7 @@
                     "type": "string"
                   },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis value is independent from worker pool's `maxCapacity`, which\ncontrols total number of workers for the whole pool.\nEffective max capacity for the launch config would be\n`min(workerPool.maxCapacity, launchConfigMaxCapacity)`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"
@@ -2168,7 +2168,7 @@
                     "uniqueItems": true
                   },
                   "initialWeight": {
-                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `1`.\nSpecifying a weight of `0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
@@ -2183,7 +2183,7 @@
                     "type": "string"
                   },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis value is independent from worker pool's `maxCapacity`, which\ncontrols total number of workers for the whole pool.\nEffective max capacity for the launch config would be\n`min(workerPool.maxCapacity, launchConfigMaxCapacity)`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"
@@ -2334,7 +2334,7 @@
                     "type": "integer"
                   },
                   "initialWeight": {
-                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `0.5`.\nSpecifying a weight of `0.0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `1`.\nSpecifying a weight of `0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
                     "maximum": 1,
                     "minimum": 0,
                     "title": "Initial Weight",
@@ -2349,7 +2349,7 @@
                     "type": "string"
                   },
                   "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis cannot exceed worker pool's `maxCapacity`.",
+                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis value is independent from worker pool's `maxCapacity`, which\ncontrols total number of workers for the whole pool.\nEffective max capacity for the launch config would be\n`min(workerPool.maxCapacity, launchConfigMaxCapacity)`.",
                     "minimum": 0,
                     "title": "Max Capacity",
                     "type": "integer"

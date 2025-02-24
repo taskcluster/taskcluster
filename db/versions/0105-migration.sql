@@ -48,7 +48,6 @@ begin
   BEGIN
     truncate table worker_pool_launch_configs;
 
-    -- FOR wp IN SELECT * FROM worker_pools WHERE worker_pool_id LIKE 'proj-taskcluster/%' LOOP
     FOR wp IN SELECT * FROM worker_pools LOOP
         -- Iterate through each config in the array
         FOR config IN SELECT jsonb_array_elements(wp.config->'launchConfigs') LOOP

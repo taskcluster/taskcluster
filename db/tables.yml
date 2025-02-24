@@ -138,7 +138,6 @@ worker_pools:
   config: jsonb not null
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
-
 worker_pool_launch_configs:
   launch_config_id: text not null
   worker_pool_id: text not null
@@ -146,8 +145,6 @@ worker_pool_launch_configs:
   configuration: jsonb not null
   created: timestamp with time zone not null
   last_modified: timestamp with time zone not null
-  # should stats be included in this table or it will be updated too frequently?
-
 workers:
   worker_pool_id: text not null
   worker_group: text not null
