@@ -131,8 +131,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
-        helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
-        helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+        if (expectedWorkers > 0) {
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+        }
       });
     };
 
@@ -142,6 +144,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       scalingRatio: 1,
       launchConfigs: [defaultLaunchConfig],
     };
+
+    provisionTest('no launch configs', {
+      config: { minCapacity: 0, maxCapacity: 1, scalingRatio: 1 },
+      expectedWorkers: 0,
+    }, async workers => {
+      assert.equal(workers.length, 0);
+    });
 
     provisionTest('simple success', {
       config,
