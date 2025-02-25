@@ -13,9 +13,9 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v81/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v81/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v81/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v82/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v82/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v82/workers/generic-worker/gwconfig"
 )
 
 type S3Artifact struct {

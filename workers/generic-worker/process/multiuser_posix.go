@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"syscall"
 
-	gwruntime "github.com/taskcluster/taskcluster/v81/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v82/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
 

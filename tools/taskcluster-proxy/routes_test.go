@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/v81/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v82/clients/client-go"
 )
 
 func TestHttpRedirects(t *testing.T) {
