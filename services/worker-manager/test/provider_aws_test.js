@@ -133,10 +133,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
-        helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
-        helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+        if (expectedWorkers > 0) {
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+        }
       });
     };
+
+    provisionTest('no launch configs', {
+      config: {
+        minCapacity: 1,
+        maxCapacity: 1,
+        scalingRatio: 1,
+        lifecycle: {
+          registrationTimeout: 6000,
+        },
+      },
+      expectedWorkers: 0,
+    }, async function(workers) {
+      assert.equal(workers.length, 0);
+    });
 
     provisionTest('simple launchConfig, single worker', {
       config: {

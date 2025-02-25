@@ -289,6 +289,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker;
     };
 
+    test('provision with no launch configs', async function() {
+      const workerPool = await makeWorkerPool({
+        config: {
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+        },
+        owner: 'whatever@example.com',
+        providerData: {},
+        emailOnError: false,
+      });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 0);
+    });
+
     test('provision a simple worker', async function() {
       const worker = await provisionWorkerPool({});
 
