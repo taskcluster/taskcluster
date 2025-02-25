@@ -45,7 +45,6 @@
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
 CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);
-CREATE UNIQUE INDEX worker_pool_launch_configs_uniq_idx ON worker_pool_launch_configs USING btree (worker_pool_id, launch_config_id);
 ```
 
 ## access_tokens
@@ -544,6 +543,8 @@ CREATE TABLE worker_pool_launch_configs (
     created timestamp with time zone NOT NULL,
     last_modified timestamp with time zone NOT NULL
 );
+ALTER TABLE worker_pool_launch_configs
+    ADD CONSTRAINT worker_pool_launch_configs_pkey PRIMARY KEY (worker_pool_id, launch_config_id);
 ```
 
 ## worker_pools

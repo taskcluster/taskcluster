@@ -10,7 +10,7 @@ begin
     last_modified timestamp with time zone not null
   );
 
-  CREATE UNIQUE INDEX worker_pool_launch_configs_uniq_idx ON worker_pool_launch_configs(worker_pool_id, launch_config_id);
+  ALTER TABLE worker_pool_launch_configs ADD PRIMARY KEY (worker_pool_id, launch_config_id);
   CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs(worker_pool_id) WHERE NOT is_archived;
 
   -- utility function to create launch config id from worker pool id and config
