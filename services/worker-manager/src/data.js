@@ -4,6 +4,15 @@ import taskcluster from 'taskcluster-client';
 import { MAX_MODIFY_ATTEMPTS } from './util.js';
 import { paginateResults } from 'taskcluster-lib-api';
 
+/** @typedef {import('taskcluster-lib-postgres').Database} Database */
+
+/**
+ * Create error
+ * @param {string} message
+ * @param {string} code
+ * @param {number} statusCode
+ * @returns {Error}
+ */
 const makeError = (message, code, statusCode) => {
   const err = new Error(message);
   err.code = code;
@@ -15,6 +24,27 @@ const makeError = (message, code, statusCode) => {
 const make404 = () => makeError('Resource not found', 'ResourceNotFound', 404);
 
 export class WorkerPool {
+  /** @type {string} */
+  workerPoolId;
+  /** @type {string} */
+  providerId;
+  /** @type {string[]} */
+  previousProviderIds;
+  /** @type {string} */
+  description;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  lastModified;
+  /** @type {import('../@types/index.d.ts').WorkerPoolConfig } */
+  config;
+  /** @type {string} */
+  owner;
+  /** @type {Boolean} */
+  emailOnError;
+  /** @type {Record<string, any>} */
+  providerData;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -74,24 +104,47 @@ export class WorkerPool {
     });
   }
 
-  // Get a worker pool from the DB, or undefined if it does not exist.
+  /**
+   * Get a worker pool from the DB, or undefined if it does not exist.
+   * @param {Database} db
+   * @param {string} workerPoolId
+   * @returns {Promise<WorkerPool|undefined>}
+   */
   static async get(db, workerPoolId) {
-    return WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_capacity_and_counts_by_state(workerPoolId));
+    const [rows, stats] = await Promise.all([
+      db.fns.get_worker_pool_with_launch_configs(workerPoolId),
+      db.fns.get_worker_pool_counts_and_capacity(workerPoolId),
+    ]);
+
+    if (rows.length === 1) {
+      return WorkerPool.fromDb({
+        ...rows[0],
+        ...stats[0],
+      });
+    }
   }
 
-  // Expire worker pools with null-provider that no longer have any workers,
-  // returning the list of worker pools expired.
-  static async expire({ db, monitor }) {
+  /**
+   * Expire worker pools with null-provider that no longer have any workers,
+   * returning the list of worker pools expired.
+   *
+   * @param {{ db: Database }} options
+   */
+  static async expire({ db }) {
     const rows = await db.fns.expire_worker_pools();
     return rows.map(row => row.worker_pool_id);
   }
 
-  // Call db.create_worker_pool with the content of this instance.  This
-  // implements the usual idempotency checks and returns an error with code
-  // UNIQUE_VIOLATION when those checks fail.
+  /**
+   * Call db.create_worker_pool with the content of this instance. This
+   * implements the usual idempotency checks and returns an error with code
+   * UNIQUE_VIOLATION when those checks fail.
+   *
+   * @param {Database} db
+   */
   async create(db) {
     try {
-      await db.fns.create_worker_pool(
+      return await db.fns.create_worker_pool_with_launch_configs(
         this.workerPoolId,
         this.providerId,
         // node-pg cannot correctly encode JS arrays as JSONB
@@ -109,13 +162,14 @@ export class WorkerPool {
         throw err;
       }
       const existing = WorkerPool.fromDbRows(
-        await db.fns.get_worker_pool_with_capacity_and_counts_by_state(this.workerPoolId));
+        await db.fns.get_worker_pool_with_launch_configs(this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool does not match, so this is a "real" conflict
         throw err;
       }
     }
+    return [];
   }
 
   // Create a serializable representation of this worker pool suitable for response
@@ -130,19 +184,23 @@ export class WorkerPool {
       config: this.config,
       owner: this.owner,
       emailOnError: this.emailOnError,
-      currentCapacity: this.currentCapacity,
-      requestedCount: this.requestedCount,
-      runningCount: this.runningCount,
-      stoppingCount: this.stoppingCount,
-      stoppedCount: this.stoppedCount,
-      requestedCapacity: this.requestedCapacity,
-      runningCapacity: this.runningCapacity,
-      stoppingCapacity: this.stoppingCapacity,
-      stoppedCapacity: this.stoppedCapacity,
+      currentCapacity: this.currentCapacity ?? 0,
+      requestedCount: this.requestedCount ?? 0,
+      runningCount: this.runningCount ?? 0,
+      stoppingCount: this.stoppingCount ?? 0,
+      stoppedCount: this.stoppedCount ?? 0,
+      requestedCapacity: this.requestedCapacity ?? 0,
+      runningCapacity: this.runningCapacity ?? 0,
+      stoppingCapacity: this.stoppingCapacity ?? 0,
+      stoppedCapacity: this.stoppedCapacity ?? 0,
     };
   }
 
-  // Compare "important" fields to another worker pool (used to check idempotency)
+  /**
+   * Compare "important" fields to another worker pool (used to check idempotency)
+   *
+   * @param {WorkerPool} other
+   */
   equals(other) {
     const fields = [
       'workerPoolId',
@@ -156,7 +214,132 @@ export class WorkerPool {
   }
 }
 
+/**
+ * Stats collected for provisioning
+ */
+export class WorkerPoolStats {
+  /** @param {string} workerPoolId */
+  constructor(workerPoolId) {
+    this.workerPoolId = workerPoolId;
+    /** @type {Set<string>} */
+    this.providers = new Set([]);
+    this.existingCapacity = 0;
+    this.requestedCapacity = 0;
+    this.stoppingCapacity = 0;
+    this.quarantinedCapacity = 0;
+
+    this.totalErrors = 0;
+    this.capacityByLaunchConfig = new Map();
+    this.errorsByLaunchConfig = new Map();
+  }
+
+  forProvision() {
+    return {
+      existingCapacity: this.existingCapacity,
+      requestedCapacity: this.requestedCapacity,
+      stoppingCapacity: this.stoppingCapacity,
+    };
+  }
+
+  /** @param {Worker} worker */
+  updateFromWorker(worker) {
+    const isStopping = worker.state === Worker.states.STOPPING;
+    const isRequested = worker.state === Worker.states.REQUESTED;
+    const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+
+    if (isStopping) {
+      this.stoppingCapacity += worker.capacity;
+    } else {
+      const requestedCapacity = isRequested ? worker.capacity : 0;
+      const existingCapacity = isQuarantined ? 0 : worker.capacity;
+
+      if (isQuarantined) {
+        this.quarantinedCapacity += existingCapacity;
+      }
+
+      this.existingCapacity += existingCapacity;
+      this.requestedCapacity += requestedCapacity;
+    }
+
+    if (worker.launchConfigId) {
+      this.capacityByLaunchConfig.set(
+        worker.launchConfigId,
+        this.capacityByLaunchConfig.get(worker.launchConfigId) + 1 || 1,
+      );
+    }
+  }
+}
+
+/** @typedef {import('../@types/index.d.ts').CloudLaunchConfig} CloudLaunchConfig */
+export class WorkerPoolLaunchConfig {
+  /** @type {string} */
+  launchConfigId;
+  /** @type {string} */
+  workerPoolId;
+  /** @type {Boolean} */
+  isArchived;
+  /** @type {CloudLaunchConfig} */
+  configuration;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  lastModified;
+
+  constructor(props) {
+    Object.assign(this, props);
+  }
+
+  get initialWeight() {
+    return this.configuration?.workerManager?.initialWeight ?? 1;
+  }
+
+  static fromDb(row) {
+    return new WorkerPoolLaunchConfig({
+      launchConfigId: row.launch_config_id,
+      workerPoolId: row.worker_pool_id,
+      isArchived: row.is_archived,
+      configuration: row.configuration,
+      created: row.created,
+      lastModified: row.last_modified,
+    });
+  }
+
+  /**
+   * @param {Database} db
+   * @param {string} workerPoolId
+   * @returns {Promise<WorkerPoolLaunchConfig[]>}
+   */
+  static async load(db, workerPoolId) {
+    const isArchived = false;
+    const rows = await db.fns.get_worker_pool_launch_configs(workerPoolId, isArchived, null, null);
+    return rows.map(WorkerPoolLaunchConfig.fromDb);
+  }
+
+  // remove launch configurations that no longer have workers associated with them
+  static async expire({ db, monitor }) {
+    const rows = await db.fns.expire_worker_pool_launch_configs();
+    return rows.map(row => row.launch_config_id);
+  }
+}
+
 export class WorkerPoolError {
+  /** @type {string} */
+  errorId;
+  /** @type {string} */
+  workerPoolId;
+  /** @type {Date} */
+  reported;
+  /** @type {string} */
+  kind;
+  /** @type {string} */
+  title;
+  /** @type {string} */
+  description;
+  /** @type {Object} */
+  extra;
+  /** @type {string?} */
+  launchConfigId;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -172,6 +355,7 @@ export class WorkerPoolError {
       title: row.title,
       description: row.description,
       extra: row.extra,
+      launchConfigId: row.launch_config_id,
     });
   }
 
@@ -195,7 +379,7 @@ export class WorkerPoolError {
 
   // Get a worker pool error from the DB, or undefined if it does not exist.
   static async get(db, errorId, workerPoolId) {
-    return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error(errorId, workerPoolId));
+    return WorkerPoolError.fromDbRows(await db.fns.get_worker_pool_error_launch_config(errorId, workerPoolId));
   }
 
   // Expire worker pool errors reported before the specified time
@@ -209,20 +393,21 @@ export class WorkerPoolError {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      await db.fns.create_worker_pool_error(
+      await db.fns.create_worker_pool_error_launch_config(
         this.errorId,
         this.workerPoolId,
         this.reported,
         this.kind,
         this.title,
         this.description,
-        this.extra);
+        this.extra,
+        this.launchConfigId);
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
         throw err;
       }
       const existing = WorkerPoolError.fromDbRows(
-        await db.fns.get_worker_pool_error(this.errorId, this.workerPoolId));
+        await db.fns.get_worker_pool_error_launch_config(this.errorId, this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool error does not match, so this is a "real" conflict
@@ -242,6 +427,7 @@ export class WorkerPoolError {
       title: this.title,
       description: this.description,
       extra: this.extra,
+      launchConfigId: this.launchConfigId || undefined,
     };
   }
 
@@ -253,12 +439,52 @@ export class WorkerPoolError {
       'kind',
       'title',
       'description',
+      'launchConfigId',
     ];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
   }
 }
 
 export class Worker {
+  /** @type {string} */
+  workerPoolId;
+  /** @type {string} */
+  workerGroup;
+  /** @type {string} */
+  workerId;
+  /** @type {string} */
+  providerId;
+  /** @type {Date} */
+  created;
+  /** @type {Date} */
+  expires;
+  /** @type {string} */
+  state;
+  /** @type {Object} */
+  providerData;
+  /** @type {number} */
+  capacity;
+  /** @type {Date} */
+  lastModified;
+  /** @type {Date} */
+  lastChecked;
+  /** @type {string} */
+  etag;
+  /** @type {string} */
+  secret;
+  /** @type {Date} */
+  quarantineUntil;
+  /** @type {Array} */
+  quarantineDetails;
+  /** @type {Date} */
+  firstClaim;
+  /** @type {Array} */
+  recentTasks;
+  /** @type {Date} */
+  lastDateActive;
+  /** @type {string|null} */
+  launchConfigId;
+
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -287,6 +513,7 @@ export class Worker {
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
       lastDateActive: row.last_date_active,
+      launchConfigId: row.launch_config_id || undefined,
     });
   }
 
@@ -310,19 +537,20 @@ export class Worker {
       secret: null,
       expires: taskcluster.fromNow('1 week'),
       quarantineUntil: null,
+      launchConfigId: null,
       ...input,
     });
   }
 
   // Get a worker from the DB, or undefined if it does not exist.
   static async get(db, { workerPoolId, workerGroup, workerId }) {
-    return Worker.fromDbRows(await db.fns.get_worker_2(workerPoolId, workerGroup, workerId));
+    return Worker.fromDbRows(await db.fns.get_worker_3(workerPoolId, workerGroup, workerId));
   }
 
   // Get a queue worker from the DB, or undefined if it does not exist.
   static async getQueueWorker(db, workerPoolId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.fns.get_queue_worker_with_wm_join_2(
+      await db.fns.get_queue_worker_with_wm_data(
         workerPoolId,
         workerGroup,
         workerId,
@@ -331,39 +559,28 @@ export class Worker {
     );
   }
 
-  // Call db.get_queue_workers_with_wm_join.
-  // The response will be of the form { rows, continationToken }.
-  // If there are no workers to show, the response will have the
-  // `rows` field set to an empty array.
-  static async getWorkers(db, { workerPoolId, expires }, { query } = {}) {
+  /**
+   * db.get_queue_workers_with_wm_join.
+   * The response will be of the form { rows, continationToken }.
+   * If there are no workers to show, the response will have the
+   * `rows` field set to an empty array.
+   *
+   * @param {Database} db
+   * @param {{workerPoolId?: string, expires?: Date}} params - Parameters object
+   * @param {{ workerState?: string, launchConfigId?: string, quarantined?: string }} [queryIn]
+   * @returns {Promise<{rows: Worker[], continuationToken: string}>}
+   */
+  static async getWorkers(db, { workerPoolId, expires }, queryIn = {}) {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) => {
-          if (
-            Object.keys(query).includes("workerState") &&
-            Object.values(Worker.states).includes(query.workerState)
-          ) {
-            return db.fns.get_queue_workers_with_wm_join_state(
-              workerPoolId || null,
-              expires || null,
-              size,
-              offset,
-              query.workerState,
-            );
-          }
-
-          if (query.quarantined === 'true') {
-            return db.fns.get_queue_workers_with_wm_join_quarantined_2(
-              workerPoolId || null,
-              size,
-              offset,
-            );
-          }
-
-          return db.fns.get_queue_workers_with_wm_join(
+          return db.fns.get_queue_workers_with_wm_data(
             workerPoolId || null,
             expires || null,
+            query.workerState && Object.values(Worker.states).includes(query.workerState) ? query.workerState : null,
+            query.quarantined === 'true', // only_quarantined_in
+            query.launchConfigId ?? null,
             size,
             offset,
           );
@@ -376,7 +593,7 @@ export class Worker {
     };
 
     // Fetch results
-    return fetchResults(query || {});
+    return fetchResults(queryIn || {});
   }
 
   // Expire workers,
@@ -390,7 +607,7 @@ export class Worker {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      const etag = (await db.fns.create_worker(
+      const etag = (await db.fns.create_worker_with_lc(
         this.workerPoolId,
         this.workerGroup,
         this.workerId,
@@ -402,7 +619,8 @@ export class Worker {
         this.capacity,
         this.lastModified,
         this.lastChecked,
-      ))[0].create_worker;
+        this.launchConfigId,
+      ))[0].create_worker_with_lc;
 
       return new Worker({
         workerPoolId: this.workerPoolId,
@@ -419,6 +637,7 @@ export class Worker {
         etag,
         secret: this.secret,
         quarantineUntil: null,
+        launchConfigId: this.launchConfigId,
       });
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -451,6 +670,7 @@ export class Worker {
       expires: this.expires?.toJSON(),
       state: this.state || 'standalone',
       capacity: this.capacity || 0,
+      launchConfigId: this.launchConfigId || undefined,
       lastModified: this.lastModified?.toJSON(),
       lastChecked: this.lastChecked?.toJSON(),
       firstClaim: this.firstClaim?.toJSON(),

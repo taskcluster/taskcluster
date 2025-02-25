@@ -155,7 +155,9 @@ Be sure to select the AWS provider that we created earlier.
         }
       },
       "additionalUserData": {},
-      "capacityPerInstance": 2 # How much job capacity one EC2 instance can provide.
+      "workerManager": {
+        "capacityPerInstance": 2 # How much job capacity one EC2 instance can provide.
+      },
     }
   ]
 }

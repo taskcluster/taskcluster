@@ -126,6 +126,7 @@ worker_pool_errors:
   kind: text not null
   description: text not null
   extra: jsonb
+  launch_config_id: text
 worker_pools:
   worker_pool_id: text not null
   provider_id: text not null
@@ -137,6 +138,13 @@ worker_pools:
   config: jsonb not null
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
+worker_pool_launch_configs:
+  launch_config_id: text not null
+  worker_pool_id: text not null
+  is_archived: boolean not null
+  configuration: jsonb not null
+  created: timestamp with time zone not null
+  last_modified: timestamp with time zone not null
 workers:
   worker_pool_id: text not null
   worker_group: text not null
@@ -151,6 +159,7 @@ workers:
   last_checked: timestamp with time zone not null
   secret: jsonb
   etag: uuid not null
+  launch_config_id: text
 tasks:
   task_id: text not null
   created: timestamp with time zone not null

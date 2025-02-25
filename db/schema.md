@@ -34,6 +34,7 @@
  * [`tasks`](#tasks)
  * [`tcversion`](#tcversion)
  * [`worker_pool_errors`](#worker_pool_errors)
+ * [`worker_pool_launch_configs`](#worker_pool_launch_configs)
  * [`worker_pools`](#worker_pools)
  * [`workers`](#workers)
  * [`undefined`](#undefined)
@@ -524,10 +525,26 @@ CREATE TABLE worker_pool_errors (
     kind text NOT NULL,
     title text NOT NULL,
     description text NOT NULL,
-    extra jsonb
+    extra jsonb,
+    launch_config_id text
 );
 ALTER TABLE worker_pool_errors
     ADD CONSTRAINT worker_pool_errors_pkey PRIMARY KEY (error_id);
+```
+
+## worker_pool_launch_configs
+
+```sql
+CREATE TABLE worker_pool_launch_configs (
+    launch_config_id text NOT NULL,
+    worker_pool_id text NOT NULL,
+    is_archived boolean NOT NULL,
+    configuration jsonb NOT NULL,
+    created timestamp with time zone NOT NULL,
+    last_modified timestamp with time zone NOT NULL
+);
+ALTER TABLE worker_pool_launch_configs
+    ADD CONSTRAINT worker_pool_launch_configs_pkey PRIMARY KEY (worker_pool_id, launch_config_id);
 ```
 
 ## worker_pools
@@ -565,7 +582,8 @@ CREATE TABLE workers (
     last_modified timestamp with time zone NOT NULL,
     last_checked timestamp with time zone NOT NULL,
     etag uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    secret jsonb
+    secret jsonb,
+    launch_config_id text
 );
 ALTER TABLE workers
     ADD CONSTRAINT workers_pkey PRIMARY KEY (worker_pool_id, worker_group, worker_id);
@@ -592,7 +610,10 @@ CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha51
 CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING btree (dependent_task_id) WHERE (NOT satisfied);
 CREATE INDEX tasks_task_group_id_idx ON tasks USING btree (task_group_id);
 CREATE INDEX tasks_task_group_id_unresolved_idx ON tasks USING btree (task_group_id) WHERE (NOT ever_resolved);
+CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors USING btree (worker_pool_id, launch_config_id);
 CREATE INDEX worker_pool_errors_reported_idx ON worker_pool_errors USING btree (reported);
+CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs USING btree (worker_pool_id) WHERE (NOT is_archived);
 CREATE INDEX workers_created_idx ON workers USING btree (created);
+CREATE INDEX workers_lc_idx ON workers USING btree (worker_pool_id, launch_config_id, state);
 CREATE INDEX workers_state_idx ON workers USING btree (state);
 ```

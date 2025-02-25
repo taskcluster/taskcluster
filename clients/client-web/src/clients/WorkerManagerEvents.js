@@ -17,7 +17,7 @@ export default class WorkerManagerEvents extends Client {
   // a provider can act upon it.
   /* eslint-enable max-len */
   workerPoolCreated(pattern) {
-    const entry = {"exchange":"worker-pool-created","name":"workerPoolCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-pool-created","name":"workerPoolCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -27,7 +27,7 @@ export default class WorkerManagerEvents extends Client {
   // a provider can act upon it.
   /* eslint-enable max-len */
   workerPoolUpdated(pattern) {
-    const entry = {"exchange":"worker-pool-updated","name":"workerPoolUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-pool-updated","name":"workerPoolUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -38,7 +38,7 @@ export default class WorkerManagerEvents extends Client {
   // exchange.
   /* eslint-enable max-len */
   workerPoolError(pattern) {
-    const entry = {"exchange":"worker-pool-error","name":"workerPoolError","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-error-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-pool-error","name":"workerPoolError","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-pool-error-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -47,7 +47,7 @@ export default class WorkerManagerEvents extends Client {
   // to this exchange.
   /* eslint-enable max-len */
   workerRequested(pattern) {
-    const entry = {"exchange":"worker-requested","name":"workerRequested","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-requested","name":"workerRequested","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -57,7 +57,7 @@ export default class WorkerManagerEvents extends Client {
   // successfully and is ready to claim work.
   /* eslint-enable max-len */
   workerRunning(pattern) {
-    const entry = {"exchange":"worker-running","name":"workerRunning","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-running","name":"workerRunning","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -67,7 +67,7 @@ export default class WorkerManagerEvents extends Client {
   // either terminated or stopped gracefully.
   /* eslint-enable max-len */
   workerStopped(pattern) {
-    const entry = {"exchange":"worker-stopped","name":"workerStopped","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-stopped","name":"workerStopped","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -78,7 +78,34 @@ export default class WorkerManagerEvents extends Client {
   // The reason for the removal is included in the message.
   /* eslint-enable max-len */
   workerRemoved(pattern) {
-    const entry = {"exchange":"worker-removed","name":"workerRemoved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-removed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {"exchange":"worker-removed","name":"workerRemoved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-worker-removed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a new launch configuration is created for a worker pool,
+  // a message is posted to this exchange.
+  /* eslint-enable max-len */
+  launchConfigCreated(pattern) {
+    const entry = {"exchange":"launch-config-created","name":"launchConfigCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-launch-config-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a launch configuration is updated for a worker pool,
+  // a message is posted to this exchange.
+  /* eslint-enable max-len */
+  launchConfigUpdated(pattern) {
+    const entry = {"exchange":"launch-config-updated","name":"launchConfigUpdated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-launch-config-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // Whenever a launch configuration is archived for a worker pool,
+  // a message is posted to this exchange.
+  /* eslint-enable max-len */
+  launchConfigArchived(pattern) {
+    const entry = {"exchange":"launch-config-archived","name":"launchConfigArchived","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"providerId","required":false},{"multipleWords":false,"name":"provisionerId","required":false},{"multipleWords":false,"name":"workerType","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"launchConfigId","required":false},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-launch-config-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

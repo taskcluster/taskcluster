@@ -90,7 +90,7 @@ suite(testing.suiteName(), function() {
       // this one is the same task and run, so only one record would remain
       await db.fns.queue_pending_tasks_add('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'));
       await db.fns.queue_pending_tasks_add('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'));
-      await db.fns.queue_pending_tasks_add('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'));
+      await db.fns.queue_pending_tasks_add('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('-10 seconds'));
       assert.deepEqual(
         await db.fns.queue_pending_tasks_count("tq1"),
         [{ queue_pending_tasks_count: 2 }],
@@ -1592,7 +1592,7 @@ suite(testing.suiteName(), function() {
     };
 
     helper.dbTest('no such queue worker', async function(db) {
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
@@ -1601,7 +1601,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: null,
         expires: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
@@ -1611,7 +1611,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: taskcluster.fromNow('2 hours'),
         quarantineDetails: { a: 'b' },
       });
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res.length, 1);
       assert.equal(res[0].state, null);
       assert.equal(res[0].capacity, null);
@@ -1620,13 +1620,13 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_workers_with_wm_join empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_workers_with_wm_join null options', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 1);
     });
 
@@ -1635,7 +1635,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: null,
         expires: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_workers_with_wm_join(new Date(), null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1644,7 +1644,7 @@ suite(testing.suiteName(), function() {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
       });
-      const res = await db.fns.get_queue_workers_with_wm_join(new Date(), null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1652,7 +1652,7 @@ suite(testing.suiteName(), function() {
       for (let i = 0; i < 10; i++) {
         await create(db, { taskQueueId: `prov/w/${i}` });
       }
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 10);
       assert.equal(res[3].worker_pool_id, 'prov/w/3');
       assert.equal(res[4].worker_pool_id, 'prov/w/4');
@@ -1665,7 +1665,7 @@ suite(testing.suiteName(), function() {
       }
       let results = [];
       while (true) {
-        const res = await db.fns.get_queue_workers_with_wm_join(null, null, 2, results.length);
+        const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, 2, results.length);
         if (res.length === 0) {
           break;
         }
@@ -1679,12 +1679,12 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_workers_with_wm_join_state empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join_state(null, null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join_state(null, null, null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_workers_with_wm_join_quarantined_2 empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join_quarantined_2(null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join_quarantined_2(null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1712,7 +1712,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1731,7 +1731,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1756,7 +1756,7 @@ suite(testing.suiteName(), function() {
         });
       }
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res[0].expires, expireses[1]);
     });
 
@@ -1800,7 +1800,7 @@ suite(testing.suiteName(), function() {
 
       for (let task of tasks) {
         await db.fns.queue_worker_task_seen('prov/wt', 'wg', 'wi', task);
-        res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+        res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
         const recentTasks = res[0].recent_tasks;
         assert.deepEqual(recentTasks[recentTasks.length - 1], task);
       }
@@ -1816,7 +1816,7 @@ suite(testing.suiteName(), function() {
       });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 1);
-      res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 0);
     });
 
@@ -1827,7 +1827,7 @@ suite(testing.suiteName(), function() {
       });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 0);
-      res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 1);
     });
   });

@@ -1,7 +1,9 @@
 {
   "launchConfigs": [
     {
-      "capacityPerInstance": 1,
+      "workerManager": {
+        "capacityPerInstance": 1
+      },
       "location": "westus",
       "subnetId": "/subscriptions/your-subscription-id/resourceGroups/your-resource-group-name/providers/Microsoft.Network/virtualNetworks/your-vnet-name/subnets/your-subnet-name",
       "hardwareProfile": {

@@ -14,7 +14,8 @@ import tcdb from 'taskcluster-db';
 import { Provisioner } from './provisioner.js';
 import { Providers } from './providers/index.js';
 import { WorkerScanner } from './worker-scanner.js';
-import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
+import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -56,6 +57,18 @@ let load = loader({
         const expired = await WorkerPool.expire({ db, monitor });
         for (let workerPoolId of expired) {
           monitor.info(`deleted expired worker pool ${workerPoolId}`);
+        }
+      });
+    },
+  },
+
+  expireLaunchConfigs: {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({ cfg, monitor, db }, ownName) => {
+      return monitor.childMonitor('expireLaunchConfigs').oneShot(ownName, async () => {
+        const expired = await WorkerPoolLaunchConfig.expire({ db, monitor });
+        for (let launchConfigId of expired) {
+          monitor.info(`deleted expired worker pool launch config ${launchConfigId}`);
         }
       });
     },
@@ -183,10 +196,15 @@ let load = loader({
     setup: async ({ cfg, schemaset }) => await schemaset.validator(cfg.taskcluster.rootUrl),
   },
 
+  launchConfigSelector: {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }) => new LaunchConfigSelector({ db, monitor }),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator'],
-    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator }) =>
-      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator }),
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator', 'launchConfigSelector'],
+    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator, launchConfigSelector }) =>
+      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator, launchConfigSelector }),
   },
 
   azureProviderIds: {
@@ -241,16 +259,14 @@ let load = loader({
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'providers', 'notify', 'reference', 'db'],
-    setup: async ({ cfg, monitor, providers, notify, reference, db }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'notify', 'db'],
+    setup: async ({ cfg, monitor, providers, notify, db }, ownName) => {
       return new Provisioner({
         ownName,
         monitor: monitor.childMonitor('provisioner'),
         providers,
         notify,
         db,
-        reference,
-        rootUrl: cfg.taskcluster.rootUrl,
         iterateConf: cfg.app.provisionerIterateConfig || {},
       });
     },

@@ -27,9 +27,27 @@ export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
  * properly by never returning a failed provider.
  */
 export class Providers {
-  async setup({ cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher }) {
+  /** @type {Record<string, import('./provider.js').Provider>} */
+  _providers = {};
+
+  /**
+   * @param {{
+   *   cfg: Record<string, any>,
+   *   monitor: object,
+   *   notify: object,
+   *   db: import('taskcluster-lib-postgres').Database,
+   *   estimator: import('../estimator.js').Estimator,
+   *   Worker: import('../data.js').Worker,
+   *   WorkerPoolError: import('../data.js').WorkerPoolError,
+   *   validator: Function,
+   *   publisher: import('taskcluster-lib-pulse').PulsePublisher,
+   *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+   * }} opts
+   */
+  async setup({
+    cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
+  }) {
     this.monitor = monitor;
-    this._providers = {};
 
     if (cfg.providers['null-provider']) {
       throw new Error('Explicit configuration of the null-provider providerId is not allowed');
@@ -54,9 +72,10 @@ export class Providers {
         Worker,
         WorkerPoolError,
         validator,
-        providerConfig,
         providerType: providerConfig.providerType,
         publisher,
+        launchConfigSelector,
+        providerConfig, // used in testing provider
       });
       this._providers[providerId] = provider;
 
@@ -68,9 +87,14 @@ export class Providers {
     return this;
   }
 
-  // Try *once* to set up the provider, returning either with success or
-  // having marked the provider as `provider.setupFailed = true` with a
-  // retry scheduled.
+  /**
+   * Try *once* to set up the provider, returning either with success or
+   * having marked the provider as `provider.setupFailed = true` with a
+   * retry scheduled.
+   *
+   * @param {string} providerId
+   * @param {import('./provider.js').Provider} provider
+   */
   async setupProvider(providerId, provider) {
     try {
       await provider.setup();
@@ -94,6 +118,8 @@ export class Providers {
 
   /**
    * Run the async callback for all providers that have been setup successfully
+   *
+   * @param {Function} cb
    */
   forAll(cb) {
     return Promise.all(
@@ -104,6 +130,8 @@ export class Providers {
 
   /**
    * Return true if this providerId is defined (regardless of whether its setup failed)
+   *
+   * @param {string} providerId
    */
   has(providerId) {
     return Boolean(this._providers[providerId]);
@@ -113,12 +141,16 @@ export class Providers {
    * Get the named provider instance.  If no such provider exists, this returns null;
    * if the provider is not yet set up, it returns an object with `{setupFailed: true}`
    * It is up to the caller to verify this property.
+   *
+   * @param {string} providerId
+   * @returns {import('./provider.js').Provider}
    */
   get(providerId) {
     const p = this._providers[providerId];
     if (p && p.setupFailed) {
       // If setup failed, we do not return the provider, but just an empty object.  This
       // avoids mistakes where the caller does not check for failed setup.
+      // @ts-ignore
       return { setupFailed: true };
     }
     return p;

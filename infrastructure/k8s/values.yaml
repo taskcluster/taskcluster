@@ -206,6 +206,9 @@ worker_manager:
     expire_worker_pools:
       cpu: 800m
       memory: 500Mi
+    expire_launch_configs:
+      cpu: 50m
+      memory: 100Mi
     expire_errors:
       cpu: 800m
       memory: 500Mi

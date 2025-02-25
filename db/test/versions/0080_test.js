@@ -32,7 +32,7 @@ suite(testing.suiteName(), function () {
     }
     // create same worker with multiple queue ids
     const workerPoolIds = ['prov/w/1', 'some/other/pool', 'extra/pool'];
-    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.fns.create_worker(
+    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.deprecatedFns.create_worker(
       pool,
       `wg-${idx}`,
       'worker-1',
@@ -47,12 +47,12 @@ suite(testing.suiteName(), function () {
     )));
 
     await helper.upgradeTo(PREV_VERSION);
-    const res = await queueDb.fns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);
+    const res = await queueDb.deprecatedFns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);
     // older implementation will include same worker that exists in `workers` table with two different `worker_pool_id`
     assert.equal(res.length, 3);
 
     await helper.upgradeTo(THIS_VERSION);
-    const res2 = await queueDb.fns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);
+    const res2 = await queueDb.deprecatedFns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);
     // new implementation will include only workers with the same `worker_pool_id`
     assert.equal(res2.length, 1);
   });

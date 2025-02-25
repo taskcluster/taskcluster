@@ -9,6 +9,8 @@ import { ApiError, Provider } from './provider.js';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
 
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
 export class GoogleProvider extends Provider {
 
   constructor({
@@ -189,8 +191,12 @@ export class GoogleProvider extends Provider {
     }
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -211,14 +217,11 @@ export class GoogleProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = [];
-    while (toSpawn > 0) {
-      const cfg = _.sample(workerPool.config.launchConfigs);
-      cfgs.push(cfg);
-      toSpawn -= cfg.capacityPerInstance;
-    }
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
-    await Promise.all(cfgs.map(async cfg => {
+    await Promise.all(cfgs.map(async launchConfig => {
+      const cfg = launchConfig.configuration;
+
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
@@ -235,6 +238,7 @@ export class GoogleProvider extends Provider {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
         'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+        'launch-config-id': launchConfig.launchConfigId,
       };
       let op;
 
@@ -264,7 +268,7 @@ export class GoogleProvider extends Provider {
           zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
-            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'capacityPerInstance']),
+            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'workerManager', 'capacityPerInstance']),
             name: instanceName,
             labels: {
               ...(cfg.labels || {}),
@@ -324,6 +328,7 @@ export class GoogleProvider extends Provider {
             extra: {
               config: cfg,
             },
+            launchConfigId: launchConfig.launchConfigId,
           });
         }
         return;
@@ -336,7 +341,7 @@ export class GoogleProvider extends Provider {
         workerId: op.targetId,
         expires: taskcluster.fromNow('1 week'),
         state: Worker.states.REQUESTED,
-        capacity: cfg.capacityPerInstance,
+        capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
         providerData: {
           project: this.project,
           zone: cfg.zone,
@@ -349,6 +354,7 @@ export class GoogleProvider extends Provider {
           queueInactivityTimeout,
           workerConfig: cfg.workerConfig || {},
         },
+        launchConfigId: launchConfig.launchConfigId,
       });
       await worker.create(this.db);
       await this.onWorkerRequested({ worker, terminateAfter });
