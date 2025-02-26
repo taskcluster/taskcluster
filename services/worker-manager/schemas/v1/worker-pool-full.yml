@@ -58,47 +58,47 @@ properties:
     type: boolean
     description: If true, the owner should be emailed on provisioning errors
   currentCapacity:
-    title: Current Capacity
+    title: Current Capacity (deprecated)
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool that are currently not "stopped"
   requestedCount:
-    title: Requested Worker Count
+    title: Requested Worker Count (deprecated)
     type: integer
     minimum: 0
     description: Total worker count in "requested" state for this worker pool
   runningCount:
-    title: Running Worker Count
+    title: Running Worker Count (deprecated)
     type: integer
     minimum: 0
     description: Total worker count in "running" state for this worker pool
   stoppingCount:
-    title: Stopping Worker Count
+    title: Stopping Worker Count (deprecated)
     type: integer
     minimum: 0
     description: Total worker count in "stopping" state for this worker pool
   stoppedCount:
-    title: Stopped Worker Count
+    title: Stopped Worker Count (deprecated)
     type: integer
     minimum: 0
     description: Total worker count in "stopped" state for this worker pool
   requestedCapacity:
-    title: Requested Worker Capacity
+    title: Requested Worker Capacity (deprecated)
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool with state "requested"
   runningCapacity:
-    title: Running Worker Capacity
+    title: Running Worker Capacity (deprecated)
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool with state "running"
   stoppingCapacity:
-    title: Stopping Worker Capacity
+    title: Stopping Worker Capacity (deprecated)
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool with state "stopping"
   stoppedCapacity:
-    title: Stopped Worker Capacity
+    title: Stopped Worker Capacity (deprecated)
     type: integer
     minimum: 0
     description: Total capacity available across all workers for this worker pool with state "stopped"

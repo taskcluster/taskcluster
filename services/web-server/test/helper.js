@@ -461,6 +461,8 @@ const stubbedClients = () => {
       fake: {
         workerPool: async workerPoolId => workerPools.get(workerPoolId),
         listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
+        listWorkerPoolsStats: async ({ limit = 1000 }) => ({
+          workerPoolsStats: [...workerPools.values()].slice(0, limit) }),
         deleteWorkerPool: async workerPoolId => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);

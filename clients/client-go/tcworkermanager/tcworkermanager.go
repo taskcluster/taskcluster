@@ -285,6 +285,47 @@ func (workerManager *WorkerManager) ListWorkerPools_SignedURL(continuationToken,
 	return (&cd).SignedURL("/worker-pools", v, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// # Get the stats for all worker pools - number of requested, running, stopping and stopped capacity
+//
+// Required scopes:
+//
+//	worker-manager:list-worker-pools
+//
+// See #listWorkerPoolsStats
+func (workerManager *WorkerManager) ListWorkerPoolsStats(continuationToken, limit string) (*WorkerPoolListStats, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pools/stats", new(WorkerPoolListStats), v)
+	return responseObject.(*WorkerPoolListStats), err
+}
+
+// Returns a signed URL for ListWorkerPoolsStats, valid for the specified duration.
+//
+// Required scopes:
+//
+//	worker-manager:list-worker-pools
+//
+// See ListWorkerPoolsStats for more details.
+func (workerManager *WorkerManager) ListWorkerPoolsStats_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pools/stats", v, duration)
+}
+
 // Report an error that occurred on a worker.  This error will be included
 // with the other errors in `listWorkerPoolErrors(workerPoolId)`.
 //

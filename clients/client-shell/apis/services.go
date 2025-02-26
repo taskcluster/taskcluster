@@ -2258,6 +2258,20 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "listWorkerPoolsStats",
+				Title:       "List All Worker Pools Stats",
+				Description: "Get the stats for all worker pools - number of requested, running, stopping and stopped capacity",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pools/stats",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "reportWorkerError",
 				Title:       "Report an error from a worker",
 				Description: "Report an error that occurred on a worker.  This error will be included\nwith the other errors in `listWorkerPoolErrors(workerPoolId)`.\n\nWorkers can use this endpoint to report startup or configuration errors\nthat might be associated with the worker pool configuration and thus of\ninterest to a worker-pool administrator.\n\nNOTE: errors are publicly visible.  Ensure that none of the content\ncontains secrets or other sensitive information.",

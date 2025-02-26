@@ -218,15 +218,24 @@ export class WorkerPool {
  * Stats collected for provisioning
  */
 export class WorkerPoolStats {
-  /** @param {string} workerPoolId */
-  constructor(workerPoolId) {
+  /**
+   * @param {string} workerPoolId
+   * @param {Record<string, number>} stats
+   */
+  constructor(workerPoolId, stats = {}) {
     this.workerPoolId = workerPoolId;
     /** @type {Set<string>} */
     this.providers = new Set([]);
-    this.existingCapacity = 0;
-    this.requestedCapacity = 0;
-    this.stoppingCapacity = 0;
-    this.quarantinedCapacity = 0;
+    this.existingCapacity = stats.currentCapacity ?? 0;
+    this.requestedCapacity = stats.requestedCapacity ?? 0;
+    this.stoppingCapacity = stats.stoppingCapacity ?? 0;
+    this.stoppedCapacity = stats.stoppedCapacity ?? 0;
+    this.runningCapacity = stats.runningCapacity ?? 0;
+    this.requestedCount = stats.requestedCount ?? 0;
+    this.runningCount = stats.runningCount ?? 0;
+    this.stoppingCount = stats.stoppingCount ?? 0;
+    this.stoppedCount = stats.stoppedCount ?? 0;
+    this.quarantinedCapacity = stats.quarantinedCapacity ?? 0;
 
     this.totalErrors = 0;
     this.capacityByLaunchConfig = new Map();
@@ -238,6 +247,36 @@ export class WorkerPoolStats {
       existingCapacity: this.existingCapacity,
       requestedCapacity: this.requestedCapacity,
       stoppingCapacity: this.stoppingCapacity,
+    };
+  }
+
+  /** @param {Record<string, any>} row */
+  static fromDb(row) {
+    return new WorkerPoolStats(row.worker_pool_id, {
+      currentCapacity: row.current_capacity,
+      requestedCount: row.requested_count,
+      runningCount: row.running_count,
+      stoppingCount: row.stopping_count,
+      stoppedCount: row.stopped_count,
+      requestedCapacity: row.requested_capacity,
+      runningCapacity: row.running_capacity,
+      stoppingCapacity: row.stopping_capacity,
+      stoppedCapacity: row.stopped_capacity,
+    });
+  }
+
+  serializable() {
+    return {
+      workerPoolId: this.workerPoolId,
+      currentCapacity: this.existingCapacity ?? 0,
+      requestedCount: this.requestedCount ?? 0,
+      runningCount: this.runningCount ?? 0,
+      stoppingCount: this.stoppingCount ?? 0,
+      stoppedCount: this.stoppedCount ?? 0,
+      requestedCapacity: this.requestedCapacity ?? 0,
+      runningCapacity: this.runningCapacity ?? 0,
+      stoppingCapacity: this.stoppingCapacity ?? 0,
+      stoppedCapacity: this.stoppedCapacity ?? 0,
     };
   }
 
