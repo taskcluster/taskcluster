@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v82.1.0
+
+### USERS
+
+▶ [minor]
+Worker manager introduces `listWorkerPoolsStats()` endpoint to return worker stats for all worker pools.
+Fixes UI not showing capacity for worker pools.
+
 ## v82.0.1
 
 ### WORKER-DEPLOYERS
