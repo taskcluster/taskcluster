@@ -83,6 +83,59 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	}
 }
 
+func TestD2GArtifactDoesNotExist(t *testing.T) {
+	setup(t)
+	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world > existingArtifactPath",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Artifacts: map[string]dockerworker.Artifact{
+			"existingArtifact": {
+				Path:    "existingArtifactPath",
+				Type:    "file",
+				Expires: testTime,
+			},
+			"nonExistingArtifact": {
+				Path:    "nonExistingArtifactPath",
+				Type:    "file",
+				Expires: testTime,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		// will still resolve as `completed/completed` because d2g
+		// will add the `optional` flag to the artifact during translation
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
 func TestD2GWithInvalidDockerWorkerPayload(t *testing.T) {
 	setup(t)
 	image := map[string]any{

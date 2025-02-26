@@ -78,6 +78,14 @@ type (
 		// Since: generic-worker 8.1.0
 		Name string `json:"name,omitempty"`
 
+		// If `true`, the artifact is optional. If the optional artifact doesn't exist and
+		// fails to be uploaded, the task will not resolve as `failed/failed`.
+		//
+		// Since: generic-worker 83.1.0
+		//
+		// Default:    false
+		Optional bool `json:"optional" default:"false"`
+
 		// Relative path of the file/directory from the task directory. Note this is not an absolute
 		// path as is typically used in docker-worker, since the absolute task directory name is not
 		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
@@ -1036,6 +1044,12 @@ func JSONSchema() string {
                 "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
                 "title": "Name of the artifact",
                 "type": "string"
+              },
+              "optional": {
+                "default": false,
+                "description": "If ` + "`" + `true` + "`" + `, the artifact is optional. If the optional artifact doesn't exist and\nfails to be uploaded, the task will not resolve as ` + "`" + `failed/failed` + "`" + `.\n\nSince: generic-worker 83.1.0",
+                "title": "Optional artifact",
+                "type": "boolean"
               },
               "path": {
                 "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",

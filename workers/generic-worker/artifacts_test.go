@@ -647,6 +647,31 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
+func TestMissingOptionalArtifactDoesNotFailTest(t *testing.T) {
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	payload := GenericWorkerPayload{
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     "Nonexistent/art i fact.txt",
+				Expires:  expires,
+				Type:     "file",
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
 func TestInvalidContentEncoding(t *testing.T) {
 
 	setup(t)
