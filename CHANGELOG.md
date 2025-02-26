@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v82.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Fixes an error in worker manager's provisioner when no launch configs are defined.
+
 ## v82.0.0
 
 ### WORKER-DEPLOYERS
