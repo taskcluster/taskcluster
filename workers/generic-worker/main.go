@@ -1123,6 +1123,10 @@ If you do require this feature, please do one of two things:
 				}
 				err := task.uploadArtifact(artifact)
 				if err != nil {
+					// we don't care about optional artifacts failing to upload
+					if artifact.Base().Optional {
+						return
+					}
 					uploadErrChan <- err
 				}
 				// Note - the above error only covers not being able to upload an
@@ -1131,6 +1135,10 @@ If you do require this feature, please do one of two things:
 				// here:
 				switch a := artifact.(type) {
 				case *artifacts.ErrorArtifact:
+					// we don't care about optional artifacts failing to upload
+					if a.Optional {
+						return
+					}
 					fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 					failChan <- fail
 					task.Errorf("TASK FAILURE during artifact upload: %v", fail)

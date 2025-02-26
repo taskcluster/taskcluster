@@ -313,6 +313,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 		ext := filepath.Ext(dwPayload.Artifacts[name].Path)
 		gwArt.Path = "artifact" + strconv.Itoa(i) + ext
 		gwArt.Type = dwPayload.Artifacts[name].Type
+		gwArt.Optional = true
 
 		gwArtifacts[i] = *gwArt
 	}
@@ -324,6 +325,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 		gwArt.Name = "public/dockerImage.tar.gz"
 		gwArt.Path = "image.tar.gz"
 		gwArt.Type = "file"
+		gwArt.Optional = true
 
 		gwArtifacts = append(gwArtifacts, *gwArt)
 	}

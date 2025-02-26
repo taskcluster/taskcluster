@@ -50,8 +50,9 @@ type (
 
 	// Common properties across all implementations.
 	BaseArtifact struct {
-		Name    string
-		Expires tcclient.Time
+		Name     string
+		Expires  tcclient.Time
+		Optional bool
 	}
 )
 

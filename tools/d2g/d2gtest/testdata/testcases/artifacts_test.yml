@@ -34,10 +34,12 @@ testSuite:
       artifacts:
       - expires: "2024-05-28T16:12:56.693Z"
         name: public/build.tar.gz
+        optional: true
         path: artifact0
         type: file
       - expires: "0001-01-01T00:00:00.000Z"
         name: public/fred
+        optional: true
         path: artifact1.txt
         type: file
       command:
