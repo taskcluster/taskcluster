@@ -4,13 +4,26 @@ import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const WorkerManagerWorkerPoolSummaries = new ConnectionLoader(
-    async ({ workerPoolId, filter, options }) => {
-      const raw = await workerManager.listWorkerPools(options);
-      const workerPools = sift(filter, raw.workerPools);
+    async ({ filter, options }) => {
+      const [pools, stats] = await Promise.all([
+        workerManager.listWorkerPools(options),
+        workerManager.listWorkerPoolsStats(options),
+      ]);
+
+      const workerPools = sift(filter, pools.workerPools);
+
+      const fullWorkerPools = workerPools.map((wp) => {
+        const poolStats = stats.workerPoolsStats.find((stat) => stat.workerPoolId === wp.workerPoolId) ?? {};
+
+        return {
+          ...wp,
+          ...poolStats,
+        };
+      });
 
       return {
-        ...raw,
-        items: workerPools,
+        ...fullWorkerPools,
+        items: fullWorkerPools,
       };
     },
   );

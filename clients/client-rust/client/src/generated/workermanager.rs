@@ -301,6 +301,43 @@ impl WorkerManager {
         (path, query)
     }
 
+    /// List All Worker Pools Stats
+    ///
+    /// Get the stats for all worker pools - number of requested, running, stopping and stopped capacity
+    pub async fn listWorkerPoolsStats(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listWorkerPoolsStats_details(continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listWorkerPoolsStats endpoint
+    pub fn listWorkerPoolsStats_url(&self, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolsStats_details(continuationToken, limit);
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the listWorkerPoolsStats endpoint
+    pub fn listWorkerPoolsStats_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolsStats_details(continuationToken, limit);
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listWorkerPoolsStats
+    fn listWorkerPoolsStats_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "worker-pools/stats";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Report an error from a worker
     ///
     /// Report an error that occurred on a worker.  This error will be included

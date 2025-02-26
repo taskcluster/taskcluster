@@ -19,6 +19,7 @@ export default class WorkerManager extends Client {
     this.deleteWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"delete","name":"deleteWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:manage-worker-pool:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:get-worker-pool:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","scopes":"worker-manager:list-worker-pools","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listWorkerPoolsStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPoolsStats","output":true,"query":["continuationToken","limit"],"route":"/worker-pools/stats","scopes":"worker-manager:list-worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
     this.reportWorkerError.entry = {"args":["workerPoolId"],"category":"Worker Interface","input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.workerPoolErrorStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"workerPoolErrorStats","output":true,"query":["workerPoolId"],"route":"/worker-pool-errors/stats","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit","launchConfigId","errorId"],"route":"/worker-pool-errors/<workerPoolId>","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -116,6 +117,14 @@ export default class WorkerManager extends Client {
     this.validate(this.listWorkerPools.entry, args);
 
     return this.request(this.listWorkerPools.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get the stats for all worker pools - number of requested, running, stopping and stopped capacity
+  /* eslint-enable max-len */
+  listWorkerPoolsStats(...args) {
+    this.validate(this.listWorkerPoolsStats.entry, args);
+
+    return this.request(this.listWorkerPoolsStats.entry, args);
   }
   /* eslint-disable max-len */
   // Report an error that occurred on a worker.  This error will be included

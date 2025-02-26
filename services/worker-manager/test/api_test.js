@@ -1025,6 +1025,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), { statusCode: 404 });
   });
 
+  test('worker pools stats', async function () {
+    const workerPoolId = 'wp/stats';
+    await createWorker({
+      workerPoolId,
+      providerId: 'google',
+      workerGroup: 'wg-a',
+      workerId: 's-3434',
+      created: new Date(),
+      lastModified: new Date(),
+      lastChecked: new Date(),
+      expires: taskcluster.fromNow('1 week'),
+      capacity: 1,
+      state: Worker.states.RUNNING,
+      providerData: {},
+      secret: null,
+      launchConfigId: 'lc-w1',
+    });
+
+    await helper.workerManager.createWorkerPool(workerPoolId, {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    });
+    let data = await helper.workerManager.listWorkerPoolsStats();
+
+    assert.equal(data.workerPoolsStats.length, 1);
+    assert.equal(data.workerPoolsStats[0].workerPoolId, workerPoolId);
+    assert.equal(data.workerPoolsStats[0].runningCount, 1);
+    assert.equal(data.workerPoolsStats[0].runningCapacity, 1);
+  });
+
   suite('worker creation / update / removal', function () {
     test('create a worker for a worker pool that does not exist', async function () {
       await assert.rejects(() =>

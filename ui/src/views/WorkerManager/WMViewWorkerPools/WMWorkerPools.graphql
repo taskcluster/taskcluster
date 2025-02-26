@@ -13,7 +13,6 @@ query workerPools($connection: PageConnection, $filter: JSON) {
         providerId
         description
         owner
-        config
         emailOnError
         currentCapacity
         requestedCount

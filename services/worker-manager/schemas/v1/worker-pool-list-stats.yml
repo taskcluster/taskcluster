@@ -1,0 +1,92 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool List Stats
+description: A list of worker pools stats
+type: object
+properties:
+  workerPoolsStats:
+    type: array
+    title: "Worker Pools Stats"
+    description: List of all worker pools stats
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        workerPoolId:
+          title: Worker Pool ID
+          type:           string
+          pattern:        {$const: workerpoolid-pattern}
+          description: |
+            The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+        currentCapacity:
+          title: Current Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this worker pool that are currently not "stopped"
+        requestedCount:
+          title: Requested Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "requested" state for this worker pool
+        runningCount:
+          title: Running Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "running" state for this worker pool
+        stoppingCount:
+          title: Stopping Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "stopping" state for this worker pool
+        stoppedCount:
+          title: Stopped Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "stopped" state for this worker pool
+        requestedCapacity:
+          title: Requested Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this worker pool with state "requested"
+        runningCapacity:
+          title: Running Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this worker pool with state "running"
+        stoppingCapacity:
+          title: Stopping Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this worker pool with state "stopping"
+        stoppedCapacity:
+          title: Stopped Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this worker pool with state "stopped"
+      additionalProperties: false
+      required:
+        - workerPoolId
+        - currentCapacity
+        - requestedCount
+        - runningCount
+        - stoppingCount
+        - stoppedCount
+        - requestedCapacity
+        - runningCapacity
+        - stoppingCapacity
+        - stoppedCapacity
+
+
+  continuationToken:
+    type:               string
+    title:              "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of worker-types in the worker-manager.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listWorkerPoolsStats` with `continuationToken`
+      until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+  - workerPoolsStats

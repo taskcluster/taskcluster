@@ -3,7 +3,7 @@ import slug from 'slugid';
 import assert from 'assert';
 import { ApiError, Provider } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
 /**
@@ -399,6 +399,31 @@ builder.declare({
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
+    continuationToken,
+  };
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pools/stats',
+  query: paginateResults.query,
+  name: 'listWorkerPoolsStats',
+  scopes: 'worker-manager:list-worker-pools',
+  title: 'List All Worker Pools Stats',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Pools',
+  output: 'worker-pool-list-stats.yml',
+  description: [
+    'Get the stats for all worker pools - number of requested, running, stopping and stopped capacity',
+  ].join('\n'),
+}, async function(req, res) {
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pools_counts_and_capacity(size, offset),
+  });
+  const result = {
+    workerPoolsStats: rows.map(r => WorkerPoolStats.fromDb(r).serializable()),
     continuationToken,
   };
   return res.reply(result);

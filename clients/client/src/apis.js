@@ -4116,6 +4116,24 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Worker Pools",
+          "description": "Get the stats for all worker pools - number of requested, running, stopping and stopped capacity",
+          "method": "get",
+          "name": "listWorkerPoolsStats",
+          "output": "v1/worker-pool-list-stats.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/worker-pools/stats",
+          "scopes": "worker-manager:list-worker-pools",
+          "stability": "experimental",
+          "title": "List All Worker Pools Stats",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Worker Interface",

@@ -136,6 +136,17 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkerPools"], *args, **kwargs)
 
+    async def listWorkerPoolsStats(self, *args, **kwargs):
+        """
+        List All Worker Pools Stats
+
+        Get the stats for all worker pools - number of requested, running, stopping and stopped capacity
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listWorkerPoolsStats"], *args, **kwargs)
+
     async def reportWorkerError(self, *args, **kwargs):
         """
         Report an error from a worker
@@ -414,6 +425,15 @@ class WorkerManager(AsyncBaseClient):
             'query': ['continuationToken', 'limit'],
             'route': '/worker-pools',
             'stability': 'stable',
+        },
+        "listWorkerPoolsStats": {
+            'args': [],
+            'method': 'get',
+            'name': 'listWorkerPoolsStats',
+            'output': 'v1/worker-pool-list-stats.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/worker-pools/stats',
+            'stability': 'experimental',
         },
         "listWorkers": {
             'args': ['provisionerId', 'workerType'],
