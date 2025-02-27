@@ -2,7 +2,6 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_image_versions
   - taskgraph.transforms.run
   - taskgraph.transforms.task
 
@@ -17,7 +16,7 @@ tasks:
   nodejs:
     description: nodejs lint
     worker:
-      docker-image: node:{node_version}
+      docker-image: {in-tree: ci}
     run:
       command: >-
         corepack yarn &&
@@ -27,6 +26,9 @@ tasks:
     priority: very-high
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         corepack yarn &&
@@ -34,8 +36,10 @@ tasks:
   python:
     description: python flake8
     worker:
-      docker-image: python:3.11
+      docker-image: {in-tree: ci}
     run:
       command: >-
+        python3 -m venv venv &&
+        . venv/bin/activate &&
         pip install flake8 &&
         sh test/py-lint.sh
