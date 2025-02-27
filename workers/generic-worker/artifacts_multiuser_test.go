@@ -50,6 +50,43 @@ func TestPrivilegedFileUpload(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
+func TestPrivilegedOptionalFileUploadDoesNotFailTest(t *testing.T) {
+	setup(t)
+
+	tempFile, err := os.CreateTemp(testdataDir, t.Name())
+	if err != nil {
+		t.Fatalf("Could not create temporary file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	err = fileutil.SecureFiles(tempFile.Name())
+	if err != nil {
+		t.Fatalf("Could not secure temporary file: %v", err)
+	}
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	command := helloGoodbye()
+
+	payload := GenericWorkerPayload{
+		Command:    command,
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     filepath.Join("../../../", filepath.Base(tempFile.Name())),
+				Expires:  expires,
+				Type:     "file",
+				Name:     fmt.Sprintf("public/build/%s.txt", t.Name()),
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
 func TestPrivilegedFileUploadAsCurrentUser(t *testing.T) {
 	setup(t)
 
