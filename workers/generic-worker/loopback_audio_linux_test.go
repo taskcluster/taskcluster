@@ -38,8 +38,8 @@ func TestLoopbackAudio(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	logText := LogText(t)
-	if !strings.Contains(logText, "crw-rw----") {
-		t.Fatalf("Expected log to contain 'crw-rw----', but it didn't\n%s", logText)
+	if !strings.Contains(logText, "crw-rw----+ 1 root audio") {
+		t.Fatalf("Expected log to contain 'crw-rw----+ 1 root audio', but it didn't\n%s", logText)
 	}
 }
 
