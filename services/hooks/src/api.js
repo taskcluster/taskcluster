@@ -8,6 +8,14 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { hookUtils } from './utils.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  HOOK: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
 const builder = new APIBuilder({
   title: 'Hooks Service',
   description: [
@@ -20,7 +28,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,1000}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,1000}$/,
   },
-  context: ['db', 'taskcreator', 'publisher', 'denylist'],
+  context: ['db', 'taskcreator', 'publisher', 'denylist', 'monitor'],
 });
 
 export default builder;
@@ -273,6 +281,20 @@ builder.declare({
       hook.nextScheduledDate,
       hook.triggerSchema,
     );
+
+    this.monitor.log.auditEvent({
+      service: 'hooks',
+      entity: 'hook',
+      entityId: hookId,
+      clientId: await req.clientId(),
+      action: AUDIT_ENTRY_TYPE.HOOK.CREATED,
+    });
+
+    await this.db.fns.insert_hooks_audit_history(
+      hookId,
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.HOOK.CREATED,
+    );
   } catch (err) {
     if (!err || err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -389,6 +411,20 @@ builder.declare({
     ),
   );
 
+  this.monitor.log.auditEvent({
+    service: 'hooks',
+    entity: 'hook',
+    entityId: hookId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.HOOK.UPDATED,
+  });
+
+  await this.db.fns.insert_hooks_audit_history(
+    hookId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.UPDATED,
+  );
+
   let definition = hookUtils.definition(hook);
   await this.publisher.hookUpdated({ hookGroupId, hookId });
 
@@ -416,6 +452,20 @@ builder.declare({
 
   // Remove the resource if it exists
   await this.db.fns.delete_hook(hookGroupId, hookId);
+
+  this.monitor.log.auditEvent({
+    service: 'hooks',
+    entity: 'hook',
+    entityId: hookId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.HOOK.DELETED,
+  });
+
+  await this.db.fns.insert_hooks_audit_history(
+    hookId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.DELETED,
+  );
   await this.publisher.hookDeleted({ hookGroupId, hookId });
 
   await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);

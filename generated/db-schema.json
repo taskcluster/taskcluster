@@ -2,6 +2,7 @@
   "access": {
     "auth": {
       "tables": {
+        "audit_history": "write",
         "clients": "write",
         "roles": "write"
       }
@@ -15,6 +16,7 @@
     },
     "hooks": {
       "tables": {
+        "audit_history": "write",
         "hooks": "write",
         "hooks_last_fires": "write",
         "hooks_queues": "write",
@@ -60,6 +62,7 @@
     },
     "secrets": {
       "tables": {
+        "audit_history": "write",
         "secrets": "write"
       }
     },
@@ -73,6 +76,7 @@
     },
     "worker_manager": {
       "tables": {
+        "audit_history": "write",
         "queue_workers": "read",
         "task_queues": "read",
         "worker_pool_errors": "write",
@@ -92,6 +96,13 @@
       "identity": "text not null",
       "identity_provider_id": "text not null",
       "redirect_uri": "text not null"
+    },
+    "audit_history": {
+      "action_type": "text not null",
+      "client_id": "text not null",
+      "created": "timestamp with time zone not null",
+      "entity_id": "text not null",
+      "entity_type": "text not null"
     },
     "authorization_codes": {
       "client_details": "jsonb not null",
@@ -7541,6 +7552,68 @@
       },
       "migrationScript": "begin\n\n  DROP TABLE IF EXISTS worker_pool_launch_configs;\n  CREATE TABLE worker_pool_launch_configs (\n    launch_config_id text not null,\n    worker_pool_id text not null,\n    is_archived boolean not null,\n    configuration jsonb not null,\n    created timestamp with time zone not null,\n    last_modified timestamp with time zone not null\n  );\n\n  ALTER TABLE worker_pool_launch_configs ADD PRIMARY KEY (worker_pool_id, launch_config_id);\n  CREATE INDEX worker_pool_launch_configs_active_idx ON worker_pool_launch_configs(worker_pool_id) WHERE NOT is_archived;\n\n  -- utility function to create launch config id from worker pool id and config\n  -- if workerManager.launchConfig is set it will be returned instead of generated one\n  -- this will ignore \"workerManager\" part of the config if it exists, as it can be \"dynamic\"\n  -- and allow changing maxCapacity/initialWeight without changing the id\n  CREATE OR REPLACE FUNCTION get_or_create_launch_config_id(worker_pool_id TEXT, config JSONB)\n  RETURNS TEXT AS $$\n  DECLARE\n    cfg_without_wm JSONB;\n  BEGIN\n    IF jsonb_typeof(config) = 'object' THEN\n      -- check if id is present and return if it is\n      IF (config->>'workerManager' IS NOT NULL) AND\n         (config->'workerManager'->>'launchConfigId' IS NOT NULL) THEN\n        RETURN config->'workerManager'->>'launchConfigId';\n      END IF;\n\n      cfg_without_wm := config - 'workerManager';\n    ELSE\n      cfg_without_wm := config;\n    END IF;\n\n    RETURN 'lc-' || left(md5(worker_pool_id || cfg_without_wm::text), 20);\n  END;\n  $$ LANGUAGE plpgsql;\n\n  -- migrate existing worker pools configs\n  CREATE OR REPLACE FUNCTION _migrate_worker_pools_to_launch_configs()\n  RETURNS void AS $$\n  DECLARE\n      wp RECORD;\n      config JSONB;\n      launch_config_id TEXT;\n  BEGIN\n    truncate table worker_pool_launch_configs;\n\n    FOR wp IN SELECT * FROM worker_pools LOOP\n        -- Iterate through each config in the array\n        FOR config IN SELECT jsonb_array_elements(wp.config->'launchConfigs') LOOP\n            -- Insert into the new table\n            INSERT INTO worker_pool_launch_configs (\n                launch_config_id,\n                worker_pool_id,\n                is_archived,\n                configuration,\n                created,\n                last_modified\n            ) VALUES (\n                get_or_create_launch_config_id(wp.worker_pool_id, config),\n                wp.worker_pool_id,\n                false, -- not archived by default\n                config,\n                wp.created,\n                wp.last_modified\n            );\n        END LOOP;\n    END LOOP;\n\n    -- remove launchConfigs from worker_pools configs\n    UPDATE worker_pools\n    SET config = worker_pools.config - 'launchConfigs';\n\n  END;\n  $$ LANGUAGE plpgsql;\n\n  -- migrate worker pools\n  PERFORM _migrate_worker_pools_to_launch_configs();\n  DROP FUNCTION _migrate_worker_pools_to_launch_configs();\n\n  -- workers need new field\n  alter table workers add column launch_config_id text null;\n  CREATE INDEX workers_lc_idx ON workers(worker_pool_id, launch_config_id, state);\n\n  -- errors also need to know where they are coming from\n  alter table worker_pool_errors add column launch_config_id text null;\n  CREATE INDEX worker_pool_errors_lc_idx ON worker_pool_errors(worker_pool_id, launch_config_id);\n\n  -- allow\n  GRANT select, insert, update, delete ON worker_pool_launch_configs to $db_user_prefix$_worker_manager;\n\nend\n",
       "version": 105
+    },
+    {
+      "description": "insert, fetch and purge audit history for auth, hooks and secrets",
+      "downgradeScript": "begin\n\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_auth;\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_hooks;\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_secrets;\n    REVOKE select, insert, update, delete ON audit_history FROM $db_user_prefix$_worker_manager;\n    DROP TABLE audit_history;\n\nend\n",
+      "methods": {
+        "get_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    audit_history.client_id,\n    audit_history.action_type,\n    audit_history.created\n  from audit_history\n  where audit_history.entity_id = entity_id_in\n  and audit_history.entity_type = entity_type_in\n  order by audit_history.created\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get Audit History against a entityId and entity type\n",
+          "mode": "read",
+          "returns": "table ( client_id text, action_type text, created timestamptz )",
+          "serviceName": "auth"
+        },
+        "insert_auth_audit_history": {
+          "args": "entity_id_in text, entity_type_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    entity_id_in,\n    entity_type_in,\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        },
+        "insert_hooks_audit_history": {
+          "args": "hook_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    hook_id_in,\n    'hook',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "hooks"
+        },
+        "insert_secrets_audit_history": {
+          "args": "secret_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    secret_id_in,\n    'secret',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "secrets"
+        },
+        "insert_worker_manager_audit_history": {
+          "args": "worker_pool_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    worker_pool_id_in,\n    'worker_pool',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "worker_manager"
+        },
+        "purge_audit_history": {
+          "args": "cutoff_date_in timestamptz",
+          "body": "begin\n    DELETE FROM audit_history\n    WHERE created < cutoff_date_in;\nend",
+          "deprecated": false,
+          "description": "Purge audit history entries older than the specified date\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n\n  CREATE TABLE audit_history (\n    entity_id text not null,\n    entity_type text not null,\n    client_id text not null,\n    action_type text not null,\n    created timestamptz not null\n  );\n\n  ALTER TABLE audit_history add primary key (entity_id, entity_type, created);\n\n  GRANT select, insert, update, delete ON audit_history to $db_user_prefix$_auth;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_hooks;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_secrets;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_worker_manager;\n\nend\n",
+      "version": 106
     }
   ]
 }

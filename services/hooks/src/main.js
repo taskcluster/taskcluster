@@ -31,7 +31,7 @@ const load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({ process, profile, cfg }) => MonitorManager.setup({
-      serviceName: 'github',
+      serviceName: 'hooks',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -103,7 +103,13 @@ const load = loader({
     requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
     setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient }) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: { db, taskcreator, publisher, denylist: cfg.pulse.denylist },
+      context: {
+        db,
+        taskcreator,
+        publisher,
+        denylist: cfg.pulse.denylist,
+        monitor: monitor.childMonitor('api-context'),
+      },
       schemaset,
       monitor: monitor.childMonitor('api'),
     }),

@@ -13,6 +13,9 @@ auth:
     purgeExpiredClients:
       cpu: 800m
       memory: 500Mi
+    purgeAuditHistory:
+      cpu: 50m
+      memory: 100Mi
   debug: ''
   level: notice
 built_in_workers:

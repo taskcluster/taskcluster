@@ -115,6 +115,20 @@ type AuthExpireClientsFn = {
  (params: {
  }): Promise<[{ expire_clients: number }]>;
 };
+type AuthGetAuditHistoryFn = {
+ (
+   entity_id_in: string,
+   entity_type_in: string,
+   page_size_in: number | null,
+   page_offset_in: number | null
+ ): Promise<Array<{client_id: string, action_type: string, created: Date}>>;
+ (params: {
+  entity_id_in: string;
+  entity_type_in: string;
+  page_size_in?: number | null;
+  page_offset_in?: number | null;
+ }): Promise<Array<{client_id: string, action_type: string, created: Date}>>;
+};
 type AuthGetClientFn = {
  (
    client_id_in: string
@@ -141,6 +155,20 @@ type AuthGetRolesFn = {
  (params: {
  }): Promise<Array<{role_id: string, scopes: JsonB, created: Date, description: string, last_modified: Date, etag: string}>>;
 };
+type AuthInsertAuthAuditHistoryFn = {
+ (
+   entity_id_in: string,
+   entity_type_in: string,
+   client_id_in: string,
+   action_type_in: string
+ ): Promise<void>;
+ (params: {
+  entity_id_in: string;
+  entity_type_in: string;
+  client_id_in: string;
+  action_type_in: string;
+ }): Promise<void>;
+};
 type AuthModifyRolesFn = {
  (
    roles_in: JsonB,
@@ -149,6 +177,14 @@ type AuthModifyRolesFn = {
  (params: {
   roles_in: JsonB;
   old_etag_in: string;
+ }): Promise<void>;
+};
+type AuthPurgeAuditHistoryFn = {
+ (
+   cutoff_date_in: Date
+ ): Promise<void>;
+ (params: {
+  cutoff_date_in: Date;
  }): Promise<void>;
 };
 /** @deprecated */
@@ -1017,6 +1053,18 @@ type HooksHooksEntitiesScanDeprecatedFn = {
   size: number;
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
+};
+type HooksInsertHooksAuditHistoryFn = {
+ (
+   hook_id_in: string,
+   client_id_in: string,
+   action_type_in: string
+ ): Promise<void>;
+ (params: {
+  hook_id_in: string;
+  client_id_in: string;
+  action_type_in: string;
+ }): Promise<void>;
 };
 /** @deprecated */
 type HooksLastFire3EntitiesCreateDeprecatedFn = {
@@ -4168,6 +4216,18 @@ type SecretsGetSecretsFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{name: string}>>;
 };
+type SecretsInsertSecretsAuditHistoryFn = {
+ (
+   secret_id_in: string,
+   client_id_in: string,
+   action_type_in: string
+ ): Promise<void>;
+ (params: {
+  secret_id_in: string;
+  client_id_in: string;
+  action_type_in: string;
+ }): Promise<void>;
+};
 /** @deprecated */
 type SecretsSecretsEntitiesCreateDeprecatedFn = {
  (
@@ -5550,6 +5610,18 @@ type WorkerManagerGetWorkersWithoutProviderDataDeprecatedFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, capacity: number, last_modified: Date, last_checked: Date}>>;
 };
+type WorkerManagerInsertWorkerManagerAuditHistoryFn = {
+ (
+   worker_pool_id_in: string,
+   client_id_in: string,
+   action_type_in: string
+ ): Promise<void>;
+ (params: {
+  worker_pool_id_in: string;
+  client_id_in: string;
+  action_type_in: string;
+ }): Promise<void>;
+};
 type WorkerManagerRemoveWorkerPoolPreviousProviderIdFn = {
  (
    worker_pool_id_in: string,
@@ -5953,10 +6025,13 @@ export interface DbFunctions {
   create_client: AuthCreateClientFn;
   delete_client: AuthDeleteClientFn;
   expire_clients: AuthExpireClientsFn;
+  get_audit_history: AuthGetAuditHistoryFn;
   get_client: AuthGetClientFn;
   get_clients: AuthGetClientsFn;
   get_roles: AuthGetRolesFn;
+  insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;
   modify_roles: AuthModifyRolesFn;
+  purge_audit_history: AuthPurgeAuditHistoryFn;
   update_client: AuthUpdateClientFn;
   update_client_last_used: AuthUpdateClientLastUsedFn;
 
@@ -5988,6 +6063,7 @@ export interface DbFunctions {
   get_hooks_queues: HooksGetHooksQueuesFn;
   get_last_fire: HooksGetLastFireFn;
   get_last_fires_with_task_state: HooksGetLastFiresWithTaskStateFn;
+  insert_hooks_audit_history: HooksInsertHooksAuditHistoryFn;
   update_hook: HooksUpdateHookFn;
   update_hooks_queue_bindings: HooksUpdateHooksQueueBindingsFn;
 
@@ -6102,6 +6178,7 @@ export interface DbFunctions {
   expire_secrets: SecretsExpireSecretsFn;
   get_secret: SecretsGetSecretFn;
   get_secrets: SecretsGetSecretsFn;
+  insert_secrets_audit_history: SecretsInsertSecretsAuditHistoryFn;
   upsert_secret: SecretsUpsertSecretFn;
 
   // WebServer
@@ -6153,6 +6230,7 @@ export interface DbFunctions {
   get_worker_pool_with_launch_configs: WorkerManagerGetWorkerPoolWithLaunchConfigsFn;
   get_worker_pools_counts_and_capacity: WorkerManagerGetWorkerPoolsCountsAndCapacityFn;
   get_worker_pools_with_launch_configs: WorkerManagerGetWorkerPoolsWithLaunchConfigsFn;
+  insert_worker_manager_audit_history: WorkerManagerInsertWorkerManagerAuditHistoryFn;
   remove_worker_pool_previous_provider_id: WorkerManagerRemoveWorkerPoolPreviousProviderIdFn;
   update_worker_2: WorkerManagerUpdateWorker2Fn;
   update_worker_pool_provider_data: WorkerManagerUpdateWorkerPoolProviderDataFn;

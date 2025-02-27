@@ -59,10 +59,13 @@ auth:
   azure_accounts: {}
   aws_credentials_allowed_buckets: {}
   gcp_credentials_allowed_projects: {}
+  audit_retention_days: ...
   procs:
     web:
       cpu: 10m
     purgeExpiredClients:
+      cpu: 10m
+    purgeAuditHistory:
       cpu: 10m
 built_in_workers:
   taskcluster_access_token: ...

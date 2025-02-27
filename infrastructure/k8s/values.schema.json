@@ -10,6 +10,9 @@
     "auth": {
       "additionalProperties": false,
       "properties": {
+        "audit_retention_days": {
+          "type": "string"
+        },
         "aws_credentials_allowed_buckets": {
           "oneOf": [
             {
@@ -73,6 +76,22 @@
         "procs": {
           "additionalProperties": false,
           "properties": {
+            "purgeAuditHistory": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
             "purgeExpiredClients": {
               "additionalProperties": false,
               "properties": {
@@ -112,7 +131,8 @@
           },
           "required": [
             "web",
-            "purgeExpiredClients"
+            "purgeExpiredClients",
+            "purgeAuditHistory"
           ],
           "title": "Process settings for this service",
           "type": "object"

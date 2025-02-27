@@ -10816,6 +10816,9 @@
         "auth": {
           "additionalProperties": false,
           "properties": {
+            "audit_retention_days": {
+              "type": "string"
+            },
             "aws_credentials_allowed_buckets": {
               "oneOf": [
                 {
@@ -10879,6 +10882,22 @@
             "procs": {
               "additionalProperties": false,
               "properties": {
+                "purgeAuditHistory": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
+                },
                 "purgeExpiredClients": {
                   "additionalProperties": false,
                   "properties": {
@@ -10918,7 +10937,8 @@
               },
               "required": [
                 "web",
-                "purgeExpiredClients"
+                "purgeExpiredClients",
+                "purgeAuditHistory"
               ],
               "title": "Process settings for this service",
               "type": "object"
@@ -14130,6 +14150,53 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/get-entity-history-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from getEntityHistory endpoint containing audit history entries\n",
+      "properties": {
+        "auditHistory": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "action_type": {
+                "description": "The type of action performed",
+                "type": "string"
+              },
+              "client_id": {
+                "description": "The ID of the client that performed the action",
+                "type": "string"
+              },
+              "created": {
+                "description": "Timestamp when the action occurred",
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "required": [
+              "client_id",
+              "action_type",
+              "created"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "continuationToken": {
+          "description": "Token to be used to get the next page of results",
+          "type": "string"
+        }
+      },
+      "required": [
+        "auditHistory"
+      ],
+      "title": "Get Entity History Response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/get-entity-history-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/get-client-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -14872,6 +14939,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -16362,6 +16444,21 @@
           "version": 2
         },
         {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
+        },
+        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",
@@ -16629,6 +16726,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -16955,6 +17067,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -18969,6 +19096,21 @@
           "version": 2
         },
         {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
+        },
+        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",
@@ -19278,6 +19420,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -19622,6 +19779,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -20167,6 +20339,21 @@
           "version": 2
         },
         {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
+        },
+        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",
@@ -20588,6 +20775,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -21182,6 +21384,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -21824,6 +22041,21 @@
       "serviceName": "built-in-workers",
       "types": [
         {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
+        },
+        {
           "description": "A timer for calls to aws services.",
           "fields": {
             "duration": "How long it took to resolve the request in ms.",
@@ -21987,6 +22219,21 @@
           "title": "API Method Report",
           "type": "monitor.apiMethod",
           "version": 2
+        },
+        {
+          "description": "Audit event that happens .. .",
+          "fields": {
+            "action": "Type of action: create, edit, delete, etc..",
+            "clientId": "ClientID associated with the change",
+            "entity": "Name of the entity",
+            "entityId": "Id of the entity",
+            "service": "The name of the service."
+          },
+          "level": "notice",
+          "name": "auditEvent",
+          "title": "Audit Event",
+          "type": "audit-event",
+          "version": 1
         },
         {
           "description": "A timer for calls to aws services.",
@@ -22400,6 +22647,26 @@
           },
           "stability": "stable",
           "title": "Create Client",
+          "type": "function"
+        },
+        {
+          "args": [
+            "entityType",
+            "entityId"
+          ],
+          "category": "Audit",
+          "description": "Get entity history based on entity type and entity name",
+          "method": "get",
+          "name": "getEntityHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/audit/<entityType>/<entityId>",
+          "scopes": "auth:audit-history:<entityType>",
+          "stability": "stable",
+          "title": "Get Entity History",
           "type": "function"
         },
         {

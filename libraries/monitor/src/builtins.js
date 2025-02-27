@@ -141,3 +141,19 @@ MonitorManager.register({
   description: 'An internal type for reporting malformed logging calls.',
   fields: {},
 });
+
+MonitorManager.register({
+  name: 'auditEvent',
+  title: 'Audit Event',
+  type: 'audit-event',
+  level: 'notice',
+  version: 1,
+  description: 'Audit event that happens .. .',
+  fields: {
+    service: 'The name of the service.',
+    entity: 'Name of the entity',
+    entityId: 'Id of the entity',
+    clientId: 'ClientID associated with the change',
+    action: 'Type of action: create, edit, delete, etc..',
+  },
+});

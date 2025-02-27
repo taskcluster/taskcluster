@@ -12,7 +12,7 @@ const debug = debugFactory('server');
 import exchanges from './exchanges.js';
 import ScopeResolver from './scoperesolver.js';
 import createSignatureValidator from './signaturevalidator.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster, { fromNow } from 'taskcluster-client';
 import makeSentryManager from './sentrymanager.js';
 import * as libPulse from 'taskcluster-lib-pulse';
 import googleapis from '@googleapis/iamcredentials';
@@ -139,6 +139,7 @@ const load = Loader({
           sentryManager,
           websocktunnel: cfg.app.websocktunnel,
           gcp,
+          monitor: monitor.childMonitor('api-context'),
         },
         schemaset,
         signatureValidator,
@@ -224,6 +225,15 @@ const load = Loader({
         debug('Purging expired clients');
         const [{ expire_clients: count }] = await db.fns.expire_clients();
         debug(`Purged ${count} expired clients`);
+      });
+    },
+  },
+
+  'purge-audit-history': {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({ cfg, db, monitor }, ownName) => {
+      return monitor.oneShot(ownName, async () => {
+        await db.fns.purge_audit_history(fromNow(cfg.app.auditHistoryRetention));
       });
     },
   },

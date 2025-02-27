@@ -1,0 +1,97 @@
+---
+title: Audit History
+order: 15
+---
+
+# Audit History
+
+Taskcluster provides an audit history feature that tracks changes made to key entities in the system, including clients, roles, secrets and hooks.
+This helps administrators monitor and review changes for security and compliance purposes.
+
+## Tracked Actions
+
+The audit history records the following types of actions:
+
+### Clients
+- Client creation
+- Client updates
+- Client deletion
+- Client enabled/disabled
+- Access token resets
+
+### Roles
+- Role creation
+- Role updates
+- Role deletion
+
+### Secrets
+- Secret creation
+- Secret updates
+- Secret deletion
+
+### Hooks
+- Hook creation
+- Hook updates
+- Hook deletion
+
+### Worker manager
+- Worker pool creation
+- Worker pool updates
+- Worker pool deletion
+
+## Accessing Audit History
+
+You can retrieve the audit history for an entity using the Auth service's `getEntityHistory` API endpoint:
+
+```js
+await auth.getEntityHistory(entityType, entityId, [options]);
+```
+
+Parameters:
+- `entityType`: The type of entity ("client", "role", "secret", or "hook")
+- `entityId`: The ID of the specific entity
+- `options`: Optional pagination parameters
+  - `continuationToken`: Token for paginating through results
+  - `limit`: Maximum number of entries to return
+
+The response includes:
+- `auditHistory`: Array of audit entries, each containing:
+  - `client_id`: The client that performed the action
+  - `action_type`: The type of action performed
+  - `created`: Timestamp when the action occurred
+- `continuationToken`: Token for retrieving the next page of results
+
+## Data Retention
+
+Audit history entries are automatically purged after 30 days by default. This retention period can be configured using the `auditHistoryRetentionDays` setting in the Auth service configuration.
+
+## Required Scopes
+
+To access audit history, you need the scope:
+```
+auth:audit-history:<entityType>
+```
+
+Where `entityType` matches the type of entity you want to query ("client", "role", "secret", or "hook").
+
+## Example Usage
+
+```js
+// Get audit history for a client
+const history = await auth.getEntityHistory(
+  'client',
+  'my-client-id'
+);
+
+// Get audit history for a role with pagination
+const history = await auth.getEntityHistory(
+  'role',
+  'my-role-id',
+  {
+    limit: 10,
+    continuationToken: '...'
+  }
+);
+```
+
+This provides visibility into who made what changes and when, helping with security audits and troubleshooting.
