@@ -58,7 +58,6 @@ func (lvt *LoopbackVideoTask) Start() *CommandExecutionError {
 }
 
 func (lvt *LoopbackVideoTask) Stop(err *ExecutionErrors) {
-	err.add(lvt.resetVideoDevice())
 }
 
 func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
@@ -72,26 +71,12 @@ func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("could not chmod 660 the %s device: %v", lvt.devicePath, err))
 	}
 
-	err = makeFileOrDirReadWritableForUser(false, lvt.devicePath, taskContext.User)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could make the %s device readwritable for task user: %v", lvt.devicePath, err))
-	}
-
 	err = lvt.task.setVariable("TASKCLUSTER_VIDEO_DEVICE", lvt.devicePath)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("could not set TASKCLUSTER_VIDEO_DEVICE environment variable: %v", err))
 	}
 
 	lvt.task.Infof("Loopback video device is available at %s", lvt.devicePath)
-
-	return nil
-}
-
-func (lvt *LoopbackVideoTask) resetVideoDevice() *CommandExecutionError {
-	chownErr := makeDirUnreadableForUser(lvt.devicePath, taskContext.User)
-	if chownErr != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not remove %s's access from the %s device: %v", taskContext.User.Name, lvt.devicePath, chownErr))
-	}
 
 	return nil
 }
