@@ -9,7 +9,9 @@ properties:
     type:           string
     pattern:        {$const: workerpoolid-pattern}
     description: |
-      The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+      The ID of this worker pool (of the form `provisionerId/workerType` for
+      compatibility). Worker Pool IDs beginning `test-provisioner-id/` are
+      reserved for integration testing.
   providerId:
     title: Provider
     type:           string
