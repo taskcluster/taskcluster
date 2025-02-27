@@ -207,7 +207,7 @@ builder.declare({
 
   this.monitor.log.auditEvent({
     service: 'worker-manager',
-    entity: 'worker_pool',
+    entity: 'worker-pool',
     entityId: workerPoolId,
     clientId: await req.clientId(),
     action: AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
@@ -304,7 +304,7 @@ builder.declare({
 
   this.monitor.log.auditEvent({
     service: 'worker-manager',
-    entity: 'worker_pool',
+    entity: 'worker-pool',
     entityId: workerPoolId,
     clientId: await req.clientId(),
     action: AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
@@ -382,7 +382,7 @@ builder.declare({
 
   this.monitor.log.auditEvent({
     service: 'worker-manager',
-    entity: 'worker_pool',
+    entity: 'worker-pool',
     entityId: workerPoolId,
     clientId: await req.clientId(),
     action: AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,

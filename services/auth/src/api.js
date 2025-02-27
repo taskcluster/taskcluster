@@ -352,7 +352,7 @@ builder.declare({
     ...paginateResults.query,
   },
   params: {
-    entityType: /^(client|role|secret|hook|worker_pool)$/,
+    entityType: /^(client|role|secret|hook|worker-pool)$/,
   },
   name: 'getEntityHistory',
   category: 'Audit',

@@ -285,13 +285,13 @@ builder.declare({
     this.monitor.log.auditEvent({
       service: 'hooks',
       entity: 'hook',
-      entityId: hookId,
+      entityId: `${hookGroupId}/${hookId}`,
       clientId: await req.clientId(),
       action: AUDIT_ENTRY_TYPE.HOOK.CREATED,
     });
 
     await this.db.fns.insert_hooks_audit_history(
-      hookId,
+      `${hookGroupId}/${hookId}`,
       await req.clientId(),
       AUDIT_ENTRY_TYPE.HOOK.CREATED,
     );
@@ -414,13 +414,13 @@ builder.declare({
   this.monitor.log.auditEvent({
     service: 'hooks',
     entity: 'hook',
-    entityId: hookId,
+    entityId: `${hookGroupId}/${hookId}`,
     clientId: await req.clientId(),
     action: AUDIT_ENTRY_TYPE.HOOK.UPDATED,
   });
 
   await this.db.fns.insert_hooks_audit_history(
-    hookId,
+    `${hookGroupId}/${hookId}`,
     await req.clientId(),
     AUDIT_ENTRY_TYPE.HOOK.UPDATED,
   );
@@ -456,13 +456,13 @@ builder.declare({
   this.monitor.log.auditEvent({
     service: 'hooks',
     entity: 'hook',
-    entityId: hookId,
+    entityId: `${hookGroupId}/${hookId}`,
     clientId: await req.clientId(),
     action: AUDIT_ENTRY_TYPE.HOOK.DELETED,
   });
 
   await this.db.fns.insert_hooks_audit_history(
-    hookId,
+    `${hookGroupId}/${hookId}`,
     await req.clientId(),
     AUDIT_ENTRY_TYPE.HOOK.DELETED,
   );
