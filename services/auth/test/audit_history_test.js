@@ -20,7 +20,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     }
   });
   test('get audit history', async() => {
-
     const entityType = 'client';
 
     await helper.apiClient.createClient(clientId, {
@@ -35,6 +34,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       scopes: [],
     });
 
+    const longClientId = 'test/client/id/with/slashes';
+    await helper.apiClient.createClient(longClientId, {
+      expires: taskcluster.fromNowJSON('2 days'),
+      description: 'updated description',
+      scopes: [],
+    });
+
     const audit_history = await helper.apiClient.getEntityHistory(entityType, clientId);
 
     assert.equal(audit_history.auditHistory.length, 2);
@@ -42,5 +48,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     assert.equal(audit_history.auditHistory[0].action_type, 'created');
     assert.equal(audit_history.auditHistory[1].client_id, 'static/taskcluster/root');
     assert.equal(audit_history.auditHistory[1].action_type, 'updated');
+
+    const audit_history_long = await helper.apiClient.getEntityHistory(entityType, longClientId);
+
+    assert.equal(audit_history_long.auditHistory.length, 1);
+    assert.equal(audit_history_long.auditHistory[0].client_id, 'static/taskcluster/root');
+    assert.equal(audit_history_long.auditHistory[0].action_type, 'created');
   });
 });

@@ -7614,6 +7614,23 @@
       },
       "migrationScript": "begin\n\n  CREATE TABLE audit_history (\n    entity_id text not null,\n    entity_type text not null,\n    client_id text not null,\n    action_type text not null,\n    created timestamptz not null\n  );\n\n  ALTER TABLE audit_history add primary key (entity_id, entity_type, created);\n\n  GRANT select, insert, update, delete ON audit_history to $db_user_prefix$_auth;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_hooks;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_secrets;\n  GRANT select, insert, update, delete on audit_history to $db_user_prefix$_worker_manager;\n\nend\n",
       "version": 106
+    },
+    {
+      "description": "add description here",
+      "downgradeScript": "begin\n  UPDATE audit_history SET entity_type = 'worker_pool' WHERE entity_type = 'worker-pool';\nend",
+      "methods": {
+        "insert_worker_manager_audit_history": {
+          "args": "worker_pool_id_in text, client_id_in text, action_type_in text",
+          "body": "begin\n  INSERT INTO audit_history (\n    entity_id,\n    entity_type,\n    client_id,\n    action_type,\n    created\n  ) VALUES (\n    worker_pool_id_in,\n    'worker-pool',\n    client_id_in,\n    action_type_in,\n    now()\n  );\nend;",
+          "deprecated": false,
+          "description": "Insert an audit history entry for a given entity.\n",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "worker_manager"
+        }
+      },
+      "migrationScript": "begin\n  UPDATE audit_history SET entity_type = 'worker-pool' WHERE entity_type = 'worker_pool';\nend",
+      "version": 107
     }
   ]
 }

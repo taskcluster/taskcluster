@@ -8018,7 +8018,7 @@ end
   * `client_id_in text`
   * `action_type_in text`
 * *Returns*: `void`
-* *Last defined on version*: 106
+* *Last defined on version*: 107
 
 Insert an audit history entry for a given entity.
 
@@ -8035,7 +8035,7 @@ begin
     created
   ) VALUES (
     worker_pool_id_in,
-    'worker_pool',
+    'worker-pool',
     client_id_in,
     action_type_in,
     now()
