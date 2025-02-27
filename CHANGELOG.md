@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.0.1
+
+### USERS
+
+▶ [patch] [#5438](https://github.com/taskcluster/taskcluster/issues/5438)
+Fixes hook id in audit history table.
+Changes `worker_pool` to `worker-pool` for consistency as entity type.
+
 ## v83.0.0
 
 ### USERS
