@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v82/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v83/clients/client-go"
 )
 
 type (

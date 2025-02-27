@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.0.0
+
+### USERS
+
+▶ [MAJOR] [#5438](https://github.com/taskcluster/taskcluster/issues/5438)
+Added audit history tracking for clients, roles, secrets, and hooks.
+History can be queried using `auth.getEntityHistory(type, entityId)` and is retained for 30 days.
+
 ## v82.1.0
 
 ### USERS

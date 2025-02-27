@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v82/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v82/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v82/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v83/tools/worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v83/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v83/tools/workerproto/testing"
 )
 
 func TestLoggingProtocol(t *testing.T) {

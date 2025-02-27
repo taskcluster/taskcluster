@@ -8427,21 +8427,3 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `create_worker(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz)` (compatibility guaranteed until v83.0.0)
-* `create_worker_pool(worker_pool_id_in text, provider_id_in text, previous_provider_ids_in jsonb, description_in text, config_in jsonb, created_in timestamptz, last_modified_in timestamptz, owner_in text, email_on_error_in boolean, provider_data_in jsonb)` (compatibility guaranteed until v83.0.0)
-* `create_worker_pool_error(error_id_in text, worker_pool_id_in text, reported_in timestamptz, kind_in text, title_in text, description_in text, extra_in jsonb)` (compatibility guaranteed until v83.0.0)
-* `get_non_stopped_workers_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond text, providers_filter_value text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `get_queue_worker_with_wm_join_2(task_queue_id_in text, worker_group_in text, worker_id_in text, expires_in timestamptz)` (compatibility guaranteed until v83.0.0)
-* `get_queue_workers_with_wm_join(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `get_queue_workers_with_wm_join_quarantined_2(task_queue_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `get_queue_workers_with_wm_join_state(task_queue_id_in text, expires_in timestamptz, page_size_in integer, page_offset_in integer, worker_state_in text)` (compatibility guaranteed until v83.0.0)
-* `get_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text)` (compatibility guaranteed until v83.0.0)
-* `get_worker_manager_workers(worker_pool_id_in text, worker_group_in text, worker_id_in text, state_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `get_worker_pool_error(error_id_in text, worker_pool_id_in text)` (compatibility guaranteed until v83.0.0)
-* `get_worker_pool_errors_for_worker_pool(error_id_in text, worker_pool_id_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `get_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text)` (compatibility guaranteed until v83.0.0)
-* `get_worker_pools_with_capacity_and_counts_by_state(page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v83.0.0)
-* `update_worker_pool_with_capacity_and_counts_by_state(worker_pool_id_in text, provider_id_in text, description_in text, config_in jsonb, last_modified_in timestamptz, owner_in text, email_on_error_in boolean)` (compatibility guaranteed until v83.0.0)
