@@ -31,7 +31,7 @@ task-defaults:
         git fetch {head_repository} "${{GITHUB_SHA}}"
         git checkout -f "${{GITHUB_SHA}}"
         git reset --hard "${{GITHUB_SHA}}"
-        git clean -fdx
+        git clean -fd
   worker:
     max-run-time: 600
     mounts:

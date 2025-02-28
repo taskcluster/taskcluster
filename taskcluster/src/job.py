@@ -34,7 +34,7 @@ def bare_docker_worker(config, job, taskdesc):
             "git fetch {} {} && ".format(params["head_repository"], params["head_rev"]),
             "git checkout -f {} && ".format(params["head_rev"]),
             "git reset --hard {} && ".format(params["head_rev"]),
-            "git clean -fdx && ",
+            "git clean -fd && ",
         ])
     if run.get("install"):
         command.append(run.get("install").format(**params) + " && ")

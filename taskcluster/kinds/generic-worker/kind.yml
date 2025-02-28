@@ -53,7 +53,7 @@ tasks:
         - git fetch {head_repository} %GITHUB_SHA%
         - git checkout -f %GITHUB_SHA%
         - git reset --hard %GITHUB_SHA%
-        - git clean -fdx
+        - git clean -fd
         - cd tools/worker-runner
         - go test -v ./...
   format-source:
@@ -89,7 +89,7 @@ tasks:
         - git fetch {head_repository} "${{GITHUB_SHA}}"
         - git checkout -f "${{GITHUB_SHA}}"
         - git reset --hard "${{GITHUB_SHA}}"
-        - git clean -fdx
+        - git clean -fd
         - go fmt ./...
         - git diff
         - test $(git status --porcelain | wc -l) == 0
@@ -163,7 +163,7 @@ tasks:
           git fetch {head_repository} "${{GITHUB_SHA}}"
           git checkout -f "${{GITHUB_SHA}}"
           git reset --hard "${{GITHUB_SHA}}"
-          git clean -fdx
+          git clean -fd
           cd workers/generic-worker
           go mod tidy
           git status
@@ -298,7 +298,7 @@ tasks:
         - git fetch %GITHUB_CLONE_URL% %GITHUB_SHA%
         - git checkout -f %GITHUB_SHA%
         - git reset --hard %GITHUB_SHA%
-        - git clean -fdx
+        - git clean -fd
         - cd workers\generic-worker
         - go mod tidy
         - |
