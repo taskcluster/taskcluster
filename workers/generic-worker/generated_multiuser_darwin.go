@@ -78,8 +78,8 @@ type (
 		// Since: generic-worker 8.1.0
 		Name string `json:"name,omitempty"`
 
-		// If `true`, the artifact is optional. If the optional artifact doesn't exist and
-		// fails to be uploaded, the task will not resolve as `failed/failed`.
+		// If `true`, the artifact is optional. If the file or directory
+		// doesn't exist, the artifact won't be created.
 		//
 		// Since: generic-worker 83.1.0
 		//
@@ -1086,7 +1086,7 @@ func JSONSchema() string {
               },
               "optional": {
                 "default": false,
-                "description": "If ` + "`" + `true` + "`" + `, the artifact is optional. If the optional artifact doesn't exist and\nfails to be uploaded, the task will not resolve as ` + "`" + `failed/failed` + "`" + `.\n\nSince: generic-worker 83.1.0",
+                "description": "If ` + "`" + `true` + "`" + `, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
                 "title": "Optional artifact",
                 "type": "boolean"
               },

@@ -8728,7 +8728,7 @@
               },
               "optional": {
                 "default": false,
-                "description": "If `true`, the artifact is optional. If the optional artifact doesn't exist and\nfails to be uploaded, the task will not resolve as `failed/failed`.\n\nSince: generic-worker 83.1.0",
+                "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
                 "title": "Optional artifact",
                 "type": "boolean"
               },
@@ -9226,7 +9226,7 @@
                   },
                   "optional": {
                     "default": false,
-                    "description": "If `true`, the artifact is optional. If the optional artifact doesn't exist and\nfails to be uploaded, the task will not resolve as `failed/failed`.\n\nSince: generic-worker 83.1.0",
+                    "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
                     "title": "Optional artifact",
                     "type": "boolean"
                   },
@@ -10023,7 +10023,7 @@
                   },
                   "optional": {
                     "default": false,
-                    "description": "If `true`, the artifact is optional. If the optional artifact doesn't exist and\nfails to be uploaded, the task will not resolve as `failed/failed`.\n\nSince: generic-worker 83.1.0",
+                    "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
                     "title": "Optional artifact",
                     "type": "boolean"
                   },

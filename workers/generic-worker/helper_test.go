@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -339,6 +340,7 @@ type (
 		ContentEncoding  string
 		Expires          tcclient.Time
 		SkipContentCheck bool
+		StorageType      string
 	}
 	ExpectedArtifacts map[string]ArtifactTraits
 )
@@ -547,10 +549,15 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 			continue
 		}
 		actual := unexpectedArtifacts[artifactName]
-		// link artifacts do not have content types
-		if actual.StorageType != "link" {
+		// link and error artifacts do not have content types
+		if !slices.Contains([]string{"link", "error"}, actual.StorageType) {
 			if actual.ContentType != expected.ContentType {
 				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifactName, expected.ContentType, actual.ContentType)
+			}
+		}
+		if expected.StorageType != "" {
+			if actual.StorageType != expected.StorageType {
+				t.Errorf("Artifact %s should have storage type '%v' but has '%s'", artifactName, expected.StorageType, actual.StorageType)
 			}
 		}
 		if !time.Time(expected.Expires).IsZero() {

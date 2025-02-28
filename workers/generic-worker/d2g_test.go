@@ -98,18 +98,18 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 		Command: []string{
 			"/bin/bash",
 			"-c",
-			"echo hello world > existingArtifactPath",
+			"mkdir -p SampleArtifacts/_/ && echo hello world > SampleArtifacts/_/X.txt",
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
 		Artifacts: map[string]dockerworker.Artifact{
-			"existingArtifact": {
-				Path:    "existingArtifactPath",
+			"SampleArtifacts/_/X.txt": {
+				Path:    "SampleArtifacts/_/X.txt",
 				Type:    "file",
 				Expires: testTime,
 			},
-			"nonExistingArtifact": {
-				Path:    "nonExistingArtifactPath",
+			"nonExistingArtifact.txt": {
+				Path:    "nonExistingArtifact.txt",
 				Type:    "file",
 				Expires: testTime,
 			},
@@ -123,7 +123,37 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 	case "multiuser:linux":
 		// will still resolve as `completed/completed` because d2g
 		// will add the `optional` flag to the artifact during translation
-		_ = submitAndAssert(t, td, payload, "completed", "completed")
+		taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+		expectedArtifacts := ExpectedArtifacts{
+			"SampleArtifacts/_/X.txt": {
+				Extracts: []string{
+					"hello world",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         testTime,
+			},
+			"nonExistingArtifact.txt": {
+				StorageType:      "error",
+				SkipContentCheck: true,
+			},
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+		}
+		expectedArtifacts.Validate(t, taskID, 0)
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
