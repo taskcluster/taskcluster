@@ -22,19 +22,21 @@ task-defaults:
         git --version
         go version
         go env
+        git config --global --add safe.directory "$(pwd)/taskcluster"
         if [ ! -d taskcluster/.git ]; then
-          rm -rf taskcluster
           git clone {head_repository} taskcluster
         fi
         cd taskcluster
-        git fetch {head_repository} "+${{GITHUB_SHA}}:refs/heads/X${{TASK_ID}}"
-        git checkout -f "X${{TASK_ID}}"
+        git config advice.detachedHead false
+        git fetch {head_repository} "${{GITHUB_SHA}}"
+        git checkout -f "${{GITHUB_SHA}}"
         git reset --hard "${{GITHUB_SHA}}"
-        git clean -fdx
-        git checkout -B tmp -t "X${{TASK_ID}}"
+        git clean -fd
   worker:
     max-run-time: 600
     mounts:
+      - cache-name: checkouts
+        directory: taskcluster
       - content:
           url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
         directory: '{go_version}'

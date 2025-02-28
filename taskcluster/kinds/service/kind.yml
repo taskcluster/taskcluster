@@ -20,8 +20,11 @@ task-defaults:
     taskcluster-proxy: true
     artifacts:
       - name: public
-        path: /taskcluster/artifacts
+        path: /builds/worker/checkouts/taskcluster/artifacts
         type: directory
+    caches:
+      - name: taskcluster
+        mount-point: /builds/worker/checkouts
     max-run-time: 600
     env:
       # temporary for https://github.com/taskcluster/taskcluster/issues/3665

@@ -12,6 +12,9 @@ task-defaults:
     using: bare
   worker:
     docker-image: {in-tree: browser-test}
+    caches:
+      - name: taskcluster
+        mount-point: /builds/worker/checkouts
     max-run-time: 600
 
 tasks:
