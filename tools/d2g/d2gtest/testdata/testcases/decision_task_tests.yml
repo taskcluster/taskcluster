@@ -68,14 +68,17 @@ testSuite:
       artifacts:
       - expires: "2023-10-20T10:58:21.912Z"
         name: public
+        optional: true
         path: artifact0
         type: directory
       - expires: "2022-10-27T10:58:21.912Z"
         name: public/docker-contexts
+        optional: true
         path: artifact1
         type: directory
       - expires: "0001-01-01T00:00:00.000Z"
         name: public/dockerImage.tar.gz
+        optional: true
         path: image.tar.gz
         type: file
       command:

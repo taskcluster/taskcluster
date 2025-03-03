@@ -39,8 +39,9 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
 		base := &artifacts.BaseArtifact{
-			Name:    artifact.Name,
-			Expires: artifact.Expires,
+			Name:     artifact.Name,
+			Expires:  artifact.Expires,
+			Optional: artifact.Optional,
 		}
 		// if no name given, use canonical path
 		if base.Name == "" {
@@ -71,8 +72,9 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 				}
 				subName := filepath.Join(base.Name, relativePath)
 				b := &artifacts.BaseArtifact{
-					Name:    canonicalPath(subName),
-					Expires: base.Expires,
+					Name:     canonicalPath(subName),
+					Expires:  base.Expires,
+					Optional: base.Optional,
 				}
 				switch {
 				// Issue 6488

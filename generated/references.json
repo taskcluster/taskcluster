@@ -8726,6 +8726,12 @@
                 "title": "Name of the artifact",
                 "type": "string"
               },
+              "optional": {
+                "default": false,
+                "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
+                "title": "Optional artifact",
+                "type": "boolean"
+              },
               "path": {
                 "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
                 "title": "Artifact location",
@@ -9217,6 +9223,12 @@
                     "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
                     "title": "Name of the artifact",
                     "type": "string"
+                  },
+                  "optional": {
+                    "default": false,
+                    "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
+                    "title": "Optional artifact",
+                    "type": "boolean"
                   },
                   "path": {
                     "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
@@ -10008,6 +10020,12 @@
                     "description": "Name of the artifact, as it will be published. If not set, `path` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n`public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.\nArtifact names not beginning `public/` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
                     "title": "Name of the artifact",
                     "type": "string"
+                  },
+                  "optional": {
+                    "default": false,
+                    "description": "If `true`, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
+                    "title": "Optional artifact",
+                    "type": "boolean"
                   },
                   "path": {
                     "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: `dist\\regedit.exe`. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
