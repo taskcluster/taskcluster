@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.1.0
+
+### USERS
+
+▶ [minor] [#7545](https://github.com/taskcluster/taskcluster/issues/7545)
+D2G: sets each payload artifact as `optional` so tasks won't resolve as `failed/failed` if the artifact doesn't exist, like Docker Worker does.
+
+▶ [minor] [#7545](https://github.com/taskcluster/taskcluster/issues/7545)
+Generic Worker: adds `optional` field to payload artifacts to ignore any artifact upload errors, for example, if the artifact isn't known to exist at the end of a task but you don't want the task to resolve as `failed/failed`. This makes the transition from Docker Worker --> Generic Worker (through d2g) more seamless, as Docker Worker does not resolve tasks as `failed/failed` if the artifact doesn't exist.
+
+▶ [patch] [#7411](https://github.com/taskcluster/taskcluster/issues/7411)
+Generic Worker: no longer `chown` loopback video/audio devices to the task user. Explicitly change group of the devices to `video`/`audio`, respectively, so that users in those groups may still access them.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump the go-deps group with 6 updates (84deac48d4)
+* build(deps): bump got in /clients/client in the client-node-deps group (8af8bc3d9e)
+* build(deps-dev): bump the client-web-node-deps group (6771b0038e)
+* build(deps): bump taskcluster from 79.0.0 to 83.0.1 in /taskcluster (cf16b31c9a)
+
+</details>
+
 ## v83.0.1
 
 ### USERS
