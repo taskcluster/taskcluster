@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/taskcluster/taskcluster/v83/internal/scopes"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/host"
@@ -64,11 +65,14 @@ func (lat *LoopbackAudioTask) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("loopback audio device number must be between 0 and 31, inclusive"))
 	}
 
+	if !slices.Contains(lat.task.Payload.OSGroups, "audio") {
+		lat.task.Warn("The 'audio' group is not in the list of OS groups. Consider adding so that the loopback audio devices will work as expected.")
+	}
+
 	return lat.setupAudioDevice()
 }
 
 func (lat *LoopbackAudioTask) Stop(err *ExecutionErrors) {
-	err.add(lat.resetAudioDevice())
 }
 
 func (lat *LoopbackAudioTask) setupAudioDevice() *CommandExecutionError {
@@ -84,31 +88,18 @@ func (lat *LoopbackAudioTask) setupAudioDevice() *CommandExecutionError {
 	}
 
 	for _, devicePath := range lat.devicePaths {
+		err = host.Run("/usr/bin/chgrp", "audio", devicePath)
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("could not chgrp audio the %s device: %v", devicePath, err))
+		}
+
 		out, err = host.CombinedOutput("/bin/chmod", "660", devicePath)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not chmod 660 the %s device. Output: %s. Error: %v", devicePath, out, err))
 		}
 	}
 
-	for _, devicePath := range lat.devicePaths {
-		err = makeFileOrDirReadWritableForUser(false, devicePath, taskContext.User)
-		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("could make the %s device readwritable for task user: %v", devicePath, err))
-		}
-	}
-
 	lat.task.Infof("Loopback audio devices are available at %v", lat.devicePaths)
-
-	return nil
-}
-
-func (lat *LoopbackAudioTask) resetAudioDevice() *CommandExecutionError {
-	for _, devicePath := range lat.devicePaths {
-		chownErr := makeDirUnreadableForUser(devicePath, taskContext.User)
-		if chownErr != nil {
-			return executionError(internalError, errored, fmt.Errorf("could not remove %s's access from the %s device: %v", taskContext.User.Name, devicePath, chownErr))
-		}
-	}
 
 	return nil
 }

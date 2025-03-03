@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/taskcluster/taskcluster/v83/internal/scopes"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/host"
@@ -54,11 +55,14 @@ func (lvt *LoopbackVideoTask) ReservedArtifacts() []string {
 }
 
 func (lvt *LoopbackVideoTask) Start() *CommandExecutionError {
+	if !slices.Contains(lvt.task.Payload.OSGroups, "video") {
+		lvt.task.Warn("The 'video' group is not in the list of OS groups. Consider adding so that the loopback video device will work as expected.")
+	}
+
 	return lvt.setupVideoDevice()
 }
 
 func (lvt *LoopbackVideoTask) Stop(err *ExecutionErrors) {
-	err.add(lvt.resetVideoDevice())
 }
 
 func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
@@ -67,14 +71,14 @@ func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("could not load the v4l2loopback kernel module: %v", err))
 	}
 
+	err = host.Run("/usr/bin/chgrp", "video", lvt.devicePath)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("could not chgrp video the %s device: %v", lvt.devicePath, err))
+	}
+
 	err = host.Run("/bin/chmod", "660", lvt.devicePath)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("could not chmod 660 the %s device: %v", lvt.devicePath, err))
-	}
-
-	err = makeFileOrDirReadWritableForUser(false, lvt.devicePath, taskContext.User)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could make the %s device readwritable for task user: %v", lvt.devicePath, err))
 	}
 
 	err = lvt.task.setVariable("TASKCLUSTER_VIDEO_DEVICE", lvt.devicePath)
@@ -83,15 +87,6 @@ func (lvt *LoopbackVideoTask) setupVideoDevice() *CommandExecutionError {
 	}
 
 	lvt.task.Infof("Loopback video device is available at %s", lvt.devicePath)
-
-	return nil
-}
-
-func (lvt *LoopbackVideoTask) resetVideoDevice() *CommandExecutionError {
-	chownErr := makeDirUnreadableForUser(lvt.devicePath, taskContext.User)
-	if chownErr != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not remove %s's access from the %s device: %v", taskContext.User.Name, lvt.devicePath, chownErr))
-	}
 
 	return nil
 }
