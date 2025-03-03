@@ -39,7 +39,8 @@ func TestCommandGeneration(t *testing.T) {
 	assert.NoError(err, "could not find subcommand, error: %s", err)
 
 	buf := &bytes.Buffer{}
-	subCmd.SetOutput(buf)
+	subCmd.SetOut(buf)
+	subCmd.SetErr(buf)
 
 	// execute command, server will receive request
 	cmd.SetArgs([]string{"test", "test"})

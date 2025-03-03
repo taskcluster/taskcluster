@@ -87,7 +87,8 @@ func TestFromNowEmpty(t *testing.T) {
 func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	cmd.SetOut(buf)
+	cmd.SetErr(buf)
 
 	return buf, cmd
 }
