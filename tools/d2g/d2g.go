@@ -637,6 +637,10 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
+	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
+		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_VIDEO_DEVICE")
+	}
+
 	envVarNames := []string{}
 	for envVarName := range dwPayload.Env {
 		envVarNames = append(envVarNames, envVarName)

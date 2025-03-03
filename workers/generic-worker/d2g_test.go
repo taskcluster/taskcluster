@@ -415,6 +415,110 @@ func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 	}
 }
 
+func TestD2GLoopbackVideoDeviceNonRootUserInVideoGroup(t *testing.T) {
+	setup(t)
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`groupadd -g 1001 testgroup && \
+			useradd -u 1001 -g 1001 -M -s /bin/bash testuser && \
+			usermod -aG video testuser && \
+			su -m testuser -c 'whoami && groups && \
+			ls -l "${TASKCLUSTER_VIDEO_DEVICE}" && \
+			test -r "${TASKCLUSTER_VIDEO_DEVICE}" && \
+			echo \"Access succeeded\" || { echo \"Access failed\"; exit 1; }'`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackVideo: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackVideo",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestD2GLoopbackVideoDeviceNonRootUserNotInVideoGroup(t *testing.T) {
+	setup(t)
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`groupadd -g 1001 testgroup && \
+			useradd -u 1001 -g 1001 -M -s /bin/bash testuser && \
+			su -m testuser -c 'whoami && groups && \
+			ls -l "${TASKCLUSTER_VIDEO_DEVICE}" && \
+			test -r "${TASKCLUSTER_VIDEO_DEVICE}" && \
+			echo \"Access succeeded\" || { echo \"Access failed\"; exit 1; }'`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackVideo: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackVideo",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		// This test is expected to fail because the non-root user is not in the video group
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
 func TestD2GLoopbackAudioDevice(t *testing.T) {
 	setup(t)
 	image := map[string]any{
@@ -501,6 +605,114 @@ func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestD2GLoopbackAudioDeviceNonRootUserInAudioGroup(t *testing.T) {
+	setup(t)
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`groupadd -g 1001 testgroup && \
+			useradd -u 1001 -g 1001 -M -s /bin/bash testuser && \
+			usermod -aG audio testuser && \
+			su -m testuser -c 'whoami && groups && \
+			ls -l /dev/snd && \
+			test -r /dev/snd/controlC16 \
+			-a -r /dev/snd/pcmC16D0c -a -r /dev/snd/pcmC16D0p \
+			-a -r /dev/snd/pcmC16D1c -a -r /dev/snd/pcmC16D1p && \
+			echo \"Access succeeded\" || { echo \"Access failed\"; exit 1; }'`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackAudio: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackAudio",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		_ = submitAndAssert(t, td, payload, "completed", "completed")
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
+func TestD2GLoopbackAudioDeviceNonRootUserNotInAudioGroup(t *testing.T) {
+	setup(t)
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			`groupadd -g 1001 testgroup && \
+			useradd -u 1001 -g 1001 -M -s /bin/bash testuser && \
+			su -m testuser -c 'whoami && groups && \
+			ls -l /dev/snd && \
+			test -r /dev/snd/controlC16 \
+			-a -r /dev/snd/pcmC16D0c -a -r /dev/snd/pcmC16D0p \
+			-a -r /dev/snd/pcmC16D1c -a -r /dev/snd/pcmC16D1p && \
+			echo \"Access succeeded\" || { echo \"Access failed\"; exit 1; }'`,
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Capabilities: dockerworker.Capabilities{
+			Devices: dockerworker.Devices{
+				LoopbackAudio: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = append(td.Scopes, []string{
+		"docker-worker:capability:device:loopbackAudio",
+	}...)
+	config.PublicPlatformConfig.EnableD2G(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		// This test is expected to fail because the non-root user is not in the audio group
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
