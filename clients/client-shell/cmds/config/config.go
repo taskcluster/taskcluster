@@ -115,7 +115,8 @@ func cmdConfig(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to create output file '%s', error: %s", output, err)
 		}
 		defer file.Close()
-		cmd.SetOutput(file)
+		cmd.SetOut(file)
+		cmd.SetErr(file)
 	}
 
 	// write output
