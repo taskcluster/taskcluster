@@ -647,6 +647,111 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
+func TestMissingOptionalFileArtifactDoesNotFailTest(t *testing.T) {
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	payload := GenericWorkerPayload{
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     "Nonexistent/artifact.txt",
+				Expires:  expires,
+				Type:     "file",
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+	expectedArtifacts := ExpectedArtifacts{
+		"Nonexistent/artifact.txt": {
+			StorageType:      "error",
+			SkipContentCheck: true,
+		},
+		"public/logs/live_backing.log": {
+			Extracts: []string{
+				"hello world!",
+				"goodbye world!",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
+		"public/logs/live.log": {
+			Extracts: []string{
+				"hello world!",
+				"goodbye world!",
+				"=== Task Finished ===",
+				"Exit Code: 0",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
+	}
+	expectedArtifacts.Validate(t, taskID, 0)
+}
+
+func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+
+	payload := GenericWorkerPayload{
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     "Nonexistent/dir",
+				Expires:  expires,
+				Type:     "directory",
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expectedArtifacts := ExpectedArtifacts{
+		"Nonexistent/dir": {
+			StorageType:      "error",
+			SkipContentCheck: true,
+		},
+		"public/logs/live_backing.log": {
+			Extracts: []string{
+				"hello world!",
+				"goodbye world!",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
+		"public/logs/live.log": {
+			Extracts: []string{
+				"hello world!",
+				"goodbye world!",
+				"=== Task Finished ===",
+				"Exit Code: 0",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
+	}
+	expectedArtifacts.Validate(t, taskID, 0)
+}
+
 func TestInvalidContentEncoding(t *testing.T) {
 
 	setup(t)

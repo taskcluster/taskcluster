@@ -182,6 +182,15 @@ properties:
             encoding to all the files contained in the directory.
 
             Since: generic-worker 16.2.0
+        optional:
+          title: Optional artifact
+          type: boolean
+          default: false
+          description: |-
+            If `true`, the artifact is optional. If the file or directory
+            doesn't exist, the artifact won't be created.
+
+            Since: generic-worker 83.1.0
       required:
       - type
       - path
