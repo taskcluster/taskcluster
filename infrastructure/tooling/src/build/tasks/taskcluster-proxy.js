@@ -101,7 +101,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'taskcluster-proxy-docker-push.log'),
         tag,
         utils,
         baseDir,

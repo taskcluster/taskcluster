@@ -36,8 +36,9 @@ export const pyClientRelease = async ({ dir, username, password, logfile, utils 
 
       if (logfile) {
         const logStream = fs.createWriteStream(logfile);
-        proc.stdout.pipe(logStream);
-        proc.stderr.pipe(logStream);
+        proc.stdout.pipe(logStream, { end: false });
+        proc.stderr.pipe(logStream, { end: false });
+        proc.on('close', () => logStream.end());
       }
 
       const loglines = data =>
