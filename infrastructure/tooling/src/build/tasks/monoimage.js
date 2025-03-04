@@ -100,7 +100,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       await execCommand({
         command,
         dir: sourceDir,
-        logfile: path.join(logsDir, 'docker-build.log'),
+        logfile: path.join(logsDir, 'monoimage-docker-build.log'),
         utils,
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
@@ -171,7 +171,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
         await execCommand({
           command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
           dir: dockerDir,
-          logfile: path.join(logsDir, 'docker-build-devel.log'),
+          logfile: path.join(logsDir, 'monoimage-devel-docker-build.log'),
           utils,
           env: { DOCKER_BUILDKIT: 1, ...process.env },
         });
@@ -213,7 +213,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'monoimage-docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -254,7 +254,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'monoimage-devel-docker-push.log'),
         tag,
         utils,
         baseDir,

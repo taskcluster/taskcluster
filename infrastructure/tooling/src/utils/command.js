@@ -35,8 +35,9 @@ export const execCommand = async ({
 
   if (logfile) {
     const logStream = fs.createWriteStream(logfile);
-    cp.stdout.pipe(logStream);
-    cp.stderr.pipe(logStream);
+    cp.stdout.pipe(logStream, { end: false });
+    cp.stderr.pipe(logStream, { end: false });
+    cp.on('close', () => logStream.end());
   }
 
   const stream = new Transform({
@@ -49,8 +50,9 @@ export const execCommand = async ({
       callback(null, chunk);
     },
   });
-  cp.stdout.pipe(stream);
-  cp.stderr.pipe(stream);
+  cp.stdout.pipe(stream, { end: false });
+  cp.stderr.pipe(stream, { end: false });
+  cp.on('close', () => stream.end());
   if (stdin) {
     cp.stdin.write(stdin);
     cp.stdin.end();

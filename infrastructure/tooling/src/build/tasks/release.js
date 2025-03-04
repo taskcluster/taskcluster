@@ -73,7 +73,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, '/websocktunnel-build.log'),
+        logfile: path.join(logsDir, 'websocktunnel-build.log'),
         utils,
         env: { CGO_ENABLED: '0', ...process.env },
       });
@@ -122,7 +122,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'websocktunnel-docker-push.log'),
         tag,
         utils,
         baseDir,
