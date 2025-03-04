@@ -45,7 +45,6 @@
 
 ```sql
 CREATE UNIQUE INDEX objects_upload_id_idx ON objects USING btree (upload_id) WHERE (upload_id IS NOT NULL);
-CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);
 ```
 
 ## access_tokens
@@ -346,6 +345,8 @@ CREATE TABLE queue_claimed_tasks (
     visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
+ALTER TABLE queue_claimed_tasks
+    ADD CONSTRAINT queue_claimed_tasks_pkey PRIMARY KEY (task_id, run_id, taken_until);
 ```
 
 ## queue_pending_tasks
@@ -362,6 +363,8 @@ CREATE TABLE queue_pending_tasks (
     visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
+ALTER TABLE queue_pending_tasks
+    ADD CONSTRAINT queue_pending_tasks_pkey PRIMARY KEY (task_id, run_id);
 ```
 
 ## queue_resolved_tasks
@@ -376,6 +379,8 @@ CREATE TABLE queue_resolved_tasks (
     visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
+ALTER TABLE queue_resolved_tasks
+    ADD CONSTRAINT queue_resolved_tasks_pkey PRIMARY KEY (task_id, resolution, resolved);
 ```
 
 ## queue_task_deadlines
@@ -390,6 +395,8 @@ CREATE TABLE queue_task_deadlines (
     visible timestamp with time zone NOT NULL,
     pop_receipt uuid
 );
+ALTER TABLE queue_task_deadlines
+    ADD CONSTRAINT queue_task_deadlines_pkey PRIMARY KEY (task_id, created, deadline);
 ```
 
 ## queue_workers
