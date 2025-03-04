@@ -3,6 +3,30 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.2.0
+
+### GENERAL
+
+▶ [patch] [#7541](https://github.com/taskcluster/taskcluster/issues/7541)
+Added missing primary keys for several db tables.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7552](https://github.com/taskcluster/taskcluster/issues/7552)
+D2G: use the default docker bridge network instead of the host network.
+
+▶ [minor]
+Generic Worker: when running a task through d2g, the taskcluster proxy now listens on the docker bridge instead of localhost.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump fast-azure-storage from 3.1.6 to 4.0.0 (9e093e4ff1)
+
+</details>
+
 ## v83.1.0
 
 ### USERS
