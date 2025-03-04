@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
+	"strings"
 
 	tcclient "github.com/taskcluster/taskcluster/v83/clients/client-go"
 	"github.com/taskcluster/taskcluster/v83/internal/scopes"
@@ -39,6 +41,7 @@ type TaskclusterProxyTask struct {
 	taskclusterProxy         *tcproxy.TaskclusterProxy
 	task                     *TaskRun
 	taskStatusChangeListener *TaskStatusChangeListener
+	taskclusterProxyAddress  string
 }
 
 func (l *TaskclusterProxyTask) ReservedArtifacts() []string {
@@ -57,9 +60,19 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
+	if l.task.D2GInfo != nil {
+		out, err := exec.Command("docker", "network", "inspect", "bridge", "--format", "{{ index (index .IPAM.Config 0 ) \"Gateway\"}}").Output()
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: %s", err))
+		}
+		l.taskclusterProxyAddress = strings.TrimSpace(string(out))
+	} else {
+		l.taskclusterProxyAddress = "127.0.0.1"
+	}
+
 	// Set TASKCLUSTER_PROXY_URL in the task environment
 	err := l.task.setVariable("TASKCLUSTER_PROXY_URL",
-		fmt.Sprintf("http://localhost:%d", config.TaskclusterProxyPort))
+		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, config.TaskclusterProxyPort))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
@@ -70,6 +83,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		fmt.Sprintf("queue:create-artifact:%s/%d", l.task.TaskID, l.task.RunID))
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
+		l.taskclusterProxyAddress,
 		config.TaskclusterProxyPort,
 		config.RootURL,
 		&tcclient.Credentials{

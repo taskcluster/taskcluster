@@ -26,13 +26,13 @@ type TaskclusterProxy struct {
 
 // New starts a tcproxy OS process using the executable specified, and returns
 // a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
 		"--client-id", creds.ClientID,
 		"--access-token", creds.AccessToken,
-		"--ip-address", "127.0.0.1",
+		"--ip-address", ipAddress,
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
@@ -53,7 +53,7 @@ func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, cre
 	l.Pid = l.command.Process.Pid
 	log.Printf("Started taskcluster proxy process (PID %v)", l.Pid)
 	// Just to be safe, let's make sure the port is actually active before returning.
-	err = waitForPortToBeActive(httpPort)
+	err = waitForPortToBeActive(ipAddress, httpPort)
 	return l, err
 }
 
@@ -75,10 +75,10 @@ func (l *TaskclusterProxy) Terminate() error {
 	return l.command.Process.Kill()
 }
 
-func waitForPortToBeActive(port uint16) error {
+func waitForPortToBeActive(ipAddress string, port uint16) error {
 	deadline := time.Now().Add(60 * time.Second)
 	for time.Now().Before(deadline) {
-		conn, err := net.DialTimeout("tcp", "localhost:"+strconv.Itoa(int(port)), 60*time.Second)
+		conn, err := net.DialTimeout("tcp", ipAddress+":"+strconv.Itoa(int(port)), 60*time.Second)
 		if err == nil {
 			_ = conn.Close()
 			return nil
