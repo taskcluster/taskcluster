@@ -7170,13 +7170,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-azure-storage@npm:^3.1.2":
-  version: 3.1.6
-  resolution: "fast-azure-storage@npm:3.1.6"
+"fast-azure-storage@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "fast-azure-storage@npm:4.0.0"
   dependencies:
     debug: "npm:^4.1.1"
     xml2js: "npm:^0.6.0"
-  checksum: 10c0/17117abc7092d44a5218bd10929978dbf16ab8ba19a427c053e1e32c4f8118e028436aef8e5eba43806498c7918cf9c88d10be66d74bf34af7e3c2c726d108cb
+  checksum: 10c0/8caa09d1d06296c2f596ae930204a31cce208dcfd7c9a88cc2d9c1c511de52c03ee03d3af1a893b1fd9b108ed3128a55eba3e068d335f4dced48930dcab01912
   languageName: node
   linkType: hard
 
@@ -12946,7 +12946,7 @@ __metadata:
     express: "npm:4.21.2"
     express-session: "npm:^1.18.1"
     express-sslify: "npm:1.2.0"
-    fast-azure-storage: "npm:^3.1.2"
+    fast-azure-storage: "npm:^4.0.0"
     fast-json-stable-stringify: "npm:^2.0.0"
     generate-password: "npm:^1.5.0"
     github-slugger: "npm:^2.0.0"
