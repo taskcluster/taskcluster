@@ -7631,6 +7631,14 @@
       },
       "migrationScript": "begin\n  UPDATE audit_history SET entity_type = 'worker-pool' WHERE entity_type = 'worker_pool';\nend",
       "version": 107
+    },
+    {
+      "description": "missing primary keys to the tables created in version 91",
+      "downgradeScript": "begin\n  ALTER TABLE queue_claimed_tasks DROP CONSTRAINT queue_claimed_tasks_pkey;\n\n  ALTER TABLE queue_pending_tasks DROP CONSTRAINT queue_pending_tasks_pkey;\n  CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);\n\n  ALTER TABLE queue_resolved_tasks DROP CONSTRAINT queue_resolved_tasks_pkey;\n\n  ALTER TABLE queue_task_deadlines DROP CONSTRAINT queue_task_deadlines_pkey;\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  ALTER TABLE queue_claimed_tasks ADD PRIMARY KEY (task_id, run_id, taken_until);\n\n  -- For queue_pending_tasks, convert the existing unique index to a primary key\n  DROP INDEX queue_pending_task_idx;\n  ALTER TABLE queue_pending_tasks ADD PRIMARY KEY (task_id, run_id);\n\n  ALTER TABLE queue_resolved_tasks ADD PRIMARY KEY (task_id, resolution, resolved);\n\n  ALTER TABLE queue_task_deadlines ADD PRIMARY KEY (task_id, created, deadline);\nend",
+      "version": 108
     }
   ]
 }
