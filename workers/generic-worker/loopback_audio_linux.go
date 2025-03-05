@@ -19,10 +19,6 @@ func (feature *LoopbackAudioFeature) Initialise() error {
 	return nil
 }
 
-func (feature *LoopbackAudioFeature) PersistState() error {
-	return nil
-}
-
 func (feature *LoopbackAudioFeature) IsEnabled() bool {
 	return config.EnableLoopbackAudio
 }

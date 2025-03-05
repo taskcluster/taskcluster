@@ -71,16 +71,6 @@ var (
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 
-func persistFeaturesState() (err error) {
-	for _, feature := range Features {
-		err := feature.PersistState()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
@@ -411,13 +401,6 @@ func RunWorker() (exitCode ExitCode) {
 	if err != nil {
 		return featureInitFailure(err)
 	}
-	defer func() {
-		err := persistFeaturesState()
-		if err != nil {
-			log.Printf("Could not persist features: %v", err)
-			exitCode = INTERNAL_ERROR
-		}
-	}()
 
 	// loop, claiming and running tasks!
 	lastActive := time.Now()

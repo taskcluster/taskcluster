@@ -26,10 +26,6 @@ func (feature *RDPFeature) Initialise() error {
 	return nil
 }
 
-func (feature *RDPFeature) PersistState() error {
-	return nil
-}
-
 func (feature *RDPFeature) IsEnabled() bool {
 	return config.EnableRDP
 }

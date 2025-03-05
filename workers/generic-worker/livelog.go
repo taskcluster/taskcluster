@@ -26,10 +26,6 @@ func (feature *LiveLogFeature) Initialise() error {
 	return nil
 }
 
-func (feature *LiveLogFeature) PersistState() error {
-	return nil
-}
-
 func (feature *LiveLogFeature) IsEnabled() bool {
 	return config.EnableLiveLog
 }

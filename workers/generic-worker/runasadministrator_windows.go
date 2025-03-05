@@ -18,10 +18,6 @@ func (feature *RunAsAdministratorFeature) Initialise() error {
 	return nil
 }
 
-func (feature *RunAsAdministratorFeature) PersistState() error {
-	return nil
-}
-
 func (feature *RunAsAdministratorFeature) IsEnabled() bool {
 	return config.EnableRunAsAdministrator
 }

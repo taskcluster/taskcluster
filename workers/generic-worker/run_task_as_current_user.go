@@ -17,10 +17,6 @@ func (feature *RunTaskAsCurrentUserFeature) Initialise() error {
 	return nil
 }
 
-func (feature *RunTaskAsCurrentUserFeature) PersistState() error {
-	return nil
-}
-
 func (feature *RunTaskAsCurrentUserFeature) IsEnabled() bool {
 	return config.EnableRunTaskAsCurrentUser
 }

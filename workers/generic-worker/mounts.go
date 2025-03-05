@@ -147,19 +147,6 @@ func (taskMount *TaskMount) Error(message string) {
 	taskMount.task.Error("[mounts] " + message)
 }
 
-func (feature *MountsFeature) PersistState() (err error) {
-	err = fileutil.WriteToFileAsJSON(&fileCaches, "file-caches.json")
-	if err != nil {
-		return
-	}
-	err = fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")
-	if err != nil {
-		return
-	}
-	err = fileutil.SecureFiles("file-caches.json", "directory-caches.json")
-	return
-}
-
 func MkdirAll(taskMount *TaskMount, dir string) error {
 	taskMount.Infof("Creating directory %v", dir)
 	return MkdirAllTaskUser(dir, taskMount.task.pd)
@@ -467,6 +454,9 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 			err.add(Failure(e))
 		}
 	}
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&fileCaches, "file-caches.json")))
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")))
+	err.add(executionError(internalError, errored, fileutil.SecureFiles("file-caches.json", "directory-caches.json")))
 }
 
 func (taskMount *TaskMount) shouldPurgeCaches() bool {
