@@ -47,7 +47,25 @@ export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
         const logStream = fs.createWriteStream(logfile);
         proc.stdout.pipe(logStream, { end: false });
         proc.stderr.pipe(logStream, { end: false });
-        proc.on('close', () => logStream.end());
+
+        let stdoutEnded = false;
+        let stderrEnded = false;
+
+        const checkToCloseStream = () => {
+          if (stdoutEnded && stderrEnded) {
+            logStream.end();
+          }
+        };
+
+        proc.stdout.on('end', () => {
+          stdoutEnded = true;
+          checkToCloseStream();
+        });
+
+        proc.stderr.on('end', () => {
+          stderrEnded = true;
+          checkToCloseStream();
+        });
       }
 
       const loglines = data =>
