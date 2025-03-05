@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.2.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7568](https://github.com/taskcluster/taskcluster/issues/7568)
+Generic Worker: fixes panic while trying to refresh `taskcluster-proxy` credentials.
+
 ## v83.2.0
 
 ### GENERAL
