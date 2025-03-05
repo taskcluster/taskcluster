@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/mholt/archiver/v3"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {
@@ -28,8 +29,14 @@ func WriteToFileAsJSON(obj any, filename string) error {
 	} else {
 		log.Printf("Saving file %v", filename)
 	}
-
-	return os.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+	tempFilename := filename + "-" + slugid.Nice()
+	if err := os.WriteFile(tempFilename, append(jsonBytes, '\n'), 0644); err != nil {
+		return fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	if err := os.Rename(tempFilename, filename); err != nil {
+		return fmt.Errorf("failed to rename temp file: %w", err)
+	}
+	return nil
 }
 
 func CalculateSHA256(file string) (hash string, err error) {
