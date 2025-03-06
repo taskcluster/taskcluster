@@ -3,7 +3,7 @@ import helper from './helper.js';
 import _ from 'lodash';
 import testing from 'taskcluster-lib-testing';
 import taskcluster from 'taskcluster-client';
-import { Worker, WorkerPoolError } from '../src/data.js';
+import { Worker, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -96,5 +96,43 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await WorkerPoolError.expire({ db: helper.db, retentionDays: 1 });
     const removedError2 = await WorkerPoolError.get(helper.db, err2.errorId, err2.workerPoolId);
     assert(!removedError2);
+  });
+
+  test('WorkerPoolStats', async function () {
+    const wps = new WorkerPoolStats('wp/id', {});
+
+    wps.updateFromWorker(new Worker({
+      capacity: 1,
+      state: Worker.states.REQUESTED,
+      launchConfigId: 'lc-1',
+    }));
+
+    assert.equal(wps.existingCapacity, 1);
+    assert.equal(wps.requestedCapacity, 1);
+
+    wps.updateFromWorker(new Worker({
+      capacity: 5,
+      state: Worker.states.RUNNING,
+      launchConfigId: 'lc-2',
+    }));
+    wps.updateFromWorker(new Worker({
+      capacity: 1,
+      state: Worker.states.STOPPING,
+      launchConfigId: 'lc-3',
+    }));
+
+    assert.equal(wps.existingCapacity, 6);
+    assert.equal(wps.requestedCapacity, 1);
+    assert.equal(wps.stoppingCapacity, 1);
+
+    assert.equal(wps.capacityByLaunchConfig.get('lc-1'), 1);
+    assert.equal(wps.capacityByLaunchConfig.get('lc-2'), 5);
+    assert.equal(wps.capacityByLaunchConfig.get('lc-3'), 1);
+
+    assert.deepEqual(wps.forProvision(), {
+      existingCapacity: 6,
+      requestedCapacity: 1,
+      stoppingCapacity: 1,
+    });
   });
 });

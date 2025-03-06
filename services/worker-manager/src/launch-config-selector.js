@@ -76,11 +76,8 @@ export class WeightedRandomConfig {
    * @returns {WorkerPoolLaunchConfig[]}
    */
   selectCapacity(toSpawn) {
-    // during selection, should we adjust the weights as we go?
-    // we might hit the max capacity so we cannot select it more than we do..
-    // at least removing from the list?
     const configs = [];
-    while (toSpawn) {
+    while (toSpawn > 0) {
       const cfg = this.getRandomConfig();
       if (!cfg) {
         break;
