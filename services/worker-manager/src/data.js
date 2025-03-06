@@ -303,7 +303,7 @@ export class WorkerPoolStats {
     if (worker.launchConfigId) {
       this.capacityByLaunchConfig.set(
         worker.launchConfigId,
-        this.capacityByLaunchConfig.get(worker.launchConfigId) + 1 || 1,
+        this.capacityByLaunchConfig.get(worker.launchConfigId) + worker.capacity || worker.capacity,
       );
     }
   }
