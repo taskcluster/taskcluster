@@ -1,5 +1,5 @@
-query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $filter: JSON) {
-  WorkerManagerErrors(workerPoolId: $workerPoolId, connection: $errorsConnection, filter: $filter) {
+query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $launchConfigId: String, $filter: JSON) {
+  WorkerManagerErrors(workerPoolId: $workerPoolId, launchConfigId: $launchConfigId, connection: $errorsConnection, filter: $filter) {
     pageInfo {
       hasNextPage
       hasPreviousPage
@@ -14,6 +14,7 @@ query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnecti
         description
         reported
         extra
+        launchConfigId
       }
     }
   }
@@ -24,6 +25,7 @@ query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnecti
       hourly
       title
       code
+      launchConfigId
     }
   }
 }

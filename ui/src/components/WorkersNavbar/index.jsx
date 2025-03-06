@@ -111,7 +111,7 @@ export default class WorkersNavbar extends Component {
     const { workerPoolId, provisionerId, workerType } = this;
     const workerTypeUrl = `/provisioners/${provisionerId}/worker-types/${workerType}`;
     const workerPoolUrl = `/worker-manager/${encodeURIComponent(workerPoolId)}`;
-    const items = [
+    let items = [
       {
         icon: WorkerIcon,
         label: 'Queue Workers',
@@ -123,6 +123,7 @@ export default class WorkersNavbar extends Component {
         label: 'W-M Workers',
         to: `${workerPoolUrl}/workers`,
         hint: 'Show workers as seen by worker manager',
+        onlyWorkerManager: true,
       },
       {
         icon: HourglassIcon,
@@ -141,20 +142,28 @@ export default class WorkersNavbar extends Component {
         label: 'Worker Pool',
         to: `/worker-manager/${encodeURIComponent(workerPoolId)}`,
         hint: 'Show worker pool definition',
+        onlyWorkerManager: true,
+      },
+      {
+        icon: HexagonSlice4,
+        label: 'Launch Configs',
+        to: `/worker-manager/${encodeURIComponent(
+          workerPoolId
+        )}/launch-configs`,
+        hint: 'Show worker pool definition',
+        onlyWorkerManager: true,
       },
       {
         icon: MessageAlertIcon,
         label: 'Errors',
         to: `/worker-manager/${encodeURIComponent(workerPoolId)}/errors`,
         hint: 'Worker-manager errors',
+        onlyWorkerManager: true,
       },
     ];
 
     if (!this.props.hasWorkerPool) {
-      // worker pool definition and worker-manager view would be empty otherwise
-      items.pop();
-      items.pop();
-      items.splice(1, 1);
+      items = items.filter(item => !item.onlyWorkerManager);
     }
 
     return (

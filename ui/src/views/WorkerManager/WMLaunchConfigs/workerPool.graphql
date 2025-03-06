@@ -1,0 +1,50 @@
+query WorkerPool($workerPoolId: String!, $includeArchived: Boolean!, $connection: PageConnection) {
+  WorkerPool(workerPoolId: $workerPoolId) {
+    workerPoolId
+    description
+    providerId
+    config
+  }
+
+  WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
+    totals {
+      total
+      launchConfigId
+    }
+  }
+
+  WorkerPoolLaunchConfigs(workerPoolId: $workerPoolId, includeArchived: $includeArchived, connection: $connection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        launchConfigId
+        workerPoolId
+        isArchived
+        configuration
+        created
+        lastModified
+      }
+    }
+  }
+
+  WorkerPoolStats(workerPoolId: $workerPoolId) {
+    launchConfigStats {
+      launchConfigId
+      currentCapacity
+      requestedCapacity
+      runningCapacity
+      stoppingCapacity
+      stoppedCapacity
+      requestedCount
+      runningCount
+      stoppingCount
+      stoppedCount
+    }
+  }
+}

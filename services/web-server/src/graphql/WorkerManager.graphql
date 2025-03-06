@@ -35,6 +35,7 @@ type WorkerManagerError {
     description: String!
     reported: DateTime!
     extra: JSON!
+    launchConfigId: String
 }
 
 type WorkerManagerErrorsStatsConnection implements Connection {
@@ -83,6 +84,7 @@ type WorkerPoolErrorTotals {
   title: JSON!
   code: JSON!
   workerPool: JSON!
+  launchConfigId: JSON!
 }
 
 type WorkerManagerErrorsStats {
@@ -101,6 +103,7 @@ type WMWorker {
   capacity: Int!
   lastModified: DateTime!
   lastChecked: DateTime!
+  launchConfigId: String
 }
 
 type WorkerManagerWorkerEdge implements Edge {
@@ -113,17 +116,56 @@ type WorkerManagerWorkerConnection {
   edges: [WorkerManagerWorkerEdge]
 }
 
+type WorkerPoolLaunchConfig {
+  launchConfigId: String!
+  workerPoolId: String!
+  isArchived: Boolean!
+  configuration: JSON!
+  created: DateTime!
+  lastModified: DateTime!
+}
+
+type WorkerPoolLaunchConfigConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerPoolLaunchConfigEdge]
+}
+
+type WorkerPoolLaunchConfigEdge implements Edge {
+  cursor: String
+  node: WorkerPoolLaunchConfig
+}
+
+type WorkerPoolLaunchConfigStats {
+  workerPoolId: String!
+  launchConfigId: String!
+  currentCapacity: Int!
+  requestedCapacity: Int!
+  runningCapacity: Int!
+  stoppingCapacity: Int!
+  stoppedCapacity: Int!
+  requestedCount: Int!
+  runningCount: Int!
+  stoppingCount: Int!
+  stoppedCount: Int!
+}
+
+type WorkerPoolStats {
+  launchConfigStats: [WorkerPoolLaunchConfigStats!]!
+}
+
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
 
-    WorkerManagerErrors(workerPoolId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
+    WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
     WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
+    WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
+    WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
 
     WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 
-    WorkerManagerWorkers(workerPoolId: String!, state: String, connection: PageConnection): WorkerManagerWorkerConnection!
+    WorkerManagerWorkers(workerPoolId: String!, state: String, launchConfigId: String, connection: PageConnection): WorkerManagerWorkerConnection!
 
     WorkerManagerWorker(workerPoolId: String!, workerGroup: String!, workerId: ID!): WMWorker
 }

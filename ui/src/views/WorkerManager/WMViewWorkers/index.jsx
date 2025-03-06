@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';
@@ -10,6 +10,7 @@ import {
   Tooltip,
   Typography,
   Box,
+  Button,
 } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
@@ -42,12 +43,19 @@ const getFilterStateFromQuery = query => {
   return q.get('state');
 };
 
+const getLaunchConfigIdFromQuery = query => {
+  const q = new URLSearchParams(query);
+
+  return q.get('launchConfigId');
+};
+
 @withRouter
 @graphql(workersQuery, {
   options: props => ({
     variables: {
       workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
       state: getFilterStateFromQuery(props.location.search),
+      launchConfigId: getLaunchConfigIdFromQuery(props.location.search),
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
@@ -131,6 +139,7 @@ export default class WMViewWorkers extends Component {
       state,
       lastModified,
       lastChecked,
+      launchConfigId,
     },
   }) {
     const dateItem = date => (
@@ -161,6 +170,22 @@ export default class WMViewWorkers extends Component {
             {state}
           </Label>
         </TableCell>
+        <TableCell>
+          {launchConfigId && (
+            <Link
+              to={`/worker-manager/${encodeURIComponent(
+                workerPoolId
+              )}/launch-configs?launchConfigId=${encodeURIComponent(
+                launchConfigId
+              )}&includeArchived=true`}>
+              <TableCellItem button>
+                {launchConfigId}
+                <LinkIcon size={16} />
+              </TableCellItem>
+            </Link>
+          )}
+          {!launchConfigId && <TableCellItem button>n/a</TableCellItem>}
+        </TableCell>
         <TableCell>{dateItem(lastModified)}</TableCell>
         <TableCell>{dateItem(lastChecked)}</TableCell>
       </TableRow>
@@ -172,12 +197,18 @@ export default class WMViewWorkers extends Component {
     const {
       data: { loading, error, WorkerManagerWorkers },
       match: { params },
+      location,
     } = this.props;
+    const launchConfigId = getLaunchConfigIdFromQuery(location.search);
+    const state = getFilterStateFromQuery(location.search);
+    let title = `Workers for "${decodeURIComponent(params.workerPoolId)}"`;
+
+    if (launchConfigId) {
+      title += ` and Launch Config ${launchConfigId}`;
+    }
 
     return (
-      <Dashboard
-        disableTitleFormatting
-        title={`Workers for "${decodeURIComponent(params.workerPoolId)}"`}>
+      <Dashboard disableTitleFormatting title={title}>
         <ErrorPanel fixed error={this.state.error || error} />
 
         <Box
@@ -214,22 +245,47 @@ export default class WMViewWorkers extends Component {
         {loading && <Spinner loading />}
 
         {!error && !loading && (
-          <ConnectionDataTable
-            noItemsMessage="No workers"
-            connection={WorkerManagerWorkers}
-            pageSize={VIEW_WORKERS_PAGE_SIZE}
-            renderRow={this.renderRow}
-            onPageChange={this.handlePageChange}
-            headers={[
-              'Worker Group',
-              'Worker ID',
-              'Created',
-              'Expires',
-              'State',
-              'Last Modified',
-              'Last Checked',
-            ]}
-          />
+          <Fragment>
+            {launchConfigId && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                <Typography variant="subtitle1" style={{ padding: 12 }}>
+                  Showing workers for Launch Config ID: &quot;
+                  {decodeURIComponent(launchConfigId)}&quot;
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component={Link}
+                  to={`/worker-manager/${encodeURIComponent(
+                    params.workerPoolId
+                  )}/workers?state=${state || ''}`}
+                  style={{ marginLeft: 8 }}>
+                  Show all workers
+                </Button>
+              </Box>
+            )}
+            <ConnectionDataTable
+              noItemsMessage="No workers"
+              connection={WorkerManagerWorkers}
+              pageSize={VIEW_WORKERS_PAGE_SIZE}
+              renderRow={this.renderRow}
+              onPageChange={this.handlePageChange}
+              headers={[
+                'Worker Group',
+                'Worker ID',
+                'Created',
+                'Expires',
+                'State',
+                'Launch Config',
+                'Last Modified',
+                'Last Checked',
+              ]}
+            />
+          </Fragment>
         )}
       </Dashboard>
     );

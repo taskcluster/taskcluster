@@ -217,6 +217,111 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/worker-pool-stats.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Statistics for a worker pool, showing counts and capacities of workers in different states,\nbroken down by launch configuration.\n",
+      "properties": {
+        "launchConfigStats": {
+          "description": "Statistics broken down by launch configuration",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "currentCapacity": {
+                "description": "Total capacity available across all workers for this launch configuration that are currently not \"stopped\"",
+                "minimum": 0,
+                "title": "Current Capacity",
+                "type": "integer"
+              },
+              "launchConfigId": {
+                "description": "The ID of the launch configuration",
+                "title": "Launch Configuration ID",
+                "type": "string"
+              },
+              "requestedCapacity": {
+                "description": "Total capacity available across all workers for this launch configuration with state \"requested\"",
+                "minimum": 0,
+                "title": "Requested Worker Capacity",
+                "type": "integer"
+              },
+              "requestedCount": {
+                "description": "Total worker count in \"requested\" state for this launch configuration",
+                "minimum": 0,
+                "title": "Requested Worker Count",
+                "type": "integer"
+              },
+              "runningCapacity": {
+                "description": "Total capacity available across all workers for this launch configuration with state \"running\"",
+                "minimum": 0,
+                "title": "Running Worker Capacity",
+                "type": "integer"
+              },
+              "runningCount": {
+                "description": "Total worker count in \"running\" state for this launch configuration",
+                "minimum": 0,
+                "title": "Running Worker Count",
+                "type": "integer"
+              },
+              "stoppedCapacity": {
+                "description": "Total capacity available across all workers for this launch configuration with state \"stopped\"",
+                "minimum": 0,
+                "title": "Stopped Worker Capacity",
+                "type": "integer"
+              },
+              "stoppedCount": {
+                "description": "Total worker count in \"stopped\" state for this launch configuration",
+                "minimum": 0,
+                "title": "Stopped Worker Count",
+                "type": "integer"
+              },
+              "stoppingCapacity": {
+                "description": "Total capacity available across all workers for this launch configuration with state \"stopping\"",
+                "minimum": 0,
+                "title": "Stopping Worker Capacity",
+                "type": "integer"
+              },
+              "stoppingCount": {
+                "description": "Total worker count in \"stopping\" state for this launch configuration",
+                "minimum": 0,
+                "title": "Stopping Worker Count",
+                "type": "integer"
+              },
+              "workerPoolId": {
+                "description": "The ID of this worker pool\n",
+                "pattern": "^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$",
+                "title": "Worker Pool ID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "workerPoolId",
+              "launchConfigId",
+              "currentCapacity",
+              "requestedCapacity",
+              "runningCapacity",
+              "stoppingCapacity",
+              "stoppedCapacity",
+              "requestedCount",
+              "runningCount",
+              "stoppingCount",
+              "stoppedCount"
+            ],
+            "type": "object"
+          },
+          "title": "Launch Configuration Statistics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "launchConfigStats"
+      ],
+      "title": "Worker Pool Statistics",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-pool-stats.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/worker-pool-list.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -349,6 +454,73 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/worker-pool-list-stats.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/worker-pool-launch-config-list.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A list of worker pool launch configurations",
+      "properties": {
+        "continuationToken": {
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of worker pool launch configurations.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "workerPoolLaunchConfigs": {
+          "description": "List of all worker pool launch configurations",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "configuration": {
+                "description": "The launch configuration",
+                "type": "object"
+              },
+              "created": {
+                "description": "Time when this launch configuration was created",
+                "format": "date-time",
+                "type": "string"
+              },
+              "isArchived": {
+                "description": "Whether this launch configuration is archived",
+                "type": "boolean"
+              },
+              "lastModified": {
+                "description": "Time when this launch configuration was last modified",
+                "format": "date-time",
+                "type": "string"
+              },
+              "launchConfigId": {
+                "description": "Unique identifier for this launch configuration",
+                "type": "string"
+              },
+              "workerPoolId": {
+                "description": "The worker pool ID this launch config belongs to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "launchConfigId",
+              "workerPoolId",
+              "isArchived",
+              "configuration",
+              "created",
+              "lastModified"
+            ],
+            "type": "object"
+          },
+          "title": "Worker Pool Launch Configs",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "workerPoolLaunchConfigs"
+      ],
+      "title": "Worker Pool Launch Config List",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/worker-pool-launch-config-list.json"
   },
   {
     "content": {
@@ -16103,6 +16275,43 @@
           "scopes": "worker-manager:manage-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Delete Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pool Launch Configs",
+          "description": "Get the list of launch configurations for a given worker pool.\nInclude archived launch configurations by setting includeArchived=true.\nBy default, only active launch configurations are returned.",
+          "method": "get",
+          "name": "listWorkerPoolLaunchConfigs",
+          "output": "v1/worker-pool-launch-config-list.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "includeArchived"
+          ],
+          "route": "/worker-pool/<workerPoolId>/launch-configs",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Launch Configs",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pools",
+          "description": "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+          "method": "get",
+          "name": "workerPoolStats",
+          "output": "v1/worker-pool-stats.json#",
+          "query": [
+          ],
+          "route": "/worker-pool/<workerPoolId>/stats",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "Get Worker Pool Statistics",
           "type": "function"
         },
         {
