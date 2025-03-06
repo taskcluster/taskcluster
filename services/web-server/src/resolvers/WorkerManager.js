@@ -23,6 +23,9 @@ export default {
     WorkerPool(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
+    WorkerPoolLaunchConfigs(parent, { workerPoolId, includeArchived, connection }, { loaders }) {
+      return loaders.WorkerPoolLaunchConfigs.load({ workerPoolId, includeArchived, connection });
+    },
     WorkerManagerWorker(parent, { workerPoolId, workerGroup, workerId }, { loaders }) {
       return loaders.WorkerManagerWorker.load({ workerPoolId, workerGroup, workerId });
     },

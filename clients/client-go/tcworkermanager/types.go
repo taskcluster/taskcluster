@@ -390,6 +390,29 @@ type (
 
 	Var1 struct {
 
+		// The launch configuration
+		//
+		// Additional properties allowed
+		Configuration json.RawMessage `json:"configuration"`
+
+		// Time when this launch configuration was created
+		Created tcclient.Time `json:"created"`
+
+		// Whether this launch configuration is archived
+		IsArchived bool `json:"isArchived"`
+
+		// Time when this launch configuration was last modified
+		LastModified tcclient.Time `json:"lastModified"`
+
+		// Unique identifier for this launch configuration
+		LaunchConfigID string `json:"launchConfigId"`
+
+		// The worker pool ID this launch config belongs to
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	Var2 struct {
+
 		// Total capacity available across all workers for this worker pool that are currently not "stopped"
 		//
 		// Mininum:    0
@@ -442,7 +465,7 @@ type (
 	}
 
 	// Constant value: ""
-	Var2 string
+	Var3 string
 
 	Worker struct {
 
@@ -899,7 +922,7 @@ type (
 
 		// One of:
 		//   * WorkerPoolID
-		//   * Var2
+		//   * Var3
 		WorkerPoolID json.RawMessage `json:"workerPoolId"`
 	}
 
@@ -993,6 +1016,22 @@ type (
 	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 	WorkerPoolID string
 
+	// A list of worker pool launch configurations
+	WorkerPoolLaunchConfigList struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of worker pool launch configurations.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all worker pool launch configurations
+		WorkerPoolLaunchConfigs []Var1 `json:"workerPoolLaunchConfigs"`
+	}
+
 	// A list of worker pools
 	WorkerPoolList struct {
 
@@ -1022,7 +1061,7 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of all worker pools stats
-		WorkerPoolsStats []Var1 `json:"workerPoolsStats"`
+		WorkerPoolsStats []Var2 `json:"workerPoolsStats"`
 	}
 
 	// Response containing information about a worker.

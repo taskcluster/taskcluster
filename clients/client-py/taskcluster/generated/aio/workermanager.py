@@ -114,6 +114,19 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["deleteWorkerPool"], *args, **kwargs)
 
+    async def listWorkerPoolLaunchConfigs(self, *args, **kwargs):
+        """
+        List Worker Pool Launch Configs
+
+        Get the list of launch configurations for a given worker pool.
+        Include archived launch configurations by setting includeArchived=true.
+        By default, only active launch configurations are returned.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listWorkerPoolLaunchConfigs"], *args, **kwargs)
+
     async def workerPool(self, *args, **kwargs):
         """
         Get Worker Pool
@@ -416,6 +429,15 @@ class WorkerManager(AsyncBaseClient):
             'query': ['continuationToken', 'limit', 'launchConfigId', 'errorId'],
             'route': '/worker-pool-errors/<workerPoolId>',
             'stability': 'stable',
+        },
+        "listWorkerPoolLaunchConfigs": {
+            'args': ['workerPoolId'],
+            'method': 'get',
+            'name': 'listWorkerPoolLaunchConfigs',
+            'output': 'v1/worker-pool-launch-config-list.json#',
+            'query': ['continuationToken', 'limit', 'includeArchived'],
+            'route': '/worker-pool/<workerPoolId>/launch-configs',
+            'stability': 'experimental',
         },
         "listWorkerPools": {
             'args': [],

@@ -32,6 +32,20 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     return await workerManager.workerPool(workerPoolId);
   })));
 
+  const WorkerPoolLaunchConfigs = new ConnectionLoader(
+    async ({ workerPoolId, includeArchived, options }) => {
+      if (includeArchived) {
+        options.includeArchived = 'true';
+      }
+      const raw = await workerManager.listWorkerPoolLaunchConfigs(workerPoolId, options);
+      console.log(options, includeArchived)
+      return {
+        ...raw,
+        items: raw.workerPoolLaunchConfigs,
+      };
+    }
+  );
+
   const WorkerManagerWorker = new DataLoader(queries => Promise.all(queries.map(
     async ({ workerPoolId, workerGroup, workerId }) => {
       return await workerManager.worker(workerPoolId, workerGroup, workerId);
@@ -86,6 +100,7 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     WorkerManagerErrors,
     WorkerManagerErrorsStats,
     WorkerPool,
+    WorkerPoolLaunchConfigs,
     WorkerManagerProviders,
     WorkerManagerWorkers,
     WorkerManagerWorker,

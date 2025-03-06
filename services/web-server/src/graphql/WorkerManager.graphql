@@ -83,6 +83,7 @@ type WorkerPoolErrorTotals {
   title: JSON!
   code: JSON!
   workerPool: JSON!
+  launchConfigId: JSON!
 }
 
 type WorkerManagerErrorsStats {
@@ -113,6 +114,25 @@ type WorkerManagerWorkerConnection {
   edges: [WorkerManagerWorkerEdge]
 }
 
+type WorkerPoolLaunchConfig {
+  launchConfigId: String!
+  workerPoolId: String!
+  isArchived: Boolean!
+  configuration: JSON!
+  created: DateTime!
+  lastModified: DateTime!
+}
+
+type WorkerPoolLaunchConfigConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerPoolLaunchConfigEdge]
+}
+
+type WorkerPoolLaunchConfigEdge implements Edge {
+  cursor: String
+  node: WorkerPoolLaunchConfig
+}
+
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
 
@@ -120,6 +140,7 @@ extend type Query {
     WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
+    WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
 
     WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 

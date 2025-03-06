@@ -221,6 +221,55 @@ func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*Work
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Get the list of launch configurations for a given worker pool.
+// Include archived launch configurations by setting includeArchived=true.
+// By default, only active launch configurations are returned.
+//
+// Required scopes:
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
+//
+// See #listWorkerPoolLaunchConfigs
+func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs(workerPoolId, continuationToken, includeArchived, limit string) (*WorkerPoolLaunchConfigList, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if includeArchived != "" {
+		v.Add("includeArchived", includeArchived)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.QueryEscape(workerPoolId)+"/launch-configs", new(WorkerPoolLaunchConfigList), v)
+	return responseObject.(*WorkerPoolLaunchConfigList), err
+}
+
+// Returns a signed URL for ListWorkerPoolLaunchConfigs, valid for the specified duration.
+//
+// Required scopes:
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
+//
+// See ListWorkerPoolLaunchConfigs for more details.
+func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs_SignedURL(workerPoolId, continuationToken, includeArchived, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if includeArchived != "" {
+		v.Add("includeArchived", includeArchived)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId)+"/launch-configs", v, duration)
+}
+
 // Fetch an existing worker pool defition.
 //
 // Required scopes:
