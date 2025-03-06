@@ -19,10 +19,6 @@ func (feature *LoopbackVideoFeature) Initialise() error {
 	return nil
 }
 
-func (feature *LoopbackVideoFeature) PersistState() error {
-	return nil
-}
-
 func (feature *LoopbackVideoFeature) IsEnabled() bool {
 	return config.EnableLoopbackVideo
 }

@@ -16,10 +16,6 @@ func (feature *OSGroupsFeature) Initialise() error {
 	return nil
 }
 
-func (feature *OSGroupsFeature) PersistState() error {
-	return nil
-}
-
 func (feature *OSGroupsFeature) IsEnabled() bool {
 	return config.EnableOSGroups
 }

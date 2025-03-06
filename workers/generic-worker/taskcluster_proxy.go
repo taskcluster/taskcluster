@@ -25,10 +25,6 @@ func (feature *TaskclusterProxyFeature) Initialise() error {
 	return nil
 }
 
-func (feature *TaskclusterProxyFeature) PersistState() error {
-	return nil
-}
-
 func (feature *TaskclusterProxyFeature) IsEnabled() bool {
 	return config.EnableTaskclusterProxy
 }

@@ -5,7 +5,6 @@ import "github.com/taskcluster/taskcluster/v83/internal/scopes"
 type (
 	Feature interface {
 		Initialise() error
-		PersistState() error
 		IsEnabled() bool
 		IsRequested(task *TaskRun) bool
 		NewTaskFeature(task *TaskRun) TaskFeature

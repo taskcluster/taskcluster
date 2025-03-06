@@ -28,10 +28,6 @@ func (feature *InteractiveFeature) Initialise() error {
 	return nil
 }
 
-func (feature *InteractiveFeature) PersistState() error {
-	return nil
-}
-
 func (feature *InteractiveFeature) IsEnabled() bool {
 	return config.EnableInteractive
 }

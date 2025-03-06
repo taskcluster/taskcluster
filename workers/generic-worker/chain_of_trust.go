@@ -81,10 +81,6 @@ func (feature *ChainOfTrustFeature) Name() string {
 	return "Chain of Trust"
 }
 
-func (feature *ChainOfTrustFeature) PersistState() error {
-	return nil
-}
-
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	feature.Ed25519PrivateKey, err = readEd25519PrivateKeyFromFile(config.Ed25519SigningKeyLocation)
 	if err != nil {
