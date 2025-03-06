@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.2.3
+
+### DEPLOYERS
+
+▶ [patch]
+Fixes worker-manager provisioner behaviour for worker pools with capacityPerInstance > 1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7427](https://github.com/taskcluster/taskcluster/issues/7427)
+Generic Worker now writes file-caches.json and directory-caches.json after each task that uses mounts feature.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump jinja2 from 3.1.5 to 3.1.6 in /taskcluster (f39bb30e57)
+
+</details>
+
 ## v83.2.2
 
 
