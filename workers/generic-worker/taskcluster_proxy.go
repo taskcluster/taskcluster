@@ -106,7 +106,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 				panic(err)
 			}
 			buffer := bytes.NewBuffer(b)
-			putURL := fmt.Sprintf("http://%s:%v/credentials", l.taskclusterProxyAddress, config.TaskclusterProxyPort)
+			putURL := fmt.Sprintf("http://localhost:%v/credentials", config.TaskclusterProxyPort)
 			req, err := http.NewRequest("PUT", putURL, buffer)
 			if err != nil {
 				panic(fmt.Sprintf("Could not create PUT request to taskcluster-proxy /credentials endpoint: %v", err))
