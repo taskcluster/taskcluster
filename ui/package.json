@@ -74,7 +74,7 @@
     "mitt": "^3.0.1",
     "param-case": "^3.0.3",
     "prism-themes": "^1.0.1",
-    "prismjs": "^1.29.0",
+    "prismjs": "^1.30.0",
     "prop-types": "^15.6.2",
     "qs": "^6.13.0",
     "ramda": "^0.30.1",
