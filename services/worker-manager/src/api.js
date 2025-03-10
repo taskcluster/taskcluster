@@ -458,6 +458,46 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/worker-pool/:workerPoolId(*)/stats',
+  name: 'workerPoolStats',
+  scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
+  title: 'Get Worker Pool Statistics',
+  category: 'Worker Pools',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-stats.yml',
+  description: [
+    'Fetch statistics for an existing worker pool, broken down by launch configuration.',
+    'This includes counts and capacities of requested, running, stopping, and stopped workers.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId } = req.params;
+
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const rows = await this.db.fns.get_worker_pool_counts_and_capacity_lc(workerPoolId, null);
+
+  const launchConfigStats = rows.map(row => ({
+    workerPoolId: row.worker_pool_id,
+    launchConfigId: row.launch_config_id || 'unknown',
+    currentCapacity: row.current_capacity || 0,
+    requestedCapacity: row.requested_capacity || 0,
+    runningCapacity: row.running_capacity || 0,
+    stoppingCapacity: row.stopping_capacity || 0,
+    stoppedCapacity: row.stopped_capacity || 0,
+    requestedCount: row.requested_count || 0,
+    runningCount: row.running_count || 0,
+    stoppingCount: row.stopping_count || 0,
+    stoppedCount: row.stopped_count || 0,
+  }));
+
+  return res.reply({ launchConfigStats });
+});
+
+builder.declare({
+  method: 'get',
   route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   scopes: 'worker-manager:get-worker-pool:<workerPoolId>',

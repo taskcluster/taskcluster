@@ -39,7 +39,8 @@ union Node =
   HookLastFire |
   PendingTask |
   ClaimedTask |
-  WorkerPoolLaunchConfig
+  WorkerPoolLaunchConfig |
+  WorkerPoolLaunchConfigStats
 
 interface Edge {
   cursor: String

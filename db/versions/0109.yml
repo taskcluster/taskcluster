@@ -6,7 +6,7 @@ methods:
     mode: read
     serviceName: worker_manager
     args: worker_pool_id_in text, launch_config_id_in text
-    returns: table(worker_pool_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)
+    returns: table(worker_pool_id text, launch_config_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)
     body: |-
       begin
         return query

@@ -5362,11 +5362,11 @@ type WorkerManagerGetWorkerPoolCountsAndCapacityLcFn = {
  (
    worker_pool_id_in: string,
    launch_config_id_in: string | null
- ): Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
+ ): Promise<Array<{worker_pool_id: string, launch_config_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
  (params: {
   worker_pool_id_in: string;
   launch_config_id_in?: string | null;
- }): Promise<Array<{worker_pool_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
+ }): Promise<Array<{worker_pool_id: string, launch_config_id: string, current_capacity: number, stopped_capacity: number, stopped_count: number, requested_capacity: number, requested_count: number, running_capacity: number, running_count: number, stopping_capacity: number, stopping_count: number}>>;
 };
 /** @deprecated */
 type WorkerManagerGetWorkerPoolErrorDeprecatedFn = {

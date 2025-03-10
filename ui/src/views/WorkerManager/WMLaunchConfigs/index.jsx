@@ -100,6 +100,10 @@ export default class WMLaunchConfigs extends Component {
           return node.totalWorkers ?? 0;
         }
 
+        if (property === 'dynamicWeight') {
+          return node.dynamicWeight ?? 0;
+        }
+
         return node[property];
       };
 
@@ -126,6 +130,7 @@ export default class WMLaunchConfigs extends Component {
         sortBy,
         sortDirection,
         errorsStats,
+        workerPoolStats,
       ]) => {
         if (!launchConfigsConnection || !launchConfigsConnection.edges) {
           return `empty-${sortBy}-${sortDirection}`;
@@ -135,7 +140,7 @@ export default class WMLaunchConfigs extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${JSON.stringify(
           errorsStats
-        )}`;
+        )}-${JSON.stringify(workerPoolStats)}`;
       },
     }
   );
@@ -184,7 +189,31 @@ export default class WMLaunchConfigs extends Component {
     }));
   };
 
-  renderRow({ node: launchConfig }, workerPoolId, errorsStats) {
+  calculateDynamicWeight(launchConfig, workerPoolStats) {
+    const stats = workerPoolStats?.launchConfigStats?.find(
+      stat => stat.launchConfigId === launchConfig.launchConfigId
+    );
+
+    if (!stats || launchConfig.isArchived) {
+      return 0;
+    }
+
+    const maxCapacity = launchConfig.configuration?.maxCapacity || 1;
+    const currentCapacity = stats.currentCapacity || 0;
+    const initialWeight = launchConfig.configuration?.initialWeight || 1.0;
+    const capacityRatio = 1 - currentCapacity / maxCapacity;
+    const dynamicWeight = initialWeight * capacityRatio;
+
+    return Number(dynamicWeight.toFixed(2));
+  }
+
+  renderRow(
+    { node: launchConfig },
+    workerPoolId,
+    errorsStats,
+    includeArchived,
+    workerPoolStats
+  ) {
     const launchConfiguration = launchConfig
       ? JSON.stringify(launchConfig.configuration, null, 2)
       : 'N/A';
@@ -195,7 +224,14 @@ export default class WMLaunchConfigs extends Component {
         .substring(2);
     const isExpanded = this.state.expandedConfigs[configId];
     const totalErrors = errorsStats?.launchConfigId?.[configId] ?? 0;
-    const totalWorkers = 0; // todo
+    // Get worker stats for this launch config
+    const stats = workerPoolStats?.launchConfigStats?.find(
+      stat => stat.launchConfigId === configId
+    );
+    // Calculate total workers based on actual data
+    const totalWorkers = stats
+      ? stats.requestedCount + stats.runningCount + stats.stoppingCount
+      : 0;
     const maxCapacity = launchConfig?.configuration?.maxCapacity ?? `-`;
     const initialWeight = launchConfig?.configuration?.initialWeight ?? 1.0;
     const location =
@@ -205,7 +241,11 @@ export default class WMLaunchConfigs extends Component {
       'N/A';
     const isArchived = launchConfig?.isArchived || false;
     const rowStyle = isArchived ? { opacity: 0.5 } : {};
-    const dynamicWeight = isArchived ? 0 : Math.random().toFixed(2); // TODO
+    // Use the calculated dynamic weight
+    const dynamicWeight = this.calculateDynamicWeight(
+      launchConfig,
+      workerPoolStats
+    );
 
     return (
       <TableRow key={configId} style={rowStyle}>
@@ -222,17 +262,6 @@ export default class WMLaunchConfigs extends Component {
         <TableCell>
           {launchConfig?.lastModified && (
             <DateDistance from={launchConfig.lastModified} />
-          )}
-        </TableCell>
-        <TableCell align="center">
-          {isArchived ? (
-            <ArchiveIcon
-              size={20}
-              style={{ color: '#bf5722' }}
-              title="Archived"
-            />
-          ) : (
-            <CheckIcon size={20} style={{ color: '#4caf50' }} title="Active" />
           )}
         </TableCell>
         <TableCell>
@@ -294,6 +323,23 @@ export default class WMLaunchConfigs extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
+        {includeArchived && (
+          <TableCell align="center">
+            {isArchived ? (
+              <ArchiveIcon
+                size={20}
+                style={{ color: '#bf5722' }}
+                title="Archived"
+              />
+            ) : (
+              <CheckIcon
+                size={20}
+                style={{ color: '#4caf50' }}
+                title="Active"
+              />
+            )}
+          </TableCell>
+        )}
       </TableRow>
     );
   }
@@ -305,6 +351,7 @@ export default class WMLaunchConfigs extends Component {
     const error = data && data.error;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
     const errorsStats = data?.WorkerManagerErrorsStats?.totals ?? {};
+    const workerPoolStats = data?.WorkerPoolStats;
     const includeArchived = getFilterStateFromQuery(location.search);
     const headers = [
       { label: 'LaunchConfigId', id: 'launchConfigId' },
@@ -314,7 +361,6 @@ export default class WMLaunchConfigs extends Component {
       { label: 'Location', id: 'location' },
       { label: 'Created', id: 'created' },
       { label: 'Last Modified', id: 'lastModified' },
-      { label: 'Is Active', id: 'isActive' },
       { label: 'Config', id: 'config' },
       { label: 'Total Workers', id: 'totalWorkers' },
       { label: 'Total Errors', id: 'totalErrors' },
@@ -324,22 +370,41 @@ export default class WMLaunchConfigs extends Component {
     };
     const enrichedLaunchConfigsConnection = {
       ...launchConfigsConnection,
-      edges: launchConfigsConnection.edges.map(edge => ({
-        ...edge,
-        node: {
-          ...edge.node,
-          totalWorkers: 0, // todo
-          totalErrors:
-            errorsStats?.launchConfigId?.[edge.node.launchConfigId] ?? 0,
-        },
-      })),
+      edges: launchConfigsConnection.edges.map(edge => {
+        const stats = workerPoolStats?.launchConfigStats?.find(
+          stat => stat.launchConfigId === edge.node.launchConfigId
+        );
+        const totalWorkers = stats
+          ? stats.requestedCount + stats.runningCount + stats.stoppingCount
+          : 0;
+        const dynamicWeight = this.calculateDynamicWeight(
+          edge.node,
+          workerPoolStats
+        );
+
+        return {
+          ...edge,
+          node: {
+            ...edge.node,
+            totalWorkers,
+            dynamicWeight,
+            totalErrors:
+              errorsStats?.launchConfigId?.[edge.node.launchConfigId] ?? 0,
+          },
+        };
+      }),
     };
     const sortedLaunchConfigsConnection = this.createSortedConnection(
       enrichedLaunchConfigsConnection,
       sortBy,
       sortDirection,
-      errorsStats
+      errorsStats,
+      workerPoolStats
     );
+
+    if (includeArchived) {
+      headers.push({ label: 'Is Active', id: 'isArchived' });
+    }
 
     return (
       <Dashboard
@@ -420,7 +485,13 @@ export default class WMLaunchConfigs extends Component {
                 }
                 onPageChange={this.handlePageChange}
                 renderRow={row =>
-                  this.renderRow(row, workerPoolId, errorsStats)
+                  this.renderRow(
+                    row,
+                    workerPoolId,
+                    errorsStats,
+                    includeArchived,
+                    workerPoolStats
+                  )
                 }
                 noItemsMessage="No launch configurations available for this worker pool."
               />

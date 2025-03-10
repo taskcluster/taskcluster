@@ -133,6 +133,24 @@ type WorkerPoolLaunchConfigEdge implements Edge {
   node: WorkerPoolLaunchConfig
 }
 
+type WorkerPoolLaunchConfigStats {
+  workerPoolId: String!
+  launchConfigId: String!
+  currentCapacity: Int!
+  requestedCapacity: Int!
+  runningCapacity: Int!
+  stoppingCapacity: Int!
+  stoppedCapacity: Int!
+  requestedCount: Int!
+  runningCount: Int!
+  stoppingCount: Int!
+  stoppedCount: Int!
+}
+
+type WorkerPoolStats {
+  launchConfigStats: [WorkerPoolLaunchConfigStats!]!
+}
+
 extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
 
@@ -141,6 +159,7 @@ extend type Query {
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
     WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
+    WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
 
     WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 

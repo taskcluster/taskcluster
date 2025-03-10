@@ -25,4 +25,19 @@ query WorkerPool($workerPoolId: String!, $includeArchived: Boolean!, $connection
         }
       }
     }
+
+    WorkerPoolStats(workerPoolId: $workerPoolId) {
+      launchConfigStats {
+        launchConfigId
+        currentCapacity
+        requestedCapacity
+        runningCapacity
+        stoppingCapacity
+        stoppedCapacity
+        requestedCount
+        runningCount
+        stoppingCount
+        stoppedCount
+      }
+    }
 }

@@ -270,6 +270,34 @@ func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs_SignedURL(worker
 	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId)+"/launch-configs", v, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Fetch statistics for an existing worker pool, broken down by launch configuration.
+// This includes counts and capacities of requested, running, stopping, and stopped workers.
+//
+// Required scopes:
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
+//
+// See #workerPoolStats
+func (workerManager *WorkerManager) WorkerPoolStats(workerPoolId string) (*WorkerPoolStatistics, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.QueryEscape(workerPoolId)+"/stats", new(WorkerPoolStatistics), nil)
+	return responseObject.(*WorkerPoolStatistics), err
+}
+
+// Returns a signed URL for WorkerPoolStats, valid for the specified duration.
+//
+// Required scopes:
+//
+//	worker-manager:get-worker-pool:<workerPoolId>
+//
+// See WorkerPoolStats for more details.
+func (workerManager *WorkerManager) WorkerPoolStats_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId)+"/stats", nil, duration)
+}
+
 // Fetch an existing worker pool defition.
 //
 // Required scopes:

@@ -7649,7 +7649,7 @@
           "deprecated": false,
           "description": "Get the capacity of workers in each state for a given worker pool and launch config if provided",
           "mode": "read",
-          "returns": "table(worker_pool_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)",
+          "returns": "table(worker_pool_id text, launch_config_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)",
           "serviceName": "worker_manager"
         }
       },

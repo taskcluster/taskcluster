@@ -7508,6 +7508,7 @@ end
   * `launch_config_id_in text`
 * *Returns*: `table`
   * `worker_pool_id text`
+  * `launch_config_id text`
   * `current_capacity integer`
   * `stopped_capacity integer`
   * `stopped_count integer`

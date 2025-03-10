@@ -18,6 +18,7 @@ export default class WorkerManager extends Client {
     this.updateWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","input":true,"method":"post","name":"updateWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":{"AllOf":["worker-manager:manage-worker-pool:<workerPoolId>","worker-manager:provider:<providerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.deleteWorkerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"delete","name":"deleteWorkerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:manage-worker-pool:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerPoolLaunchConfigs.entry = {"args":["workerPoolId"],"category":"Worker Pool Launch Configs","method":"get","name":"listWorkerPoolLaunchConfigs","output":true,"query":["continuationToken","limit","includeArchived"],"route":"/worker-pool/<workerPoolId>/launch-configs","scopes":"worker-manager:get-worker-pool:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerPoolStats.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"workerPoolStats","output":true,"query":[],"route":"/worker-pool/<workerPoolId>/stats","scopes":"worker-manager:get-worker-pool:<workerPoolId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.workerPool.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"workerPool","output":true,"query":[],"route":"/worker-pool/<workerPoolId>","scopes":"worker-manager:get-worker-pool:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerPools.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","scopes":"worker-manager:list-worker-pools","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerPoolsStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPoolsStats","output":true,"query":["continuationToken","limit"],"route":"/worker-pools/stats","scopes":"worker-manager:list-worker-pools","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -112,6 +113,15 @@ export default class WorkerManager extends Client {
     this.validate(this.listWorkerPoolLaunchConfigs.entry, args);
 
     return this.request(this.listWorkerPoolLaunchConfigs.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Fetch statistics for an existing worker pool, broken down by launch configuration.
+  // This includes counts and capacities of requested, running, stopping, and stopped workers.
+  /* eslint-enable max-len */
+  workerPoolStats(...args) {
+    this.validate(this.workerPoolStats.entry, args);
+
+    return this.request(this.workerPoolStats.entry, args);
   }
   /* eslint-disable max-len */
   // Fetch an existing worker pool defition.

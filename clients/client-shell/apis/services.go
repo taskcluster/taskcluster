@@ -2265,6 +2265,19 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "workerPoolStats",
+				Title:       "Get Worker Pool Statistics",
+				Description: "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pool/<workerPoolId>/stats",
+				Args: []string{
+					"workerPoolId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "workerPool",
 				Title:       "Get Worker Pool",
 				Description: "Fetch an existing worker pool defition.",

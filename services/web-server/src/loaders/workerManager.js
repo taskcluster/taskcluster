@@ -46,6 +46,12 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     }
   );
 
+  const WorkerPoolStats = new DataLoader(queries => Promise.all(
+    queries.map(async ({ workerPoolId }) => {
+      return await workerManager.workerPoolStats(workerPoolId);
+    })
+  ));
+
   const WorkerManagerWorker = new DataLoader(queries => Promise.all(queries.map(
     async ({ workerPoolId, workerGroup, workerId }) => {
       return await workerManager.worker(workerPoolId, workerGroup, workerId);
@@ -104,5 +110,6 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     WorkerManagerProviders,
     WorkerManagerWorkers,
     WorkerManagerWorker,
+    WorkerPoolStats,
   };
 };

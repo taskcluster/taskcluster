@@ -127,6 +127,18 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listWorkerPoolLaunchConfigs"], *args, **kwargs)
 
+    async def workerPoolStats(self, *args, **kwargs):
+        """
+        Get Worker Pool Statistics
+
+        Fetch statistics for an existing worker pool, broken down by launch configuration.
+        This includes counts and capacities of requested, running, stopping, and stopped workers.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(self.funcinfo["workerPoolStats"], *args, **kwargs)
+
     async def workerPool(self, *args, **kwargs):
         """
         Get Worker Pool
@@ -573,6 +585,14 @@ class WorkerManager(AsyncBaseClient):
             'output': 'v1/worker-pool-error-stats.json#',
             'query': ['workerPoolId'],
             'route': '/worker-pool-errors/stats',
+            'stability': 'experimental',
+        },
+        "workerPoolStats": {
+            'args': ['workerPoolId'],
+            'method': 'get',
+            'name': 'workerPoolStats',
+            'output': 'v1/worker-pool-stats.json#',
+            'route': '/worker-pool/<workerPoolId>/stats',
             'stability': 'experimental',
         },
     }

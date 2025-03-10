@@ -35,6 +35,9 @@ export default {
     WorkerManagerProviders(parent, { connection, filter }, { loaders }) {
       return loaders.WorkerManagerProviders.load({ connection, filter });
     },
+    WorkerPoolStats(parent, { workerPoolId }, { loaders }) {
+      return loaders.WorkerPoolStats.load({ workerPoolId });
+    },
   },
   Mutation: {
     createWorkerPool(parent, { workerPoolId, payload }, { clients }) {

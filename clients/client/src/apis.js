@@ -4124,6 +4124,23 @@ export default {
             "workerPoolId"
           ],
           "category": "Worker Pools",
+          "description": "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+          "method": "get",
+          "name": "workerPoolStats",
+          "output": "v1/worker-pool-stats.json#",
+          "query": [
+          ],
+          "route": "/worker-pool/<workerPoolId>/stats",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "Get Worker Pool Statistics",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pools",
           "description": "Fetch an existing worker pool defition.",
           "method": "get",
           "name": "workerPool",

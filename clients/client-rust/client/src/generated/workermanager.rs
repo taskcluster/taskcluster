@@ -275,6 +275,38 @@ impl WorkerManager {
         (path, query)
     }
 
+    /// Get Worker Pool Statistics
+    ///
+    /// Fetch statistics for an existing worker pool, broken down by launch configuration.
+    /// This includes counts and capacities of requested, running, stopping, and stopped workers.
+    pub async fn workerPoolStats(&self, workerPoolId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the workerPoolStats endpoint
+    pub fn workerPoolStats_url(&self, workerPoolId: &str) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the workerPoolStats endpoint
+    pub fn workerPoolStats_signed_url(&self, workerPoolId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for workerPoolStats
+    fn workerPoolStats_details<'a>(workerPoolId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("worker-pool/{}/stats", urlencode(workerPoolId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Worker Pool
     ///
     /// Fetch an existing worker pool defition.
