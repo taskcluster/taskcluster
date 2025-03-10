@@ -38,7 +38,9 @@ union Node =
   WorkerManagerError |
   HookLastFire |
   PendingTask |
-  ClaimedTask
+  ClaimedTask |
+  WorkerPoolLaunchConfig |
+  WorkerPoolLaunchConfigStats
 
 interface Edge {
   cursor: String

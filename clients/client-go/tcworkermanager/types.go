@@ -390,6 +390,85 @@ type (
 
 	Var1 struct {
 
+		// The launch configuration
+		//
+		// Additional properties allowed
+		Configuration json.RawMessage `json:"configuration"`
+
+		// Time when this launch configuration was created
+		Created tcclient.Time `json:"created"`
+
+		// Whether this launch configuration is archived
+		IsArchived bool `json:"isArchived"`
+
+		// Time when this launch configuration was last modified
+		LastModified tcclient.Time `json:"lastModified"`
+
+		// Unique identifier for this launch configuration
+		LaunchConfigID string `json:"launchConfigId"`
+
+		// The worker pool ID this launch config belongs to
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	Var2 struct {
+
+		// Total capacity available across all workers for this launch configuration that are currently not "stopped"
+		//
+		// Mininum:    0
+		CurrentCapacity int64 `json:"currentCapacity"`
+
+		// The ID of the launch configuration
+		LaunchConfigID string `json:"launchConfigId"`
+
+		// Total capacity available across all workers for this launch configuration with state "requested"
+		//
+		// Mininum:    0
+		RequestedCapacity int64 `json:"requestedCapacity"`
+
+		// Total worker count in "requested" state for this launch configuration
+		//
+		// Mininum:    0
+		RequestedCount int64 `json:"requestedCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "running"
+		//
+		// Mininum:    0
+		RunningCapacity int64 `json:"runningCapacity"`
+
+		// Total worker count in "running" state for this launch configuration
+		//
+		// Mininum:    0
+		RunningCount int64 `json:"runningCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "stopped"
+		//
+		// Mininum:    0
+		StoppedCapacity int64 `json:"stoppedCapacity"`
+
+		// Total worker count in "stopped" state for this launch configuration
+		//
+		// Mininum:    0
+		StoppedCount int64 `json:"stoppedCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "stopping"
+		//
+		// Mininum:    0
+		StoppingCapacity int64 `json:"stoppingCapacity"`
+
+		// Total worker count in "stopping" state for this launch configuration
+		//
+		// Mininum:    0
+		StoppingCount int64 `json:"stoppingCount"`
+
+		// The ID of this worker pool
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	Var3 struct {
+
 		// Total capacity available across all workers for this worker pool that are currently not "stopped"
 		//
 		// Mininum:    0
@@ -442,7 +521,7 @@ type (
 	}
 
 	// Constant value: ""
-	Var2 string
+	Var4 string
 
 	Worker struct {
 
@@ -899,7 +978,7 @@ type (
 
 		// One of:
 		//   * WorkerPoolID
-		//   * Var2
+		//   * Var4
 		WorkerPoolID json.RawMessage `json:"workerPoolId"`
 	}
 
@@ -993,6 +1072,22 @@ type (
 	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
 	WorkerPoolID string
 
+	// A list of worker pool launch configurations
+	WorkerPoolLaunchConfigList struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of worker pool launch configurations.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all worker pool launch configurations
+		WorkerPoolLaunchConfigs []Var1 `json:"workerPoolLaunchConfigs"`
+	}
+
 	// A list of worker pools
 	WorkerPoolList struct {
 
@@ -1022,7 +1117,15 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of all worker pools stats
-		WorkerPoolsStats []Var1 `json:"workerPoolsStats"`
+		WorkerPoolsStats []Var3 `json:"workerPoolsStats"`
+	}
+
+	// Statistics for a worker pool, showing counts and capacities of workers in different states,
+	// broken down by launch configuration.
+	WorkerPoolStatistics struct {
+
+		// Statistics broken down by launch configuration
+		LaunchConfigStats []Var2 `json:"launchConfigStats"`
 	}
 
 	// Response containing information about a worker.

@@ -233,6 +233,80 @@ impl WorkerManager {
         (path, query)
     }
 
+    /// List Worker Pool Launch Configs
+    ///
+    /// Get the list of launch configurations for a given worker pool.
+    /// Include archived launch configurations by setting includeArchived=true.
+    /// By default, only active launch configurations are returned.
+    pub async fn listWorkerPoolLaunchConfigs(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, includeArchived: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listWorkerPoolLaunchConfigs_details(workerPoolId, continuationToken, limit, includeArchived);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listWorkerPoolLaunchConfigs endpoint
+    pub fn listWorkerPoolLaunchConfigs_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, includeArchived: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolLaunchConfigs_details(workerPoolId, continuationToken, limit, includeArchived);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listWorkerPoolLaunchConfigs endpoint
+    pub fn listWorkerPoolLaunchConfigs_signed_url(&self, workerPoolId: &str, continuationToken: Option<&str>, limit: Option<&str>, includeArchived: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listWorkerPoolLaunchConfigs_details(workerPoolId, continuationToken, limit, includeArchived);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listWorkerPoolLaunchConfigs
+    fn listWorkerPoolLaunchConfigs_details<'a>(workerPoolId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>, includeArchived: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("worker-pool/{}/launch-configs", urlencode(workerPoolId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = includeArchived {
+            query.get_or_insert_with(Vec::new).push(("includeArchived", q));
+        }
+
+        (path, query)
+    }
+
+    /// Get Worker Pool Statistics
+    ///
+    /// Fetch statistics for an existing worker pool, broken down by launch configuration.
+    /// This includes counts and capacities of requested, running, stopping, and stopped workers.
+    pub async fn workerPoolStats(&self, workerPoolId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the workerPoolStats endpoint
+    pub fn workerPoolStats_url(&self, workerPoolId: &str) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the workerPoolStats endpoint
+    pub fn workerPoolStats_signed_url(&self, workerPoolId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolStats_details(workerPoolId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for workerPoolStats
+    fn workerPoolStats_details<'a>(workerPoolId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("worker-pool/{}/stats", urlencode(workerPoolId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Get Worker Pool
     ///
     /// Fetch an existing worker pool defition.

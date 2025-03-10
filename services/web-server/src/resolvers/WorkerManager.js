@@ -23,6 +23,9 @@ export default {
     WorkerPool(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
+    WorkerPoolLaunchConfigs(parent, { workerPoolId, includeArchived, connection }, { loaders }) {
+      return loaders.WorkerPoolLaunchConfigs.load({ workerPoolId, includeArchived, connection });
+    },
     WorkerManagerWorker(parent, { workerPoolId, workerGroup, workerId }, { loaders }) {
       return loaders.WorkerManagerWorker.load({ workerPoolId, workerGroup, workerId });
     },
@@ -31,6 +34,9 @@ export default {
     },
     WorkerManagerProviders(parent, { connection, filter }, { loaders }) {
       return loaders.WorkerManagerProviders.load({ connection, filter });
+    },
+    WorkerPoolStats(parent, { workerPoolId }, { loaders }) {
+      return loaders.WorkerPoolStats.load({ workerPoolId });
     },
   },
   Mutation: {

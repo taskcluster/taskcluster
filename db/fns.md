@@ -187,6 +187,7 @@
    * [`get_worker_3`](#get_worker_3)
    * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
    * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
+   * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
    * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
    * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
    * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
@@ -6608,6 +6609,7 @@ end
 * [`get_worker_3`](#get_worker_3)
 * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
 * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
+* [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
 * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
 * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
 * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
@@ -7493,6 +7495,56 @@ begin
   left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
   where worker_pools.worker_pool_id = worker_pool_id_in
   group by worker_pools.worker_pool_id;
+end
+```
+
+</details>
+
+### get_worker_pool_counts_and_capacity_lc
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `launch_config_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `launch_config_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 109
+
+Get the capacity of workers in each state for a given worker pool and launch config if provided
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    workers.launch_config_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  and (workers.launch_config_id = launch_config_id_in or launch_config_id_in is null)
+  group by worker_pools.worker_pool_id, workers.launch_config_id
+  order by workers.launch_config_id;
 end
 ```
 
