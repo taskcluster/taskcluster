@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.2.4
+
+### GENERAL
+
+▶ [patch]
+Generic Worker: fix `panic` when the taskcluster proxy task feature tries to terminate the taskcluster proxy PID.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker: fix detection of docker bridge gateway address in the presence of ipv6
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump prismjs from 1.29.0 to 1.30.0 in /ui (e7d659894f)
+
+</details>
+
 ## v83.2.3
 
 ### DEPLOYERS
