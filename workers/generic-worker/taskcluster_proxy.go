@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os/exec"
 	"strings"
@@ -57,11 +58,28 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 	if l.task.D2GInfo != nil {
-		out, err := exec.Command("docker", "network", "inspect", "bridge", "--format", "{{ index (index .IPAM.Config 0 ) \"Gateway\"}}").Output()
+		out, err := exec.Command("docker", "network", "inspect", "bridge", "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}").Output()
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: %s", err))
 		}
-		l.taskclusterProxyAddress = strings.TrimSpace(string(out))
+		gateways := strings.Split(strings.TrimSpace(string(out)), " ")
+		if len(gateways) == 0 {
+			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no gateways found"))
+		}
+		for _, v := range gateways {
+			ipAddress := net.ParseIP(v)
+			if ipAddress == nil {
+				continue
+			}
+			if ipAddress.To4() == nil {
+				continue
+			}
+			l.taskclusterProxyAddress = v
+			break
+		}
+		if l.taskclusterProxyAddress == "" {
+			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no ipv4 gateway found among %v", gateways))
+		}
 	} else {
 		l.taskclusterProxyAddress = "127.0.0.1"
 	}
