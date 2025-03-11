@@ -1,6 +1,9 @@
+version: 2
+
 builds:
   - main: ./clients/client-shell
     id: taskcluster
+    binary: taskcluster
     env:
       - CGO_ENABLED=0
     targets:
@@ -24,7 +27,8 @@ archives:
     # Default is empty.
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
     files:
       - none*
@@ -42,7 +46,7 @@ changelog:
   # Warning: this will also ignore any changelog files passed via `--release-notes`,
   # and will render an empty changelog.
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
-  skip: true
+  disable: true
 
 checksum:
   # Disable the generation/upload of the checksum file.
@@ -69,13 +73,15 @@ brews:
     # The project name and current git tag are used in the format string.
     commit_msg_template: "Brew formula update for taskcluster version {{ .Tag }}"
 
-    # Folder inside the repository to put the formula.
-    # Default is the root folder.
-    folder: Formula
+    # Directory inside the repository to put the formula.
+    # Default is the root directory.
+    directory: Formula
 
     # Your app's homepage.
     # Default is empty.
     homepage: "https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell"
+
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Template of your app's description.
     # Default is empty.

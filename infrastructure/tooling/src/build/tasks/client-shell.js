@@ -10,7 +10,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       await execCommand({
         dir: artifactsDir,
-        command: ['go', 'install', 'github.com/goreleaser/goreleaser@v1.20.0'],
+        command: ['go', 'install', 'github.com/goreleaser/goreleaser/v2@v2.7.0'],
         utils,
       });
 
