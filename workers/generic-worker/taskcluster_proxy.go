@@ -130,6 +130,9 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 
 func (l *TaskclusterProxyTask) Stop(err *ExecutionErrors) {
 	l.task.StatusManager.DeregisterListener(l.taskStatusChangeListener)
+	if l.taskclusterProxy == nil {
+		return
+	}
 	errTerminate := l.taskclusterProxy.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception, machine will reboot anyway
