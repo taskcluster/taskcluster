@@ -7639,6 +7639,21 @@
       },
       "migrationScript": "begin\n  ALTER TABLE queue_claimed_tasks ADD PRIMARY KEY (task_id, run_id, taken_until);\n\n  -- For queue_pending_tasks, convert the existing unique index to a primary key\n  DROP INDEX queue_pending_task_idx;\n  ALTER TABLE queue_pending_tasks ADD PRIMARY KEY (task_id, run_id);\n\n  ALTER TABLE queue_resolved_tasks ADD PRIMARY KEY (task_id, resolution, resolved);\n\n  ALTER TABLE queue_task_deadlines ADD PRIMARY KEY (task_id, created, deadline);\nend",
       "version": 108
+    },
+    {
+      "description": "add worker pool launch config statistics",
+      "methods": {
+        "get_worker_pool_counts_and_capacity_lc": {
+          "args": "worker_pool_id_in text, launch_config_id_in text",
+          "body": "begin\n  return query\n  select\n    worker_pools.worker_pool_id,\n    workers.launch_config_id,\n    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,\n    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,\n    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,\n    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,\n    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer\n  from worker_pools\n  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id\n  where worker_pools.worker_pool_id = worker_pool_id_in\n  and (workers.launch_config_id = launch_config_id_in or launch_config_id_in is null)\n  group by worker_pools.worker_pool_id, workers.launch_config_id\n  order by workers.launch_config_id;\nend",
+          "deprecated": false,
+          "description": "Get the capacity of workers in each state for a given worker pool and launch config if provided",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, launch_config_id text, current_capacity integer, stopped_capacity integer, stopped_count integer, requested_capacity integer, requested_count integer, running_capacity integer, running_count integer, stopping_capacity integer, stopping_count integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 109
     }
   ]
 }

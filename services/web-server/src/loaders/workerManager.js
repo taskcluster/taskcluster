@@ -32,15 +32,38 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     return await workerManager.workerPool(workerPoolId);
   })));
 
+  const WorkerPoolLaunchConfigs = new ConnectionLoader(
+    async ({ workerPoolId, includeArchived, options }) => {
+      if (includeArchived) {
+        options.includeArchived = 'true';
+      }
+      const raw = await workerManager.listWorkerPoolLaunchConfigs(workerPoolId, options);
+
+      return {
+        ...raw,
+        items: raw.workerPoolLaunchConfigs,
+      };
+    },
+  );
+
+  const WorkerPoolStats = new DataLoader(queries => Promise.all(
+    queries.map(async ({ workerPoolId }) => {
+      return await workerManager.workerPoolStats(workerPoolId);
+    }),
+  ));
+
   const WorkerManagerWorker = new DataLoader(queries => Promise.all(queries.map(
     async ({ workerPoolId, workerGroup, workerId }) => {
       return await workerManager.worker(workerPoolId, workerGroup, workerId);
     })));
 
   const WorkerManagerWorkers = new ConnectionLoader(
-    async ({ workerPoolId, state, options }) => {
+    async ({ workerPoolId, state, launchConfigId, options }) => {
       if (state) {
         options.state = state;
+      }
+      if (launchConfigId) {
+        options.launchConfigId = launchConfigId;
       }
       const raw = await workerManager.listWorkersForWorkerPool(workerPoolId, options);
 
@@ -52,7 +75,10 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
   );
 
   const WorkerManagerErrors = new ConnectionLoader(
-    async ({ workerPoolId, filter, options }) => {
+    async ({ workerPoolId, launchConfigId, filter, options }) => {
+      if (launchConfigId) {
+        options.launchConfigId = launchConfigId;
+      }
       const raw = await workerManager.listWorkerPoolErrors(workerPoolId, options);
       const errors = sift(filter, raw.workerPoolErrors);
 
@@ -86,8 +112,10 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
     WorkerManagerErrors,
     WorkerManagerErrorsStats,
     WorkerPool,
+    WorkerPoolLaunchConfigs,
     WorkerManagerProviders,
     WorkerManagerWorkers,
     WorkerManagerWorker,
+    WorkerPoolStats,
   };
 };

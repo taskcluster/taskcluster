@@ -4103,6 +4103,43 @@ export default {
           "args": [
             "workerPoolId"
           ],
+          "category": "Worker Pool Launch Configs",
+          "description": "Get the list of launch configurations for a given worker pool.\nInclude archived launch configurations by setting includeArchived=true.\nBy default, only active launch configurations are returned.",
+          "method": "get",
+          "name": "listWorkerPoolLaunchConfigs",
+          "output": "v1/worker-pool-launch-config-list.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "includeArchived"
+          ],
+          "route": "/worker-pool/<workerPoolId>/launch-configs",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Launch Configs",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pools",
+          "description": "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+          "method": "get",
+          "name": "workerPoolStats",
+          "output": "v1/worker-pool-stats.json#",
+          "query": [
+          ],
+          "route": "/worker-pool/<workerPoolId>/stats",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "Get Worker Pool Statistics",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
           "category": "Worker Pools",
           "description": "Fetch an existing worker pool defition.",
           "method": "get",

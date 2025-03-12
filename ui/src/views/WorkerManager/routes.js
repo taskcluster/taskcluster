@@ -23,6 +23,11 @@ const WMWorkerPoolEditor = lazy(() =>
     /* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'
   )
 );
+const WMWorkerPoolLaunchConfigs = lazy(() =>
+  import(
+    /* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'
+  )
+);
 
 export default path => [
   {
@@ -45,6 +50,11 @@ export default path => [
     component: WorkerManagerViewErrors,
     path: `${path}/:workerPoolId/errors`,
     description: 'View errors for that specific worker pool',
+  },
+  {
+    component: WMWorkerPoolLaunchConfigs,
+    path: `${path}/:workerPoolId/launch-configs`,
+    description: 'View launch configs for that specific worker pool',
   },
   {
     component: WMWorkerPoolEditor,

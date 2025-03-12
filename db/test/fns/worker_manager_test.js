@@ -1221,6 +1221,43 @@ suite(testing.suiteName(), function () {
       assert.equal(pools[0].current_capacity, 10);
       assert.equal(pools[1].current_capacity, 5);
     });
+
+    suite('launch configs', function () {
+      helper.dbTest('launch configs statistics for a worker pool', async function (db) {
+        await create_worker_pool(db, { worker_pool_id: 'll/cc' });
+        await create_worker(db, { worker_id: 'foo1', capacity: 4, worker_pool_id: 'll/cc', state: 'running', launch_config_id: 'lc1' });
+        await create_worker(db, { worker_id: 'foo2', capacity: 1, worker_pool_id: 'll/cc', state: 'running', launch_config_id: 'lc1' });
+        await create_worker(db, { worker_id: 'foo3', capacity: 3, worker_pool_id: 'll/cc', state: 'stopping', launch_config_id: 'lc1' });
+        await create_worker(db, { worker_id: 'foo4', capacity: 1, worker_pool_id: 'll/cc', state: 'requested', launch_config_id: 'lc1' });
+        await create_worker(db, { worker_id: 'foo5', capacity: 3, worker_pool_id: 'll/cc', state: 'stopped', launch_config_id: 'lc3' });
+        await create_worker(db, { worker_id: 'foo6', capacity: 7, worker_pool_id: 'll/cc', state: 'stopped', launch_config_id: 'lc3' });
+
+        const stats = await db.fns.get_worker_pool_counts_and_capacity_lc('ll/cc', null);
+        const lc1 = stats.filter(lc => lc.launch_config_id === 'lc1');
+        assert.equal(lc1.length, 1);
+        assert.equal(lc1[0].worker_pool_id, 'll/cc');
+        assert.equal(lc1[0].running_count, 2);
+        assert.equal(lc1[0].running_capacity, 5);
+        assert.equal(lc1[0].stopping_count, 1);
+        assert.equal(lc1[0].stopping_capacity, 3);
+        assert.equal(lc1[0].stopped_count, 0);
+        assert.equal(lc1[0].stopped_capacity, 0);
+        assert.equal(lc1[0].requested_count, 1);
+        assert.equal(lc1[0].requested_capacity, 1);
+
+        const lc3 = stats.filter(lc => lc.launch_config_id === 'lc3');
+        assert.equal(lc3.length, 1);
+        assert.equal(lc3[0].worker_pool_id, 'll/cc');
+        assert.equal(lc3[0].running_count, 0);
+        assert.equal(lc3[0].running_capacity, 0);
+        assert.equal(lc3[0].stopping_count, 0);
+        assert.equal(lc3[0].stopping_capacity, 0);
+        assert.equal(lc3[0].stopped_count, 2);
+        assert.equal(lc3[0].stopped_capacity, 10);
+        assert.equal(lc3[0].requested_count, 0);
+        assert.equal(lc3[0].requested_capacity, 0);
+      });
+    });
   });
 
   suite(`${testing.suiteName()} - TaskQueue`, function () {

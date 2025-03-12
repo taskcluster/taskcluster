@@ -13,6 +13,7 @@ import List from '@material-ui/core/List';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
+import LinkIcon from 'mdi-react/LinkIcon';
 import JsonDisplay from '../JsonDisplay';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -21,6 +22,7 @@ import TableCellItem from '../TableCellItem';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
 import { pageInfo, WMError } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   errorDescription: {
@@ -66,6 +68,7 @@ export default class WorkerManagerErrorsTable extends Component {
   static propTypes = {
     onPageChange: func.isRequired,
     searchTerm: string,
+    workerPoolId: string,
     errorsConnection: shape({
       edges: arrayOf(shape({ node: WMError.isRequred }).isRequired).isRequired,
       pageInfo: pageInfo.isRequired,
@@ -154,8 +157,14 @@ export default class WorkerManagerErrorsTable extends Component {
   }
 
   renderTableRow = error => {
-    const { classes } = this.props;
-    const { errorId, title, description, reported } = error.node;
+    const { classes, workerPoolId } = this.props;
+    const {
+      errorId,
+      title,
+      description,
+      reported,
+      launchConfigId,
+    } = error.node;
 
     return (
       <TableRow key={errorId}>
@@ -175,6 +184,22 @@ export default class WorkerManagerErrorsTable extends Component {
             title={description}>
             {description}
           </Typography>
+        </TableCell>
+        <TableCell>
+          {launchConfigId && (
+            <Link
+              to={`/worker-manager/${encodeURIComponent(
+                workerPoolId
+              )}/launch-configs?launchConfigId=${encodeURIComponent(
+                launchConfigId
+              )}&includeArchived=true`}>
+              <TableCellItem>
+                {launchConfigId ?? 'n/a'}
+                <LinkIcon size={16} style={{ marginLeft: 2 }} />
+              </TableCellItem>
+            </Link>
+          )}
+          {!launchConfigId && <TableCellItem>n/a</TableCellItem>}
         </TableCell>
 
         <CopyToClipboardTableCell
@@ -209,7 +234,7 @@ export default class WorkerManagerErrorsTable extends Component {
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
-          headers={['Title', 'Description', 'Reported']}
+          headers={['Title', 'Description', 'Launch Config', 'Reported']}
           onPageChange={onPageChange}
         />
         <Drawer
@@ -250,6 +275,14 @@ export default class WorkerManagerErrorsTable extends Component {
                       secondary={drawerError.reported}
                     />
                   </ListItem>
+                  {drawerError.launchConfigId && (
+                    <ListItem>
+                      <ListItemText
+                        primary="Launch Config ID"
+                        secondary={drawerError.launchConfigId}
+                      />
+                    </ListItem>
+                  )}
                   <ListItem>
                     <ListItemText
                       primary="Extra"

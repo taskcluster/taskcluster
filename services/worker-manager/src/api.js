@@ -409,6 +409,94 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/worker-pool/:workerPoolId/launch-configs',
+  query: {
+    ...paginateResults.query,
+    includeArchived: /^(true|false)$/,
+  },
+  name: 'listWorkerPoolLaunchConfigs',
+  scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
+  title: 'List Worker Pool Launch Configs',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Pool Launch Configs',
+  output: 'worker-pool-launch-config-list.yml',
+  description: [
+    'Get the list of launch configurations for a given worker pool.',
+    'Include archived launch configurations by setting includeArchived=true.',
+    'By default, only active launch configurations are returned.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId } = req.params;
+  const includeArchived = req.query.includeArchived === 'true';
+
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pool_launch_configs(
+      workerPoolId, includeArchived ? null : false, size, offset),
+  });
+
+  const result = {
+    workerPoolLaunchConfigs: rows.map(row => ({
+      launchConfigId: row.launch_config_id,
+      workerPoolId: row.worker_pool_id,
+      isArchived: row.is_archived,
+      configuration: row.configuration,
+      created: row.created.toJSON(),
+      lastModified: row.last_modified.toJSON(),
+    })),
+    continuationToken,
+  };
+
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pool/:workerPoolId(*)/stats',
+  name: 'workerPoolStats',
+  scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
+  title: 'Get Worker Pool Statistics',
+  category: 'Worker Pools',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-stats.yml',
+  description: [
+    'Fetch statistics for an existing worker pool, broken down by launch configuration.',
+    'This includes counts and capacities of requested, running, stopping, and stopped workers.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId } = req.params;
+
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const rows = await this.db.fns.get_worker_pool_counts_and_capacity_lc(workerPoolId, null);
+
+  const launchConfigStats = rows.map(row => ({
+    workerPoolId: row.worker_pool_id,
+    launchConfigId: row.launch_config_id || 'unknown',
+    currentCapacity: row.current_capacity || 0,
+    requestedCapacity: row.requested_capacity || 0,
+    runningCapacity: row.running_capacity || 0,
+    stoppingCapacity: row.stopping_capacity || 0,
+    stoppedCapacity: row.stopped_capacity || 0,
+    requestedCount: row.requested_count || 0,
+    runningCount: row.running_count || 0,
+    stoppingCount: row.stopping_count || 0,
+    stoppedCount: row.stopped_count || 0,
+  }));
+
+  return res.reply({ launchConfigStats });
+});
+
+builder.declare({
+  method: 'get',
   route: '/worker-pool/:workerPoolId(*)',
   name: 'workerPool',
   scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
@@ -584,7 +672,7 @@ builder.declare({
       title: {},
       code: {},
       workerPool: {},
-      launchConfigId: {},
+      launchConfig: {},
     },
   };
 
@@ -593,7 +681,7 @@ builder.declare({
       if (row[column] instanceof Date) {
         dict[row[column].toISOString()] = row.count;
       } else {
-        dict[row[column]] = row.count;
+        dict[row[column] ?? 'unknown'] = row.count;
       }
     }
   };
@@ -615,7 +703,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
-  rowsToDict(out.totals.launchConfigId, launchConfigs, 'launchConfigId');
+  rowsToDict(out.totals.launchConfig, launchConfigs, 'launch_config_id');
 
   return res.reply(out);
 });

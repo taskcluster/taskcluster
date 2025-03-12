@@ -37,7 +37,7 @@ properties:
         description: Breakdown by error code where available
         type: object
         additionalProperties: true
-      launchConfigId:
+      launchConfig:
         title: By launch config ID
         description: Breakdown by launchConfigId where available
         type: object
@@ -56,7 +56,8 @@ properties:
     - hourly
     - title
     - code
-    - launchConfigId
+    - launchConfig
+    - workerPool
 additionalProperties: false
 required:
   - workerPoolId
