@@ -362,7 +362,7 @@ type (
 		// Breakdown by launchConfigId where available
 		//
 		// Additional properties allowed
-		LaunchConfigID json.RawMessage `json:"launchConfigId"`
+		LaunchConfig json.RawMessage `json:"launchConfig"`
 
 		// Breakdown by title
 		//
@@ -376,7 +376,7 @@ type (
 		// If specified, this will only include the worker pool specified.
 		//
 		// Additional properties allowed
-		WorkerPool json.RawMessage `json:"workerPool,omitempty"`
+		WorkerPool json.RawMessage `json:"workerPool"`
 	}
 
 	Var struct {

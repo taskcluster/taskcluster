@@ -144,7 +144,7 @@ export default class WMLaunchConfigs extends Component {
       // it operates on total number of errors and existing capacity
       const wpMaxCapacity = workerPool?.maxCapacity ?? 0;
       const totalWorkerPoolErrors = Object.values(
-        errorsStats?.launchConfigId ?? {}
+        errorsStats?.launchConfig ?? {}
       ).reduce((acc, val) => acc + val, 0);
 
       return {
@@ -168,7 +168,7 @@ export default class WMLaunchConfigs extends Component {
               stoppingCount: 0,
               stoppedCount: 0,
             };
-            const totalErrors = errorsStats?.launchConfigId?.[configId] ?? 0;
+            const totalErrors = errorsStats?.launchConfig?.[configId] ?? 0;
             const currentNonStoppedCapacity =
               stats.requestedCapacity +
               stats.runningCapacity +

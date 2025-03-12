@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { func, object, string } from 'prop-types';
+import { bool, func, object, string } from 'prop-types';
 import { Grid } from '@material-ui/core';
 import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsStats';
 import StatusGroup from '../StatusDashboard/StatusGroup';
@@ -40,11 +40,13 @@ export default class WorkerManagerErrorsSummary extends Component {
     data: object.isRequired,
     onStatClick: func,
     selectedLaunchConfigId: string,
+    includeLaunchConfig: bool,
   };
 
   render() {
     const {
       data: { loading, WorkerManagerErrorsStats },
+      includeLaunchConfig,
     } = this.props;
     const errorWidgets =
       !loading && WorkerManagerErrorsStats
@@ -71,14 +73,16 @@ export default class WorkerManagerErrorsSummary extends Component {
                   title="Errors by error code"
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
-                <MiniTable
-                  data={WorkerManagerErrorsStats?.totals?.launchConfigId}
-                  title="Errors by launch config"
-                  selectedKey={this.props.selectedLaunchConfigId}
-                  onStatClick={this.props.onStatClick}
-                />
-              </Grid>
+              {includeLaunchConfig && (
+                <Grid item xs={12} md={4}>
+                  <MiniTable
+                    data={WorkerManagerErrorsStats?.totals?.launchConfig}
+                    title="Errors by launch config"
+                    selectedKey={this.props.selectedLaunchConfigId}
+                    onStatClick={this.props.onStatClick}
+                  />
+                </Grid>
+              )}
             </Grid>
           </Fragment>
         )}

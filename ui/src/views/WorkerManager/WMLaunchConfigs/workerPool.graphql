@@ -9,7 +9,7 @@ query WorkerPool($workerPoolId: String!, $includeArchived: Boolean!, $connection
   WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
     totals {
       total
-      launchConfigId
+      launchConfig
     }
   }
 

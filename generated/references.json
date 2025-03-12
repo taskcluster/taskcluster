@@ -752,7 +752,7 @@
               "title": "Last 24 hours",
               "type": "object"
             },
-            "launchConfigId": {
+            "launchConfig": {
               "additionalProperties": true,
               "description": "Breakdown by launchConfigId where available",
               "title": "By launch config ID",
@@ -782,7 +782,8 @@
             "hourly",
             "title",
             "code",
-            "launchConfigId"
+            "launchConfig",
+            "workerPool"
           ],
           "type": "object"
         },

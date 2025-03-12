@@ -84,7 +84,7 @@ type WorkerPoolErrorTotals {
   title: JSON!
   code: JSON!
   workerPool: JSON!
-  launchConfigId: JSON!
+  launchConfig: JSON!
 }
 
 type WorkerManagerErrorsStats {

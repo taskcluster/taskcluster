@@ -672,7 +672,7 @@ builder.declare({
       title: {},
       code: {},
       workerPool: {},
-      launchConfigId: {},
+      launchConfig: {},
     },
   };
 
@@ -703,7 +703,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
-  rowsToDict(out.totals.launchConfigId, launchConfigs, 'launch_config_id');
+  rowsToDict(out.totals.launchConfig, launchConfigs, 'launch_config_id');
 
   return res.reply(out);
 });

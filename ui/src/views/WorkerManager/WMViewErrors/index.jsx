@@ -147,6 +147,7 @@ export default class WMViewErrors extends Component {
             data={this.props.data}
             selectedLaunchConfigId={launchConfigId}
             onStatClick={this.handleStatClick}
+            includeLaunchConfig
           />
         )}
 
