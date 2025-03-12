@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.3.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades `goreleaser` to v2.7.0 for building `client-shell` binaries during releases.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7581](https://github.com/taskcluster/taskcluster/issues/7581)
+D2G: add `audio`/`video` os-groups and scopes needed when the Docker Worker task payload requests these loopback devices.
+
+### USERS
+
+▶ [minor]
+UI shows launch configs for worker pool with details and runtime worker/error statistics.
+Improved navigation between pages.
+
+▶ [minor]
+Worker-Manager introduces new endpoints:
+* `listWorkerPoolLaunchConfigs(workerPoolId)` to fetch all active and archived launch configs for worker pool.
+* `workerPoolStats(workerPoolId)` to return workers capacity and counts grouped by launch config
+
 ## v83.2.4
 
 ### GENERAL
