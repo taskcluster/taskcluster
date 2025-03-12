@@ -239,6 +239,7 @@ testSuite:
         - 125
         - 128
       osGroups:
+      - video
       - docker
     name: Video Loopback
   - d2gConfig:
@@ -334,6 +335,7 @@ testSuite:
         - 125
         - 128
       osGroups:
+      - audio
       - docker
     name: Audio Loopback
   - d2gConfig:

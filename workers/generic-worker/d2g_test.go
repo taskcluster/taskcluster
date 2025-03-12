@@ -331,7 +331,9 @@ func TestD2GLoopbackVideoDevice(t *testing.T) {
 		Command: []string{
 			"/bin/bash",
 			"-c",
-			"ls /dev && test -c ${TASKCLUSTER_VIDEO_DEVICE} || { echo 'Device not found' ; exit 1; }",
+			`ls /dev && test -c ${TASKCLUSTER_VIDEO_DEVICE} \
+			-a -r ${TASKCLUSTER_VIDEO_DEVICE} \
+			|| { echo 'Device not found or not readable' ; exit 1; }`,
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
@@ -354,8 +356,8 @@ func TestD2GLoopbackVideoDevice(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [video docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [video docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -399,8 +401,8 @@ func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [video docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [video docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -450,8 +452,8 @@ func TestD2GLoopbackVideoDeviceNonRootUserInVideoGroup(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [video docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [video docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -501,8 +503,8 @@ func TestD2GLoopbackVideoDeviceNonRootUserNotInVideoGroup(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [video docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [video docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -526,7 +528,10 @@ func TestD2GLoopbackAudioDevice(t *testing.T) {
 			`ls /dev/snd && test -c /dev/snd/controlC16 \
 			-a -c /dev/snd/pcmC16D0c -a -c /dev/snd/pcmC16D0p \
 			-a -c /dev/snd/pcmC16D1c -a -c /dev/snd/pcmC16D1p \
-			|| { echo 'Device not found' ; exit 1; }`,
+			-a -r /dev/snd/controlC16 \
+			-a -r /dev/snd/pcmC16D0c -a -r /dev/snd/pcmC16D0p \
+			-a -r /dev/snd/pcmC16D1c -a -r /dev/snd/pcmC16D1p \
+			|| { echo 'Device not found or not readable' ; exit 1; }`,
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
@@ -549,8 +554,8 @@ func TestD2GLoopbackAudioDevice(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [audio docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [audio docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -597,8 +602,8 @@ func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [audio docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [audio docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -650,8 +655,8 @@ func TestD2GLoopbackAudioDeviceNonRootUserInAudioGroup(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [audio docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [audio docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -703,8 +708,8 @@ func TestD2GLoopbackAudioDeviceNonRootUserNotInAudioGroup(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [audio docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [audio docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
