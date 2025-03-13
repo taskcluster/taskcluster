@@ -7,29 +7,40 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/shirou/gopsutil/v4/mem"
 )
 
 func (r *Result) Succeeded() bool {
 	return r.SystemError == nil && r.ExitError == nil && !r.Aborted
 }
 
-type Command struct {
-	mutex sync.RWMutex
-	*exec.Cmd
-	// abort channel is closed when Kill() is called so that Execute() can
-	// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
-	// sometimes does not return promptly.
-	abort chan struct{}
-}
+type (
+	Command struct {
+		mutex sync.RWMutex
+		*exec.Cmd
+		// abort channel is closed when Kill() is called so that Execute() can
+		// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
+		// sometimes does not return promptly.
+		abort chan struct{}
+	}
 
-type Result struct {
-	SystemError error
-	ExitError   *exec.ExitError
-	Duration    time.Duration
-	Aborted     bool
-	KernelTime  time.Duration
-	UserTime    time.Duration
-}
+	Result struct {
+		SystemError error
+		ExitError   *exec.ExitError
+		Duration    time.Duration
+		Aborted     bool
+		KernelTime  time.Duration
+		UserTime    time.Duration
+		Usage       ResourceUsage
+	}
+
+	ResourceUsage struct {
+		AverageMemoryUsed    float64
+		PeakMemoryUsed       uint64
+		TotalMemoryAvailable uint64
+	}
+)
 
 // ExitCode returns the exit code, or
 //
@@ -63,12 +74,18 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = err
 		return
 	}
+
+	done := make(chan struct{})
+	usageChan := make(chan ResourceUsage, 1)
+	go monitorResources(usageChan, done)
+
 	exitErr := make(chan error)
 	// wait for command to complete in separate go routine, so we handle abortion in parallel to command termination
 	go func() {
 		err := c.Wait()
 		exitErr <- err
 	}()
+
 	select {
 	case err = <-exitErr:
 		r.UserTime = c.ProcessState.UserTime()
@@ -84,6 +101,10 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = fmt.Errorf("process aborted")
 		r.Aborted = true
 	}
+
+	close(done)
+	r.Usage = <-usageChan
+
 	finished := time.Now()
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	r.Duration = finished.Round(0).Sub(started)
@@ -102,15 +123,21 @@ func (r *Result) String() string {
 		return fmt.Sprintf("System error executing command: %v", r.SystemError)
 	}
 	return fmt.Sprintf(""+
-		"   Exit Code: %v\n"+
-		"   User Time: %v\n"+
-		" Kernel Time: %v\n"+
-		"   Wall Time: %v\n"+
-		"      Result: %v",
+		"           Exit Code: %v\n"+
+		"           User Time: %v\n"+
+		"         Kernel Time: %v\n"+
+		"           Wall Time: %v\n"+
+		" Average Memory Used: %v\n"+
+		"    Peak Memory Used: %v\n"+
+		" Total System Memory: %v\n"+
+		"              Result: %v",
 		r.ExitCode(),
 		r.UserTime,
 		r.KernelTime,
 		r.Duration,
+		formatMemoryString(r.Usage.AverageMemoryUsed),
+		formatMemoryString(float64(r.Usage.PeakMemoryUsed)),
+		formatMemoryString(float64(r.Usage.TotalMemoryAvailable)),
 		r.Verdict(),
 	)
 }
@@ -129,4 +156,48 @@ func (r *Result) Verdict() string {
 func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stdout = writer
 	c.Stderr = writer
+}
+
+func formatMemoryString(bytes float64) string {
+	if bytes < 1024*1024 {
+		return fmt.Sprintf("%f B", bytes)
+	} else if bytes < 1024*1024*1024 {
+		mb := bytes / (1024 * 1024)
+		return fmt.Sprintf("%.2f MB", mb)
+	} else {
+		gb := bytes / (1024 * 1024 * 1024)
+		return fmt.Sprintf("%.2f GB", gb)
+	}
+}
+
+func monitorResources(usageChan chan ResourceUsage, done chan struct{}) {
+	var numOfMeasurements, peakMemoryUsed, totalMemoryAvailable, totalMemoryUsed uint64
+	ticker := time.NewTicker(1 * time.Second)
+
+	for {
+		select {
+		case <-ticker.C:
+			if vm, err := mem.VirtualMemory(); err == nil {
+				if vm.Used > peakMemoryUsed {
+					peakMemoryUsed = vm.Used
+				}
+				if totalMemoryAvailable == 0 {
+					totalMemoryAvailable = vm.Total
+				}
+				totalMemoryUsed += vm.Used
+				numOfMeasurements++
+			}
+		case <-done:
+			if numOfMeasurements > 0 {
+				usageChan <- ResourceUsage{
+					AverageMemoryUsed:    float64(totalMemoryUsed) / float64(numOfMeasurements),
+					PeakMemoryUsed:       peakMemoryUsed,
+					TotalMemoryAvailable: totalMemoryAvailable,
+				}
+			} else {
+				usageChan <- ResourceUsage{}
+			}
+			return
+		}
+	}
 }
