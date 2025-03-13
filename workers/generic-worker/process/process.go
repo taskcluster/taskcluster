@@ -7,29 +7,42 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/shirou/gopsutil/v4/mem"
 )
 
 func (r *Result) Succeeded() bool {
 	return r.SystemError == nil && r.ExitError == nil && !r.Aborted
 }
 
-type Command struct {
-	mutex sync.RWMutex
-	*exec.Cmd
-	// abort channel is closed when Kill() is called so that Execute() can
-	// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
-	// sometimes does not return promptly.
-	abort chan struct{}
-}
+type (
+	Command struct {
+		mutex sync.RWMutex
+		*exec.Cmd
+		// abort channel is closed when Kill() is called so that Execute() can
+		// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
+		// sometimes does not return promptly.
+		abort                 chan struct{}
+		usageChan             chan *ResourceUsage
+		usageMeasurementsDone chan struct{}
+	}
 
-type Result struct {
-	SystemError error
-	ExitError   *exec.ExitError
-	Duration    time.Duration
-	Aborted     bool
-	KernelTime  time.Duration
-	UserTime    time.Duration
-}
+	Result struct {
+		SystemError error
+		ExitError   *exec.ExitError
+		Duration    time.Duration
+		Aborted     bool
+		KernelTime  time.Duration
+		UserTime    time.Duration
+		Usage       *ResourceUsage
+	}
+
+	ResourceUsage struct {
+		AverageMemoryUsed    float64
+		PeakMemoryUsed       uint64
+		TotalMemoryAvailable uint64
+	}
+)
 
 // ExitCode returns the exit code, or
 //
@@ -56,6 +69,9 @@ func (r *Result) ExitCode() int {
 func (c *Command) Execute() (r *Result) {
 	r = &Result{}
 	started := time.Now()
+
+	defer close(c.usageMeasurementsDone)
+
 	c.mutex.Lock()
 	err := c.Start()
 	c.mutex.Unlock()
@@ -63,12 +79,14 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = err
 		return
 	}
+
 	exitErr := make(chan error)
 	// wait for command to complete in separate go routine, so we handle abortion in parallel to command termination
 	go func() {
 		err := c.Wait()
 		exitErr <- err
 	}()
+
 	select {
 	case err = <-exitErr:
 		r.UserTime = c.ProcessState.UserTime()
@@ -84,6 +102,7 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = fmt.Errorf("process aborted")
 		r.Aborted = true
 	}
+
 	finished := time.Now()
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	r.Duration = finished.Round(0).Sub(started)
@@ -96,21 +115,32 @@ func (c *Command) String() string {
 
 func (r *Result) String() string {
 	if r.Aborted {
-		return fmt.Sprintf("Command ABORTED after %v", r.Duration)
+		return fmt.Sprintf("Command ABORTED after %v: %v", r.Duration, r.SystemError)
 	}
 	if r.SystemError != nil {
 		return fmt.Sprintf("System error executing command: %v", r.SystemError)
 	}
+	var usageStr string
+	if r.Usage != nil && r.Usage.TotalMemoryAvailable > 0 {
+		usageStr = fmt.Sprintf(" Average Memory Used: %v\n"+
+			"    Peak Memory Used: %v\n"+
+			" Total System Memory: %v\n",
+			formatMemoryString(r.Usage.AverageMemoryUsed),
+			formatMemoryString(r.Usage.PeakMemoryUsed),
+			formatMemoryString(r.Usage.TotalMemoryAvailable),
+		)
+	}
 	return fmt.Sprintf(""+
-		"   Exit Code: %v\n"+
-		"   User Time: %v\n"+
-		" Kernel Time: %v\n"+
-		"   Wall Time: %v\n"+
-		"      Result: %v",
+		"           Exit Code: %v\n"+
+		"           User Time: %v\n"+
+		"         Kernel Time: %v\n"+
+		"           Wall Time: %v\n%v"+
+		"              Result: %v",
 		r.ExitCode(),
 		r.UserTime,
 		r.KernelTime,
 		r.Duration,
+		usageStr,
 		r.Verdict(),
 	)
 }
@@ -126,7 +156,72 @@ func (r *Result) Verdict() string {
 	}
 }
 
+func (r *Result) GatherUsage(c *Command) {
+	r.Usage = <-c.usageChan
+}
+
 func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stdout = writer
 	c.Stderr = writer
+}
+
+func formatMemoryString[T float64 | uint64](bytes T) string {
+	val := float64(bytes)
+	if val < 1024*1024 {
+		return fmt.Sprintf("%f B", val)
+	} else if val < 1024*1024*1024 {
+		mb := val / (1024 * 1024)
+		return fmt.Sprintf("%.2f MB", mb)
+	} else {
+		gb := val / (1024 * 1024 * 1024)
+		return fmt.Sprintf("%.2f GB", gb)
+	}
+}
+
+func (c *Command) MonitorResources(abort func() bool) {
+	var consecutiveHighMemoryUsage, numOfMeasurements, totalMemoryUsed uint64
+	usage := new(ResourceUsage)
+	ticker := time.NewTicker(500 * time.Millisecond)
+
+	defer func() {
+		if numOfMeasurements > 0 {
+			usage.AverageMemoryUsed = float64(totalMemoryUsed) / float64(numOfMeasurements)
+		}
+		c.usageChan <- usage
+	}()
+
+	for {
+		select {
+		case <-ticker.C:
+			if vm, err := mem.VirtualMemory(); err == nil {
+				numOfMeasurements++
+
+				if vm.Used > usage.PeakMemoryUsed {
+					usage.PeakMemoryUsed = vm.Used
+				}
+				if usage.TotalMemoryAvailable == 0 {
+					usage.TotalMemoryAvailable = vm.Total
+				}
+				totalMemoryUsed += vm.Used
+
+				// if memory used is greater than 90%
+				// for 5 measurements consecutively, then
+				// kill the process
+				if vm.UsedPercent >= 90.0 {
+					consecutiveHighMemoryUsage++
+					if consecutiveHighMemoryUsage >= 5 {
+						if abort() {
+							return
+						} else {
+							consecutiveHighMemoryUsage = 0
+						}
+					}
+				} else {
+					consecutiveHighMemoryUsage = 0
+				}
+			}
+		case <-c.usageMeasurementsDone:
+			return
+		}
+	}
 }

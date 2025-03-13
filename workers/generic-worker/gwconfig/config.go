@@ -34,6 +34,7 @@ type (
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
 		DeploymentID                   string         `json:"deploymentId"`
+		DisableOOMProtection           bool           `json:"disableOOMProtection"`
 		DisableReboots                 bool           `json:"disableReboots"`
 		DownloadsDir                   string         `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string         `json:"ed25519SigningKeyLocation"`
