@@ -808,7 +808,7 @@ func TestD2GTaskclusterProxy(t *testing.T) {
 			// sleep long enough to reclaim and get new credentials
 			fmt.Sprintf("sleep 12 && curl -v %s", artifactURL),
 		},
-		Image:      json.RawMessage(`"centos:latest"`),
+		Image:      json.RawMessage(`"denolehov/curl"`),
 		MaxRunTime: 60,
 		Features: dockerworker.FeatureFlags{
 			TaskclusterProxy: true,
