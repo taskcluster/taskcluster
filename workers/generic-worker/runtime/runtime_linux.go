@@ -18,7 +18,6 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		/usr/sbin/useradd -m -d "${homedir}" "${username}"
 		/usr/bin/chfn -f "${username}"
 		echo "${username}:${password}" | /usr/sbin/chpasswd
-		/usr/bin/sed -i "s/^${username}:.*$/${username}:100000:65536/" /etc/subuid /etc/subgid
 	`
 
 	return host.Run("/usr/bin/env", "bash", "-c", createUserScript, user.Name, user.Password)

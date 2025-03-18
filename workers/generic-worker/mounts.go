@@ -73,10 +73,6 @@ type Cache struct {
 	// Keeps a record of which task user mounts this cache. This is so that
 	// when the cache is mounted as a new task user, file ownership can be
 	// recursively changed from the previous task user to the new task user.
-	// Note, when tasks create containers which contain additional users
-	// (subuids), it is recommended that those subuids and subgids are mapped
-	// with explicit fixed ranges, so that when a future task mounts the cache,
-	// inside the container the same uids will be seen.
 	//
 	// Note, although uid is typically a uint32, we store as a string since
 	// that is how the standard library passes it to us, and we pass it to
