@@ -145,29 +145,13 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 				"generic-worker:os-group:"+s[len("docker-worker:capability:device:kvm:"):]+"/libvirt",
 			)
 		case s == "docker-worker:capability:device:loopbackVideo":
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:loopback-video:*",
-				"generic-worker:os-group:"+taskQueueID+"/video",
-			)
+			gwScopes = append(gwScopes, "generic-worker:loopback-video:*")
 		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackVideo:"):
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:loopback-video:"+s[len("docker-worker:capability:device:loopbackVideo:"):],
-				"generic-worker:os-group:"+s[len("docker-worker:capability:device:loopbackVideo:"):]+"/video",
-			)
+			gwScopes = append(gwScopes, "generic-worker:loopback-video:"+s[len("docker-worker:capability:device:loopbackVideo:"):])
 		case s == "docker-worker:capability:device:loopbackAudio":
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:loopback-audio:*",
-				"generic-worker:os-group:"+taskQueueID+"/audio",
-			)
+			gwScopes = append(gwScopes, "generic-worker:loopback-audio:*")
 		case strings.HasPrefix(s, "docker-worker:capability:device:loopbackAudio:"):
-			gwScopes = append(
-				gwScopes,
-				"generic-worker:loopback-audio:"+s[len("docker-worker:capability:device:loopbackAudio:"):],
-				"generic-worker:os-group:"+s[len("docker-worker:capability:device:loopbackAudio:"):]+"/audio",
-			)
+			gwScopes = append(gwScopes, "generic-worker:loopback-audio:"+s[len("docker-worker:capability:device:loopbackAudio:"):])
 		case strings.HasPrefix(s, "docker-worker:"):
 			gwScopes = append(gwScopes, "generic-worker:"+s[len("docker-worker:"):])
 		}
@@ -544,12 +528,6 @@ func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generic
 		// task user needs to be in kvm and libvirt groups for KVM to work:
 		// https://help.ubuntu.com/community/KVM/Installation
 		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
-	}
-	if dwPayload.Capabilities.Devices.LoopbackAudio && config["allowLoopbackAudio"].(bool) {
-		gwPayload.OSGroups = append(gwPayload.OSGroups, "audio")
-	}
-	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
-		gwPayload.OSGroups = append(gwPayload.OSGroups, "video")
 	}
 	gwPayload.OSGroups = append(gwPayload.OSGroups, "docker")
 }
