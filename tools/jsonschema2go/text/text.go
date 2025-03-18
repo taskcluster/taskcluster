@@ -93,13 +93,13 @@ func Indent(text, indent string) string {
 	}
 	if text[len(text)-1:] == "\n" {
 		result := ""
-		for _, j := range strings.Split(text[:len(text)-1], "\n") {
+		for j := range strings.SplitSeq(text[:len(text)-1], "\n") {
 			result += indent + j + "\n"
 		}
 		return result
 	}
 	result := ""
-	for _, j := range strings.Split(strings.TrimRight(text, "\n"), "\n") {
+	for j := range strings.SplitSeq(strings.TrimRight(text, "\n"), "\n") {
 		result += indent + j + "\n"
 	}
 	return result[:len(result)-1]
@@ -110,7 +110,7 @@ func Indent(text, indent string) string {
 // the provided text, followed by a final newline character.
 func Underline(text string) string {
 	var maxlen int
-	for _, j := range strings.Split(text, "\n") {
+	for j := range strings.SplitSeq(text, "\n") {
 		if len(j) > maxlen {
 			maxlen = len(j)
 		}
