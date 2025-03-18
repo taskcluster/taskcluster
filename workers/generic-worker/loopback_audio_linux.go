@@ -61,7 +61,7 @@ func (lat *LoopbackAudioTask) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("loopback audio device number must be between 0 and 31, inclusive"))
 	}
 
-	if !slices.Contains(lat.task.Payload.OSGroups, "audio") {
+	if lat.task.D2GInfo == nil && !slices.Contains(lat.task.Payload.OSGroups, "audio") {
 		lat.task.Warn("The 'audio' group is not in the list of OS groups. Consider adding so that the loopback audio devices will work as expected.")
 	}
 
