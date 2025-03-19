@@ -82,6 +82,5 @@ testSuite:
         - 125
         - 128
       osGroups:
-      - audio
       - docker
     name: Bugmon Processor disableSeccomp test task

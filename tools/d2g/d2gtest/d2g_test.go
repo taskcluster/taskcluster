@@ -61,12 +61,9 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:loopback-video:*"
 	//	"generic-worker:loopback-video:x/y/z"
 	//	"generic-worker:monkey"
-	//	"generic-worker:os-group:/video"
 	//	"generic-worker:os-group:proj-misc/tutorial/docker"
-	//	"generic-worker:os-group:proj-misc/tutorial/video"
 	//	"generic-worker:os-group:x/y/z/kvm"
 	//	"generic-worker:os-group:x/y/z/libvirt"
-	//	"generic-worker:os-group:x/y/z/video"
 	//	"generic-worker:teapot"
 }
 
