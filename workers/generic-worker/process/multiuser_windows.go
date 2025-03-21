@@ -98,8 +98,10 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 		}
 	}
 	return &Command{
-		Cmd:   cmd,
-		abort: make(chan struct{}),
+		Cmd:                   cmd,
+		abort:                 make(chan struct{}),
+		usageChan:             make(chan *ResourceUsage, 1),
+		usageMeasurementsDone: make(chan struct{}),
 	}, nil
 }
 
@@ -123,6 +125,8 @@ func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, en
 func (c *Command) Kill() (killOutput string, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	// abort even if process hasn't started
+	close(c.abort)
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
 		return "", nil
@@ -133,7 +137,6 @@ func (c *Command) Kill() (killOutput string, err error) {
 	// 	// If process has finished, nothing to kill
 	// 	return
 	// }
-	close(c.abort)
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed

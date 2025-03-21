@@ -159,6 +159,8 @@ and reports back results to the queue.
                                             (such as formatting a hard drive) and then
                                             rebooting in the run-generic-worker.bat script.
                                             [default: false]
+          disableOOMProtection              If true, the worker will not abort tasks that use
+                                            >= 90% of the available memory. [default: false]
           downloadsDir                      The directory to cache downloaded files for
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This

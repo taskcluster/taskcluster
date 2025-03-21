@@ -1,5 +1,6 @@
 from __future__ import division, print_function, absolute_import
 import datetime
+from datetime import timezone
 import os
 import pytest
 
@@ -36,8 +37,8 @@ async def test_async_works_with_temporary_credentials():
     tempCred = subjectAsync.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:xyz'],
     )
     client = subjectAsync.Auth({
