@@ -30,6 +30,7 @@ import { THEME } from '../../../utils/constants';
 import fromNow from '../../../utils/fromNow';
 import { withAuth } from '../../../utils/Auth';
 import SignInDialog from '../../../components/SignInDialog';
+import { getAuditHistory } from '../../../utils/getAuditHistory';
 
 @withAuth
 @withApollo
@@ -105,6 +106,10 @@ export default class ViewClient extends Component {
       return JSON.stringify(omit(['expires'], initialClient));
     },
   });
+
+  handleAuditHistory = async clientId => {
+    return getAuditHistory('client', clientId);
+  };
 
   handleDeleteClient = async clientId => {
     this.setState({ dialogError: null, loading: true });
@@ -405,6 +410,7 @@ export default class ViewClient extends Component {
                     onDialogActionComplete={this.handleDialogActionComplete}
                     onDialogActionClose={this.handleDialogActionClose}
                     onDialogActionOpen={this.handleDialogActionOpen}
+                    onAuditHistory={this.handleAuditHistory}
                   />
                 )}
               </Fragment>
