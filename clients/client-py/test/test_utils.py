@@ -209,15 +209,17 @@ def test_repeat(text):
     s = subject.stableSlugId()
     assert s(text) == s(text)
 
-    def test_not_equal():
-        s = subject.stableSlugId()
-        assert s("first") != s("second")
 
-    @given(st.text())
-    def test_invalidate(text):
-        s1 = subject.stableSlugId()
-        s2 = subject.stableSlugId()
-        assert s1(text) != s2(text)
+def test_not_equal():
+    s = subject.stableSlugId()
+    assert s("first") != s("second")
+
+
+@given(st.text())
+def test_invalidate(text):
+    s1 = subject.stableSlugId()
+    s2 = subject.stableSlugId()
+    assert s1(text) != s2(text)
 
 
 examples = [{"expr": '1 hour', "from": '2017-01-19T16:27:20.974Z', "result": '2017-01-19T17:27:20.974Z'},

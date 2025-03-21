@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import re
 import json
 import datetime
+from datetime import timezone
 import base64
 import logging
 import os
@@ -109,7 +110,7 @@ def fromNow(offset, dateObj=None):
     )
 
     if not dateObj:
-        dateObj = datetime.datetime.utcnow()
+        dateObj = datetime.datetime.now(timezone.utc)
 
     return dateObj + delta if future else dateObj - delta
 
