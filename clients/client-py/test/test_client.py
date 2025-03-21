@@ -2,6 +2,7 @@ from __future__ import division, print_function
 import types
 import time
 import datetime
+from datetime import timezone
 import urllib
 import os
 import re
@@ -851,8 +852,8 @@ def test_temporary_credentials():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:xyz'],
     )
     client = subject.Auth({
@@ -871,8 +872,8 @@ def test_named_temporary_credentials():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:xyz'],
         name='credName'
     )
@@ -892,8 +893,8 @@ def test_temporary_credentials_authorizedScopes():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:xyz:*'],
     )
     client = subject.Auth({
@@ -913,8 +914,8 @@ def test_named_temporary_credentials_authorizedScopes():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:xyz:*'],
         name='credName'
     )
@@ -970,8 +971,8 @@ def test_temp_credentials_signed_url():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:*'],
     )
     client = subject.Auth({
@@ -1011,8 +1012,8 @@ def test_temp_credentials_signed_url_authorizedScopes():
     tempCred = subject.createTemporaryCredentials(
         'tester',
         'no-secret',
-        datetime.datetime.utcnow(),
-        datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        datetime.datetime.now(timezone.utc),
+        datetime.datetime.now(timezone.utc) + datetime.timedelta(hours=1),
         ['test:*'],
     )
     client = subject.Auth({
