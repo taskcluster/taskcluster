@@ -15,6 +15,7 @@ task-defaults:
     using: bare
   worker:
     docker-image: {in-tree: ci}
+    chain-of-trust: true
     caches:
       - name: taskcluster
         mount-point: /builds/worker/checkouts

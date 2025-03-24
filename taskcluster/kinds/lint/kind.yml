@@ -11,6 +11,7 @@ task-defaults:
     using: bare
   worker:
     max-run-time: 600
+    chain-of-trust: true
 
 tasks:
   nodejs:
