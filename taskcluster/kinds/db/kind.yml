@@ -11,6 +11,7 @@ task-defaults:
     using: bare
   worker:
     docker-image: {in-tree: ci}
+    chain-of-trust: true
     max-run-time: 600
 
 tasks:

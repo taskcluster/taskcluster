@@ -177,6 +177,7 @@ tasks:
             "${trustDomain}-level-${level}-checkouts-sparse-v2": /builds/worker/checkouts
 
           features:
+            chainOfTrust: true
             taskclusterProxy: true
 
           # Note: This task is built server side without the context or tooling that
