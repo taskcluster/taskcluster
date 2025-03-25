@@ -109,6 +109,7 @@ export default class ClientForm extends Component {
     onDialogActionClose: func,
     /** Initial client to use for third party login */
     initialThirdPartyClient: client,
+    onAuditHistory: func,
   };
 
   static defaultProps = {
@@ -125,6 +126,7 @@ export default class ClientForm extends Component {
     onDialogActionOpen: null,
     onDialogActionClose: null,
     initialThirdPartyClient: {},
+    onAuditHistory: null,
   };
 
   query = parse(this.props.location.search.slice(1));
@@ -141,6 +143,7 @@ export default class ClientForm extends Component {
     scopeText: (this.props.client.scopes || []).join('\n'),
     expandedScopes: this.props.client.expandedScopes,
     disabled: this.props.client.disabled,
+    auditHistory: [],
   };
 
   handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
@@ -156,6 +159,10 @@ export default class ClientForm extends Component {
   handleEnableClient = () => {
     this.props.onEnableClient(this.state.clientId);
   };
+
+  handleAuditHistory = () => {
+    this.props.onAuditHistory(this.state.clientId)
+  }
 
   handleExpirationChange = expires => {
     this.setState({
@@ -202,6 +209,7 @@ export default class ClientForm extends Component {
       onDialogActionError,
       onDialogActionOpen,
       onDialogActionComplete,
+      onAuditHistory,
     } = this.props;
     const {
       description,
@@ -215,6 +223,7 @@ export default class ClientForm extends Component {
       deleteOnExpiration,
       expandedScopes,
       disabled,
+      auditHistory,
     } = this.state;
     const isClientDirty =
       isNewClient ||
@@ -355,6 +364,27 @@ export default class ClientForm extends Component {
               </ListItem>
             </Fragment>
           ) : null}
+            {!isNewClient && client && auditHistory.length > 0 && (
+            <Fragment>
+              <ListItem>
+                <ListItemText
+                  primary="Audit History"
+                  secondary="History of changes made to this client"
+                />
+              </ListItem>
+              <ListItem>
+                <List dense>
+                  {auditHistory.map((audit, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={audit.action_type}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </ListItem>
+            </Fragment>
+          )}
         </List>
         {isNewClient ? (
           <Button
