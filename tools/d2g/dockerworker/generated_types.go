@@ -17,6 +17,7 @@ type (
 		// Possible values:
 		//   * "file"
 		//   * "directory"
+		//   * "volume"
 		Type string `json:"type"`
 	}
 
@@ -242,7 +243,8 @@ func JSONSchema() string {
         "type": {
           "enum": [
             "file",
-            "directory"
+            "directory",
+            "volume"
           ],
           "title": "Artifact upload type.",
           "type": "string"

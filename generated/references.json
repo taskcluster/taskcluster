@@ -9110,7 +9110,8 @@
             "type": {
               "enum": [
                 "file",
-                "directory"
+                "directory",
+                "volume"
               ],
               "title": "Artifact upload type.",
               "type": "string"
@@ -9907,7 +9908,8 @@
             "type": {
               "enum": [
                 "file",
-                "directory"
+                "directory",
+                "volume"
               ],
               "title": "Artifact upload type.",
               "type": "string"
@@ -10695,7 +10697,8 @@
             "type": {
               "enum": [
                 "file",
-                "directory"
+                "directory",
+                "volume"
               ],
               "title": "Artifact upload type.",
               "type": "string"

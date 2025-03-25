@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -157,7 +156,7 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 		}
 	}
 
-	sort.Strings(gwScopes)
+	slices.Sort(gwScopes)
 
 	return
 }
@@ -303,7 +302,7 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 		names[i] = name
 		i++
 	}
-	sort.Strings(names)
+	slices.Sort(names)
 	for i, name := range names {
 		gwArt := new(genericworker.Artifact)
 		defaults.SetDefaults(gwArt)
@@ -311,8 +310,15 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 		gwArt.Expires = dwPayload.Artifacts[name].Expires
 		gwArt.Name = name
 		ext := filepath.Ext(dwPayload.Artifacts[name].Path)
-		gwArt.Path = "artifact" + strconv.Itoa(i) + ext
-		gwArt.Type = dwPayload.Artifacts[name].Type
+		if dwPayload.Artifacts[name].Type == "volume" {
+			gwArt.Path = "volume" + strconv.Itoa(i) + ext
+			// Generic Worker treats Docker Worker
+			// volume artifacts as a directory artifact
+			gwArt.Type = "directory"
+		} else {
+			gwArt.Path = "artifact" + strconv.Itoa(i) + ext
+			gwArt.Type = dwPayload.Artifacts[name].Type
+		}
 		gwArt.Optional = true
 
 		gwArtifacts[i] = *gwArt
@@ -357,7 +363,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		)
 	}
 
-	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, config)
+	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, gwArtifacts, config)
 	if err != nil {
 		return nil, containerName, fmt.Errorf("could not form docker run command: %w", err)
 	}
@@ -395,7 +401,7 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}, containerName, nil
 }
 
-func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, config map[string]any) (string, error) {
+func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, config map[string]any) (string, error) {
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
@@ -412,7 +418,7 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
-	command.WriteString(createVolumeMountsString(dwPayload, wdcs, config))
+	command.WriteString(createVolumeMountsString(dwPayload, wdcs, gwArtifacts, config))
 	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
 		command.WriteString(" --add-host=taskcluster:host-gateway")
 	}
@@ -435,6 +441,10 @@ func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPay
 		// complete, so no cp command is needed for it. The image artifact is
 		// created after the run command is complete.
 		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
+			continue
+		}
+		// Volume artifact mounts do not need to be copied
+		if dwPayload.Artifacts[gwArtifacts[i].Name].Type == "volume" {
 			continue
 		}
 		commands = append(commands, fmt.Sprintf("docker cp %s:%s %s", containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
@@ -561,10 +571,15 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache, config map[string]any) string {
+func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, config map[string]any) string {
 	volumeMounts := strings.Builder{}
 	for _, wdc := range wdcs {
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
+	}
+	for _, gwArtifact := range gwArtifacts {
+		if strings.HasPrefix(gwArtifact.Path, "volume") {
+			volumeMounts.WriteString(` -v "$(pwd)/` + gwArtifact.Path + ":" + dwPayload.Artifacts[gwArtifact.Name].Path + `"`)
+		}
 	}
 	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
 		volumeMounts.WriteString(" --device=/dev/kvm")
@@ -646,7 +661,7 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		envVarNames = append(envVarNames, envVarName)
 	}
 	envVarNames = append(envVarNames, additionalEnvVars...)
-	sort.Strings(envVarNames)
+	slices.Sort(envVarNames)
 	for _, envVarName := range envVarNames {
 		envStrBuilder.WriteString(envSetting(envVarName))
 	}
