@@ -67,3 +67,57 @@ testSuite:
       osGroups:
       - docker
     name: Artifacts test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that volume artifacts will be created in the resulting generic
+      worker task payload.
+    dockerWorkerTaskPayload:
+      artifacts:
+        public/fred:
+          path: /home/worker/artifacts
+          type: volume
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      artifacts:
+      - expires: "0001-01-01T00:00:00.000Z"
+        name: public/fred
+        optional: true
+        path: volume0
+        type: directory
+      command:
+      - - bash
+        - -cx
+        - |-
+          docker pull ubuntu
+          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/volume0:/home/worker/artifacts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          exit_code=$?
+          docker rm -v taskcontainer
+          exit "${exit_code}"
+      features:
+        backingLog: true
+        liveLog: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 4500
+      onExitStatus:
+        retry:
+        - 125
+        - 128
+      osGroups:
+      - docker
+    name: Artifacts test
