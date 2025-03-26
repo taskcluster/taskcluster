@@ -113,7 +113,7 @@ func websocketToTCPHandlerFunc(targetPort uint16) http.HandlerFunc {
 
 		go func() {
 			defer kill()
-			var buf []byte = make([]byte, 1024*512)
+			buf := make([]byte, 1024*512)
 			for {
 				n, err := tcpconn.Read(buf)
 				if err != nil {

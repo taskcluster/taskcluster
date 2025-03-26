@@ -35,7 +35,7 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		pathRegExp = ".*"
 	} else {
 		slug := slugid.V4()
-		pathRegExp = strings.Replace(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*", -1)
+		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*")
 	}
 	return []string{
 			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,

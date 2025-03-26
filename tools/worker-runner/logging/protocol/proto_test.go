@@ -27,10 +27,7 @@ func TestLoggingProtocol(t *testing.T) {
 	wkr.WorkerProtocol.WaitUntilInitialized()
 
 	waitForLogMessage := func() {
-		for {
-			if len(logDest.Messages()) > 0 {
-				break
-			}
+		for len(logDest.Messages()) == 0 {
 			time.Sleep(10 * time.Millisecond)
 		}
 	}

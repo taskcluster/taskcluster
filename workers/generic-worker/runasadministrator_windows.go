@@ -55,7 +55,7 @@ func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
 		return MalformedPayloadError(fmt.Errorf(`UAC is disabled on this worker type (%v/%v) - therefore runAsAdministrator property not allowed in task payload`, config.ProvisionerID, config.WorkerType))
 	}
 	for _, c := range l.task.Commands {
-		adminToken, err := win32.GetLinkedToken(c.Cmd.SysProcAttr.Token)
+		adminToken, err := win32.GetLinkedToken(c.SysProcAttr.Token)
 		if err != nil {
 			return MalformedPayloadError(fmt.Errorf(`could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
 		}

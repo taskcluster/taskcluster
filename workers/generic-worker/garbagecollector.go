@@ -69,7 +69,7 @@ func runGarbageCollection(r Resources) error {
 		}
 	}
 	if currentFreeSpace < requiredFreeSpace {
-		if config.PublicPlatformConfig.D2GEnabled() {
+		if config.D2GEnabled() {
 			err := host.Run("/usr/bin/env", "bash", "-c", "docker image prune --all --force")
 			if err != nil {
 				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)

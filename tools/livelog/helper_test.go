@@ -72,7 +72,8 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 		if err != nil {
 			return err
 		}
-		if addr == ":getport" {
+		switch addr {
+		case ":getport":
 			ts.getCond.L.Lock()
 			if ts.getPort != 0 {
 				panic("runServer called more than once!")
@@ -81,7 +82,7 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 			ts.getServer = server
 			ts.getCond.Broadcast()
 			ts.getCond.L.Unlock()
-		} else if addr == ":putport" {
+		case ":putport":
 			ts.putCond.L.Lock()
 			if ts.putPort != 0 {
 				panic("runServer called more than once!")
@@ -90,7 +91,7 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 			ts.putServer = server
 			ts.putCond.Broadcast()
 			ts.putCond.L.Unlock()
-		} else {
+		default:
 			panic(fmt.Sprintf("Expected addr :putport or :getport, got %s", addr))
 		}
 		if crtFile != "" || keyFile != "" {
@@ -142,10 +143,7 @@ func (ts *TestLivelogServer) Close() {
 func (ts *TestLivelogServer) PutPort() uint16 {
 	ts.putCond.L.Lock()
 	defer ts.putCond.L.Unlock()
-	for {
-		if ts.putPort != 0 {
-			break
-		}
+	for ts.putPort == 0 {
 		ts.putCond.Wait()
 	}
 	return ts.putPort
@@ -155,10 +153,7 @@ func (ts *TestLivelogServer) PutPort() uint16 {
 func (ts *TestLivelogServer) GetPort() uint16 {
 	ts.getCond.L.Lock()
 	defer ts.getCond.L.Unlock()
-	for {
-		if ts.getPort != 0 {
-			break
-		}
+	for ts.getPort == 0 {
 		ts.getCond.Wait()
 	}
 	return ts.getPort

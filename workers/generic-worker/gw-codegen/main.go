@@ -95,7 +95,7 @@ func generateFunctions(ymlFile string) []byte {
 	}
 
 	// the following strings.Replace function call safely escapes backticks (`) in rawJSON
-	escapedJSON := "`" + strings.Replace(string(rawJSON), "`", "` + \"`\" + `", -1) + "`"
+	escapedJSON := "`" + strings.ReplaceAll(string(rawJSON), "`", "` + \"`\" + `") + "`"
 
 	response := `
 // Returns json schema for the payload part of the task definition. Please
