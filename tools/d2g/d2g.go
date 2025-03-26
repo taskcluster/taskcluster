@@ -399,7 +399,11 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	command := strings.Builder{}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run -t --name %v", dwPayload.MaxRunTime, containerName))
+
+	// Note `-p` option of timeout command was added in GNU timeout 9.6, but we
+	// may have timeout 9.5 in places, so prefer --preserve-status which is
+	// supported in both.
+	command.WriteString(fmt.Sprintf("timeout -s TERM -k 10 --preserve-status %v docker run -t --name %v", dwPayload.MaxRunTime, containerName))
 
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/

@@ -47,7 +47,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          timeout -s TERM -k 10 --preserve-status 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
           exit_code=$?
           docker cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
           docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
