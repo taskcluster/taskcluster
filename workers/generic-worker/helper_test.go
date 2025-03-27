@@ -58,7 +58,7 @@ func setup(t *testing.T) {
 //
 // See https://bugzil.la/1553953
 func testWorkerType() string {
-	return "test-" + strings.ToLower(strings.Replace(slugid.Nice(), "_", "", -1)) + "-a"
+	return "test-" + strings.ToLower(strings.ReplaceAll(slugid.Nice(), "_", "")) + "-a"
 }
 
 func scheduleTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P) (taskID string) {
@@ -80,8 +80,8 @@ func scheduleNamedTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload
 		// horrible hack here, until we have jsonschema2go generating pointer types...
 		//
 		//////////////////////////////////////////////////////////////////////////////////
-		b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00.000Z",`), []byte{}, -1)
-		b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00.000Z"`), []byte{}, -1)
+		b = bytes.ReplaceAll(b, []byte(`"expires":"0001-01-01T00:00:00.000Z",`), []byte{})
+		b = bytes.ReplaceAll(b, []byte(`,"expires":"0001-01-01T00:00:00.000Z"`), []byte{})
 
 		payloadJSON := json.RawMessage{}
 		err = json.Unmarshal(b, &payloadJSON)

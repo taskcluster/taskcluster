@@ -210,9 +210,10 @@ func confirmCancellation(ids []string, names []string, out io.Writer) bool {
 		var c string
 		_, _ = fmt.Scanf("%s", &c)
 
-		if c == "y" || c == "Y" {
+		switch c {
+		case "y", "Y":
 			return true
-		} else if c == "n" || c == "N" {
+		case "n", "N":
 			return false
 		}
 		// otherwise reloop to ask again

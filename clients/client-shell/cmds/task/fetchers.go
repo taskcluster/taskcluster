@@ -85,9 +85,10 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 
 		response = strings.ToLower(strings.TrimSpace(response))
 
-		if response == "y" || response == "yes" {
+		switch response {
+		case "y", "yes":
 			return true
-		} else if response == "n" || response == "no" {
+		case "n", "no", "":
 			return false
 		}
 	}

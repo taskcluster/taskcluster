@@ -45,7 +45,7 @@ func (em *ExitManager) shutdown() {
 	// https://github.com/taskcluster/taskcluster/issues/2886, this is a
 	// fast-and-dirty way to determine what it means to "shut down" this
 	// worker.
-	dynamicallyProvisioned := !(em.runnercfg.Provider.ProviderType == "static" || em.runnercfg.Provider.ProviderType == "standalone")
+	dynamicallyProvisioned := em.runnercfg.Provider.ProviderType != "static" && em.runnercfg.Provider.ProviderType != "standalone"
 
 	if !dynamicallyProvisioned {
 		log.Println("Host is not dynamically provisioned; exiting")

@@ -233,7 +233,7 @@ func canonicalPath(path string) string {
 	if os.PathSeparator == '/' {
 		return path
 	}
-	return strings.Replace(path, string(os.PathSeparator), "/", -1)
+	return strings.ReplaceAll(path, string(os.PathSeparator), "/")
 }
 
 // createDataArtifact creates a TaskArtifact for the given data, according to

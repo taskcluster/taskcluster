@@ -145,7 +145,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 
 		dirBytes, err := os.ReadFile(dir)
-		dirString := strings.SplitN(strings.Replace(string(dirBytes), "\r\n", "\n", -1), "\n", 2)[0]
+		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
 
 		if err != nil {
 			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
@@ -222,11 +222,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 func (task *TaskRun) setVariable(variable string, value string) error {
 	for i := range task.Commands {
 		newEnv := []string{fmt.Sprintf("%s=%s", variable, value)}
-		combined, err := win32.MergeEnvLists(&task.Commands[i].Cmd.Env, &newEnv)
+		combined, err := win32.MergeEnvLists(&task.Commands[i].Env, &newEnv)
 		if err != nil {
 			return err
 		}
-		task.Commands[i].Cmd.Env = *combined
+		task.Commands[i].Env = *combined
 	}
 	return nil
 }

@@ -41,7 +41,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	}
 
 	// Convert dwPayload to gwPayload
-	gwPayload, conversionInfo, err := d2g.ConvertPayload(dwPayload, config.PublicPlatformConfig.D2GConfig)
+	gwPayload, conversionInfo, err := d2g.ConvertPayload(dwPayload, config.D2GConfig)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}
@@ -84,7 +84,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("could not convert task definition from JSON to YAML: %v", err))
 	}
 
-	if !config.PublicPlatformConfig.NativePayloadsDisabled() {
+	if !config.NativePayloadsDisabled() {
 		task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")
 		task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
 		task.Warn("utility (Docker Worker 2 Generic Worker):")
@@ -98,7 +98,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 		task.Warn("")
 	}
 
-	if config.PublicPlatformConfig.LogD2GTranslation() {
+	if config.LogD2GTranslation() {
 		task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
 	}
 

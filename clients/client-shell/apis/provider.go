@@ -171,7 +171,7 @@ func execute(
 	// Parameterize the route
 	route := entry.Route
 	for k, v := range args {
-		val := strings.Replace(url.QueryEscape(v), "+", "%20", -1)
+		val := strings.ReplaceAll(url.QueryEscape(v), "+", "%20")
 		route = strings.Replace(route, "<"+k+">", val, 1)
 	}
 
@@ -196,7 +196,7 @@ func execute(
 	g.MaxSize = 0
 
 	// use a custom client that does not follow redirects
-	var httpClient http.Client = *g.Client
+	httpClient := *g.Client
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
@@ -231,7 +231,7 @@ func execute(
 		// Got considers redirects an error, but we would like to read the body as if it
 		// was success, so ignore such errors
 		if brcerr, ok := err.(got.BadResponseCodeError); ok {
-			if brcerr.Response.StatusCode < 400 {
+			if brcerr.StatusCode < 400 {
 				res = brcerr.Response
 				err = nil
 			}

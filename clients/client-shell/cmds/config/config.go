@@ -100,11 +100,12 @@ func cmdConfig(cmd *cobra.Command, args []string) error {
 	var formatter func(any) []byte
 	format, _ := cmd.Flags().GetString("format")
 
-	if format == "yaml" {
+	switch format {
+	case "yaml":
 		formatter = formatYAML
-	} else if format == "json" {
+	case "json":
 		formatter = formatJSON
-	} else {
+	default:
 		return fmt.Errorf("unsupported output format '%s'", format)
 	}
 

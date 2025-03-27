@@ -155,7 +155,7 @@ func NewCommandContext(ctx context.Context, commandLine []string, workingDirecto
 }
 
 func (c *Command) SetEnv(envVar, value string) {
-	c.Cmd.Env = append(c.Cmd.Env, envVar+"="+value)
+	c.Env = append(c.Env, envVar+"="+value)
 }
 
 func (c *Command) Kill() (killOutput string, err error) {

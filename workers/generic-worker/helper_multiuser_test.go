@@ -39,7 +39,7 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	runningTests = true
 	testConfig.HeadlessTasks = true
 	testConfig.EnableRunTaskAsCurrentUser = true
-	testConfig.PublicPlatformConfig.EnableD2G(t)
+	testConfig.EnableD2G(t)
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
