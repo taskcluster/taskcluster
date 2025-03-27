@@ -270,21 +270,35 @@ properties:
           Since: generic-worker 48.2.0
         default: true
       runTaskAsCurrentUser:
-          type: boolean
-          title: Run task as current user
-          description: |-
-            If `true`, task commands will be executed as the
-            user currently running Generic Worker (typically
-            `root` or `LocalSystem`), rather than as the
-            dedicated task user created for the task. The task
-            user account will still be created, and is
-            available for the task to use.
+        type: boolean
+        title: Run task as current user
+        description: |-
+          If `true`, task commands will be executed as the
+          user currently running Generic Worker (typically
+          `root` or `LocalSystem`), rather than as the
+          dedicated task user created for the task. The task
+          user account will still be created, and is
+          available for the task to use.
 
-            Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
-            Tasks submitted without this scope will be resolved
-            as `exception/malformed-payload`.
+          Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+          Tasks submitted without this scope will be resolved
+          as `exception/malformed-payload`.
 
-            Since: generic-worker 81.0.0
+          Since: generic-worker 81.0.0
+      resourceMonitor:
+        type: boolean
+        title: Resource monitor
+        description: |-
+          The resource monitor features reports Peak System Memory Used,
+          Average System Memory Used and Total Available Memory in the
+          task log for each task command executed. It also will abort
+          any task command that causes the available system memory to be
+          reduced to less than or equal to 10% of the total system memory
+          for five consecutive measurements at 0.5s intervals. When this
+          happens, the task will be resolved as failed.
+
+          Since: generic-worker 83.4.0
+        default: true
   mounts:
     type: array
     description: |-

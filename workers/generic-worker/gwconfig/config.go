@@ -42,6 +42,7 @@ type (
 		EnableLiveLog                  bool           `json:"enableLiveLog"`
 		EnableMounts                   bool           `json:"enableMounts"`
 		EnableOSGroups                 bool           `json:"enableOSGroups"`
+		EnableResourceMonitor          bool           `json:"enableResourceMonitor"`
 		EnableTaskclusterProxy         bool           `json:"enableTaskclusterProxy"`
 		IdleTimeoutSecs                uint           `json:"idleTimeoutSecs"`
 		InstanceID                     string         `json:"instanceId"`

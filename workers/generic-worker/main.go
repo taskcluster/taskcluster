@@ -11,7 +11,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -63,7 +62,7 @@ var (
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
 	configFile     *gwconfig.File
-	Features       []Feature
+	features       []Feature
 
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
@@ -73,14 +72,15 @@ var (
 )
 
 func initialiseFeatures() (err error) {
-	Features = []Feature{
+	features = []Feature{
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},
+		&ResourceMonitorFeature{},
 	}
-	Features = append(Features, platformFeatures()...)
-	for _, feature := range Features {
+	features = append(features, platformFeatures()...)
+	for _, feature := range features {
 		log.Printf("Initialising task feature %v...", feature.Name())
 		err := feature.Initialise()
 		if err != nil {
@@ -223,6 +223,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			EnableLiveLog:                  true,
 			EnableMounts:                   true,
 			EnableOSGroups:                 true,
+			EnableResourceMonitor:          true,
 			EnableTaskclusterProxy:         true,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
@@ -822,38 +823,13 @@ func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
-	c := task.Commands[index]
 	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
-	log.Print("Executing command " + strconv.Itoa(index) + ": " + c.String())
+	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
 	cee := task.prepareCommand(index)
 	if cee != nil {
 		panic(cee)
 	}
-	go c.MonitorResources(func(previouslyWarned bool) bool {
-		if config.DisableOOMProtection {
-			if !previouslyWarned {
-				task.Warn("Sustained memory usage above 90%!")
-				task.Warn("OOM protections are disabled, continuing task...")
-			}
-			return false
-		} else {
-			task.Warn("Sustained memory usage above 90%!")
-			task.Warn("Aborting task to prevent OOM issues...")
-		}
-		err := task.StatusManager.Abort(
-			&CommandExecutionError{
-				Cause:      errors.New("task aborted due to sustained memory usage above 90%"),
-				Reason:     internalError,
-				TaskStatus: aborted,
-			},
-		)
-		if err != nil {
-			task.Warnf("Error when aborting task: %v", err)
-		}
-		return true
-	})
-	task.result = c.Execute()
-	task.result.GatherUsage(c)
+	task.result = task.Commands[index].Execute()
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}
@@ -1046,7 +1022,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	taskFeatureOrigins := []TaskFeatureOrigin{}
 
 	// create task features
-	for _, feature := range Features {
+	for _, feature := range features {
 		if feature.IsRequested(task) {
 			if !feature.IsEnabled() {
 				workerPoolID := config.ProvisionerID + "/" + config.WorkerType

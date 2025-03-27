@@ -263,27 +263,41 @@ oneOf:
 
             Since: generic-worker 53.1.0
         loopbackAudio:
-            type: boolean
-            title: Loopback Audio device
-            description: |-
-              Audio loopback device created using snd-aloop.
-              An audio device will be available for the task. Its
-              location will be `/dev/snd`. Devices inside that directory
-              will take the form `/dev/snd/controlC<N>`,
-              `/dev/snd/pcmC<N>D0c`, `/dev/snd/pcmC<N>D0p`,
-              `/dev/snd/pcmC<N>D1c`, and `/dev/snd/pcmC<N>D1p`,
-              where <N> is an integer between 0 and 31, inclusive.
-              The Generic Worker config setting `loopbackAudioDeviceNumber`
-              may be used to change the device number in case the
-              default value (`16`) conflicts with another
-              audio device on the worker.
+          type: boolean
+          title: Loopback Audio device
+          description: |-
+            Audio loopback device created using snd-aloop.
+            An audio device will be available for the task. Its
+            location will be `/dev/snd`. Devices inside that directory
+            will take the form `/dev/snd/controlC<N>`,
+            `/dev/snd/pcmC<N>D0c`, `/dev/snd/pcmC<N>D0p`,
+            `/dev/snd/pcmC<N>D1c`, and `/dev/snd/pcmC<N>D1p`,
+            where <N> is an integer between 0 and 31, inclusive.
+            The Generic Worker config setting `loopbackAudioDeviceNumber`
+            may be used to change the device number in case the
+            default value (`16`) conflicts with another
+            audio device on the worker.
 
-              This feature is only available on Linux. If a task
-              is submitted with this feature enabled on a non-Linux,
-              posix platform (FreeBSD, macOS), the task will resolve as
-              `exception/malformed-payload`.
+            This feature is only available on Linux. If a task
+            is submitted with this feature enabled on a non-Linux,
+            posix platform (FreeBSD, macOS), the task will resolve as
+            `exception/malformed-payload`.
 
-              Since: generic-worker 54.5.0
+            Since: generic-worker 54.5.0
+        resourceMonitor:
+          type: boolean
+          title: Resource monitor
+          description: |-
+            The resource monitor features reports Peak System Memory Used,
+            Average System Memory Used and Total Available Memory in the
+            task log for each task command executed. It also will abort
+            any task command that causes the available system memory to be
+            reduced to less than or equal to 10% of the total system memory
+            for five consecutive measurements at 0.5s intervals. When this
+            happens, the task will be resolved as failed.
+
+            Since: generic-worker 83.4.0
+          default: true
     mounts:
       type: array
       description: |-

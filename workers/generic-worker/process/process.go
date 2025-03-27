@@ -17,14 +17,17 @@ func (r *Result) Succeeded() bool {
 
 type (
 	Command struct {
-		mutex sync.RWMutex
+		// ResourceMonitor is a function that monitors the system's resource usage.
+		// It should send the resource usage data to the first channel of type
+		// *ResourceUsage and stop measuring usage when the second channel of
+		// type struct{} is closed.
+		ResourceMonitor func(chan *ResourceUsage, chan struct{})
+		mutex           sync.RWMutex
 		*exec.Cmd
 		// abort channel is closed when Kill() is called so that Execute() can
 		// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
 		// sometimes does not return promptly.
-		abort                 chan struct{}
-		usageChan             chan *ResourceUsage
-		usageMeasurementsDone chan struct{}
+		abort chan struct{}
 	}
 
 	Result struct {
@@ -38,9 +41,9 @@ type (
 	}
 
 	ResourceUsage struct {
-		AverageMemoryUsed    float64
-		PeakMemoryUsed       uint64
-		TotalMemoryAvailable uint64
+		AverageSystemMemoryUsed uint64
+		PeakSystemMemoryUsed    uint64
+		TotalMemoryAvailable    uint64
 	}
 )
 
@@ -70,7 +73,17 @@ func (c *Command) Execute() (r *Result) {
 	r = &Result{}
 	started := time.Now()
 
-	defer close(c.usageMeasurementsDone)
+	if c.ResourceMonitor != nil {
+		usageChan := make(chan *ResourceUsage, 1)
+		usageMeasurementsDone := make(chan struct{})
+
+		go c.ResourceMonitor(usageChan, usageMeasurementsDone)
+
+		defer func() {
+			close(usageMeasurementsDone)
+			r.Usage = <-usageChan
+		}()
+	}
 
 	c.mutex.Lock()
 	err := c.Start()
@@ -122,20 +135,20 @@ func (r *Result) String() string {
 	}
 	var usageStr string
 	if r.Usage != nil && r.Usage.TotalMemoryAvailable > 0 {
-		usageStr = fmt.Sprintf(" Average Memory Used: %v\n"+
-			"    Peak Memory Used: %v\n"+
-			" Total System Memory: %v\n",
-			formatMemoryString(r.Usage.AverageMemoryUsed),
-			formatMemoryString(r.Usage.PeakMemoryUsed),
+		usageStr = fmt.Sprintf(" Average System Memory Used: %v\n"+
+			"    Peak System Memory Used: %v\n"+
+			"        Total System Memory: %v\n",
+			formatMemoryString(r.Usage.AverageSystemMemoryUsed),
+			formatMemoryString(r.Usage.PeakSystemMemoryUsed),
 			formatMemoryString(r.Usage.TotalMemoryAvailable),
 		)
 	}
 	return fmt.Sprintf(""+
-		"           Exit Code: %v\n"+
-		"           User Time: %v\n"+
-		"         Kernel Time: %v\n"+
-		"           Wall Time: %v\n%v"+
-		"              Result: %v",
+		"                  Exit Code: %v\n"+
+		"                  User Time: %v\n"+
+		"                Kernel Time: %v\n"+
+		"                  Wall Time: %v\n%v"+
+		"                     Result: %v",
 		r.ExitCode(),
 		r.UserTime,
 		r.KernelTime,
@@ -156,86 +169,87 @@ func (r *Result) Verdict() string {
 	}
 }
 
-// GatherUsage collects the resource usage data for the command execution.
-func (r *Result) GatherUsage(c *Command) {
-	r.Usage = <-c.usageChan
-}
-
 func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stdout = writer
 	c.Stderr = writer
 }
 
 // formatMemoryString formats a memory size in bytes into a human-readable string.
-// It accepts a value of type float64 or uint64 representing the number of bytes.
 // The function returns a string with the value formatted to two decimal places
-// and appended with the appropriate unit: "B" for bytes, "MB" for megabytes, or "GB" for gigabytes.
-func formatMemoryString[T float64 | uint64](bytes T) string {
+// and appended with the appropriate unit: "B" for bytes, "KiB" for kibibyte,
+// "MiB" for mebibyte, or "GiB" for gibibyte.
+func formatMemoryString(bytes uint64) string {
 	val := float64(bytes)
-	if val < 1024*1024 {
+	if val < 1024 {
 		return fmt.Sprintf("%f B", val)
+	} else if val < 1024*1024 {
+		kb := val / 1024
+		return fmt.Sprintf("%.2f KiB", kb)
 	} else if val < 1024*1024*1024 {
 		mb := val / (1024 * 1024)
-		return fmt.Sprintf("%.2f MB", mb)
+		return fmt.Sprintf("%.2f MiB", mb)
 	} else {
 		gb := val / (1024 * 1024 * 1024)
-		return fmt.Sprintf("%.2f GB", gb)
+		return fmt.Sprintf("%.2f GiB", gb)
 	}
 }
 
-// MonitorResources monitors the system's memory usage at 500ms intervals while a command is executing.
+// MonitorResources returns a function that monitors the system's memory usage at 500ms
+// intervals while a command is executing.
 // It tracks peak memory used, total memory available, and calculates the average memory used.
 // If memory usage exceeds 90% for five consecutive measurements, it calls the provided abort function.
 // The abort function is called with a boolean indicating if a warning was previously issued.
 // If the abort function returns true (indicating the task will be aborted), the monitoring stops.
-// The function sends the collected ResourceUsage data through c.usageChan when monitoring stops.
-// The monitoring can also be stopped by sending a signal through c.usageMeasurementsDone.
-func (c *Command) MonitorResources(abort func(previouslyWarned bool) bool) {
-	var consecutiveHighMemoryUsage, numOfMeasurements, totalMemoryUsed uint64
-	previouslyWarned := false
-	usage := new(ResourceUsage)
-	ticker := time.NewTicker(500 * time.Millisecond)
+// The function sends the collected ResourceUsage data through usageChan when monitoring stops.
+// The monitoring can also be stopped by sending a signal through usageMeasurementsDone.
+func MonitorResources(abort func(previouslyWarned bool) bool) func(chan *ResourceUsage, chan struct{}) {
+	return func(usageChan chan *ResourceUsage, usageMeasurementsDone chan struct{}) {
+		var consecutiveHighMemoryUsage, numOfMeasurements, totalMemoryUsed uint64
+		previouslyWarned := false
+		usage := new(ResourceUsage)
+		ticker := time.NewTicker(500 * time.Millisecond)
 
-	defer func() {
-		ticker.Stop()
-		if numOfMeasurements > 0 {
-			usage.AverageMemoryUsed = float64(totalMemoryUsed) / float64(numOfMeasurements)
-		}
-		c.usageChan <- usage
-	}()
-
-	for {
-		select {
-		case <-ticker.C:
-			if vm, err := mem.VirtualMemory(); err == nil {
-				numOfMeasurements++
-
-				if vm.Used > usage.PeakMemoryUsed {
-					usage.PeakMemoryUsed = vm.Used
-				}
-				if usage.TotalMemoryAvailable == 0 {
-					usage.TotalMemoryAvailable = vm.Total
-				}
-				totalMemoryUsed += vm.Used
-
-				// if memory used is greater than 90%
-				// for 5 measurements consecutively, then
-				// kill the process
-				if vm.UsedPercent >= 90.0 {
-					consecutiveHighMemoryUsage++
-					if consecutiveHighMemoryUsage >= 5 {
-						if abort(previouslyWarned) {
-							return
-						} else {
-							previouslyWarned = true
-						}
-					}
-				} else {
-					consecutiveHighMemoryUsage = 0
-				}
+		defer func() {
+			ticker.Stop()
+			if numOfMeasurements > 0 {
+				usage.AverageSystemMemoryUsed = totalMemoryUsed / numOfMeasurements
 			}
-		case <-c.usageMeasurementsDone:
-			return
+			usageChan <- usage
+		}()
+
+		for {
+			select {
+			case <-ticker.C:
+				if vm, err := mem.VirtualMemory(); err == nil {
+					numOfMeasurements++
+
+					if vm.Used > usage.PeakSystemMemoryUsed {
+						usage.PeakSystemMemoryUsed = vm.Used
+					}
+					if usage.TotalMemoryAvailable == 0 {
+						usage.TotalMemoryAvailable = vm.Total
+					}
+					totalMemoryUsed += vm.Used
+
+					// if memory used is greater than 90%
+					// for 5 measurements consecutively, then
+					// kill the process
+					if vm.UsedPercent >= 90.0 {
+						consecutiveHighMemoryUsage++
+						if consecutiveHighMemoryUsage >= 5 {
+							if abort(previouslyWarned) {
+								return
+							} else {
+								previouslyWarned = true
+							}
+						}
+					} else {
+						consecutiveHighMemoryUsage = 0
+					}
+				}
+			case <-usageMeasurementsDone:
+				return
+			}
 		}
 	}
 }
