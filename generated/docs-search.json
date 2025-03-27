@@ -2289,6 +2289,20 @@
     "title": "Worker-Manager - Launch Configurations"
   },
   {
+    "element": "h4",
+    "id": "examples",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Examples",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h4",
+    "id": "how-it-works",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "How It Works",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
     "element": "h2",
     "id": "improved-provisioning",
     "path": "/reference/core/worker-manager/launch-configurations",
@@ -2307,6 +2321,20 @@
     "id": "usage-tracking",
     "path": "/reference/core/worker-manager/launch-configurations",
     "subtitle": "Usage Tracking",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h4",
+    "id": "use-cases",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Use Cases",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
+    "element": "h3",
+    "id": "using-initial-weight",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Using initial weight",
     "title": "Worker-Manager - Launch Configurations"
   },
   {
