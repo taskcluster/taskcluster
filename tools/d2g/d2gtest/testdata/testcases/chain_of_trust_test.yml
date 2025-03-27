@@ -38,10 +38,7 @@ testSuite:
         - |-
           docker pull 'my-little/pony:4.1'
           echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' 'my-little/pony:4.1')"'"}}' > chain-of-trust-additional-data.json
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
       env:
         ABC: def
         GHI: jkl
@@ -96,10 +93,7 @@ testSuite:
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
           echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' "${IMAGE_ID}")"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
       env:
         ABC: def
         GHI: jkl
@@ -160,10 +154,7 @@ testSuite:
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
           echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' "${IMAGE_ID}")"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" foo bar
       env:
         ABC: def
         GHI: jkl
@@ -220,10 +211,7 @@ testSuite:
         - |-
           docker pull 'my-little/pony:4.1'
           echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' 'my-little/pony:4.1')"'"}}' > chain-of-trust-additional-data.json
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1' foo bar
       env:
         ABC: def
         GHI: jkl
