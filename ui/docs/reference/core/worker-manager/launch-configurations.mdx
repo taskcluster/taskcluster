@@ -37,6 +37,31 @@ Worker-Manager implements improved provisioning strategies to:
 2. Respect capacity limits
 3. Adapt to failures and errors
 
+### Using initial weight
+
+Initial weight determines how likely a configuration will be selected during provisioning.
+
+#### How It Works
+- `Probability = (Config Weight) / (Sum of All Weights)`
+- Higher weights increase selection probability
+
+#### Examples
+
+**Two Configurations:**
+- Config A: `1.0`, Config B: `0.1`
+- Result: `~91%` A, `~9%` B (9 workers on A for each 1 on B)
+
+**Three Configurations:**
+- Config A: `1.0`, Config B: `0.5`, Config C: `0.5`
+- Result: `~50%` A, `~25%` B, `~25%` C
+
+#### Use Cases
+- Cost optimization: Assign higher weights to cheaper regions
+- Fault tolerance: Distribute across regions while favoring more reliable ones
+- Performance optimization: Prioritize regions closer to your users
+- Capacity management: Use lower weights for regions with limited quota
+- Testing: Allocate small weight to new configurations for gradual adoption
+
 ### Weight Adjustment
 
 The actual weight used for provisioning is dynamically adjusted based on:
