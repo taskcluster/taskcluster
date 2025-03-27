@@ -371,6 +371,7 @@ func GWTest(t *testing.T) *Test {
 			EnableLiveLog:             true,
 			EnableMounts:              true,
 			EnableOSGroups:            true,
+			EnableResourceMonitor:     true,
 			EnableTaskclusterProxy:    true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
 			IdleTimeoutSecs:           60,

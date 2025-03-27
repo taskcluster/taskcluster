@@ -32,10 +32,8 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string) (*Com
 	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return &Command{
-		Cmd:                   cmd,
-		abort:                 make(chan struct{}),
-		usageChan:             make(chan *ResourceUsage, 1),
-		usageMeasurementsDone: make(chan struct{}),
+		Cmd:   cmd,
+		abort: make(chan struct{}),
 	}, nil
 }
 

@@ -27,6 +27,7 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&ResourceMonitorFeature{},
 		&RunTaskAsCurrentUserFeature{},
 		&RDPFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature

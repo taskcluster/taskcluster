@@ -98,10 +98,8 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 		}
 	}
 	return &Command{
-		Cmd:                   cmd,
-		abort:                 make(chan struct{}),
-		usageChan:             make(chan *ResourceUsage, 1),
-		usageMeasurementsDone: make(chan struct{}),
+		Cmd:   cmd,
+		abort: make(chan struct{}),
 	}, nil
 }
 

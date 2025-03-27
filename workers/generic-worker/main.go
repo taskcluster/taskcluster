@@ -11,7 +11,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -223,6 +222,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			EnableLiveLog:                  true,
 			EnableMounts:                   true,
 			EnableOSGroups:                 true,
+			EnableResourceMonitor:          true,
 			EnableTaskclusterProxy:         true,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
@@ -822,38 +822,13 @@ func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
 }
 
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
-	c := task.Commands[index]
 	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
-	log.Print("Executing command " + strconv.Itoa(index) + ": " + c.String())
+	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
 	cee := task.prepareCommand(index)
 	if cee != nil {
 		panic(cee)
 	}
-	go c.MonitorResources(func(previouslyWarned bool) bool {
-		if config.DisableOOMProtection {
-			if !previouslyWarned {
-				task.Warn("Sustained memory usage above 90%!")
-				task.Warn("OOM protections are disabled, continuing task...")
-			}
-			return false
-		} else {
-			task.Warn("Sustained memory usage above 90%!")
-			task.Warn("Aborting task to prevent OOM issues...")
-		}
-		err := task.StatusManager.Abort(
-			&CommandExecutionError{
-				Cause:      errors.New("task aborted due to sustained memory usage above 90%"),
-				Reason:     internalError,
-				TaskStatus: aborted,
-			},
-		)
-		if err != nil {
-			task.Warnf("Error when aborting task: %v", err)
-		}
-		return true
-	})
-	task.result = c.Execute()
-	task.result.GatherUsage(c)
+	task.result = task.Commands[index].Execute()
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}

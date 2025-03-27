@@ -4,6 +4,7 @@ package main
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&ResourceMonitorFeature{},
 		&RunTaskAsCurrentUserFeature{},
 		&InteractiveFeature{},
 		// keep chain of trust as low down as possible, as it checks permissions

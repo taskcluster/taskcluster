@@ -200,6 +200,14 @@ type (
 		// Default:    true
 		LiveLog bool `json:"liveLog" default:"true"`
 
+		// The resource monitor feature enables the monitoring of system memory usage
+		// of the task.
+		//
+		// Since: generic-worker 83.4.0
+		//
+		// Default:    true
+		ResourceMonitor bool `json:"resourceMonitor" default:"true"`
+
 		// Runs commands with UAC elevation. Only set to true when UAC is
 		// enabled on the worker and Administrative privileges are required by
 		// task commands. When UAC is disabled on the worker, task commands will
@@ -897,6 +905,12 @@ func JSONSchema() string {
           "default": true,
           "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
           "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+          "type": "boolean"
+        },
+        "resourceMonitor": {
+          "default": true,
+          "description": "The resource monitor feature enables the monitoring of system memory usage\nof the task.\n\nSince: generic-worker 83.4.0",
+          "title": "Resource monitor",
           "type": "boolean"
         },
         "runAsAdministrator": {
