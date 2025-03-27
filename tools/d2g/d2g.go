@@ -340,11 +340,9 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 }
 
 func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, config map[string]any) ([][]string, string, error) {
-	containerName := ""
-	if testing.Testing() {
-		containerName = "taskcontainer"
-	} else {
-		containerName = "taskcontainer_" + slugid.Nice()
+	containerName := "taskcontainer"
+	if !testing.Testing() {
+		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
 	}
 
 	commands := []string{}
@@ -363,7 +361,9 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		)
 	}
 
-	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, gwArtifacts, config)
+	copyArtifactCommands, captureExitCode := copyArtifacts(containerName, dwPayload, gwArtifacts)
+
+	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, gwArtifacts, captureExitCode, config)
 	if err != nil {
 		return nil, containerName, fmt.Errorf("could not form docker run command: %w", err)
 	}
@@ -371,13 +371,20 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	commands = append(
 		commands,
 		runString,
-		"exit_code=$?",
 	)
+
+	if captureExitCode {
+		commands = append(
+			commands,
+			"exit_code=$?",
+		)
+	}
 
 	commands = append(
 		commands,
-		copyArtifacts(containerName, dwPayload, gwArtifacts)...,
+		copyArtifactCommands...,
 	)
+
 	if dwPayload.Features.DockerSave {
 		commands = append(
 			commands,
@@ -386,11 +393,13 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 		)
 	}
 
-	commands = append(
-		commands,
-		"docker rm -v "+containerName,
-		`exit "${exit_code}"`,
-	)
+	if captureExitCode {
+		commands = append(
+			commands,
+			"docker rm -v "+containerName,
+			`exit "${exit_code}"`,
+		)
+	}
 
 	return [][]string{
 		{
@@ -401,11 +410,15 @@ func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtif
 	}, containerName, nil
 }
 
-func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, config map[string]any) (string, error) {
+func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, captureExitCode bool, config map[string]any) (string, error) {
 	command := strings.Builder{}
+	rm := " --rm"
+	if captureExitCode {
+		rm = ""
+	}
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run -t --name %v", dwPayload.MaxRunTime, containerName))
+	command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run%s -t --name %v", dwPayload.MaxRunTime, rm, containerName))
 
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
@@ -432,8 +445,9 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	return command.String(), nil
 }
 
-func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []string {
+func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) ([]string, bool) {
 	commands := []string{}
+	captureExitCode := dwPayload.Features.DockerSave
 	for i := range gwArtifacts {
 		// An image artifact will be in the generic worker payload when
 		// dockerSave is enabled. That artifact will not be found in either the
@@ -447,9 +461,10 @@ func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPay
 		if dwPayload.Artifacts[gwArtifacts[i].Name].Type == "volume" {
 			continue
 		}
+		captureExitCode = true
 		commands = append(commands, fmt.Sprintf("docker cp %s:%s %s", containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
 	}
-	return commands
+	return commands, captureExitCode
 }
 
 func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {

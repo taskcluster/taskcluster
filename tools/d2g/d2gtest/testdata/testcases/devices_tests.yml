@@ -32,10 +32,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v /dev/shm:/dev/shm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v /dev/shm:/dev/shm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -79,10 +76,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -126,10 +120,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -175,10 +166,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -222,10 +210,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device="${TASKCLUSTER_VIDEO_DEVICE}" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_VIDEO_DEVICE -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device="${TASKCLUSTER_VIDEO_DEVICE}" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_VIDEO_DEVICE -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -270,10 +255,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -317,10 +299,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/snd -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 --device=/dev/snd -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -365,10 +344,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -409,10 +385,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus all -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus all -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -453,10 +426,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
