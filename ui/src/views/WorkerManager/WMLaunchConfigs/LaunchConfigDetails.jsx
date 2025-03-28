@@ -45,7 +45,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
               secondary={
                 <Fragment>
                   <Typography variant="body2">
-                    {launchConfig.created.toLocaleString()}
+                    {launchConfig.created}
                   </Typography>
                   <Typography variant="body1">
                     <DateDistance from={launchConfig.created} />
@@ -60,7 +60,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
               secondary={
                 <Fragment>
                   <Typography variant="body2">
-                    {launchConfig.lastModified.toLocaleString()}
+                    {launchConfig.lastModified}
                   </Typography>
                   <Typography variant="body1">
                     <DateDistance from={launchConfig.lastModified} />
