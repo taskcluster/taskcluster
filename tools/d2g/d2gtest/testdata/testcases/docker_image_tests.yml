@@ -27,10 +27,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -72,10 +69,7 @@ testSuite:
         - -cx
         - |-
           docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -118,10 +112,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -170,10 +161,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -223,10 +211,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -275,10 +260,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -326,10 +308,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -378,10 +357,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -431,10 +407,7 @@ testSuite:
         - -cx
         - |-
           IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/cache0:/builds/worker/checkouts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
-          exit_code=$?
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/cache0:/builds/worker/checkouts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${IMAGE_ID}" 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true

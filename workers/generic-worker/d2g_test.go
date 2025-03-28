@@ -82,6 +82,77 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	}
 }
 
+func TestD2GVolumeArtifacts(t *testing.T) {
+	setup(t)
+	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
+	image := map[string]any{
+		"name": "ubuntu:latest",
+		"type": "docker-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"mkdir -p /SampleArtifacts/_/ && echo hello world > /SampleArtifacts/_/X.txt",
+		},
+		Image:      json.RawMessage(imageBytes),
+		MaxRunTime: 30,
+		Artifacts: map[string]dockerworker.Artifact{
+			"SampleArtifacts/_": {
+				Path:    "/SampleArtifacts/_",
+				Type:    "volume",
+				Expires: testTime,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+		expectedArtifacts := ExpectedArtifacts{
+			"SampleArtifacts/_/X.txt": {
+				Extracts: []string{
+					"hello world",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         testTime,
+			},
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td.Expires,
+			},
+		}
+		expectedArtifacts.Validate(t, taskID, 0)
+	case "insecure:linux":
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+		logtext := LogText(t)
+		t.Log(logtext)
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
+		}
+	default:
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
 func TestD2GArtifactDoesNotExist(t *testing.T) {
 	setup(t)
 	testTime := tcclient.Time(time.Now().AddDate(0, 0, 1))
