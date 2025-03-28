@@ -15,6 +15,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(claimedTasks, {
   options: props => ({
@@ -85,9 +86,11 @@ export default class WMViewClaimedTasks extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
-        <TableCell>
-          <DateDistance from={new Date(claimed)} />
-        </TableCell>
+        <CopyToClipboardTableCell
+          tooltipTitle={claimed}
+          textToCopy={claimed}
+          text={<DateDistance from={claimed} />}
+        />
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );

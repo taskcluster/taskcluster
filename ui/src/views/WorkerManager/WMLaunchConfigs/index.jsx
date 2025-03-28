@@ -26,6 +26,7 @@ import DateDistance from '../../../components/DateDistance';
 import { VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE } from '../../../utils/constants';
 import sort from '../../../utils/sort';
 import LaunchConfigDetails from './LaunchConfigDetails';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.launchConfigId, b.node.launchConfigId)),
@@ -407,16 +408,16 @@ export default class WMLaunchConfigs extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
-        <TableCell>
-          {launchConfig?.created && (
-            <DateDistance from={launchConfig.created} />
-          )}
-        </TableCell>
-        <TableCell>
-          {launchConfig?.lastModified && (
-            <DateDistance from={launchConfig.lastModified} />
-          )}
-        </TableCell>
+        <CopyToClipboardTableCell
+          tooltipTitle={launchConfig.created}
+          textToCopy={launchConfig.created}
+          text={<DateDistance from={launchConfig.created} />}
+        />
+        <CopyToClipboardTableCell
+          tooltipTitle={launchConfig.lastModified}
+          textToCopy={launchConfig.lastModified}
+          text={<DateDistance from={launchConfig.lastModified} />}
+        />
         <TableCell>
           <Button
             size="small"

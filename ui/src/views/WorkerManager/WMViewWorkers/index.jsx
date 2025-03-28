@@ -143,9 +143,9 @@ export default class WMViewWorkers extends Component {
     },
   }) {
     const dateItem = date => (
-      <Tooltip placement="top" title={new Date(date).toLocaleString()}>
+      <Tooltip placement="top" title={date}>
         <TableCellItem>
-          <DateDistance from={new Date(date)} />
+          <DateDistance from={date} />
         </TableCellItem>
       </Tooltip>
     );

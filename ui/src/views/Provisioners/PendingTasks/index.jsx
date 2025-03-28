@@ -16,6 +16,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(pendingTasks, {
   options: props => ({
@@ -82,9 +83,11 @@ export default class WMViewPendingTasks extends Component {
             {task.priority}
           </Label>
         </TableCell>
-        <TableCell>
-          <DateDistance from={new Date(inserted)} />
-        </TableCell>
+        <CopyToClipboardTableCell
+          tooltipTitle={inserted}
+          textToCopy={inserted}
+          text={<DateDistance from={inserted} />}
+        />
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );
