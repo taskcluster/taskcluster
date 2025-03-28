@@ -248,6 +248,17 @@ type (
 	DockerWorkerPayload struct {
 
 		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+		// Artifacts can be an individual `file`, a `directory` containing
+		// potentially multiple files with recursively included subdirectories,
+		// or a `volume` which will create a volume mount from the
+		// host to the running container. Unlike `directory` artifacts, the
+		// `volume` directory will already exist as the task starts. Since the
+		// artifacts will be created directly on the host, they do not need to
+		// be copied from the container to the host prior to being published,
+		// so perform more efficiently, and simplify the d2g-generated task payload.
+		// Moreover, in the case of time-critical spot terminations, tasks have
+		// more chance of successfully publishing volume artifacts than directory
+		// artifacts, due to the efficiency gain.
 		Artifacts map[string]DockerWorkerArtifact `json:"artifacts,omitempty"`
 
 		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
@@ -1309,7 +1320,7 @@ func JSONSchema() string {
           "additionalProperties": {
             "$ref": "#/definitions/artifact"
           },
-          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `",
+          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
           "title": "Artifacts",
           "type": "object"
         },
