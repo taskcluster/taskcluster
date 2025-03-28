@@ -4,6 +4,7 @@ package main
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&ResourceMonitorFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},
 		&LoopbackVideoFeature{},

@@ -328,6 +328,15 @@ oneOf:
             as `exception/malformed-payload`.
 
             Since: generic-worker 81.0.0
+        resourceMonitor:
+          type: boolean
+          title: Resource monitor
+          description: |-
+            The resource monitor feature enables the monitoring of system memory usage
+            of the task.
+
+            Since: generic-worker 83.4.0
+          default: true
     mounts:
       type: array
       description: |-

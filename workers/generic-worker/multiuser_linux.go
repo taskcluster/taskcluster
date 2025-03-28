@@ -8,6 +8,7 @@ func defaultTasksDir() string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&ResourceMonitorFeature{},
 		&RunTaskAsCurrentUserFeature{},
 		&InteractiveFeature{},
 		&LoopbackAudioFeature{},

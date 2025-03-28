@@ -433,6 +433,14 @@ type (
 		// Since: generic-worker 53.1.0
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 
+		// The resource monitor feature enables the monitoring of system memory usage
+		// of the task.
+		//
+		// Since: generic-worker 83.4.0
+		//
+		// Default:    true
+		ResourceMonitor bool `json:"resourceMonitor" default:"true"`
+
 		// If `true`, task commands will be executed as the
 		// user currently running Generic Worker (typically
 		// `root` or `LocalSystem`), rather than as the
@@ -1173,6 +1181,12 @@ func JSONSchema() string {
             "loopbackVideo": {
               "description": "Video loopback device created using v4l2loopback.\nA video device will be available for the task. Its\nlocation will be passed to the task via environment\nvariable ` + "`" + `TASKCLUSTER_VIDEO_DEVICE` + "`" + `. The\nlocation will be ` + "`" + `/dev/video\u003cN\u003e` + "`" + ` where ` + "`" + `\u003cN\u003e` + "`" + ` is\nan integer between 0 and 255. The value of ` + "`" + `\u003cN\u003e` + "`" + `\nis not static, and therefore either the environment\nvariable should be used, or ` + "`" + `/dev` + "`" + ` should be\nscanned in order to determine the correct location.\nTasks should not assume a constant value.\n\nThis feature is only available on Linux. If a task\nis submitted with this feature enabled on a non-Linux,\nposix platform (FreeBSD, macOS), the task will resolve as\n` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 53.1.0",
               "title": "Loopback Video device",
+              "type": "boolean"
+            },
+            "resourceMonitor": {
+              "default": true,
+              "description": "The resource monitor feature enables the monitoring of system memory usage\nof the task.\n\nSince: generic-worker 83.4.0",
+              "title": "Resource monitor",
               "type": "boolean"
             },
             "runTaskAsCurrentUser": {
