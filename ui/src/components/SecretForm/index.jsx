@@ -3,6 +3,7 @@ import { oneOfType, object, string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { dump, load } from 'js-yaml';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -13,6 +14,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import HistoryIcon from 'mdi-react/HistoryIcon';
 import CodeEditor from '../CodeEditor';
 import TextField from '../TextField';
 import DialogAction from '../DialogAction';
@@ -22,6 +24,7 @@ import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
+@withRouter
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
@@ -263,6 +266,21 @@ export default class SecretForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<HistoryIcon />}
+                onClick={() => {
+                  this.props.history.push(
+                    `/audit/secret/${encodeURIComponent(secretName)}`
+                  );
+                }}
+                tooltipTitle="View Audit History"
+                className={classes.icon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

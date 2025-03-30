@@ -135,6 +135,24 @@ export default {
           "args": [
             "clientId"
           ],
+          "category": "Audit",
+          "description": "Get audit history based on various filters.\n\nParameters:\n * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)\n * `entityId` - Filter by entity ID\n * `fromDate` - Filter entries from this date (inclusive)\n * `toDate` - Filter entries to this date (inclusive)\n * `actionType` - Filter by action type (created, updated, deleted, etc)",
+          "method": "get",
+          "name": "listAuditHistory",
+          "output": "v1/get-client-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/audit-logs/<clientId>",
+          "stability": "stable",
+          "title": "List Audit History",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
           "category": "Clients",
           "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",
           "method": "post",

@@ -278,6 +278,50 @@ impl Auth {
         (path, query)
     }
 
+    /// List Audit History
+    ///
+    /// Get audit history based on various filters.
+    ///
+    /// Parameters:
+    ///  * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)
+    ///  * `entityId` - Filter by entity ID
+    ///  * `fromDate` - Filter entries from this date (inclusive)
+    ///  * `toDate` - Filter entries to this date (inclusive)
+    ///  * `actionType` - Filter by action type (created, updated, deleted, etc)
+    pub async fn listAuditHistory(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listAuditHistory endpoint
+    pub fn listAuditHistory_url(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listAuditHistory endpoint
+    pub fn listAuditHistory_signed_url(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listAuditHistory
+    fn listAuditHistory_details<'a>(clientId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("audit-logs/{}", urlencode(clientId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Reset `accessToken`
     ///
     /// Reset a clients `accessToken`, this will revoke the existing

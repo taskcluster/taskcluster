@@ -1,12 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import HistoryIcon from 'mdi-react/HistoryIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TextField from '../TextField';
@@ -21,6 +23,7 @@ import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
 import scopeLink from '../../utils/scopeLink';
 
+@withRouter
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,
@@ -281,6 +284,19 @@ export default class RoleForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<HistoryIcon />}
+                onClick={() => {
+                  this.props.history.push(`/audit/role/${roleId}`);
+                }}
+                tooltipTitle="View Audit History"
+                className={classes.icon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

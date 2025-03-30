@@ -1,0 +1,30 @@
+version: 111
+description: fetch audit history for a client
+methods:
+  get_client_audit_history:
+    description: |
+      Get Audit History against a clientId
+    mode: read
+    serviceName: auth
+    args: client_id_in text, page_size_in integer, page_offset_in integer
+    returns:
+      table (
+        entity_id text,
+        entity_type text,
+        action_type text,
+        created timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          audit_history.entity_id,
+          audit_history.entity_type,
+          audit_history.action_type,
+          audit_history.created
+        from audit_history
+        where audit_history.client_id = client_id_in
+        order by audit_history.created
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

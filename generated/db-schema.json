@@ -7672,6 +7672,21 @@
         }
       },
       "version": 110
+    },
+    {
+      "description": "fetch audit history for a client",
+      "methods": {
+        "get_client_audit_history": {
+          "args": "client_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    audit_history.entity_id,\n    audit_history.entity_type,\n    audit_history.action_type,\n    audit_history.created\n  from audit_history\n  where audit_history.client_id = client_id_in\n  order by audit_history.created\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get Audit History against a clientId\n",
+          "mode": "read",
+          "returns": "table ( entity_id text, entity_type text, action_type text, created timestamptz )",
+          "serviceName": "auth"
+        }
+      },
+      "version": 111
     }
   ]
 }

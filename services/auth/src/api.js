@@ -74,6 +74,16 @@ const auditToJson = (audit) => ({
 });
 
 /**
+ * Helper to return object of client audit history as defined in the blob to one suitable for return.
+ */
+const clientAuditToJson = (audit) => ({
+  entity_id: audit?.entity_id,
+  entity_type: audit?.entity_type,
+  action_type: audit?.action_type,
+  created: audit?.created.toJSON(),
+});
+
+/**
  * Helper to fetch roles
  * This involves building response for pagination
  */
@@ -376,6 +386,45 @@ builder.declare({
 
   return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
 });
+
+builder.declare({
+  method: 'get',
+  route: '/audit-logs/:clientId',
+  query: {
+    ...paginateResults.query,
+  },
+  // params: {
+  //   clientId: /^(client|role|secret|hook|worker_pool)$/,
+  // },
+  name: 'listAuditHistory',
+  category: 'Audit',
+  output: 'get-client-history-response.yml',
+  scopes: null,
+  stability: 'stable',
+  title: 'List Audit History',
+  description: [
+    'Get audit history based on various filters.',
+    '',
+    'Parameters:',
+    ' * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)',
+    ' * `entityId` - Filter by entity ID',
+    ' * `fromDate` - Filter entries from this date (inclusive)',
+    ' * `toDate` - Filter entries to this date (inclusive)',
+    ' * `actionType` - Filter by action type (created, updated, deleted, etc)',
+  ].join('\n'),
+}, async function(req, res) {
+
+  let client_id = req.params.clientId;
+  client_id = 'static/taskcluster/root';
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_client_audit_history(client_id, size, offset),
+    maxLimit: 1000,
+  });
+  console.log("Rows: ", rows);
+  return res.reply({ auditHistory: rows.map(c => clientAuditToJson(c)), continuationToken });
+});
+
 /** Reset access token for client */
 builder.declare({
   method: 'post',

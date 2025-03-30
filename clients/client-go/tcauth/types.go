@@ -321,6 +321,14 @@ type (
 		Roles []GetRoleResponse `json:"roles"`
 	}
 
+	// Response from listAuditHistory endpoint containing audit history entries for a client
+	GetClientHistoryResponse struct {
+		AuditHistory []Var1 `json:"auditHistory"`
+
+		// Token to be used to get the next page of results
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
 	// Get all details about a client, useful for tools modifying a client
 	GetClientResponse struct {
 
@@ -669,6 +677,21 @@ type (
 
 		// Timestamp when the action occurred
 		Created tcclient.Time `json:"created"`
+	}
+
+	Var1 struct {
+
+		// The type of action performed
+		Action_Type string `json:"action_type"`
+
+		// Timestamp when the action occurred
+		Created tcclient.Time `json:"created"`
+
+		// The entity Id on which an action was performed
+		Entity_ID string `json:"entity_id"`
+
+		// The entity type on which the action was performed (client, role, secret, hook, worker_pool)
+		Entity_Type string `json:"entity_type"`
 	}
 
 	// Token for connecting a worker to websocktunnel proxy

@@ -18,6 +18,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
+import HistoryIcon from 'mdi-react/HistoryIcon';
 import TextField from '../TextField';
 import MarkdownTextArea from '../MarkdownTextArea';
 import DateDistance from '../DateDistance';
@@ -381,6 +382,21 @@ export default class ClientForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<HistoryIcon />}
+                onClick={() => {
+                  this.props.history.push(
+                    `/audit/client/${encodeURIComponent(this.state.clientId)}`
+                  );
+                }}
+                tooltipTitle="View Audit History"
+                className={classes.icon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

@@ -104,6 +104,22 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "listAuditHistory",
+				Title:       "List Audit History",
+				Description: "Get audit history based on various filters.\n\nParameters:\n * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)\n * `entityId` - Filter by entity ID\n * `fromDate` - Filter entries from this date (inclusive)\n * `toDate` - Filter entries to this date (inclusive)\n * `actionType` - Filter by action type (created, updated, deleted, etc)",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/audit-logs/<clientId>",
+				Args: []string{
+					"clientId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "resetAccessToken",
 				Title:       "Reset `accessToken`",
 				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",

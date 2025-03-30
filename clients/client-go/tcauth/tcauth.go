@@ -272,6 +272,29 @@ func (auth *Auth) GetEntityHistory_SignedURL(entityType, entityId, continuationT
 	return (&cd).SignedURL("/audit/"+url.QueryEscape(entityType)+"/"+url.QueryEscape(entityId), v, duration)
 }
 
+// Get audit history based on various filters.
+//
+// Parameters:
+//   - `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)
+//   - `entityId` - Filter by entity ID
+//   - `fromDate` - Filter entries from this date (inclusive)
+//   - `toDate` - Filter entries to this date (inclusive)
+//   - `actionType` - Filter by action type (created, updated, deleted, etc)
+//
+// See #listAuditHistory
+func (auth *Auth) ListAuditHistory(clientId, continuationToken, limit string) (*GetClientHistoryResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/audit-logs/"+url.QueryEscape(clientId), new(GetClientHistoryResponse), v)
+	return responseObject.(*GetClientHistoryResponse), err
+}
+
 // Reset a clients `accessToken`, this will revoke the existing
 // `accessToken`, generate a new `accessToken` and return it from this
 // call.

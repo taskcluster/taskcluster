@@ -126,6 +126,24 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["getEntityHistory"], *args, **kwargs)
 
+    def listAuditHistory(self, *args, **kwargs):
+        """
+        List Audit History
+
+        Get audit history based on various filters.
+
+        Parameters:
+         * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)
+         * `entityId` - Filter by entity ID
+         * `fromDate` - Filter entries from this date (inclusive)
+         * `toDate` - Filter entries to this date (inclusive)
+         * `actionType` - Filter by action type (created, updated, deleted, etc)
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listAuditHistory"], *args, **kwargs)
+
     def resetAccessToken(self, *args, **kwargs):
         """
         Reset `accessToken`
@@ -736,6 +754,15 @@ class Auth(BaseClient):
             'method': 'get',
             'name': 'lbheartbeat',
             'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
+        "listAuditHistory": {
+            'args': ['clientId'],
+            'method': 'get',
+            'name': 'listAuditHistory',
+            'output': 'v1/get-client-history-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/audit-logs/<clientId>',
             'stability': 'stable',
         },
         "listClients": {

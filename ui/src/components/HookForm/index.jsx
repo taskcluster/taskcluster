@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Drawer from '@material-ui/core/Drawer';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -28,6 +29,7 @@ import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import HistoryIcon from 'mdi-react/HistoryIcon';
 import { docs } from 'taskcluster-lib-urls';
 import CodeEditor from '../CodeEditor';
 import JsonDisplay from '../JsonDisplay';
@@ -76,6 +78,7 @@ const initialHook = {
   },
 };
 
+@withRouter
 @withStyles(theme => ({
   actionButtonSpan: {
     ...theme.mixins.fab,
@@ -178,6 +181,7 @@ export default class HookForm extends Component {
     hook: object.isRequired,
     /** Part of the same Grahql hook response as above containing info
      about some last hook fired attempts */
+    loading: bool,
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -209,6 +213,7 @@ export default class HookForm extends Component {
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
+    loading: false,
     hookLastFires: null,
     onTriggerHook: null,
     onCreateHook: null,
@@ -538,6 +543,7 @@ export default class HookForm extends Component {
     const {
       actionLoading,
       dialogOpen,
+      loading,
       deleteDialogOpen,
       dialogError,
       classes,
@@ -839,6 +845,21 @@ export default class HookForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                icon={<HistoryIcon />}
+                onClick={() => {
+                  this.props.history.push(
+                    `/audit/hook/${hook.hookGroupId / hook.hookId}`
+                  );
+                }}
+                tooltipTitle="View Audit History"
+                className={classes.icon}
+                ButtonProps={{
+                  disabled: loading,
+                }}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
