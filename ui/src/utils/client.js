@@ -1,4 +1,4 @@
-import { WorkerManager } from 'taskcluster-client-web';
+import { Auth, WorkerManager } from 'taskcluster-client-web';
 
 export const getClient = ({ Class, user, ...options }) => {
   return new Class({
@@ -23,4 +23,17 @@ export const removeWorker = async ({
   });
 
   await wm.removeWorker(workerPoolId, workerGroup, workerId);
+};
+
+export const getAuditHistory = async (entityId, entityType, user, {continuationToken, limit}) => {
+  const auth = getClient({
+    Class: Auth,
+    user,
+    authorizedScopes: [`auth:audit-history:${entityType}`],
+  });
+
+  return auth.getEntityHistory(entityType, entityId, {
+    continuationToken: continuationToken,
+    limit: limit
+  });
 };
