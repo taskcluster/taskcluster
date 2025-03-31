@@ -62,7 +62,7 @@ var (
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
 	configFile     *gwconfig.File
-	Features       []Feature
+	features       []Feature
 
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
@@ -72,14 +72,15 @@ var (
 )
 
 func initialiseFeatures() (err error) {
-	Features = []Feature{
+	features = []Feature{
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
 		&MountsFeature{},
+		&ResourceMonitorFeature{},
 	}
-	Features = append(Features, platformFeatures()...)
-	for _, feature := range Features {
+	features = append(features, platformFeatures()...)
+	for _, feature := range features {
 		log.Printf("Initialising task feature %v...", feature.Name())
 		err := feature.Initialise()
 		if err != nil {
@@ -215,12 +216,14 @@ func loadConfig(configFile *gwconfig.File) error {
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
+			DisableOOMProtection:           false,
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
 			EnableChainOfTrust:             true,
 			EnableLiveLog:                  true,
 			EnableMounts:                   true,
 			EnableOSGroups:                 true,
+			EnableResourceMonitor:          true,
 			EnableTaskclusterProxy:         true,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
@@ -1019,7 +1022,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	taskFeatureOrigins := []TaskFeatureOrigin{}
 
 	// create task features
-	for _, feature := range Features {
+	for _, feature := range features {
 		if feature.IsRequested(task) {
 			if !feature.IsEnabled() {
 				workerPoolID := config.ProvisionerID + "/" + config.WorkerType

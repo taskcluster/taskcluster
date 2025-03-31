@@ -159,6 +159,11 @@ and reports back results to the queue.
                                             (such as formatting a hard drive) and then
                                             rebooting in the run-generic-worker.bat script.
                                             [default: false]
+          disableOOMProtection              If true, the worker will continue to monitor system
+                                            memory usage, but will not abort tasks when the
+                                            system memory usage is at 90% or higher for five
+                                            consecutive measurements at 0.5s intervals.
+                                            [default: false]
           downloadsDir                      The directory to cache downloaded files for
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This
@@ -192,6 +197,8 @@ and reports back results to the queue.
                                             payload. [default: true]
           enableOSGroups                    Enables the OS Groups feature to be used in the task
                                             payload. [default: true]
+          enableResourceMonitor             Enables the Resource Monitor feature to be used in
+                                            the task payload. [default: true]
           enableTaskclusterProxy            Enables the Taskcluster Proxy feature to be used in
                                             the task payload. [default: true]
           enableInteractive                 Enables the Interactive feature to be used in the
