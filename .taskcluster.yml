@@ -212,7 +212,7 @@ tasks:
               --head-ref='${head_ref}'
               --head-rev='${head_sha}'
               --head-tag='${head_tag}' &&
-              rm artifacts/actions.json # taskcluster is not using actions.json
+              echo "{}" > artifacts/actions.json # taskcluster is not using actions.json, setting to {} so CoT can still verify
 
           artifacts:
             "public":
