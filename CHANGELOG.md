@@ -3,6 +3,51 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.4.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.23.7, Node.js 22.14.0, and yarn 4.7.0
+
+### DEPLOYERS
+
+▶ [patch]
+Improves worker manager launch configurations documentation
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#6464](https://github.com/taskcluster/taskcluster/issues/6464)
+Generic Worker: adds memory usage monitoring during tasks and reports average and peak memory used, in addition to the system's total available memory.
+
+If the total percentage of memory used exceeds 90% for 5 consecutive measurements at 0.5s intervals, the worker will abort the task to prevent OOM crashes and errors. If `disableOOMProtection` (default `false`) is set to `true` in the worker configuration, the worker will continue to monitor and report on memory usage, but will not abort the task if memory consumption is high.
+
+Resource monitoring can be disabled with worker config `enableResourceMonitor` (default `true`) or per task via `payload.features.resourceMonitor` (default `true`).
+
+▶ [patch]
+Generic Worker: only warn about missing `audio`/`video` os groups for non-d2g tasks.
+
+### USERS
+
+▶ [minor] [#7594](https://github.com/taskcluster/taskcluster/issues/7594)
+Docker Worker (D2G): adds `volume` type for artifacts. This is strictly used for D2G purposes only. Use this type to have D2G volume mount your artifact path instead of `docker cp`'ing the artifact at the end of the task run. This can be useful under spot termination instances where the `docker cp` command doesn't get a chance to run, instead a volume mount will have the files on the host ready for upload as soon as the spot termination requests comes in.
+
+▶ [patch] [#7603](https://github.com/taskcluster/taskcluster/issues/7603)
+UI shows all dates in UTC.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump github.com/golang-jwt/jwt/v4 from 4.5.1 to 4.5.2 (2534d51f13)
+* build(deps): bump golang.org/x/net from 0.35.0 to 0.36.0 (86d00b581d)
+* build(deps): bump @babel/helpers from 7.17.2 to 7.26.10 in /ui (3804ecc951)
+* build(deps): bump @babel/runtime from 7.23.2 to 7.26.10 (0d00c3c953)
+* build(deps): bump @babel/runtime from 7.18.6 to 7.26.10 in /ui (3211ce06f3)
+
+</details>
+
 ## v83.3.0
 
 ### GENERAL
