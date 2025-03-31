@@ -13,6 +13,7 @@ definitions:
         enum:
           - file
           - directory
+          - volume
       path:
         title: Location of artifact in container, as an absolute path.
         type: string
@@ -207,10 +208,19 @@ properties:
   artifacts:
     type: object
     title: Artifacts
-    description: >-
-      Artifact upload map example: ```{"public/build.tar.gz": {"path":
-      "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z",
-      "type": "file"}}```
+    description: |-
+      Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+      Artifacts can be an individual `file`, a `directory` containing
+      potentially multiple files with recursively included subdirectories,
+      or a `volume` (d2g only) which will create a volume mount from the
+      host to the running container. Unlike `directory` artifacts, the
+      `volume` directory will already exist as the task starts. Since the
+      artifacts will be created directly on the host, they do not need to
+      be copied from the container to the host prior to being published,
+      so perform more efficiently, and simplify the d2g-generated task payload.
+      Moreover, in the case of time-critical spot terminations, tasks have
+      more chance of successfully publishing volume artifacts than directory
+      artifacts, due to the efficiency gain.
     additionalProperties:
       $ref: '#/definitions/artifact'
   supersederUrl:
