@@ -13,12 +13,12 @@
     "test": "NODE_OPTIONS=--openssl-legacy-provider karma start --single-run"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.9",
+    "@babel/core": "^7.26.10",
     "chai": "^4.3.10",
     "chai-as-promised": "^8.0.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.7",
-    "eslint": "^9.21.0",
+    "eslint": "^9.23.0",
     "karma": "^6.4.4",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.2.1",
