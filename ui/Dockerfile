@@ -4,7 +4,11 @@ WORKDIR /app/ui
 COPY yarn.lock package.json ./
 
 RUN corepack enable && \
-    yarn
+  yarn set version stable && \
+  yarn config set nodeLinker node-modules && \
+  yarn install
+
+COPY . ./
 
 ENTRYPOINT [ "yarn" ]
 CMD [ "start:docker" ]

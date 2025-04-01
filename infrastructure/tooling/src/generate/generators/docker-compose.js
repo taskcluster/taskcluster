@@ -418,9 +418,12 @@ tasks.push({
           volumes: [
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
-            './ui:/app/ui',
+            './ui/package.json:/app/ui/package.json',
+            './ui/src:/app/ui/src',
+            './ui/docs:/app/ui/docs',
             './CHANGELOG.md:/app/CHANGELOG.md',
           ],
+          ports: servicePorts('ui'),
         },
       },
     };
