@@ -3760,6 +3760,13 @@
   },
   {
     "element": "h1",
+    "id": "usageconfig",
+    "path": "/reference/workers/generic-worker/usage",
+    "subtitle": null,
+    "title": "Usage/Config"
+  },
+  {
+    "element": "h1",
     "id": "websocktunnel",
     "path": "/reference/workers/websocktunnel",
     "subtitle": null,

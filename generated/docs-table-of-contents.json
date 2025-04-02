@@ -3914,6 +3914,28 @@
                 "children": [
                 ],
                 "data": {
+                  "order": 10,
+                  "title": "Usage/Config"
+                },
+                "name": "usage",
+                "next": {
+                  "path": "reference/workers/generic-worker/features",
+                  "title": "Features"
+                },
+                "path": "reference/workers/generic-worker/usage",
+                "prev": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
                   "order": 20,
                   "title": "Features"
                 },
@@ -3924,8 +3946,8 @@
                 },
                 "path": "reference/workers/generic-worker/features",
                 "prev": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
+                  "path": "reference/workers/generic-worker/usage",
+                  "title": "Usage/Config"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -4070,8 +4092,8 @@
             },
             "name": "generic-worker",
             "next": {
-              "path": "reference/workers/generic-worker/features",
-              "title": "Features"
+              "path": "reference/workers/generic-worker/usage",
+              "title": "Usage/Config"
             },
             "path": "reference/workers/generic-worker/README",
             "prev": {
