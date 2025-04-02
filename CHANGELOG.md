@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.0
+
+### GENERAL
+
+▶ [patch] [#7611](https://github.com/taskcluster/taskcluster/issues/7611)
+Fixes worker-manager events that didn't include `launchConfigId` in pulse messages.
+
+▶ [patch]
+Upgrades to go1.23.8 (SECURITY) and yarn 4.8.1
+
+### USERS
+
+▶ [minor] [#6783](https://github.com/taskcluster/taskcluster/issues/6783)
+Docs: adds Generic Worker Configuration help page to the reference docs.
+
+▶ [patch] [#7606](https://github.com/taskcluster/taskcluster/issues/7606)
+UI displays paginated quarantine history on the worker page.
+
+### DEVELOPERS
+
+▶ [minor] [#7543](https://github.com/taskcluster/taskcluster/issues/7543)
+Fixes broken local development UI container.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump the go-deps group with 6 updates (9122a95706)
+* build(deps): bump got in /clients/client in the client-node-deps group (5800faaafa)
+* build(deps-dev): bump the client-web-node-deps group (ce7d5b35b8)
+* build(deps): bump taskcluster in /taskcluster in the python-deps group (22f859b4f4)
+
+</details>
+
 ## v83.4.0
 
 ### GENERAL
