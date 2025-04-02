@@ -1622,6 +1622,9 @@
         "capacity": {
           "$ref": "worker-full.json#/properties/capacity"
         },
+        "launchConfigId": {
+          "$ref": "worker-full.json#/properties/launchConfigId"
+        },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
         },
@@ -1705,12 +1708,7 @@
           "$ref": "worker-pool-error.json#/properties/kind"
         },
         "launchConfigId": {
-          "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
-          "maxLength": 38,
-          "minLength": 1,
-          "pattern": "^([a-zA-Z0-9-_]*)$",
-          "title": "Launch Configuration ID",
-          "type": "string"
+          "$ref": "worker-full.json#/properties/launchConfigId"
         },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"
@@ -1756,6 +1754,9 @@
       "properties": {
         "capacity": {
           "$ref": "worker-full.json#/properties/capacity"
+        },
+        "launchConfigId": {
+          "$ref": "worker-full.json#/properties/launchConfigId"
         },
         "providerId": {
           "$ref": "worker-pool-full.json#/properties/providerId"

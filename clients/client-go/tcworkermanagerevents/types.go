@@ -46,6 +46,18 @@ type (
 		// Mininum:    1
 		Capacity int64 `json:"capacity"`
 
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// The provider responsible for managing this worker pool.
 		//
 		// If this value is `"null-provider"`, then the worker pool is pending deletion
@@ -86,6 +98,18 @@ type (
 		//
 		// Mininum:    1
 		Capacity int64 `json:"capacity"`
+
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider responsible for managing this worker pool.
 		//

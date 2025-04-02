@@ -340,6 +340,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(customData.rootUrl, helper.rootUrl);
       assert.deepEqual(customData.workerConfig, {});
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
     test('provision with custom tags', async function() {
@@ -1642,6 +1643,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
           helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
+          helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
         });
 
         test('success after downloading missing intermediate', async function() {

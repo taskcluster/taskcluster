@@ -5673,7 +5673,8 @@ type WorkerManagerUpdateWorkerDeprecatedFn = {
   etag_in: string;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, etag: string}>>;
 };
-type WorkerManagerUpdateWorker2Fn = {
+/** @deprecated */
+type WorkerManagerUpdateWorker2DeprecatedFn = {
  (
    worker_pool_id_in: string,
    worker_group_in: string,
@@ -5704,6 +5705,38 @@ type WorkerManagerUpdateWorker2Fn = {
   etag_in: string;
   secret_in: JsonB;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, etag: string, secret: JsonB}>>;
+};
+type WorkerManagerUpdateWorker3Fn = {
+ (
+   worker_pool_id_in: string,
+   worker_group_in: string,
+   worker_id_in: string,
+   provider_id_in: string,
+   created_in: Date,
+   expires_in: Date,
+   state_in: string,
+   provider_data_in: JsonB,
+   capacity_in: number,
+   last_modified_in: Date,
+   last_checked_in: Date,
+   etag_in: string,
+   secret_in: JsonB
+ ): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, etag: string, secret: JsonB, launch_config_id: string}>>;
+ (params: {
+  worker_pool_id_in: string;
+  worker_group_in: string;
+  worker_id_in: string;
+  provider_id_in: string;
+  created_in: Date;
+  expires_in: Date;
+  state_in: string;
+  provider_data_in: JsonB;
+  capacity_in: number;
+  last_modified_in: Date;
+  last_checked_in: Date;
+  etag_in: string;
+  secret_in: JsonB;
+ }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, etag: string, secret: JsonB, launch_config_id: string}>>;
 };
 /** @deprecated */
 type WorkerManagerUpdateWorkerPoolDeprecatedFn = {
@@ -6243,7 +6276,7 @@ export interface DbFunctions {
   get_worker_pools_with_launch_configs: WorkerManagerGetWorkerPoolsWithLaunchConfigsFn;
   insert_worker_manager_audit_history: WorkerManagerInsertWorkerManagerAuditHistoryFn;
   remove_worker_pool_previous_provider_id: WorkerManagerRemoveWorkerPoolPreviousProviderIdFn;
-  update_worker_2: WorkerManagerUpdateWorker2Fn;
+  update_worker_3: WorkerManagerUpdateWorker3Fn;
   update_worker_pool_provider_data: WorkerManagerUpdateWorkerPoolProviderDataFn;
   update_worker_pool_with_launch_configs: WorkerManagerUpdateWorkerPoolWithLaunchConfigsFn;
   upsert_worker_pool_launch_configs: WorkerManagerUpsertWorkerPoolLaunchConfigsFn;
@@ -6497,6 +6530,7 @@ export interface DeprecatedDbFunctions {
   get_workers: WorkerManagerGetWorkersDeprecatedFn;
   get_workers_without_provider_data: WorkerManagerGetWorkersWithoutProviderDataDeprecatedFn;
   update_worker: WorkerManagerUpdateWorkerDeprecatedFn;
+  update_worker_2: WorkerManagerUpdateWorker2DeprecatedFn;
   update_worker_pool: WorkerManagerUpdateWorkerPoolDeprecatedFn;
   update_worker_pool_with_capacity: WorkerManagerUpdateWorkerPoolWithCapacityDeprecatedFn;
   update_worker_pool_with_capacity_and_counts_by_state: WorkerManagerUpdateWorkerPoolWithCapacityAndCountsByStateDeprecatedFn;

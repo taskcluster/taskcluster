@@ -42,6 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     capacity: 1,
     state: 'requested',
     providerData: {},
+    launchConfigId: 'lc-id-1',
   };
   const actualWorkerIid = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString());
   const workerInDB = {
@@ -136,6 +137,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         if (expectedWorkers > 0) {
           helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
           helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === workers[0].launchConfigId);
         }
       });
     };
@@ -436,6 +438,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
       assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);
     });
 
     test('registerWorker - success (different reregister)', async function() {
@@ -469,6 +472,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
       assert.equal(resp.workerConfig.someKey, 'someValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);
     });
   });
 
@@ -546,6 +550,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
@@ -711,6 +716,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-removed', m => m.payload.launchConfigId === worker.launchConfigId);
     });
     test('don\'t remove zombie workers that were active recently', async function () {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';

@@ -749,7 +749,7 @@ export class AzureProvider extends Provider {
    * op: a URL for tracking the ongoing status of an Azure operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({ op, errors, monitor }) {
+  async handleOperation({ op, errors, monitor, worker }) {
     monitor.debug({ message: 'handling operation', op });
     let req, resp;
     try {
@@ -793,8 +793,7 @@ export class AzureProvider extends Provider {
           extra: {
             code: body.error.code,
           },
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
+          launchConfigId: worker?.launchConfigId ?? undefined,
         });
         return false;
       }
@@ -872,6 +871,7 @@ export class AzureProvider extends Provider {
             op: typeData.operation,
             errors: this.errors[worker.workerPoolId],
             monitor,
+            worker,
           });
           if (!op) {
             // if the operation has expired or does not exist
