@@ -235,6 +235,7 @@ export class Provider {
       providerId: this.providerId,
       workerId: worker.workerId,
       workerGroup: worker.workerGroup,
+      launchConfigId: worker.launchConfigId,
       ...extraLog,
     });
 
@@ -245,6 +246,7 @@ export class Provider {
       workerGroup: worker.workerGroup,
       capacity: worker.capacity,
       timestamp: new Date().toJSON(),
+      launchConfigId: worker.launchConfigId,
       ...extraPublish,
     });
   }

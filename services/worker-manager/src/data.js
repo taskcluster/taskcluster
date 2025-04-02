@@ -766,7 +766,7 @@ export class Worker {
 
       if (!_.isEqual(newProperties, this._properties)) {
         try {
-          [result] = await db.fns.update_worker_2(
+          [result] = await db.fns.update_worker_3(
             newProperties.workerPoolId,
             newProperties.workerGroup,
             newProperties.workerId,

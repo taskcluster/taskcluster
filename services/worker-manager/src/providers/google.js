@@ -423,6 +423,7 @@ export class GoogleProvider extends Provider {
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],
           monitor,
+          worker,
         })) {
           monitor.debug('operation still running');
           // return to poll the operation again..
@@ -486,7 +487,7 @@ export class GoogleProvider extends Provider {
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({ op, errors, monitor }) {
+  async handleOperation({ op, errors, monitor, worker }) {
     let operation;
     let opService;
     const args = {
@@ -530,8 +531,7 @@ export class GoogleProvider extends Provider {
           extra: {
             code: err.code,
           },
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
+          launchConfigId: worker?.launchConfigId ?? undefined,
         });
       }
     }

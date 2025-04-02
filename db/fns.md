@@ -203,7 +203,7 @@
    * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
    * [`insert_worker_manager_audit_history`](#insert_worker_manager_audit_history)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-   * [`update_worker_2`](#update_worker_2)
+   * [`update_worker_3`](#update_worker_3)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
    * [`update_worker_pool_with_launch_configs`](#update_worker_pool_with_launch_configs)
    * [`upsert_worker_pool_launch_configs`](#upsert_worker_pool_launch_configs)
@@ -6625,7 +6625,7 @@ end
 * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
 * [`insert_worker_manager_audit_history`](#insert_worker_manager_audit_history)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-* [`update_worker_2`](#update_worker_2)
+* [`update_worker_3`](#update_worker_3)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
 * [`update_worker_pool_with_launch_configs`](#update_worker_pool_with_launch_configs)
 * [`upsert_worker_pool_launch_configs`](#upsert_worker_pool_launch_configs)
@@ -8124,7 +8124,7 @@ end
 
 </details>
 
-### update_worker_2
+### update_worker_3
 
 * *Mode*: write
 * *Arguments*:
@@ -8155,7 +8155,8 @@ end
   * `last_checked timestamptz`
   * `etag uuid`
   * `secret jsonb`
-* *Last defined on version*: 14
+  * `launch_config_id text`
+* *Last defined on version*: 110
 
 Update a worker.
 Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
@@ -8200,7 +8201,8 @@ begin
     workers.last_modified,
     workers.last_checked,
     workers.etag,
-    workers.secret
+    workers.secret,
+    workers.launch_config_id
   into updated_row;
 
   if found then
@@ -8217,7 +8219,8 @@ begin
       updated_row.last_modified,
       updated_row.last_checked,
       updated_row.etag,
-      updated_row.secret;
+      updated_row.secret,
+      updated_row.launch_config_id;
     return;
   end if;
 
@@ -8479,3 +8482,7 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `update_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb)` (compatibility guaranteed until v85.0.0)

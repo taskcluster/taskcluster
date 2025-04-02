@@ -134,6 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         if (expectedWorkers > 0) {
           helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
           helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === workers[0].launchConfigId);
         }
       });
     };
@@ -473,10 +474,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       capacity: 1,
       state: 'requested',
       providerData: { zone: 'us-east1-a' },
+      launchConfigId: 'lc-id-1',
     });
     await provider.removeWorker({ worker });
     assert(fake.compute.instances.delete_called);
     helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId);
+    helper.assertPulseMessage('worker-removed', m => m.payload.launchConfigId === worker.launchConfigId);
     assert.equal(worker.state, Worker.states.STOPPING);
   });
 
@@ -540,6 +543,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
     test('for a stopped instance', async function() {
@@ -579,14 +583,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           errors: [{ message: 'uhoh' }],
         },
       });
-      let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation } });
+      let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation }, launchConfigId: 'lc1' });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       assert.equal(errors[0].title, 'Operation Error');
+      assert.equal(errors[0].launch_config_id, 'lc1');
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === 'lc1');
     });
 
     test('remove unregistered workers after terminateAfter', async function() {
@@ -829,6 +835,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
     });
   });
 });

@@ -8,6 +8,7 @@ properties:
   workerId: {$ref: "worker-full.json#/properties/workerId"}
   workerGroup: {$ref: "worker-full.json#/properties/workerGroup"}
   capacity: {$ref: "worker-full.json#/properties/capacity"}
+  launchConfigId: {$ref: "worker-full.json#/properties/launchConfigId"}
   timestamp:
     title: Event timestamp
     description: Date and time when this event occurred
