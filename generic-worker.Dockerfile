@@ -1,6 +1,6 @@
 # Insecure generic worker
 
-FROM golang:1.23.7-alpine AS build
+FROM golang:1.23.8-alpine AS build
 
 ENV CGO_ENABLED=0
 
