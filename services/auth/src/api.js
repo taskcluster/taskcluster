@@ -357,7 +357,7 @@ builder.declare({
   name: 'getEntityHistory',
   category: 'Audit',
   output: 'get-entity-history-response.yml',
-  scopes: 'auth:audit-history:<entityType>',
+  scopes: null, //'auth:audit-history:<entityType>',
   stability: 'stable',
   title: 'Get Entity History',
   description: [
@@ -376,6 +376,37 @@ builder.declare({
 
   return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
 });
+
+// builder.declare({
+//   method: 'get',
+//   route: '/audit-logs',
+//   query: {
+//     ...paginateResults.query,
+//     entityType: /^(client|role|secret|hook|worker_pool)$/,
+//     entityId: /^([a-zA-Z0-9-_%]*)$/,
+//     fromDate: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
+//     toDate: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
+//     actionType: /^(created|updated|deleted|client enabled|client disabled|access token reset)$/,
+//   },
+//   name: 'listAuditHistory',
+//   category: 'Audit',
+//   //output: ,
+//   scopes: null,
+//   stability: 'stable',
+//   title: 'List Audit History',
+//   description: [
+//     'Get audit history based on various filters.',
+//     '',
+//     'Parameters:',
+//     ' * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)',
+//     ' * `entityId` - Filter by entity ID',
+//     ' * `fromDate` - Filter entries from this date (inclusive)',
+//     ' * `toDate` - Filter entries to this date (inclusive)',
+//     ' * `actionType` - Filter by action type (created, updated, deleted, etc)',
+//   ].join('\n'),
+// }, async function(req, res){
+
+// })
 /** Reset access token for client */
 builder.declare({
   method: 'post',

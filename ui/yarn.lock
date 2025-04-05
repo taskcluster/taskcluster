@@ -17449,15 +17449,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"taskcluster-client-web@npm:^68.0.4":
-  version: 68.0.4
-  resolution: "taskcluster-client-web@npm:68.0.4"
+"taskcluster-client-web@npm:^83.4.0":
+  version: 83.4.0
+  resolution: "taskcluster-client-web@npm:83.4.0"
   dependencies:
     crypto-js: "npm:^4.2.0"
     hawk: "npm:^9.0.2"
     query-string: "npm:^7.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
-  checksum: 10c0/522e4d4dd917f8058b2d8a4898749784de60dde6079a68083760c8fc185ef24a525717a10cc22bba8769a47ffcc84113cb36461cdacb26c3cdddba9516be7c9f
+  checksum: 10c0/e4b3ac672d5dd9bd54a7b9f422d1ed260d6ed274c36892c9906a7aabaec748fff0caf4c4bee3c041ce30856422ad5e1bf7390313456fe08382ed7ee9ea9cca19
   languageName: node
   linkType: hard
 
@@ -17591,7 +17591,7 @@ __metadata:
     shebang-loader: "npm:^0.0.1"
     snake-case: "npm:^3.0.3"
     subscriptions-transport-ws: "npm:^0.11.0"
-    taskcluster-client-web: "npm:^68.0.4"
+    taskcluster-client-web: "npm:^83.4.0"
     taskcluster-lib-scopes: "npm:^11.0.0"
     taskcluster-lib-urls: "npm:^13.0.0"
     title-case: "npm:^3.0.2"
