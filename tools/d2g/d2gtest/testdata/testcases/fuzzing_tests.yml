@@ -67,6 +67,7 @@ testSuite:
         backingLog: true
         liveLog: true
         loopbackAudio: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -83,4 +84,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Bugmon Processor disableSeccomp test task

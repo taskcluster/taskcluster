@@ -62,7 +62,7 @@ func AutoLoginUser() (user string, password []byte, err error) {
 }
 
 func AutoLoginUsername() (user string, err error) {
-	output, err := host.CombinedOutput("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
+	output, err := host.Output("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
 	if err != nil {
 		return "", fmt.Errorf("error reading autoLoginUser: %v", err)
 	}
@@ -80,7 +80,7 @@ func AutoLoginPassword() (password []byte, err error) {
 }
 
 func LoginWindowPList() (data map[string]any, err error) {
-	loginWindowPListString, err := host.CombinedOutput("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
+	loginWindowPListString, err := host.Output("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
 	if err != nil {
 		return data, err
 	}

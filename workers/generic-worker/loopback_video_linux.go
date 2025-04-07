@@ -51,8 +51,8 @@ func (lvt *LoopbackVideoTask) ReservedArtifacts() []string {
 }
 
 func (lvt *LoopbackVideoTask) Start() *CommandExecutionError {
-	if lvt.task.D2GInfo == nil && !slices.Contains(lvt.task.Payload.OSGroups, "video") {
-		lvt.task.Warn("The 'video' group is not in the list of OS groups. Consider adding so that the loopback video device will work as expected.")
+	if !slices.Contains(lvt.task.Payload.OSGroups, "video") && !slices.Contains(lvt.task.Payload.OSGroups, "docker") {
+		lvt.task.Warn("Neither 'video' nor 'docker' group is in the list of OS groups. Consider adding so that the loopback video device will work as expected.")
 	}
 
 	return lvt.setupVideoDevice()

@@ -39,6 +39,7 @@ testSuite:
       features:
         backingLog: false
         liveLog: false
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -49,4 +50,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: No artifacts test

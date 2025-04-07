@@ -613,6 +613,19 @@ type (
 
 		// This property is allowed for backward compatibility, but is unused.
 		SupersederURL string `json:"supersederUrl,omitempty"`
+
+		// Specifies whether taskcluster-proxy should listen on
+		// localhost interface (default) or search for a docker bridge
+		// interface (for tasks that wish to call the taskcluster
+		// proxy from inside a docker container that does not share
+		// the host network).
+		//
+		// Possible values:
+		//   * "localhost"
+		//   * "docker-bridge"
+		//
+		// Default:    "localhost"
+		TaskclusterProxyInterface string `json:"taskclusterProxyInterface" default:"localhost"`
 	}
 
 	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
@@ -1302,6 +1315,16 @@ func JSONSchema() string {
         "supersederUrl": {
           "description": "This property is allowed for backward compatibility, but is unused.",
           "title": "unused",
+          "type": "string"
+        },
+        "taskclusterProxyInterface": {
+          "default": "localhost",
+          "description": "Specifies whether taskcluster-proxy should listen on\nlocalhost interface (default) or search for a docker bridge\ninterface (for tasks that wish to call the taskcluster\nproxy from inside a docker container that does not share\nthe host network).",
+          "enum": [
+            "localhost",
+            "docker-bridge"
+          ],
+          "title": "Network Interface for Taskcluster Proxy to listen on",
           "type": "string"
         }
       },

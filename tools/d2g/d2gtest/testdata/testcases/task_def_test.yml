@@ -87,6 +87,7 @@ testSuite:
         - kvm
         - libvirt
         - docker
+        taskclusterProxyInterface: docker-bridge
       priority: lowest
       projectId: none
       provisionerId: proj-taskcluster
@@ -189,6 +190,7 @@ testSuite:
         - kvm
         - libvirt
         - docker
+        taskclusterProxyInterface: docker-bridge
       priority: lowest
       projectId: none
       provisionerId: proj-taskcluster
@@ -294,6 +296,7 @@ testSuite:
         - kvm
         - libvirt
         - docker
+        taskclusterProxyInterface: docker-bridge
       priority: lowest
       projectId: none
       provisionerId: proj-taskcluster

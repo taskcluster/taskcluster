@@ -18,7 +18,7 @@ func SecureFiles(filepaths ...string) (err error) {
 }
 
 func GetPermissions(path string) (string, func() error, error) {
-	permissions, err := host.CombinedOutput("icacls", path)
+	permissions, err := host.Output("icacls", path)
 	if err != nil {
 		return "", nil, err
 	}

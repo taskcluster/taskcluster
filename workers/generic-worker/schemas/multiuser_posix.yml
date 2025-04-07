@@ -436,6 +436,19 @@ oneOf:
             Since: generic-worker 48.2.0
           type: string
           default: public/logs/live_backing.log
+    taskclusterProxyInterface:
+      title: Network Interface for Taskcluster Proxy to listen on
+      type: string
+      description: |-
+        Specifies whether taskcluster-proxy should listen on
+        localhost interface (default) or search for a docker bridge
+        interface (for tasks that wish to call the taskcluster
+        proxy from inside a docker container that does not share
+        the host network).
+      default: localhost
+      enum:
+      - localhost
+      - docker-bridge
 - title: Docker worker payload
   description: "`.payload` field of the queue."
   type: object

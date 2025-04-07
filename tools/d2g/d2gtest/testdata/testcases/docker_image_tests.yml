@@ -31,6 +31,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -41,6 +42,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: DockerImageName
   - d2gConfig:
       allowChainOfTrust: true
@@ -73,6 +75,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -83,6 +86,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: NamedDockerImage
   - d2gConfig:
       allowChainOfTrust: true
@@ -116,6 +120,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -132,6 +137,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: IndexedDockerImage
   - d2gConfig:
       allowChainOfTrust: true
@@ -165,6 +171,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -182,6 +189,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: IndexedDockerImage with .lz4 extension
   - d2gConfig:
       allowChainOfTrust: true
@@ -215,6 +223,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -231,6 +240,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: IndexedDockerImage with .zst extension
   - d2gConfig:
       allowChainOfTrust: true
@@ -264,6 +274,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -279,6 +290,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: DockerImageArtifact
   - d2gConfig:
       allowChainOfTrust: true
@@ -312,6 +324,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -328,6 +341,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: DockerImageArtifact with .lz4 extension
   - d2gConfig:
       allowChainOfTrust: true
@@ -361,6 +375,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -376,6 +391,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: DockerImageArtifact with .zst extension
   - d2gConfig:
       allowChainOfTrust: true
@@ -411,6 +427,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -428,4 +445,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: DockerImage with cache

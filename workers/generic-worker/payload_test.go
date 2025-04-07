@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v83/clients/client-go"
 	"github.com/taskcluster/taskcluster/v83/clients/client-go/tcqueue"
@@ -183,17 +184,19 @@ func TestMaxTaskRunTime(t *testing.T) {
 
 func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
 	t.Helper()
-	payload, err := json.Marshal(GenericWorkerPayload{
+	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 310,
-	})
+	}
+	defaults.SetDefaults(&payload)
+	payloadRawJSON, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatalf("Failed to marshal payload: %v", err)
 	}
 	return &TaskRun{
 		TaskID: slugid.Nice(),
 		Definition: tcqueue.TaskDefinitionResponse{
-			Payload: payload,
+			Payload: payloadRawJSON,
 		},
 		logWriter: &bytes.Buffer{},
 	}
