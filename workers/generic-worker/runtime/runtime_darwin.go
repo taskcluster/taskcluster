@@ -57,7 +57,7 @@ func DeleteUser(username string) (err error) {
 
 func ListUserAccounts() (usernames []string, err error) {
 	var out string
-	out, err = host.CombinedOutput("/usr/bin/dscl", ".", "-list", "/Users")
+	out, err = host.Output("/usr/bin/dscl", ".", "-list", "/Users")
 	if err != nil {
 		return
 	}
@@ -107,7 +107,7 @@ func WaitForLoginCompletion(timeout time.Duration, username string) (err error) 
 	}
 	log.Print("Timed out waiting for user login")
 	var output string
-	output, err = host.CombinedOutput("/usr/bin/last")
+	output, err = host.Output("/usr/bin/last")
 	if err != nil {
 		log.Printf("Not able to execute /usr/bin/last due to %v", err)
 	} else {
@@ -127,7 +127,7 @@ func InteractiveUsername() (string, error) {
 	if cachedInteractiveUsername != "" {
 		return cachedInteractiveUsername, nil
 	}
-	output, err := host.CombinedOutput("/usr/bin/last", "-t", "console", "-1")
+	output, err := host.Output("/usr/bin/last", "-t", "console", "-1")
 	if err != nil {
 		return "", err
 	}

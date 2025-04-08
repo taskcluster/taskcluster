@@ -85,7 +85,7 @@ func DeleteUser(username string) (err error) {
 
 func ListUserAccounts() (usernames []string, err error) {
 	var out string
-	out, err = host.CombinedOutput("powershell", "-Command", "Get-LocalUser | Select-Object -ExpandProperty Name")
+	out, err = host.Output("powershell", "-Command", "Get-LocalUser | Select-Object -ExpandProperty Name")
 	if err != nil {
 		return
 	}

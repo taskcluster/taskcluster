@@ -111,6 +111,7 @@ testSuite:
         chainOfTrust: true
         interactive: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: apple/banana_backing.log
@@ -128,4 +129,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Regular decision task

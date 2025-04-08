@@ -209,6 +209,7 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[stri
 	setOnExitStatus(dwPayload, gwPayload)
 	setSupersederURL(dwPayload, gwPayload)
 	setOSGroups(dwPayload, gwPayload, config)
+	gwPayload.TaskclusterProxyInterface = "docker-bridge"
 
 	return
 }

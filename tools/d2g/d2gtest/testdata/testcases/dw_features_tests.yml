@@ -36,6 +36,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -47,6 +48,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Allow ptrace, disableSeccomp, and taskclusterProxy
   - d2gConfig:
       allowChainOfTrust: true
@@ -83,6 +85,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -93,6 +96,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Allow ptrace, disableSeccomp, and taskclusterProxy disabled
   - d2gConfig:
       allowChainOfTrust: true
@@ -125,6 +129,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -135,6 +140,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Allow privileged
   - d2gConfig:
       allowChainOfTrust: true
@@ -168,6 +174,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -178,4 +185,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Allow privileged disabled

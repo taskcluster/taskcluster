@@ -74,7 +74,7 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 	setup(t)
 
-	goPath, err := host.CombinedOutput("go", "env", "GOPATH")
+	goPath, err := host.Output("go", "env", "GOPATH")
 	if err != nil {
 		t.Fatalf("Could not get GOPATH: %v", err)
 	}

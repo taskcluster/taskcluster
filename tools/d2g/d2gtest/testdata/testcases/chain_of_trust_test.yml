@@ -46,6 +46,7 @@ testSuite:
         backingLog: true
         chainOfTrust: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -56,6 +57,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Named Docker Image Test
   - d2gConfig:
       allowChainOfTrust: true
@@ -101,6 +103,7 @@ testSuite:
         backingLog: true
         chainOfTrust: true
         liveLog: true
+        resourceMonitor: true
         taskclusterProxy: true
       logs:
         backing: public/logs/live_backing.log
@@ -117,6 +120,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Indexed Docker Image Test
   - d2gConfig:
       allowChainOfTrust: true
@@ -162,6 +166,7 @@ testSuite:
         backingLog: true
         chainOfTrust: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -177,6 +182,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Docker Image Artifact Test
   - d2gConfig:
       allowChainOfTrust: true
@@ -219,6 +225,7 @@ testSuite:
         backingLog: true
         chainOfTrust: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -229,4 +236,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Docker Image Name Test

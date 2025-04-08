@@ -471,6 +471,12 @@ func TestFileMountWithCompression(t *testing.T) {
 		granting...,
 	)
 
+	payload := GenericWorkerPayload{
+		Command:    printFileContents(t.Name()),
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -496,10 +502,7 @@ func TestFileMountWithCompression(t *testing.T) {
 				// Required text from second task when download is already cached
 				pass2,
 			},
-			Payload: &GenericWorkerPayload{
-				Command:    printFileContents(t.Name()),
-				MaxRunTime: 10,
-			},
+			Payload: &payload,
 			PerTaskExtraTesting: func(t *testing.T) {
 				t.Helper()
 				expectedText := "testing file mounts with compression!"

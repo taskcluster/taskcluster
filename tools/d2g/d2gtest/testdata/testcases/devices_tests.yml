@@ -36,6 +36,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -46,6 +47,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Host Shared Memory
   - d2gConfig:
       allowChainOfTrust: true
@@ -80,6 +82,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -90,6 +93,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Host Shared Memory disabled
   - d2gConfig:
       allowChainOfTrust: true
@@ -124,6 +128,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -136,6 +141,7 @@ testSuite:
       - kvm
       - libvirt
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: KVM
   - d2gConfig:
       allowChainOfTrust: true
@@ -170,6 +176,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -180,6 +187,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: KVM disabled
   - d2gConfig:
       allowChainOfTrust: true
@@ -215,6 +223,7 @@ testSuite:
         backingLog: true
         liveLog: true
         loopbackVideo: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -225,6 +234,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Video Loopback
   - d2gConfig:
       allowChainOfTrust: true
@@ -259,6 +269,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -269,6 +280,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Video Loopback disabled
   - d2gConfig:
       allowChainOfTrust: true
@@ -304,6 +316,7 @@ testSuite:
         backingLog: true
         liveLog: true
         loopbackAudio: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -314,6 +327,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Audio Loopback
   - d2gConfig:
       allowChainOfTrust: true
@@ -348,6 +362,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -358,6 +373,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Audio Loopback disabled
   - d2gConfig:
       allowChainOfTrust: true
@@ -389,6 +405,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -399,6 +416,7 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: GPUs
   - d2gConfig:
       allowChainOfTrust: true
@@ -430,6 +448,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -440,4 +459,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: GPUs with custom device

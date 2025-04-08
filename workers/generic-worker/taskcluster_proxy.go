@@ -7,11 +7,11 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os/exec"
 	"strings"
 
 	tcclient "github.com/taskcluster/taskcluster/v83/clients/client-go"
 	"github.com/taskcluster/taskcluster/v83/internal/scopes"
+	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/tcproxy"
 )
 
@@ -57,12 +57,13 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
-	if l.task.D2GInfo != nil {
-		out, err := exec.Command("docker", "network", "inspect", "bridge", "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}").Output()
+	switch l.task.Payload.TaskclusterProxyInterface {
+	case "docker-bridge":
+		out, err := host.Output("docker", "network", "inspect", "bridge", "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}")
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: %s", err))
 		}
-		gateways := strings.Split(strings.TrimSpace(string(out)), " ")
+		gateways := strings.Split(strings.TrimSpace(out), " ")
 		if len(gateways) == 0 {
 			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no gateways found"))
 		}
@@ -80,8 +81,10 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		if l.taskclusterProxyAddress == "" {
 			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no ipv4 gateway found among %v", gateways))
 		}
-	} else {
+	case "localhost":
 		l.taskclusterProxyAddress = "127.0.0.1"
+	default:
+		return executionError(internalError, errored, fmt.Errorf("INTERNAL BUG: Unsupported taskcluster proxy interface enum option should not have made it here: %q", l.task.Payload.TaskclusterProxyInterface))
 	}
 
 	// Set TASKCLUSTER_PROXY_URL in the task environment

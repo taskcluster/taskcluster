@@ -36,6 +36,7 @@ testSuite:
       features:
         backingLog: true
         liveLog: true
+        resourceMonitor: true
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
@@ -46,4 +47,5 @@ testSuite:
         - 128
       osGroups:
       - docker
+      taskclusterProxyInterface: docker-bridge
     name: Env escaping test
