@@ -44,13 +44,24 @@ type S3Artifact struct {
 // use this cleanup function.
 func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, func()) {
 	var fileLock *flock.Flock
+	removeFileLock := func() {
+		log.Printf("Removing exclusive file lock on %v...", s3Artifact.ContentPath)
+		_ = fileLock.Unlock()
+	}
+
 	if runtime.GOOS != "windows" {
 		fileLock = flock.New(s3Artifact.ContentPath)
+		log.Printf("Attempting to get exclusive file lock on %v...", s3Artifact.ContentPath)
 		locked, _ := fileLock.TryLock()
-		if locked && s3Artifact.ContentEncoding != "gzip" {
-			return s3Artifact.ContentPath, func() {
-				_ = fileLock.Unlock()
+		if locked {
+			log.Printf("Got exclusive file lock on %v", s3Artifact.ContentPath)
+			if s3Artifact.ContentEncoding != "gzip" {
+				log.Printf("No need to copy %v to temp file", s3Artifact.ContentPath)
+				return s3Artifact.ContentPath, removeFileLock
 			}
+			log.Printf("Need to gzip-compress %v...", s3Artifact.ContentPath)
+		} else {
+			log.Printf("Failed to get exclusive file lock on %v", s3Artifact.ContentPath)
 		}
 	}
 
@@ -75,7 +86,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, func()) {
 	_, _ = io.Copy(target, source)
 	return tmpFile.Name(), func() {
 		if runtime.GOOS != "windows" {
-			_ = fileLock.Unlock()
+			removeFileLock()
 		}
 		os.Remove(tmpFile.Name())
 	}
