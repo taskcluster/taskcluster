@@ -23,7 +23,7 @@ func CombinedOutput(name string, arg ...string) (combinedOutput string, err erro
 	return runCommand(exec.Command(name, arg...))
 }
 
-// Output is like CombinedOutput but only returns Standard Error output. If an
+// Output is like CombinedOutput but only returns Standard Out output. If an
 // error is encountered, both standard error and standard output are logged.
 func Output(name string, arg ...string) (string, error) {
 	log.Printf("Running command: %s %s", shell.Escape(name), shell.Escape(arg...))
