@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker: adds additional worker logs around the artifact upload process to help debug artifact upload performance.
+
+### USERS
+
+▶ [patch] [#7625](https://github.com/taskcluster/taskcluster/issues/7625)
+Generic Worker now supports running Taskcluster Proxy on the docker bridge network outside of D2G.
+
 ## v83.5.0
 
 ### GENERAL
