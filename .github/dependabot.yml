@@ -139,3 +139,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+
+  # Ignore docker worker dependencies
+  - package-ecosystem: "npm"
+    directory: "/workers/docker-worker"
+    schedule:
+      interval: "monthly"
+    rebase-strategy: "disabled"
+    ignore:
+      - dependency-name: "*"
