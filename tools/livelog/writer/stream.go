@@ -8,7 +8,10 @@ import (
 	"sync"
 )
 
-const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
+// 32KiB for improved I/O performance
+// this value is used inside the go stdlib
+// for io.Copy() so this should be safe
+const READ_BUFFER_SIZE = 32 * 1024
 
 type Event struct {
 	Number int
