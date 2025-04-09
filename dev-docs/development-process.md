@@ -25,7 +25,7 @@ We recommend using https://github.com/moovweb/gvm to support installing multiple
 ### Rust
 
 You do not need Rust installed unless you are working on one of the Rust components of Taskcluster.
-The currently-required version of Rust is in `rust-toolchain`.
+The currently-required version of Rust is in `rust-toolchain.toml`.
 
 ### Postgres
 

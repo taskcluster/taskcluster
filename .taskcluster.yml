@@ -168,6 +168,7 @@ tasks:
                 TASKCLUSTER_HEAD_REF: "${head_ref}"
                 TASKCLUSTER_HEAD_REV: "${head_sha}"
                 TASKCLUSTER_REPOSITORY_TYPE: git
+                TASKCLUSTER_PIP_REQUIREMENTS: taskcluster/requirements.txt
                 REPOSITORIES: { $json: { taskcluster: Taskcluster } }
               - $if: "isPullRequest"
                 then:
