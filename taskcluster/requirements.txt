@@ -590,13 +590,13 @@ slugid==2.0.0 \
     # via
     #   taskcluster
     #   taskcluster-taskgraph
-taskcluster==83.4.0 \
-    --hash=sha256:9efe11d57b0fb6876cb175880be6e278d90b03ea503edaa95215ce9080948b88 \
-    --hash=sha256:c30e596c02d023f8b206c9c4ff566515212d49619e08bb53f580760584047ec8
+taskcluster==83.5.1 \
+    --hash=sha256:606f352b5619c7015f2bcbcda1ed6e0253be1a3df6abf74d5c4d54bfa1f436d9 \
+    --hash=sha256:fe6e0f661178b52126627b16e4af58bfe716483ee7809e132be255bd724cb644
     # via -r requirements.in
-taskcluster-taskgraph==14.0.0 \
-    --hash=sha256:04be28c01ea244930d25a0d0474aa8109c2d9273b74c628ab447b4356858d60f \
-    --hash=sha256:512463517429c323c1834e3164606d44bc55837e6afab56dd8d97f3abad892d2
+taskcluster-taskgraph==14.1.0 \
+    --hash=sha256:bf69ac09275f98206696e628873867fcd4aff5f9f8fe6cffc465e6be42955763 \
+    --hash=sha256:e93132b3a80142e7b2a27a4ecb11102011885967099aa5e7117238de48731e6f
     # via -r requirements.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \
