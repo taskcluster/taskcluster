@@ -18,7 +18,7 @@ type (
 )
 
 func (af *ArtifactFeature) Name() string {
-	return "Artifact Feature"
+	return "Artifact Uploads"
 }
 
 func (af *ArtifactFeature) Initialise() (err error) {
