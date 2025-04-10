@@ -22,7 +22,6 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"slices"
@@ -80,6 +79,14 @@ func initialiseFeatures() (err error) {
 		&ResourceMonitorFeature{},
 	}
 	features = append(features, platformFeatures()...)
+	features = append(
+		features,
+		// ArtifactFeature last in the list, to match previous behaviour. It
+		// may be possible to move further up at some point, but then task
+		// log comments might need to be adjusted (since they refer to other
+		// features running later in the Stop() method).
+		&ArtifactFeature{},
+	)
 	for _, feature := range features {
 		log.Printf("Initialising task feature %v...", feature.Name())
 		err := feature.Initialise()
@@ -1087,62 +1094,6 @@ If you do require this feature, please do one of two things:
 			return
 		}
 	}
-
-	defer func() {
-		taskArtifacts := task.PayloadArtifacts()
-		var wg sync.WaitGroup
-		uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
-		failChan := make(chan *CommandExecutionError, len(taskArtifacts))
-		for _, artifact := range taskArtifacts {
-			wg.Add(1)
-			go func(artifact artifacts.TaskArtifact) {
-				defer wg.Done()
-
-				// Any attempt to upload a feature artifact should be skipped
-				// but not cause a failure, since e.g. a directory artifact
-				// could include one, non-maliciously, such as a top level
-				// public/ directory artifact that includes
-				// public/logs/live_backing.log inadvertently.
-				if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
-					task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
-					return
-				}
-				err := task.uploadArtifact(artifact)
-				if err != nil {
-					// we don't care about optional artifacts failing to upload
-					if artifact.Base().Optional {
-						return
-					}
-					uploadErrChan <- err
-				}
-				// Note - the above error only covers not being able to upload an
-				// artifact, but doesn't cover case that an artifact could not be
-				// found, and so an error artifact was uploaded. So we do that
-				// here:
-				switch a := artifact.(type) {
-				case *artifacts.ErrorArtifact:
-					// we don't care about optional artifacts failing to upload
-					if a.Optional {
-						return
-					}
-					fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
-					failChan <- fail
-					task.Errorf("TASK FAILURE during artifact upload: %v", fail)
-				}
-			}(artifact)
-		}
-
-		wg.Wait()
-		close(uploadErrChan)
-		close(failChan)
-
-		for executionErr := range uploadErrChan {
-			err.add(executionErr)
-		}
-		for executionErr := range failChan {
-			err.add(executionErr)
-		}
-	}()
 
 	t := task.setMaxRunTimer()
 	defer func() {
