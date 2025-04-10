@@ -1,5 +1,6 @@
 import os
 import json
+import toml
 
 from taskgraph.transforms.base import TransformSequence
 
@@ -8,8 +9,8 @@ transforms = TransformSequence()
 
 def _dependency_versions():
     pg_version = 15
-    with open('clients/client-rust/rust-toolchain', 'r') as f:
-        rust_version = f.read().strip()
+    with open('clients/client-rust/rust-toolchain.toml', 'r') as f:
+        rust_version = toml.load(f)["toolchain"]["channel"].strip()
     with open('package.json', 'r') as pkg:
         node_version = json.load(pkg)["engines"]["node"].strip()
     with open('.go-version', 'r') as goversion:
