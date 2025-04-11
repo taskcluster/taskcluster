@@ -551,15 +551,15 @@ func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
 	}
 
 	// Reset to inherited permissions only, recursively
-	err := host.Run("icacls", dir, "/reset", "/t")
+	out, err := host.Output("icacls", dir, "/reset", "/t", "/c", "/q")
 	if err != nil {
-		return fmt.Errorf("failed to reset permissions on dir %v: %v", dir, err)
+		return fmt.Errorf("failed to reset permissions on dir %v: %v\n%v", dir, err, out)
 	}
 
 	// Grant full control to new owner, adding to inherited permissions
-	err = host.Run("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
+	out, err = host.Output("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
 	if err != nil {
-		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v", newOwnerUsername, dir, err)
+		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v\n%v", newOwnerUsername, dir, err, out)
 	}
 
 	return nil
