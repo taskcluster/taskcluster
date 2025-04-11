@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.2
+
+### GENERAL
+
+▶ [patch] [#7643](https://github.com/taskcluster/taskcluster/issues/7643)
+Upgrades to rust 1.86.0.
+
+### DEVELOPERS
+
+▶ [patch]
+Generic Worker now handles artifact upload inside a task feature rather than the main processing loop of the task execution. This refactor improves code modularity.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump crossbeam-channel in /clients/client-rust (19918f0136)
+* build(deps): bump the node-deps group with 21 updates (c73c37aa06)
+* build(deps): bump the python-deps group in /taskcluster with 2 updates (ba5ee4b929)
+* build(deps-dev): bump eslint (f0b65711be)
+* build(deps): bump the go-deps group with 4 updates (6051fc8b9e)
+
+</details>
+
 ## v83.5.1
 
 ### WORKER-DEPLOYERS
