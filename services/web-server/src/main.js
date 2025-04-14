@@ -149,7 +149,6 @@ const load = loader(
         const server = new ApolloServer({
           schema,
           formatError,
-          tracing: true,
           status400ForVariableCoercionErrors: true, //https://www.apollographql.com/docs/apollo-server/migration#appropriate-400-status-codes
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,

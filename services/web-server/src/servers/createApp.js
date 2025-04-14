@@ -54,6 +54,17 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     },
   });
 
+  app.use((req, res, next) => {
+    const cspDirectives = [
+      'frame-ancestors "none"',
+      'default-src "self"',
+    ];
+    res.setHeader('Content-Security-Policy', cspDirectives.join('; '));
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    next();
+  });
+
   app.use(traceMiddleware);
   app.use(session({
     store: process.env.NODE_ENV === 'production' ?
