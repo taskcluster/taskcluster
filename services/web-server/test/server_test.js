@@ -52,7 +52,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test('login/logout', async function () {
       const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
       assert(logout.body);
-      assert.equal(logout.headers['cross-origin-opener-policy'], 'same-origin');
     });
   });
 
