@@ -54,13 +54,8 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     },
   });
 
-  app.use((req, res, next) => {
-    const cspDirectives = [
-      'frame-ancestors "none"',
-      'default-src "self"',
-    ];
-    res.setHeader('Content-Security-Policy', cspDirectives.join('; '));
-    res.setHeader('X-Frame-Options', 'DENY');
+  app.use('/login', (req, res, next) => {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     next();
   });
