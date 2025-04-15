@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.4
+
+### GENERAL
+
+▶ [patch]
+Refactor web-server middleware
+
+### DEVELOPERS
+
+▶ [patch]
+UI: Improves login window after redirect
+
 ## v83.5.3
 
 ### GENERAL
