@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.3
+
+### GENERAL
+
+▶ [patch]
+Fix 3rd party login header issue
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7650](https://github.com/taskcluster/taskcluster/issues/7650)
+Generic Worker (windows): fixes cache mount issue where generic worker fails to reset permissions on the cache directory. First noticed in [v81.0.3](https://docs.taskcluster.net/docs/changelog?version=v81.0.3).
+
 ## v83.5.2
 
 ### GENERAL
