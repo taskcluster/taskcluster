@@ -54,6 +54,12 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     },
   });
 
+  app.use('/login', (req, res, next) => {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    next();
+  });
+
   app.use(traceMiddleware);
   app.use(session({
     store: process.env.NODE_ENV === 'production' ?
