@@ -25,7 +25,6 @@ import workersQuery from './workers.graphql';
 import WorkersNavbar from '../../../components/WorkersNavbar';
 
 const STATES = {
-  requested: 'requested',
   running: 'running',
   stopping: 'stopping',
   stopped: 'stopped',
@@ -272,7 +271,6 @@ export default class ViewWorkers extends Component {
                   <em>None</em>
                 </MenuItem>
                 <MenuItem value="quarantined">Quarantined</MenuItem>
-                <MenuItem value="requested">Requested</MenuItem>
                 <MenuItem value="running">Running</MenuItem>
                 <MenuItem value="stopping">Stopping</MenuItem>
                 <MenuItem value="stopped">Stopped</MenuItem>
