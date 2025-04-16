@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.5
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7652](https://github.com/taskcluster/taskcluster/issues/7652)
+Generic Worker: remove temp file created while adding additional data to chain of trust file.
+
+### USERS
+
+▶ [patch]
+Fixes duplicate taskcluster windows after external signin.
+
 ## v83.5.4
 
 ### GENERAL
