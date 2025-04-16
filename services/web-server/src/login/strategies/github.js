@@ -168,6 +168,7 @@ export default class Github {
     app.get('/login/github', applySecurityHeaders, passport.authenticate('github'));
     app.get(
       callback,
+      applySecurityHeaders,
       passport.authenticate('github'),
       loginMiddleware,
     );
