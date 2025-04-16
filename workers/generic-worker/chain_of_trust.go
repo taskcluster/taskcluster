@@ -257,6 +257,7 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	if err != nil {
 		return
 	}
+	defer os.Remove(tempPath)
 
 	var additionalDataBytes []byte
 	additionalDataBytes, err = os.ReadFile(tempPath)
