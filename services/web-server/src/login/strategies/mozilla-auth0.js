@@ -236,6 +236,7 @@ export default class MozillaAuth0 {
     // Called by the provider
     app.get(
       callback,
+      applySecurityHeaders,
       passport.authenticate('auth0'),
       loginMiddleware,
     );

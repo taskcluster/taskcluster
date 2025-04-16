@@ -9,6 +9,7 @@
     <h1>Logging in...</h1>
     <script>
       const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
+      const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
 
       window.addEventListener('load', () => {
         const userData = {
@@ -19,34 +20,41 @@
         };
 
         if (window.opener) {
-          // original flow when opener is available
           window.opener.postMessage(userData, <%- JSON.stringify(publicUrl) %>);
           window.close();
-        } else {
-          try {
-            const userSession = {
-              ...userData,
-              profile: JSON.parse(atob(userData.encodedProfile)),
-              expires: userData.providerExpires,
-            };
+          return;
+        }
 
-            // save auth
-            localStorage.setItem(AUTH_STORE, JSON.stringify(userSession));
+        try {
+          const userSession = {
+            ...userData,
+            profile: JSON.parse(atob(userData.encodedProfile)),
+            expires: userData.providerExpires,
+          };
+          localStorage.setItem(AUTH_STORE, JSON.stringify(userSession));
 
-            setTimeout(() => {
-              window.location.href = '<%- publicUrl %>';
-            }, 1500);
-          } catch (err) {
-            console.error('Login error:', err);
-            document.body.innerHTML = `
-              <div style="text-align: center; margin-top: 2em;">
-                <h2>Login error</h2>
-                <p>There was a problem completing the login process.</p>
-                <p>${error.message}</p>
-                <p><a href="<%- publicUrl %>">Return to application</a></p>
-              </div>
-            `;
+          let shouldRedirect = true;
+          if (localStorage.getItem(AUTH_STARTED) === userData.identityProviderId) {
+            localStorage.removeItem(AUTH_STARTED);
+            shouldRedirect = false;
           }
+          setTimeout(() => {
+            if (shouldRedirect) {
+              window.location.href = '<%- publicUrl %>';
+            } else {
+              window.close();
+            }
+          }, 1000);
+        } catch (err) {
+          console.error('Login error:', err);
+          document.body.innerHTML = `
+            <div style="text-align: center; margin-top: 2em;">
+              <h2>Login error</h2>
+              <p>There was a problem completing the login process.</p>
+              <p>${error.message}</p>
+              <p><a href="<%- publicUrl %>">Return to application</a></p>
+            </div>
+          `;
         }
       });
     </script>
