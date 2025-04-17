@@ -354,8 +354,6 @@ export default class WMWorkerPoolEditor extends Component {
         workerPoolId: joinWorkerPoolId(workerPoolId1, workerPoolId2),
         payload,
       });
-
-      this.props.history.push('/worker-manager');
     } catch (error) {
       this.setState({ error: formatError(error), actionLoading: false });
     }
@@ -420,7 +418,7 @@ export default class WMWorkerPoolEditor extends Component {
         value: requestedCapacity,
         className: 'requestedCapacity',
         Icon: TimerSandIcon,
-        href: `${workerTypeUrl}?filterBy=requested`,
+        href: `${workerPoolUrl}/workers?state=requested`,
       },
       {
         label: 'Running Capacity',
@@ -434,7 +432,7 @@ export default class WMWorkerPoolEditor extends Component {
         value: stoppingCapacity,
         className: 'stoppingCapacity',
         Icon: CloseIcon,
-        href: `${workerTypeUrl}?filterBy=stopping`,
+        href: `${workerPoolUrl}/workers?state=stopping`,
       },
       {
         label: 'Errors',
