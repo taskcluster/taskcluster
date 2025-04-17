@@ -61,21 +61,25 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 
 	logger.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
 
-	// task user copies artifact at Path to ContentPath for task artifacts
-	// and this should be cleaned up after artifact upload
+	// Artifacts declared in payload are copied to a temp file
+	// as task user to ensure they are readable by task user.
+	// Reserved artifacts (created by task features) are not,
+	// since their file location is not user-defined, and task
+	// user cannot replace their content with symbolic links.
+	// Thus reserved (trusted) artifacts have Path == ContentPath.
 	tempFileCreated := s3Artifact.Path != s3Artifact.ContentPath
 	if tempFileCreated {
 		defer os.Remove(s3Artifact.ContentPath)
 	}
 
 	var transferContentFile string
-	if tempFileCreated && s3Artifact.ContentEncoding != "gzip" {
-		log.Printf("Not copying %v to temp file", s3Artifact.ContentPath)
-		transferContentFile = s3Artifact.ContentPath
-	} else {
+	if !tempFileCreated || s3Artifact.ContentEncoding == "gzip" {
 		log.Printf("Copying %v to temp file...", s3Artifact.ContentPath)
 		transferContentFile = s3Artifact.createTempFileForPUTBody()
 		defer os.Remove(transferContentFile)
+	} else {
+		log.Printf("Not copying %v to temp file", s3Artifact.ContentPath)
+		transferContentFile = s3Artifact.ContentPath
 	}
 
 	// perform http PUT to upload to S3...
