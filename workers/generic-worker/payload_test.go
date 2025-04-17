@@ -27,7 +27,7 @@ func taskWithPayload(payload string) *TaskRun {
 
 func ensureValidPayload(t *testing.T, task *TaskRun) {
 	t.Helper()
-	err := task.validatePayload()
+	err := validatePayload(task)
 	if err != nil {
 		t.Logf("%v", err.Cause)
 		t.Fatalf("Valid task payload should have passed validation")
@@ -36,7 +36,7 @@ func ensureValidPayload(t *testing.T, task *TaskRun) {
 
 func ensureMalformedPayload(t *testing.T, task *TaskRun) {
 	t.Helper()
-	err := task.validatePayload()
+	err := validatePayload(task)
 	if err == nil {
 		t.Fatalf("Bad task payload should not have passed validation")
 	}
@@ -61,7 +61,7 @@ func TestPayloadSchemaValid(t *testing.T) {
 	}
 }
 
-// Badly formatted json payload should result in *json.SyntaxError error in task.validatePayload()
+// Badly formatted json payload should result in *json.SyntaxError error in validatePayload(task)
 func TestTotallyMalformedPayload(t *testing.T) {
 	ensureMalformedPayload(t, taskWithPayload(`bad payload, not even json`))
 }
@@ -174,7 +174,7 @@ func TestArtifactExpiresBeforeDeadline(t *testing.T) {
 func TestMaxTaskRunTime(t *testing.T) {
 	setup(t)
 	task := maxTaskRunTimeTestTask(t)
-	if err := task.validatePayload(); err == nil {
+	if err := validatePayload(task); err == nil {
 		t.Fatal("Bad task payload should not have passed validation")
 	} else {
 		assertMaxTaskRunTimeError(t, err)
@@ -331,4 +331,12 @@ func TestInvalidPayload(t *testing.T) {
 }`)
 
 	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+}
+
+// helper for tests
+func validatePayload(task *TaskRun) *CommandExecutionError {
+	pvtf := PayloadValidatorTaskFeature{
+		task: task,
+	}
+	return pvtf.Start()
 }

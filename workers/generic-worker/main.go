@@ -72,6 +72,8 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&BackingLogFeature{},
+		&PayloadValidatorFeature{},
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
@@ -81,11 +83,11 @@ func initialiseFeatures() (err error) {
 	features = append(features, platformFeatures()...)
 	features = append(
 		features,
-		// ArtifactFeature last in the list, to match previous behaviour. It
-		// may be possible to move further up at some point, but then task
-		// log comments might need to be adjusted (since they refer to other
-		// features running later in the Stop() method).
 		&ArtifactFeature{},
+		&MaxRunTimeFeature{},
+		&AbortFeature{},
+		&TaskTimerFeature{},
+		&CommandsFeature{},
 	)
 	for _, feature := range features {
 		log.Printf("Initialising task feature %v...", feature.Name())
@@ -616,62 +618,6 @@ func ClaimWork() *TaskRun {
 	}
 }
 
-func (task *TaskRun) validatePayload() *CommandExecutionError {
-	jsonPayload := task.Definition.Payload
-	validateErr := task.validateJSON(jsonPayload, JSONSchema())
-	if validateErr != nil {
-		return validateErr
-	}
-	payload := map[string]any{}
-	err := json.Unmarshal(jsonPayload, &payload)
-	if err != nil {
-		panic(err)
-	}
-	workerPoolID := config.ProvisionerID + "/" + config.WorkerType
-	workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
-	if _, exists := payload["image"]; exists {
-		if !config.D2GEnabled() {
-			return MalformedPayloadError(fmt.Errorf(`docker worker payload detected, but D2G is not enabled on this worker pool (%s).
-If you need D2G to translate your Docker Worker payload so Generic Worker can process it, please do one of two things:
-	1. Contact the owner of the worker pool %s (see %s) and ask for D2G to be enabled.
-	2. Use a worker pool that already allows docker worker payloads (search for "enableD2G": "true" in the worker pool definition)`, workerPoolID, workerPoolID, workerManagerURL))
-		}
-		err := task.convertDockerWorkerPayload()
-		if err != nil {
-			return err
-		}
-	} else if config.NativePayloadsDisabled() {
-		return MalformedPayloadError(fmt.Errorf("native Generic Worker payloads are disabled on this worker pool (%s)", workerPoolID))
-	} else {
-		err := json.Unmarshal(jsonPayload, &task.Payload)
-		if err != nil {
-			panic(err)
-		}
-	}
-	for _, artifact := range task.Payload.Artifacts {
-		// The default artifact expiry is task expiry, but is only applied when
-		// the task artifacts are resolved. We intentionally don't modify
-		// task.Payload otherwise it no longer reflects the real data defined
-		// in the task.
-		if !time.Time(artifact.Expires).IsZero() {
-			// Don't be too strict: allow 1s discrepancy to account for
-			// possible timestamp rounding on upstream systems
-			if time.Time(artifact.Expires).Add(time.Second).Before(time.Time(task.Definition.Deadline)) {
-				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
-			}
-			// Don't be too strict: allow 1s discrepancy to account for
-			// possible timestamp rounding on upstream systems
-			if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires).Add(time.Second)) {
-				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
-			}
-		}
-	}
-	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
-		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
-	}
-	return nil
-}
-
 func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecutionError {
 	// Parse the JSON schema
 	schemaLoader := gojsonschema.NewStringLoader(schema)
@@ -911,20 +857,6 @@ func (task *TaskRun) resolve(e *ExecutionErrors) *CommandExecutionError {
 	return ResourceUnavailable(task.StatusManager.ReportException((*e)[0].Reason))
 }
 
-func (task *TaskRun) setMaxRunTimer() *time.Timer {
-	return time.AfterFunc(
-		time.Second*time.Duration(task.Payload.MaxRunTime),
-		func() {
-			// ignore any error the Abort function returns - we are in the
-			// wrong go routine to properly handle it
-			err := task.StatusManager.Abort(Failure(fmt.Errorf("task aborted - max run time exceeded")))
-			if err != nil {
-				task.Warnf("Error when aborting task: %v", err)
-			}
-		},
-	)
-}
-
 func (task *TaskRun) kill() {
 	for _, command := range task.Commands {
 		output, err := command.Kill()
@@ -936,29 +868,6 @@ func (task *TaskRun) kill() {
 			task.Warnf("%v", err)
 		}
 	}
-}
-
-func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
-	logFileHandle, err := os.Create(absLogFile)
-	if err != nil {
-		panic(err)
-	}
-	task.logMux.Lock()
-	defer task.logMux.Unlock()
-	task.logWriter = logFileHandle
-	return logFileHandle
-}
-
-func (task *TaskRun) logHeader() {
-	jsonBytes, err := json.MarshalIndent(config.WorkerTypeMetadata, "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-	task.Infof("Worker Type (%v/%v) settings:", config.ProvisionerID, config.WorkerType)
-	task.Info("  " + string(jsonBytes))
-	task.Info("Task ID: " + task.TaskID)
-	task.Info("=== Task Starting ===")
 }
 
 func (task *TaskRun) Run() (err *ExecutionErrors) {
@@ -982,33 +891,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		err.add(task.resolve(err))
 	}()
 
-	logHandle := task.createLogFile()
-	defer func() {
-		// log any errors that occurred
-		if err.Occurred() {
-			task.Error(err.Error())
-		}
-		if r := recover(); r != nil {
-			task.Error(string(debug.Stack()))
-			task.Errorf("%#v", r)
-			task.Errorf("%v", r)
-			defer panic(r)
-		}
-		task.closeLog(logHandle)
-		if task.Payload.Features.BackingLog {
-			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
-		}
-		if config.CleanUpTaskDirs {
-			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
-		}
-	}()
-
-	task.logHeader()
-
-	err.add(task.validatePayload())
-	if err.Occurred() {
-		return
-	}
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
 	task.Commands = make([]*process.Command, len(task.Payload.Command))
@@ -1094,58 +976,6 @@ If you do require this feature, please do one of two things:
 			return
 		}
 	}
-
-	t := task.setMaxRunTimer()
-	defer func() {
-
-		// Bug 1329617
-		// ********* DON'T drain channel **********
-		// because AfterFunc() drains it!
-		// see https://play.golang.org/p/6pqRerGVcg
-		// ****************************************
-		//
-		// if !t.Stop() {
-		// <-t.C
-		// }
-		t.Stop()
-	}()
-
-	// Terminating the Worker Early
-	// ----------------------------
-	// If the worker finds itself having to terminate early, for example a spot
-	// nodes that detects pending termination. Or a physical machine ordered to
-	// be provisioned for another purpose, the worker should report exception
-	// with the reason `worker-shutdown`. Upon such report the queue will
-	// resolve the run as exception and create a new run, if the task has
-	// additional retries left.
-	stopHandlingGracefulTermination := graceful.OnTerminationRequest(func(finishTasks bool) {
-		if !finishTasks {
-			_ = task.StatusManager.Abort(
-				&CommandExecutionError{
-					Cause:      fmt.Errorf("graceful termination requested, without time to finish tasks"),
-					Reason:     workerShutdown,
-					TaskStatus: aborted,
-				},
-			)
-		}
-	})
-	defer stopHandlingGracefulTermination()
-
-	started := time.Now()
-	defer func() {
-		finished := time.Now()
-		task.Info("=== Task Finished ===")
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		task.Info("Task Duration: " + finished.Round(0).Sub(started).String())
-	}()
-
-	for i := range task.Payload.Command {
-		err.add(task.ExecuteCommand(i))
-		if err.Occurred() {
-			return
-		}
-	}
-
 	return
 }
 
