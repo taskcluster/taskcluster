@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.6
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7368](https://github.com/taskcluster/taskcluster/issues/7368)
+Generic Worker: increase performance of artifact uploads by removing a redundant file copy operation.
+
+### USERS
+
+▶ [patch]
+UI: don't show `Requested` filter option on `Queue Workers` view, link to `W-M Workers` filtered view when clicking on `Requested Capacity` or `Stopping Capacity` buttons, don't redirect to Worker Manager Worker Pools page after saving Worker Pool config changes.
+
 ## v83.5.5
 
 ### WORKER-DEPLOYERS
