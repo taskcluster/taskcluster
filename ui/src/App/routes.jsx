@@ -11,6 +11,7 @@ import hookRoutes from '../views/Hooks/routes';
 import denylistRoutes from '../views/Denylist/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
+import auditHistoryRoutes from '../views/AuditHistory/routes';
 
 const SwitchEntryPoint = lazy(() =>
   import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
@@ -24,6 +25,7 @@ const Provisioners = lazy(() =>
 const Clients = lazy(() =>
   import(/* webpackChunkName: 'Clients' */ '../views/Clients')
 );
+const AuditHistory = lazy(() => import('../views/AuditHistory'));
 const Roles = lazy(() =>
   import(/* webpackChunkName: 'Roles' */ '../views/Roles')
 );
@@ -84,6 +86,11 @@ export default [
     component: Provisioners,
     path: '/provisioners',
     routes: provisionerRoutes('/provisioners'),
+  },
+  {
+    component: AuditHistory,
+    path: '/audit',
+    routes: auditHistoryRoutes('/audit'),
   },
   {
     component: Clients,
