@@ -56,7 +56,7 @@ type (
 		// only present if a hash is available. You are not required to validate
 		// this hash, but if you do, please check `scheme` to ensure that it's
 		// on a scheme you support.
-		Hash json.RawMessage `json:"hash,omitempty"`
+		Hash json.RawMessage `json:"hash,omitempty,omitzero"`
 
 		// Authentication scheme the client used. Generally, you don't need to
 		// read this property unless `hash` is provided and you want to validate
@@ -121,7 +121,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called this method with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// A list of Azure tables in an account
@@ -134,7 +134,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `azureAccountTables` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// A list of tables that are in an account. These are
 		// the tables that can have SAS credentials fetched for them.
@@ -164,7 +164,7 @@ type (
 		// it cannot be used for authentication in that state.
 		//
 		// Default:    false
-		DeleteOnExpiration bool `json:"deleteOnExpiration,omitempty"`
+		DeleteOnExpiration bool `json:"deleteOnExpiration,omitempty,omitzero"`
 
 		// Description of what these credentials are used for in markdown.
 		// Should include who is the owner, point of contact.
@@ -183,7 +183,7 @@ type (
 		// one `*` character are forbidden.
 		//
 		// Syntax:     ^[ -~]*$
-		Scopes []string `json:"scopes,omitempty"`
+		Scopes []string `json:"scopes,omitempty,omitzero"`
 	}
 
 	// All details about a client including the `accessToken`
@@ -315,7 +315,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// A list of requested roles
 		Roles []GetRoleResponse `json:"roles"`
@@ -387,7 +387,7 @@ type (
 		AuditHistory []Var `json:"auditHistory"`
 
 		// Token to be used to get the next page of results
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// If no limit is given, the roleIds of all roles are returned. Since this
@@ -398,7 +398,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// A list of requested roleIds
 		//
@@ -455,7 +455,7 @@ type (
 
 		// Authorization header, **must** only be specified if request being
 		// authenticated has a `Authorization` header.
-		Authorization string `json:"authorization,omitempty"`
+		Authorization string `json:"authorization,omitempty,omitzero"`
 
 		// Host for which the request came in, this is typically the `Host` header
 		// excluding the port if any.
@@ -511,7 +511,7 @@ type (
 		// One of:
 		//   * SourceIP
 		//   * SourceIP1
-		SourceIP string `json:"sourceIp,omitempty"`
+		SourceIP string `json:"sourceIp,omitempty,omitzero"`
 	}
 
 	// Response from a request to authenticate a hawk request.
@@ -529,7 +529,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// Response from a request to authenticate a hawk request.

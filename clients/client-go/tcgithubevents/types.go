@@ -24,7 +24,7 @@ type (
 		// Metadata describing the pull request (for version 0)
 		//
 		// Additional properties allowed
-		Details json.RawMessage `json:"details,omitempty"`
+		Details json.RawMessage `json:"details,omitempty,omitzero"`
 
 		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 		//
@@ -75,7 +75,7 @@ type (
 		// Metadata describing the push (for version 0)
 		//
 		// Additional properties allowed
-		Details json.RawMessage `json:"details,omitempty"`
+		Details json.RawMessage `json:"details,omitempty,omitzero"`
 
 		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 		//
@@ -126,7 +126,7 @@ type (
 		// Metadata describing the push (for version 0)
 		//
 		// Additional properties allowed
-		Details json.RawMessage `json:"details,omitempty"`
+		Details json.RawMessage `json:"details,omitempty,omitzero"`
 
 		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 		//
@@ -174,7 +174,7 @@ type (
 		// Metadata describing the release (for version 0)
 		//
 		// Additional properties allowed
-		Details json.RawMessage `json:"details,omitempty"`
+		Details json.RawMessage `json:"details,omitempty,omitzero"`
 
 		// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 		//

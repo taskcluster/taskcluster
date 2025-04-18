@@ -31,7 +31,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// Secret names
 		//

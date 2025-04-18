@@ -43,7 +43,7 @@ type (
 		AccessToken string `json:"accessToken"`
 
 		// Note that a certificate may not be provided, if the credentials are not temporary.
-		Certificate string `json:"certificate,omitempty"`
+		Certificate string `json:"certificate,omitempty,omitzero"`
 
 		ClientID string `json:"clientId"`
 	}
@@ -61,7 +61,7 @@ type (
 		AccessToken string `json:"accessToken"`
 
 		// Note that a certificate may not be provided, if the credentials are not temporary.
-		Certificate string `json:"certificate,omitempty"`
+		Certificate string `json:"certificate,omitempty,omitzero"`
 
 		ClientID string `json:"clientId"`
 	}
@@ -84,7 +84,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerTypes` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of workers in this worker-type.
 		Workers []Worker `json:"workers"`
@@ -100,7 +100,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPools` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all providers
 		Providers []Var `json:"providers"`
@@ -530,10 +530,10 @@ type (
 		// true capacity is not known.
 		//
 		// Mininum:    0
-		Capacity int64 `json:"capacity,omitempty"`
+		Capacity int64 `json:"capacity,omitempty,omitzero"`
 
 		// Date of the first time this worker claimed a task.
-		FirstClaim tcclient.Time `json:"firstClaim,omitempty"`
+		FirstClaim tcclient.Time `json:"firstClaim,omitempty,omitzero"`
 
 		// Date of the last time this worker was seen active. Updated each time a worker calls
 		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
@@ -541,10 +541,10 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitempty,omitzero"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
 		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
@@ -556,7 +556,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -565,13 +565,13 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		ProviderID string `json:"providerId,omitempty"`
+		ProviderID string `json:"providerId,omitempty,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty,omitzero"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
 		// A "requested" worker is in the process of starting up, and if successful will enter
@@ -589,7 +589,7 @@ type (
 		//   * "stopping"
 		//   * "stopped"
 		//   * "standalone"
-		State string `json:"state,omitempty"`
+		State string `json:"state,omitempty,omitzero"`
 
 		// Identifier for the worker group containing this worker.
 		//
@@ -608,7 +608,7 @@ type (
 		// Unique identifier for a worker pool
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId,omitempty"`
+		WorkerPoolID string `json:"workerPoolId,omitempty,omitzero"`
 	}
 
 	// Actions provide a generic mechanism to expose additional features of a
@@ -685,7 +685,7 @@ type (
 		// Number of tasks this worker can handle at once
 		//
 		// Mininum:    1
-		Capacity int64 `json:"capacity,omitempty"`
+		Capacity int64 `json:"capacity,omitempty,omitzero"`
 
 		// Date and time when this worker will be deleted from the DB
 		Expires tcclient.Time `json:"expires"`
@@ -694,7 +694,7 @@ type (
 		//
 		// One of:
 		//   * StaticProviderType
-		ProviderInfo json.RawMessage `json:"providerInfo,omitempty"`
+		ProviderInfo json.RawMessage `json:"providerInfo,omitempty,omitzero"`
 	}
 
 	// A report of an error from a worker.  This will be recorded with kind
@@ -771,7 +771,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -826,7 +826,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPools` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all workers in a given worker pool
 		Workers []WorkerFullDefinition `json:"workers"`
@@ -878,7 +878,7 @@ type (
 		Config json.RawMessage `json:"config"`
 
 		// Ignored on update
-		Created tcclient.Time `json:"created,omitempty"`
+		Created tcclient.Time `json:"created,omitempty,omitzero"`
 
 		// A description of this worker pool.
 		//
@@ -889,7 +889,7 @@ type (
 		EmailOnError bool `json:"emailOnError"`
 
 		// Ignored on update
-		LastModified tcclient.Time `json:"lastModified,omitempty"`
+		LastModified tcclient.Time `json:"lastModified,omitempty,omitzero"`
 
 		// An email address to notify when there are provisioning errors for this
 		// worker pool.
@@ -906,7 +906,7 @@ type (
 		ProviderID string `json:"providerId"`
 
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId,omitempty"`
+		WorkerPoolID string `json:"workerPoolId,omitempty,omitzero"`
 	}
 
 	// A complete worker pool error definition.
@@ -938,7 +938,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// Date and time when this error was reported
 		Reported tcclient.Time `json:"reported"`
@@ -964,7 +964,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPools` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of worker pool errors
 		WorkerPoolErrors []WorkerPoolError `json:"workerPoolErrors"`
@@ -1064,7 +1064,7 @@ type (
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId,omitempty"`
+		WorkerPoolID string `json:"workerPoolId,omitempty,omitzero"`
 	}
 
 	// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
@@ -1082,7 +1082,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all worker pool launch configurations
 		WorkerPoolLaunchConfigs []Var1 `json:"workerPoolLaunchConfigs"`
@@ -1098,7 +1098,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPools` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all worker pools
 		WorkerPools []WorkerPoolFullDefinition `json:"workerPools"`
@@ -1114,7 +1114,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerPoolsStats` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all worker pools stats
 		WorkerPoolsStats []Var3 `json:"workerPoolsStats"`
@@ -1137,7 +1137,7 @@ type (
 		// true capacity is not known.
 		//
 		// Mininum:    0
-		Capacity int64 `json:"capacity,omitempty"`
+		Capacity int64 `json:"capacity,omitempty,omitzero"`
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
@@ -1152,7 +1152,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty,omitzero"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
 		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
@@ -1164,7 +1164,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -1173,7 +1173,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		ProviderID string `json:"providerId,omitempty"`
+		ProviderID string `json:"providerId,omitempty,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1185,13 +1185,13 @@ type (
 
 		// This is a list of changes to the worker's quarantine status. Each entry is an object
 		// containing information about the time, clientId and reason for the change.
-		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty"`
+		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
@@ -1212,7 +1212,7 @@ type (
 		//   * "stopping"
 		//   * "stopped"
 		//   * "standalone"
-		State string `json:"state,omitempty"`
+		State string `json:"state,omitempty,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -1233,7 +1233,7 @@ type (
 		// Unique identifier for a worker pool
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerPoolID string `json:"workerPoolId,omitempty"`
+		WorkerPoolID string `json:"workerPoolId,omitempty,omitzero"`
 
 		// Unique identifier for a worker-type within a specific
 		// provisioner. Deprecation is planned for this property as it will

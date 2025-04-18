@@ -1077,7 +1077,7 @@ func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPack
 			subComment, subType = s.Properties[j].typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			jsonStructTagOptions := ""
 			if !s.Properties[j].IsRequired {
-				jsonStructTagOptions = ",omitempty"
+				jsonStructTagOptions = ",omitempty,omitzero"
 			}
 			defaultStructTag := ""
 			if def := s.Properties[j].Default; enableDefaults && (def != nil) {
@@ -1087,10 +1087,10 @@ func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPack
 				// when more types are needed
 				case string, bool:
 					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
-					// remove omitempty since a default value is provided
+					// remove omitempty,omitzero since a default value is provided
 					// if user provides an empty string or false,
 					// json.Marshal will disregard the default value if
-					// omitempty is present
+					// omitempty,omitzero is present
 					jsonStructTagOptions = ""
 				}
 			}

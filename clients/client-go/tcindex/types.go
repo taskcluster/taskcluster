@@ -70,7 +70,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of namespaces.
 		Namespaces []Namespace `json:"namespaces"`
@@ -83,7 +83,7 @@ type (
 		//
 		// Array items:
 		// Index of a task to list
-		Indexes []string `json:"indexes,omitempty"`
+		Indexes []string `json:"indexes,omitempty,omitzero"`
 	}
 
 	// Representation of an indexed task.
@@ -92,7 +92,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of tasks.
 		Tasks []Task `json:"tasks"`

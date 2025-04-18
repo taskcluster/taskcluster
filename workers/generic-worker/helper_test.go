@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -75,13 +74,6 @@ func scheduleNamedTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload
 		if err != nil {
 			t.Fatalf("Could not convert task payload to json")
 		}
-		//////////////////////////////////////////////////////////////////////////////////
-		//
-		// horrible hack here, until we have jsonschema2go generating pointer types...
-		//
-		//////////////////////////////////////////////////////////////////////////////////
-		b = bytes.ReplaceAll(b, []byte(`"expires":"0001-01-01T00:00:00.000Z",`), []byte{})
-		b = bytes.ReplaceAll(b, []byte(`,"expires":"0001-01-01T00:00:00.000Z"`), []byte{})
 
 		payloadJSON := json.RawMessage{}
 		err = json.Unmarshal(b, &payloadJSON)

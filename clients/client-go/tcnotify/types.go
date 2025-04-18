@@ -30,7 +30,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// Type of notification and its corresponding address.
@@ -74,10 +74,10 @@ type (
 		Content string `json:"content"`
 
 		// Optional link that can be added as a button to the email.
-		Link Link `json:"link,omitempty"`
+		Link Link `json:"link,omitempty,omitzero"`
 
 		// Reply-to e-mail (this property is optional)
-		ReplyTo string `json:"replyTo,omitempty"`
+		ReplyTo string `json:"replyTo,omitempty,omitzero"`
 
 		// Subject line of the e-mail, this is plain-text
 		//
@@ -92,7 +92,7 @@ type (
 		//   * "fullscreen"
 		//
 		// Default:    "simple"
-		Template string `json:"template,omitempty"`
+		Template string `json:"template,omitempty,omitzero"`
 	}
 
 	// Request to send a Matrix notice. Many of these fields are better understood by
@@ -105,11 +105,11 @@ type (
 		Body string `json:"body"`
 
 		// The format for `formattedBody`. For instance, `org.matrix.custom.html`
-		Format string `json:"format,omitempty"`
+		Format string `json:"format,omitempty,omitzero"`
 
 		// Text that will be rendered by matrix clients that support the given
 		// format in that format. For instance, `<h1>Header Text</h1>`.
-		FormattedBody string `json:"formattedBody,omitempty"`
+		FormattedBody string `json:"formattedBody,omitempty,omitzero"`
 
 		// Which of the `m.room.message` msgtypes to use. At the moment only the
 		// types that take `body`/`format`/`formattedBody` are supported.
@@ -120,7 +120,7 @@ type (
 		//   * "m.emote"
 		//
 		// Default:    "m.notice"
-		Msgtype string `json:"msgtype,omitempty"`
+		Msgtype string `json:"msgtype,omitempty,omitzero"`
 
 		// The fully qualified room name, such as `!whDRjjSmICCgrhFHsQ:mozilla.org`
 		// If you are using riot, you can find this under the advanced settings for a room.
@@ -134,10 +134,10 @@ type (
 	SendSlackMessage struct {
 
 		// An array of Slack attachments. See https://api.slack.com/messaging/composing/layouts#attachments.
-		Attachments []any `json:"attachments,omitempty"`
+		Attachments []any `json:"attachments,omitempty,omitzero"`
 
 		// An array of Slack layout blocks. See https://api.slack.com/reference/block-kit/blocks.
-		Blocks []any `json:"blocks,omitempty"`
+		Blocks []any `json:"blocks,omitempty,omitzero"`
 
 		// The unique Slack channel ID, such as `C123456GZ`.
 		// In the app, this is the last section of the 'copy link' URL for a channel.

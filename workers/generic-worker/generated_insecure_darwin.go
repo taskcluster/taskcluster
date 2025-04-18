@@ -48,7 +48,7 @@ type (
 		// Possible values:
 		//   * "identity"
 		//   * "gzip"
-		ContentEncoding string `json:"contentEncoding,omitempty"`
+		ContentEncoding string `json:"contentEncoding,omitempty,omitzero"`
 
 		// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
 		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
@@ -61,13 +61,13 @@ type (
 		// See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
 		//
 		// Since: generic-worker 10.4.0
-		ContentType string `json:"contentType,omitempty"`
+		ContentType string `json:"contentType,omitempty,omitzero"`
 
 		// Date when artifact should expire must be in the future, no earlier than task deadline, but
 		// no later than task expiry. If not set, defaults to task expiry.
 		//
 		// Since: generic-worker 1.0.0
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// Name of the artifact, as it will be published. If not set, `path` will be used.
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
@@ -76,7 +76,7 @@ type (
 		// download the artifact). See the Queue documentation for more information.
 		//
 		// Since: generic-worker 8.1.0
-		Name string `json:"name,omitempty"`
+		Name string `json:"name,omitempty,omitzero"`
 
 		// If `true`, the artifact is optional. If the file or directory
 		// doesn't exist, the artifact won't be created.
@@ -118,7 +118,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		SHA256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty,omitzero"`
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
@@ -142,7 +142,7 @@ type (
 	Capabilities struct {
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		Devices Devices `json:"devices,omitempty"`
+		Devices Devices `json:"devices,omitempty,omitzero"`
 
 		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
 		//
@@ -159,16 +159,16 @@ type (
 	Devices struct {
 
 		// Mount /dev/shm from the host in the container.
-		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
+		HostSharedMemory bool `json:"hostSharedMemory,omitempty,omitzero"`
 
 		// Mount /dev/kvm from the host in the container.
-		KVM bool `json:"kvm,omitempty"`
+		KVM bool `json:"kvm,omitempty,omitzero"`
 
 		// Audio loopback device created using snd-aloop
-		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
+		LoopbackAudio bool `json:"loopbackAudio,omitempty,omitzero"`
 
 		// Video loopback device created using v4l2loopback.
-		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+		LoopbackVideo bool `json:"loopbackVideo,omitempty,omitzero"`
 	}
 
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
@@ -186,7 +186,7 @@ type (
 	DockerImageName string
 
 	DockerWorkerArtifact struct {
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		Path string `json:"path"`
 
@@ -259,22 +259,22 @@ type (
 		// Moreover, in the case of time-critical spot terminations, tasks have
 		// more chance of successfully publishing volume artifacts than directory
 		// artifacts, due to the efficiency gain.
-		Artifacts map[string]DockerWorkerArtifact `json:"artifacts,omitempty"`
+		Artifacts map[string]DockerWorkerArtifact `json:"artifacts,omitempty,omitzero"`
 
 		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
 		//
 		// Map entries:
-		Cache map[string]string `json:"cache,omitempty"`
+		Cache map[string]string `json:"cache,omitempty,omitzero"`
 
 		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		Capabilities Capabilities `json:"capabilities,omitempty"`
+		Capabilities Capabilities `json:"capabilities,omitempty,omitzero"`
 
 		// Example: `['/bin/bash', '-c', 'ls']`.
 		//
 		// Default:    []
 		//
 		// Array items:
-		Command []string `json:"command,omitempty"`
+		Command []string `json:"command,omitempty,omitzero"`
 
 		// Example: ```
 		// {
@@ -284,10 +284,10 @@ type (
 		// ```
 		//
 		// Map entries:
-		Env map[string]string `json:"env,omitempty"`
+		Env map[string]string `json:"env,omitempty,omitzero"`
 
 		// Used to enable additional functionality.
-		Features DockerWorkerFeatureFlags `json:"features,omitempty"`
+		Features DockerWorkerFeatureFlags `json:"features,omitempty,omitzero"`
 
 		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
@@ -309,10 +309,10 @@ type (
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty,omitzero"`
 
 		// Maintained for backward compatibility, but no longer used
-		SupersederURL string `json:"supersederUrl,omitempty"`
+		SupersederURL string `json:"supersederUrl,omitempty,omitzero"`
 	}
 
 	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
@@ -328,7 +328,7 @@ type (
 		//
 		// Array items:
 		// Mininum:    0
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+		PurgeCaches []int64 `json:"purgeCaches,omitempty,omitzero"`
 
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
@@ -341,7 +341,7 @@ type (
 		//
 		// Array items:
 		// Mininum:    1
-		Retry []int64 `json:"retry,omitempty"`
+		Retry []int64 `json:"retry,omitempty,omitzero"`
 	}
 
 	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
@@ -350,12 +350,12 @@ type (
 		// If the task exits with a purge caches exit status, all caches associated with the task will be purged.
 		//
 		// Array items:
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+		PurgeCaches []int64 `json:"purgeCaches,omitempty,omitzero"`
 
 		// If the task exits with a retriable exit status, the task will be marked as an exception and a new run created.
 		//
 		// Array items:
-		Retry []int64 `json:"retry,omitempty"`
+		Retry []int64 `json:"retry,omitempty,omitzero"`
 	}
 
 	// Feature flags enable additional functionality.
@@ -382,7 +382,7 @@ type (
 		// is one.
 		//
 		// Since: generic-worker 49.2.0
-		Interactive bool `json:"interactive,omitempty"`
+		Interactive bool `json:"interactive,omitempty,omitzero"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
@@ -410,7 +410,7 @@ type (
 		// `exception/malformed-payload`.
 		//
 		// Since: generic-worker 54.5.0
-		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
+		LoopbackAudio bool `json:"loopbackAudio,omitempty,omitzero"`
 
 		// Video loopback device created using v4l2loopback.
 		// A video device will be available for the task. Its
@@ -429,7 +429,7 @@ type (
 		// `exception/malformed-payload`.
 		//
 		// Since: generic-worker 53.1.0
-		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+		LoopbackVideo bool `json:"loopbackVideo,omitempty,omitzero"`
 
 		// The resource monitor features reports Peak System Memory Used,
 		// Average System Memory Used and Total Available Memory in the
@@ -449,7 +449,7 @@ type (
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+		TaskclusterProxy bool `json:"taskclusterProxy,omitempty,omitzero"`
 	}
 
 	FileMount struct {
@@ -477,7 +477,7 @@ type (
 		//   * "lz4"
 		//   * "xz"
 		//   * "zst"
-		Format string `json:"format,omitempty"`
+		Format string `json:"format,omitempty,omitzero"`
 	}
 
 	// This schema defines the structure of the `payload` property referred to in a
@@ -487,7 +487,7 @@ type (
 		// Artifacts to be published.
 		//
 		// Since: generic-worker 1.0.0
-		Artifacts []Artifact `json:"artifacts,omitempty"`
+		Artifacts []Artifact `json:"artifacts,omitempty,omitzero"`
 
 		// One array per command (each command is an array of arguments). Several arrays
 		// for several commands.
@@ -526,17 +526,17 @@ type (
 		// Since: generic-worker 0.0.1
 		//
 		// Map entries:
-		Env map[string]string `json:"env,omitempty"`
+		Env map[string]string `json:"env,omitempty,omitzero"`
 
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitempty,omitzero"`
 
 		// Configuration for task logs.
 		//
 		// Since: generic-worker 48.2.0
-		Logs Logs `json:"logs,omitempty"`
+		Logs Logs `json:"logs,omitempty,omitzero"`
 
 		// Maximum time the task container can run in seconds.
 		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
@@ -555,13 +555,13 @@ type (
 		//   * FileMount
 		//   * WritableDirectoryCache
 		//   * ReadOnlyDirectory
-		Mounts []json.RawMessage `json:"mounts,omitempty"`
+		Mounts []json.RawMessage `json:"mounts,omitempty,omitzero"`
 
 		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 		// if all task commands have a zero exit code, or `failed/failed` if any command has a
 		// non-zero exit code. This payload property allows customsation of the task resolution
 		// based on exit code of task commands.
-		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty,omitzero"`
 
 		// A list of OS Groups that the task user should be a member of. Not yet implemented on
 		// non-Windows platforms, therefore this optional property may only be an empty array if
@@ -570,10 +570,10 @@ type (
 		// Since: generic-worker 6.0.0
 		//
 		// Array items:
-		OSGroups []string `json:"osGroups,omitempty"`
+		OSGroups []string `json:"osGroups,omitempty,omitzero"`
 
 		// This property is allowed for backward compatibility, but is unused.
-		SupersederURL string `json:"supersederUrl,omitempty"`
+		SupersederURL string `json:"supersederUrl,omitempty,omitzero"`
 
 		// Specifies whether taskcluster-proxy should listen on
 		// localhost interface (default) or search for a docker bridge
@@ -701,7 +701,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		SHA256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty,omitzero"`
 
 		// URL to download content from.
 		//
@@ -725,7 +725,7 @@ type (
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
-		Content json.RawMessage `json:"content,omitempty"`
+		Content json.RawMessage `json:"content,omitempty,omitzero"`
 
 		// The filesystem location to mount the directory volume.
 		//
@@ -744,7 +744,7 @@ type (
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
-		Format string `json:"format,omitempty"`
+		Format string `json:"format,omitempty,omitzero"`
 	}
 )
 

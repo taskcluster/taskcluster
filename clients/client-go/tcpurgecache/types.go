@@ -11,7 +11,7 @@ type (
 	OpenAllPurgeRequestsList struct {
 
 		// Passed back from Azure to allow us to page through long result sets.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// A list of Purge Cache requests that the Purge Cache service has previously received.
 		Requests []PurgeCacheRequestsEntry `json:"requests"`

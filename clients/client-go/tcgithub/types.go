@@ -32,7 +32,7 @@ type (
 		Organization string `json:"organization"`
 
 		// Associated pull request number for 'pull_request' events.
-		PullRequestNumber int64 `json:"pullRequestNumber,omitempty"`
+		PullRequestNumber int64 `json:"pullRequestNumber,omitempty,omitzero"`
 
 		// Github repository associated with the build.
 		//
@@ -73,7 +73,7 @@ type (
 		Builds []Build `json:"builds"`
 
 		// Passed back from Azure to allow us to page through long result sets.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// Write a new comment on a GitHub Issue or Pull Request.
@@ -89,10 +89,10 @@ type (
 	CreateStatusRequest struct {
 
 		// A string label to differentiate this status from the status of other systems.
-		Context string `json:"context,omitempty"`
+		Context string `json:"context,omitempty,omitzero"`
 
 		// A short description of the status.
-		Description string `json:"description,omitempty"`
+		Description string `json:"description,omitempty,omitzero"`
 
 		// The state of the status.
 		//
@@ -104,7 +104,7 @@ type (
 		State string `json:"state"`
 
 		// The target URL to associate with this status. This URL will be linked from the GitHub UI to allow users to easily see the 'source' of the Status.
-		Target_URL string `json:"target_url,omitempty"`
+		Target_URL string `json:"target_url,omitempty,omitzero"`
 	}
 
 	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
@@ -147,7 +147,7 @@ type (
 		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
 		//
 		// Additional properties allowed
-		Overrides json.RawMessage `json:"overrides,omitempty"`
+		Overrides json.RawMessage `json:"overrides,omitempty,omitzero"`
 
 		// Possible values:
 		//   * "github-pull-request"
@@ -171,7 +171,7 @@ type (
 		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
 		//
 		// Additional properties allowed
-		Overrides json.RawMessage `json:"overrides,omitempty"`
+		Overrides json.RawMessage `json:"overrides,omitempty,omitzero"`
 
 		// Possible values:
 		//   * "github-push"
@@ -203,7 +203,7 @@ type (
 		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
 		//
 		// Additional properties allowed
-		Overrides json.RawMessage `json:"overrides,omitempty"`
+		Overrides json.RawMessage `json:"overrides,omitempty,omitzero"`
 
 		// Possible values:
 		//   * "github-release"
@@ -230,10 +230,10 @@ type (
 		FakeEvent json.RawMessage `json:"fakeEvent"`
 
 		// Syntax:     ^[-a-zA-Z0-9]{1,39}$
-		Organization string `json:"organization,omitempty"`
+		Organization string `json:"organization,omitempty,omitzero"`
 
 		// Syntax:     ^[-a-zA-Z0-9_.]{1,100}$
-		Repository string `json:"repository,omitempty"`
+		Repository string `json:"repository,omitempty,omitzero"`
 	}
 
 	// Rendered .taskcluster.yml output.

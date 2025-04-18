@@ -35,15 +35,15 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	SHA256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	SHA512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 		//  }
 		//
 		// Additional properties allowed
-		Hashes json.RawMessage `json:"hashes,omitempty"`
+		Hashes json.RawMessage `json:"hashes,omitempty,omitzero"`
 
 		// Project identifier.
 		//
@@ -135,15 +135,15 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	SHA256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	SHA512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 		//  }
 		//
 		// Additional properties allowed
-		Hashes json.RawMessage `json:"hashes,omitempty"`
+		Hashes json.RawMessage `json:"hashes,omitempty,omitzero"`
 
 		// Project identifier.
 		//
@@ -192,11 +192,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	SHA256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	SHA512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 		//  }
 		//
 		// Additional properties allowed
@@ -226,11 +226,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	SHA256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	SHA512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 	//  }
 	//
 	// Additional properties allowed
@@ -246,11 +246,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	SHA256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	SHA512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 	//  }
 	//
 	// Additional properties allowed
@@ -270,11 +270,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	SHA256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty,omitzero"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	SHA512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty,omitzero"`
 		//  }
 		//
 		// Additional properties allowed
@@ -297,10 +297,10 @@ type (
 		// be used only for value that are known to be of constant, fairly small size to avoid surprises as
 		// the payload grows. In general, this is useful for testing and for metadata objects such as
 		// separate cryptographic signatures.
-		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
+		DataInline DataInlineUploadRequest `json:"dataInline,omitempty,omitzero"`
 
 		// Request a URL to which a PUT request can be made.
-		PutURL PutURLUploadRequest `json:"putUrl,omitempty"`
+		PutURL PutURLUploadRequest `json:"putUrl,omitempty,omitzero"`
 	}
 
 	// Request a URL to which a PUT request can be made.
@@ -344,10 +344,10 @@ type (
 		// Indication that the data has been uploaded.
 		//
 		// Constant value: %!q(bool=true)
-		DataInline bool `json:"dataInline,omitempty"`
+		DataInline bool `json:"dataInline,omitempty,omitzero"`
 
 		// Response containing a URL to which to PUT the data.
-		PutURL PutURLUploadResponse `json:"putUrl,omitempty"`
+		PutURL PutURLUploadResponse `json:"putUrl,omitempty,omitzero"`
 	}
 
 	// A simple download returns a URL to which the caller should make a GET request.
@@ -365,10 +365,10 @@ type (
 	SupportedDownloadMethods struct {
 
 		// Constant value: %!q(bool=true)
-		GetURL bool `json:"getUrl,omitempty"`
+		GetURL bool `json:"getUrl,omitempty,omitzero"`
 
 		// Constant value: %!q(bool=true)
-		Simple bool `json:"simple,omitempty"`
+		Simple bool `json:"simple,omitempty,omitzero"`
 	}
 )
 

@@ -10,7 +10,7 @@ import (
 
 type (
 	Artifact struct {
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		Path string `json:"path"`
 
@@ -25,7 +25,7 @@ type (
 	Capabilities struct {
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		Devices Devices `json:"devices,omitempty"`
+		Devices Devices `json:"devices,omitempty,omitzero"`
 
 		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
 		//
@@ -42,16 +42,16 @@ type (
 	Devices struct {
 
 		// Mount /dev/shm from the host in the container.
-		HostSharedMemory bool `json:"hostSharedMemory,omitempty"`
+		HostSharedMemory bool `json:"hostSharedMemory,omitempty,omitzero"`
 
 		// Mount /dev/kvm from the host in the container.
-		KVM bool `json:"kvm,omitempty"`
+		KVM bool `json:"kvm,omitempty,omitzero"`
 
 		// Audio loopback device created using snd-aloop
-		LoopbackAudio bool `json:"loopbackAudio,omitempty"`
+		LoopbackAudio bool `json:"loopbackAudio,omitempty,omitzero"`
 
 		// Video loopback device created using v4l2loopback.
-		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
+		LoopbackVideo bool `json:"loopbackVideo,omitempty,omitzero"`
 	}
 
 	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
@@ -83,22 +83,22 @@ type (
 		// Moreover, in the case of time-critical spot terminations, tasks have
 		// more chance of successfully publishing volume artifacts than directory
 		// artifacts, due to the efficiency gain.
-		Artifacts map[string]Artifact `json:"artifacts,omitempty"`
+		Artifacts map[string]Artifact `json:"artifacts,omitempty,omitzero"`
 
 		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
 		//
 		// Map entries:
-		Cache map[string]string `json:"cache,omitempty"`
+		Cache map[string]string `json:"cache,omitempty,omitzero"`
 
 		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		Capabilities Capabilities `json:"capabilities,omitempty"`
+		Capabilities Capabilities `json:"capabilities,omitempty,omitzero"`
 
 		// Example: `['/bin/bash', '-c', 'ls']`.
 		//
 		// Default:    []
 		//
 		// Array items:
-		Command []string `json:"command,omitempty"`
+		Command []string `json:"command,omitempty,omitzero"`
 
 		// Example: ```
 		// {
@@ -108,10 +108,10 @@ type (
 		// ```
 		//
 		// Map entries:
-		Env map[string]string `json:"env,omitempty"`
+		Env map[string]string `json:"env,omitempty,omitzero"`
 
 		// Used to enable additional functionality.
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitempty,omitzero"`
 
 		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
@@ -133,10 +133,10 @@ type (
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty,omitzero"`
 
 		// Maintained for backward compatibility, but no longer used
-		SupersederURL string `json:"supersederUrl,omitempty"`
+		SupersederURL string `json:"supersederUrl,omitempty,omitzero"`
 	}
 
 	// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
@@ -145,12 +145,12 @@ type (
 		// If the task exits with a purge caches exit status, all caches associated with the task will be purged.
 		//
 		// Array items:
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+		PurgeCaches []int64 `json:"purgeCaches,omitempty,omitzero"`
 
 		// If the task exits with a retriable exit status, the task will be marked as an exception and a new run created.
 		//
 		// Array items:
-		Retry []int64 `json:"retry,omitempty"`
+		Retry []int64 `json:"retry,omitempty,omitzero"`
 	}
 
 	// Used to enable additional functionality.

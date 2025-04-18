@@ -111,10 +111,10 @@ type (
 		Name string `json:"name"`
 
 		// The test cases which this test suite contains
-		PayloadTests []TaskPayloadTestCase `json:"payloadTests,omitempty"`
+		PayloadTests []TaskPayloadTestCase `json:"payloadTests,omitempty,omitzero"`
 
 		// The test cases which this test suite contains
-		TaskDefTests []TaskDefinitionTestCase `json:"taskDefTests,omitempty"`
+		TaskDefTests []TaskDefinitionTestCase `json:"taskDefTests,omitempty,omitzero"`
 	}
 )
 

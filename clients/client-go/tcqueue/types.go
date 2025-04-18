@@ -365,7 +365,7 @@ type (
 		// `application/binary`.
 		//
 		// Max length: 255
-		ContentType string `json:"contentType,omitempty"`
+		ContentType string `json:"contentType,omitempty,omitzero"`
 
 		// Date-time after which the queue should no longer maintain this link.
 		Expires tcclient.Time `json:"expires"`
@@ -400,7 +400,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 	}
 
 	// Response from a `listClaimedTasks` request.
@@ -413,7 +413,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listClaimedTasks` with
 		// `continuationToken` until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of tasks that are currently claimed by workers and are not yet resolved.
 		// Results might not represent the actual state of the tasks,
@@ -433,7 +433,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listDependentTasks` with
 		// `continuationToken` until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// Identifier for the task whose dependents are being listed.
 		//
@@ -454,7 +454,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listPendingTasks` with
 		// `continuationToken` until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of tasks that are currently waiting for workers to be claimed.
 		// Results may not represent the actual state of the tasks,
@@ -473,7 +473,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		Provisioners []ProvisionerInformation `json:"provisioners"`
 	}
@@ -488,7 +488,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listTaskGroup` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// Date and time after the last expiration of any task in the task group.
 		// For the unsealed task group this could change to a later date.
@@ -511,7 +511,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitempty,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -532,7 +532,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listTaskQueues` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of all task-queues.
 		TaskQueues []TaskQueue `json:"taskQueues"`
@@ -548,7 +548,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerTypes` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of worker-types in this provisioner.
 		WorkerTypes []WorkerType `json:"workerTypes"`
@@ -564,7 +564,7 @@ type (
 		// return additional results, but it can. Thus, you can only be sure to have
 		// all the results if you've called `listWorkerTypes` with `continuationToken`
 		// until you get a result without a `continuationToken`.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// List of workers in this worker-type.
 		Workers []Worker `json:"workers"`
@@ -719,14 +719,14 @@ type (
 	ProvisionerRequest struct {
 
 		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
-		Actions []Action `json:"actions,omitempty"`
+		Actions []Action `json:"actions,omitempty,omitzero"`
 
 		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
+		Description string `json:"description,omitempty,omitzero"`
 
 		// Date and time after which the provisioner will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`
@@ -737,7 +737,7 @@ type (
 		//   * "experimental"
 		//   * "stable"
 		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
+		Stability string `json:"stability,omitempty,omitzero"`
 	}
 
 	// Response containing information about a provisioner.
@@ -802,7 +802,7 @@ type (
 		//
 		// Min length: 0
 		// Max length: 4000
-		QuarantineInfo string `json:"quarantineInfo,omitempty"`
+		QuarantineInfo string `json:"quarantineInfo,omitempty,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
@@ -888,12 +888,12 @@ type (
 		//   * "internal-error"
 		//   * "intermittent-task"
 		//   * "superseded"
-		ReasonResolved string `json:"reasonResolved,omitempty"`
+		ReasonResolved string `json:"reasonResolved,omitempty,omitzero"`
 
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
+		Resolved tcclient.Time `json:"resolved,omitempty,omitzero"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
@@ -908,7 +908,7 @@ type (
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
+		Started tcclient.Time `json:"started,omitempty,omitzero"`
 
 		// State of this run
 		//
@@ -923,7 +923,7 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+		TakenUntil tcclient.Time `json:"takenUntil,omitempty,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -932,7 +932,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		WorkerGroup string `json:"workerGroup,omitempty"`
+		WorkerGroup string `json:"workerGroup,omitempty,omitzero"`
 
 		// Identifier for worker evaluating this run within given
 		// `workerGroup`. Note, this property is only available after the run
@@ -941,7 +941,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		WorkerID string `json:"workerId,omitempty"`
+		WorkerID string `json:"workerId,omitempty,omitzero"`
 	}
 
 	// Request for a signed PUT URL that will allow you to upload an artifact
@@ -1200,13 +1200,13 @@ type (
 		// scheduled.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		Dependencies []string `json:"dependencies,omitempty"`
+		Dependencies []string `json:"dependencies,omitempty,omitzero"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1220,7 +1220,7 @@ type (
 		// Default:    {}
 		//
 		// Additional properties allowed
-		Extra json.RawMessage `json:"extra,omitempty"`
+		Extra json.RawMessage `json:"extra,omitempty,omitzero"`
 
 		// Required task metadata
 		Metadata TaskMetadata `json:"metadata"`
@@ -1248,7 +1248,7 @@ type (
 		//   * "normal"
 		//
 		// Default:    "lowest"
-		Priority string `json:"priority,omitempty"`
+		Priority string `json:"priority,omitempty,omitzero"`
 
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as
@@ -1260,7 +1260,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
 		// Min length: 1
 		// Max length: 500
-		ProjectID string `json:"projectId,omitempty"`
+		ProjectID string `json:"projectId,omitempty,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1268,7 +1268,7 @@ type (
 		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
-		ProvisionerID string `json:"provisionerId,omitempty"`
+		ProvisionerID string `json:"provisionerId,omitempty,omitzero"`
 
 		// The tasks relation to its dependencies. This property specifies the
 		// semantics of the `task.dependencies` property.
@@ -1282,7 +1282,7 @@ type (
 		//   * "all-resolved"
 		//
 		// Default:    "all-completed"
-		Requires string `json:"requires,omitempty"`
+		Requires string `json:"requires,omitempty,omitzero"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
@@ -1291,7 +1291,7 @@ type (
 		// Default:    5
 		// Mininum:    0
 		// Maximum:    49
-		Retries int64 `json:"retries,omitempty"`
+		Retries int64 `json:"retries,omitempty,omitzero"`
 
 		// List of task-specific routes. Pulse messages about the task will be CC'ed to
 		// `route.<value>` for each `<value>` in this array.
@@ -1307,7 +1307,7 @@ type (
 		//
 		// Min length: 1
 		// Max length: 249
-		Routes []string `json:"routes,omitempty"`
+		Routes []string `json:"routes,omitempty,omitzero"`
 
 		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
 		//
@@ -1323,7 +1323,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		SchedulerID string `json:"schedulerId,omitempty"`
+		SchedulerID string `json:"schedulerId,omitempty,omitzero"`
 
 		// List of scopes that the task is authorized to use during its execution.
 		//
@@ -1333,7 +1333,7 @@ type (
 		// one `*` character are forbidden.
 		//
 		// Syntax:     ^[ -~]*$
-		Scopes []string `json:"scopes,omitempty"`
+		Scopes []string `json:"scopes,omitempty,omitzero"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
 		// to attach informal metadata to a task. Use this for informal tags that
@@ -1345,7 +1345,7 @@ type (
 		//
 		// Map entries:
 		// Max length: 4096
-		Tags map[string]string `json:"tags,omitempty"`
+		Tags map[string]string `json:"tags,omitempty,omitzero"`
 
 		// Identifier for a group of tasks scheduled together with this task.
 		// Generally, all tasks related to a single event such as a version-control
@@ -1355,12 +1355,12 @@ type (
 		// decision tasks.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskGroupID string `json:"taskGroupId,omitempty"`
+		TaskGroupID string `json:"taskGroupId,omitempty,omitzero"`
 
 		// Unique identifier for a task queue
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		TaskQueueID string `json:"taskQueueId,omitempty"`
+		TaskQueueID string `json:"taskQueueId,omitempty,omitzero"`
 
 		// Unique identifier for a worker-type within a specific
 		// provisioner. Deprecation is planned for this property as it will
@@ -1368,7 +1368,7 @@ type (
 		// identifier `taskQueueId`.
 		//
 		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		WorkerType string `json:"workerType,omitempty"`
+		WorkerType string `json:"workerType,omitempty,omitzero"`
 	}
 
 	// Definition of a task that can be scheduled
@@ -1401,7 +1401,7 @@ type (
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1455,7 +1455,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9._/-]*)$
 		// Min length: 1
 		// Max length: 500
-		ProjectID string `json:"projectId,omitempty"`
+		ProjectID string `json:"projectId,omitempty,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -1572,7 +1572,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// Default:    []
 		Tasks []Var1 `json:"tasks"`
@@ -1585,7 +1585,7 @@ type (
 		//
 		// Array items:
 		// ID of a task to list
-		TaskIds []string `json:"taskIds,omitempty"`
+		TaskIds []string `json:"taskIds,omitempty,omitzero"`
 	}
 
 	// Request for a run of a task to be resolved with an exception
@@ -1660,7 +1660,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitempty,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -1944,7 +1944,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		// Default:    []
 		Statuses []Var2 `json:"statuses"`
@@ -2061,16 +2061,16 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitempty,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty,omitzero"`
 
 		// Identifier for the worker group containing this worker.
 		//
@@ -2160,7 +2160,7 @@ type (
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 	}
 
 	// Response containing information about a worker.
@@ -2180,7 +2180,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitempty,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -2192,13 +2192,13 @@ type (
 
 		// This is a list of changes to the worker's quarantine status. Each entry is an object
 		// containing information about the time, clientId and reason for the change.
-		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty"`
+		QuarantineDetails []QuarantineDetails `json:"quarantineDetails,omitempty,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
@@ -2206,7 +2206,7 @@ type (
 		// Unique identifier for a task queue
 		//
 		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
-		TaskQueueID string `json:"taskQueueId,omitempty"`
+		TaskQueueID string `json:"taskQueueId,omitempty,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -2350,11 +2350,11 @@ type (
 	WorkerTypeRequest struct {
 
 		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
+		Description string `json:"description,omitempty,omitzero"`
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`
@@ -2365,7 +2365,7 @@ type (
 		//   * "experimental"
 		//   * "stable"
 		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
+		Stability string `json:"stability,omitempty,omitzero"`
 	}
 
 	// Response to a worker-type request from a provisioner.
