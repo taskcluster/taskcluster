@@ -297,10 +297,10 @@ type (
 		// be used only for value that are known to be of constant, fairly small size to avoid surprises as
 		// the payload grows. In general, this is useful for testing and for metadata objects such as
 		// separate cryptographic signatures.
-		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
+		DataInline DataInlineUploadRequest `json:"dataInline,omitzero"`
 
 		// Request a URL to which a PUT request can be made.
-		PutURL PutURLUploadRequest `json:"putUrl,omitempty"`
+		PutURL PutURLUploadRequest `json:"putUrl,omitzero"`
 	}
 
 	// Request a URL to which a PUT request can be made.
@@ -347,7 +347,7 @@ type (
 		DataInline bool `json:"dataInline,omitempty"`
 
 		// Response containing a URL to which to PUT the data.
-		PutURL PutURLUploadResponse `json:"putUrl,omitempty"`
+		PutURL PutURLUploadResponse `json:"putUrl,omitzero"`
 	}
 
 	// A simple download returns a URL to which the caller should make a GET request.

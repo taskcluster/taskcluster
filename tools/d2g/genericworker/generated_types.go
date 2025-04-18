@@ -65,7 +65,7 @@ type (
 		// no later than task expiry. If not set, defaults to task expiry.
 		//
 		// Since: generic-worker 1.0.0
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Name of the artifact, as it will be published. If not set, `path` will be used.
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
@@ -140,7 +140,7 @@ type (
 	Capabilities struct {
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		Devices Devices `json:"devices,omitempty"`
+		Devices Devices `json:"devices,omitzero"`
 
 		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
 		//
@@ -184,7 +184,7 @@ type (
 	DockerImageName string
 
 	DockerWorkerArtifact struct {
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		Path string `json:"path"`
 
@@ -265,7 +265,7 @@ type (
 		Cache map[string]string `json:"cache,omitempty"`
 
 		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		Capabilities Capabilities `json:"capabilities,omitempty"`
+		Capabilities Capabilities `json:"capabilities,omitzero"`
 
 		// Example: `['/bin/bash', '-c', 'ls']`.
 		//
@@ -285,7 +285,7 @@ type (
 		Env map[string]string `json:"env,omitempty"`
 
 		// Used to enable additional functionality.
-		Features DockerWorkerFeatureFlags `json:"features,omitempty"`
+		Features DockerWorkerFeatureFlags `json:"features,omitzero"`
 
 		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
@@ -307,7 +307,7 @@ type (
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitzero"`
 
 		// Maintained for backward compatibility, but no longer used
 		SupersederURL string `json:"supersederUrl,omitempty"`
@@ -569,12 +569,12 @@ type (
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitzero"`
 
 		// Configuration for task logs.
 		//
 		// Since: generic-worker 48.2.0
-		Logs Logs `json:"logs,omitempty"`
+		Logs Logs `json:"logs,omitzero"`
 
 		// Maximum time the task container can run in seconds.
 		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
@@ -599,7 +599,7 @@ type (
 		// if all task commands have a zero exit code, or `failed/failed` if any command has a
 		// non-zero exit code. This payload property allows customsation of the task resolution
 		// based on exit code of task commands.
-		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitzero"`
 
 		// A list of OS Groups that the task user should be a member of.
 		//

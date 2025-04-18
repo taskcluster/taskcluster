@@ -511,7 +511,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -726,7 +726,7 @@ type (
 
 		// Date and time after which the provisioner will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`
@@ -893,7 +893,7 @@ type (
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
+		Resolved tcclient.Time `json:"resolved,omitzero"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
@@ -908,7 +908,7 @@ type (
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
+		Started tcclient.Time `json:"started,omitzero"`
 
 		// State of this run
 		//
@@ -923,7 +923,7 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+		TakenUntil tcclient.Time `json:"takenUntil,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -1206,7 +1206,7 @@ type (
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1401,7 +1401,7 @@ type (
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1660,7 +1660,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -2061,16 +2061,16 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// Identifier for the worker group containing this worker.
 		//
@@ -2160,7 +2160,7 @@ type (
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 	}
 
 	// Response containing information about a worker.
@@ -2180,7 +2180,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -2198,7 +2198,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
@@ -2354,7 +2354,7 @@ type (
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`

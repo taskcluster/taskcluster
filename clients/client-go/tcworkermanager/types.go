@@ -533,7 +533,7 @@ type (
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date of the first time this worker claimed a task.
-		FirstClaim tcclient.Time `json:"firstClaim,omitempty"`
+		FirstClaim tcclient.Time `json:"firstClaim,omitzero"`
 
 		// Date of the last time this worker was seen active. Updated each time a worker calls
 		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
@@ -541,10 +541,10 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitzero"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
 		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
@@ -571,7 +571,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
 		// A "requested" worker is in the process of starting up, and if successful will enter
@@ -878,7 +878,7 @@ type (
 		Config json.RawMessage `json:"config"`
 
 		// Ignored on update
-		Created tcclient.Time `json:"created,omitempty"`
+		Created tcclient.Time `json:"created,omitzero"`
 
 		// A description of this worker pool.
 		//
@@ -889,7 +889,7 @@ type (
 		EmailOnError bool `json:"emailOnError"`
 
 		// Ignored on update
-		LastModified tcclient.Time `json:"lastModified,omitempty"`
+		LastModified tcclient.Time `json:"lastModified,omitzero"`
 
 		// An email address to notify when there are provisioning errors for this
 		// worker pool.
@@ -1152,7 +1152,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// The ID of the launch configuration. Must be unique forever within the worker pool.
 		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
@@ -1191,7 +1191,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`

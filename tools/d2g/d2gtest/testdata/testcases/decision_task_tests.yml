@@ -76,8 +76,7 @@ testSuite:
         optional: true
         path: artifact1
         type: directory
-      - expires: "0001-01-01T00:00:00.000Z"
-        name: public/dockerImage.tar.gz
+      - name: public/dockerImage.tar.gz
         optional: true
         path: image.tar.gz
         type: file
