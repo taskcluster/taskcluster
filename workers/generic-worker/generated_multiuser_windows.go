@@ -47,7 +47,7 @@ type (
 		// Possible values:
 		//   * "identity"
 		//   * "gzip"
-		ContentEncoding string `json:"contentEncoding,omitempty"`
+		ContentEncoding string `json:"contentEncoding,omitempty,omitzero"`
 
 		// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
 		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
@@ -59,13 +59,13 @@ type (
 		// See [mime.TypeByExtension](https://pkg.go.dev/mime#TypeByExtension).
 		//
 		// Since: generic-worker 10.4.0
-		ContentType string `json:"contentType,omitempty"`
+		ContentType string `json:"contentType,omitempty,omitzero"`
 
 		// Date when artifact should expire must be in the future, no earlier than task deadline, but
 		// no later than task expiry. If not set, defaults to task expiry.
 		//
 		// Since: generic-worker 1.0.0
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitempty,omitzero"`
 
 		// Name of the artifact, as it will be published. If not set, `path` will be used.
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
@@ -74,7 +74,7 @@ type (
 		// download the artifact). See the Queue documentation for more information.
 		//
 		// Since: generic-worker 8.1.0
-		Name string `json:"name,omitempty"`
+		Name string `json:"name,omitempty,omitzero"`
 
 		// If `true`, the artifact is optional. If the file or directory
 		// doesn't exist, the artifact won't be created.
@@ -116,7 +116,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		SHA256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty,omitzero"`
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
@@ -149,7 +149,7 @@ type (
 		//
 		// Array items:
 		// Mininum:    0
-		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+		PurgeCaches []int64 `json:"purgeCaches,omitempty,omitzero"`
 
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
@@ -162,7 +162,7 @@ type (
 		//
 		// Array items:
 		// Mininum:    1
-		Retry []int64 `json:"retry,omitempty"`
+		Retry []int64 `json:"retry,omitempty,omitzero"`
 	}
 
 	// Feature flags enable additional functionality.
@@ -190,7 +190,7 @@ type (
 		// directory.
 		//
 		// Since: generic-worker v81.0.0
-		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+		ChainOfTrust bool `json:"chainOfTrust,omitempty,omitzero"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
 		// so that the output is available while the task is running.
@@ -231,7 +231,7 @@ type (
 		// `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
 		//
 		// Since: generic-worker 10.11.0
-		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
+		RunAsAdministrator bool `json:"runAsAdministrator,omitempty,omitzero"`
 
 		// If `true`, task commands will be executed as the
 		// user currently running Generic Worker (typically
@@ -245,14 +245,14 @@ type (
 		// as `exception/malformed-payload`.
 		//
 		// Since: generic-worker 81.0.0
-		RunTaskAsCurrentUser bool `json:"runTaskAsCurrentUser,omitempty"`
+		RunTaskAsCurrentUser bool `json:"runTaskAsCurrentUser,omitempty,omitzero"`
 
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
 		//
 		// Since: generic-worker 10.6.0
-		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+		TaskclusterProxy bool `json:"taskclusterProxy,omitempty,omitzero"`
 	}
 
 	FileMount struct {
@@ -280,7 +280,7 @@ type (
 		//   * "lz4"
 		//   * "xz"
 		//   * "zst"
-		Format string `json:"format,omitempty"`
+		Format string `json:"format,omitempty,omitzero"`
 	}
 
 	// This schema defines the structure of the `payload` property referred to in a
@@ -290,7 +290,7 @@ type (
 		// Artifacts to be published.
 		//
 		// Since: generic-worker 1.0.0
-		Artifacts []Artifact `json:"artifacts,omitempty"`
+		Artifacts []Artifact `json:"artifacts,omitempty,omitzero"`
 
 		// One entry per command (consider each entry to be interpreted as a full line of
 		// a Windows™ .bat file). For example:
@@ -340,17 +340,17 @@ type (
 		// Since: generic-worker 0.0.1
 		//
 		// Map entries:
-		Env map[string]string `json:"env,omitempty"`
+		Env map[string]string `json:"env,omitempty,omitzero"`
 
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitempty,omitzero"`
 
 		// Configuration for task logs.
 		//
 		// Since: generic-worker 48.2.0
-		Logs Logs `json:"logs,omitempty"`
+		Logs Logs `json:"logs,omitempty,omitzero"`
 
 		// Maximum time the task container can run in seconds.
 		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
@@ -369,13 +369,13 @@ type (
 		//   * FileMount
 		//   * WritableDirectoryCache
 		//   * ReadOnlyDirectory
-		Mounts []json.RawMessage `json:"mounts,omitempty"`
+		Mounts []json.RawMessage `json:"mounts,omitempty,omitzero"`
 
 		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 		// if all task commands have a zero exit code, or `failed/failed` if any command has a
 		// non-zero exit code. This payload property allows customsation of the task resolution
 		// based on exit code of task commands.
-		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty,omitzero"`
 
 		// A list of OS Groups that the task user should be a member of. Requires scope
 		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
@@ -384,7 +384,7 @@ type (
 		// Since: generic-worker 6.0.0
 		//
 		// Array items:
-		OSGroups []string `json:"osGroups,omitempty"`
+		OSGroups []string `json:"osGroups,omitempty,omitzero"`
 
 		// Specifies an artifact name for publishing RDP connection information.
 		//
@@ -412,10 +412,10 @@ type (
 		// should rely on this value.
 		//
 		// Since: generic-worker 10.5.0
-		RdpInfo string `json:"rdpInfo,omitempty"`
+		RdpInfo string `json:"rdpInfo,omitempty,omitzero"`
 
 		// This property is allowed for backward compatibility, but is unused.
-		SupersederURL string `json:"supersederUrl,omitempty"`
+		SupersederURL string `json:"supersederUrl,omitempty,omitzero"`
 
 		// Specifies whether taskcluster-proxy should listen on
 		// localhost interface (default) or search for a docker bridge
@@ -518,7 +518,7 @@ type (
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		SHA256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty,omitzero"`
 
 		// URL to download content from.
 		//
@@ -542,7 +542,7 @@ type (
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
-		Content json.RawMessage `json:"content,omitempty"`
+		Content json.RawMessage `json:"content,omitempty,omitzero"`
 
 		// The filesystem location to mount the directory volume.
 		//
@@ -561,7 +561,7 @@ type (
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
-		Format string `json:"format,omitempty"`
+		Format string `json:"format,omitempty,omitzero"`
 	}
 )
 

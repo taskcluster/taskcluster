@@ -19,6 +19,6 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version int64 `json:"version,omitempty"`
+		Version int64 `json:"version,omitempty,omitzero"`
 	}
 )

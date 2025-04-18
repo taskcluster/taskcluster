@@ -18,7 +18,7 @@ type (
 		Description string `json:"description"`
 
 		// JSON schema for input, if input is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`.
-		Input string `json:"input,omitempty"`
+		Input string `json:"input,omitempty,omitzero"`
 
 		// HTTP method (verb) used to access the function
 		//
@@ -56,13 +56,13 @@ type (
 		// One of:
 		//   * OutputSchema
 		//   * Blob
-		Output string `json:"output,omitempty"`
+		Output string `json:"output,omitempty,omitzero"`
 
 		// List of accepted query-string parameters, these are always optional.
 		//
 		// Array items:
 		// Optional query-string parameter
-		Query []string `json:"query,omitempty"`
+		Query []string `json:"query,omitempty,omitzero"`
 
 		// Route for the call, note that arguments wrapped with brackets, like `/user/<userId>/` must be replaced.
 		Route string `json:"route"`
@@ -74,7 +74,7 @@ type (
 		//   * Disjunction
 		//   * Conjunction
 		//   * Conditional
-		Scopes ScopeExpressionTemplate `json:"scopes,omitempty"`
+		Scopes ScopeExpressionTemplate `json:"scopes,omitempty,omitzero"`
 
 		// Stability level of the API
 		//
@@ -137,7 +137,7 @@ type (
 		//   * Conjunction
 		//   * Conditional
 		//   * ForAll
-		Else ScopeExpressionTemplate `json:"else,omitempty"`
+		Else ScopeExpressionTemplate `json:"else,omitempty,omitzero"`
 
 		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
 		If string `json:"if"`
@@ -266,7 +266,7 @@ type (
 	Var1 struct {
 
 		// Constant to be used for this field, cannot be overwritten, only present if applicable.
-		Constant string `json:"constant,omitempty"`
+		Constant string `json:"constant,omitempty,omitzero"`
 
 		// True, if key may contain dots, which AMQP will consider as words. This determines if `#` or `*` should be used in client libraries
 		MultipleWords bool `json:"multipleWords"`

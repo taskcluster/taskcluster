@@ -39,17 +39,17 @@ type (
 
 	// Definition of a hook that can create tasks at defined times.
 	HookCreationRequest struct {
-		Bindings []Binding `json:"bindings,omitempty"`
+		Bindings []Binding `json:"bindings,omitempty,omitzero"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 1000
-		HookGroupID string `json:"hookGroupId,omitempty"`
+		HookGroupID string `json:"hookGroupId,omitempty,omitzero"`
 
 		// Syntax:     ^([a-zA-Z0-9-_/]*)$
 		// Min length: 1
 		// Max length: 1000
-		HookID string `json:"hookId,omitempty"`
+		HookID string `json:"hookId,omitempty,omitzero"`
 
 		Metadata HookMetadata `json:"metadata"`
 
@@ -64,7 +64,7 @@ type (
 		// parsed in a UTC context.
 		// See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
 		// Note that tasks may not be created at exactly the time specified.
-		Schedule []string `json:"schedule,omitempty"`
+		Schedule []string `json:"schedule,omitempty,omitzero"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://json-e.js.org/)
 		// as described in [firing hooks](/docs/reference/core/hooks/firing-hooks) to produce
@@ -79,12 +79,12 @@ type (
 		//             }
 		//
 		// Additional properties allowed
-		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
+		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty,omitzero"`
 	}
 
 	// Definition of a hook that will create tasks when defined events occur.
 	HookDefinition struct {
-		Bindings []Binding `json:"bindings,omitempty"`
+		Bindings []Binding `json:"bindings,omitempty,omitzero"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
@@ -142,7 +142,7 @@ type (
 		// Whether to email the owner on an error creating the task.
 		//
 		// Default:    true
-		EmailOnError bool `json:"emailOnError,omitempty"`
+		EmailOnError bool `json:"emailOnError,omitempty,omitzero"`
 
 		// Human readable name of the hook
 		//
@@ -170,7 +170,7 @@ type (
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty,omitzero"`
 	}
 
 	// List of lastFires
@@ -179,7 +179,7 @@ type (
 		// A continuation token is returned if there are more results than listed
 		// here. You can optionally provide the token in the request payload to
 		// load the additional results.
-		ContinuationToken string `json:"continuationToken,omitempty"`
+		ContinuationToken string `json:"continuationToken,omitempty,omitzero"`
 
 		LastFires []Var `json:"lastFires"`
 	}
@@ -198,7 +198,7 @@ type (
 	Status struct {
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
-		TaskID string `json:"taskId,omitempty"`
+		TaskID string `json:"taskId,omitempty,omitzero"`
 	}
 
 	// Information about a successful firing of the hook
@@ -239,7 +239,7 @@ type (
 		// Another copy of the taskId, at the location where it was published in
 		// Taskcluster versions before v42.  Prefer to use the top-level property,
 		// as `status.taskId` may be removed in future versions.
-		Status Status `json:"status,omitempty"`
+		Status Status `json:"status,omitempty,omitzero"`
 
 		// TaskId of the task created by triggering the hook.
 		//

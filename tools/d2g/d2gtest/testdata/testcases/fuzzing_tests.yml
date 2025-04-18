@@ -43,8 +43,7 @@ testSuite:
       maxRunTime: 14400
     genericWorkerTaskPayload:
       artifacts:
-      - expires: "0001-01-01T00:00:00.000Z"
-        name: project/fuzzing/bugmon
+      - name: project/fuzzing/bugmon
         optional: true
         path: artifact0
         type: directory

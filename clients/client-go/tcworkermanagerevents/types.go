@@ -56,7 +56,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider responsible for managing this worker pool.
 		//
@@ -109,7 +109,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider responsible for managing this worker pool.
 		//
@@ -163,7 +163,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		PreviousProviderID string `json:"previousProviderId,omitempty"`
+		PreviousProviderID string `json:"previousProviderId,omitempty,omitzero"`
 
 		// The provider responsible for managing this worker pool.
 		//
@@ -205,7 +205,7 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		LaunchConfigID string `json:"launchConfigId,omitempty"`
+		LaunchConfigID string `json:"launchConfigId,omitempty,omitzero"`
 
 		// The provider responsible for managing this worker pool.
 		//
@@ -230,14 +230,14 @@ type (
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		WorkerGroup string `json:"workerGroup,omitempty"`
+		WorkerGroup string `json:"workerGroup,omitempty,omitzero"`
 
 		// Worker ID
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
-		WorkerID string `json:"workerId,omitempty"`
+		WorkerID string `json:"workerId,omitempty,omitzero"`
 
 		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
 		//
