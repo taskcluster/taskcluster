@@ -74,7 +74,7 @@ type (
 		//   * Disjunction
 		//   * Conjunction
 		//   * Conditional
-		Scopes ScopeExpressionTemplate `json:"scopes,omitempty"`
+		Scopes *ScopeExpressionTemplate `json:"scopes,omitempty"`
 
 		// Stability level of the API
 		//
@@ -137,7 +137,7 @@ type (
 		//   * Conjunction
 		//   * Conditional
 		//   * ForAll
-		Else ScopeExpressionTemplate `json:"else,omitempty"`
+		Else *ScopeExpressionTemplate `json:"else,omitempty"`
 
 		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
 		If string `json:"if"`
@@ -148,7 +148,7 @@ type (
 		//   * Conjunction
 		//   * Conditional
 		//   * ForAll
-		Then ScopeExpressionTemplate `json:"then"`
+		Then *ScopeExpressionTemplate `json:"then"`
 	}
 
 	// AllOf objects will evaluate to true if all subexpressions are true
@@ -161,7 +161,7 @@ type (
 		//   * Conjunction
 		//   * Conditional
 		//   * ForAll
-		AllOf []ScopeExpressionTemplate `json:"AllOf"`
+		AllOf []*ScopeExpressionTemplate `json:"AllOf"`
 	}
 
 	// AnyOf objects will evaluate to true if any subexpressions are true
@@ -174,7 +174,7 @@ type (
 		//   * Conjunction
 		//   * Conditional
 		//   * ForAll
-		AnyOf []ScopeExpressionTemplate `json:"AnyOf"`
+		AnyOf []*ScopeExpressionTemplate `json:"AnyOf"`
 	}
 
 	// Reference of exchanges published

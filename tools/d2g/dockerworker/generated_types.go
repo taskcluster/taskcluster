@@ -10,7 +10,7 @@ import (
 
 type (
 	Artifact struct {
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		Path string `json:"path"`
 
@@ -25,7 +25,7 @@ type (
 	Capabilities struct {
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		Devices Devices `json:"devices,omitempty"`
+		Devices Devices `json:"devices,omitzero"`
 
 		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
 		//
@@ -91,7 +91,7 @@ type (
 		Cache map[string]string `json:"cache,omitempty"`
 
 		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		Capabilities Capabilities `json:"capabilities,omitempty"`
+		Capabilities Capabilities `json:"capabilities,omitzero"`
 
 		// Example: `['/bin/bash', '-c', 'ls']`.
 		//
@@ -111,7 +111,7 @@ type (
 		Env map[string]string `json:"env,omitempty"`
 
 		// Used to enable additional functionality.
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitzero"`
 
 		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
@@ -133,7 +133,7 @@ type (
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitzero"`
 
 		// Maintained for backward compatibility, but no longer used
 		SupersederURL string `json:"supersederUrl,omitempty"`

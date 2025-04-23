@@ -37,8 +37,7 @@ testSuite:
         optional: true
         path: artifact0
         type: file
-      - expires: "0001-01-01T00:00:00.000Z"
-        name: public/fred
+      - name: public/fred
         optional: true
         path: artifact1.txt
         type: file
@@ -95,8 +94,7 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       artifacts:
-      - expires: "0001-01-01T00:00:00.000Z"
-        name: public/fred
+      - name: public/fred
         optional: true
         path: volume0
         type: directory

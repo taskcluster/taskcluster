@@ -74,7 +74,7 @@ type (
 		Content string `json:"content"`
 
 		// Optional link that can be added as a button to the email.
-		Link Link `json:"link,omitempty"`
+		Link Link `json:"link,omitzero"`
 
 		// Reply-to e-mail (this property is optional)
 		ReplyTo string `json:"replyTo,omitempty"`

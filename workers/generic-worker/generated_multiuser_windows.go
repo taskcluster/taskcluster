@@ -65,7 +65,7 @@ type (
 		// no later than task expiry. If not set, defaults to task expiry.
 		//
 		// Since: generic-worker 1.0.0
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Name of the artifact, as it will be published. If not set, `path` will be used.
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
@@ -345,12 +345,12 @@ type (
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitzero"`
 
 		// Configuration for task logs.
 		//
 		// Since: generic-worker 48.2.0
-		Logs Logs `json:"logs,omitempty"`
+		Logs Logs `json:"logs,omitzero"`
 
 		// Maximum time the task container can run in seconds.
 		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
@@ -375,7 +375,7 @@ type (
 		// if all task commands have a zero exit code, or `failed/failed` if any command has a
 		// non-zero exit code. This payload property allows customsation of the task resolution
 		// based on exit code of task commands.
-		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitzero"`
 
 		// A list of OS Groups that the task user should be a member of. Requires scope
 		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each

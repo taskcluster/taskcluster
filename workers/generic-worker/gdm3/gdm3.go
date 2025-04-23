@@ -59,8 +59,8 @@ func SetAutoLogin(username string, source []byte) (output []byte) {
 // and the raw line itself.
 func iniFileLineHandler(data []byte, callback func(section, line string)) {
 	section := ""
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(data), "\n")
+	for line := range lines {
 		trimmedLine := strings.TrimSpace(line)
 		if len(trimmedLine) > 1 && trimmedLine[0] == '[' && trimmedLine[len(trimmedLine)-1] == ']' {
 			section = trimmedLine[1 : len(trimmedLine)-1]

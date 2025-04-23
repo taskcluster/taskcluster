@@ -119,7 +119,7 @@ type (
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
+		Resolved tcclient.Time `json:"resolved,omitzero"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
@@ -134,7 +134,7 @@ type (
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
+		Started tcclient.Time `json:"started,omitzero"`
 
 		// State of this run
 		//
@@ -149,7 +149,7 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+		TakenUntil tcclient.Time `json:"takenUntil,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -218,7 +218,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -252,7 +252,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -278,7 +278,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -320,7 +320,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -367,7 +367,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -428,7 +428,7 @@ type (
 		Status TaskStatusStructure `json:"status"`
 
 		// Subset of a task definition
-		Task Task `json:"task,omitempty"`
+		Task Task `json:"task,omitzero"`
 
 		// Message version
 		//

@@ -67,7 +67,7 @@ func main() {
 
 	source := result.SourceCode
 	source = regexp.MustCompile(`APIEntry struct`).ReplaceAll(source, []byte(`Entry struct`))
-	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`ScopeExpressionTemplate`))
+	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`*ScopeExpressionTemplate`))
 
 	model.FormatSourceAndSave("types.go", source)
 

@@ -320,7 +320,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
-	comment += requiredScopesComment(&entry.Scopes)
+	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 
@@ -360,6 +360,9 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 }
 
 func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
+	if entry.Scopes == nil {
+		entry.Scopes = new(ScopeExpressionTemplate)
+	}
 	// if no required scopes, no reason to provide a signed url
 	// method, since no auth is required, so unsigned url already works,
 	// except for TestAuthenticateGet, which can be usefully used to test
@@ -368,7 +371,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 		return ""
 	}
 	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"
-	comment += requiredScopesComment(&entry.Scopes)
+	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
@@ -390,6 +393,9 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 }
 
 func requiredScopesComment(scopes *ScopeExpressionTemplate) string {
+	if scopes == nil {
+		scopes = new(ScopeExpressionTemplate)
+	}
 	if scopes.Type == "" {
 		return ""
 	}
@@ -522,19 +528,19 @@ func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 	case []any:
 		m.Type = "AnyOf"
 		m.AnyOf = &Disjunction{
-			AnyOf: make([]ScopeExpressionTemplate, len(t)),
+			AnyOf: make([]*ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
 			allOf := j.([]any)
-			m.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
+			m.AnyOf.AnyOf[i] = &ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{
-					AllOf: make([]ScopeExpressionTemplate, len(allOf)),
+					AllOf: make([]*ScopeExpressionTemplate, len(allOf)),
 				},
 			}
 			for k, l := range allOf {
 				rs := RequiredScope(l.(string))
-				m.AnyOf.AnyOf[i].AllOf.AllOf[k] = ScopeExpressionTemplate{
+				m.AnyOf.AnyOf[i].AllOf.AllOf[k] = &ScopeExpressionTemplate{
 					Type:          "RequiredScope",
 					RequiredScope: &rs,
 				}
