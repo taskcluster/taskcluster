@@ -84,14 +84,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = '33:82:51:70:58:A0:C2:02:28:D5:98:EE:75:01:B6:12:56:A7:64:42';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 07';
+  const intermediateCertFingerprint = 'F9:38:8E:A2:C9:B7:D6:32:B6:6A:2B:0B:40:6D:F1:D3:7D:39:01:F6';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 03';
   const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_07_xsign.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2007%20-%20xsign.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt';
   // this id should match the id of the instance where azure_signature_good cert was fetched from
-  const testVmId = 'ce9941b4-3c5a-4e2a-93a9-846375218157';
+  const testVmId = 'f9cc27a0-2d12-40cf-adc9-7a676efec010';
 
   suite('helpers', function() {
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath));
