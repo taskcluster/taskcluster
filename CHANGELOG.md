@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.7
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.24.2.
+
+### DEVELOPERS
+
+▶ [patch] [#7099](https://github.com/taskcluster/taskcluster/issues/7099)
+Updated azure test certificates.
+
 ## v83.5.6
 
 ### WORKER-DEPLOYERS
