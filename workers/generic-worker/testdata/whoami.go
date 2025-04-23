@@ -22,14 +22,18 @@ func main() {
 	username := user.Username
 
 	if runTaskAsCurrentUser {
-		expectedUsername := "root"
-		if runtime.GOOS == "windows" {
-			expectedUsername = `NT AUTHORITY\SYSTEM`
+		switch runtime.GOOS {
+		case "windows":
+			if user.Uid != "S-1-5-18" {
+				log.Fatalf("Running as current user, so SID should be \"S-1-5-18\" but is %q", user.Uid)
+			}
+			log.Printf("All ok - running as current user, and SID %q matches required value \"S-1-5-18\"", user.Uid)
+		default:
+			if username != "root" {
+				log.Fatalf("Running as current user, so username should be \"root\" but is %q", username)
+			}
+			log.Printf("All ok - running as current user, and username %q matches required value \"root\"", username)
 		}
-		if username != expectedUsername {
-			log.Fatalf("Running as current user, so username should be %q but is %q", expectedUsername, username)
-		}
-		log.Printf("All ok - running as current user, and username %q matches required value %q", username, expectedUsername)
 	} else {
 		// On Windows, local users have username in the form COMPUTER_NAME\USER
 		if !strings.HasPrefix(filepath.Base(username), "task_") {
