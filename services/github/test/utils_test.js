@@ -318,6 +318,18 @@ suite(testing.suiteName(), function() {
     });
   });
 
+  suite('extractLogWithLongLine', function() {
+    test('should get the complete head lines corresponding to the max payload length', function() {
+      const payload = Array.from({ length: 10 }).map(line => `line: ${line}`);
+      payload.push('A'.repeat(100000));
+
+      // Those values (20, 200, 60000) are what the github worker would use in "worst case scenarios".
+      // We append a line that far exceeds that within the `tail+head` of what it tries to get to make
+      // sure that the return value ignores it (doesn't include a cut line, doesn't exceed max payload)
+      assert.equal(extractLog(payload.join('\n'), 20, 200, 60000).length, 159);
+    });
+  });
+
   suite('extractTailLinesFromLog', function() {
     test('should get complete tail lines corresponding to may payload length or taiLines whichever is minimum', function() {
       const payload = Array.from({ length: 4 }, (_, i) => Array(i + 1).fill(`line ${i + 1}`).join(' ')).join('\n');

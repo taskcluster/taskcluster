@@ -225,12 +225,11 @@ export const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
  * @returns string
  */
 export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
-
   const logString = ansi2txt(log);
   const lines = logString.split('\n');
   const LOG_BUFFER = 42;
 
-  if (lines.length <= headLines + tailLines) {
+  if (lines.length <= headLines + tailLines && logString.length <= maxPayloadLength) {
     return logString;
   }
 
