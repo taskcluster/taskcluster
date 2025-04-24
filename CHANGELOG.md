@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.5.8
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7671](https://github.com/taskcluster/taskcluster/issues/7671)
+D2G: removes unneeded `kvm` and `libvirt` OS groups for generic worker task user if KVM device is requested.
+
+### USERS
+
+▶ [patch] [#7664](https://github.com/taskcluster/taskcluster/issues/7664)
+Fix an issue where taskcluster would try to report checks to github that exceeded the max allowed length if the log contained long lines in its tail
+
 ## v83.5.7
 
 ### GENERAL
