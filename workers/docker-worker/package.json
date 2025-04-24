@@ -4,9 +4,9 @@
   "version": "83.6.0",
   "engine-strict": true,
   "engines": {
-    "node": "22.14.0"
+    "node": "22.15.0"
   },
-  "packageManager": "yarn@4.8.1",
+  "packageManager": "yarn@4.9.1",
   "description": "Docker task host for linux.",
   "bin": {
     "docker-worker": "bin/worker.js"
