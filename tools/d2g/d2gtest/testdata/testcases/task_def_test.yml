@@ -84,8 +84,6 @@ testSuite:
           - 125
           - 128
         osGroups:
-        - kvm
-        - libvirt
         - docker
         taskclusterProxyInterface: docker-bridge
       priority: lowest
@@ -187,8 +185,6 @@ testSuite:
           - 125
           - 128
         osGroups:
-        - kvm
-        - libvirt
         - docker
         taskclusterProxyInterface: docker-bridge
       priority: lowest
@@ -293,8 +289,6 @@ testSuite:
           - 125
           - 128
         osGroups:
-        - kvm
-        - libvirt
         - docker
         taskclusterProxyInterface: docker-bridge
       priority: lowest
