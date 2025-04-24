@@ -208,7 +208,7 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[stri
 	setMaxRunTime(dwPayload, gwPayload)
 	setOnExitStatus(dwPayload, gwPayload)
 	setSupersederURL(dwPayload, gwPayload)
-	setOSGroups(dwPayload, gwPayload, config)
+	setOSGroups(gwPayload)
 	gwPayload.TaskclusterProxyInterface = "docker-bridge"
 
 	return
@@ -549,12 +549,7 @@ func setSupersederURL(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *ge
 	gwPayload.SupersederURL = dwPayload.SupersederURL
 }
 
-func setOSGroups(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config map[string]any) {
-	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
-		// task user needs to be in kvm and libvirt groups for KVM to work:
-		// https://help.ubuntu.com/community/KVM/Installation
-		gwPayload.OSGroups = append(gwPayload.OSGroups, "kvm", "libvirt")
-	}
+func setOSGroups(gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.OSGroups = append(gwPayload.OSGroups, "docker")
 }
 

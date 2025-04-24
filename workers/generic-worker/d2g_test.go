@@ -340,8 +340,8 @@ func TestD2GWithValidScopes(t *testing.T) {
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
 		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [kvm libvirt docker]") {
-			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [kvm libvirt docker]'")
+		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
+			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
 		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
