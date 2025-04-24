@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/taskcluster/taskcluster/v83/tools/worker-runner/cfg"
 	"github.com/taskcluster/taskcluster/v83/tools/worker-runner/errorreport"
@@ -67,9 +68,21 @@ func Run(configFile string) (state run.State, err error) {
 			return
 		}
 		if workerIdentityProof != nil {
-			err = reg.RegisterWorker(workerIdentityProof)
-			if err != nil {
-				return
+			const maxRetries = 3
+			for i := range maxRetries {
+				err = reg.RegisterWorker(workerIdentityProof)
+				if err == nil {
+					break
+				}
+				log.Printf("Error registering worker: %v", err)
+				if i < maxRetries-1 {
+					log.Println("Retrying registration...")
+					time.Sleep(1 * time.Second)
+				} else {
+					log.Printf("Failed to register worker after %d attempts", maxRetries)
+					err = em.WorkerFinished()
+					return
+				}
 			}
 		}
 	} else {
