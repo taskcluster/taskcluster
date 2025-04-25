@@ -27,12 +27,6 @@ are not sure if or when the metadata API certificates will change.
 
 Node.js includes a set of root CAs in
 [tls.rootCertificates](https://nodejs.org/api/tls.html#tls_tls_rootcertificates).
-Node.js v12.19.0 includes 4 of the 6, and the remaining 2 are added in Node.js v15.
-The two certificates are included here until we update Node.js
-([issue #3924](https://github.com/taskcluster/taskcluster/issues/3925)):
-
-* ``microsoft_rsa_root_certificate_authority_2017.pem`` - Expires 2042
-* ``microsoft_ecc_root_certificate_authority_2017.pem`` - Expires 2042
 
 ## Downloading certificates
 
