@@ -10,5 +10,6 @@ func platformFeatures() []Feature {
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible
 		&ChainOfTrustFeature{},
+		&DelegateFeature{},
 	}
 }
