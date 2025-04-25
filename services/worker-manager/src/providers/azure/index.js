@@ -17,6 +17,7 @@ import msRestJS from '@azure/ms-rest-js';
 import msRestAzure from '@azure/ms-rest-azure-js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
+import { loadCertificates } from './azure-ca-certs/index.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
 
@@ -266,17 +267,8 @@ export class AzureProvider extends Provider {
     this.caStore = forge.pki.createCaStore();
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
 
-    const __dirname = new URL('.', import.meta.url).pathname;
-
     // load known microsoft intermediate certs from disk
-    let intermediateFiles = [
-      'microsoft_rsa_tls_ca_1.pem',
-      'microsoft_rsa_tls_ca_2.pem',
-      'microsoft_azure_tls_issuing_ca_01_xsign.pem',
-      'microsoft_azure_tls_issuing_ca_05_xsign.pem',
-      'microsoft_azure_rsa_tls_issuing_ca_07_xsign.pem',
-      'microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem',
-    ].map(f => fs.readFileSync(path.resolve(__dirname, 'azure-ca-certs', f)));
+    const intermediateFiles = loadCertificates();
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
 

@@ -1,0 +1,18 @@
+[
+  {
+    "filename": "microsoft_rsa_tls_ca_1.pem",
+    "url": "http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt"
+  },
+  {
+    "filename": "microsoft_rsa_tls_ca_2.pem",
+    "url": "http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2002.crt"
+  },
+  {
+    "filename": "microsoft_rsa_root_certificate_authority_2017.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt"
+  },
+  {
+    "filename": "microsoft_ecc_root_certificate_authority_2017.pem",
+    "url": "http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt"
+  }
+]
