@@ -86,8 +86,17 @@ func Unzip(b []byte, dest string) error {
 		// constitute a vulnerability (just an odd way to get things done)
 		path := filepath.Join(dest, f.Name)
 
+		// Ensure the path is within the destination directory
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		if !strings.HasPrefix(absPath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return errors.New("invalid file path: " + absPath)
+		}
+
 		if f.FileInfo().IsDir() {
-			_ = os.MkdirAll(path, f.Mode())
+			_ = os.MkdirAll(absPath, f.Mode())
 		} else {
 			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
