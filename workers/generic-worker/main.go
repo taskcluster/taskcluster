@@ -228,6 +228,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			DisableReboots:                 false,
 			DownloadsDir:                   "downloads",
 			EnableChainOfTrust:             true,
+			EnableInteractive:				true,
 			EnableLiveLog:                  true,
 			EnableMounts:                   true,
 			EnableOSGroups:                 true,

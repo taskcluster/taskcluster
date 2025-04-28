@@ -3,14 +3,12 @@ package gwconfig
 import "testing"
 
 type PublicPlatformConfig struct {
-	EnableInteractive        bool `json:"enableInteractive"`
 	EnableRDP                bool `json:"enableRDP"`
 	EnableRunAsAdministrator bool `json:"enableRunAsAdministrator"`
 }
 
 func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 	return &PublicPlatformConfig{
-		EnableInteractive:        true,
 		EnableRDP:                true,
 		EnableRunAsAdministrator: true,
 	}

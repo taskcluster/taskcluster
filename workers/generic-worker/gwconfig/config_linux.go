@@ -5,7 +5,6 @@ import "testing"
 type PublicPlatformConfig struct {
 	D2GConfig                 map[string]any `json:"d2gConfig"`
 	DisableNativePayloads     bool           `json:"disableNativePayloads"`
-	EnableInteractive         bool           `json:"enableInteractive"`
 	EnableLoopbackAudio       bool           `json:"enableLoopbackAudio"`
 	EnableLoopbackVideo       bool           `json:"enableLoopbackVideo"`
 	LoopbackAudioDeviceNumber uint8          `json:"loopbackAudioDeviceNumber"`
@@ -31,7 +30,6 @@ func DefaultPublicPlatformConfig() *PublicPlatformConfig {
 			"logTranslation":        true,
 		},
 		DisableNativePayloads:     false,
-		EnableInteractive:         true,
 		EnableLoopbackAudio:       true,
 		EnableLoopbackVideo:       true,
 		LoopbackAudioDeviceNumber: 16,
