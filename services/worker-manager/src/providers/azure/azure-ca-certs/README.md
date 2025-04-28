@@ -58,7 +58,6 @@ The certificates in our bundle are those listed in the [Azure CA details](https:
 | Certificate Filename | Expiration Date |
 |----------------------|-----------------|
 | [microsoft_rsa_root_certificate_authority_2017.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt) | Jul 18 23:00:23 2042 GMT |
-| [microsoft_ecc_root_certificate_authority_2017.pem](http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt) | Oct  8 07:00:00 2024 GMT |
 | [microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt) | Aug 25 23:59:59 2026 GMT |
 | [microsoft_azure_rsa_tls_issuing_ca_03.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crt) | May 25 23:49:25 2028 GMT |
 | [microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt) | Aug 25 23:59:59 2026 GMT |
