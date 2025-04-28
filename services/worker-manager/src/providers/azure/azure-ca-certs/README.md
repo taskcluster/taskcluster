@@ -1,5 +1,7 @@
 # Azure Trusted Certificates
 
+Updates and recent information about certificates can be found at [Azure CA details](https://learn.microsoft.com/en-us/azure/security/fundamentals/azure-ca-details)
+
 ## Microsoft IT TLS CAs
 
 These CA certificates were obtained from
@@ -38,7 +40,5 @@ and converts CRT files to PEM
 <!-- CERTIFICATES -->
 | Certificate Filename | Expiration Date |
 |----------------------|-----------------|
-| [microsoft_rsa_tls_ca_1.pem](http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt) | Oct  8 07:00:00 2024 GMT |
-| [microsoft_rsa_tls_ca_2.pem](http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2002.crt) | Oct  8 07:00:00 2024 GMT |
 | [microsoft_rsa_root_certificate_authority_2017.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt) | Jul 18 23:00:23 2042 GMT |
 | [microsoft_ecc_root_certificate_authority_2017.pem](http://www.microsoft.com/pki/mscorp/Microsoft%20RSA%20TLS%20CA%2001.crt) | Oct  8 07:00:00 2024 GMT |

@@ -8,6 +8,11 @@ const certificates = JSON.parse(fs.readFileSync(certsPath, 'utf8'));
 const output = [];
 
 certificates.forEach(({ filename, url }) => {
+  if (!url) {
+    console.log(`Skipping "${filename} - no download URL`);
+    return;
+  }
+
   const tempFilename = filename.replace('.pem', '.crt');
 
   console.log(`Downloading certificate from ${url}`);
