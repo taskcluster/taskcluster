@@ -1,5 +1,3 @@
-//go:build windows
-
 // This was heavily inspired by https://github.com/UserExistsError/conpty/blob/aff362cbe133d2e0818f6eeaffd66c84957a0cf1/conpty.go
 
 package interactive
