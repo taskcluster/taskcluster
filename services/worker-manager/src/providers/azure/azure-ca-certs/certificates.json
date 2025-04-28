@@ -1,0 +1,38 @@
+[
+  {
+    "filename": "microsoft_rsa_root_certificate_authority_2017.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_03.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_04.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_07_xsign.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2007%20-%20xsign.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_07.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2007.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_08_xsign.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008%20-%20xsign.crt"
+  },
+  {
+    "filename": "microsoft_azure_rsa_tls_issuing_ca_08.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt"
+    }
+]

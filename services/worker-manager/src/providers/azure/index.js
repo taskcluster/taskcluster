@@ -4,8 +4,6 @@ import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import forge from 'node-forge';
 import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs';
 import generator from 'generate-password';
 import got from 'got';
 import { rootCertificates } from 'tls';
@@ -17,6 +15,7 @@ import msRestJS from '@azure/ms-rest-js';
 import msRestAzure from '@azure/ms-rest-azure-js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
+import { loadCertificates } from './azure-ca-certs/index.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
 
@@ -261,34 +260,11 @@ export class AzureProvider extends Provider {
     this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
 
     // Load root certificates from Node, which get them from the Mozilla CA store.
-    // As of node v12.19.0 (Nov. 2020), this includes 117 certs that node-forge
-    // can load, and 21 it can not (issue #3923)
     this.caStore = forge.pki.createCaStore();
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
 
-    const __dirname = new URL('.', import.meta.url).pathname;
-
-    // node v12.9.0 doesn't have these certificates
-    // Added from NSS 3.56, released 2020-08-21
-    // TODO (issue #3924): remove after upgrade to node with these bundled
-    const rootCertFilenames = [
-      'microsoft_rsa_root_certificate_authority_2017.pem',
-      // node-forge can't load ECDSA certificates (issue #3923)
-      // 'microsoft_ecc_root_certificate_authority_2017.pem',
-    ];
-    const rootCertFiles = rootCertFilenames.map(
-      name => fs.readFileSync(path.resolve(__dirname, "azure-ca-certs", name)));
-    rootCertFiles.forEach(pem => this.addRootCertPem(pem, true));
-
     // load known microsoft intermediate certs from disk
-    let intermediateFiles = [
-      'microsoft_rsa_tls_ca_1.pem',
-      'microsoft_rsa_tls_ca_2.pem',
-      'microsoft_azure_tls_issuing_ca_01_xsign.pem',
-      'microsoft_azure_tls_issuing_ca_05_xsign.pem',
-      'microsoft_azure_rsa_tls_issuing_ca_07_xsign.pem',
-      'microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem',
-    ].map(f => fs.readFileSync(path.resolve(__dirname, 'azure-ca-certs', f)));
+    const intermediateFiles = loadCertificates();
     let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
     intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
 

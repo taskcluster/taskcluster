@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import Debug from 'debug';
+import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js';
 
 const debug = Debug('provider_azure_test');
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -92,9 +93,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt';
   // this id should match the id of the instance where azure_signature_good cert was fetched from
   const testVmId = 'f9cc27a0-2d12-40cf-adc9-7a676efec010';
+  const allCertificates = loadCertificates();
+
+  const getIntermediateCert = () => {
+    const pem = fs.readFileSync(intermediateCertPath, 'utf-8');
+    return forge.pki.certificateFromPem(pem);
+  };
+
+  const removeAllCertsFromStore = () => {
+    allCertificates.forEach((cert) => {
+      const intermediate = forge.pki.certificateFromPem(cert);
+      provider.caStore.removeCertificate(intermediate);
+    });
+  };
+
+  const restoreAllCerts = () => {
+    allCertificates.forEach((cert) => {
+      const intermediate = forge.pki.certificateFromPem(cert);
+      provider.caStore.addCertificate(intermediate);
+    });
+  };
 
   suite('helpers', function() {
-    const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath));
+    const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath, 'utf-8'));
 
     test('dnToString of subject', async function() {
       const dn = dnToString(testCert.subject);
@@ -1398,10 +1419,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
-          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
-          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
-          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
-          assert(deletedCert);
+          // to force download we should drop intermediate certs
+          removeAllCertsFromStore();
+          const intermediateCert = getIntermediateCert();
 
           // Disable downloads
           provider.downloadBinaryResponse = (url) => {
@@ -1418,7 +1438,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(
             log0.error,
             `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
@@ -1430,7 +1450,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
-          provider.caStore.addCertificate(deletedCert);
+          restoreAllCerts();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
@@ -1447,11 +1467,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const oldDownloadTimeout = provider.downloadTimeout;
           provider.downloadTimeout = 1; // 1 millisecond
 
-          // Remove the intermediate certificate
-          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
-          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
-          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
-          assert(deletedCert);
+          removeAllCertsFromStore();
+          const intermediateCert = getIntermediateCert();
 
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
@@ -1459,7 +1476,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
@@ -1471,7 +1488,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
-          provider.caStore.addCertificate(deletedCert);
+          restoreAllCerts();
           provider.downloadTimeout = oldDownloadTimeout;
           helper.assertNoPulseMessage('worker-running');
         });
@@ -1488,11 +1505,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
-          // Remove the intermediate certificate
-          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
-          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
-          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
-          assert(deletedCert);
+          // to force download we should drop intermediate certs
+          removeAllCertsFromStore();
+          const intermediateCert = getIntermediateCert();
 
           // Download is not a binary certificate
           provider.downloadBinaryResponse = async url =>
@@ -1506,7 +1521,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert.equal(
             log0.error,
             `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(deletedCert.subject);
+          const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
             { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
@@ -1518,7 +1533,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
-          provider.caStore.addCertificate(deletedCert);
+          restoreAllCerts();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
@@ -1531,14 +1546,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
 
-          // Remove the intermediate certificate
-          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
-          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
-          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
-          assert(deletedCert);
+          // to force download we should drop intermediate certs
+          removeAllCertsFromStore();
+          const intermediateCert = getIntermediateCert();
 
           // Remove the Baltimore CyberTrust Root CA
-          const rootCert = provider.caStore.getIssuer(deletedCert);
+          const rootCert = provider.caStore.getIssuer(intermediateCert);
           const deletedRoot = provider.caStore.removeCertificate(rootCert);
           assert(deletedRoot);
 
@@ -1554,7 +1567,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Restore test fixture
           provider.caStore.addCertificate(deletedRoot);
-          provider.caStore.addCertificate(deletedCert);
+          restoreAllCerts();
           helper.assertNoPulseMessage('worker-running');
         });
 
@@ -1662,11 +1675,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             path.resolve(__dirname, 'fixtures/azure_signature_good')).toString();
           const workerIdentityProof = { document };
 
-          // Remove the intermediate certificate
-          const intermediateCertPem = fs.readFileSync(intermediateCertPath);
-          const intermediateCert = forge.pki.certificateFromPem(intermediateCertPem);
-          const deletedCert = provider.caStore.removeCertificate(intermediateCert);
-          assert(deletedCert);
+          removeAllCertsFromStore();
 
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
