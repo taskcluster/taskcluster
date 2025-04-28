@@ -19,20 +19,20 @@ type InteractiveCmdType = *exec.Cmd
 type InteractiveInnerType = CmdPty
 
 func (itj *InteractiveJob) Setup(cmd InteractiveCmdType) {
-	itj.inner.pty = nil
-	if itj.inner.cmd.SysProcAttr == nil {
-		itj.inner.cmd.SysProcAttr = &syscall.SysProcAttr{}
+	if cmd.SysProcAttr == nil {
+		cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}
-	itj.inner.cmd.SysProcAttr.Setpgid = false
-	itj.inner.cmd.SysProcAttr.Setctty = true
-	itj.inner.cmd.SysProcAttr.Setsid = true
+	cmd.SysProcAttr.Setpgid = false
+	cmd.SysProcAttr.Setctty = true
+	cmd.SysProcAttr.Setsid = true
 
-	pty, err := pty.StartWithAttrs(itj.inner.cmd, nil, itj.inner.cmd.SysProcAttr)
+	pty, err := pty.StartWithAttrs(cmd, nil, cmd.SysProcAttr)
 	if err != nil {
 		itj.reportError(fmt.Sprintf("Error while spawning command %v", err))
 		return
 	}
 	itj.inner.pty = pty
+	itj.inner.cmd = cmd
 
 	go func() {
 		itj.errors <- itj.inner.cmd.Wait()
