@@ -15,18 +15,43 @@ certificates.forEach(({ filename, url }) => {
 
   const tempFilename = filename.replace('.pem', '.crt');
 
-  console.log(`Downloading certificate from ${url}`);
-  execSync(`curl -s "${url}" -o "${tempFilename}"`);
+  try {
+    console.log(`Downloading certificate from ${url}`);
+    execSync(`curl -s "${url}" -o "${tempFilename}"`);
 
-  console.log(`Converting ${tempFilename} to PEM format`);
-  execSync(`openssl x509 -inform DER -in "${tempFilename}" -out "${filename}"`);
+    let isPEM = false;
+    try {
+      const fileContent = fs.readFileSync(tempFilename, 'utf8');
+      isPEM = fileContent.includes('-----BEGIN CERTIFICATE-----');
+    } catch (e) {
+      isPEM = false;
+    }
 
-  const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`).toString().trim().replace('notAfter=', '');
-  console.log(`Certificate ${filename} expires on ${expiryDate}`);
+    if (isPEM) {
+      console.log(`Certificate ${tempFilename} is already in PEM format, copying directly`);
+      fs.copyFileSync(tempFilename, filename);
+    } else {
+      console.log(`Converting ${tempFilename} from DER to PEM format`);
+      try {
+        execSync(`openssl x509 -inform DER -in "${tempFilename}" -out "${filename}"`);
+      } catch (e) {
+        console.log(`DER conversion failed, trying auto-detection with openssl`);
+        execSync(`openssl x509 -in "${tempFilename}" -out "${filename}"`);
+      }
+    }
 
-  output.push({ filename, url, expiryDate });
+    if (!fs.existsSync(filename)) {
+      throw new Error(`Failed to create PEM file ${filename}`);
+    }
 
-  fs.unlinkSync(tempFilename);
+    const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`).toString().trim().replace('notAfter=', '');
+    console.log(`Certificate ${filename} expires on ${expiryDate}`);
+    output.push({ filename, url, expiryDate });
+
+    fs.unlinkSync(tempFilename);
+  } catch (e) {
+    console.error(`Error downloading or converting certificate ${filename} from ${url}:\n ${e.message}`);
+  }
 });
 
 // Update README.md with certificates table

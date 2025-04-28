@@ -4,8 +4,6 @@ import _ from 'lodash';
 import taskcluster from 'taskcluster-client';
 import forge from 'node-forge';
 import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs';
 import generator from 'generate-password';
 import got from 'got';
 import { rootCertificates } from 'tls';
@@ -262,8 +260,6 @@ export class AzureProvider extends Provider {
     this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
 
     // Load root certificates from Node, which get them from the Mozilla CA store.
-    // As of node v12.19.0 (Nov. 2020), this includes 117 certs that node-forge
-    // can load, and 21 it can not (issue #3923)
     this.caStore = forge.pki.createCaStore();
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
 
