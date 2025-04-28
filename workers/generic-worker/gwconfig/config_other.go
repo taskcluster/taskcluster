@@ -8,8 +8,7 @@ type PublicPlatformConfig struct {
 }
 
 func DefaultPublicPlatformConfig() *PublicPlatformConfig {
-	return &PublicPlatformConfig{
-	}
+	return &PublicPlatformConfig{}
 }
 
 func (c *PublicPlatformConfig) D2GEnabled() bool {
