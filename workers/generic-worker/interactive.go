@@ -1,5 +1,3 @@
-//go:build darwin || linux || freebsd || windows
-
 package main
 
 import (

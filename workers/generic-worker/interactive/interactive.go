@@ -1,5 +1,3 @@
-//go:build darwin || linux || freebsd || windows
-
 // Package interactive provides a way to run an interactive shell in a task.
 package interactive
 

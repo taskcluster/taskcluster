@@ -309,7 +309,7 @@ properties:
           Note that this feature works differently from the `interactive` feature
           in docker worker, which `docker exec`s into the running container.
           Since tasks on generic worker are not guaranteed to be running in a
-          container, a bash shell is started on the task user's account.
+          container, a powershell instance is started on the task user's account.
           A user can then `docker exec` into the a running container, if there
           is one.
 
