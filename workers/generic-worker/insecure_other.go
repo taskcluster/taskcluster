@@ -4,6 +4,5 @@ package main
 
 func platformFeatures() []Feature {
 	return []Feature{
-		&InteractiveFeature{},
 	}
 }

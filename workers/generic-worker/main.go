@@ -77,6 +77,7 @@ func initialiseFeatures() (err error) {
 		&OSGroupsFeature{},
 		&MountsFeature{},
 		&ResourceMonitorFeature{},
+		&InteractiveFeature{},
 	}
 	features = append(features, platformFeatures()...)
 	features = append(
