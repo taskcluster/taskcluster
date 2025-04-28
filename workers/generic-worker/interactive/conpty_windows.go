@@ -189,7 +189,7 @@ func closeHandles(handles ...windows.Handle) error {
 			if err == nil {
 				err = windows.CloseHandle(h)
 			} else {
-				windows.CloseHandle(h)
+				_ = windows.CloseHandle(h)
 			}
 		}
 	}
@@ -198,8 +198,8 @@ func closeHandles(handles ...windows.Handle) error {
 
 // Close all open handles and terminate the process.
 func (conpty *ConPty) Close() error {
-	// there is no return code
-	procClosePseudoConsole.Call(uintptr(conpty.hpc))
+	// ClosePseudoConsole return is void
+	_, _, _ = procClosePseudoConsole.Call(uintptr(conpty.hpc))
 	return closeHandles(
 		conpty.pi.Process,
 		conpty.pi.Thread,
@@ -256,7 +256,7 @@ func StartConPty(commandLine []string, workDir string, env []string, token windo
 		return nil, fmt.Errorf("CreatePipe: %v", err)
 	}
 	if err := windows.CreatePipe(&cmdOut, &ptyOut, nil, 0); err != nil {
-		closeHandles(ptyIn, cmdIn)
+		_ = closeHandles(ptyIn, cmdIn)
 		return nil, fmt.Errorf("CreatePipe: %v", err)
 	}
 
@@ -264,14 +264,14 @@ func StartConPty(commandLine []string, workDir string, env []string, token windo
 
 	hPc, err := win32CreatePseudoConsole(&size, ptyIn, ptyOut)
 	if err != nil {
-		closeHandles(ptyIn, ptyOut, cmdIn, cmdOut)
+		_ = closeHandles(ptyIn, ptyOut, cmdIn, cmdOut)
 		return nil, err
 	}
 
 	pi, err := createConsoleProcessAttachedToPTY(hPc, commandLine, workDir, env, token)
 	if err != nil {
-		closeHandles(ptyIn, ptyOut, cmdIn, cmdOut)
-		procClosePseudoConsole.Call(uintptr(hPc))
+		_ = closeHandles(ptyIn, ptyOut, cmdIn, cmdOut)
+		_, _, _ = procClosePseudoConsole.Call(uintptr(hPc))
 		return nil, fmt.Errorf("failed to create console process: %v", err)
 	}
 
