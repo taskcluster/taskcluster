@@ -3,6 +3,24 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.6.0
+
+### DEPLOYERS
+
+▶ [minor] [#3924](https://github.com/taskcluster/taskcluster/issues/3924)
+Removed bundled root CAs that exist in node already.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7670](https://github.com/taskcluster/taskcluster/issues/7670)
+Azure provider includes up-to-date intermediate certificates to speed up worker registration process,
+expired certificates has been removed.
+
+### USERS
+
+▶ [minor]
+Add support for windows interactive tasks
+
 ## v83.5.8
 
 ### WORKER-DEPLOYERS
