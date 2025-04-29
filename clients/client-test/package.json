@@ -28,7 +28,7 @@
     "taskcluster-lib-validate": "link:../libraries/validate"
   },
   "engines": {
-    "node": "22.14.0"
+    "node": "22.15.0"
   },
   "type": "module"
 }
