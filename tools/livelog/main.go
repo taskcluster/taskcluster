@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 
@@ -262,6 +263,7 @@ func serve(putAddr, getAddr string) {
 		consumeErr := stream.Consume()
 		if consumeErr != nil {
 			log.Println("Error finalizing consume of stream", consumeErr)
+			_ = os.RemoveAll(filepath.Dir(stream.Path))
 			abort(w)
 			return
 		}

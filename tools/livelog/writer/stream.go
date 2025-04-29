@@ -46,7 +46,9 @@ type Stream struct {
 
 func NewStream(read io.Reader) (*Stream, error) {
 	dir, err := os.MkdirTemp(TempDir, "livelog")
+	cleanup := func() { _ = os.RemoveAll(dir) }
 	if err != nil {
+		cleanup()
 		return nil, err
 	}
 
@@ -57,6 +59,7 @@ func NewStream(read io.Reader) (*Stream, error) {
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 
 	if openErr != nil {
+		cleanup()
 		return nil, openErr
 	}
 
