@@ -14407,11 +14407,11 @@
           "items": {
             "additionalProperties": false,
             "properties": {
-              "action_type": {
+              "actionType": {
                 "description": "The type of action performed",
                 "type": "string"
               },
-              "client_id": {
+              "clientId": {
                 "description": "The ID of the client that performed the action",
                 "type": "string"
               },
@@ -14419,12 +14419,22 @@
                 "description": "Timestamp when the action occurred",
                 "format": "date-time",
                 "type": "string"
+              },
+              "entityId": {
+                "description": "The entity Id on which an action was performed",
+                "type": "string"
+              },
+              "entityType": {
+                "description": "The entity type on which the action was performed (client, role, secret, hook, worker_pool)",
+                "type": "string"
               }
             },
             "required": [
-              "client_id",
-              "action_type",
-              "created"
+              "clientId",
+              "actionType",
+              "created",
+              "entityId",
+              "entityType"
             ],
             "type": "object"
           },
@@ -22952,6 +22962,25 @@
           "scopes": "auth:audit-history:<entityType>",
           "stability": "stable",
           "title": "Get Entity History",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
+          "category": "Audit",
+          "description": "Get audit history of a client based on clientId.",
+          "method": "get",
+          "name": "listAuditHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/clients/<clientId>/audit",
+          "scopes": "auth:client-audit-history:<clientId>",
+          "stability": "stable",
+          "title": "List Audit History",
           "type": "function"
         },
         {

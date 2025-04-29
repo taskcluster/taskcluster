@@ -115,7 +115,8 @@ type AuthExpireClientsFn = {
  (params: {
  }): Promise<[{ expire_clients: number }]>;
 };
-type AuthGetAuditHistoryFn = {
+/** @deprecated */
+type AuthGetAuditHistoryDeprecatedFn = {
  (
    entity_id_in: string,
    entity_type_in: string,
@@ -148,6 +149,22 @@ type AuthGetClientsFn = {
   page_size_in?: number | null;
   page_offset_in?: number | null;
  }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
+};
+type AuthGetCombinedAuditHistoryFn = {
+ (
+   client_id_in: string,
+   entity_id_in: string,
+   entity_type_in: string,
+   page_size_in: number | null,
+   page_offset_in: number | null
+ ): Promise<Array<{entity_id: string, entity_type: string, client_id: string, action_type: string, created: Date}>>;
+ (params: {
+  client_id_in: string;
+  entity_id_in: string;
+  entity_type_in: string;
+  page_size_in?: number | null;
+  page_offset_in?: number | null;
+ }): Promise<Array<{entity_id: string, entity_type: string, client_id: string, action_type: string, created: Date}>>;
 };
 type AuthGetRolesFn = {
  (
@@ -6068,9 +6085,9 @@ export interface DbFunctions {
   create_client: AuthCreateClientFn;
   delete_client: AuthDeleteClientFn;
   expire_clients: AuthExpireClientsFn;
-  get_audit_history: AuthGetAuditHistoryFn;
   get_client: AuthGetClientFn;
   get_clients: AuthGetClientsFn;
+  get_combined_audit_history: AuthGetCombinedAuditHistoryFn;
   get_roles: AuthGetRolesFn;
   insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;
   modify_roles: AuthModifyRolesFn;
@@ -6290,6 +6307,7 @@ export interface DeprecatedDbFunctions {
   clients_entities_modify: AuthClientsEntitiesModifyDeprecatedFn;
   clients_entities_remove: AuthClientsEntitiesRemoveDeprecatedFn;
   clients_entities_scan: AuthClientsEntitiesScanDeprecatedFn;
+  get_audit_history: AuthGetAuditHistoryDeprecatedFn;
   roles_entities_create: AuthRolesEntitiesCreateDeprecatedFn;
   roles_entities_load: AuthRolesEntitiesLoadDeprecatedFn;
   roles_entities_modify: AuthRolesEntitiesModifyDeprecatedFn;

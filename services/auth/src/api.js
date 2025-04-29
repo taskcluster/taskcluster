@@ -68,9 +68,11 @@ const clientToJson = (client, context) => ({
  * Helper to return object of audit history as defined in the blob to one suitable for return.
  */
 const auditToJson = (audit) => ({
-  client_id: audit?.client_id,
-  action_type: audit?.action_type,
+  clientId: audit?.client_id,
+  actionType: audit?.action_type,
   created: audit?.created.toJSON(),
+  entityId: audit?.entity_id,
+  entityType: audit.entity_type,
 });
 
 /**
@@ -370,12 +372,41 @@ builder.declare({
 
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_audit_history(entityId, entityType, size, offset),
+    fetch: (size, offset) => this.db.fns.get_combined_audit_history(null, entityId, entityType, size, offset),
     maxLimit: 1000,
   });
 
   return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
 });
+
+builder.declare({
+  method: 'get',
+  route: '/clients/:clientId/audit',
+  query: {
+    ...paginateResults.query,
+  },
+  name: 'listAuditHistory',
+  category: 'Audit',
+  output: 'get-entity-history-response.yml',
+  scopes: 'auth:client-audit-history:<clientId>',
+  stability: 'stable',
+  title: 'List Audit History',
+  description: [
+    'Get audit history of a client based on clientId.',
+  ].join('\n'),
+}, async function(req, res) {
+
+  let client_id = req.params.clientId;
+
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_combined_audit_history(client_id, null, null, size, offset),
+    maxLimit: 1000,
+  });
+
+  return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
+});
+
 /** Reset access token for client */
 builder.declare({
   method: 'post',

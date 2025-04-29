@@ -7672,6 +7672,26 @@
         }
       },
       "version": 110
+    },
+    {
+      "description": "fetch audit history for a client",
+      "downgradeScript": "begin\n  DROP INDEX if exists audit_history_client_idx;\nend",
+      "methods": {
+        "get_audit_history": {
+          "deprecated": true
+        },
+        "get_combined_audit_history": {
+          "args": "client_id_in text, entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    audit_history.entity_id,\n    audit_history.entity_type,\n    audit_history.client_id,\n    audit_history.action_type,\n    audit_history.created\n  from audit_history\n  where (audit_history.client_id = client_id_in OR client_id_in IS NULL)\n    AND (\n      (audit_history.entity_id = entity_id_in AND audit_history.entity_type = entity_type_in)\n      OR (entity_id_in IS NULL OR entity_type_in IS NULL)\n    )\n  order by audit_history.created\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get Audit History by client ID OR by entity ID and entity type.\nIf client_id_in is provided, returns full audit records for that client.\nIf entity_id_in and entity_type_in are provided, returns filtered audit records for that entity.\nAt least one search parameter must be provided.\n",
+          "mode": "read",
+          "returns": "table ( entity_id text, entity_type text, client_id text, action_type text, created timestamptz )",
+          "serviceName": "auth"
+        }
+      },
+      "migrationScript": "begin\n  CREATE INDEX audit_history_client_idx ON audit_history(client_id);\nend",
+      "version": 111
     }
   ]
 }
