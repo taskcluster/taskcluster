@@ -71,13 +71,13 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
 				return
 			}
-			err := task.uploadArtifact(artifact)
-			if err != nil {
+			e := task.uploadArtifact(artifact)
+			if e != nil {
 				// we don't care about optional artifacts failing to upload
 				if artifact.Base().Optional {
 					return
 				}
-				uploadErrChan <- err
+				uploadErrChan <- e
 			}
 			// Note - the above error only covers not being able to upload an
 			// artifact, but doesn't cover case that an artifact could not be
