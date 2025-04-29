@@ -22,8 +22,6 @@ import (
 	"github.com/taskcluster/shell"
 )
 
-var MaxArtifactCopyDuration int64 = 900
-
 type (
 	DockerImageName     string
 	IndexedDockerImage  dockerworker.IndexedDockerImage
@@ -35,11 +33,18 @@ type (
 		ImageLoader() ImageLoader
 	}
 	ImageLoader interface {
-		LoadCommands() []string
-		ChainOfTrustCommands() []string
+		LoadCommand() string
+		ChainOfTrustCommand() string
 	}
 	ConversionInfo struct {
 		ContainerName string
+		CopyArtifacts []CopyArtifact
+		Image         Image
+	}
+	CopyArtifact struct {
+		Name     string
+		SrcPath  string
+		DestPath string
 	}
 	FileImageLoader struct {
 		Image Image
@@ -49,7 +54,11 @@ type (
 	}
 )
 
-func ConvertTaskDefinition(dwTaskDef json.RawMessage, config map[string]any, scopeExpander scopes.ScopeExpander) (json.RawMessage, error) {
+func ConvertTaskDefinition(
+	dwTaskDef json.RawMessage,
+	config map[string]any,
+	scopeExpander scopes.ScopeExpander,
+) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
 	var parsedTaskDef map[string]any
 	err := json.Unmarshal(dwTaskDef, &parsedTaskDef)
@@ -119,7 +128,12 @@ func ConvertTaskDefinition(dwTaskDef json.RawMessage, config map[string]any, sco
 // equivalent Generic Worker scopes. These scopes should be used together with
 // a converted Docker Worker task payload (see d2g.Convert function) to run
 // Docker Worker tasks under Generic Worker.
-func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayload, taskQueueID string, scopeExpander scopes.ScopeExpander) (gwScopes []string, err error) {
+func ConvertScopes(
+	dwScopes []string,
+	dwPayload *dockerworker.DockerWorkerPayload,
+	taskQueueID string,
+	scopeExpander scopes.ScopeExpander,
+) (gwScopes []string, err error) {
 	var expandedScopes scopes.Given
 	expandedScopes, err = validateDockerWorkerScopes(dwPayload, dwScopes, taskQueueID, scopeExpander)
 	if err != nil {
@@ -168,7 +182,10 @@ func ConvertScopes(dwScopes []string, dwPayload *dockerworker.DockerWorkerPayloa
 // a BASH script which uses Docker (by default) to contain the Docker Worker payload. Since
 // scopes fall outside of the payload in a task definition, scopes need to be
 // converted separately (see d2g.ConvertScopes function).
-func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) (gwPayload *genericworker.GenericWorkerPayload, conversionInfo ConversionInfo, err error) {
+func ConvertPayload(
+	dwPayload *dockerworker.DockerWorkerPayload,
+	config map[string]any,
+) (gwPayload *genericworker.GenericWorkerPayload, conversionInfo ConversionInfo, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
 
@@ -187,11 +204,10 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[stri
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config)
-	if err != nil {
-		return
-	}
+	containerName := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config)
 	conversionInfo.ContainerName = containerName
+	conversionInfo.CopyArtifacts = copyArtifacts(dwPayload, gwPayload.Artifacts)
+	conversionInfo.Image = dwImage
 
 	gwFileMounts, err := dwImage.FileMounts()
 	if err != nil {
@@ -214,7 +230,12 @@ func ConvertPayload(dwPayload *dockerworker.DockerWorkerPayload, config map[stri
 	return
 }
 
-func validateDockerWorkerScopes(dwPayload *dockerworker.DockerWorkerPayload, dwScopes []string, taskQueueID string, scopeExpander scopes.ScopeExpander) (scopes.Given, error) {
+func validateDockerWorkerScopes(
+	dwPayload *dockerworker.DockerWorkerPayload,
+	dwScopes []string,
+	taskQueueID string,
+	scopeExpander scopes.ScopeExpander,
+) (scopes.Given, error) {
 	expandedScopes, err := scopes.Given(dwScopes).Expand(scopeExpander)
 	if err != nil {
 		return nil, fmt.Errorf("error expanding scopes: %v", err)
@@ -275,7 +296,10 @@ func validateDockerWorkerScopes(dwPayload *dockerworker.DockerWorkerPayload, dwS
 	return expandedScopes, nil
 }
 
-func mounts(gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gwFileMounts []genericworker.FileMount) (result []json.RawMessage, err error) {
+func mounts(
+	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	gwFileMounts []genericworker.FileMount,
+) (result []json.RawMessage, err error) {
 	result = make([]json.RawMessage, 0, len(gwWritableDirectoryCaches)+len(gwFileMounts))
 	marshalAndAddToSlice := func(i any) {
 		var bytes []byte
@@ -340,86 +364,23 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 	return gwArtifacts
 }
 
-func command(dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, gwArtifacts []genericworker.Artifact, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, config map[string]any) ([][]string, string, error) {
+func runCommand(
+	dwPayload *dockerworker.DockerWorkerPayload,
+	dwImage Image,
+	gwArtifacts []genericworker.Artifact,
+	wdcs []genericworker.WritableDirectoryCache,
+	config map[string]any,
+) ([][]string, string) {
 	containerName := "taskcontainer"
 	if !testing.Testing() {
 		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
 	}
 
-	commands := []string{}
-
-	imageLoader := dwImage.ImageLoader()
-
-	commands = append(
-		commands,
-		imageLoader.LoadCommands()...,
-	)
-
-	if dwPayload.Features.ChainOfTrust {
-		commands = append(
-			commands,
-			imageLoader.ChainOfTrustCommands()...,
-		)
-	}
-
-	copyArtifactCommands, captureExitCode := copyArtifacts(containerName, dwPayload, gwArtifacts)
-
-	runString, err := runCommand(containerName, dwPayload, dwImage, gwWritableDirectoryCaches, gwArtifacts, captureExitCode, config)
-	if err != nil {
-		return nil, containerName, fmt.Errorf("could not form docker run command: %w", err)
-	}
-
-	commands = append(
-		commands,
-		runString,
-	)
-
-	if captureExitCode {
-		commands = append(
-			commands,
-			"exit_code=$?",
-		)
-	}
-
-	commands = append(
-		commands,
-		copyArtifactCommands...,
-	)
-
-	if dwPayload.Features.DockerSave {
-		commands = append(
-			commands,
-			"docker commit "+containerName+" "+containerName,
-			"docker save "+containerName+" | gzip > image.tar.gz",
-		)
-	}
-
-	if captureExitCode {
-		commands = append(
-			commands,
-			"docker rm -v "+containerName,
-			`exit "${exit_code}"`,
-		)
-	}
-
-	return [][]string{
-		{
-			"bash",
-			"-cx",
-			strings.Join(commands, "\n"),
-		},
-	}, containerName, nil
-}
-
-func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayload, dwImage Image, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, captureExitCode bool, config map[string]any) (string, error) {
 	command := strings.Builder{}
-	rm := " --rm"
-	if captureExitCode {
-		rm = ""
-	}
+
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString(fmt.Sprintf("timeout -s KILL %v docker run%s -t --name %v", dwPayload.MaxRunTime, rm, containerName))
+	command.WriteString(fmt.Sprintf("docker run -t --name %v", containerName))
 
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
@@ -443,12 +404,18 @@ func runCommand(containerName string, dwPayload *dockerworker.DockerWorkerPayloa
 	// note, dwImage.String() is already shell escaped
 	command.WriteString(" " + dwImage.String())
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
-	return command.String(), nil
+	return [][]string{
+		{
+			"/usr/bin/env",
+			"bash",
+			"-cx",
+			command.String(),
+		},
+	}, containerName
 }
 
-func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) ([]string, bool) {
-	commands := []string{}
-	captureExitCode := dwPayload.Features.DockerSave
+func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []CopyArtifact {
+	artifacts := []CopyArtifact{}
 	for i := range gwArtifacts {
 		// An image artifact will be in the generic worker payload when
 		// dockerSave is enabled. That artifact will not be found in either the
@@ -462,10 +429,15 @@ func copyArtifacts(containerName string, dwPayload *dockerworker.DockerWorkerPay
 		if dwPayload.Artifacts[gwArtifacts[i].Name].Type == "volume" {
 			continue
 		}
-		captureExitCode = true
-		commands = append(commands, fmt.Sprintf("docker cp %s:%s %s", containerName, shell.Escape(dwPayload.Artifacts[gwArtifacts[i].Name].Path), shell.Escape(gwArtifacts[i].Path)))
+		artifacts = append(artifacts,
+			CopyArtifact{
+				Name:     gwArtifacts[i].Name,
+				SrcPath:  dwPayload.Artifacts[gwArtifacts[i].Name].Path,
+				DestPath: gwArtifacts[i].Path,
+			},
+		)
 	}
-	return commands, captureExitCode
+	return artifacts
 }
 
 func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
@@ -506,22 +478,28 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 	}
 }
 
-func setCommand(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, dwImage Image, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, config map[string]any) (containerName string, err error) {
-	gwPayload.Command, containerName, err = command(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config)
+func setCommand(
+	dwPayload *dockerworker.DockerWorkerPayload,
+	gwPayload *genericworker.GenericWorkerPayload,
+	dwImage Image,
+	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	config map[string]any,
+) (containerName string) {
+	gwPayload.Command, containerName = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config)
 	return
 }
 
-func setMounts(gwPayload *genericworker.GenericWorkerPayload, gwWritableDirectoryCaches []genericworker.WritableDirectoryCache, gwFileMounts []genericworker.FileMount) (err error) {
+func setMounts(
+	gwPayload *genericworker.GenericWorkerPayload,
+	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	gwFileMounts []genericworker.FileMount,
+) (err error) {
 	gwPayload.Mounts, err = mounts(gwWritableDirectoryCaches, gwFileMounts)
 	return
 }
 
 func setMaxRunTime(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
 	gwPayload.MaxRunTime = dwPayload.MaxRunTime
-	if len(gwPayload.Artifacts) > 0 {
-		// Add 15 minutes as buffer for task to be able to upload artifacts
-		gwPayload.MaxRunTime += MaxArtifactCopyDuration
-	}
 }
 
 func setOnExitStatus(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
@@ -582,7 +560,12 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(dwPayload *dockerworker.DockerWorkerPayload, wdcs []genericworker.WritableDirectoryCache, gwArtifacts []genericworker.Artifact, config map[string]any) string {
+func createVolumeMountsString(
+	dwPayload *dockerworker.DockerWorkerPayload,
+	wdcs []genericworker.WritableDirectoryCache,
+	gwArtifacts []genericworker.Artifact,
+	config map[string]any,
+) string {
 	volumeMounts := strings.Builder{}
 	for _, wdc := range wdcs {
 		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
@@ -679,26 +662,24 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 	return envStrBuilder.String()
 }
 
-func (fil *FileImageLoader) LoadCommands() []string {
-	return []string{
-		`IMAGE_ID=$(docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p')`,
-	}
+func (fil *FileImageLoader) LoadCommand() string {
+	return "docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p'"
 }
 
-func (fil *FileImageLoader) ChainOfTrustCommands() []string {
-	return []string{
-		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' ` + fil.Image.String() + `)"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json`,
-	}
+func (fil *FileImageLoader) ChainOfTrustCommand() string {
+	return fmt.Sprintf(
+		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' %s)"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json`,
+		fil.Image.String(),
+	)
 }
 
-func (ril *RegistryImageLoader) LoadCommands() []string {
-	return []string{
-		"docker pull " + ril.Image.String(),
-	}
+func (ril *RegistryImageLoader) LoadCommand() string {
+	return "docker pull -q " + ril.Image.String()
 }
 
-func (ril *RegistryImageLoader) ChainOfTrustCommands() []string {
-	return []string{
-		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' ` + ril.Image.String() + `)"'"}}' > chain-of-trust-additional-data.json`,
-	}
+func (ril *RegistryImageLoader) ChainOfTrustCommand() string {
+	return fmt.Sprintf(
+		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' %s)"'"}}' > chain-of-trust-additional-data.json`,
+		ril.Image.String(),
+	)
 }

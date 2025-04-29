@@ -9,6 +9,7 @@ import (
 	"github.com/taskcluster/taskcluster/v83/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v83/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v83/tools/d2g"
+	"github.com/taskcluster/taskcluster/v83/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/process"
 )
@@ -46,8 +47,9 @@ type (
 		// the feature name that caused the upload to be skipped, which may
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
-		featureArtifacts map[string]string
-		D2GInfo          *d2g.ConversionInfo `json:"-"`
+		featureArtifacts    map[string]string
+		D2GInfo             *d2g.ConversionInfo               `json:"-"`
+		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
 	}
 
 	TaskStatus       string

@@ -46,7 +46,7 @@ func (idi *IndexedDockerImage) ImageLoader() ImageLoader {
 }
 
 func (idi *IndexedDockerImage) String() string {
-	return `"${IMAGE_ID}"`
+	return `"${D2G_IMAGE_ID}"`
 }
 
 func fileExtension(path string) string {
