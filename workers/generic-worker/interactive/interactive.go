@@ -1,5 +1,3 @@
-//go:build darwin || linux || freebsd
-
 // Package interactive provides a way to run an interactive shell in a task.
 package interactive
 
@@ -17,7 +15,7 @@ import (
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
-type CreateInteractiveProcess func() (*exec.Cmd, error)
+type CreateInteractiveProcess func() (InteractiveCmdType, error)
 type CreateInteractiveIsReadyProcess func() (*exec.Cmd, error)
 type InteractiveCommands struct {
 	IsReadyCmd     CreateInteractiveIsReadyProcess

@@ -5,13 +5,10 @@ package gwconfig
 import "testing"
 
 type PublicPlatformConfig struct {
-	EnableInteractive bool `json:"enableInteractive"`
 }
 
 func DefaultPublicPlatformConfig() *PublicPlatformConfig {
-	return &PublicPlatformConfig{
-		EnableInteractive: true,
-	}
+	return &PublicPlatformConfig{}
 }
 
 func (c *PublicPlatformConfig) D2GEnabled() bool {

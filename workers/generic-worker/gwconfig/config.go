@@ -39,6 +39,7 @@ type (
 		DownloadsDir                   string         `json:"downloadsDir"`
 		Ed25519SigningKeyLocation      string         `json:"ed25519SigningKeyLocation"`
 		EnableChainOfTrust             bool           `json:"enableChainOfTrust"`
+		EnableInteractive              bool           `json:"enableInteractive"`
 		EnableLiveLog                  bool           `json:"enableLiveLog"`
 		EnableMounts                   bool           `json:"enableMounts"`
 		EnableOSGroups                 bool           `json:"enableOSGroups"`

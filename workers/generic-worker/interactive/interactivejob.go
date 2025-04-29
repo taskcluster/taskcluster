@@ -1,5 +1,3 @@
-//go:build darwin || linux || freebsd
-
 package interactive
 
 import (
@@ -8,12 +6,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"os/exec"
 	"sync"
-	"syscall"
 
-	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
 )
 
@@ -23,8 +17,7 @@ const (
 )
 
 type InteractiveJob struct {
-	pty    *os.File
-	cmd    *exec.Cmd
+	inner  InteractiveInnerType
 	errors chan error
 	done   chan struct{}
 	wsLock sync.Mutex
@@ -50,25 +43,7 @@ func CreateInteractiveJob(createCmd CreateInteractiveProcess, conn *websocket.Co
 		itj.reportError(fmt.Sprintf("Error while getting command %v", err))
 		return
 	}
-	if cmd.SysProcAttr == nil {
-		cmd.SysProcAttr = &syscall.SysProcAttr{}
-	}
-	cmd.SysProcAttr.Setpgid = false
-	cmd.SysProcAttr.Setctty = true
-	cmd.SysProcAttr.Setsid = true
-	itj.cmd = cmd
-
-	pty, err := pty.StartWithAttrs(cmd, nil, cmd.SysProcAttr)
-	if err != nil {
-		itj.reportError(fmt.Sprintf("Error while spawning command %v", err))
-		return
-	}
-	itj.pty = pty
-
-	go func() {
-		itj.errors <- cmd.Wait()
-		close(itj.done)
-	}()
+	itj.Setup(cmd)
 
 	go itj.copyCommandOutputStream()
 	go itj.handleWebsocketMessages()
@@ -81,7 +56,7 @@ func (itj *InteractiveJob) Terminate() (err error) {
 	case <-itj.done:
 		return nil
 	default:
-		return itj.cmd.Process.Kill()
+		return itj.terminate()
 	}
 }
 
@@ -94,7 +69,7 @@ func (itj *InteractiveJob) copyCommandOutputStream() {
 		case <-itj.done:
 			return
 		default:
-			n, err := itj.pty.Read(buf)
+			n, err := itj.readPty(buf)
 			if err != nil {
 				if err == io.EOF {
 					continue
@@ -143,14 +118,13 @@ func (itj *InteractiveJob) handleWebsocketMessages() {
 
 			switch msg[0] {
 			case MsgStdin:
-				if _, err := itj.pty.Write(msg[1:]); err != nil {
+				if _, err := itj.writePty(msg[1:]); err != nil {
 					itj.errors <- err
 				}
 			case MsgResize:
 				width := binary.LittleEndian.Uint16(msg[1:3])
 				height := binary.LittleEndian.Uint16(msg[3:])
-				sz := pty.Winsize{Rows: width, Cols: height}
-				err := pty.Setsize(itj.pty, &sz)
+				err = itj.resizePty(width, height)
 				if err != nil {
 					itj.errors <- err
 				}

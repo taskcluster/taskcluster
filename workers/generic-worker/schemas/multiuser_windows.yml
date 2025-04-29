@@ -299,6 +299,21 @@ properties:
 
           Since: generic-worker 83.4.0
         default: true
+      interactive:
+        type: boolean
+        title: Interactive shell
+        description: |-
+          This allows you to interactively run commands from within the worker
+          as the task user. This may be useful for debugging purposes.
+          Can be used for SSH-like access to the running worker.
+          Note that this feature works differently from the `interactive` feature
+          in docker worker, which `docker exec`s into the running container.
+          Since tasks on generic worker are not guaranteed to be running in a
+          container, a powershell instance is started on the task user's account.
+          A user can then `docker exec` into the a running container, if there
+          is one.
+
+          Since: generic-worker v83.6.0
   mounts:
     type: array
     description: |-

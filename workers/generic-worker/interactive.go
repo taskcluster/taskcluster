@@ -1,5 +1,3 @@
-//go:build darwin || linux || freebsd
-
 package main
 
 import (
@@ -63,7 +61,7 @@ func (it *InteractiveTask) ReservedArtifacts() []string {
 
 func (it *InteractiveTask) Start() *CommandExecutionError {
 	ctx, cancel := context.WithCancel(context.Background())
-	interactiveCmd := func() (*exec.Cmd, error) {
+	interactiveCmd := func() (interactive.InteractiveCmdType, error) {
 		return it.task.generateInteractiveCommand(it.task.D2GInfo, ctx)
 	}
 

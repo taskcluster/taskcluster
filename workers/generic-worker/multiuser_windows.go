@@ -4,9 +4,11 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	stdlibruntime "runtime"
 	"strconv"
@@ -14,6 +16,7 @@ import (
 	"syscall"
 
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/interactive"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v83/workers/generic-worker/runtime"
 	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/win32"
@@ -570,4 +573,16 @@ func convertNilToEmptyString(val any) string {
 		return ""
 	}
 	return val.(string)
+}
+
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, ctx context.Context) (*interactive.ConPty, error) {
+	envVars := []string{}
+	for k, v := range task.Payload.Env {
+		envVars = append(envVars, k+"="+win32.CMDExeEscape(v))
+	}
+	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, taskContext.TaskDir, envVars, windows.Token(task.pd.CommandAccessToken))
+}
+
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo interface{}, ctx context.Context) (*exec.Cmd, error) {
+	return nil, nil
 }
