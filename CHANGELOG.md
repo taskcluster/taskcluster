@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.7.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.15.0 and yarn v4.9.1
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7670](https://github.com/taskcluster/taskcluster/issues/7670)
+Removed ECC Azure certificate and include extra information in errors.
+
 ## v83.6.0
 
 ### DEPLOYERS
