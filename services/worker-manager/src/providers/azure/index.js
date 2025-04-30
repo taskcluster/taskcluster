@@ -264,9 +264,14 @@ export class AzureProvider extends Provider {
     rootCertificates.forEach(pem => this.addRootCertPem(pem));
 
     // load known microsoft intermediate certs from disk
-    const intermediateFiles = loadCertificates();
-    let intermediateCerts = intermediateFiles.map(forge.pki.certificateFromPem);
-    intermediateCerts.forEach(cert => this.addIntermediateCert(cert));
+    loadCertificates().forEach(cert => {
+      if (cert.root) {
+        this.addRootCertPem(cert.certificate);
+      } else {
+        const certFromPem = forge.pki.certificateFromPem(cert.certificate);
+        this.addIntermediateCert(certFromPem);
+      }
+    });
 
     let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
     this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
@@ -481,6 +486,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -502,6 +508,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -518,6 +525,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -533,6 +541,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -556,6 +565,7 @@ export class AzureProvider extends Provider {
               workerPoolId: workerPool.workerPoolId,
               providerId: this.providerId,
               workerId: worker.workerId,
+              document,
             });
             // Continue, there may be a further CA Issuer that works
           }
@@ -572,6 +582,7 @@ export class AzureProvider extends Provider {
                 workerPoolId: workerPool.workerPoolId,
                 providerId: this.providerId,
                 workerId: worker.workerId,
+                document,
               });
               // Continue, there may be a later CA Issuer that works
             }
@@ -593,6 +604,7 @@ export class AzureProvider extends Provider {
             workerPoolId: workerPool.workerPoolId,
             providerId: this.providerId,
             workerId: worker.workerId,
+            document,
           });
           throw error();
         }
@@ -610,6 +622,7 @@ export class AzureProvider extends Provider {
           workerPoolId: workerPool.workerPoolId,
           providerId: this.providerId,
           workerId: worker.workerId,
+          document,
         });
         throw error();
       }
@@ -625,6 +638,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -639,6 +653,7 @@ export class AzureProvider extends Provider {
         workerPoolId: workerPool.workerPoolId,
         providerId: this.providerId,
         workerId: worker.workerId,
+        document,
       });
       throw error();
     }
@@ -661,6 +676,7 @@ export class AzureProvider extends Provider {
         workerId: worker.workerId,
         vmId: payload.vmId,
         expectedVmId: workerVmId,
+        document,
       });
       throw error();
     }

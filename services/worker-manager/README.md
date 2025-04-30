@@ -32,6 +32,20 @@ curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?ap
 
 Note: new signature might be signed by one of the two intermediate certificates (`azure/azure-ca-certs/microsoft_rsa_tls_ca_[12].pem`). This is important for `test/provider_azure_test.js` as it relies on the intermediate cert to do proper tests.
 
+Another way would be to create a task in one of the Azure worker pools with the following payload and parse logs to get the document:
+
+```yaml
+  command:
+  - >-
+    powershell -Command "(Invoke-WebRequest -UseBasicParsing -Headers
+    @{Metadata='true'} -Uri
+    'http://169.254.169.254/metadata/attested/document?api-version=2021-05-01').Content"
+  - >-
+    powershell -Command "(Invoke-WebRequest -UseBasicParsing -Headers
+    @{Metadata='true'} -Uri
+    'http://169.254.169.254/metadata/instance?api-version=2021-05-01').Content"
+```
+
 <details>
 <summary>Steps to find out which intermediate certificate is used</summary>
 To find out which intermediate cert is used:
