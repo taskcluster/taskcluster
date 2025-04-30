@@ -1,7 +1,8 @@
 [
   {
     "filename": "microsoft_rsa_root_certificate_authority_2017.pem",
-    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt"
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20RSA%20Root%20Certificate%20Authority%202017.crt",
+    "root": true
   },
   {
     "filename": "microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem",

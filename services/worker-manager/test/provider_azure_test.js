@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt';
   // this id should match the id of the instance where azure_signature_good cert was fetched from
   const testVmId = 'f9cc27a0-2d12-40cf-adc9-7a676efec010';
-  const allCertificates = loadCertificates();
+  const allCertificates = loadCertificates(true);
 
   const getIntermediateCert = () => {
     const pem = fs.readFileSync(intermediateCertPath, 'utf-8');
@@ -102,14 +102,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const removeAllCertsFromStore = () => {
     allCertificates.forEach((cert) => {
-      const intermediate = forge.pki.certificateFromPem(cert);
+      const intermediate = forge.pki.certificateFromPem(cert.certificate);
       provider.caStore.removeCertificate(intermediate);
     });
   };
 
   const restoreAllCerts = () => {
     allCertificates.forEach((cert) => {
-      const intermediate = forge.pki.certificateFromPem(cert);
+      const intermediate = forge.pki.certificateFromPem(cert.certificate);
       provider.caStore.addCertificate(intermediate);
     });
   };
@@ -1304,6 +1304,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       },
     ]) {
       suite(name, function() {
+        test('2025-04-30 Azure signature root cert test', async function() {
+          const vmId = 'c2a4383b-6266-4c94-915d-36e7ab8726fe';
+          const workerPool = await makeWorkerPool();
+          const worker = Worker.fromApi({
+            ...defaultWorker,
+            providerData: { ...baseProviderData, vm: { vmId, name: 'some-vm' } },
+          });
+          await worker.create(helper.db);
+          const document = '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';
+          const workerIdentityProof = { document };
+          await provider.registerWorker({ workerPool, worker, workerIdentityProof });
+          helper.assertPulseMessage('worker-running');
+        });
         test('document is not a valid PKCS#7 message', async function() {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
@@ -1316,6 +1329,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
           /Signature validation error/);
           assert(monitor.manager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
+          assert.equal(monitor.manager.messages[0].Fields.document, document);
           helper.assertNoPulseMessage('worker-running');
         });
 
