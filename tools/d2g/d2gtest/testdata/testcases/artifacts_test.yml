@@ -42,16 +42,12 @@ testSuite:
         path: artifact1.txt
         type: file
       command:
-      - - bash
+      - - /usr/bin/env
+        - bash
         - -cx
-        - |-
-          docker pull ubuntu
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
-          exit_code=$?
-          docker cp taskcontainer:'/etc/passwd'\'' artifact0; whoami; echo foo > /root/bar; cp '\''foo' artifact0
-          docker cp taskcontainer:'/home/worker/artifacts/fred.txt' 'artifact1.txt'
-          docker rm -v taskcontainer
-          exit "${exit_code}"
+        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID
+          -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -59,7 +55,7 @@ testSuite:
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
-      maxRunTime: 4500
+      maxRunTime: 3600
       onExitStatus:
         retry:
         - 125
@@ -99,11 +95,12 @@ testSuite:
         path: volume0
         type: directory
       command:
-      - - bash
+      - - /usr/bin/env
+        - bash
         - -cx
-        - |-
-          docker pull ubuntu
-          timeout -s KILL 3600 docker run --rm -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/volume0:/home/worker/artifacts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -v "$(pwd)/volume0:/home/worker/artifacts"
+          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -111,7 +108,7 @@ testSuite:
       logs:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
-      maxRunTime: 4500
+      maxRunTime: 3600
       onExitStatus:
         retry:
         - 125

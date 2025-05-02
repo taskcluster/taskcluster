@@ -3,6 +3,7 @@
 package process
 
 import (
+	"os"
 	"os/exec"
 	"syscall"
 
@@ -38,6 +39,16 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string) (*Com
 }
 
 func NewCommand(commandLine []string, workingDirectory string, env []string) (*Command, error) {
+	f := func() *exec.Cmd {
+		cmd := exec.Command(commandLine[0], commandLine[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd
+	}
+	return newCommand(f, workingDirectory, env)
+}
+
+func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, platformData *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.Command(commandLine[0], commandLine[1:]...)
 	}

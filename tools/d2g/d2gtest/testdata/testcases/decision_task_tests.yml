@@ -81,20 +81,12 @@ testSuite:
         path: image.tar.gz
         type: file
       command:
-      - - bash
+      - - /usr/bin/env
+        - bash
         - -cx
         - |-
-          docker pull 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06'
-          echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06')"'"}}' > chain-of-trust-additional-data.json
-          timeout -s KILL 3600 docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged -v "$(pwd)/cache0:/builds/worker/checkouts" --add-host=taskcluster:host-gateway -e GECKO_BASE_REPOSITORY -e GECKO_BASE_REV -e GECKO_HEAD_REF -e GECKO_HEAD_REPOSITORY -e GECKO_HEAD_REV -e HG_STORE_PATH -e MOZ_AUTOMATION -e PYTHONDONTWRITEBYTECODE -e RUN_ID -e TASKCLUSTER_CACHES -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06' /builds/worker/bin/run-task --gecko-checkout=/builds/worker/checkouts/gecko --gecko-sparse-profile=build/sparse-profiles/taskgraph -- bash -cx 'cd /builds/worker/checkouts/gecko && ln -s /builds/worker/artifacts artifacts && ./mach --log-no-times taskgraph decision --pushlog-id='\''40334'\'' --pushdate='\''1666263365'\'' --project='\''mozilla-central'\'' --owner='\''ctuns@mozilla.com'\'' --level='\''3'\'' --tasks-for='\''hg-push'\'' --repository-type=hg --base-repository="$GECKO_BASE_REPOSITORY" --base-rev="$GECKO_BASE_REV" --head-repository="$GECKO_HEAD_REPOSITORY" --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
+          docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged -v "$(pwd)/cache0:/builds/worker/checkouts" --add-host=taskcluster:host-gateway -e GECKO_BASE_REPOSITORY -e GECKO_BASE_REV -e GECKO_HEAD_REF -e GECKO_HEAD_REPOSITORY -e GECKO_HEAD_REV -e HG_STORE_PATH -e MOZ_AUTOMATION -e PYTHONDONTWRITEBYTECODE -e RUN_ID -e TASKCLUSTER_CACHES -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06' /builds/worker/bin/run-task --gecko-checkout=/builds/worker/checkouts/gecko --gecko-sparse-profile=build/sparse-profiles/taskgraph -- bash -cx 'cd /builds/worker/checkouts/gecko && ln -s /builds/worker/artifacts artifacts && ./mach --log-no-times taskgraph decision --pushlog-id='\''40334'\'' --pushdate='\''1666263365'\'' --project='\''mozilla-central'\'' --owner='\''ctuns@mozilla.com'\'' --level='\''3'\'' --tasks-for='\''hg-push'\'' --repository-type=hg --base-repository="$GECKO_BASE_REPOSITORY" --base-rev="$GECKO_BASE_REV" --head-repository="$GECKO_HEAD_REPOSITORY" --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
           '
-          exit_code=$?
-          docker cp taskcontainer:/builds/worker/artifacts artifact0
-          docker cp taskcontainer:/builds/worker/checkouts/gecko/docker-contexts artifact1
-          docker commit taskcontainer taskcontainer
-          docker save taskcontainer | gzip > image.tar.gz
-          docker rm -v taskcontainer
-          exit "${exit_code}"
       env:
         GECKO_BASE_REPOSITORY: https://hg.mozilla.org/mozilla-unified
         GECKO_BASE_REV: 330c69218a931b3504d44c867539ed6083521be5
@@ -115,7 +107,7 @@ testSuite:
       logs:
         backing: apple/banana_backing.log
         live: apple/banana.log
-      maxRunTime: 4500
+      maxRunTime: 3600
       mounts:
       - cacheName: gecko-level-3-checkouts-sparse-v3
         directory: cache0

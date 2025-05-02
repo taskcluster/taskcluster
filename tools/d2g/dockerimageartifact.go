@@ -39,7 +39,7 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 }
 
 func (dia *DockerImageArtifact) String() string {
-	return `"${IMAGE_ID}"`
+	return `"${D2G_IMAGE_ID}"`
 }
 
 func (dia *DockerImageArtifact) ImageLoader() ImageLoader {

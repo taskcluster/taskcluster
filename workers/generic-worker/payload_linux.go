@@ -16,9 +16,9 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
 
 	// Convert the validated JSON input
-	dwPayload := new(dockerworker.DockerWorkerPayload)
-	defaults.SetDefaults(dwPayload)
-	err := json.Unmarshal(jsonPayload, &dwPayload)
+	task.DockerWorkerPayload = new(dockerworker.DockerWorkerPayload)
+	defaults.SetDefaults(task.DockerWorkerPayload)
+	err := json.Unmarshal(jsonPayload, &task.DockerWorkerPayload)
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
@@ -34,13 +34,13 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	// Validate that the required docker worker scopes
 	// are present for the given docker worker payload
 	// and then convert dwScopes to gwScopes
-	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, dwPayload, taskQueueID, serviceFactory.Auth(config.Credentials(), config.RootURL))
+	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, task.DockerWorkerPayload, taskQueueID, serviceFactory.Auth(config.Credentials(), config.RootURL))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 
-	// Convert dwPayload to gwPayload
-	gwPayload, conversionInfo, err := d2g.ConvertPayload(dwPayload, config.D2GConfig)
+	// Convert task.DockerWorkerPayload to gwPayload
+	gwPayload, conversionInfo, err := d2g.ConvertPayload(task.DockerWorkerPayload, config.D2GConfig)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}
