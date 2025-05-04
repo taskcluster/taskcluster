@@ -1,8 +1,10 @@
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
+import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
+import Bottleneck from "bottleneck";
 
-const PluggedOctokit = Octokit.plugin(retry);
+const PluggedOctokit = Octokit.plugin(retry, throttling);
 
 const tokenCache = new Map();
 /**
@@ -52,6 +54,24 @@ export default async ({ cfg, monitor }) => {
       info: message => monitor.info(message),
       warn: message => monitor.warning(message),
       error: message => monitor.err(message),
+    },
+    throttle: {
+      write: new Bottleneck.Group({ minTime: 50 }),
+      onRateLimit: (retryAfter, options, octokit, retryCount) => {
+        octokit.log.warn(
+          `Request quota exhausted for request ${options.method} ${options.url}`,
+        );
+
+        if (retryCount < 3) {
+          octokit.log.info(`Retrying after ${retryAfter} seconds!`);
+          return true;
+        }
+      },
+      onSecondaryRateLimit: (retryAfter, options, octokit) => {
+        octokit.log.warn(
+          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+        );
+      },
     },
     retry: {
       // 404 and 401 are both retried because they can occur spuriously, likely due to MySQL db replication
