@@ -18,16 +18,26 @@ See [docs/providers.md](docs/providers.md) for details on implementing providers
 
 ## Testing
 
-Azure tests rely on valid `test/fixtures/azure_signature_good` file that can be obtained by running a VM inside Azure cloud to fetch [attested metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux#attested-data):
+Azure tests rely on valid `test/fixtures/azure_signature_good.json` file that can be obtained by running a VM inside Azure cloud to fetch [attested metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux#attested-data). This JSON file contains both the document (signature) and vmId in a single place, eliminating the need to maintain these values separately.
 
 ```sh
 # sudo apt update && sudo apt install jq
 
-# obtain new signature for `azure_signature_good`
+# obtain new signature document for `azure_signature_good.json`
 curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/attested/document?api-version=2021-05-01" | jq -r .signature
 
-# obtain vmId for tests: update `testVmId` in `provider_azure_test.js`
+# obtain vmId to include in the JSON file
 curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-05-01" | jq -r .compute.vmId
+
+# Create or update azure_signature_good.json with both values
+# The file should have this format:
+# [
+#   {
+#     "document": "<signature-string>",
+#     "vmId": "<vm-id>",
+#     "notes": "expiration date and other info"
+#   }
+# ]
 ```
 
 Note: new signature might be signed by one of the two intermediate certificates (`azure/azure-ca-certs/microsoft_rsa_tls_ca_[12].pem`). This is important for `test/provider_azure_test.js` as it relies on the intermediate cert to do proper tests.
@@ -51,8 +61,11 @@ Another way would be to create a task in one of the Azure worker pools with the 
 To find out which intermediate cert is used:
 
 ```sh
+# Extract the document from the JSON file
+jq -r '.[0].document' azure_signature_good.json > azure_signature_encoded
+
 # Decode the signature
-base64 -d -i azure_signature_good > decodedsignature
+base64 -d -i azure_signature_encoded > decodedsignature
 # Get PKCS7 format
 openssl pkcs7 -in decodedsignature -inform DER -out sign.pk7
 # Get Public key out of pkc7
