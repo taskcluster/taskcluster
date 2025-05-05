@@ -5,7 +5,7 @@ import assert from 'assert';
 import helper from './helper.js';
 import { FakeAzure } from './fakes/index.js';
 import { AzureProvider } from '../src/providers/azure/index.js';
-import { dnToString, getAuthorityAccessInfo, getCertFingerprint  } from '../src/providers/azure/utils.js';
+import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
 import testing from 'taskcluster-lib-testing';
 import forge from 'node-forge';
 import fs from 'fs';
@@ -143,6 +143,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         ]);
     });
 
+    test('cloneCaStore handles invalid inputs', async function() {
+      assert.throws(() => cloneCaStore(null), /Invalid input/);
+      assert.throws(() => cloneCaStore(undefined), /Invalid input/);
+      assert.throws(() => cloneCaStore({}), /Invalid input/);
+      assert.throws(() => cloneCaStore({ certs: 'not an object' }), /Invalid input/);
+    });
+
+    test('cloneCaStore creates independent store', async function() {
+      const originalStore = forge.pki.createCaStore();
+      originalStore.addCertificate(testCert);
+
+      const newCert = { ...testCert };
+      newCert.subject.attributes[0].value = 'some modified to get new hash';
+      originalStore.addCertificate(newCert);
+      const clonedStore = cloneCaStore(originalStore);
+
+      assert.notEqual(originalStore, clonedStore);
+      assert.deepEqual(Object.keys(originalStore.certs), Object.keys(clonedStore.certs));
+
+      clonedStore.removeCertificate(newCert);
+      assert.ok(originalStore.hasCertificate(newCert));
+      assert.ok(!clonedStore.hasCertificate(newCert));
+    });
   });
 
   setup(async function() {
@@ -1305,6 +1328,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       },
     ]) {
       suite(name, function () {
+        test('Test same certificate multiple times', async function () {
+          // https://github.com/taskcluster/taskcluster/issues/7685
+          // verification can fail if same cert is present twice in CA Store but with different parents
+          // if we check same cert few times, it would start failing
+          const workerPool = await makeWorkerPool();
+          const [{ vmId, document }] = azureSignatures;
+          for (let i = 0; i < 5; i++) {
+            const worker = Worker.fromApi({
+              ...defaultWorker,
+              workerId: vmId,
+              providerData: { ...baseProviderData, vm: { vmId, name: 'some-vm' } },
+            });
+            await worker.create(helper.db);
+            const workerIdentityProof = { document };
+            await provider.registerWorker({ workerPool, worker, workerIdentityProof });
+            helper.assertPulseMessage('worker-running');
+            await helper.db.fns.delete_worker(worker.workerPoolId, worker.workerGroup, worker.workerId);
+          }
+        });
         test('document is not a valid PKCS#7 message', async function() {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({

@@ -126,3 +126,31 @@ export function getAuthorityAccessInfo(cert) {
   });
   return accessDescriptions;
 }
+
+/**
+ * Creates a clone of a node-forge CA certificate store.
+ * The clone will have its own internal certificate map, preventing
+ * modifications (like array shifts during verification) in the clone
+ * from affecting the original store.
+ * Note: The certificate objects themselves are shared by reference,
+ * assuming they are treated as immutable by the relevant operations.
+ *
+ * @param {object} originalCaStore - The node-forge CA store to clone.
+ * @returns {object} A new, independent CA store object.
+ */
+export function cloneCaStore(originalCaStore) {
+  if (!originalCaStore || typeof originalCaStore.certs !== 'object') {
+    throw new Error("Invalid input: Not a CA store object.");
+  }
+
+  const newCaStore = forge.pki.createCaStore();
+
+  for (const value of Object.values(originalCaStore.certs)) {
+    const certs = Array.isArray(value) ? value : [value];
+    for (const cert of certs) {
+      newCaStore.addCertificate(cert);
+    }
+  }
+
+  return newCaStore;
+}

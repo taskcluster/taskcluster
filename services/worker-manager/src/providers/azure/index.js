@@ -14,7 +14,7 @@ import msRestAzure from '@azure/ms-rest-azure-js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
-import { nicerId, dnToString, workerConfigWithSecrets, getCertFingerprint, getAuthorityAccessInfo } from './utils.js';
+import { nicerId, dnToString, workerConfigWithSecrets, getCertFingerprint, getAuthorityAccessInfo, cloneCaStore } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
 
@@ -506,7 +506,15 @@ export class AzureProvider extends Provider {
 
     // verify that the embedded certificates have proper chain of trust
     try {
-      forge.pki.verifyCertificateChain(this.caStore, [crt]);
+      // Verification can mutate store certificates when Azure uses
+      // multiple certificates with the same hash but different issuer chains
+      // (direct-signed vs cross-signed), potentially causing future request failures
+      // https://github.com/digitalbazaar/forge/issues/1003
+      // https://github.com/taskcluster/taskcluster/issues/7685
+      forge.pki.verifyCertificateChain(
+        cloneCaStore(this.caStore),
+        [crt],
+      );
     } catch (err) {
       this.monitor.log.registrationErrorWarning({
         message: 'Error verifying certificate chain',
