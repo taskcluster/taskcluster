@@ -1,3 +1,9 @@
+/* eslint-disable no-continue */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-console */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable max-len */
 // @ts-check
 
 /**
@@ -14,6 +20,51 @@
 
 import { getTaskGroupTimeRanges } from './taskcluster';
 import { log } from './utils';
+
+function getCategories() {
+  return [
+    {
+      name: 'Other',
+      color: 'grey',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'Idle',
+      color: 'transparent',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'Layout',
+      color: 'purple',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'JavaScript',
+      color: 'yellow',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'GC / CC',
+      color: 'orange',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'Network',
+      color: 'lightblue',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'Graphics',
+      color: 'green',
+      subcategories: ['Other'],
+    },
+    {
+      name: 'DOM',
+      color: 'blue',
+      subcategories: ['Other'],
+    },
+  ];
+}
 
 /**
  * Returns an empty thread for the profiler.
@@ -284,51 +335,6 @@ export function getEmptyProfile() {
     threads: [],
     counters: [],
   };
-}
-
-function getCategories() {
-  return [
-    {
-      name: 'Other',
-      color: 'grey',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'Idle',
-      color: 'transparent',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'Layout',
-      color: 'purple',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'JavaScript',
-      color: 'yellow',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'GC / CC',
-      color: 'orange',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'Network',
-      color: 'lightblue',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'Graphics',
-      color: 'green',
-      subcategories: ['Other'],
-    },
-    {
-      name: 'DOM',
-      color: 'blue',
-      subcategories: ['Other'],
-    },
-  ];
 }
 
 /**

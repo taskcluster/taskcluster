@@ -11,9 +11,9 @@
     // Allow esnext syntax. Otherwise the default is ES5 only.
     "target": "esnext",
     "lib": ["esnext", "dom"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "jsx": "react"
   },
-  "include": ["./ui/src/components/Profiler/**/*.js"],
-  // "files": [],
-  "exclude": []
+  "include": ["./src/**/*.js", "./src/**/*.jsx"],
+  "exclude": ["node_modules"]
 }

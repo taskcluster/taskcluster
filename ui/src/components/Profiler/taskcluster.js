@@ -1,3 +1,9 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-continue */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable max-len */
 // @ts-check
 
 /**
@@ -22,6 +28,62 @@ export function isTaskGroupIdValid(id) {
 }
 
 /**
+ * @param {TaskAndStatus[]} tasks
+ */
+function mutateAndRemoveMissingDependencies(tasks) {
+  // Figure out which taskIds are actually present.
+  const presentTaskIds = new Set();
+
+  for (const task of tasks) {
+    const { taskId } = task.status;
+
+    presentTaskIds.add(taskId);
+  }
+
+  // Remove any dependencies that aren't present.
+  for (const task of tasks) {
+    task.task.dependencies = task.task.dependencies.filter(id =>
+      presentTaskIds.has(id)
+    );
+  }
+}
+
+/**
+ * TODO - This should probably be removed from the official Taskcluster implementation.
+ *
+ * @param {Record<string, string>} taskToGroup
+ * @param {string} taskId
+ * @param {string} taskGroupId
+ */
+function setTaskToGroup(taskToGroup, taskId, taskGroupId) {
+  // eslint-disable-next-line no-param-reassign
+  taskToGroup[taskId] = taskGroupId;
+  localStorage.setItem('taskToGroup', JSON.stringify(taskToGroup));
+}
+
+/**
+ * TODO - This should probably be removed from the official Taskcluster implementation.
+ *
+ * From local storage, retain the relationships of task to group. This saves on
+ * some API requests which will not change relationships.
+ *
+ * @returns {Record<string, string>}
+ */
+function getTaskToGroup() {
+  const taskToGroup = localStorage.getItem('taskToGroup');
+
+  if (!taskToGroup) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(taskToGroup);
+  } catch (error) {
+    return {};
+  }
+}
+
+/**
  * @param {string} server
  * @param {string} taskGroupId
  * @param {(message: string) => void} updateStatusMessage
@@ -35,8 +97,10 @@ export async function fetchTaskGroup(server, taskGroupId, updateStatusMessage) {
   const response = await fetch(listUrl);
 
   if (!response.ok) {
+    // eslint-disable-next-line no-console
     response.json().then(json => console.error(json));
 
+    // eslint-disable-next-line prefer-promise-reject-errors
     return Promise.reject('Could not fetch task.');
   }
 
@@ -229,61 +293,6 @@ export async function getTasks(
   mutateAndRemoveMissingDependencies(tasks);
 
   return { mergedTasks: tasks, taskGroups };
-}
-
-/**
- * TODO - This should probably be removed from the official Taskcluster implementation.
- *
- * From local storage, retain the relationships of task to group. This saves on
- * some API requests which will not change relationships.
- *
- * @returns {Record<string, string>}
- */
-function getTaskToGroup() {
-  const taskToGroup = localStorage.getItem('taskToGroup');
-
-  if (!taskToGroup) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(taskToGroup);
-  } catch (error) {
-    return {};
-  }
-}
-
-/**
- * TODO - This should probably be removed from the official Taskcluster implementation.
- *
- * @param {Record<string, string>} taskToGroup
- * @param {string} taskId
- * @param {string} taskGroupId
- */
-function setTaskToGroup(taskToGroup, taskId, taskGroupId) {
-  taskToGroup[taskId] = taskGroupId;
-  localStorage.setItem('taskToGroup', JSON.stringify(taskToGroup));
-}
-
-/**
- * @param {TaskAndStatus[]} tasks
- */
-function mutateAndRemoveMissingDependencies(tasks) {
-  // Figure out which taskIds are actually present.
-  const presentTaskIds = new Set();
-
-  for (const task of tasks) {
-    const { taskId } = task.status;
-
-    presentTaskIds.add(taskId);
-  }
-
-  // Remove any dependencies that aren't present.
-  for (const task of tasks) {
-    task.task.dependencies = task.task.dependencies.filter(id =>
-      presentTaskIds.has(id)
-    );
-  }
 }
 
 /**

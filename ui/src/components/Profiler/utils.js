@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-bitwise */
 // @ts-check
 /**
  * @param {any} any
@@ -15,42 +17,25 @@ const ENCODING_DIGITS =
 const LEADING_ZERO_DIGIT = ENCODING_DIGITS[0b100000];
 
 /**
- * @param {Set<number>} numbers
+ * @param {number} value
  * @returns {string}
  */
-export function encodeUintSetForUrlComponent(numbers) {
-  // A set has no order. Convert it to an array and then sort the array,
-  // so that consecutive numbers can be detected by encodeUintArrayForUrlComponent.
-  const array = Array.from(numbers);
+function encodeUint(value) {
+  // Build the string digit by digit, back to front. The last digit has the
+  // continuation bit set to 0, the other digits have it set to 1.
+  // No "leading zero" digits are emitted, so that smaller numbers use fewer
+  // digits, and so that "leading zero" digits can have special meaning.
+  let x = value;
+  let r = ENCODING_DIGITS[x & 0b11111];
 
-  array.sort((a, b) => a - b);
+  x >>= 5;
 
-  return encodeUintArrayForUrlComponent(array);
-}
-
-/**
- * @param {number[]} numbers
- * @returns {string}
- */
-export function encodeUintArrayForUrlComponent(numbers) {
-  let result = '';
-
-  for (let i = 0; i < numbers.length; i++) {
-    const skipCount = countSkippableConsecutiveNumbersAt(numbers, i);
-
-    if (skipCount === 0) {
-      result += encodeUint(numbers[i]);
-      continue;
-    }
-
-    i += skipCount;
-
-    // We use the "leading zero digit" as the range marker.
-    result += LEADING_ZERO_DIGIT;
-    result += encodeUint(numbers[i]);
+  while (x !== 0) {
+    r = ENCODING_DIGITS[0b100000 + (x & 0b11111)] + r;
+    x >>= 5;
   }
 
-  return result;
+  return r;
 }
 
 /**
@@ -94,25 +79,44 @@ function countSkippableConsecutiveNumbersAt(numbers, start) {
 }
 
 /**
- * @param {number} value
+ * @param {number[]} numbers
  * @returns {string}
  */
-function encodeUint(value) {
-  // Build the string digit by digit, back to front. The last digit has the
-  // continuation bit set to 0, the other digits have it set to 1.
-  // No "leading zero" digits are emitted, so that smaller numbers use fewer
-  // digits, and so that "leading zero" digits can have special meaning.
-  let x = value;
-  let r = ENCODING_DIGITS[x & 0b11111];
+export function encodeUintArrayForUrlComponent(numbers) {
+  let result = '';
 
-  x >>= 5;
+  for (let i = 0; i < numbers.length; i++) {
+    const skipCount = countSkippableConsecutiveNumbersAt(numbers, i);
 
-  while (x !== 0) {
-    r = ENCODING_DIGITS[0b100000 + (x & 0b11111)] + r;
-    x >>= 5;
+    if (skipCount === 0) {
+      result += encodeUint(numbers[i]);
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    i += skipCount;
+
+    // We use the "leading zero digit" as the range marker.
+    result += LEADING_ZERO_DIGIT;
+    result += encodeUint(numbers[i]);
   }
 
-  return r;
+  return result;
+}
+
+/**
+ * @param {Set<number>} numbers
+ * @returns {string}
+ */
+export function encodeUintSetForUrlComponent(numbers) {
+  // A set has no order. Convert it to an array and then sort the array,
+  // so that consecutive numbers can be detected by
+  // encodeUintArrayForUrlComponent.
+  const array = Array.from(numbers);
+
+  array.sort((a, b) => a - b);
+
+  return encodeUintArrayForUrlComponent(array);
 }
 
 /**
@@ -128,5 +132,6 @@ export function getServer() {
  * @param {any[]} args
  */
 export function log(...args) {
+  // eslint-disable-next-line no-console
   console.log(...args);
 }

@@ -39,11 +39,11 @@ export interface Task {
     // This was all the same for translations.
     artifacts: [
       {
-        name: 'public/build',
-        path: 'artifacts',
-        type: 'directory',
+        name: 'public/build';
+        path: 'artifacts';
+        type: 'directory';
       }
-    ],
+    ];
     // The command comes in the form of an array, e.g. ["echo", "hello"]
     command: Array<string[]>;
   };

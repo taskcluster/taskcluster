@@ -1,3 +1,8 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
+/* eslint-disable no-continue */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable max-len */
 // @ts-check
 
 /**
@@ -5,19 +10,14 @@
  * into Firefox Profiler data structures.
  */
 
-import {
-  asAny,
-  encodeUintArrayForUrlComponent,
-  getServer,
-  log,
-} from './utils.js';
+import { asAny, encodeUintArrayForUrlComponent, getServer, log } from './utils';
 import {
   getEmptyProfile,
   getEmptyThread,
   UniqueStringArray,
   getProfile,
-} from './profiler.js';
-import { getTasks } from './taskcluster.js';
+} from './profiler';
+import { getTasks } from './taskcluster';
 
 /**
  * @typedef {import("./types").Task} Task
@@ -296,9 +296,7 @@ function buildProfileFromLogRows(logRows, task, taskId) {
   profile.threads.push(thread);
   thread.isMainThread = true;
   const { markers } = thread;
-
   // Map a category name to its index.
-
   /** @type {Record<string, number>} */
   const categoryIndexDict = {};
 
@@ -390,6 +388,7 @@ async function fetchLogsAndBuildProfile(taskId, task) {
  */
 function updateStatusMessage(message) {
   // TODO - Needs a Taskcluster UI implementation
+  console.log(message);
 }
 
 /**
@@ -443,6 +442,7 @@ async function injectProfile(profile, params = '') {
 /**
  * @param {string} taskId
  */
+// eslint-disable-next-line no-unused-vars
 async function getProfileFromTaskId(taskId) {
   updateStatusMessage('Fetching the logs…');
 
@@ -475,6 +475,7 @@ async function getProfileFromTaskId(taskId) {
 /**
  * @param {string} taskGroupId
  */
+// eslint-disable-next-line no-unused-vars
 async function getProfileFromTaskGroup(taskGroupId) {
   try {
     updateStatusMessage('Loading tasks');
