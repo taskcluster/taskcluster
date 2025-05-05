@@ -12,8 +12,8 @@
  * @typedef {ReturnType<getEmptyProfile>} Profile
  */
 
-import { getTaskGroupTimeRanges } from "./taskcluster";
-import { log } from "./utils";
+import { getTaskGroupTimeRanges } from './taskcluster';
+import { log } from './utils';
 
 /**
  * Returns an empty thread for the profiler.
@@ -21,8 +21,8 @@ import { log } from "./utils";
  */
 export function getEmptyThread() {
   return {
-    processType: "default",
-    processName: "Taskcluster",
+    processType: 'default',
+    processName: 'Taskcluster',
     processStartupTime: 0,
     /** @type {number | null} */
     processShutdownTime: null,
@@ -32,13 +32,13 @@ export function getEmptyThread() {
      */
     unregisterTime: null,
     pausedRanges: [],
-    name: "",
+    name: '',
     isMainThread: false,
     showMarkersInTimeline: true,
     pid: 0,
     tid: 0,
     samples: {
-      weightType: "samples",
+      weightType: 'samples',
       weight: null,
       /** @type {number[]} */
       stack: [],
@@ -139,84 +139,84 @@ export function getEmptyThread() {
  */
 function getTaskSchema() {
   return {
-    name: "Task",
-    tooltipLabel: "{marker.data.name}",
-    tableLabel: "{marker.data.name}",
-    chartLabel: "{marker.data.name}",
-    display: ["marker-chart", "marker-table", "timeline-overview"],
+    name: 'Task',
+    tooltipLabel: '{marker.data.name}',
+    tableLabel: '{marker.data.name}',
+    chartLabel: '{marker.data.name}',
+    display: ['marker-chart', 'marker-table', 'timeline-overview'],
     data: [
       {
-        key: "startTime",
-        label: "Start time",
-        format: "string",
+        key: 'startTime',
+        label: 'Start time',
+        format: 'string',
       },
       {
-        key: "name",
-        label: "Task Name",
-        format: "string",
+        key: 'name',
+        label: 'Task Name',
+        format: 'string',
         searchable: true,
       },
       {
-        key: "taskId",
-        label: "Task ID",
-        format: "string",
+        key: 'taskId',
+        label: 'Task ID',
+        format: 'string',
       },
       {
-        key: "owner",
-        label: "Owner",
-        format: "string",
+        key: 'owner',
+        label: 'Owner',
+        format: 'string',
       },
       {
-        key: "retries",
-        label: "Retries",
-        format: "string",
+        key: 'retries',
+        label: 'Retries',
+        format: 'string',
       },
       {
-        key: "state",
-        label: "State",
-        format: "string",
+        key: 'state',
+        label: 'State',
+        format: 'string',
       },
       {
-        key: "reasonCreated",
-        label: "Reason Created",
-        format: "string",
+        key: 'reasonCreated',
+        label: 'Reason Created',
+        format: 'string',
       },
       {
-        key: "reasonResolved",
-        label: "Reason Resolved",
-        format: "string",
+        key: 'reasonResolved',
+        label: 'Reason Resolved',
+        format: 'string',
       },
       {
-        key: "description",
-        label: "Description",
-        format: "string",
+        key: 'description',
+        label: 'Description',
+        format: 'string',
       },
 
       // URLs:
       {
-        key: "taskURL",
-        label: "Task URL",
-        format: "url",
+        key: 'taskURL',
+        label: 'Task URL',
+        format: 'url',
       },
       {
-        key: "source",
-        label: "Source URL",
-        format: "url",
+        key: 'source',
+        label: 'Source URL',
+        format: 'url',
       },
       {
-        key: "taskGroup",
-        label: "Task Group URL",
-        format: "url",
+        key: 'taskGroup',
+        label: 'Task Group URL',
+        format: 'url',
       },
       {
-        key: "liveLog",
-        label: "Live Log",
-        format: "url",
+        key: 'liveLog',
+        label: 'Live Log',
+        format: 'url',
       },
       {
-        key: "taskProfile",
-        label: "Task Profile",
-        format: "url",
+        key: 'taskProfile',
+        label: 'Task Profile',
+        format: 'url',
       },
     ],
   };
@@ -224,37 +224,37 @@ function getTaskSchema() {
 
 function getTaskGroupSchema() {
   return {
-    name: "TaskGroup",
-    tooltipLabel: "{marker.data.name}",
-    tableLabel: "{marker.data.name}",
-    chartLabel: "{marker.data.name}",
-    display: ["marker-chart", "marker-table", "timeline-overview"],
+    name: 'TaskGroup',
+    tooltipLabel: '{marker.data.name}',
+    tableLabel: '{marker.data.name}',
+    chartLabel: '{marker.data.name}',
+    display: ['marker-chart', 'marker-table', 'timeline-overview'],
     data: [
       {
-        key: "startTime",
-        label: "Start time",
-        format: "string",
+        key: 'startTime',
+        label: 'Start time',
+        format: 'string',
       },
       {
-        key: "name",
-        label: "Task Group ID",
-        format: "string",
+        key: 'name',
+        label: 'Task Group ID',
+        format: 'string',
         searchable: true,
       },
       {
-        key: "expires",
-        label: "Expires",
-        format: "string",
+        key: 'expires',
+        label: 'Expires',
+        format: 'string',
       },
       {
-        key: "tasks",
-        label: "Tasks",
-        format: "integer",
+        key: 'tasks',
+        label: 'Tasks',
+        format: 'integer',
       },
       {
-        key: "url",
-        label: "URL",
-        format: "url",
+        key: 'url',
+        label: 'URL',
+        format: 'url',
       },
     ],
   };
@@ -266,7 +266,7 @@ export function getEmptyProfile() {
       interval: 1,
       startTime: 0,
       processType: 0,
-      product: "Taskcluster",
+      product: 'Taskcluster',
       stackwalk: 0,
       version: 27,
       preprocessedProfileVersion: 47,
@@ -289,44 +289,44 @@ export function getEmptyProfile() {
 function getCategories() {
   return [
     {
-      name: "Other",
-      color: "grey",
-      subcategories: ["Other"],
+      name: 'Other',
+      color: 'grey',
+      subcategories: ['Other'],
     },
     {
-      name: "Idle",
-      color: "transparent",
-      subcategories: ["Other"],
+      name: 'Idle',
+      color: 'transparent',
+      subcategories: ['Other'],
     },
     {
-      name: "Layout",
-      color: "purple",
-      subcategories: ["Other"],
+      name: 'Layout',
+      color: 'purple',
+      subcategories: ['Other'],
     },
     {
-      name: "JavaScript",
-      color: "yellow",
-      subcategories: ["Other"],
+      name: 'JavaScript',
+      color: 'yellow',
+      subcategories: ['Other'],
     },
     {
-      name: "GC / CC",
-      color: "orange",
-      subcategories: ["Other"],
+      name: 'GC / CC',
+      color: 'orange',
+      subcategories: ['Other'],
     },
     {
-      name: "Network",
-      color: "lightblue",
-      subcategories: ["Other"],
+      name: 'Network',
+      color: 'lightblue',
+      subcategories: ['Other'],
     },
     {
-      name: "Graphics",
-      color: "green",
-      subcategories: ["Other"],
+      name: 'Graphics',
+      color: 'green',
+      subcategories: ['Other'],
     },
     {
-      name: "DOM",
-      color: "blue",
-      subcategories: ["Other"],
+      name: 'DOM',
+      color: 'blue',
+      subcategories: ['Other'],
     },
   ];
 }
@@ -351,6 +351,7 @@ export class UniqueStringArray {
   constructor(originalArray = []) {
     this._array = originalArray.slice(0);
     this._stringToIndex = new Map();
+
     for (let i = 0; i < originalArray.length; i++) {
       this._stringToIndex.set(originalArray[i], i);
     }
@@ -365,10 +366,13 @@ export class UniqueStringArray {
     if (!this.hasIndex(index)) {
       if (els) {
         console.warn(`index ${index} not in UniqueStringArray`);
+
         return els;
       }
+
       throw new Error(`index ${index} not in UniqueStringArray`);
     }
+
     return this._array[index];
   }
 
@@ -394,11 +398,13 @@ export class UniqueStringArray {
    */
   indexForString(s) {
     let index = this._stringToIndex.get(s);
+
     if (index === undefined) {
       index = this._array.length;
       this._stringToIndex.set(s, index);
       this._array.push(s);
     }
+
     return index;
   }
 
@@ -419,14 +425,12 @@ export class UniqueStringArray {
  */
 export function getProfile(taskGroups, url) {
   const profile = getEmptyProfile();
-
   let profileStartTime = Infinity;
-
   // Compute the start and end of each task group.
   const taskGroupTimeRanges = getTaskGroupTimeRanges(taskGroups, () => true);
   const taskGroupTimeRangesNoActions = getTaskGroupTimeRanges(
     taskGroups,
-    ({ task }) => !task.metadata.name.startsWith("Action:")
+    ({ task }) => !task.metadata.name.startsWith('Action:')
   );
 
   for (const { start } of taskGroupTimeRanges) {
@@ -434,14 +438,16 @@ export function getProfile(taskGroups, url) {
       profileStartTime = Math.min(profileStartTime, start);
     }
   }
+
   if (profileStartTime === Infinity) {
     // No start time was determined, as there were no runs yet with a start time.
     profileStartTime = 0;
   }
 
   {
-    const ids = taskGroups.map((taskGroup) => taskGroup.taskGroupId).join(", ");
+    const ids = taskGroups.map(taskGroup => taskGroup.taskGroupId).join(', ');
     const date = new Date(profileStartTime).toLocaleDateString();
+
     profile.meta.product = `Task Group ${ids} - ${date}`;
   }
 
@@ -456,13 +462,14 @@ export function getProfile(taskGroups, url) {
     const stringArray = new UniqueStringArray();
     const taskGroupTimeRange = taskGroupTimeRanges[i];
     const taskGroupTimeRangeNoActions = taskGroupTimeRangesNoActions[i];
-
     // Sort of the tasks by their start time.
-    const sortedTasks = taskGroup.tasks.map((task) => {
+    const sortedTasks = taskGroup.tasks.map(task => {
       const { runs } = task.status;
+
       if (!runs || !runs.length || !runs[0].started) {
         return { task, start: null };
       }
+
       return {
         task,
         start: new Date(runs[0].started).valueOf(),
@@ -473,19 +480,22 @@ export function getProfile(taskGroups, url) {
       if (!ta.start) {
         return -1;
       }
+
       if (!tb.start) {
         return 1;
       }
+
       return ta.start - tb.start;
     });
 
     const thread = getEmptyThread();
+
     profile.threads.push(thread);
     thread.isMainThread = true;
     thread.name = taskGroup.taskGroupId;
     thread.tid = tid++;
     thread.pid = pid++;
-    const markers = thread.markers;
+    const { markers } = thread;
 
     if (taskGroupTimeRange.start !== null) {
       thread.registerTime = taskGroupTimeRange.start - profileStartTime;
@@ -494,23 +504,26 @@ export function getProfile(taskGroups, url) {
       thread.registerTime = -1;
       thread.unregisterTime = -1;
     }
+
     if (taskGroupTimeRange.end !== null) {
       thread.unregisterTime = taskGroupTimeRange.end - profileStartTime;
     }
 
     for (const { timeRange, markerName } of [
-      { timeRange: taskGroupTimeRange, markerName: "TaskGroup" },
+      { timeRange: taskGroupTimeRange, markerName: 'TaskGroup' },
       {
         timeRange: taskGroupTimeRangeNoActions,
-        markerName: "TaskGroup (no actions)",
+        markerName: 'TaskGroup (no actions)',
       },
     ]) {
       if (timeRange.start) {
         const runStart = timeRange.start;
-        let runEnd = timeRange.end;
+        const runEnd = timeRange.end;
         const durationMarker = 1;
         const instantMarker = 2;
+
         markers.startTime.push(runStart - profileStartTime);
+
         if (runEnd === null) {
           markers.endTime.push(null);
           markers.phase.push(instantMarker);
@@ -523,7 +536,7 @@ export function getProfile(taskGroups, url) {
         markers.name.push(stringArray.indexForString(markerName));
 
         markers.data.push({
-          type: "TaskGroup",
+          type: 'TaskGroup',
           startTime: new Date(
             profile.meta.startTime + profileStartTime
           ).toLocaleTimeString(),
@@ -542,20 +555,25 @@ export function getProfile(taskGroups, url) {
         if (!task.status.runs) {
           continue;
         }
+
         for (const run of task.status.runs) {
           const runStart = run.started ? new Date(run.started).valueOf() : null;
           let runEnd = run.resolved ? new Date(run.resolved).valueOf() : null;
-          if (run.state === "running" && runEnd === null) {
+
+          if (run.state === 'running' && runEnd === null) {
             runEnd = Date.now();
           }
+
           const durationMarker = 1;
           const instantMarker = 2;
+
           if (runStart === null) {
             // There is nothing to graph here.
             continue;
           } else {
             markers.startTime.push(runStart - profileStartTime);
           }
+
           if (runEnd === null) {
             markers.endTime.push(null);
             markers.phase.push(instantMarker);
@@ -566,23 +584,24 @@ export function getProfile(taskGroups, url) {
 
           markers.category.push(5);
           const grouping = run.reasonResolved ?? run.state;
+
           markers.name.push(
             stringArray.indexForString(
-              run.state === "completed" ? "Task" : `Task (${grouping})`
+              run.state === 'completed' ? 'Task' : `Task (${grouping})`
             )
           );
 
           const taskName = task.task.metadata.name;
-          const retries = task.task.retries;
-          const runId = run.runId;
-          const taskId = task.status.taskId;
+          const { retries } = task.task;
+          const { runId } = run;
+          const { taskId } = task.status;
           const name =
-            run.state === "completed" && run.runId === 0 && retries > 1
+            run.state === 'completed' && run.runId === 0 && retries > 1
               ? taskName
               : `${taskName} (run ${runId + 1}/${retries})`;
 
           markers.data.push({
-            type: "Task",
+            type: 'Task',
             startTime: new Date(
               profile.meta.startTime + profileStartTime
             ).toLocaleTimeString(),
@@ -613,6 +632,7 @@ export function getProfile(taskGroups, url) {
 
   profile.threads.sort((a, b) => a.registerTime - b.registerTime);
 
-  log("Generated profile:", profile);
+  log('Generated profile:', profile);
+
   return profile;
 }
