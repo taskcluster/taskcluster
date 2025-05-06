@@ -1,4 +1,4 @@
-import parser from 'cron-parser';
+import { CronExpressionParser as parser } from 'cron-parser';
 import taskcluster from 'taskcluster-client';
 import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
 import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
@@ -228,7 +228,7 @@ builder.declare({
   // Validate cron-parser expressions
   for (let schedElement of hookDef.schedule) {
     try {
-      parser.parseExpression(schedElement);
+      parser.parse(schedElement);
     } catch (err) {
       return res.reportError('InputError',
         '{{message}} in {{schedElement}}', { message: err.message, schedElement });
@@ -378,7 +378,7 @@ builder.declare({
   const schedule = hookDef.schedule ? hookDef.schedule : [];
   for (let schedElement of schedule) {
     try {
-      parser.parseExpression(schedElement);
+      parser.parse(schedElement);
     } catch (err) {
       return res.reportError('InputError',
         '{{message}} in {{schedElement}}', { message: err.message, schedElement });
