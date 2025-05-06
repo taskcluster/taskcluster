@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.8.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7678](https://github.com/taskcluster/taskcluster/issues/7678)
+D2G: pre and post-task-processing (image pulling/loading/saving, copying artifacts out of container, creating chain of trust additional data file, removing container/volumes, handling max runtime) now happens within the D2G Task Feature in Generic Worker, as opposed to within the resulting translated task payload. This slims the translated task payload to only the `docker run ...` command.
+
+▶ [patch] [#7685](https://github.com/taskcluster/taskcluster/issues/7685)
+Fixes node-forge issue with certificates being removed during chain verification process,
+which allowed Azure `registerWorker()` calls fail after some time.
+This happened when multiple certs had same subject hash but different issuers.
+
+▶ [patch] [#5786](https://github.com/taskcluster/taskcluster/issues/5786)
+Properly reap proxy processes when stopping the taskcluster proxy feature
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump the python-deps group in /taskcluster with 2 updates (501c8adc14)
+* build(deps): bump the node-deps group with 18 updates (fe67ad2c2e)
+* build(deps): bump github.com/shirou/gopsutil/v4 in the go-deps group (1008f65d9e)
+* build(deps-dev): bump the client-web-node-deps group (76b7158f6b)
+* build(deps): bump the client-rust-deps group (c927822da6)
+* build(deps): bump base-x from 5.0.0 to 5.0.1 (0f33f56af5)
+
+</details>
+
 ## v83.7.0
 
 ### GENERAL

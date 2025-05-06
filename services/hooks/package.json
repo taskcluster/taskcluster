@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-hooks",
-  "version": "83.7.0",
+  "version": "83.8.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
