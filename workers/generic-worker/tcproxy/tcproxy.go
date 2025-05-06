@@ -67,6 +67,10 @@ func (l *TaskclusterProxy) Terminate() error {
 		return nil
 	}
 	defer func() {
+		_, err := l.command.Process.Wait()
+		if err != nil {
+			log.Printf("Error while waiting for taskcluster proxy to stop: %v", err)
+		}
 		log.Printf("Stopped taskcluster proxy process (PID %v)", l.Pid)
 		l.HTTPPort = 0
 		l.Pid = 0
