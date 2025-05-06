@@ -10,6 +10,7 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [Config Library](config#readme)
 * [Iterate Library](iterate#readme)
 * [Loader Library](loader#readme)
+* [Taskcluster Metrics Library](metrics#readme)
 * [Monitor Library](monitor#readme)
 * [Postgres Library](postgres#readme)
 * [Pulse Library](pulse#readme)
