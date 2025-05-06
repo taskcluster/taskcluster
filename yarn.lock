@@ -5951,12 +5951,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron-parser@npm:4.9.0":
-  version: 4.9.0
-  resolution: "cron-parser@npm:4.9.0"
+"cron-parser@npm:5.1.1":
+  version: 5.1.1
+  resolution: "cron-parser@npm:5.1.1"
   dependencies:
-    luxon: "npm:^3.2.1"
-  checksum: 10c0/348622bdcd1a15695b61fc33af8a60133e5913a85cf99f6344367579e7002896514ba3b0a9d6bb569b02667d6b06836722bf2295fcd101b3de378f71d37bed0b
+    luxon: "npm:^3.6.1"
+  checksum: 10c0/6e0a62833111974884407eb9e2c57f4d6abdddf302f9e43097363c57a1e32bd950f17fb4f14d857ce44bf73a6e5822918c9e5951a4b274c2eb02d5ec03e34b15
   languageName: node
   linkType: hard
 
@@ -9433,10 +9433,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^3.2.1":
-  version: 3.4.4
-  resolution: "luxon@npm:3.4.4"
-  checksum: 10c0/02e26a0b039c11fd5b75e1d734c8f0332c95510f6a514a9a0991023e43fb233884da02d7f966823ffb230632a733fc86d4a4b1e63c3fbe00058b8ee0f8c728af
+"luxon@npm:^3.6.1":
+  version: 3.6.1
+  resolution: "luxon@npm:3.6.1"
+  checksum: 10c0/906d57a9dc4d1de9383f2e9223e378c298607c1b4d17b6657b836a3cd120feb1c1de3b5d06d846a3417e1ca764de8476e8c23b3cd4083b5cdb870adcb06a99d5
   languageName: node
   linkType: hard
 
@@ -12983,7 +12983,7 @@ __metadata:
     content-security-policy: "npm:^0.3.0"
     content-type: "npm:^1.0.4"
     cors: "npm:^2.8.4"
-    cron-parser: "npm:4.9.0"
+    cron-parser: "npm:5.1.1"
     cronstrue: "npm:^2.60.0"
     cross-env: "npm:^7.0.2"
     dataloader: "npm:^2.2.3"
