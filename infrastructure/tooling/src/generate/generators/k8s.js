@@ -125,6 +125,13 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 `;
 };
 
+const wrapConditionalHorizontalPodAutoscaler = (rendered) => {
+  return `{{- if .Values.autoscaling.enabled }}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
 const renderTemplates = async (name, vars, procs, templates) => {
   const processVar = (v) => {
     const val = v.var.toLowerCase();
@@ -196,6 +203,21 @@ const renderTemplates = async (name, vars, procs, templates) => {
 
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
+
+    // Generate HPA for web and background processes if autoscaling is enabled
+    if ('web' === conf.type) {
+      const hpaContext = {
+        ...context,
+        enabled: `{{ .Values.${context.configName}.autoscaling.enabled }}`,
+        minReplicas: `{{ .Values.${context.configName}.autoscaling.minReplicas }}`,
+        maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
+        targetCPUUtilization: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilization }}`,
+        targetMemoryUtilization: `{{ .Values.${context.configName}.autoscaling.targetMemoryUtilization }}`,
+      };
+      const hpaRendered = jsone(templates['hpa'], hpaContext);
+      const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
+      await writeRepoFile(path.join(TMPL_DIR, hpaFilename), wrapConditionalHorizontalPodAutoscaler(hpaRendered));
+    }
   }
   return ingresses;
 };
@@ -503,6 +525,13 @@ tasks.push({
       valuesYAML[confName] = {
         procs: {},
         debug: '',
+        autoscaling: {
+          enabled: false,
+          minReplicas: 1,
+          maxReplicas: 100,
+          targetCPUUtilization: 80,
+          targetMemoryUtilization: 80
+        }
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -520,6 +549,45 @@ tasks.push({
             type: 'string',
             title: 'node debug env var',
           },
+          autoscaling: {
+            type: 'object',
+            title: 'Autoscaling configuration for this service',
+            properties: {
+              enabled: {
+                type: 'boolean',
+                description: 'Whether to enable autoscaling for this service',
+                default: false
+              },
+              minReplicas: {
+                type: 'integer',
+                description: 'Minimum number of replicas',
+                minimum: 1,
+                default: 1
+              },
+              maxReplicas: {
+                type: 'integer',
+                description: 'Maximum number of replicas',
+                minimum: 1,
+                default: 100
+              },
+              targetCPUUtilization: {
+                type: 'integer',
+                description: 'Target CPU utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80
+              },
+              targetMemoryUtilization: {
+                type: 'integer',
+                description: 'Target memory utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80
+              }
+            },
+            required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilization', 'targetMemoryUtilization'],
+            additionalProperties: false
+          }
         },
         required: ['procs'],
         additionalProperties: false,
