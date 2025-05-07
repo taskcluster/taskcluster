@@ -96,6 +96,7 @@
     "passport-github": "^1.1.0",
     "pg": "^8.15.6",
     "pg-connection-string": "^2.8.5",
+    "prom-client": "^15.1.3",
     "qs": "^6.14.0",
     "quick-lru": "^5.0.0",
     "regex-escape": "^3.4.11",
