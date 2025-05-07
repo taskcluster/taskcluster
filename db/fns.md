@@ -5,9 +5,9 @@
    * [`create_client`](#create_client)
    * [`delete_client`](#delete_client)
    * [`expire_clients`](#expire_clients)
-   * [`get_audit_history`](#get_audit_history)
    * [`get_client`](#get_client)
    * [`get_clients`](#get_clients)
+   * [`get_combined_audit_history`](#get_combined_audit_history)
    * [`get_roles`](#get_roles)
    * [`insert_auth_audit_history`](#insert_auth_audit_history)
    * [`modify_roles`](#modify_roles)
@@ -213,9 +213,9 @@
 * [`create_client`](#create_client)
 * [`delete_client`](#delete_client)
 * [`expire_clients`](#expire_clients)
-* [`get_audit_history`](#get_audit_history)
 * [`get_client`](#get_client)
 * [`get_clients`](#get_clients)
+* [`get_combined_audit_history`](#get_combined_audit_history)
 * [`get_roles`](#get_roles)
 * [`insert_auth_audit_history`](#insert_auth_audit_history)
 * [`modify_roles`](#modify_roles)
@@ -342,43 +342,6 @@ end
 
 </details>
 
-### get_audit_history
-
-* *Mode*: read
-* *Arguments*:
-  * `entity_id_in text`
-  * `entity_type_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * ` client_id text`
-  * `action_type text`
-  * `created timestamptz `
-* *Last defined on version*: 106
-
-Get Audit History against a entityId and entity type
-
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    audit_history.client_id,
-    audit_history.action_type,
-    audit_history.created
-  from audit_history
-  where audit_history.entity_id = entity_id_in
-  and audit_history.entity_type = entity_type_in
-  order by audit_history.created
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
-end
-```
-
-</details>
-
 ### get_client
 
 * *Mode*: read
@@ -470,6 +433,54 @@ begin
   from clients
   where prefix_in is null or starts_with(clients.client_id, prefix_in)
   order by clients.client_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_combined_audit_history
+
+* *Mode*: read
+* *Arguments*:
+  * `client_id_in text`
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * ` entity_id text`
+  * `entity_type text`
+  * `client_id text`
+  * `action_type text`
+  * `created timestamptz `
+* *Last defined on version*: 111
+
+Get Audit History by client ID OR by entity ID and entity type.
+If client_id_in is provided, returns full audit records for that client.
+If entity_id_in and entity_type_in are provided, returns filtered audit records for that entity.
+At least one search parameter must be provided.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    audit_history.entity_id,
+    audit_history.entity_type,
+    audit_history.client_id,
+    audit_history.action_type,
+    audit_history.created
+  from audit_history
+  where (audit_history.client_id = client_id_in OR client_id_in IS NULL)
+    AND (
+      (audit_history.entity_id = entity_id_in AND audit_history.entity_type = entity_type_in)
+      OR (entity_id_in IS NULL OR entity_type_in IS NULL)
+    )
+  order by audit_history.created
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
@@ -695,6 +706,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `get_audit_history(entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v85.0.0)
 
 ## github
 

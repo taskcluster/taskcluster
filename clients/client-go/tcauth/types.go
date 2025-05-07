@@ -662,13 +662,19 @@ type (
 	Var struct {
 
 		// The type of action performed
-		Action_Type string `json:"action_type"`
+		ActionType string `json:"actionType"`
 
 		// The ID of the client that performed the action
-		Client_ID string `json:"client_id"`
+		ClientID string `json:"clientId"`
 
 		// Timestamp when the action occurred
 		Created tcclient.Time `json:"created"`
+
+		// The entity Id on which an action was performed
+		EntityID string `json:"entityId"`
+
+		// The entity type on which the action was performed (client, role, secret, hook, worker_pool)
+		EntityType string `json:"entityType"`
 	}
 
 	// Token for connecting a worker to websocktunnel proxy

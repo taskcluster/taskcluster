@@ -614,6 +614,7 @@ ALTER TABLE workers
 ## undefined
 
 ```sql
+CREATE INDEX audit_history_client_idx ON audit_history USING btree (client_id);
 CREATE INDEX azure_queue_messages_inserted ON azure_queue_messages USING btree (queue_name, inserted);
 CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USING btree (organization, repository, sha);
 CREATE INDEX github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);

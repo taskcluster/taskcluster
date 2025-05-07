@@ -272,6 +272,45 @@ func (auth *Auth) GetEntityHistory_SignedURL(entityType, entityId, continuationT
 	return (&cd).SignedURL("/audit/"+url.QueryEscape(entityType)+"/"+url.QueryEscape(entityId), v, duration)
 }
 
+// Get audit history of a client based on clientId.
+//
+// Required scopes:
+//
+//	auth:client-audit-history:<clientId>
+//
+// See #listAuditHistory
+func (auth *Auth) ListAuditHistory(clientId, continuationToken, limit string) (*GetEntityHistoryResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId)+"/audit", new(GetEntityHistoryResponse), v)
+	return responseObject.(*GetEntityHistoryResponse), err
+}
+
+// Returns a signed URL for ListAuditHistory, valid for the specified duration.
+//
+// Required scopes:
+//
+//	auth:client-audit-history:<clientId>
+//
+// See ListAuditHistory for more details.
+func (auth *Auth) ListAuditHistory_SignedURL(clientId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId)+"/audit", v, duration)
+}
+
 // Reset a clients `accessToken`, this will revoke the existing
 // `accessToken`, generate a new `accessToken` and return it from this
 // call.

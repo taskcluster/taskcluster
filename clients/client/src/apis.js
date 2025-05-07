@@ -135,6 +135,25 @@ export default {
           "args": [
             "clientId"
           ],
+          "category": "Audit",
+          "description": "Get audit history of a client based on clientId.",
+          "method": "get",
+          "name": "listAuditHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/clients/<clientId>/audit",
+          "scopes": "auth:client-audit-history:<clientId>",
+          "stability": "stable",
+          "title": "List Audit History",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
           "category": "Clients",
           "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",
           "method": "post",

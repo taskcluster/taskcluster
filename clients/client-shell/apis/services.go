@@ -104,6 +104,22 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "listAuditHistory",
+				Title:       "List Audit History",
+				Description: "Get audit history of a client based on clientId.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/clients/<clientId>/audit",
+				Args: []string{
+					"clientId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "resetAccessToken",
 				Title:       "Reset `accessToken`",
 				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",

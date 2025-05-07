@@ -385,6 +385,7 @@ helper.resetTables = (mock, skipping) => {
     await libTesting.resetTables({ tableNames: [
       'roles',
       'clients',
+      'audit_history',
     ] });
 
     // set up the static clients (which have already been overridden in withCfg)

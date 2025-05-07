@@ -126,6 +126,17 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["getEntityHistory"], *args, **kwargs)
 
+    def listAuditHistory(self, *args, **kwargs):
+        """
+        List Audit History
+
+        Get audit history of a client based on clientId.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listAuditHistory"], *args, **kwargs)
+
     def resetAccessToken(self, *args, **kwargs):
         """
         Reset `accessToken`
@@ -736,6 +747,15 @@ class Auth(BaseClient):
             'method': 'get',
             'name': 'lbheartbeat',
             'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
+        "listAuditHistory": {
+            'args': ['clientId'],
+            'method': 'get',
+            'name': 'listAuditHistory',
+            'output': 'v1/get-entity-history-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/clients/<clientId>/audit',
             'stability': 'stable',
         },
         "listClients": {

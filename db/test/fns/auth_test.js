@@ -377,7 +377,8 @@ suite(testing.suiteName(), function() {
         'created',
       );
 
-      const results = await db.fns.get_audit_history(
+      const results = await db.fns.get_combined_audit_history(
+        null,
         'client-1',
         'client',
         10,
@@ -401,12 +402,12 @@ suite(testing.suiteName(), function() {
         );
       }
 
-      const page1 = await db.fns.get_audit_history('client-1', 'client', 2, 0);
+      const page1 = await db.fns.get_combined_audit_history(null, 'client-1', 'client', 2, 0);
       assert.equal(page1.length, 2);
       assert.equal(page1[0].client_id, 'test-client-0');
       assert.equal(page1[1].client_id, 'test-client-1');
 
-      const page2 = await db.fns.get_audit_history('client-1', 'client', 2, 2);
+      const page2 = await db.fns.get_combined_audit_history(null, 'client-1', 'client', 2, 2);
       assert.equal(page2.length, 2);
       assert.equal(page2[0].client_id, 'test-client-2');
       assert.equal(page2[1].client_id, 'test-client-3');
@@ -426,13 +427,14 @@ suite(testing.suiteName(), function() {
       await db.fns.purge_audit_history(taskcluster.fromNow('-1 day'));
 
       // Should only have one entry left
-      const results = await db.fns.get_audit_history('client-1', 'client', 10, 0);
+      const results = await db.fns.get_combined_audit_history(null, 'client-1', 'client', 10, 0);
       assert.equal(results.length, 1);
       assert.equal(results[0].action_type, 'updated');
     });
 
     helper.dbTest('get_audit_history with non-existent entity', async function(db) {
-      const results = await db.fns.get_audit_history(
+      const results = await db.fns.get_combined_audit_history(
+        null,
         'non-existent',
         'client',
         10,
