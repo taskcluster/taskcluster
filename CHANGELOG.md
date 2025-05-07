@@ -3,6 +3,32 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.9.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go 1.24.3 [SECURITY].
+
+### USERS
+
+▶ [minor] [#7548](https://github.com/taskcluster/taskcluster/issues/7548)
+Auth service exposes `ListAuditHistory` endpoint for retrieving audit history by entity ID, entity type, and client ID.
+
+### DEVELOPERS
+
+▶ [minor] [#7612](https://github.com/taskcluster/taskcluster/issues/7612)
+Introduce internal metrics library to export metrics to prometheus.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump cron-parser from 4.9.0 to 5.1.1 (42e7bb29ef)
+
+</details>
+
 ## v83.8.0
 
 ### WORKER-DEPLOYERS
