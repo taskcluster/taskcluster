@@ -1,4 +1,4 @@
-# Taskcluster Metrics Library
+# Metrics Library
 
 A lightweight library for exposing metrics to Prometheus for Taskcluster services.
 

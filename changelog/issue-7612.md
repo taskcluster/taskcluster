@@ -1,5 +1,5 @@
 audience: developers
-level: patch
+level: minor
 reference: issue 7612
 ---
 

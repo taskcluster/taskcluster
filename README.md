@@ -64,7 +64,7 @@ This repository is used to develop, build, and release the Taskcluster services.
     * [Config Library](libraries/config#readme)
     * [Iterate Library](libraries/iterate#readme)
     * [Loader Library](libraries/loader#readme)
-    * [Taskcluster Metrics Library](libraries/metrics#readme)
+    * [Metrics Library](libraries/metrics#readme)
     * [Monitor Library](libraries/monitor#readme)
     * [Postgres Library](libraries/postgres#readme)
     * [Pulse Library](libraries/pulse#readme)
