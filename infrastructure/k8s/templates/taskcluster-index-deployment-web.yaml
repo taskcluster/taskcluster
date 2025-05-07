@@ -8,7 +8,9 @@ metadata:
     app.kubernetes.io/component: taskcluster-index-web
     app.kubernetes.io/part-of: taskcluster
 spec:
+  {{- if not .Values.index.autoscaling.enabled }}
   replicas: {{ int (.Values.index.procs.web.replicas) }}
+  {{- end }}
   selector:
     matchLabels: *ref_0
   template:
