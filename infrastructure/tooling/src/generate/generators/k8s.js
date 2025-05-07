@@ -123,7 +123,7 @@ const postJsoneProcessing = (rendered, replacements, context) => {
       /replicas:.*$/m,
       `{{- if not .Values.${context.configName}.autoscaling.enabled }}
   replicas: ${replacements.REPLICA_CONFIG_STRING}
-  {{- end }}`
+  {{- end }}`,
     );
   }
   return result;
@@ -540,8 +540,8 @@ tasks.push({
           minReplicas: 1,
           maxReplicas: 100,
           targetCPUUtilization: 80,
-          targetMemoryUtilization: 80
-        }
+          targetMemoryUtilization: 80,
+        },
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -566,38 +566,38 @@ tasks.push({
               enabled: {
                 type: 'boolean',
                 description: 'Whether to enable autoscaling for this service',
-                default: false
+                default: false,
               },
               minReplicas: {
                 type: 'integer',
                 description: 'Minimum number of replicas',
                 minimum: 1,
-                default: 1
+                default: 1,
               },
               maxReplicas: {
                 type: 'integer',
                 description: 'Maximum number of replicas',
                 minimum: 1,
-                default: 100
+                default: 100,
               },
               targetCPUUtilization: {
                 type: 'integer',
                 description: 'Target CPU utilization percentage',
                 minimum: 1,
                 maximum: 100,
-                default: 80
+                default: 80,
               },
               targetMemoryUtilization: {
                 type: 'integer',
                 description: 'Target memory utilization percentage',
                 minimum: 1,
                 maximum: 100,
-                default: 80
-              }
+                default: 80,
+              },
             },
             required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilization', 'targetMemoryUtilization'],
-            additionalProperties: false
-          }
+            additionalProperties: false,
+          },
         },
         required: ['procs'],
         additionalProperties: false,

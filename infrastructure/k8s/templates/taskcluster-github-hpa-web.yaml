@@ -1,0 +1,31 @@
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskcluster-github-hpa
+  labels:
+    app.kubernetes.io/name: taskcluster-github
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-github-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskcluster-github
+  minReplicas: '{{ .Values.github.autoscaling.minReplicas }}'
+  maxReplicas: '{{ .Values.github.autoscaling.maxReplicas }}'
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: '{{ .Values.github.autoscaling.targetCPUUtilization }}'
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: '{{ .Values.github.autoscaling.targetMemoryUtilization }}'
+{{- end }}

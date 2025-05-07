@@ -8,7 +8,9 @@ metadata:
     app.kubernetes.io/component: taskcluster-notify-web
     app.kubernetes.io/part-of: taskcluster
 spec:
+  {{- if not .Values.notify.autoscaling.enabled }}
   replicas: {{ int (.Values.notify.procs.web.replicas) }}
+  {{- end }}
   selector:
     matchLabels: *ref_0
   template:

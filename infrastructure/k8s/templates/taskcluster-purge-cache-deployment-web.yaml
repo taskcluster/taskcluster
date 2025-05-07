@@ -8,7 +8,9 @@ metadata:
     app.kubernetes.io/component: taskcluster-purge-cache-web
     app.kubernetes.io/part-of: taskcluster
 spec:
+  {{- if not .Values.purge_cache.autoscaling.enabled }}
   replicas: {{ int (.Values.purge_cache.procs.web.replicas) }}
+  {{- end }}
   selector:
     matchLabels: *ref_0
   template:

@@ -1,0 +1,31 @@
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskcluster-auth-hpa
+  labels:
+    app.kubernetes.io/name: taskcluster-auth
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-auth-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskcluster-auth
+  minReplicas: '{{ .Values.auth.autoscaling.minReplicas }}'
+  maxReplicas: '{{ .Values.auth.autoscaling.maxReplicas }}'
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: '{{ .Values.auth.autoscaling.targetCPUUtilization }}'
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: '{{ .Values.auth.autoscaling.targetMemoryUtilization }}'
+{{- end }}
