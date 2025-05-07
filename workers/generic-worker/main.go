@@ -663,6 +663,9 @@ If you need D2G to translate your Docker Worker payload so Generic Worker can pr
 	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
 		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
 	}
+	if time.Time(task.Definition.Deadline).Before(time.Now().Round(0).Add(time.Second * time.Duration(task.Payload.MaxRunTime))) {
+		return MalformedPayloadError(fmt.Errorf("task deadline too close: deadline occurs in %v seconds, but maxRunTime is %vs", time.Time(task.Definition.Deadline).Sub(time.Now().Round(0)).Seconds(), task.Payload.MaxRunTime))
+	}
 	return nil
 }
 

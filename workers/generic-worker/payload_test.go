@@ -147,6 +147,21 @@ func NowMillis(t *testing.T) (now time.Time) {
 	return
 }
 
+// If a task deadline is sooner than maxRunTime
+func TestTaskDeadlineTooClose(t *testing.T) {
+	now := NowMillis(t)
+	task := taskWithPayload(`{
+  "env": {
+    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+  },
+  "maxRunTime": 3,
+  "command": [` + rawHelloGoodbye() + `]
+}`)
+	task.Definition.Deadline = tcclient.Time(now.Add(time.Second))
+	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	ensureMalformedPayload(t, task)
+}
+
 // If an artifact expires before task deadline we should get a Malformed Payload
 func TestArtifactExpiresBeforeDeadline(t *testing.T) {
 	setup(t)
