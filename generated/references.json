@@ -14536,6 +14536,58 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/get-client-history-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response from listAuditHistory endpoint containing audit history entries for a client\n",
+      "properties": {
+        "auditHistory": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "action_type": {
+                "description": "The type of action performed",
+                "type": "string"
+              },
+              "created": {
+                "description": "Timestamp when the action occurred",
+                "format": "date-time",
+                "type": "string"
+              },
+              "entity_id": {
+                "description": "The entity Id on which an action was performed",
+                "type": "string"
+              },
+              "entity_type": {
+                "description": "The entity type on which the action was performed (client, role, secret, hook, worker_pool)",
+                "type": "string"
+              }
+            },
+            "required": [
+              "entity_id",
+              "entity_type",
+              "action_type",
+              "created"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "continuationToken": {
+          "description": "Token to be used to get the next page of results",
+          "type": "string"
+        }
+      },
+      "required": [
+        "auditHistory"
+      ],
+      "title": "Get Client History Response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/get-client-history-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/gcp-credentials-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -22952,6 +23004,24 @@
           "scopes": "auth:audit-history:<entityType>",
           "stability": "stable",
           "title": "Get Entity History",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
+          "category": "Audit",
+          "description": "Get audit history based on various filters.\n\nParameters:\n * `entityType` - Filter by entity type (client, role, secret, hook, worker_pool)\n * `entityId` - Filter by entity ID\n * `fromDate` - Filter entries from this date (inclusive)\n * `toDate` - Filter entries to this date (inclusive)\n * `actionType` - Filter by action type (created, updated, deleted, etc)",
+          "method": "get",
+          "name": "listAuditHistory",
+          "output": "v1/get-client-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/audit-logs/<clientId>",
+          "stability": "stable",
+          "title": "List Audit History",
           "type": "function"
         },
         {

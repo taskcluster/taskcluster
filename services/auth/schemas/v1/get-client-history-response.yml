@@ -1,0 +1,36 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Get Client History Response
+description: |
+  Response from listAuditHistory endpoint containing audit history entries for a client
+type: object
+properties:
+  auditHistory:
+    type: array
+    items:
+      type: object
+      properties:
+        entity_id:
+          type: string
+          description: The entity Id on which an action was performed
+        entity_type:
+          type: string
+          description: The entity type on which the action was performed (client, role, secret, hook, worker_pool)
+        action_type:
+          type: string
+          description: The type of action performed
+        created:
+          type: string
+          format: date-time
+          description: Timestamp when the action occurred
+      additionalProperties: false
+      required:
+        - entity_id
+        - entity_type
+        - action_type
+        - created
+  continuationToken:
+    type: string
+    description: Token to be used to get the next page of results
+additionalProperties: false
+required:
+  - auditHistory

@@ -7,6 +7,7 @@
    * [`expire_clients`](#expire_clients)
    * [`get_audit_history`](#get_audit_history)
    * [`get_client`](#get_client)
+   * [`get_client_audit_history`](#get_client_audit_history)
    * [`get_clients`](#get_clients)
    * [`get_roles`](#get_roles)
    * [`insert_auth_audit_history`](#insert_auth_audit_history)
@@ -215,6 +216,7 @@
 * [`expire_clients`](#expire_clients)
 * [`get_audit_history`](#get_audit_history)
 * [`get_client`](#get_client)
+* [`get_client_audit_history`](#get_client_audit_history)
 * [`get_clients`](#get_clients)
 * [`get_roles`](#get_roles)
 * [`insert_auth_audit_history`](#insert_auth_audit_history)
@@ -419,6 +421,43 @@ begin
     clients.delete_on_expiration
   from clients
   where clients.client_id = client_id_in;
+end
+```
+
+</details>
+
+### get_client_audit_history
+
+* *Mode*: read
+* *Arguments*:
+  * `client_id_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * ` entity_id text`
+  * `entity_type text`
+  * `action_type text`
+  * `created timestamptz `
+* *Last defined on version*: 111
+
+Get Audit History against a clientId
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    audit_history.entity_id,
+    audit_history.entity_type,
+    audit_history.action_type,
+    audit_history.created
+  from audit_history
+  where audit_history.client_id = client_id_in
+  order by audit_history.created
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
 end
 ```
 

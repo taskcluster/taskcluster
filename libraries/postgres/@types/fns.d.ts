@@ -137,6 +137,18 @@ type AuthGetClientFn = {
   client_id_in: string;
  }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 };
+type AuthGetClientAuditHistoryFn = {
+ (
+   client_id_in: string,
+   page_size_in: number | null,
+   page_offset_in: number | null
+ ): Promise<Array<{entity_id: string, entity_type: string, action_type: string, created: Date}>>;
+ (params: {
+  client_id_in: string;
+  page_size_in?: number | null;
+  page_offset_in?: number | null;
+ }): Promise<Array<{entity_id: string, entity_type: string, action_type: string, created: Date}>>;
+};
 type AuthGetClientsFn = {
  (
    prefix_in: string | null,
@@ -6070,6 +6082,7 @@ export interface DbFunctions {
   expire_clients: AuthExpireClientsFn;
   get_audit_history: AuthGetAuditHistoryFn;
   get_client: AuthGetClientFn;
+  get_client_audit_history: AuthGetClientAuditHistoryFn;
   get_clients: AuthGetClientsFn;
   get_roles: AuthGetRolesFn;
   insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;

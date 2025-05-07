@@ -21,9 +21,14 @@ import PulseIcon from 'mdi-react/PulseIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import SidebarListGroup from './SidebarListGroup';
 import SidebarListItem from './SidebarListItem';
+import { withAuth } from '../../utils/Auth';
 
+@withAuth
 export default class SidebarList extends Component {
   render() {
+    const { user } = this.props;
+    const clientId = user ? user.credentials.clientId : null;
+
     return (
       <List disablePadding>
         <SidebarListItem to="/tasks/create" icon={<PlusCircleIcon />}>
@@ -47,6 +52,13 @@ export default class SidebarList extends Component {
           <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
             Clients
           </SidebarListItem>
+          {clientId && (
+            <SidebarListItem
+              to={`/auth/audit/${encodeURIComponent(clientId)}`}
+              icon={<AccountMultipleIcon />}>
+              Client Audit History
+            </SidebarListItem>
+          )}
           <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
             Roles
           </SidebarListItem>
