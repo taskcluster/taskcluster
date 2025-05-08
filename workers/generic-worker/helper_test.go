@@ -359,6 +359,7 @@ func GWTest(t *testing.T) *Test {
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
 			EnableChainOfTrust:        true,
 			EnableLiveLog:             true,
+			EnableMetadata:            true,
 			EnableMounts:              true,
 			EnableOSGroups:            true,
 			EnableResourceMonitor:     true,

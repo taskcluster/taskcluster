@@ -41,6 +41,7 @@ type (
 		EnableChainOfTrust             bool           `json:"enableChainOfTrust"`
 		EnableInteractive              bool           `json:"enableInteractive"`
 		EnableLiveLog                  bool           `json:"enableLiveLog"`
+		EnableMetadata                 bool           `json:"enableMetadata"`
 		EnableMounts                   bool           `json:"enableMounts"`
 		EnableOSGroups                 bool           `json:"enableOSGroups"`
 		EnableResourceMonitor          bool           `json:"enableResourceMonitor"`
