@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-metrics",
-  "version": "83.9.1",
+  "version": "83.10.0",
   "description": "Prometheus metrics library for Taskcluster services",
   "type": "module",
   "author": "Taskcluster Team",
