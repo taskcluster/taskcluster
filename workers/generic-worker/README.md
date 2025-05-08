@@ -193,6 +193,11 @@ and reports back results to the queue.
                                             task payload. [default: true]
           enableLiveLog                     Enables the LiveLog feature to be used in the task
                                             payload. [default: true]
+          enableMetadata                    Enables the Metadata feature to have generic worker
+                                            write out a file "generic-worker-metadata.json"
+                                            (in the current working directory of the generic
+                                            worker process) containing information about the
+                                            last task run. [default: true]
           enableMounts                      Enables the Mounts feature to be used in the task
                                             payload. [default: true]
           enableOSGroups                    Enables the OS Groups feature to be used in the task
