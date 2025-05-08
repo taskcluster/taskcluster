@@ -8141,6 +8141,33 @@
               ],
               "title": "Release events",
               "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "enum": [
+                    "created",
+                    "edited"
+                  ],
+                  "title": "Issue Comment action"
+                },
+                "overrides": {
+                  "$ref": "#/definitions/overrides"
+                },
+                "type": {
+                  "enum": [
+                    "github-issue-comment"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "action"
+              ],
+              "title": "Issue Comment events",
+              "type": "object"
             }
           ]
         },

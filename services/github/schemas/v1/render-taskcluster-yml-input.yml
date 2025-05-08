@@ -122,6 +122,24 @@ properties:
           - type
           - action
         additionalProperties: false
+
+      - title: Issue Comment events
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - github-issue-comment
+          action:
+            title: Issue Comment action
+            enum:
+              - created
+              - edited
+          overrides: { $ref: "#/definitions/overrides" }
+        required:
+          - type
+          - action
+        additionalProperties: false
 additionalProperties: false
 required:
   - body
