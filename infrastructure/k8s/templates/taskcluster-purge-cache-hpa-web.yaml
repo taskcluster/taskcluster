@@ -21,11 +21,13 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.purge_cache.autoscaling.targetCPUUtilization }}'
+          averageUtilization: '{{ .Values.purge_cache.autoscaling.targetCPUUtilizationPercentage }}'
+    {{- if .Values.purge_cache.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.purge_cache.autoscaling.targetMemoryUtilization }}'
+          averageUtilization: {{ .Values.purge_cache.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
 {{- end }}

@@ -33,14 +33,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -52,8 +52,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -264,14 +263,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -283,8 +282,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -390,14 +388,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -409,8 +407,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -569,14 +566,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -588,8 +585,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -768,14 +764,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -787,8 +783,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -960,14 +955,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -979,8 +974,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -1141,14 +1135,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -1160,8 +1154,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -1325,14 +1318,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -1344,8 +1337,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -1456,14 +1448,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -1475,8 +1467,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -1793,14 +1784,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -1812,8 +1803,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -1887,14 +1877,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -1906,8 +1896,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -2046,14 +2035,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -2065,8 +2054,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -2168,14 +2156,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -2187,8 +2175,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
@@ -2385,14 +2372,14 @@
               "minimum": 1,
               "type": "integer"
             },
-            "targetCPUUtilization": {
+            "targetCPUUtilizationPercentage": {
               "default": 80,
               "description": "Target CPU utilization percentage",
               "maximum": 100,
               "minimum": 1,
               "type": "integer"
             },
-            "targetMemoryUtilization": {
+            "targetMemoryUtilizationPercentage": {
               "default": 80,
               "description": "Target memory utilization percentage",
               "maximum": 100,
@@ -2404,8 +2391,7 @@
             "enabled",
             "minReplicas",
             "maxReplicas",
-            "targetCPUUtilization",
-            "targetMemoryUtilization"
+            "targetCPUUtilizationPercentage"
           ],
           "title": "Autoscaling configuration for this service",
           "type": "object"

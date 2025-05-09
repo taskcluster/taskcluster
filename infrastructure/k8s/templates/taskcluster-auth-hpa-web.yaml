@@ -21,11 +21,13 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.auth.autoscaling.targetCPUUtilization }}'
+          averageUtilization: '{{ .Values.auth.autoscaling.targetCPUUtilizationPercentage }}'
+    {{- if .Values.auth.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.auth.autoscaling.targetMemoryUtilization }}'
+          averageUtilization: {{ .Values.auth.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
 {{- end }}

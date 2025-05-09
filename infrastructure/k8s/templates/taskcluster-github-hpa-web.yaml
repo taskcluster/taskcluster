@@ -21,11 +21,13 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.github.autoscaling.targetCPUUtilization }}'
+          averageUtilization: '{{ .Values.github.autoscaling.targetCPUUtilizationPercentage }}'
+    {{- if .Values.github.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.github.autoscaling.targetMemoryUtilization }}'
+          averageUtilization: {{ .Values.github.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
 {{- end }}
