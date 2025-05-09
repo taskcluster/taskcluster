@@ -81,6 +81,10 @@ func initialiseFeatures() (err error) {
 		&InteractiveFeature{},
 	}
 	features = append(features, platformFeatures()...)
+	features = append(
+		features,
+		&MaxRunTimeFeature{},
+	)
 	for _, feature := range features {
 		log.Printf("Initialising feature %v...", feature.Name())
 		err := feature.Initialise()
@@ -643,9 +647,6 @@ If you need D2G to translate your Docker Worker payload so Generic Worker can pr
 			panic(err)
 		}
 	}
-	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
-		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
-	}
 	return nil
 }
 
@@ -888,20 +889,6 @@ func (task *TaskRun) resolve(e *ExecutionErrors) *CommandExecutionError {
 	return ResourceUnavailable(task.StatusManager.ReportException((*e)[0].Reason))
 }
 
-func (task *TaskRun) setMaxRunTimer() *time.Timer {
-	return time.AfterFunc(
-		time.Second*time.Duration(task.Payload.MaxRunTime),
-		func() {
-			// ignore any error the Abort function returns - we are in the
-			// wrong go routine to properly handle it
-			err := task.StatusManager.Abort(Failure(fmt.Errorf("task aborted - max run time exceeded")))
-			if err != nil {
-				task.Warnf("Error when aborting task: %v", err)
-			}
-		},
-	)
-}
-
 func (task *TaskRun) kill() {
 	for _, command := range task.Commands {
 		output, err := command.Kill()
@@ -1039,21 +1026,6 @@ If you do require this feature, please do one of two things:
 			}
 		}
 	}
-
-	t := task.setMaxRunTimer()
-	defer func() {
-
-		// Bug 1329617
-		// ********* DON'T drain channel **********
-		// because AfterFunc() drains it!
-		// see https://play.golang.org/p/6pqRerGVcg
-		// ****************************************
-		//
-		// if !t.Stop() {
-		// <-t.C
-		// }
-		t.Stop()
-	}()
 
 	// Terminating the Worker Early
 	// ----------------------------
