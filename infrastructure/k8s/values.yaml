@@ -21,8 +21,7 @@ auth:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   level: notice
 built_in_workers:
   procs:
@@ -35,8 +34,7 @@ built_in_workers:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/built-in-workers
   level: notice
 github:
@@ -57,8 +55,7 @@ github:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/github
   level: notice
 hooks:
@@ -83,8 +80,7 @@ hooks:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/hooks
   level: notice
 index:
@@ -105,8 +101,7 @@ index:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/index
 notify:
@@ -124,8 +119,7 @@ notify:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/notify
   level: notice
 object:
@@ -142,8 +136,7 @@ object:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/object
   level: notice
 purge_cache:
@@ -160,8 +153,7 @@ purge_cache:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/purge-cache
 queue:
@@ -205,8 +197,7 @@ queue:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/queue
   level: notice
 secrets:
@@ -223,8 +214,7 @@ secrets:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/secrets
   level: notice
 web_server:
@@ -247,8 +237,7 @@ web_server:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/web-server
 worker_manager:
@@ -286,8 +275,7 @@ worker_manager:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/worker-manager
 ui:
@@ -301,8 +289,7 @@ ui:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
 references:
   procs:
     web:
@@ -314,5 +301,4 @@ references:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
-    targetCPUUtilization: 80
-    targetMemoryUtilization: 80
+    targetCPUUtilizationPercentage: 80
