@@ -136,11 +136,22 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 `;
 };
 
-const wrapConditionalHorizontalPodAutoscaler = (rendered, context) => {
-  return `{{- if .Values.${context.configName}.autoscaling.enabled }}
+const postProcessHorizontalPodAutoscaler = (rendered, context) => {
+  let result = `{{- if .Values.${context.configName}.autoscaling.enabled }}
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
+  result = result.replace("- MEMORY_UTILIZATION",
+    `{{- if .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}`,
+  );
+  return result;
 };
 
 const renderTemplates = async (name, vars, procs, templates) => {
@@ -198,12 +209,11 @@ const renderTemplates = async (name, vars, procs, templates) => {
           enabled: `{{ .Values.${context.configName}.autoscaling.enabled }}`,
           minReplicas: `{{ .Values.${context.configName}.autoscaling.minReplicas }}`,
           maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
-          targetCPUUtilization: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilization }}`,
-          targetMemoryUtilization: `{{ .Values.${context.configName}.autoscaling.targetMemoryUtilization }}`,
+          targetCPUUtilizationPercentage: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilizationPercentage }}`,
         };
         const hpaRendered = jsone(templates['hpa'], hpaContext);
         const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
-        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), wrapConditionalHorizontalPodAutoscaler(hpaRendered, context));
+        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), postProcessHorizontalPodAutoscaler(hpaRendered, context));
         break;
       }
       case 'background': {
@@ -539,8 +549,7 @@ tasks.push({
           enabled: false,
           minReplicas: 1,
           maxReplicas: 100,
-          targetCPUUtilization: 80,
-          targetMemoryUtilization: 80,
+          targetCPUUtilizationPercentage: 80,
         },
       };
       schema.required.push(confName);
@@ -580,14 +589,14 @@ tasks.push({
                 minimum: 1,
                 default: 100,
               },
-              targetCPUUtilization: {
+              targetCPUUtilizationPercentage: {
                 type: 'integer',
                 description: 'Target CPU utilization percentage',
                 minimum: 1,
                 maximum: 100,
                 default: 80,
               },
-              targetMemoryUtilization: {
+              targetMemoryUtilizationPercentage: {
                 type: 'integer',
                 description: 'Target memory utilization percentage',
                 minimum: 1,
@@ -595,7 +604,7 @@ tasks.push({
                 default: 80,
               },
             },
-            required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilization', 'targetMemoryUtilization'],
+            required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilizationPercentage'],
             additionalProperties: false,
           },
         },
