@@ -19,7 +19,9 @@ type (
 	}
 
 	ArtifactTaskFeature struct {
-		task *TaskRun
+		task            *TaskRun
+		startSuccessful bool
+		artifacts       []artifacts.TaskArtifact
 	}
 )
 
@@ -54,12 +56,35 @@ func (atf *ArtifactTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (atf *ArtifactTaskFeature) Start() *CommandExecutionError {
+	for _, artifact := range atf.task.Payload.Artifacts {
+		// The default artifact expiry is task expiry, but is only applied when
+		// the task artifacts are resolved. We intentionally don't modify
+		// task.Payload otherwise it no longer reflects the real data defined
+		// in the task.
+		if !time.Time(artifact.Expires).IsZero() {
+			// Don't be too strict: allow 1s discrepancy to account for
+			// possible timestamp rounding on upstream systems
+			if time.Time(artifact.Expires).Add(time.Second).Before(time.Time(atf.task.Definition.Deadline)) {
+				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, atf.task.Definition.Deadline))
+			}
+			// Don't be too strict: allow 1s discrepancy to account for
+			// possible timestamp rounding on upstream systems
+			if time.Time(artifact.Expires).After(time.Time(atf.task.Definition.Expires).Add(time.Second)) {
+				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, atf.task.Definition.Expires))
+			}
+		}
+	}
+	atf.startSuccessful = true
 	return nil
 }
 
 func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
+	if !atf.startSuccessful {
+		return
+	}
 	task := atf.task
-	taskArtifacts := task.PayloadArtifacts()
+	atf.FindArtifacts()
+	taskArtifacts := atf.artifacts
 	var wg sync.WaitGroup
 	uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
 	failChan := make(chan *CommandExecutionError, len(taskArtifacts))
@@ -114,9 +139,11 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 	}
 }
 
-// PayloadArtifacts returns the artifacts as listed in the payload of the task (note this does
-// not include log files)
-func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
+// FindArtifacts scans the file system for the file/directory artifacts listed
+// in the payload of the task (note this does not include log files) and
+// updates its internal record of what files exist
+func (atf *ArtifactTaskFeature) FindArtifacts() {
+	task := atf.task
 	payloadArtifacts := make([]artifacts.TaskArtifact, 0)
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
@@ -192,7 +219,7 @@ func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
 			_ = filepath.WalkDir(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
 	}
-	return payloadArtifacts
+	atf.artifacts = payloadArtifacts
 }
 
 // File should be resolved as an S3Artifact if file exists as file and is

@@ -642,24 +642,6 @@ If you need D2G to translate your Docker Worker payload so Generic Worker can pr
 			panic(err)
 		}
 	}
-	for _, artifact := range task.Payload.Artifacts {
-		// The default artifact expiry is task expiry, but is only applied when
-		// the task artifacts are resolved. We intentionally don't modify
-		// task.Payload otherwise it no longer reflects the real data defined
-		// in the task.
-		if !time.Time(artifact.Expires).IsZero() {
-			// Don't be too strict: allow 1s discrepancy to account for
-			// possible timestamp rounding on upstream systems
-			if time.Time(artifact.Expires).Add(time.Second).Before(time.Time(task.Definition.Deadline)) {
-				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires before task deadline (%v is before %v)", artifact.Path, artifact.Expires, task.Definition.Deadline))
-			}
-			// Don't be too strict: allow 1s discrepancy to account for
-			// possible timestamp rounding on upstream systems
-			if time.Time(artifact.Expires).After(time.Time(task.Definition.Expires).Add(time.Second)) {
-				return MalformedPayloadError(fmt.Errorf("malformed payload: artifact '%v' expires after task expiry (%v is after %v)", artifact.Path, artifact.Expires, task.Definition.Expires))
-			}
-		}
-	}
 	if task.Payload.MaxRunTime > int64(config.MaxTaskRunTime) {
 		return MalformedPayloadError(fmt.Errorf("task's maxRunTime of %d exceeded allowed maximum of %d", task.Payload.MaxRunTime, config.MaxTaskRunTime))
 	}

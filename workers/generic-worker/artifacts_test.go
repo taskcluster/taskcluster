@@ -40,7 +40,11 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 		pd: currentPlatformData(),
 	}
 	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
-	got := tr.PayloadArtifacts()
+	atf := ArtifactTaskFeature{
+		task: tr,
+	}
+	atf.FindArtifacts()
+	got := atf.artifacts
 
 	// remove the ContentPath field from the got artifacts
 	// if it's of type S3Artifact. We can't compare this
