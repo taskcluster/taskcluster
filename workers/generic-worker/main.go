@@ -72,6 +72,7 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&CommandGeneratorFeature{},
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
 		&OSGroupsFeature{},
@@ -986,15 +987,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		return
 	}
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
-
-	task.Commands = make([]*process.Command, len(task.Payload.Command))
-	// generate commands, in case features want to modify them
-	for i := range task.Payload.Command {
-		err := task.generateCommand(i) // platform specific
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	// create task features
 	for _, feature := range features {
