@@ -72,6 +72,7 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&PayloadValidatorFeature{},
 		&CommandGeneratorFeature{},
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
@@ -615,41 +616,6 @@ func ClaimWork() *TaskRun {
 	}
 }
 
-func (task *TaskRun) validatePayload() *CommandExecutionError {
-	jsonPayload := task.Definition.Payload
-	validateErr := task.validateJSON(jsonPayload, JSONSchema())
-	if validateErr != nil {
-		return validateErr
-	}
-	payload := map[string]any{}
-	err := json.Unmarshal(jsonPayload, &payload)
-	if err != nil {
-		panic(err)
-	}
-	workerPoolID := config.ProvisionerID + "/" + config.WorkerType
-	workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
-	if _, exists := payload["image"]; exists {
-		if !config.D2GEnabled() {
-			return MalformedPayloadError(fmt.Errorf(`docker worker payload detected, but D2G is not enabled on this worker pool (%s).
-If you need D2G to translate your Docker Worker payload so Generic Worker can process it, please do one of two things:
-	1. Contact the owner of the worker pool %s (see %s) and ask for D2G to be enabled.
-	2. Use a worker pool that already allows docker worker payloads (search for "enableD2G": "true" in the worker pool definition)`, workerPoolID, workerPoolID, workerManagerURL))
-		}
-		err := task.convertDockerWorkerPayload()
-		if err != nil {
-			return err
-		}
-	} else if config.NativePayloadsDisabled() {
-		return MalformedPayloadError(fmt.Errorf("native Generic Worker payloads are disabled on this worker pool (%s)", workerPoolID))
-	} else {
-		err := json.Unmarshal(jsonPayload, &task.Payload)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return nil
-}
-
 func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecutionError {
 	// Parse the JSON schema
 	schemaLoader := gojsonschema.NewStringLoader(schema)
@@ -969,10 +935,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	task.logHeader()
 
-	err.add(task.validatePayload())
-	if err.Occurred() {
-		return
-	}
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
 	// create task features
