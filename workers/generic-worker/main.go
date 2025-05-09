@@ -88,6 +88,7 @@ func initialiseFeatures() (err error) {
 		&MaxRunTimeFeature{},
 		&AbortFeature{},
 		&TaskTimerFeature{},
+		&CommandExecutorFeature{},
 	)
 	for _, feature := range features {
 		log.Printf("Initialising feature %v...", feature.Name())
@@ -945,13 +946,6 @@ If you do require this feature, please do one of two things:
 			}
 		}
 	}
-	for i := range task.Payload.Command {
-		err.add(task.ExecuteCommand(i))
-		if err.Occurred() {
-			return
-		}
-	}
-
 	return
 }
 
