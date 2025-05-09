@@ -4,7 +4,24 @@ import { Logger } from './logger.js';
 import TimeKeeper from './timekeeper.js';
 import { hrtime } from 'process';
 
+/**
+* @typedef {object} MonitorOptions
+* @property {import('./monitormanager.js').MonitorManager} manager
+* @property {string} name
+* @property {object} metadata
+* @property {boolean} verify
+* @property {boolean} fake
+* @property {boolean} patchGlobal
+* @property {boolean} bailOnUnhandledRejection
+* @property {number} resourceInterval
+* @property {string} processName
+* @property {boolean} monitorProcess
+*/
+
 class Monitor {
+  /**
+   * @param {MonitorOptions} options
+   */
   constructor({
     manager,
     name,
@@ -28,6 +45,14 @@ class Monitor {
     Object.entries(this.manager.types).forEach(([name, meta]) => {
       this._register({ name, ...meta });
     });
+
+    this.metrics = {};
+    if (this.manager._prometheusPlugin) {
+      Object.entries(this.manager.metrics).forEach(([name, definition]) => {
+        this.manager._prometheusPlugin.registerMetric(name, definition);
+      });
+      this.manager._prometheusPlugin.init(this);
+    }
 
     this._log = new Logger({
       name: ['taskcluster', this.manager.serviceName, ...this.name].join('.'),
@@ -104,6 +129,92 @@ class Monitor {
       processName: this.processName,
       monitorProcess: false,
     });
+  }
+
+  /**
+   * Increment a Prometheus counter metric
+   * @param {string} name - Metric name
+   * @param {number} [value=1] - Value to increment by
+   * @param {object} [labels={}] - Labels to apply
+   */
+  increment(name, value = 1, labels = {}) {
+    if (!this.manager._prometheusPlugin) {
+      return;
+    }
+    try {
+      this.manager._prometheusPlugin.increment(name, value, labels);
+    } catch (err) {
+      this.reportError(err, { name, value, labels });
+    }
+  }
+
+  /**
+   * Decrement a Prometheus gauge metric
+   * @param {string} name - Metric name
+   * @param {number} [value=1] - Value to decrement by
+   * @param {object} [labels={}] - Labels to apply
+   */
+  decrement(name, value = 1, labels = {}) {
+    if (!this.manager._prometheusPlugin) {
+      return;
+    }
+    try {
+      this.manager._prometheusPlugin.decrement(name, value, labels);
+    } catch (err) {
+      this.reportError(err, { name, value, labels });
+    }
+  }
+
+  /**
+   * Set a Prometheus gauge metric value
+   * @param {string} name - Metric name
+   * @param {number} value - Value to set
+   * @param {object} [labels={}] - Labels to apply
+   */
+  set(name, value, labels = {}) {
+    if (!this.manager._prometheusPlugin) {
+      return;
+    }
+    try {
+      this.manager._prometheusPlugin.set(name, value, labels);
+    } catch (err) {
+      this.reportError(err, { name, value, labels });
+    }
+  }
+
+  /**
+   * Observe a value for a Prometheus histogram or summary
+   * @param {string} name - Metric name
+   * @param {number} value - Value to observe
+   * @param {object} [labels={}] - Labels to apply
+   */
+  observe(name, value, labels = {}) {
+    if (!this.manager._prometheusPlugin) {
+      return;
+    }
+    try {
+      this.manager._prometheusPlugin.observe(name, value, labels);
+    } catch (err) {
+      this.reportError(err, { name, value, labels });
+    }
+  }
+
+  /**
+   * Start a timer for a Prometheus histogram or summary
+   * @param {string} name - Metric name
+   * @param {object} [labels={}] - Initial labels to apply
+   * @returns {function} Function to call to end timing
+   */
+  startPromTimer(name, labels = {}) {
+    if (!this.manager._prometheusPlugin) {
+      return () => 0;
+    }
+    try {
+      return this.manager._prometheusPlugin.startTimer(name, labels);
+    } catch (err) {
+      this.reportError(err, { name, labels });
+      return () => 0;
+    }
   }
 
   taskclusterPerRequestInstance({ requestId, traceId }) {
@@ -280,6 +391,11 @@ class Monitor {
 
     if (this.manager._reporter) {
       await this.manager._reporter.flush();
+    }
+
+    // Terminate Prometheus plugin if it exists
+    if (this.manager._prometheusPlugin) {
+      await this.manager._prometheusPlugin.terminate();
     }
   }
 
