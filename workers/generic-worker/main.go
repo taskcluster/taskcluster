@@ -81,10 +81,10 @@ func initialiseFeatures() (err error) {
 	}
 	features = append(features, platformFeatures()...)
 	for _, feature := range features {
-		log.Printf("Initialising task feature %v...", feature.Name())
+		log.Printf("Initialising feature %v...", feature.Name())
 		err := feature.Initialise()
 		if err != nil {
-			log.Printf("FATAL: Initialisation of task feature %v failed!", feature.Name())
+			log.Printf("FATAL: Initialisation of feature %v failed!", feature.Name())
 			return err
 		}
 	}
@@ -996,14 +996,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		}
 	}
 
-	// tracks which Feature created which TaskFeature
-	type TaskFeatureOrigin struct {
-		taskFeature TaskFeature
-		feature     Feature
-	}
-
-	taskFeatureOrigins := []TaskFeatureOrigin{}
-
 	// create task features
 	for _, feature := range features {
 		if feature.IsRequested(task) {
@@ -1015,9 +1007,9 @@ If you do not require this feature, remove the toggle from the task definition.
 If you do require this feature, please do one of two things:
 	1. Contact the owner of the worker pool %s (see %s) and ask for %q to be enabled.
 	2. Use a worker pool that already allows %q`, feature.Name(), workerPoolID, workerPoolID, workerManagerURL, feature.Name(), feature.Name())))
-				continue
+				return
 			}
-			log.Printf("Creating task feature %v...", feature.Name())
+			log.Printf("Starting task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
 			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, serviceFactory.Auth(config.Credentials(), config.RootURL))
@@ -1025,11 +1017,11 @@ If you do require this feature, please do one of two things:
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability
 				err.add(ResourceUnavailable(scopeValidationErr))
-				continue
+				return
 			}
 			if !scopesSatisfied {
 				err.add(MalformedPayloadError(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
-				continue
+				return
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
 			task.featureArtifacts[task.Payload.Logs.Backing] = "Backing log"
@@ -1040,34 +1032,19 @@ If you do require this feature, please do one of two things:
 					task.featureArtifacts[a] = feature.Name()
 				}
 			}
-			taskFeatureOrigins = append(
-				taskFeatureOrigins,
-				TaskFeatureOrigin{
-					taskFeature: taskFeature,
-					feature:     feature,
-				},
-			)
-		}
-	}
-	if err.Occurred() {
-		return
-	}
-
-	// start task features
-	for _, taskFeatureOrigin := range taskFeatureOrigins {
-
-		log.Printf("Starting task feature %v...", taskFeatureOrigin.feature.Name())
-		err.add(taskFeatureOrigin.taskFeature.Start())
-
-		// make sure we defer Stop() even if Start() returns an error, since the feature may have made
-		// changes that need cleaning up in Stop() before it hit the error that it returned...
-		defer func(taskFeatureOrigin TaskFeatureOrigin) {
-			log.Printf("Stopping task feature %v...", taskFeatureOrigin.feature.Name())
-			taskFeatureOrigin.taskFeature.Stop(err)
-		}(taskFeatureOrigin)
-
-		if err.Occurred() {
-			return
+			if err.Occurred() {
+				return
+			}
+			err.add(taskFeature.Start())
+			// make sure we defer Stop() even if Start() returns an error, since the feature may have made
+			// changes that need cleaning up in Stop() before it hit the error that it returned...
+			defer func(feature Feature) {
+				log.Printf("Stopping task feature %v...", feature.Name())
+				taskFeature.Stop(err)
+			}(feature)
+			if err.Occurred() {
+				return
+			}
 		}
 	}
 
