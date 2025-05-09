@@ -255,6 +255,8 @@ export const validate = (references) => {
         }
       } else if (metadata.name === 'logs') {
         // Nothing to do..
+      } else if (metadata.name === 'metrics') {
+        // Nothing to do..
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);
       }

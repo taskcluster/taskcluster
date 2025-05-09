@@ -2272,4 +2272,76 @@ suite(testing.suiteName(), function() {
       assert.equal(res.length, 0);
     });
   });
+
+  suite('queue_worker_stats method', function() {
+    setup(async function() {
+      // Clean up tables before each test
+      await helper.withDbClient(async client => {
+        await client.query('DELETE FROM queue_workers');
+        await client.query('DELETE FROM queue_claimed_tasks');
+        await client.query('DELETE FROM queue_pending_tasks');
+      });
+    });
+
+    helper.dbTest('returns empty result when no data exists', async function(db) {
+      const result = await db.fns.queue_worker_stats();
+      assert.deepEqual(result, []);
+    });
+
+    helper.dbTest('returns correct stats when some tables have data', async function(db) {
+      const taskQueueId = 'p2/wt2';
+      const expectStats = async (stats) => {
+        const result = await db.fns.queue_worker_stats();
+        assert.deepEqual(result, [{
+          task_queue_id: taskQueueId,
+          ...stats,
+        }]);
+      };
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker1',
+        expires_in: fromNow('12 hours'),
+      });
+      await expectStats({ worker_count: 1, quarantined_count: 0, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker2',
+        expires_in: fromNow('12 hours'),
+      });
+      await expectStats({ worker_count: 2, quarantined_count: 0, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.quarantine_queue_worker_with_last_date_active_and_details({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker2',
+        quarantine_until_in: fromNow('4 hours'),
+        quarantine_details_in: { details: 'quarantined for testing' },
+      });
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.queue_claimed_task_put(
+        'claimed-task-id',
+        0,
+        fromNow('1 hour'),
+        taskQueueId,
+        'wg1',
+        'worker1',
+      );
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 0, claimed_count: 1 });
+
+      await db.fns.queue_pending_tasks_add(
+        taskQueueId,
+        0,
+        'pending-task-id',
+        0,
+        'hint',
+        fromNow('1 hour'),
+      );
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
+    });
+  });
 });

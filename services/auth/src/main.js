@@ -78,7 +78,7 @@ const load = Loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth'), MonitorManager.metricsReference('auth')],
     }).then(ref => ref.generateReferences()),
   },
 
