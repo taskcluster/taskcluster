@@ -1,6 +1,6 @@
 # Monitor Library
 
-A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics and write structured logs.
+A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics, write structured logs, and expose Prometheus metrics.
 By default it will report any errors that cause the process to exit, and report as warnings any errors that cause stats writing to not work.
 To disable any of these, you can see the Options and Defaults section below.
 
@@ -42,6 +42,21 @@ This is typically done in a loader component:
       serviceName: 'some-service',
       processName: process,
       verify: profile !== 'production',
+      prometheusConfig: {
+        // Optional Prometheus configuration
+        prefix: 'someservice', // Optional prefix for metrics (defaults to serviceName)
+        server: {
+          port: 9100,          // Port for Prometheus metrics server
+          ip: '0.0.0.0',       // IP to bind server to (default 127.0.0.1)
+        },
+        // Optional PushGateway configuration for short-lived processes
+        // push: {
+        //   gateway: 'http://pushgateway:9091',
+        //   jobName: 'my-service-job',
+        //   groupings: { environment: 'production' },
+        //   interval: 60000, // Push every 60 seconds (or omit for one-time push)
+        // },
+      },
       ...cfg.monitoring,
     }),
   },
@@ -104,6 +119,53 @@ The options to `register` are:
 If the `verify` option is set to true during manager setup, this library will verify that at least the required fields have been passed into the logger
 upon invoking it.
 
+### registerMetric
+
+Similar to message types, you can register metrics that will be exposed to Prometheus:
+
+```js
+MonitorManager.registerMetric({
+  name: 'api_request_duration_seconds',
+  type: 'histogram',
+  description: 'API request duration in seconds',
+  labelNames: ['method', 'path', 'status'],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5], // Buckets for histogram
+  serviceName: null, // null means this is a global metric
+});
+
+MonitorManager.registerMetric({
+  name: 'active_users',
+  type: 'gauge',
+  description: 'Number of active users',
+  serviceName: 'auth-service', // Specific to this service
+});
+
+MonitorManager.registerMetric({
+  name: 'api_requests_total',
+  type: 'counter',
+  description: 'Count of API requests',
+  labelNames: ['method', 'status'],
+});
+
+MonitorManager.registerMetric({
+  name: 'request_processing_time',
+  type: 'summary',
+  description: 'Summary of request processing time',
+  labelNames: ['endpoint'],
+  percentiles: [0.5, 0.9, 0.95, 0.99], // Optional percentiles for summaries
+});
+```
+
+The options to `registerMetric` are:
+
+ * `name` - Name of the metric. Should follow Prometheus naming conventions.
+ * `type` - One of 'counter', 'gauge', 'histogram', or 'summary'.
+ * `description` - A description of what this metric measures.
+ * `labelNames` - (Optional) Array of label names that can be applied to this metric.
+ * `buckets` - (Optional, for 'histogram' type) Array of bucket boundaries.
+ * `percentiles` - (Optional, for 'summary' type) Array of percentiles to calculate.
+ * `serviceName` - (Optional) If set, then this metric appears only on this service; otherwise the metric is considered global.
+
 ### setup
 
 The available options to the setup function are:
@@ -121,6 +183,7 @@ The available options to the setup function are:
  * `destination` - A stream to which formatted logs should be written.
  * `verify` - If this is true, log messages that have been registered will be verified to define all of the required fields.
  * `errorConfig` - An optional object containing a `reporter` field and any arguments to pass to a reporter. See below.
+ * `prometheusConfig` - An optional object containing Prometheus configuration. See below.
 
 ### Error Configuration
 
@@ -135,6 +198,39 @@ errorConfig: {
 },
 ```
 
+### Prometheus Configuration
+
+This library supports Prometheus metrics through the `prometheusConfig` option. The configuration object supports:
+
+```js
+prometheusConfig: {
+  // Optional prefix for all metrics (defaults to serviceName converted to snake_case)
+  prefix: 'my_service',
+
+  // Optional server configuration for exposing metrics to Prometheus
+  server: {
+    port: 9100,        // Default Prometheus port
+    ip: '0.0.0.0',     // Listen on all interfaces (default: '127.0.0.1')
+  },
+
+  // Optional PushGateway configuration for short-lived processes
+  push: {
+    gateway: 'http://pushgateway:9091',  // URL of your Prometheus PushGateway
+    jobName: 'periodic-task',            // Optional name (defaults to serviceName)
+    groupings: {                         // Optional additional labels
+      instance: 'worker-1',
+      environment: 'production',
+    },
+    interval: 60000,  // Push every 60 seconds (optional for long-running processes)
+                      // If omitted, a single push is attempted
+  },
+}
+```
+
+The Prometheus server exposes the following endpoints:
+- `/metrics` - Returns Prometheus-formatted metrics
+- `/health` - A simple health check endpoint
+
 ## Monitor objects
 
 Monitor objects are intended to be passed around to the various things that might need to submit data for monitoring.
@@ -145,6 +241,29 @@ The `name` if given will be appended to the parent monitor's name.
 The `metadata`, if given, will be included in the fields of any logs generated by this object, in addition to the parent monitor's metadata.
 At least one of `name` and `metadata` must be given.
 The messages these child monitors produce will have a value of `Logger` corresponding to their full name.
+
+### Prometheus Metrics Methods
+
+If Prometheus is enabled, monitor instances provide the following methods for metrics:
+
+```js
+// Increment a counter
+monitor.increment('api_requests_total', 1, { method: 'GET', status: '200' });
+
+// Decrement a gauge
+monitor.decrement('active_connections', 1);
+
+// Set a gauge to a specific value
+monitor.set('active_users', 42);
+
+// Observe a value for a histogram or summary
+monitor.observe('request_duration_seconds', 0.157, { path: '/api/v1/task' });
+
+// Start a timer and get a function to end it
+const end = monitor.startPromTimer('api_request_duration_seconds', { method: 'POST' });
+// ... do some work ...
+const durationSeconds = end({ status: 'success' }); // Add more labels at end time
+```
 
 ### Logging
 
@@ -180,7 +299,7 @@ results in
 
 ### Measuring and Counting Things
 
-**Note: You should prefer logging specific types rather than these generic counts and measures. They exist mostly for backwards compatibility.**
+**Note: You should prefer logging specific types or using the Prometheus metrics methods rather than these generic counts and measures. They exist mostly for backwards compatibility.**
 
 To record a current measurement of a named value:
 
@@ -196,6 +315,8 @@ monitor.count('bar', 4); // increment by 4
 ```
 
 These events will have types of `monitor.measure` and `monitor.count` respectively. The fields will have `key` and `val`.
+
+If Prometheus is enabled, these calls will also automatically update corresponding Prometheus metrics.
 
 ### Reporting Errors
 
