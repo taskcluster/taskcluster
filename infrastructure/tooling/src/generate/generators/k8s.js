@@ -136,8 +136,8 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 `;
 };
 
-const wrapConditionalHorizontalPodAutoscaler = (rendered) => {
-  return `{{- if .Values.autoscaling.enabled }}
+const wrapConditionalHorizontalPodAutoscaler = (rendered, context) => {
+  return `{{- if .Values.${context.configName}.autoscaling.enabled }}
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
@@ -203,7 +203,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
         };
         const hpaRendered = jsone(templates['hpa'], hpaContext);
         const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
-        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), wrapConditionalHorizontalPodAutoscaler(hpaRendered));
+        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), wrapConditionalHorizontalPodAutoscaler(hpaRendered, context));
         break;
       }
       case 'background': {
