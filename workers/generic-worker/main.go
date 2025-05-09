@@ -72,6 +72,7 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&BackingLogFeature{},
 		&PayloadValidatorFeature{},
 		&CommandGeneratorFeature{},
 		&LiveLogFeature{},
@@ -868,29 +869,6 @@ func (task *TaskRun) kill() {
 	}
 }
 
-func (task *TaskRun) createLogFile() *os.File {
-	absLogFile := filepath.Join(taskContext.TaskDir, logPath)
-	logFileHandle, err := os.Create(absLogFile)
-	if err != nil {
-		panic(err)
-	}
-	task.logMux.Lock()
-	defer task.logMux.Unlock()
-	task.logWriter = logFileHandle
-	return logFileHandle
-}
-
-func (task *TaskRun) logHeader() {
-	jsonBytes, err := json.MarshalIndent(config.WorkerTypeMetadata, "  ", "  ")
-	if err != nil {
-		panic(err)
-	}
-	task.Infof("Worker Type (%v/%v) settings:", config.ProvisionerID, config.WorkerType)
-	task.Info("  " + string(jsonBytes))
-	task.Info("Task ID: " + task.TaskID)
-	task.Info("=== Task Starting ===")
-}
-
 func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	// err is essentially a list of all errors that occur. We'll base the task
@@ -911,29 +889,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 		}
 		err.add(task.resolve(err))
 	}()
-
-	logHandle := task.createLogFile()
-	defer func() {
-		// log any errors that occurred
-		if err.Occurred() {
-			task.Error(err.Error())
-		}
-		if r := recover(); r != nil {
-			task.Error(string(debug.Stack()))
-			task.Errorf("%#v", r)
-			task.Errorf("%v", r)
-			defer panic(r)
-		}
-		task.closeLog(logHandle)
-		if task.Payload.Features.BackingLog {
-			err.add(task.uploadLog(task.Payload.Logs.Backing, filepath.Join(taskContext.TaskDir, logPath)))
-		}
-		if config.CleanUpTaskDirs {
-			_ = os.Remove(filepath.Join(taskContext.TaskDir, logPath))
-		}
-	}()
-
-	task.logHeader()
 
 	log.Printf("Running task %v/tasks/%v/runs/%v", config.RootURL, task.TaskID, task.RunID)
 
