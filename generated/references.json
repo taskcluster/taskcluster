@@ -11067,6 +11067,50 @@
             "audit_retention_days": {
               "type": "string"
             },
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "aws_credentials_allowed_buckets": {
               "oneOf": [
                 {
@@ -11253,6 +11297,50 @@
         "built_in_workers": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -11334,6 +11422,50 @@
         "github": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "bot_username": {
               "type": "string"
             },
@@ -11468,6 +11600,50 @@
         "hooks": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "azure_crypto_key": {
               "type": "string"
             },
@@ -11622,6 +11798,50 @@
         "index": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -11769,6 +11989,50 @@
         "notify": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "aws_access_key_id": {
               "type": "string"
             },
@@ -11905,6 +12169,50 @@
         "object": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "backend_map": {
               "oneOf": [
                 {
@@ -12044,6 +12352,50 @@
         "purge_cache": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -12129,6 +12481,50 @@
           "properties": {
             "artifact_region": {
               "type": "string"
+            },
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
             },
             "aws_access_key_id": {
               "type": "string"
@@ -12422,6 +12818,50 @@
         "references": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "debug": {
               "title": "node debug env var",
               "type": "string"
@@ -12471,6 +12911,50 @@
         "secrets": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "azure_crypto_key": {
               "type": "string"
             },
@@ -12585,6 +13069,50 @@
         "ui": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "banner_message": {
               "type": "string"
             },
@@ -12661,6 +13189,50 @@
           "properties": {
             "additional_allowed_cors_origin": {
               "type": "string"
+            },
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
             },
             "azure_crypto_key": {
               "type": "string"
@@ -12834,6 +13406,50 @@
         "worker_manager": {
           "additionalProperties": false,
           "properties": {
+            "autoscaling": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "description": "Whether to enable autoscaling for this service",
+                  "type": "boolean"
+                },
+                "maxReplicas": {
+                  "default": 100,
+                  "description": "Maximum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "minReplicas": {
+                  "default": 1,
+                  "description": "Minimum number of replicas",
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target CPU utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                  "default": 80,
+                  "description": "Target memory utilization percentage",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+              ],
+              "title": "Autoscaling configuration for this service",
+              "type": "object"
+            },
             "db_crypto_keys": {
               "oneOf": [
                 {
