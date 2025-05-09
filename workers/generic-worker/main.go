@@ -86,6 +86,7 @@ func initialiseFeatures() (err error) {
 	features = append(
 		features,
 		&MaxRunTimeFeature{},
+		&AbortFeature{},
 	)
 	for _, feature := range features {
 		log.Printf("Initialising feature %v...", feature.Name())
@@ -943,27 +944,6 @@ If you do require this feature, please do one of two things:
 			}
 		}
 	}
-
-	// Terminating the Worker Early
-	// ----------------------------
-	// If the worker finds itself having to terminate early, for example a spot
-	// nodes that detects pending termination. Or a physical machine ordered to
-	// be provisioned for another purpose, the worker should report exception
-	// with the reason `worker-shutdown`. Upon such report the queue will
-	// resolve the run as exception and create a new run, if the task has
-	// additional retries left.
-	stopHandlingGracefulTermination := graceful.OnTerminationRequest(func(finishTasks bool) {
-		if !finishTasks {
-			_ = task.StatusManager.Abort(
-				&CommandExecutionError{
-					Cause:      fmt.Errorf("graceful termination requested, without time to finish tasks"),
-					Reason:     workerShutdown,
-					TaskStatus: aborted,
-				},
-			)
-		}
-	})
-	defer stopHandlingGracefulTermination()
 
 	started := time.Now()
 	defer func() {
