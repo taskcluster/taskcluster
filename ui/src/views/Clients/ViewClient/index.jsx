@@ -225,8 +225,10 @@ export default class ViewClient extends Component {
 
       // CLI login
       if (callbackUrl) {
+        const encodedClientId = encodeURIComponent(clientId);
+        const encodedAccessToken = encodeURIComponent(result.data.createClient.accessToken);
         window.location.replace(
-          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
+          `${callbackUrl}?clientId=${encodedClientId}&accessToken=${encodedAccessToken}`
         );
 
         return;
