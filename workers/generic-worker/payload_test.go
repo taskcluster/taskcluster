@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"runtime"
 	"strings"
@@ -9,43 +8,9 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v83/clients/client-go"
-	"github.com/taskcluster/taskcluster/v83/clients/client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
-
-func taskWithPayload(payload string) *TaskRun {
-	return &TaskRun{
-		TaskID: slugid.Nice(),
-		Definition: tcqueue.TaskDefinitionResponse{
-			Payload: json.RawMessage(payload),
-		},
-		logWriter: &bytes.Buffer{},
-	}
-}
-
-func ensureValidPayload(t *testing.T, task *TaskRun) {
-	t.Helper()
-	err := task.validatePayload()
-	if err != nil {
-		t.Logf("%v", err.Cause)
-		t.Fatalf("Valid task payload should have passed validation")
-	}
-}
-
-func ensureMalformedPayload(t *testing.T, task *TaskRun) {
-	t.Helper()
-	err := task.validatePayload()
-	if err == nil {
-		t.Fatalf("Bad task payload should not have passed validation")
-	}
-	t.Logf("Task log:\n%v", task.logWriter)
-	t.Logf("%v", err.Cause)
-	if err.Reason != "malformed-payload" || err.TaskStatus != errored {
-		t.Errorf("Bad task payload should have retured malformed-payload, but actually returned:\n%#v", err)
-	}
-}
 
 // Test that the burned in payload schema is a valid json schema
 func TestPayloadSchemaValid(t *testing.T) {
@@ -61,38 +26,40 @@ func TestPayloadSchemaValid(t *testing.T) {
 	}
 }
 
-// Badly formatted json payload should result in *json.SyntaxError error in task.validatePayload()
-func TestTotallyMalformedPayload(t *testing.T) {
-	ensureMalformedPayload(t, taskWithPayload(`bad payload, not even json`))
+func TestEmptyPayloadObject(t *testing.T) {
+	setup(t)
+	td := testTask(t)
+	td.Payload = json.RawMessage(
+		`{}`,
+	)
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
 }
 
 // Make sure only strings can be specified for env vars. In this test,
 // GITHUB_PULL_REQUEST is specified as a number, rather than a string.
 func TestEnvVarsMustBeStrings(t *testing.T) {
-	ensureMalformedPayload(t, taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip",
-    "GITHUB_PULL_REQUEST": 37,
-    "GITHUB_BASE_BRANCH": "main"
-  },
-  "maxRunTime": 1200,
-  "command": [`+rawHelloGoodbye()+`]
-}`))
+	setup(t)
+	td := testTask(t)
+	td.Payload = json.RawMessage(`
+		{
+		  "env": {
+		    "XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		    "GITHUB_PULL_REQUEST": 37,
+		    "GITHUB_BASE_BRANCH": "main"
+		  },
+		  "maxRunTime": 1200,
+		  "command": [` + rawHelloGoodbye() + `]
+		}`,
+	)
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
 }
 
 func TestMalformedPayloadIncludesSchema(t *testing.T) {
 	setup(t)
-	taskID := slugid.Nice()
 	td := testTask(t)
 	// invalid payload, that is still valid json
 	td.Payload = json.RawMessage(`{"a": "b"}`)
-	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
-	_, err := queue.CreateTask(taskID, td)
-	if err != nil {
-		t.Fatalf("Could not submit task: %v", err)
-	}
-	t.Logf("Scheduled task %v", taskID)
-	ensureResolution(t, taskID, "exception", "malformed-payload")
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
 	logtext := LogText(t)
 	// all worker schemas include a definition for "writableDirectoryCache" so let's use that
 	if !strings.Contains(logtext, `"writableDirectoryCache":`) {
@@ -102,212 +69,222 @@ func TestMalformedPayloadIncludesSchema(t *testing.T) {
 
 // Extra fields not allowed
 func TestExtraFieldsNotAllowed(t *testing.T) {
-	ensureMalformedPayload(t, taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "extraField": "This field is not allowed!",
-  "command": [`+rawHelloGoodbye()+`]
-}`))
+	setup(t)
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+	  "env": {
+	    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+	  },
+	  "maxRunTime": 3,
+	  "extraField": "This field is not allowed!",
+	  "command": [` + rawHelloGoodbye() + `]
+	}`)
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Task payload for this worker type must conform to the following jsonschema:`) {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
 }
 
 // At least one command must be specified
 func TestNoCommandsSpecified(t *testing.T) {
-	ensureMalformedPayload(t, taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": []
-}`))
+	setup(t)
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+	  "env": {
+	    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+	  },
+	  "maxRunTime": 3,
+	  "command": []
+	}`)
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Task payload for this worker type must conform to the following jsonschema:`) {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
 }
 
 // Valid payload should pass validation
 func TestValidPayload(t *testing.T) {
 	setup(t)
-	ensureValidPayload(t, taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [`+rawHelloGoodbye()+`]
-}`))
-}
-
-// This little hack is to make sure we get a timestamp which is truncated to
-// the millisecond
-func NowMillis(t *testing.T) (now time.Time) {
-	t.Helper()
-	var err error
-	now, err = time.Parse(time.RFC3339, tcclient.Time(time.Now()).String())
-	if err != nil {
-		t.Fatalf("Error parsing timestamp - %v", err)
-	}
-	return
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+	  "env": {
+	    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
+	  },
+	  "maxRunTime": 3,
+	  "command": [` + rawHelloGoodbye() + `]
+	}`)
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "completed", "completed")
 }
 
 // If an artifact expires before task deadline we should get a Malformed Payload
 func TestArtifactExpiresBeforeDeadline(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*5)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureMalformedPayload(t, task)
+	now := time.Now()
+	td := testTask(t)
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Env: map[string]string{
+			"XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		},
+		MaxRunTime: 3,
+		Command:    command,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: tcclient.Time(now.Add(time.Minute * 5)),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	td.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "expires before task deadline") {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
 }
 
 // If a task has a higher `maxRunTime` than the `maxTaskRunTime` set in the worker config we should get a Malformed Payload
 func TestMaxTaskRunTime(t *testing.T) {
 	setup(t)
-	task := maxTaskRunTimeTestTask(t)
-	if err := task.validatePayload(); err == nil {
-		t.Fatal("Bad task payload should not have passed validation")
-	} else {
-		assertMaxTaskRunTimeError(t, err)
-	}
-	t.Logf("Task log:\n%v", task.logWriter)
-}
-
-func maxTaskRunTimeTestTask(t *testing.T) *TaskRun {
-	t.Helper()
+	td := testTask(t)
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 310,
 	}
 	defaults.SetDefaults(&payload)
-	payloadRawJSON, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("Failed to marshal payload: %v", err)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "task's maxRunTime of 310 exceeded allowed maximum of 300") {
+		t.Fatalf("Log does't include expected text: %v", logtext)
 	}
-	return &TaskRun{
-		TaskID: slugid.Nice(),
-		Definition: tcqueue.TaskDefinitionResponse{
-			Payload: payloadRawJSON,
-		},
-		logWriter: &bytes.Buffer{},
-	}
-}
-
-func assertMaxTaskRunTimeError(t *testing.T, err error) {
-	t.Helper()
-	cmdErr, ok := err.(*CommandExecutionError)
-	if !ok {
-		t.Fatalf("Unexpected error type: %v", err)
-	}
-	if cmdErr.Reason != "malformed-payload" || cmdErr.TaskStatus != errored {
-		t.Errorf("Bad task payload should have returned malformed-payload, but actually returned:\n%#v", err)
-	}
-	const expectedErrorText = "task's maxRunTime of 310 exceeded allowed maximum of 300"
-	if !strings.Contains(err.Error(), expectedErrorText) {
-		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
-	}
-	t.Logf("%v", cmdErr.Cause)
 }
 
 // If artifact expires with task deadline, we should not get a Malformed Payload
 func TestArtifactExpiresWithDeadline(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*10)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureValidPayload(t, task)
+	now := time.Now()
+	td := testTask(t)
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Env: map[string]string{
+			"XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		},
+		MaxRunTime: 3,
+		Command:    command,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: tcclient.Time(now.Add(time.Minute * 10)),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	td.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
 // If artifact expires after task deadline, but before task expiry, we should not get a Malformed Payload
 func TestArtifactExpiresBetweenDeadlineAndTaskExpiry(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*15)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureValidPayload(t, task)
+	now := time.Now()
+	td := testTask(t)
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Env: map[string]string{
+			"XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		},
+		MaxRunTime: 3,
+		Command:    command,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: tcclient.Time(now.Add(time.Minute * 15)),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	td.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
 // If artifact expires with task expiry, we should not get a Malformed Payload
 func TestArtifactExpiresWithTask(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*20)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureValidPayload(t, task)
+	now := time.Now()
+	td := testTask(t)
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Env: map[string]string{
+			"XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		},
+		MaxRunTime: 3,
+		Command:    command,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: tcclient.Time(now.Add(time.Minute * 20)),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	td.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
 // If an artifact expires after task expiry we should get a Malformed Payload
 func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
 	setup(t)
-	now := NowMillis(t)
-	task := taskWithPayload(`{
-  "env": {
-    "XPI_NAME": "dist/example_add-on-0.0.1.zip"
-  },
-  "maxRunTime": 3,
-  "command": [` + rawHelloGoodbye() + `],
-  "artifacts": [
-    {
-      "type": "file",
-      "path": "public/some/artifact",
-      "expires": "` + tcclient.Time(now.Add(time.Minute*25)).String() + `"
-    }
-  ]
-}`)
-	task.Definition.Deadline = tcclient.Time(now.Add(time.Minute * 10))
-	task.Definition.Expires = tcclient.Time(now.Add(time.Minute * 20))
-	ensureMalformedPayload(t, task)
+	now := time.Now()
+	td := testTask(t)
+	command := helloGoodbye()
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+
+	payload := GenericWorkerPayload{
+		Env: map[string]string{
+			"XPI_NAME": "dist/example_add-on-0.0.1.zip",
+		},
+		MaxRunTime: 3,
+		Command:    command,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "SampleArtifacts/_/X.txt",
+				Expires: tcclient.Time(now.Add(time.Minute * 25)),
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td.Deadline = tcclient.Time(now.Add(time.Minute * 10))
+	td.Expires = tcclient.Time(now.Add(time.Minute * 20))
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "expires after task expiry") {
+		t.Fatalf("Log does't include expected text: %v", logtext)
+	}
 }
 
 func TestInvalidPayload(t *testing.T) {
