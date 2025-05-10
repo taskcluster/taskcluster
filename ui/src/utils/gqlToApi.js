@@ -16,7 +16,7 @@ export function gqlTaskToApi(task) {
   // omit the fields present in graphql but not in the API payload
   cloned = omit(TASK_ADDED_FIELDS, cloned);
   // convert graphql-style constants to the underlying API constants
-  cloned.priority = cloned.priority.toLowerCase();
+  cloned.priority = cloned.priority.toLowerCase().replace(/_/g, '-');
   cloned.requires = cloned.requires.toLowerCase().replace(/_/g, '-');
 
   return cloned;

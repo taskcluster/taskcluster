@@ -81,6 +81,7 @@ func initialiseFeatures() (err error) {
 		&MountsFeature{},
 		&ResourceMonitorFeature{},
 		&InteractiveFeature{},
+		&MetadataFeature{},
 	}
 	features = append(features, platformFeatures()...)
 	features = append(
@@ -232,6 +233,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			EnableChainOfTrust:             true,
 			EnableInteractive:              true,
 			EnableLiveLog:                  true,
+			EnableMetadata:                 true,
 			EnableMounts:                   true,
 			EnableOSGroups:                 true,
 			EnableResourceMonitor:          true,
