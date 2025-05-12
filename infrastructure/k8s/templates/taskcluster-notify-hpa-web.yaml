@@ -13,15 +13,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: taskcluster-notify
-  minReplicas: '{{ .Values.notify.autoscaling.minReplicas }}'
-  maxReplicas: '{{ .Values.notify.autoscaling.maxReplicas }}'
+  minReplicas: {{ .Values.notify.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.notify.autoscaling.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.notify.autoscaling.targetCPUUtilizationPercentage }}'
+          averageUtilization: {{ .Values.notify.autoscaling.targetCPUUtilizationPercentage }}
     {{- if .Values.notify.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:

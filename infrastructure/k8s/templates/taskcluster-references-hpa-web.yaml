@@ -13,15 +13,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: taskcluster-references
-  minReplicas: '{{ .Values.references.autoscaling.minReplicas }}'
-  maxReplicas: '{{ .Values.references.autoscaling.maxReplicas }}'
+  minReplicas: {{ .Values.references.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.references.autoscaling.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.references.autoscaling.targetCPUUtilizationPercentage }}'
+          averageUtilization: {{ .Values.references.autoscaling.targetCPUUtilizationPercentage }}
     {{- if .Values.references.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:

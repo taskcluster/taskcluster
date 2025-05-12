@@ -13,15 +13,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: taskcluster-purge-cache
-  minReplicas: '{{ .Values.purge_cache.autoscaling.minReplicas }}'
-  maxReplicas: '{{ .Values.purge_cache.autoscaling.maxReplicas }}'
+  minReplicas: {{ .Values.purge_cache.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.purge_cache.autoscaling.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.purge_cache.autoscaling.targetCPUUtilizationPercentage }}'
+          averageUtilization: {{ .Values.purge_cache.autoscaling.targetCPUUtilizationPercentage }}
     {{- if .Values.purge_cache.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:

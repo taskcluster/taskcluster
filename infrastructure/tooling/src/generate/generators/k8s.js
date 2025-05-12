@@ -151,6 +151,13 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
           averageUtilization: {{ .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}`,
   );
+
+  // some values need to stay integers after json'e string substitutions
+  // we unwrap minReplicas, maxReplicas, averageUtilization
+  result = result.replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*maxReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*averageUtilization:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3');
+
   return result;
 };
 

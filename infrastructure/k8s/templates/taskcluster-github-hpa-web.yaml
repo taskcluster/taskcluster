@@ -13,15 +13,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: taskcluster-github
-  minReplicas: '{{ .Values.github.autoscaling.minReplicas }}'
-  maxReplicas: '{{ .Values.github.autoscaling.maxReplicas }}'
+  minReplicas: {{ .Values.github.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.github.autoscaling.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.github.autoscaling.targetCPUUtilizationPercentage }}'
+          averageUtilization: {{ .Values.github.autoscaling.targetCPUUtilizationPercentage }}
     {{- if .Values.github.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:

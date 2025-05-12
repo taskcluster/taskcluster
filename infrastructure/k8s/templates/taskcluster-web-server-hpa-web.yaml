@@ -13,15 +13,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: taskcluster-web-server
-  minReplicas: '{{ .Values.web_server.autoscaling.minReplicas }}'
-  maxReplicas: '{{ .Values.web_server.autoscaling.maxReplicas }}'
+  minReplicas: {{ .Values.web_server.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.web_server.autoscaling.maxReplicas }}
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: '{{ .Values.web_server.autoscaling.targetCPUUtilizationPercentage }}'
+          averageUtilization: {{ .Values.web_server.autoscaling.targetCPUUtilizationPercentage }}
     {{- if .Values.web_server.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
