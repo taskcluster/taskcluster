@@ -217,6 +217,20 @@ class Monitor {
     }
   }
 
+  /**
+   * push metrics if prometheus is enabled and push options are provided
+   */
+  async pushMetrics() {
+    if (!this.manager._prometheusPlugin) {
+      return;
+    }
+    try {
+      await this.manager._prometheusPlugin.push();
+    } catch (err) {
+      this.reportError(err);
+    }
+  }
+
   taskclusterPerRequestInstance({ requestId, traceId }) {
     return this.childMonitor({ traceId, requestId });
   }

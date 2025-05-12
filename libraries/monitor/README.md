@@ -50,12 +50,11 @@ This is typically done in a loader component:
           ip: '0.0.0.0',       // IP to bind server to (default 127.0.0.1)
         },
         // Optional PushGateway configuration for short-lived processes
-        // push: {
-        //   gateway: 'http://pushgateway:9091',
-        //   jobName: 'my-service-job',
-        //   groupings: { environment: 'production' },
-        //   interval: 60000, // Push every 60 seconds (or omit for one-time push)
-        // },
+        push: {
+          gateway: 'http://pushgateway:9091',
+          jobName: 'my-service-job',
+          groupings: { environment: 'production' },
+        },
       },
       ...cfg.monitoring,
     }),
@@ -221,8 +220,6 @@ prometheusConfig: {
       instance: 'worker-1',
       environment: 'production',
     },
-    interval: 60000,  // Push every 60 seconds (optional for long-running processes)
-                      // If omitted, a single push is attempted
   },
 }
 ```
