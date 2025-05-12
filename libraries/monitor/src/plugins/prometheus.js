@@ -1,7 +1,6 @@
 import assert from 'assert';
 import http from 'http';
-import https from 'https';
-import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry } from 'prom-client';
+import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pushgateway } from 'prom-client';
 
 /**
  * @typedef {object} ServerOptions
@@ -14,7 +13,6 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry } fr
  * @property {string} gateway - URL of the Prometheus PushGateway.
  * @property {string} [jobName] - Job name for the PushGateway (defaults to serviceName).
  * @property {Record<string, string>} [groupings={}] - Additional groupings for the PushGateway. Key/value pairs.
- * @property {number | null} [interval] - Push interval in ms for long-running processes.
  */
 
 /**
@@ -57,8 +55,7 @@ class PrometheusPlugin {
     this.serverOptions = server;
     this.pushOptions = push;
     this.server = null;
-    this.pushInterval = null;
-    this.push = null;
+    this.pushGateway = null;
     this.registry = new PromClientRegistry();
     /** @type {Record<string, MetricInfo>} */
     this.metricsStore = {};
@@ -362,88 +359,21 @@ class PrometheusPlugin {
    * @returns {Promise<void>} Promise that resolves when push setup is complete.
    */
   async startPushing(options) {
-    const { gateway, jobName = this.serviceName, groupings = {}, interval = null } = options;
+    const { gateway, jobName = this.serviceName, groupings = {} } = options;
 
     assert(gateway, 'Push gateway URL is required');
-    const parsedUrl = new URL(gateway);
 
-    if (this.pushInterval) {
-      clearInterval(this.pushInterval);
-      this.pushInterval = null;
-    }
+    this.pushGateway = new Pushgateway(gateway, null, this.registry);
 
     this.push = async () => {
       try {
-        const metricsData = await this.metrics();
-
-        let path = `/metrics/job/${encodeURIComponent(jobName)}`;
-        for (const [key, value] of Object.entries(groupings)) {
-          path += `/${encodeURIComponent(key)}/${encodeURIComponent(value)}`;
-        }
-
-        const requestOptions = {
-          hostname: parsedUrl.hostname,
-          port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? '443' : '80'),
-          path,
-          method: 'POST',
-          headers: {
-            'Content-Type': this.contentType(),
-            'Content-Length': Buffer.byteLength(metricsData),
-          },
-        };
-
-        return new Promise((resolve, reject) => {
-          const req = (parsedUrl.protocol === 'https:' ? https : http).request(
-            requestOptions,
-            (res) => {
-              let responseBody = '';
-              res.on('data', (chunk) => {
-                responseBody += chunk;
-              });
-              res.on('end', () => {
-                if (res.statusCode && res.statusCode >= 400) {
-                  const errorMessage = `Push failed with status ${res.statusCode}${responseBody ? `: ${responseBody}` : ''}`;
-                  reject(new Error(errorMessage));
-                } else {
-                  resolve();
-                }
-              });
-            },
-          );
-
-          req.on('error', (err) => {
-            reject(err);
-          });
-
-          req.write(metricsData);
-          req.end();
-        });
+        await this.pushGateway.push({ jobName, groupings });
+        this.monitor?.info('Metrics pushed to gateway successfully');
       } catch (err) {
-        this.monitor?.reportError(`Failed to prepare or push metrics: ${err.message}`);
+        this.monitor?.reportError(`Metrics push failed: ${err.message}`);
         throw err;
       }
     };
-
-    if (interval && typeof interval === 'number' && interval > 0) {
-      this.pushInterval = setInterval(async () => {
-        if (this.push) {
-          try {
-            await this.push();
-          } catch (err) {
-            this.monitor?.reportError(`Auto-push failed: ${err.message}`);
-          }
-        }
-      }, interval);
-    }
-
-    if (this.push && (!interval || interval <= 0)) {
-      try {
-        await this.push(); // Initial push if no interval or interval is 0
-      } catch (err) {
-        this.monitor?.reportError(`Initial metrics push failed: ${err.message}`);
-        throw err;
-      }
-    }
   }
 
   /**
@@ -465,16 +395,13 @@ class PrometheusPlugin {
       }));
     }
 
-    if (this.pushInterval) {
-      clearInterval(this.pushInterval);
-      this.pushInterval = null;
-    }
-
-    if (this.push) {
-      promises.push(this.push().catch(err => {
-        this.monitor?.reportError(`Final metrics push failed during termination: ${err.message}`);
-      }));
-      this.push = null;
+    if (this.pushGateway) {
+      try {
+        await this.pushGateway.delete({ jobName: this.serviceName });
+      } catch (err) {
+        this.monitor?.reportError(`Failed to delete metrics from gateway during termination: ${err.message}`);
+      }
+      this.pushGateway = null;
     }
 
     await Promise.allSettled(promises);

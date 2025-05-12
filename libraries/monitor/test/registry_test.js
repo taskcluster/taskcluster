@@ -4,14 +4,14 @@ import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
 
 MonitorManager.registerMetric({
-  name: 'test_counter',
+  name: 'test_counter_xx',
   type: 'counter',
   description: 'A test counter metric',
   labelNames: ['label1', 'label2'],
 });
 
 MonitorManager.registerMetric({
-  name: 'service_histogram',
+  name: 'service_histogram_xx',
   type: 'histogram',
   description: 'A service-specific histogram metric',
   labelNames: ['instance'],
@@ -72,13 +72,13 @@ suite(testing.suiteName(), function() {
     const ref = MonitorManager.metricsReference(serviceName);
 
     // Test global metrics are included
-    const globalMetric = _.find(ref.metrics, { name: 'test_counter' });
+    const globalMetric = _.find(ref.metrics, { name: 'test_counter_xx' });
     assert.equal(globalMetric.type, 'counter');
     assert.equal(globalMetric.description, 'A test counter metric');
     assert.deepEqual(globalMetric.labelNames, ['label1', 'label2']);
 
     // Test service-specific metrics are included
-    const serviceMetric = _.find(ref.metrics, { name: 'service_histogram' });
+    const serviceMetric = _.find(ref.metrics, { name: 'service_histogram_xx' });
     assert.equal(serviceMetric.type, 'histogram');
     assert.equal(serviceMetric.description, 'A service-specific histogram metric');
     assert.deepEqual(serviceMetric.buckets, [0.05, 0.1, 0.5, 1.0]);
@@ -87,20 +87,20 @@ suite(testing.suiteName(), function() {
   test('throws on duplicate metric registration', function() {
     assert.throws(() => {
       MonitorManager.registerMetric({
-        name: 'test_counter',
+        name: 'test_counter_xx',
         type: 'counter',
         description: 'Duplicate metric',
       });
-    }, /Cannot register global metric test_counter twice/);
+    }, /Cannot register global metric test_counter_xx twice/);
 
     assert.throws(() => {
       MonitorManager.registerMetric({
-        name: 'service_histogram',
+        name: 'service_histogram_xx',
         type: 'histogram',
         description: 'Duplicate metric',
         serviceName: 'taskcluster-testing-service',
       });
-    }, /Cannot register metric service_histogram twice for the same service/);
+    }, /Cannot register metric service_histogram_xx twice for the same service/);
   });
 
   test('validates metric type and labels', function() {
@@ -129,16 +129,16 @@ suite(testing.suiteName(), function() {
       debug: true,
       prometheusConfig: {},
     });
-    monitor.increment('test_counter');
-    monitor.increment('test_counter', 10);
+    monitor.increment('test_counter_xx');
+    monitor.increment('test_counter_xx', 10);
 
-    monitor.observe('service_histogram', 33);
+    monitor.observe('service_histogram_xx', 33);
 
     const metrics = await monitor.manager._prometheusPlugin.metricsJson();
-    const counter = metrics.find(({ name }) => name.endsWith('test_counter'));
+    const counter = metrics.find(({ name }) => name.endsWith('test_counter_xx'));
     assert.equal(counter.values[0].value, 11);
 
-    const histogram = metrics.find(({ name }) => name.endsWith('service_histogram'));
+    const histogram = metrics.find(({ name }) => name.endsWith('service_histogram_xx'));
     // histograms store values in buckets
     assert.equal(histogram.values.filter(({ value }) => value === 33).length, 1);
   });
