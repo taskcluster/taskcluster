@@ -53,7 +53,7 @@ class PrometheusPlugin {
    */
   constructor({ serviceName, prefix, server, push }) {
     this.serviceName = serviceName;
-    this.prefix = prefix || serviceName.replace(/-/g, '_').toLowerCase();
+    this.prefix = (prefix || serviceName).replace(/-/g, '_').toLowerCase();
     this.serverOptions = server;
     this.pushOptions = push;
     this.server = null;
@@ -278,6 +278,13 @@ class PrometheusPlugin {
    */
   async metrics() {
     return this.registry.metrics();
+  }
+
+  /**
+  * For testing purposes
+  */
+  async metricsJson() {
+    return this.registry.getMetricsAsJSON();
   }
 
   /**

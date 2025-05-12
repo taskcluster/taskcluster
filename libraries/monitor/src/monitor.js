@@ -48,8 +48,8 @@ class Monitor {
 
     this.metrics = {};
     if (this.manager._prometheusPlugin) {
-      Object.entries(this.manager.metrics).forEach(([name, definition]) => {
-        this.manager._prometheusPlugin.registerMetric(name, definition);
+      Object.entries(this.manager.metrics).forEach(([_, definition]) => {
+        this.manager._prometheusPlugin.registerMetric(definition.name, definition);
       });
       this.manager._prometheusPlugin.init(this);
     }

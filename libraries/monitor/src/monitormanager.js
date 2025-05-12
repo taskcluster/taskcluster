@@ -70,7 +70,8 @@ const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
  * @property {boolean} [verify=false] - If true, verifies record against schema before logging
  * @property {object | null} [errorConfig=null] - Configuration for error handling (depends on reporter)
  * @property {string | null} [versionOverride=null] - Version to use instead of reading from version.json
- * @property {object | null} [prometheusConfig=null] - Configuration for Prometheus metrics
+ * @property {Omit<import('./plugins/prometheus.js').PrometheusOptions, 'serviceName'> | null} [prometheusConfig=null] -
+ *   Configuration for Prometheus metrics
  */
 
 export class MonitorManager {
