@@ -120,4 +120,26 @@ suite(testing.suiteName(), function() {
       });
     }, /Invalid label name 0invalid/);
   });
+
+  test('can use metrics', async function() {
+    const monitor = MonitorManager.setup({
+      serviceName: 'taskcluster-testing-service',
+      level: 'debug',
+      fake: true,
+      debug: true,
+      prometheusConfig: {},
+    });
+    monitor.increment('test_counter');
+    monitor.increment('test_counter', 10);
+
+    monitor.observe('service_histogram', 33);
+
+    const metrics = await monitor.manager._prometheusPlugin.metricsJson();
+    const counter = metrics.find(({ name }) => name.endsWith('test_counter'));
+    assert.equal(counter.values[0].value, 11);
+
+    const histogram = metrics.find(({ name }) => name.endsWith('service_histogram'));
+    // histograms store values in buckets
+    assert.equal(histogram.values.filter(({ value }) => value === 33).length, 1);
+  });
 });
