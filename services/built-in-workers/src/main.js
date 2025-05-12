@@ -37,7 +37,7 @@ const load = loader({
   generateReferences: {
     requires: ['cfg'],
     setup: async ({ cfg }) => libReferences.fromService({
-      references: [MonitorManager.reference('built-in-workers')],
+      references: [MonitorManager.reference('built-in-workers'), MonitorManager.metricsReference('built-in-workers')],
     }).then(ref => ref.generateReferences()),
   },
 

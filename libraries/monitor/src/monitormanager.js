@@ -83,9 +83,9 @@ export class MonitorManager {
     type,
     description,
     labelNames = [],
-    buckets = null,
-    percentiles = null,
-    serviceName = null,
+    buckets = undefined,
+    percentiles = undefined,
+    serviceName = undefined,
   }) {
     assert(name, `Must provide a name for this metric ${name}`);
     assert(/^[a-z][a-zA-Z0-9_]*$/.test(name), `Invalid metric name ${name}`);
@@ -296,13 +296,13 @@ export class MonitorManager {
     this.messages.splice(0);
   }
 
-  /*
+  /**
    * Generate log message documentation
+   * @param {string} serviceName
    */
   static reference(serviceName) {
     assert(serviceName, "serviceName is required");
     const types = MonitorManager._typesForService(serviceName);
-    const metrics = MonitorManager._metricsForService(serviceName);
 
     return {
       serviceName: serviceName,
@@ -313,6 +313,20 @@ export class MonitorManager {
           ..._.omit(type, ['serviceName']),
         };
       }).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }
+
+  /**
+   * Generate metrics documentation
+   * @param {string} serviceName
+   */
+  static metricsReference(serviceName) {
+    assert(serviceName, "serviceName is required");
+    const metrics = MonitorManager._metricsForService(serviceName);
+
+    return {
+      serviceName: serviceName,
+      $schema: '/schemas/common/metrics-reference-v0.json#',
       metrics: Object.entries(metrics).map(([name, metric]) => {
         return {
           name,
@@ -324,6 +338,7 @@ export class MonitorManager {
 
   /**
    * Return the log types for the given serviceName
+   * @param {string} serviceName
    */
   static _typesForService(serviceName) {
     return Object.assign(
@@ -335,6 +350,7 @@ export class MonitorManager {
 
   /**
    * Return the metrics for the given serviceName
+   * @param {string} serviceName
    */
   static _metricsForService(serviceName) {
     return Object.assign(
