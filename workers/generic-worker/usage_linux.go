@@ -28,7 +28,7 @@ func d2gConfig() string {
                                               * allowTaskclusterProxy - Allows Taskcluster Proxy. [default: true]
                                               * gpus - The NVIDIA GPUs to make available to the running container.
                                                 Only used if allowGPUs is true. [default: "all"]
-                                              * logTranslation - Logs the D2G-translated task definition to the task logs.
+                                              * logTranslation (unused) - Logs the D2G-translated task definition to the task logs.
                                                 [default: true]`
 }
 
