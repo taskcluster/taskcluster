@@ -67,7 +67,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), MonitorManager.reference('purge-cache')],
+      references: [builder.reference(), MonitorManager.reference('purge-cache'), MonitorManager.metricsReference('purge-cache')],
     }).then(ref => ref.generateReferences()),
   },
 
