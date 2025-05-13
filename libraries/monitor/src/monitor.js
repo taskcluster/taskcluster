@@ -47,11 +47,11 @@ class Monitor {
     });
 
     this.metrics = {};
-    if (this.manager._prometheusPlugin) {
+    if (this.manager._prometheus) {
       Object.entries(this.manager.metrics).forEach(([_, definition]) => {
-        this.manager._prometheusPlugin.registerMetric(definition.name, definition);
+        this.manager._prometheus.registerMetric(definition.name, definition);
       });
-      this.manager._prometheusPlugin.init(this);
+      this.manager._prometheus.init(this);
     }
 
     this._log = new Logger({
@@ -138,11 +138,11 @@ class Monitor {
    * @param {object} [labels={}] - Labels to apply
    */
   increment(name, value = 1, labels = {}) {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return;
     }
     try {
-      this.manager._prometheusPlugin.increment(name, value, labels);
+      this.manager._prometheus.increment(name, value, labels);
     } catch (err) {
       this.reportError(err, { name, value, labels });
     }
@@ -155,11 +155,11 @@ class Monitor {
    * @param {object} [labels={}] - Labels to apply
    */
   decrement(name, value = 1, labels = {}) {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return;
     }
     try {
-      this.manager._prometheusPlugin.decrement(name, value, labels);
+      this.manager._prometheus.decrement(name, value, labels);
     } catch (err) {
       this.reportError(err, { name, value, labels });
     }
@@ -172,11 +172,11 @@ class Monitor {
    * @param {object} [labels={}] - Labels to apply
    */
   set(name, value, labels = {}) {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return;
     }
     try {
-      this.manager._prometheusPlugin.set(name, value, labels);
+      this.manager._prometheus.set(name, value, labels);
     } catch (err) {
       this.reportError(err, { name, value, labels });
     }
@@ -189,11 +189,11 @@ class Monitor {
    * @param {object} [labels={}] - Labels to apply
    */
   observe(name, value, labels = {}) {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return;
     }
     try {
-      this.manager._prometheusPlugin.observe(name, value, labels);
+      this.manager._prometheus.observe(name, value, labels);
     } catch (err) {
       this.reportError(err, { name, value, labels });
     }
@@ -206,11 +206,11 @@ class Monitor {
    * @returns {function} Function to call to end timing
    */
   startPromTimer(name, labels = {}) {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return () => 0;
     }
     try {
-      return this.manager._prometheusPlugin.startTimer(name, labels);
+      return this.manager._prometheus.startTimer(name, labels);
     } catch (err) {
       this.reportError(err, { name, labels });
       return () => 0;
@@ -221,11 +221,11 @@ class Monitor {
    * push metrics if prometheus is enabled and push options are provided
    */
   async pushMetrics() {
-    if (!this.manager._prometheusPlugin) {
+    if (!this.manager._prometheus) {
       return;
     }
     try {
-      await this.manager._prometheusPlugin.push();
+      await this.manager._prometheus.push();
     } catch (err) {
       this.reportError(err);
     }
@@ -408,8 +408,8 @@ class Monitor {
     }
 
     // Terminate Prometheus plugin if it exists
-    if (this.manager._prometheusPlugin) {
-      await this.manager._prometheusPlugin.terminate();
+    if (this.manager._prometheus) {
+      await this.manager._prometheus.terminate();
     }
   }
 

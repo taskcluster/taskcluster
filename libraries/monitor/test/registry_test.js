@@ -134,7 +134,7 @@ suite(testing.suiteName(), function() {
 
     monitor.observe('service_histogram_xx', 33);
 
-    const metrics = await monitor.manager._prometheusPlugin.metricsJson();
+    const metrics = await monitor.manager._prometheus.metricsJson();
     const counter = metrics.find(({ name }) => name.endsWith('test_counter_xx'));
     assert.equal(counter.values[0].value, 11);
 

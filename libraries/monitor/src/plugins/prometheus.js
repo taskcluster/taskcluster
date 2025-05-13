@@ -76,9 +76,8 @@ class PrometheusPlugin {
 
     // Start push if configured
     if (this.pushOptions) {
-      this.startPushing(this.pushOptions).catch(err => {
-        this.monitor?.reportError(`Failed to start metrics pushing: ${err.message}`);
-      });
+      assert(this.pushOptions.gateway, 'Push gateway URL is required');
+      this.pushGateway = new Pushgateway(this.pushOptions.gateway, null, this.registry);
     }
   }
 
@@ -161,7 +160,7 @@ class PrometheusPlugin {
     assert(metricInfo.type === 'counter' || metricInfo.type === 'gauge',
       `Cannot increment metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this._normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
 
     if (metricInfo.labelNames.length > 0) {
       metricInfo.metric.inc(normalizedLabels, value);
@@ -180,7 +179,7 @@ class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'gauge', `Cannot decrement metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this._normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
 
     if (metricInfo.labelNames.length > 0) {
       metricInfo.metric.dec(normalizedLabels, value);
@@ -199,7 +198,7 @@ class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'gauge', `Cannot set metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this._normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
 
     if (metricInfo.labelNames.length > 0) {
       metricInfo.metric.set(normalizedLabels, value);
@@ -221,7 +220,7 @@ class PrometheusPlugin {
       `Cannot observe metric ${name} of type ${metricInfo.type}`,
     );
 
-    const normalizedLabels = this._normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
 
     if (metricInfo.labelNames.length > 0) {
       metricInfo.metric.observe(normalizedLabels, value);
@@ -243,14 +242,14 @@ class PrometheusPlugin {
       `Cannot time metric ${name} of type ${metricInfo.type}`,
     );
 
-    const normalizedLabels = this._normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
 
     if (metricInfo.labelNames.length > 0) {
       const end = metricInfo.metric.startTimer(normalizedLabels);
       return (finalLabels) => {
         const finalCombinedLabels = finalLabels ? {
           ...normalizedLabels,
-          ...this._normalizeLabels(finalLabels, metricInfo.labelNames),
+          ...this.#normalizeLabels(finalLabels, metricInfo.labelNames),
         } : normalizedLabels;
         return end(finalCombinedLabels);
       };
@@ -293,31 +292,30 @@ class PrometheusPlugin {
   }
 
   /**
-   * Create an HTTP request handler for serving metrics.
-   * @returns {(req: http.IncomingMessage, res: http.ServerResponse) => Promise<void>}
+   * HTTP request handler for serving metrics.
+   * @param {http.IncomingMessage} req
+   * @param {http.ServerResponse} res
    */
-  createMetricsHandler() {
-    return async (req, res) => {
-      if (req.url === '/metrics' && req.method === 'GET') {
-        try {
-          const data = await this.metrics();
-          res.statusCode = 200;
-          res.setHeader('Content-Type', this.contentType());
-          res.end(data);
-        } catch (err) {
-          this.monitor?.reportError(err);
-          res.statusCode = 500;
-          res.end(`Error generating metrics: ${err.message}`);
-        }
-      } else if (req.url === '/health' || req.url === '/healthz') {
+  async metricsHandler(req, res) {
+    if (req.url === '/metrics' && req.method === 'GET') {
+      try {
+        const data = await this.metrics();
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('OK');
-      } else {
-        res.statusCode = 404;
-        res.end('Not found');
+        res.setHeader('Content-Type', this.contentType());
+        res.end(data);
+      } catch (err) {
+        this.monitor?.reportError(err);
+        res.statusCode = 500;
+        res.end(`Error generating metrics: ${err.message}`);
       }
-    };
+    } else if (req.url === '/health' || req.url === '/healthz') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('OK');
+    } else {
+      res.statusCode = 404;
+      res.end('Not found');
+    }
   }
 
   /**
@@ -333,10 +331,9 @@ class PrometheusPlugin {
       return this.server;
     }
 
-    const handler = this.createMetricsHandler();
     this.server = http.createServer(async (req, res) => {
       try {
-        await handler(req, res);
+        await this.metricsHandler(req, res);
       } catch (err) {
         this.monitor?.reportError(err);
         if (!res.headersSent) {
@@ -354,26 +351,20 @@ class PrometheusPlugin {
   }
 
   /**
-   * Set up push mode to Prometheus PushGateway.
-   * @param {PushOptions} options - Push options.
-   * @returns {Promise<void>} Promise that resolves when push setup is complete.
+   * Push metrics to PushGateway
+   * @returns {Promise<void>}
    */
-  async startPushing(options) {
-    const { gateway, jobName = this.serviceName, groupings = {} } = options;
+  async push() {
+    assert(this.pushGateway, 'PushGateway is not initialized');
+    const { jobName = this.serviceName, groupings = {} } = this.pushOptions;
 
-    assert(gateway, 'Push gateway URL is required');
-
-    this.pushGateway = new Pushgateway(gateway, null, this.registry);
-
-    this.push = async () => {
-      try {
-        await this.pushGateway.push({ jobName, groupings });
-        this.monitor?.info('Metrics pushed to gateway successfully');
-      } catch (err) {
-        this.monitor?.reportError(`Metrics push failed: ${err.message}`);
-        throw err;
-      }
-    };
+    try {
+      await this.pushGateway.push({ jobName, groupings });
+      this.monitor?.info('Metrics pushed to gateway successfully');
+    } catch (err) {
+      this.monitor?.reportError(`Metrics push failed: ${err.message}`);
+      throw err;
+    }
   }
 
   /**
@@ -412,30 +403,15 @@ class PrometheusPlugin {
    * @param {Record<string, any>} labels - Labels object.
    * @param {string[]} expectedLabelNames - Expected label names array.
    * @returns {Record<string, string>} Normalized labels object with string values.
-   * @private
    */
-  _normalizeLabels(labels, expectedLabelNames) {
-    const normalizedLabels = {};
+  #normalizeLabels(labels, expectedLabelNames) {
+    assert(Array.isArray(expectedLabelNames), 'expectedLabelNames should be an array');
 
-    if (!expectedLabelNames || expectedLabelNames.length === 0) {
-      return normalizedLabels;
-    }
-
-    if (labels && typeof labels === 'object') {
-      for (const name of expectedLabelNames) {
-        if (Object.prototype.hasOwnProperty.call(labels, name) && labels[name] !== undefined && labels[name] !== null) {
-          normalizedLabels[name] = String(labels[name]);
-        } else {
-          normalizedLabels[name] = '';
-        }
-      }
-    } else {
-      for (const name of expectedLabelNames) {
-        normalizedLabels[name] = '';
-      }
-    }
-
-    return normalizedLabels;
+    return expectedLabelNames.reduce((acc, key) => {
+      const v = labels?.[key];
+      acc[key] = v == null ? '' : String(v);
+      return acc;
+    }, {});
   }
 }
 
