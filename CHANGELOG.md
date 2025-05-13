@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v83.10.1
+
+### USERS
+
+▶ [patch] [#7686](https://github.com/taskcluster/taskcluster/issues/7686)
+Fixed task retrigger for tasks with underscored priority values (like `very_low`).
+
+▶ [patch] [#7575](https://github.com/taskcluster/taskcluster/issues/7575)
+Taskcluster Yaml debugger properly simulates issue comment events, previously it was failing.
+
+▶ [patch] [#7474](https://github.com/taskcluster/taskcluster/issues/7474)
+UI: fixes hamburger menu closing too quickly
+
+▶ [patch]
+Generic Worker (D2G): no longer logs translated payload and our recommendation to migrate all tasks to Generic Worker payload format. Worker config `d2gConfig.logTranslation` is now unused and will be removed in a future release.
+
+▶ [patch] [#7716](https://github.com/taskcluster/taskcluster/issues/7716)
+Generic Worker code internal refactoring: moved task startup/teardown steps into task features. No change to behaviour other than slight changes to both worker logs and task logs.
+
 ## v83.10.0
 
 ### WORKER-DEPLOYERS
