@@ -10,17 +10,19 @@ MonitorManager.registerMetric({
   name: 'test_counter',
   type: 'counter',
   description: 'A test counter metric',
-  labelNames: ['label1', 'label2'],
+  labels: { label1: 'One metric', label2: 'Or another' },
 });
 
 MonitorManager.registerMetric({
   name: 'service_histogram',
   type: 'histogram',
   description: 'A service-specific histogram metric',
-  labelNames: ['instance'],
+  labels: { instance: 'Instance' },
   buckets: [0.05, 0.1, 0.5, 1.0],
   serviceName: 'taskcluster-testing-service',
 });
+
+const TEST_PORT = 39090;
 
 suite(testing.suiteName(), function() {
   const configDefaults = {
@@ -30,7 +32,7 @@ suite(testing.suiteName(), function() {
     debug: true,
     prometheusConfig: {
       server: {
-        port: 39090,
+        port: TEST_PORT,
       },
       push: {
         gateway: 'http://push-gateway.test:9091',
@@ -51,7 +53,7 @@ suite(testing.suiteName(), function() {
     monitor.increment('test_counter');
     assert.ok(monitor.manager._prometheus.server);
 
-    const res = await request.get('http://localhost:39090/metrics');
+    const res = await request.get(`http://localhost:${TEST_PORT}/metrics`);
     assert(res.ok, 'Got response');
     assert.match(res.text, /# TYPE testing_service_test_counter counter/);
     assert.match(res.text, /testing_service_test_counter{label1="",label2=""} 1/);
@@ -61,11 +63,11 @@ suite(testing.suiteName(), function() {
   test('server ignores other urls and methods', async function () {
     const monitor = MonitorManager.setup(configDefaults);
     await assert.rejects(
-      async () => await request.post('http://localhost:39090/metrics'),
+      async () => await request.post(`http://localhost:${TEST_PORT}/metrics`),
       /Not Found/);
 
     await assert.rejects(
-      async () => await request.get('http://localhost:39090/other'),
+      async () => await request.get(`http://localhost:${TEST_PORT}/other`),
       /Not Found/);
 
     await monitor.terminate();

@@ -42,12 +42,10 @@ properties:
         description:
           description: 'A description of this metric'
           type: string
-        labelNames:
-          description: 'The set of label names that can be attached to this metric.'
-          type: array
-          items:
-            type: string
-            pattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+        labels:
+          description: 'The set of labels with their descriptions that can be attached to this metric. Each key should be a valid prometheus label: ^[a-zA-Z][a-zA-Z0-9_]*$'
+          type: object
+          additionalProperties: true
         buckets:
           description: 'For histogram metrics, the bucket boundaries.'
           type: array

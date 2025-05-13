@@ -127,7 +127,11 @@ MonitorManager.registerMetric({
   name: 'api_request_duration_seconds',
   type: 'histogram',
   description: 'API request duration in seconds',
-  labelNames: ['method', 'path', 'status'],
+  labels: {
+    method: 'Method name',
+    path: 'Request path',
+    status: 'Response status',
+  },
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 5], // Buckets for histogram
   serviceName: null, // null means this is a global metric
 });
@@ -143,14 +147,17 @@ MonitorManager.registerMetric({
   name: 'api_requests_total',
   type: 'counter',
   description: 'Count of API requests',
-  labelNames: ['method', 'status'],
+  labels: {
+    method: 'HTTP verb',
+    status: 'Response status code',
+  },
 });
 
 MonitorManager.registerMetric({
   name: 'request_processing_time',
   type: 'summary',
   description: 'Summary of request processing time',
-  labelNames: ['endpoint'],
+  labels: { endpoint: 'Endpoint' },
   percentiles: [0.5, 0.9, 0.95, 0.99], // Optional percentiles for summaries
 });
 ```
@@ -160,7 +167,7 @@ The options to `registerMetric` are:
  * `name` - Name of the metric. Should follow Prometheus naming conventions.
  * `type` - One of 'counter', 'gauge', 'histogram', or 'summary'.
  * `description` - A description of what this metric measures.
- * `labelNames` - (Optional) Array of label names that can be applied to this metric.
+ * `labels` - (Optional) Object of label names that can be applied to this metric and their descriptions.
  * `buckets` - (Optional, for 'histogram' type) Array of bucket boundaries.
  * `percentiles` - (Optional, for 'summary' type) Array of percentiles to calculate.
  * `serviceName` - (Optional) If set, then this metric appears only on this service; otherwise the metric is considered global.
