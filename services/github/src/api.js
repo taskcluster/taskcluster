@@ -114,6 +114,15 @@ function getRerunDetails(eventData) {
   };
 }
 
+function getIssueCommentDetails(eventData) {
+  return {
+    'event.type': `issue_comment.${eventData.action}`,
+    'event.head.user.login': eventData.sender.login,
+    'taskcluster_comment': getTaskclusterCommand(eventData.comment),
+    // rest of the details would be fetched in the handler
+  };
+}
+
 /***
  Helper function to look up repo owner in the Azure table to get installation ID,
  and authenticate with GitHub using that ID.
@@ -341,12 +350,7 @@ builder.declare({
         msg.tasks_for = GITHUB_TASKS_FOR.ISSUE_COMMENT;
         msg.action = body.action; // not a PR action, but a comment action
         msg.branch = 'unknown'; // not yet available at this point
-        msg.details = {
-          'event.type': `issue_comment.${body.action}`,
-          'event.head.user.login': body.sender.login,
-          'taskcluster_comment': getTaskclusterCommand(body.comment),
-          // rest of the details would be fetched in the handler
-        };
+        msg.details = getIssueCommentDetails(body);
         break;
 
       case EVENT_TYPES.PING:
@@ -899,6 +903,7 @@ builder.declare({
     'github-pull-request': getPullRequestDetails,
     'github-pull-request-untrusted': getPullRequestDetails,
     'github-release': getReleaseDetails,
+    'github-issue-comment': getIssueCommentDetails,
   };
 
   const branch = fakeEventData?.branch || 'main';
@@ -918,6 +923,11 @@ builder.declare({
     details: fakeEventToFnMap[fakeEventType](fakePayload),
     ...fakeEventData,
   };
+
+  // simulate what handlers/job.js:219 would do with injecting extra variable
+  if (fakeEventType === 'github-issue-comment') {
+    payload.body.taskcluster_comment = payload.details.taskcluster_comment;
+  }
 
   const { rootUrl } = this.cfg.taskcluster;
   const validator = await this.schemaset.validator(rootUrl);
