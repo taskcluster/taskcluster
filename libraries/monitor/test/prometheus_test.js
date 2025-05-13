@@ -49,7 +49,7 @@ suite(testing.suiteName(), function() {
   test('starts server and responds to metrics', async function() {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.increment('test_counter');
-    assert.ok(monitor.manager._prometheusPlugin.server);
+    assert.ok(monitor.manager._prometheus.server);
 
     const res = await request.get('http://localhost:39090/metrics');
     assert(res.ok, 'Got response');

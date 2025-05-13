@@ -239,7 +239,7 @@ export class MonitorManager {
     }
 
     if (prometheusConfig) {
-      manager._prometheusPlugin = new plugins.metricsPlugins.PrometheusPlugin({
+      manager._prometheus = new plugins.metricsPlugins.PrometheusPlugin({
         serviceName: manager.serviceName,
         ...prometheusConfig,
       });
