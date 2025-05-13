@@ -1,3 +1,5 @@
+//go:build multiuser
+
 package main
 
 import (

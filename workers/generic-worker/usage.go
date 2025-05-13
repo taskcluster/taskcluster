@@ -336,6 +336,6 @@ and reports back results to the queue.
     78     Not able to connect to --worker-runner-protocol-pipe.
     79     Not able to create file at --create-file path.
     80     Not able to create directory at --create-dir path.
-    81     Not able to unarchive --archive-src to --archive-dst.` + exitCode82() + `
+    81     Not able to unarchive --archive-src to --archive-dst.` + exitCode82() + exitCode83() + `
 `
 }
