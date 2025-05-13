@@ -3,6 +3,7 @@ declare module 'lodash' {
   function isEqual(a: any, b: any): boolean;
   function pick<T extends object, K extends keyof T>(obj: T, ...props: K[]): Pick<T, K>;
   function shuffle<T extends object>(items: T[]): T[];
+  function isString(a: any): boolean;
 }
 
 declare module 'js-yaml' {

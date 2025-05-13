@@ -13,7 +13,6 @@ import { cleanupDescription } from './util.js';
 const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
-// Valid metric types
 const METRIC_TYPES = ['counter', 'gauge', 'histogram', 'summary'];
 
 const LEVELS_REVERSE_COLOR = [
@@ -29,17 +28,7 @@ const LEVELS_REVERSE_COLOR = [
 
 const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
 
-/**
- * @typedef {object} MetricOptions
- * @property {string} name - The name of the metric.
- * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - The type of the metric.
- * @property {string} description - A description of the metric.
- * @property {string[]} [labelNames] - An array of label names for the metric.
- * @property {number[] | null} [buckets] - An array of numbers representing the buckets for a histogram metric.
- * @property {number[] | null} [percentiles] - An array of numbers between 0 and 1 representing
- *                                             the percentiles for a summary metric.
- * @property {string | null} [serviceName] - The name of the service the metric belongs to.
- */
+/** @typedef {import('./plugins/prometheus.js').MetricDefinition} MetricDefinition */
 
 /**
  * @typedef {object} LogTypeOptions
@@ -68,16 +57,37 @@ const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
  * @property {boolean} [debug=false] - If true, prints logs to stdout rather than reporting them
  * @property {stream.Writable | null} [destination=null] - The destination stream to write logs to
  * @property {boolean} [verify=false] - If true, verifies record against schema before logging
- * @property {object | null} [errorConfig=null] - Configuration for error handling (depends on reporter)
+ * @property {{ reporter: 'SentryReporter' | 'TestReporter' } | null} [errorConfig=null] - Configuration
+ *   for error handling (depends on reporter)
  * @property {string | null} [versionOverride=null] - Version to use instead of reading from version.json
  * @property {Omit<import('./plugins/prometheus.js').PrometheusOptions, 'serviceName'> | null} [prometheusConfig=null] -
  *   Configuration for Prometheus metrics
  */
 
 export class MonitorManager {
+  /** @type {Record<string, LogTypeOptions>} */
+  static #registeredTypes = {};
+  /** @type {Record<string, MetricDefinition>} */
+  static #registeredMetrics = {};
+
+  // initialized in setup
+  /** @type {Record<string, LogTypeOptions>} */
+  types = {};
+  /** @type {Record<string, MetricDefinition>} */
+  metrics = {};
+  /** @type {string} */
+  serviceName;
+  /** @type {string} */
+  taskclusterVersion;
+  /** @type {import('./plugins/testreporter.js').TestReporter | import('./plugins/sentry.js').SentryReporter} */
+  _reporter;
+  /** @type {import('./plugins/prometheus.js').PrometheusPlugin} */
+  _prometheus;
+  V;
+
   /**
    * Register a new metric.
-   * @param {MetricOptions} options
+   * @param {MetricDefinition} options
    */
   static registerMetric({
     name,
@@ -96,13 +106,8 @@ export class MonitorManager {
 
     const key = serviceName ? `${serviceName}:${name}` : name;
 
-    // Check for duplicate registration for the same service
-    if (serviceName) {
-      if (MonitorManager.metrics[key]) {
-        throw new Error(`Cannot register metric ${name} twice for the same service ${serviceName}`);
-      }
-    } else if (MonitorManager.metrics[key] && !MonitorManager.metrics[key].serviceName) {
-      throw new Error(`Cannot register global metric ${name} twice`);
+    if (MonitorManager.#registeredMetrics[key]) {
+      throw new Error(`Cannot register metric ${name} twice`);
     }
 
     labelNames.forEach(label => {
@@ -126,10 +131,10 @@ export class MonitorManager {
 
     mmDebug(`registering metric ${name} ${serviceName ? `for service ${serviceName}` : 'globally'}`);
 
-    MonitorManager.metrics[key] = {
+    MonitorManager.#registeredMetrics[key] = {
       name,
       type,
-      description,
+      description: cleanupDescription(description),
       labelNames,
       buckets,
       percentiles,
@@ -154,17 +159,19 @@ export class MonitorManager {
     assert(title, `Must provide a human readable title for this log type ${name}`);
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
-    assert(!MonitorManager.types[name], `Cannot register event ${name} twice`);
+    assert(!MonitorManager.#registeredTypes[name], `Cannot register event ${name} twice`);
     assert(level === 'any' || LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
     assert(!fields['v'], '"v" is a reserved field for messages');
+    /** @type {Record<string, string>} */
     const cleaned = {};
     Object.entries(fields).forEach(([field, desc]) => {
       assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
       cleaned[field] = cleanupDescription(desc);
     });
     mmDebug(`registering log type ${name} ${serviceName ? `for service ${serviceName}` : 'for all services'}`);
-    MonitorManager.types[name] = {
+    MonitorManager.#registeredTypes[name] = {
+      name,
       type,
       title,
       level,
@@ -344,7 +351,7 @@ export class MonitorManager {
   static _typesForService(serviceName) {
     return Object.assign(
       {},
-      ...Object.entries(MonitorManager.types)
+      ...Object.entries(MonitorManager.#registeredTypes)
         .filter(([_, { serviceName: sn }]) => !sn || sn === serviceName)
         .map(([k, v]) => ({ [k]: v })));
   }
@@ -356,7 +363,7 @@ export class MonitorManager {
   static _metricsForService(serviceName) {
     return Object.assign(
       {},
-      ...Object.entries(MonitorManager.metrics)
+      ...Object.entries(MonitorManager.#registeredMetrics)
         .filter(([_, { serviceName: sn }]) => !sn || sn === serviceName)
         .map(([k, v]) => ({ [k]: v })));
   }
@@ -378,8 +385,5 @@ export class MonitorManager {
     }
   }
 }
-
-MonitorManager.types = {};
-MonitorManager.metrics = {};
 
 export default MonitorManager;

@@ -7,14 +7,14 @@ import { hrtime } from 'process';
 /**
 * @typedef {object} MonitorOptions
 * @property {import('./monitormanager.js').MonitorManager} manager
-* @property {string} name
+* @property {string[]} name
 * @property {object} metadata
 * @property {boolean} verify
 * @property {boolean} fake
 * @property {boolean} patchGlobal
 * @property {boolean} bailOnUnhandledRejection
 * @property {number} resourceInterval
-* @property {string} processName
+* @property {string | null} processName
 * @property {boolean} monitorProcess
 */
 
@@ -40,10 +40,11 @@ class Monitor {
     this.verify = verify;
     this.fake = fake;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+    this.processName = processName;
 
     this.log = {};
-    Object.entries(this.manager.types).forEach(([name, meta]) => {
-      this._register({ name, ...meta });
+    Object.entries(this.manager.types).forEach(([_, meta]) => {
+      this._register({ ...meta });
     });
 
     this.metrics = {};
@@ -295,6 +296,9 @@ class Monitor {
   /**
    * Monitor a one-shot process.  This function's promise never resolves!
    * (except in testing, with MockMonitor)
+   *
+   * @param {string} name
+   * @param {() => Promise<void>} fn
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
@@ -407,7 +411,6 @@ class Monitor {
       await this.manager._reporter.flush();
     }
 
-    // Terminate Prometheus plugin if it exists
     if (this.manager._prometheus) {
       await this.manager._prometheus.terminate();
     }
