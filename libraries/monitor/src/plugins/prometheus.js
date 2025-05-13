@@ -41,13 +41,13 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @property {import('prom-client').Metric<string>} metric - The actual metric instance
  */
 
-class PrometheusPlugin {
+export class PrometheusPlugin {
   /**
    * @param {object} options
    * @param {string} options.serviceName
-   * @param {string} options.prefix
-   * @param {ServerOptions} options.server
-   * @param {PushOptions} options.push
+   * @param {string} [options.prefix]
+   * @param {ServerOptions} [options.server]
+   * @param {PushOptions} [options.push]
    */
   constructor({ serviceName, prefix, server, push }) {
     this.serviceName = serviceName;

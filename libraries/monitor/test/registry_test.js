@@ -91,7 +91,7 @@ suite(testing.suiteName(), function() {
         type: 'counter',
         description: 'Duplicate metric',
       });
-    }, /Cannot register global metric test_counter_xx twice/);
+    }, /Cannot register metric test_counter_xx twice/);
 
     assert.throws(() => {
       MonitorManager.registerMetric({
@@ -100,7 +100,7 @@ suite(testing.suiteName(), function() {
         description: 'Duplicate metric',
         serviceName: 'taskcluster-testing-service',
       });
-    }, /Cannot register metric service_histogram_xx twice for the same service/);
+    }, /Cannot register metric service_histogram_xx twice/);
   });
 
   test('validates metric type and labels', function() {
