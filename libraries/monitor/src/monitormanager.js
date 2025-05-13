@@ -93,7 +93,7 @@ export class MonitorManager {
     name,
     type,
     description,
-    labelNames = [],
+    labels = {},
     buckets = undefined,
     percentiles = undefined,
     serviceName = undefined,
@@ -110,7 +110,7 @@ export class MonitorManager {
       throw new Error(`Cannot register metric ${name} twice`);
     }
 
-    labelNames.forEach(label => {
+    Object.keys(labels).forEach(label => {
       assert(/^[a-zA-Z][a-zA-Z0-9_]*$/.test(label), `Invalid label name ${label} for metric ${name}`);
     });
 
@@ -135,7 +135,7 @@ export class MonitorManager {
       name,
       type,
       description: cleanupDescription(description),
-      labelNames,
+      labels,
       buckets,
       percentiles,
       serviceName,

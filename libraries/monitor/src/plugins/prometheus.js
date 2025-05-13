@@ -28,7 +28,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @property {string} name - Name of the metric.
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of metric.
  * @property {string} description - Description of the metric.
- * @property {string[]} [labelNames] - Array of label names.
+ * @property {Record<string, string>} [labels] - Label names and descriptions
  * @property {number[]} [buckets] - Buckets for histograms.
  * @property {number[]} [percentiles] - Percentiles for summaries.
  * @property {string} [serviceName] - Service this metric belongs to.
@@ -37,7 +37,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
 /**
  * @typedef {object} MetricInfo
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of the metric
- * @property {string[]} labelNames - Array of label names for the metric
+ * @property {Record<string, string>} labels - Object of allowed labels and their descriptions
  * @property {import('prom-client').Metric<string>} metric - The actual metric instance
  */
 
@@ -90,7 +90,7 @@ export class PrometheusPlugin {
   registerMetric(name, {
     type,
     description,
-    labelNames = [],
+    labels = {},
     buckets,
     percentiles,
   }) {
@@ -101,7 +101,7 @@ export class PrometheusPlugin {
     const metricOptions = {
       name: prefixedName,
       help: description,
-      labelNames: labelNames,
+      labelNames: Object.keys(labels),
       registers: [this.registry],
     };
 
@@ -133,7 +133,7 @@ export class PrometheusPlugin {
     this.metricsStore[name] = {
       type,
       metric,
-      labelNames,
+      labels,
     };
 
     return metric;
@@ -160,9 +160,9 @@ export class PrometheusPlugin {
     assert(metricInfo.type === 'counter' || metricInfo.type === 'gauge',
       `Cannot increment metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
-    if (metricInfo.labelNames.length > 0) {
+    if (Object.keys(metricInfo.labels).length > 0) {
       metricInfo.metric.inc(normalizedLabels, value);
     } else {
       metricInfo.metric.inc(value);
@@ -179,9 +179,9 @@ export class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'gauge', `Cannot decrement metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
-    if (metricInfo.labelNames.length > 0) {
+    if (Object.keys(metricInfo.labels).length > 0) {
       metricInfo.metric.dec(normalizedLabels, value);
     } else {
       metricInfo.metric.dec(value);
@@ -198,9 +198,9 @@ export class PrometheusPlugin {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'gauge', `Cannot set metric ${name} of type ${metricInfo.type}`);
 
-    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
-    if (metricInfo.labelNames.length > 0) {
+    if (Object.keys(metricInfo.labels).length > 0) {
       metricInfo.metric.set(normalizedLabels, value);
     } else {
       metricInfo.metric.set(value);
@@ -220,9 +220,9 @@ export class PrometheusPlugin {
       `Cannot observe metric ${name} of type ${metricInfo.type}`,
     );
 
-    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
-    if (metricInfo.labelNames.length > 0) {
+    if (Object.keys(metricInfo.labels).length > 0) {
       metricInfo.metric.observe(normalizedLabels, value);
     } else {
       metricInfo.metric.observe(value);
@@ -242,14 +242,14 @@ export class PrometheusPlugin {
       `Cannot time metric ${name} of type ${metricInfo.type}`,
     );
 
-    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labelNames);
+    const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
-    if (metricInfo.labelNames.length > 0) {
+    if (Object.keys(metricInfo.labels).length > 0) {
       const end = metricInfo.metric.startTimer(normalizedLabels);
       return (finalLabels) => {
         const finalCombinedLabels = finalLabels ? {
           ...normalizedLabels,
-          ...this.#normalizeLabels(finalLabels, metricInfo.labelNames),
+          ...this.#normalizeLabels(finalLabels, metricInfo.labels),
         } : normalizedLabels;
         return end(finalCombinedLabels);
       };
@@ -401,13 +401,11 @@ export class PrometheusPlugin {
   /**
    * Normalize labels to ensure they match the expected label names and convert values to strings.
    * @param {Record<string, any>} labels - Labels object.
-   * @param {string[]} expectedLabelNames - Expected label names array.
+   * @param {Record<string, string>} expectedLabels - Expected labels object.
    * @returns {Record<string, string>} Normalized labels object with string values.
    */
-  #normalizeLabels(labels, expectedLabelNames) {
-    assert(Array.isArray(expectedLabelNames), 'expectedLabelNames should be an array');
-
-    return expectedLabelNames.reduce((acc, key) => {
+  #normalizeLabels(labels, expectedLabels) {
+    return Object.keys(expectedLabels).reduce((acc, key) => {
       const v = labels?.[key];
       acc[key] = v == null ? '' : String(v);
       return acc;
