@@ -88,7 +88,7 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 	var wg sync.WaitGroup
 	uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
 	failChan := make(chan *CommandExecutionError, len(taskArtifacts))
-	for _, artifact := range taskArtifacts {
+	for _, taskArtifact := range taskArtifacts {
 		wg.Add(1)
 		go func(artifact artifacts.TaskArtifact) {
 			defer wg.Done()
@@ -124,7 +124,7 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 				failChan <- fail
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
-		}(artifact)
+		}(taskArtifact)
 	}
 
 	wg.Wait()
