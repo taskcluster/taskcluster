@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v83/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/host"
 )
 
 // TestWhoAmI tests that the correct user is running the task, based on value of payload feature toggle RunTaskAsCurrentUser

@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#7287](https://github.com/taskcluster/taskcluster/issues/7287)
+Helm chart includes HorizontalPodAutoscaler for all web services which is not enabled by default.
+Can be enabled per-service, and when enabled, deployment's "replicas" field will be ignored.
+
+### USERS
+
+▶ [minor]
+Pass /dev/nvidia* devices to `docker run` when `allowGPUs` is true. This works around the issue described in https://github.com/NVIDIA/nvidia-container-toolkit/issues/48, where GPUs disappear if a systemd daemon reload happens.
+
 ## v83.10.1
 
 ### USERS
