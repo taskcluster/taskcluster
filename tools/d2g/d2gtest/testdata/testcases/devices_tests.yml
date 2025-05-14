@@ -408,8 +408,9 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus
-          all -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          all --device=/dev/nvidia0 --device=/dev/nvidiactl -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+          -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
+          -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -452,9 +453,9 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --gpus
-          device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-          -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
-          -e TASK_ID ubuntu 'echo "Hello world"'
+          device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a --device=/dev/nvidia0 --device=/dev/nvidiactl
+          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true

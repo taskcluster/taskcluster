@@ -104,7 +104,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		auth := tcauth.New(creds, config.RootURL())
 
 		// Convert dwTaskDef to gwTaskDef
-		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, d2gConfig, auth)
+		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, d2gConfig, auth, os.ReadDir)
 		if err != nil {
 			return fmt.Errorf("failed to convert docker worker task definition to a generic worker task definition: %v", err)
 		}
@@ -128,7 +128,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, _, err := d2g.ConvertPayload(dwPayload, d2gConfig)
+		gwPayload, _, err := d2g.ConvertPayload(dwPayload, d2gConfig, os.ReadDir)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}
