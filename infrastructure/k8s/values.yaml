@@ -17,6 +17,11 @@ auth:
       cpu: 50m
       memory: 100Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   level: notice
 built_in_workers:
   procs:
@@ -25,6 +30,11 @@ built_in_workers:
       cpu: 10m
       memory: 50Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/built-in-workers
   level: notice
 github:
@@ -41,6 +51,11 @@ github:
       cpu: 800m
       memory: 500Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/github
   level: notice
 hooks:
@@ -61,6 +76,11 @@ hooks:
       cpu: 50m
       memory: 50Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/hooks
   level: notice
 index:
@@ -77,6 +97,11 @@ index:
       cpu: 50m
       memory: 50Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/index
 notify:
@@ -90,6 +115,11 @@ notify:
       cpu: 50m
       memory: 100Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/notify
   level: notice
 object:
@@ -102,6 +132,11 @@ object:
       cpu: 50m
       memory: 100Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/object
   level: notice
 purge_cache:
@@ -114,6 +149,11 @@ purge_cache:
       cpu: 800m
       memory: 500Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/purge-cache
 queue:
@@ -153,6 +193,11 @@ queue:
       cpu: 200m
       memory: 100Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/queue
   level: notice
 secrets:
@@ -165,6 +210,11 @@ secrets:
       cpu: 800m
       memory: 500Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   taskcluster_client_id: static/taskcluster/secrets
   level: notice
 web_server:
@@ -183,6 +233,11 @@ web_server:
       cpu: 800m
       memory: 500Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/web-server
 worker_manager:
@@ -216,6 +271,11 @@ worker_manager:
       cpu: 800m
       memory: 500Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
   level: notice
   taskcluster_client_id: static/taskcluster/worker-manager
 ui:
@@ -225,6 +285,11 @@ ui:
       cpu: 50m
       memory: 10Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
 references:
   procs:
     web:
@@ -232,3 +297,8 @@ references:
       cpu: 10m
       memory: 10Mi
   debug: ''
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80

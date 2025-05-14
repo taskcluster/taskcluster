@@ -1,0 +1,33 @@
+{{- if .Values.purge_cache.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskcluster-purge-cache-hpa
+  labels:
+    app.kubernetes.io/name: taskcluster-purge-cache
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-purge-cache-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskcluster-purge-cache
+  minReplicas: {{ .Values.purge_cache.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.purge_cache.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.purge_cache.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.purge_cache.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.purge_cache.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

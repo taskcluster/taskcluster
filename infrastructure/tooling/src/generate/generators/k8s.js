@@ -113,9 +113,20 @@ const labels = (projectName, component) => ({
 
 // json-e can't create a "naked" string for go templates to use to render an integer.
 // we have to do some post-processing to use "advanced" go template features
-const postJsoneProcessing = (rendered, replacements) => {
-  return yaml.dump(rendered, { lineWidth: -1 })
+const postJsoneProcessing = (rendered, replacements, context) => {
+  let result = yaml.dump(rendered, { lineWidth: -1 })
     .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+
+  // Add conditional replicas configuration
+  if (context.wrapReplicas) {
+    result = result.replace(
+      /replicas:.*$/m,
+      `{{- if not .Values.${context.configName}.autoscaling.enabled }}
+  replicas: ${replacements.REPLICA_CONFIG_STRING}
+  {{- end }}`,
+    );
+  }
+  return result;
 };
 
 const wrapConditionalResource = (rendered, resourceName) => {
@@ -123,6 +134,31 @@ const wrapConditionalResource = (rendered, resourceName) => {
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
+};
+
+const postProcessHorizontalPodAutoscaler = (rendered, context) => {
+  let result = `{{- if .Values.${context.configName}.autoscaling.enabled }}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+  result = result.replace("- MEMORY_UTILIZATION",
+    `{{- if .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}`,
+  );
+
+  // some values need to stay integers after json'e string substitutions
+  // we unwrap minReplicas, maxReplicas, averageUtilization
+  result = result.replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*maxReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*averageUtilization:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3');
+
+  return result;
 };
 
 const renderTemplates = async (name, vars, procs, templates) => {
@@ -159,6 +195,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       configProcName: proc.replace(/-/g, '_'),
       procName: proc,
       needsService: false,
+      wrapReplicas: false,
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
       labels: labels(`taskcluster-${name}`, proc),
     };
@@ -166,6 +203,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       case 'web': {
         tmpl = 'deployment';
         context['needsService'] = true;
+        context['wrapReplicas'] = true;
         const rendered = jsone(templates['service'], context);
         const file = `taskcluster-${name}-service-${proc}.yaml`;
         ingresses.push({
@@ -173,6 +211,16 @@ const renderTemplates = async (name, vars, procs, templates) => {
           paths: conf['paths'] || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
         });
         await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
+        const hpaContext = {
+          ...context,
+          enabled: `{{ .Values.${context.configName}.autoscaling.enabled }}`,
+          minReplicas: `{{ .Values.${context.configName}.autoscaling.minReplicas }}`,
+          maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
+          targetCPUUtilizationPercentage: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilizationPercentage }}`,
+        };
+        const hpaRendered = jsone(templates['hpa'], hpaContext);
+        const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
+        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), postProcessHorizontalPodAutoscaler(hpaRendered, context));
         break;
       }
       case 'background': {
@@ -192,11 +240,12 @@ const renderTemplates = async (name, vars, procs, templates) => {
     const processed = postJsoneProcessing(rendered, {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
       IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
-    });
+    }, context);
 
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
   }
+
   return ingresses;
 };
 
@@ -503,6 +552,12 @@ tasks.push({
       valuesYAML[confName] = {
         procs: {},
         debug: '',
+        autoscaling: {
+          enabled: false,
+          minReplicas: 1,
+          maxReplicas: 100,
+          targetCPUUtilizationPercentage: 80,
+        },
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -519,6 +574,45 @@ tasks.push({
           debug: {
             type: 'string',
             title: 'node debug env var',
+          },
+          autoscaling: {
+            type: 'object',
+            title: 'Autoscaling configuration for this service',
+            properties: {
+              enabled: {
+                type: 'boolean',
+                description: 'Whether to enable autoscaling for this service',
+                default: false,
+              },
+              minReplicas: {
+                type: 'integer',
+                description: 'Minimum number of replicas',
+                minimum: 1,
+                default: 1,
+              },
+              maxReplicas: {
+                type: 'integer',
+                description: 'Maximum number of replicas',
+                minimum: 1,
+                default: 100,
+              },
+              targetCPUUtilizationPercentage: {
+                type: 'integer',
+                description: 'Target CPU utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80,
+              },
+              targetMemoryUtilizationPercentage: {
+                type: 'integer',
+                description: 'Target memory utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80,
+              },
+            },
+            required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilizationPercentage'],
+            additionalProperties: false,
           },
         },
         required: ['procs'],
