@@ -6,6 +6,7 @@ package d2g
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -58,6 +59,7 @@ func ConvertTaskDefinition(
 	dwTaskDef json.RawMessage,
 	config map[string]any,
 	scopeExpander scopes.ScopeExpander,
+	directoryReader func(string) ([]os.DirEntry, error),
 ) (json.RawMessage, error) {
 	var gwTaskDef json.RawMessage
 	var parsedTaskDef map[string]any
@@ -81,7 +83,7 @@ func ConvertTaskDefinition(
 		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
 	}
 
-	gwPayload, _, err := ConvertPayload(dwPayload, config)
+	gwPayload, _, err := ConvertPayload(dwPayload, config, directoryReader)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
@@ -185,6 +187,7 @@ func ConvertScopes(
 func ConvertPayload(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	config map[string]any,
+	directoryReader func(string) ([]os.DirEntry, error),
 ) (gwPayload *genericworker.GenericWorkerPayload, conversionInfo ConversionInfo, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
 	defaults.SetDefaults(gwPayload)
@@ -204,7 +207,10 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config)
+	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config, directoryReader)
+	if err != nil {
+		return
+	}
 	conversionInfo.ContainerName = containerName
 	conversionInfo.CopyArtifacts = copyArtifacts(dwPayload, gwPayload.Artifacts)
 	conversionInfo.Image = dwImage
@@ -370,7 +376,8 @@ func runCommand(
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
 	config map[string]any,
-) ([][]string, string) {
+	directoryReader func(string) ([]os.DirEntry, error),
+) ([][]string, string, error) {
 	containerName := "taskcontainer"
 	if !testing.Testing() {
 		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
@@ -399,6 +406,16 @@ func runCommand(
 	}
 	if config["allowGPUs"].(bool) {
 		command.WriteString(" --gpus " + config["gpus"].(string))
+		entries, err := directoryReader("/dev")
+		if err != nil {
+			return nil, "", fmt.Errorf("cannot read /dev to find nvidia devices")
+		}
+		for _, e := range entries {
+			deviceName := e.Name()
+			if strings.HasPrefix(deviceName, "nvidia") {
+				command.WriteString(" --device=/dev/" + deviceName)
+			}
+		}
 	}
 	command.WriteString(envMappings(dwPayload, config))
 	// note, dwImage.String() is already shell escaped
@@ -411,7 +428,7 @@ func runCommand(
 			"-cx",
 			command.String(),
 		},
-	}, containerName
+	}, containerName, nil
 }
 
 func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []CopyArtifact {
@@ -484,8 +501,12 @@ func setCommand(
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
 	config map[string]any,
-) (containerName string) {
-	gwPayload.Command, containerName = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config)
+	directoryReader func(string) ([]os.DirEntry, error),
+) (containerName string, err error) {
+	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config, directoryReader)
+	if err != nil {
+		return "", fmt.Errorf("cannot create run command: %v", err)
+	}
 	return
 }
 

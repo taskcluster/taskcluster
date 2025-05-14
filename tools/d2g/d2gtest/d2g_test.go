@@ -67,6 +67,33 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:teapot"
 }
 
+type mockedDirEntry struct {
+	name string
+}
+
+func (m mockedDirEntry) Name() string {
+	return m.name
+}
+
+func (m mockedDirEntry) IsDir() bool {
+	return false
+}
+
+func (m mockedDirEntry) Type() os.FileMode {
+	return 0666
+}
+
+func (m mockedDirEntry) Info() (os.FileInfo, error) {
+	return nil, nil
+}
+
+func FakeReadDir(name string) ([]os.DirEntry, error) {
+	if name == "/dev" {
+		return []os.DirEntry{mockedDirEntry{name: "nvidia0"}, mockedDirEntry{name: "nvidiactl"}}, nil
+	}
+	return os.ReadDir(name)
+}
+
 // TestDataTestCases runs all the test cases found in directory testdata/testcases.
 func TestDataTestCases(t *testing.T) {
 	schema := JSONSchema()
@@ -150,7 +177,7 @@ func (tc *TaskPayloadTestCase) TestTaskPayloadCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
 		}
-		actualGWPayload, _, err := d2g.ConvertPayload(&dwPayload, d2gConfigMap)
+		actualGWPayload, _, err := d2g.ConvertPayload(&dwPayload, d2gConfigMap, FakeReadDir)
 		if err != nil {
 			t.Fatalf("Cannot convert Docker Worker payload %#v to Generic Worker payload: %s", dwPayload, err)
 		}
@@ -192,7 +219,7 @@ func (tc *TaskDefinitionTestCase) TestTaskDefinitionCase() func(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot unmarshal test suite D2GConfig %v: %v", string(d2gConfigBytes), err)
 		}
-		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, d2gConfigMap, scopes.DummyExpander())
+		gwTaskDef, err := d2g.ConvertTaskDefinition(tc.DockerWorkerTaskDefinition, d2gConfigMap, scopes.DummyExpander(), FakeReadDir)
 		if err != nil {
 			t.Fatalf("cannot convert task definition: %v", err)
 		}
