@@ -58,6 +58,10 @@ func exitCode74() string {
            desktop.`
 }
 
+func exitCode83() string {
+	return ""
+}
+
 func sidSID() string {
 	return `
     --sid SID                               A SID to be granted full control of the
