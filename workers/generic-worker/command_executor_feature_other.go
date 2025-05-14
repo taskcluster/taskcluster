@@ -1,5 +1,3 @@
-//go:build insecure || !darwin
-
 package main
 
 import (
