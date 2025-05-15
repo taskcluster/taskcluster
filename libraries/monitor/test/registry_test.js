@@ -7,14 +7,14 @@ MonitorManager.registerMetric({
   name: 'test_counter_xx',
   type: 'counter',
   description: 'A test counter metric',
-  labelNames: ['label1', 'label2'],
+  labels: { label1: 'One metric', label2: 'Or another' },
 });
 
 MonitorManager.registerMetric({
   name: 'service_histogram_xx',
   type: 'histogram',
   description: 'A service-specific histogram metric',
-  labelNames: ['instance'],
+  labels: { instance: 'Instance' },
   buckets: [0.05, 0.1, 0.5, 1.0],
   serviceName: 'taskcluster-testing-service',
 });
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
     const globalMetric = _.find(ref.metrics, { name: 'test_counter_xx' });
     assert.equal(globalMetric.type, 'counter');
     assert.equal(globalMetric.description, 'A test counter metric');
-    assert.deepEqual(globalMetric.labelNames, ['label1', 'label2']);
+    assert.deepEqual(Object.keys(globalMetric.labels), ['label1', 'label2']);
 
     // Test service-specific metrics are included
     const serviceMetric = _.find(ref.metrics, { name: 'service_histogram_xx' });
@@ -116,7 +116,7 @@ suite(testing.suiteName(), function() {
         name: 'invalid_labels',
         type: 'counter',
         description: 'This metric has invalid label names',
-        labelNames: ['valid', '0invalid'],
+        labels: { valid: 'yes', '0invalid': 'no' },
       });
     }, /Invalid label name 0invalid/);
   });
