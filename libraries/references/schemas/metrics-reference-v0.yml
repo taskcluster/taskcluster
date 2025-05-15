@@ -58,6 +58,11 @@ properties:
             type: number
             minimum: 0
             maximum: 1
+        registers:
+          description: 'Metric can belong to one or several registries that can be used to separate metrics aggregation.'
+          type: array
+          items:
+            type: string
       additionalProperties: false
       required:
         - name

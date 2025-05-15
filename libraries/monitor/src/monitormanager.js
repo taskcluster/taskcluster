@@ -94,6 +94,7 @@ export class MonitorManager {
     type,
     description,
     labels = {},
+    registers = ['default'],
     buckets = undefined,
     percentiles = undefined,
     serviceName = undefined,
@@ -103,6 +104,7 @@ export class MonitorManager {
     assert(METRIC_TYPES.includes(type),
       `Invalid metric type ${type}. Must be one of: counter, gauge, histogram, summary`);
     assert(description, `Must provide a description for metric ${name}`);
+    assert(Array.isArray(registers) && registers.length > 0, 'Must provide at least one register');
 
     const key = serviceName ? `${serviceName}:${name}` : name;
 
@@ -139,6 +141,7 @@ export class MonitorManager {
       buckets,
       percentiles,
       serviceName,
+      registers,
     };
   }
 

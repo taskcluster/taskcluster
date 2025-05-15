@@ -19,6 +19,21 @@ MonitorManager.registerMetric({
   serviceName: 'taskcluster-testing-service',
 });
 
+MonitorManager.registerMetric({
+  name: 'separate_counter',
+  type: 'counter',
+  description: 'A test counter metric belonging to a different registry',
+  labels: { label1: 'One metric', label2: 'Or another' },
+  registers: ['special'],
+});
+MonitorManager.registerMetric({
+  name: 'shared_counter',
+  type: 'counter',
+  description: 'Metric in multiple registries',
+  labels: { label1: 'One metric', label2: 'Or another' },
+  registers: ['special', 'default'],
+});
+
 MonitorManager.register({
   name: 'auditLog',
   title: 'whatever',
@@ -120,6 +135,16 @@ suite(testing.suiteName(), function() {
       });
     }, /Invalid label name 0invalid/);
   });
+  test('validates registers', function() {
+    assert.throws(() => {
+      MonitorManager.registerMetric({
+        name: 'empty_registers',
+        type: 'counter',
+        description: 'This metric has an invalid registers',
+        registers: [],
+      });
+    }, /Must provide at least one register/);
+  });
 
   test('can use metrics', async function() {
     const monitor = MonitorManager.setup({
@@ -131,8 +156,9 @@ suite(testing.suiteName(), function() {
     });
     monitor.increment('test_counter_xx');
     monitor.increment('test_counter_xx', 10);
-
     monitor.observe('service_histogram_xx', 33);
+    monitor.increment('separate_counter');
+    monitor.increment('shared_counter');
 
     const metrics = await monitor.manager._prometheus.metricsJson();
     const counter = metrics.find(({ name }) => name.endsWith('test_counter_xx'));
@@ -141,5 +167,34 @@ suite(testing.suiteName(), function() {
     const histogram = metrics.find(({ name }) => name.endsWith('service_histogram_xx'));
     // histograms store values in buckets
     assert.equal(histogram.values.filter(({ value }) => value === 33).length, 1);
+
+    assert.ok(metrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in default registry');
+
+    // special counter should not be in the default registry
+    assert.equal(metrics.find(({ name }) => name.endsWith('separate_counter')), undefined);
+
+    const specialMetrics = await monitor.manager._prometheus.metricsJson('special');
+    const specialCounter = specialMetrics.find(({ name }) => name.endsWith('separate_counter'));
+    assert.equal(specialCounter.values[0].value, 1);
+
+    assert.ok(specialMetrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in special registry');
+  });
+
+  test('throws error when invalid metric names are used', async function () {
+    const monitor = MonitorManager.setup({
+      serviceName: 'taskcluster-testing-service',
+      level: 'debug',
+      fake: true,
+      debug: true,
+      prometheusConfig: {},
+    });
+    assert.throws(() => {
+      monitor.increment('this_metric_never_existed');
+    }, /Metric this_metric_never_existed was not registered/);
+    assert.throws(() => {
+      monitor.set('was not registered', 0);
+    }, /Metric was not registered was not registered/);
   });
 });

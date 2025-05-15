@@ -159,6 +159,7 @@ MonitorManager.registerMetric({
   description: 'Summary of request processing time',
   labels: { endpoint: 'Endpoint' },
   percentiles: [0.5, 0.9, 0.95, 0.99], // Optional percentiles for summaries
+  registers: ['default', 'special'], // allow metric to be present in multiple registries
 });
 ```
 
@@ -171,6 +172,7 @@ The options to `registerMetric` are:
  * `buckets` - (Optional, for 'histogram' type) Array of bucket boundaries.
  * `percentiles` - (Optional, for 'summary' type) Array of percentiles to calculate.
  * `serviceName` - (Optional) If set, then this metric appears only on this service; otherwise the metric is considered global.
+ * `registers` - (Optional) Array of registry names to use, defaults is `['default']`. This allows to separate metrics if they need to be published separately.
 
 ### setup
 
