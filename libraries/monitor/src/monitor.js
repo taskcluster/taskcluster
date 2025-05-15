@@ -187,12 +187,7 @@ class Monitor {
     if (!this.manager._prometheus) {
       return () => 0;
     }
-    try {
-      return this.manager._prometheus.startTimer(name, labels);
-    } catch (err) {
-      this.reportError(err, { name, labels });
-      return () => 0;
-    }
+    return this.manager._prometheus.startTimer(name, labels);
   }
 
   /**
@@ -202,11 +197,7 @@ class Monitor {
     if (!this.manager._prometheus) {
       return;
     }
-    try {
-      await this.manager._prometheus.push();
-    } catch (err) {
-      this.reportError(err);
-    }
+    await this.manager._prometheus.push();
   }
 
   taskclusterPerRequestInstance({ requestId, traceId }) {
