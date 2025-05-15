@@ -128,68 +128,53 @@ class Monitor {
    * Increment a Prometheus counter metric
    * @param {string} name - Metric name
    * @param {number} [value=1] - Value to increment by
-   * @param {object} [labels={}] - Labels to apply
+   * @param {Record<string, any>} [labels={}] - Labels to apply
    */
   increment(name, value = 1, labels = {}) {
     if (!this.manager._prometheus) {
       return;
     }
-    try {
-      this.manager._prometheus.increment(name, value, labels);
-    } catch (err) {
-      this.reportError(err, { name, value, labels });
-    }
+    this.manager._prometheus.increment(name, value, labels);
+
   }
 
   /**
    * Decrement a Prometheus gauge metric
    * @param {string} name - Metric name
    * @param {number} [value=1] - Value to decrement by
-   * @param {object} [labels={}] - Labels to apply
+   * @param {Record<string, any>} [labels={}] - Labels to apply
    */
   decrement(name, value = 1, labels = {}) {
     if (!this.manager._prometheus) {
       return;
     }
-    try {
-      this.manager._prometheus.decrement(name, value, labels);
-    } catch (err) {
-      this.reportError(err, { name, value, labels });
-    }
+    this.manager._prometheus.decrement(name, value, labels);
   }
 
   /**
    * Set a Prometheus gauge metric value
    * @param {string} name - Metric name
    * @param {number} value - Value to set
-   * @param {object} [labels={}] - Labels to apply
+   * @param {Record<string, any>} [labels={}] - Labels to apply
    */
   set(name, value, labels = {}) {
     if (!this.manager._prometheus) {
       return;
     }
-    try {
-      this.manager._prometheus.set(name, value, labels);
-    } catch (err) {
-      this.reportError(err, { name, value, labels });
-    }
+    this.manager._prometheus.set(name, value, labels);
   }
 
   /**
    * Observe a value for a Prometheus histogram or summary
    * @param {string} name - Metric name
    * @param {number} value - Value to observe
-   * @param {object} [labels={}] - Labels to apply
+   * @param {Record<string, any>} [labels={}] - Labels to apply
    */
   observe(name, value, labels = {}) {
     if (!this.manager._prometheus) {
       return;
     }
-    try {
-      this.manager._prometheus.observe(name, value, labels);
-    } catch (err) {
-      this.reportError(err, { name, value, labels });
-    }
+    this.manager._prometheus.observe(name, value, labels);
   }
 
   /**

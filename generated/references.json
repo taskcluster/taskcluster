@@ -13817,6 +13817,13 @@
                 },
                 "type": "array"
               },
+              "registers": {
+                "description": "Metric can belong to one or several registries that can be used to separate metrics aggregation.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "type": {
                 "description": "The type of metric (counter, gauge, histogram, summary).",
                 "enum": [
@@ -15937,6 +15944,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -15948,6 +15958,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -17517,6 +17530,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -17528,6 +17544,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -17841,6 +17860,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -17852,6 +17874,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -18222,6 +18247,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -18233,6 +18261,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         },
         {
@@ -18242,6 +18273,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_completed_tasks",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18251,6 +18285,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_exception_tasks",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18260,6 +18297,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_idle_workers",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18269,6 +18309,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_pending_tasks",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18278,6 +18321,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_quarantined_workers",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18287,6 +18333,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_running_workers",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         },
         {
@@ -18296,6 +18345,9 @@
             "workerType": "WorkerType part of the taskQueueId"
           },
           "name": "queue_workers_total",
+          "registers": [
+            "totals"
+          ],
           "type": "gauge"
         }
       ],
@@ -20352,6 +20404,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -20363,6 +20418,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -20718,6 +20776,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -20729,6 +20790,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -21117,6 +21181,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -21128,6 +21195,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -21727,6 +21797,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -21738,6 +21811,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -22205,6 +22281,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -22216,6 +22295,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -22854,6 +22936,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -22865,6 +22950,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -23572,6 +23660,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -23583,6 +23674,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],
@@ -23769,6 +23863,9 @@
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
           "type": "histogram"
         },
         {
@@ -23780,6 +23877,9 @@
             "status": "Response status code"
           },
           "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
           "type": "counter"
         }
       ],

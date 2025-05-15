@@ -11,6 +11,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
 /**
  * @typedef {object} PushOptions
  * @property {string} gateway - URL of the Prometheus PushGateway.
+ * @property {string} [registry='default'] - Registry name to use
  * @property {string} [jobName] - Job name for the PushGateway (defaults to serviceName).
  * @property {Record<string, string>} [groupings={}] - Additional groupings for the PushGateway. Key/value pairs.
  */
@@ -29,6 +30,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of metric.
  * @property {string} description - Description of the metric.
  * @property {Record<string, string>} [labels] - Label names and descriptions
+ * @property {string[]} [registers=['default']] - Registries to use for isolation purposes
  * @property {number[]} [buckets] - Buckets for histograms.
  * @property {number[]} [percentiles] - Percentiles for summaries.
  * @property {string} [serviceName] - Service this metric belongs to.
@@ -56,7 +58,8 @@ export class PrometheusPlugin {
     this.pushOptions = push;
     this.server = null;
     this.pushGateway = null;
-    this.registry = new PromClientRegistry();
+    /** @type {Record<string, import('prom-client').Registry>} */
+    this.registries = {};
     /** @type {Record<string, MetricInfo>} */
     this.metricsStore = {};
     this.monitor = null;
@@ -77,8 +80,23 @@ export class PrometheusPlugin {
     // Start push if configured
     if (this.pushOptions) {
       assert(this.pushOptions.gateway, 'Push gateway URL is required');
-      this.pushGateway = new Pushgateway(this.pushOptions.gateway, null, this.registry);
+      this.pushGateway = new Pushgateway(
+        this.pushOptions.gateway,
+        null,
+        this.#getRegistry(this.pushOptions.registry || 'default'),
+      );
     }
+  }
+
+  /**
+   * Gets or creates registry by name
+   * @param {string} name
+   */
+  #getRegistry(name) {
+    if (!this.registries[name]) {
+      this.registries[name] = new PromClientRegistry();
+    }
+    return this.registries[name];
   }
 
   /**
@@ -93,6 +111,7 @@ export class PrometheusPlugin {
     labels = {},
     buckets,
     percentiles,
+    registers = ['default'],
   }) {
     const prefixedName = `${this.prefix}_${name}`;
 
@@ -102,7 +121,7 @@ export class PrometheusPlugin {
       name: prefixedName,
       help: description,
       labelNames: Object.keys(labels),
-      registers: [this.registry],
+      registers: registers.map(name => this.#getRegistry(name)),
     };
 
     switch (type) {
@@ -145,7 +164,7 @@ export class PrometheusPlugin {
    */
   getMetric(name) {
     const metricInfo = this.metricsStore[name];
-    assert(metricInfo, `Metric ${name} not found in Prometheus registry`);
+    assert(metricInfo, `Metric ${name} was not registered.`);
     return metricInfo;
   }
 
@@ -270,25 +289,28 @@ export class PrometheusPlugin {
 
   /**
    * Get metrics in Prometheus format.
+   * @param {string} [name='default'] - The name of the registry to get metrics from.
    * @returns {Promise<string>} Prometheus-formatted metrics.
    */
-  async metrics() {
-    return this.registry.metrics();
+  async metrics(name = 'default') {
+    return this.#getRegistry(name).metrics();
   }
 
   /**
-  * For testing purposes
-  */
-  async metricsJson() {
-    return this.registry.getMetricsAsJSON();
+   * For testing purposes
+   * @param {string} [name='default'] - The name of the registry to get metrics from.
+   */
+  async metricsJson(name = 'default') {
+    return this.#getRegistry(name).getMetricsAsJSON();
   }
 
   /**
    * Get the content type for Prometheus metrics.
+   * @param {string} [name='default'] - The name of the registry to get metrics from.
    * @returns {string} Content type string.
    */
-  contentType() {
-    return this.registry.contentType;
+  contentType(name = 'default') {
+    return this.#getRegistry(name).contentType;
   }
 
   /**
