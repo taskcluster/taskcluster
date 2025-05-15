@@ -1,4 +1,4 @@
-FROM node:22.15.0-bookworm
+FROM node:22.15.1-bookworm
 
 VOLUME /builds/worker/checkouts
 
