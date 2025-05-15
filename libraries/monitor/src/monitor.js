@@ -47,14 +47,6 @@ class Monitor {
       this._register({ ...meta });
     });
 
-    this.metrics = {};
-    if (this.manager._prometheus) {
-      Object.entries(this.manager.metrics).forEach(([_, definition]) => {
-        this.manager._prometheus.registerMetric(definition.name, definition);
-      });
-      this.manager._prometheus.init(this);
-    }
-
     this._log = new Logger({
       name: ['taskcluster', this.manager.serviceName, ...this.name].join('.'),
       service: this.manager.serviceName,

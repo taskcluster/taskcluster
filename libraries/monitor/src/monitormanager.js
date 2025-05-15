@@ -245,13 +245,6 @@ export class MonitorManager {
       });
     }
 
-    if (prometheusConfig) {
-      manager._prometheus = new plugins.metricsPlugins.PrometheusPlugin({
-        serviceName: manager.serviceName,
-        ...prometheusConfig,
-      });
-    }
-
     const levels = {};
     if (level.includes(':')) {
       level.split(' ').reduce((o, conf) => {
@@ -283,7 +276,7 @@ export class MonitorManager {
       manager.destination = process.stdout;
     }
 
-    return new Monitor({
+    const monitor = new Monitor({
       manager,
       name: [],
       metadata,
@@ -295,6 +288,22 @@ export class MonitorManager {
       processName,
       monitorProcess,
     });
+
+    if (prometheusConfig) {
+      manager._prometheus = new plugins.metricsPlugins.PrometheusPlugin({
+        serviceName: manager.serviceName,
+        ...prometheusConfig,
+      });
+
+      // Initialize registered metrics once in manager
+      Object.entries(manager.metrics).forEach(([_, definition]) => {
+        manager._prometheus.registerMetric(definition.name, definition);
+      });
+      // Prometheus client needs monitor to report errors
+      manager._prometheus.init(monitor);
+    }
+
+    return monitor;
   }
 
   /*
