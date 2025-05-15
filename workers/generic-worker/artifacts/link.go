@@ -1,6 +1,8 @@
 package artifacts
 
 import (
+	"fmt"
+
 	"github.com/taskcluster/taskcluster/v84/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v84/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/gwconfig"
@@ -29,4 +31,13 @@ func (linkArtifact *LinkArtifact) RequestObject() any {
 
 func (linkArtifact *LinkArtifact) ResponseObject() any {
 	return new(tcqueue.LinkArtifactResponse)
+}
+
+func (linkArtifact *LinkArtifact) String() string {
+	return fmt.Sprintf("Link Artifact - Name: '%v', Artifact: '%v', Expires: %v, MIME Type: '%v'",
+		linkArtifact.Name,
+		linkArtifact.Artifact,
+		linkArtifact.Expires,
+		linkArtifact.ContentType,
+	)
 }

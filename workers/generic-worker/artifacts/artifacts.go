@@ -43,6 +43,14 @@ type (
 		// FinishArtifact calls queue.FinishArtifact if necessary for the artifact type
 		FinishArtifact(response any, queue tc.Queue, taskID, runID, name string) error
 
+		// String returns a string representation of the artifact type
+		// with all properties.
+		//
+		// For example, String for S3Artifact would look something like:
+		// "S3 Artifact - Name: artifact, Path: /test/path, Expires: 2006-01-02T15:04:05.000Z,
+		// Content Encoding: 'gzip', MIME Type: 'text/plain; charset=utf-8'"
+		String() string
+
 		// Base returns a *BaseArtifact which stores the properties common to
 		// all implementations
 		Base() *BaseArtifact

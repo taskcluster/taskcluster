@@ -218,12 +218,12 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
-					Name:    "public/b/c/d.jpg",
+					Name:    "public/_/X.txt",
 					Expires: inAnHour,
 				},
-				ContentType:     "image/jpeg",
-				ContentEncoding: "identity",
-				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -240,17 +240,8 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "identity",
-				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
-			},
-			&artifacts.S3Artifact{
-				BaseArtifact: &artifacts.BaseArtifact{
-					Name:    "public/_/X.txt",
-					Expires: inAnHour,
-				},
-				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
-				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -258,7 +249,16 @@ func TestFileArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "image/jpeg",
-				ContentEncoding: "gzip",
+				ContentEncoding: "identity",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
+			},
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/b/c/d.jpg",
+					Expires: inAnHour,
+				},
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
@@ -392,26 +392,8 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "identity",
+				ContentEncoding: "gzip",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
-			},
-			&artifacts.S3Artifact{
-				BaseArtifact: &artifacts.BaseArtifact{
-					Name:    "public/b/c/_/X.txt",
-					Expires: inAnHour,
-				},
-				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "identity",
-				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
-			},
-			&artifacts.S3Artifact{
-				BaseArtifact: &artifacts.BaseArtifact{
-					Name:    "public/b/c/b/c/d.jpg",
-					Expires: inAnHour,
-				},
-				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "identity",
-				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
@@ -419,7 +401,7 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
-				ContentEncoding: "gzip",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "%%%", "v", "X"),
 			},
 			&artifacts.S3Artifact{
@@ -433,11 +415,29 @@ func TestDirectoryArtifactWithContentEncoding(t *testing.T) {
 			},
 			&artifacts.S3Artifact{
 				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/b/c/_/X.txt",
+					Expires: inAnHour,
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "_", "X.txt"),
+			},
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
 					Name:    "public/b/c/b/c/d.jpg",
 					Expires: inAnHour,
 				},
 				ContentType:     "text/plain; charset=utf-8",
 				ContentEncoding: "gzip",
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
+			},
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/b/c/b/c/d.jpg",
+					Expires: inAnHour,
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "identity",
 				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifacts", "b", "c", "d.jpg"),
 			},
 		})
