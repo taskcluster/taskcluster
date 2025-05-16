@@ -198,7 +198,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue'), MonitorManager.metricsReference('queue')],
     }).then(ref => ref.generateReferences()),
   },
 

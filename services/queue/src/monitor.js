@@ -201,3 +201,67 @@ MonitorManager.register({
     errorsCount: 'Count of errors encountered (most likely missing objects)',
   },
 });
+
+const commonLabels = {
+  provisionerId: 'ProvisionerID part of the taskQueueId',
+  workerType: 'WorkerType part of the taskQueueId',
+};
+
+// data was collected from
+// url="${queue}/provisioners/${provisioner}/worker-types/${type}/workers?${queryparams}"
+
+MonitorManager.registerMetric({
+  name: 'queue_pending_tasks',
+  type: 'gauge',
+  description: 'Total number of pending tasks',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_completed_tasks',
+  type: 'gauge',
+  description: 'Number of tasks in completed state',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_exception_tasks',
+  type: 'gauge',
+  description: 'Number of tasks in exception state',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_workers_total',
+  type: 'gauge',
+  description: 'Total number of workers',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_quarantined_workers',
+  type: 'gauge',
+  description: 'Total number of quarantined workers',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_running_workers',
+  type: 'gauge',
+  description: 'Total number of workers in running state',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'queue_idle_workers',
+  type: 'gauge',
+  description: 'Total number of idle workers (not quarantined, not running)',
+  labels: commonLabels,
+  registers: ['totals'],
+});

@@ -995,6 +995,13 @@
   },
   {
     "element": "h3",
+    "id": "metrics-references",
+    "path": "/manual/design/apis/reference-format",
+    "subtitle": "Metrics References",
+    "title": "Reference Formats"
+  },
+  {
+    "element": "h3",
     "id": "pulse-exchange-references",
     "path": "/manual/design/apis/reference-format",
     "subtitle": "Pulse Exchange References",
