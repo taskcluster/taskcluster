@@ -5,6 +5,7 @@ import (
 	"mime"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -141,11 +142,18 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 
 // FindArtifacts scans the file system for the file/directory artifacts listed
 // in the payload of the task (note this does not include log files) and
-// updates its internal record of what files exist
+// updates its internal record of what files exist.
+// The artifacts will be stored in the ArtifactTaskFeature struct, and will
+// be sorted by their String() method.
 func (atf *ArtifactTaskFeature) FindArtifacts() {
 	task := atf.task
-	payloadArtifacts := make([]artifacts.TaskArtifact, 0)
-	for _, artifact := range task.Payload.Artifacts {
+	var wg sync.WaitGroup
+	artifactsChan := make(chan []artifacts.TaskArtifact, len(task.Payload.Artifacts))
+
+	processArtifact := func(artifact Artifact) {
+		defer wg.Done()
+		payloadArtifacts := make([]artifacts.TaskArtifact, 0)
+
 		basePath := artifact.Path
 		base := &artifacts.BaseArtifact{
 			Name:     artifact.Name,
@@ -166,7 +174,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 		case "directory":
 			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
-				continue
+				break
 			}
 			walkFn := func(path string, d os.DirEntry, incomingErr error) error {
 				subPath, err := filepath.Rel(taskContext.TaskDir, path)
@@ -218,7 +226,29 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 			// walkFn, so should be safe to ignore.
 			_ = filepath.WalkDir(filepath.Join(taskContext.TaskDir, basePath), walkFn)
 		}
+		artifactsChan <- payloadArtifacts
 	}
+
+	for _, artifact := range task.Payload.Artifacts {
+		wg.Add(1)
+		go processArtifact(artifact)
+	}
+
+	go func() {
+		wg.Wait()
+		close(artifactsChan)
+	}()
+
+	payloadArtifacts := make([]artifacts.TaskArtifact, 0)
+	for artifacts := range artifactsChan {
+		payloadArtifacts = append(payloadArtifacts, artifacts...)
+	}
+
+	// sort so that the order of the artifacts is deterministic
+	slices.SortFunc(payloadArtifacts, func(a, b artifacts.TaskArtifact) int {
+		return strings.Compare(a.String(), b.String())
+	})
+
 	atf.artifacts = payloadArtifacts
 }
 

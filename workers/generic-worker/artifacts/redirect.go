@@ -40,3 +40,13 @@ func (redirectArtifact *RedirectArtifact) RequestObject() any {
 func (redirectArtifact *RedirectArtifact) ResponseObject() any {
 	return new(tcqueue.RedirectArtifactResponse)
 }
+
+func (redirectArtifact *RedirectArtifact) String() string {
+	return fmt.Sprintf("Redirect Artifact - Name: '%v', URL: '%v', Hide URL: '%v', Expires: %v, MIME Type: '%v'",
+		redirectArtifact.Name,
+		redirectArtifact.URL,
+		redirectArtifact.HideURL,
+		redirectArtifact.Expires,
+		redirectArtifact.ContentType,
+	)
+}
