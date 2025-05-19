@@ -16,7 +16,11 @@ type ErrorArtifact struct {
 }
 
 func (errArtifact *ErrorArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
-	logger.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
+	log := logger.Errorf
+	if errArtifact.Optional {
+		log = logger.Infof
+	}
+	log("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
 }
