@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.0.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.15.1 (SECURITY).
+
+More info [here](https://nodejs.org/en/blog/vulnerability/may-2025-security-releases).
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 1967254](http://bugzil.la/1967254)
+Generic Worker (d2g): uses info log level when uploading error artifacts if the artifact was marked optional. Previously, the log would contain `[taskcluster:error]` which Treeherder would identify as a failure, even if the task is successful.
+
+▶ [patch] [#7630](https://github.com/taskcluster/taskcluster/issues/7630)
+Generic Worker: improves artifact upload process by parallelizing the scanning of the system for file/directory artifacts from the payload.
+
 ## v84.0.0
 
 ### DEPLOYERS
