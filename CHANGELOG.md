@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.0.2
+
+### USERS
+
+▶ [patch] [#4943](https://github.com/taskcluster/taskcluster/issues/4943)
+Fixes UI error "buildSignedUrl missing required credentials" shown directly after login due to missing credentials.
+
 ## v84.0.1
 
 ### GENERAL
