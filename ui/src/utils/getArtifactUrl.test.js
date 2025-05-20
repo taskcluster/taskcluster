@@ -18,9 +18,6 @@ describe('getArtifactUrl', () => {
   });
 
   it('should get artifact url', () => {
-    window.env = {
-      TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
-    };
     const url = getArtifactUrl({
       user: {
         credentials: {
@@ -35,6 +32,20 @@ describe('getArtifactUrl', () => {
 
     expect(url).toContain(
       'https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name?bewit=Y2xpZW50SWRcMTY'
+    );
+  });
+  it('should get artifact url with no credentials', () => {
+    const url = getArtifactUrl({
+      user: {
+        profile: 'yes',
+      },
+      taskId: 'taskId',
+      runId: 'runId',
+      name: 'name',
+    });
+
+    expect(url).toEqual(
+      'https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name'
     );
   });
   it('should get latest artifact url', () => {
