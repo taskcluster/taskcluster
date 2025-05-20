@@ -11,7 +11,7 @@ const { Queue, Index } = require('taskcluster-client-web');
 export function getArtifactUrl({ user, taskId, runId, name }) {
   const queue = getClient({ Class: Queue, user });
 
-  if (user) {
+  if (user?.credentials) {
     return queue.buildSignedUrlSync(queue.getArtifact, taskId, runId, name, {
       expiration: 60,
     });
@@ -26,7 +26,7 @@ export function getArtifactUrl({ user, taskId, runId, name }) {
 export function getLatestArtifactUrl({ user, taskId, name }) {
   const queue = getClient({ Class: Queue, user });
 
-  if (user) {
+  if (user?.credentials) {
     return queue.buildSignedUrlSync(queue.getLatestArtifact, taskId, name, {
       expiration: 60,
     });
@@ -41,7 +41,7 @@ export function getLatestArtifactUrl({ user, taskId, name }) {
 export function findArtifactFromTaskUrl({ user, namespace, name }) {
   const index = getClient({ Class: Index, user });
 
-  if (user) {
+  if (user?.credentials) {
     return index.buildSignedUrlSync(
       index.findArtifactFromTask,
       namespace,
