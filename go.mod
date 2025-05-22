@@ -1,7 +1,7 @@
 module github.com/taskcluster/taskcluster/v84
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
-go 1.24.2
+go 1.24.3
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -57,7 +57,7 @@ require (
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
-	github.com/ebitengine/purego v0.8.2 // indirect
+	github.com/ebitengine/purego v0.8.3 // indirect
 	github.com/elastic/go-windows v1.0.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
