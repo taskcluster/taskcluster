@@ -19,7 +19,8 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
 /**
  * @typedef {object} PrometheusOptions
  * @property {string} serviceName - Name of the service.
- * @property {string} [prefix] - Prefix for all metrics (defaults to sanitized service name).
+ * @property {string} [exposedRegistry='default'] - Registry name to use for publishing metrics.
+ * @property {string} [prefix] - Prefix for all metrics.
  * @property {ServerOptions} [server] - Options for metrics server.
  * @property {PushOptions} [push] - Options for pushing to a Prometheus PushGateway.
  */
@@ -48,14 +49,16 @@ export class PrometheusPlugin {
    * @param {object} options
    * @param {string} options.serviceName
    * @param {string} [options.prefix]
+   * @param {string} [options.exposedRegistry]
    * @param {ServerOptions} [options.server]
    * @param {PushOptions} [options.push]
    */
-  constructor({ serviceName, prefix, server, push }) {
+  constructor({ serviceName, prefix, exposedRegistry, server, push }) {
     this.serviceName = serviceName;
-    this.prefix = (prefix || serviceName).replace(/-/g, '_').toLowerCase();
+    this.prefix = [prefix, serviceName].filter(Boolean).map(part => String(part).replace(/-/g, '_').toLowerCase());
     this.serverOptions = server;
     this.pushOptions = push;
+    this.exposedRegistry = exposedRegistry ?? 'default';
     this.server = null;
     this.pushGateway = null;
     /** @type {Record<string, import('prom-client').Registry>} */
@@ -113,12 +116,10 @@ export class PrometheusPlugin {
     percentiles,
     registers = ['default'],
   }) {
-    const prefixedName = `${this.prefix}_${name}`;
-
     /** @type {import('prom-client').Metric<string>} */
     let metric;
     const metricOptions = {
-      name: prefixedName,
+      name: [...this.prefix, name].join('_'),
       help: description,
       labelNames: Object.keys(labels),
       registers: registers.map(name => this.#getRegistry(name)),
@@ -321,7 +322,7 @@ export class PrometheusPlugin {
   async metricsHandler(req, res) {
     if (req.url === '/metrics' && req.method === 'GET') {
       try {
-        const data = await this.metrics();
+        const data = await this.metrics(this.exposedRegistry);
         res.statusCode = 200;
         res.setHeader('Content-Type', this.contentType());
         res.end(data);

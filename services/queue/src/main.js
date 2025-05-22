@@ -11,6 +11,7 @@ import DeadlineResolver from './deadlineresolver.js';
 import ClaimResolver from './claimresolver.js';
 import DependencyTracker from './dependencytracker.js';
 import DependencyResolver from './dependencyresolver.js';
+import MetricsCollector from './metricscollector.js';
 import WorkClaimer from './workclaimer.js';
 import WorkerInfo from './workerinfo.js';
 import loader from 'taskcluster-lib-loader';
@@ -404,6 +405,27 @@ let load = loader({
         const count = await workerInfo.expire(now);
         debug('Expired %s worker-info', count);
       });
+    },
+  },
+
+  // Create the worker metrics collection process (continuous background job)
+  'queue-metrics': {
+    requires: ['cfg', 'db', 'monitor', 'queueService'],
+    setup: async ({ cfg, db, monitor, queueService }, ownName) => {
+      /** @type {import('taskcluster-lib-monitor').Monitor} */
+      const childMonitor = monitor.childMonitor('queue-metrics');
+      // This is a bit ugly.. should just create a separate monitor instead of child?
+      // or let http server be started separately
+      childMonitor.manager._prometheus.exposedRegistry = 'totals';
+      const collector = new MetricsCollector({
+        ownName,
+        db,
+        queueService,
+        monitor: childMonitor,
+        pollingDelay: cfg.app.workerMetrics?.pollingDelay || 30000,
+      });
+      await collector.start();
+      return collector;
     },
   },
 

@@ -44,7 +44,7 @@ This is typically done in a loader component:
       verify: profile !== 'production',
       prometheusConfig: {
         // Optional Prometheus configuration
-        prefix: 'someservice', // Optional prefix for metrics (defaults to serviceName)
+        prefix: 'tc', // Optional prefix for all metrics
         server: {
           port: 9100,          // Port for Prometheus metrics server
           ip: '0.0.0.0',       // IP to bind server to (default 127.0.0.1)
@@ -212,8 +212,8 @@ This library supports Prometheus metrics through the `prometheusConfig` option. 
 
 ```js
 prometheusConfig: {
-  // Optional prefix for all metrics (defaults to serviceName converted to snake_case)
-  prefix: 'my_service',
+  // Optional prefix for all metrics
+  prefix: 'fxci',
 
   // Optional server configuration for exposing metrics to Prometheus
   server: {

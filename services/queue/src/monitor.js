@@ -211,15 +211,22 @@ const commonLabels = {
 // url="${queue}/provisioners/${provisioner}/worker-types/${type}/workers?${queryparams}"
 
 MonitorManager.registerMetric({
-  name: 'queue_pending_tasks',
+  name: 'pending_tasks',
   type: 'gauge',
   description: 'Total number of pending tasks',
   labels: commonLabels,
   registers: ['totals'],
 });
+MonitorManager.registerMetric({
+  name: 'claimed_tasks',
+  type: 'gauge',
+  description: 'Total number of claimed tasks',
+  labels: commonLabels,
+  registers: ['totals'],
+});
 
 MonitorManager.registerMetric({
-  name: 'queue_completed_tasks',
+  name: 'completed_tasks',
   type: 'gauge',
   description: 'Number of tasks in completed state',
   labels: commonLabels,
@@ -227,7 +234,7 @@ MonitorManager.registerMetric({
 });
 
 MonitorManager.registerMetric({
-  name: 'queue_exception_tasks',
+  name: 'exception_tasks',
   type: 'gauge',
   description: 'Number of tasks in exception state',
   labels: commonLabels,
@@ -235,7 +242,7 @@ MonitorManager.registerMetric({
 });
 
 MonitorManager.registerMetric({
-  name: 'queue_workers_total',
+  name: 'workers_total',
   type: 'gauge',
   description: 'Total number of workers',
   labels: commonLabels,
@@ -243,7 +250,7 @@ MonitorManager.registerMetric({
 });
 
 MonitorManager.registerMetric({
-  name: 'queue_quarantined_workers',
+  name: 'quarantined_workers',
   type: 'gauge',
   description: 'Total number of quarantined workers',
   labels: commonLabels,
@@ -251,7 +258,7 @@ MonitorManager.registerMetric({
 });
 
 MonitorManager.registerMetric({
-  name: 'queue_running_workers',
+  name: 'running_workers',
   type: 'gauge',
   description: 'Total number of workers in running state',
   labels: commonLabels,
@@ -259,7 +266,7 @@ MonitorManager.registerMetric({
 });
 
 MonitorManager.registerMetric({
-  name: 'queue_idle_workers',
+  name: 'idle_workers',
   type: 'gauge',
   description: 'Total number of idle workers (not quarantined, not running)',
   labels: commonLabels,

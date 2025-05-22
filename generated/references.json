@@ -12768,6 +12768,26 @@
                     "cpu"
                   ],
                   "type": "object"
+                },
+                "workerMetrics": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
                 }
               },
               "required": [
@@ -12780,7 +12800,8 @@
                 "expireTaskGroups",
                 "expireTaskDependency",
                 "expireQueueMessages",
-                "expireWorkerInfo"
+                "expireWorkerInfo",
+                "workerMetrics"
               ],
               "title": "Process settings for this service",
               "type": "object"
@@ -18230,6 +18251,42 @@
       "$schema": "/schemas/common/metrics-reference-v0.json#",
       "metrics": [
         {
+          "description": "Total number of claimed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "claimed_tasks",
+          "registers": [
+            "totals"
+          ],
+          "type": "gauge"
+        },
+        {
+          "description": "Number of tasks in completed state",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "completed_tasks",
+          "registers": [
+            "totals"
+          ],
+          "type": "gauge"
+        },
+        {
+          "description": "Number of tasks in exception state",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "exception_tasks",
+          "registers": [
+            "totals"
+          ],
+          "type": "gauge"
+        },
+        {
           "buckets": [
             0.01,
             0.05,
@@ -18267,36 +18324,12 @@
           "type": "counter"
         },
         {
-          "description": "Number of tasks in completed state",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "queue_completed_tasks",
-          "registers": [
-            "totals"
-          ],
-          "type": "gauge"
-        },
-        {
-          "description": "Number of tasks in exception state",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "queue_exception_tasks",
-          "registers": [
-            "totals"
-          ],
-          "type": "gauge"
-        },
-        {
           "description": "Total number of idle workers (not quarantined, not running)",
           "labels": {
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "queue_idle_workers",
+          "name": "idle_workers",
           "registers": [
             "totals"
           ],
@@ -18308,7 +18341,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "queue_pending_tasks",
+          "name": "pending_tasks",
           "registers": [
             "totals"
           ],
@@ -18320,7 +18353,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "queue_quarantined_workers",
+          "name": "quarantined_workers",
           "registers": [
             "totals"
           ],
@@ -18332,7 +18365,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "queue_running_workers",
+          "name": "running_workers",
           "registers": [
             "totals"
           ],
@@ -18344,7 +18377,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "queue_workers_total",
+          "name": "workers_total",
           "registers": [
             "totals"
           ],

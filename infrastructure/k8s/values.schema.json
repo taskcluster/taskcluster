@@ -1687,6 +1687,26 @@
                 "cpu"
               ],
               "type": "object"
+            },
+            "workerMetrics": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
             }
           },
           "required": [
@@ -1699,7 +1719,8 @@
             "expireTaskGroups",
             "expireTaskDependency",
             "expireQueueMessages",
-            "expireWorkerInfo"
+            "expireWorkerInfo",
+            "workerMetrics"
           ],
           "title": "Process settings for this service",
           "type": "object"

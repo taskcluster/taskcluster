@@ -192,6 +192,10 @@ queue:
     expireWorkerInfo:
       cpu: 200m
       memory: 100Mi
+    workerMetrics:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
   debug: ''
   autoscaling:
     enabled: false
