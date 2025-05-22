@@ -207,8 +207,29 @@ const commonLabels = {
   workerType: 'WorkerType part of the taskQueueId',
 };
 
-// data was collected from
-// url="${queue}/provisioners/${provisioner}/worker-types/${type}/workers?${queryparams}"
+MonitorManager.registerMetric({
+  name: 'completed_tasks',
+  type: 'counter',
+  description: 'Counter for completed tasks',
+  labels: commonLabels,
+  registers: ['default'],
+});
+
+MonitorManager.registerMetric({
+  name: 'failed_tasks',
+  type: 'counter',
+  description: 'Counter for failed tasks',
+  labels: commonLabels,
+  registers: ['default'],
+});
+
+MonitorManager.registerMetric({
+  name: 'exception_tasks',
+  type: 'counter',
+  description: 'Counter for task exception',
+  labels: commonLabels,
+  registers: ['default'],
+});
 
 MonitorManager.registerMetric({
   name: 'pending_tasks',
@@ -221,22 +242,6 @@ MonitorManager.registerMetric({
   name: 'claimed_tasks',
   type: 'gauge',
   description: 'Total number of claimed tasks',
-  labels: commonLabels,
-  registers: ['totals'],
-});
-
-MonitorManager.registerMetric({
-  name: 'completed_tasks',
-  type: 'gauge',
-  description: 'Number of tasks in completed state',
-  labels: commonLabels,
-  registers: ['totals'],
-});
-
-MonitorManager.registerMetric({
-  name: 'exception_tasks',
-  type: 'gauge',
-  description: 'Number of tasks in exception state',
   labels: commonLabels,
   registers: ['totals'],
 });

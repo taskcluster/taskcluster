@@ -94,7 +94,6 @@ class WorkerMetricsCollector {
 
       this.monitor.set('pending_tasks', stats.pending_count, labels);
       this.monitor.set('claimed_tasks', stats.claimed_count, labels);
-
       this.monitor.set('workers_total', stats.worker_count, labels);
       this.monitor.set('quarantined_workers', stats.quarantined_count, labels);
       this.monitor.set('running_workers', stats.claimed_count, labels);
