@@ -39,6 +39,9 @@ properties:
             - gauge
             - histogram
             - summary
+        title:
+          description: 'Title of this metric'
+          type: string
         description:
           description: 'A description of this metric'
           type: string

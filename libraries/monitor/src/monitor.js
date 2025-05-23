@@ -125,6 +125,20 @@ class Monitor {
   }
 
   /**
+   * Initiate metrics exposure with configured methods
+   * Prometheus plugin will use server and push configurations to expose metrics
+   *
+   * @param {string} [exposedRegistry='default'] - Registry to expose
+   */
+  exposeMetrics(exposedRegistry = 'default') {
+    if (!this.manager._prometheus) {
+      this.info('Not exposing metrics as prometheus plugin has not been configured');
+      return;
+    }
+    this.manager._prometheus.exposeMetrics(exposedRegistry);
+  }
+
+  /**
    * Increment a Prometheus counter metric
    * @param {string} name - Metric name
    * @param {number} [value=1] - Value to increment by

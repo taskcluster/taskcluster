@@ -19,7 +19,6 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
 /**
  * @typedef {object} PrometheusOptions
  * @property {string} serviceName - Name of the service.
- * @property {string} [exposedRegistry='default'] - Registry name to use for publishing metrics.
  * @property {string} [prefix] - Prefix for all metrics.
  * @property {ServerOptions} [server] - Options for metrics server.
  * @property {PushOptions} [push] - Options for pushing to a Prometheus PushGateway.
@@ -50,16 +49,14 @@ export class PrometheusPlugin {
    * @param {object} options
    * @param {string} options.serviceName
    * @param {string} [options.prefix]
-   * @param {string} [options.exposedRegistry]
    * @param {ServerOptions} [options.server]
    * @param {PushOptions} [options.push]
    */
-  constructor({ serviceName, prefix, exposedRegistry, server, push }) {
+  constructor({ serviceName, prefix, server, push }) {
     this.serviceName = serviceName;
     this.prefix = [prefix, serviceName].filter(Boolean).map(part => String(part).replace(/-/g, '_').toLowerCase());
     this.serverOptions = server;
     this.pushOptions = push;
-    this.exposedRegistry = exposedRegistry ?? 'default';
     this.server = null;
     this.pushGateway = null;
     /** @type {Record<string, import('prom-client').Registry>} */
@@ -75,10 +72,19 @@ export class PrometheusPlugin {
    */
   init(monitor) {
     this.monitor = monitor;
+  }
 
+  /**
+   * Expose metrics via configured options.
+   * If server config options were provided, http server will be started to expose metrics
+   * If push config options were provided, metrics will be pushed to push gateway
+   *
+   * @param {string} [exposedRegistry='default'] - Registry to expose
+   */
+  exposeMetrics(exposedRegistry = 'default') {
     // Start server if configured
     if (this.serverOptions) {
-      this.startHttpServer(this.serverOptions);
+      this.startHttpServer(this.serverOptions, exposedRegistry);
     }
 
     // Start push if configured
@@ -87,7 +93,7 @@ export class PrometheusPlugin {
       this.pushGateway = new Pushgateway(
         this.pushOptions.gateway,
         null,
-        this.#getRegistry(this.pushOptions.registry || 'default'),
+        this.#getRegistry(this.pushOptions.registry || exposedRegistry),
       );
     }
   }
@@ -319,11 +325,12 @@ export class PrometheusPlugin {
    * HTTP request handler for serving metrics.
    * @param {http.IncomingMessage} req
    * @param {http.ServerResponse} res
+   * @param {string} exposedRegistry
    */
-  async metricsHandler(req, res) {
+  async metricsHandler(req, res, exposedRegistry) {
     if (req.url === '/metrics' && req.method === 'GET') {
       try {
-        const data = await this.metrics(this.exposedRegistry);
+        const data = await this.metrics(exposedRegistry);
         res.statusCode = 200;
         res.setHeader('Content-Type', this.contentType());
         res.end(data);
@@ -345,19 +352,19 @@ export class PrometheusPlugin {
   /**
    * Start an HTTP server for metrics.
    * @param {ServerOptions} [options={}] - Server options.
+   * @param {string} [exposedRegistry='default'] - Registry to expose
    * @returns {http.Server} HTTP server.
    */
-  startHttpServer(options = {}) {
+  startHttpServer(options = {}, exposedRegistry = 'default') {
     const { port = 9100, ip = '127.0.0.1' } = options;
 
     if (this.server) {
-      this.monitor?.err('Metrics server is already running. Returning existing server.');
-      return this.server;
+      throw new Error('Metrics server is already running, exposeMetrics() should be called only once.');
     }
 
     this.server = http.createServer(async (req, res) => {
       try {
-        await this.metricsHandler(req, res);
+        await this.metricsHandler(req, res, exposedRegistry);
       } catch (err) {
         this.monitor?.reportError(err);
         if (!res.headersSent) {

@@ -271,6 +271,19 @@ const end = monitor.startPromTimer('api_request_duration_seconds', { method: 'PO
 const durationSeconds = end({ status: 'success' }); // Add more labels at end time
 ```
 
+### Exposing Metrics
+
+Metrics are exposed after you have configured either a metrics server or a push gateway and explicitly started the exposure process.
+
+Call `exposeMetrics()` on a monitor instance to start the configured exposure mechanism. The first call initiates the setup (server start or gateway connection) and should be made only once.
+
+If you manage multiple sets of metrics (e.g., for different components or jobs), you can expose a specific set by passing its identifier (a string) to `exposeMetrics(identifier)`.
+
+```js
+const childMonitor = monitor.childMonitor('queue-metrics');
+childMonitor.exposeMetrics('totals'); // Start exposing metrics from the 'totals' registry
+```
+
 ### Logging
 
 A monitor instance provides the following functions:

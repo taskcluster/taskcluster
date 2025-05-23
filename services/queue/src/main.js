@@ -414,9 +414,6 @@ let load = loader({
     setup: async ({ cfg, db, monitor, queueService }, ownName) => {
       /** @type {import('taskcluster-lib-monitor').Monitor} */
       const childMonitor = monitor.childMonitor('queue-metrics');
-      // This is a bit ugly.. should just create a separate monitor instead of child?
-      // or let http server be started separately
-      childMonitor.manager._prometheus.exposedRegistry = 'totals';
       const collector = new MetricsCollector({
         ownName,
         db,
@@ -425,6 +422,7 @@ let load = loader({
         pollingDelay: cfg.app.workerMetrics?.pollingDelay || 30000,
       });
       await collector.start();
+      childMonitor.exposeMetrics('totals');
       return collector;
     },
   },
