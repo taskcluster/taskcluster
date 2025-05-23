@@ -92,6 +92,7 @@ export class MonitorManager {
   static registerMetric({
     name,
     type,
+    title,
     description,
     labels = {},
     registers = ['default'],
@@ -103,6 +104,7 @@ export class MonitorManager {
     assert(/^[a-z][a-zA-Z0-9_]*$/.test(name), `Invalid metric name ${name}`);
     assert(METRIC_TYPES.includes(type),
       `Invalid metric type ${type}. Must be one of: counter, gauge, histogram, summary`);
+    assert(title, `Must provide a title for metric ${name}`);
     assert(description, `Must provide a description for metric ${name}`);
     assert(Array.isArray(registers) && registers.length > 0, 'Must provide at least one register');
 
@@ -136,6 +138,7 @@ export class MonitorManager {
     MonitorManager.#registeredMetrics[key] = {
       name,
       type,
+      title,
       description: cleanupDescription(description),
       labels,
       buckets,

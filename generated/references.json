@@ -13845,6 +13845,10 @@
                 },
                 "type": "array"
               },
+              "title": {
+                "description": "Title of this metric",
+                "type": "string"
+              },
               "type": {
                 "description": "The type of metric (counter, gauge, histogram, summary).",
                 "enum": [
@@ -15968,6 +15972,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -15982,6 +15987,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -17554,6 +17560,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -17568,6 +17575,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -17884,6 +17892,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -17898,6 +17907,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -18260,6 +18270,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of claimed tasks",
           "type": "gauge"
         },
         {
@@ -18272,6 +18283,7 @@
           "registers": [
             "default"
           ],
+          "title": "Counter for completed tasks",
           "type": "counter"
         },
         {
@@ -18284,6 +18296,7 @@
           "registers": [
             "default"
           ],
+          "title": "Counter for task exception",
           "type": "counter"
         },
         {
@@ -18296,6 +18309,7 @@
           "registers": [
             "default"
           ],
+          "title": "Counter for failed tasks",
           "type": "counter"
         },
         {
@@ -18319,6 +18333,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -18333,6 +18348,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         },
         {
@@ -18345,6 +18361,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of idle workers",
           "type": "gauge"
         },
         {
@@ -18357,6 +18374,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of pending tasks",
           "type": "gauge"
         },
         {
@@ -18369,6 +18387,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of quarantined workers",
           "type": "gauge"
         },
         {
@@ -18381,6 +18400,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of workers in running state",
           "type": "gauge"
         },
         {
@@ -18393,6 +18413,7 @@
           "registers": [
             "totals"
           ],
+          "title": "Total number of workers",
           "type": "gauge"
         }
       ],
@@ -20452,6 +20473,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -20466,6 +20488,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -20824,6 +20847,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -20838,6 +20862,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -21229,6 +21254,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -21243,6 +21269,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -21845,6 +21872,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -21859,6 +21887,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -22329,6 +22358,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -22343,6 +22373,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -22984,6 +23015,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -22998,6 +23030,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -23708,6 +23741,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -23722,6 +23756,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],
@@ -23911,6 +23946,7 @@
           "registers": [
             "default"
           ],
+          "title": "HTTP request duration in seconds",
           "type": "histogram"
         },
         {
@@ -23925,6 +23961,7 @@
           "registers": [
             "default"
           ],
+          "title": "Total number of HTTP requests",
           "type": "counter"
         }
       ],

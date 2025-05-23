@@ -9,6 +9,7 @@ import testing from 'taskcluster-lib-testing';
 MonitorManager.registerMetric({
   name: 'test_counter',
   type: 'counter',
+  title: 'A test counter metric',
   description: 'A test counter metric',
   labels: { label1: 'One metric', label2: 'Or another' },
 });
@@ -16,6 +17,7 @@ MonitorManager.registerMetric({
 MonitorManager.registerMetric({
   name: 'service_histogram',
   type: 'histogram',
+  title: 'A service-specific histogram metric',
   description: 'A service-specific histogram metric',
   labels: { instance: 'Instance' },
   buckets: [0.05, 0.1, 0.5, 1.0],

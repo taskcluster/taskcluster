@@ -29,6 +29,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
  * @typedef {object} MetricDefinition
  * @property {string} name - Name of the metric.
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of metric.
+ * @property {string} title - Human readable title of the metric.
  * @property {string} description - Description of the metric.
  * @property {Record<string, string>} [labels] - Label names and descriptions
  * @property {string[]} [registers=['default']] - Registries to use for isolation purposes

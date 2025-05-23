@@ -162,6 +162,7 @@ MonitorManager.register({
 MonitorManager.registerMetric({
   name: 'http_requests_total',
   type: 'counter',
+  title: 'Total number of HTTP requests',
   description: 'Total number of HTTP requests',
   labels: {
     method: 'HTTP method',
@@ -174,6 +175,7 @@ MonitorManager.registerMetric({
 MonitorManager.registerMetric({
   name: 'http_request_duration_seconds',
   type: 'histogram',
+  title: 'HTTP request duration in seconds',
   description: 'HTTP request duration in seconds',
   labels: {
     method: 'HTTP method',

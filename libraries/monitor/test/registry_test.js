@@ -6,6 +6,7 @@ import testing from 'taskcluster-lib-testing';
 MonitorManager.registerMetric({
   name: 'test_counter_xx',
   type: 'counter',
+  title: 'A test counter metric',
   description: 'A test counter metric',
   labels: { label1: 'One metric', label2: 'Or another' },
 });
@@ -13,6 +14,7 @@ MonitorManager.registerMetric({
 MonitorManager.registerMetric({
   name: 'service_histogram_xx',
   type: 'histogram',
+  title: 'A service-specific histogram metric',
   description: 'A service-specific histogram metric',
   labels: { instance: 'Instance' },
   buckets: [0.05, 0.1, 0.5, 1.0],
@@ -22,6 +24,7 @@ MonitorManager.registerMetric({
 MonitorManager.registerMetric({
   name: 'separate_counter',
   type: 'counter',
+  title: 'A test counter metric belonging to a different registry',
   description: 'A test counter metric belonging to a different registry',
   labels: { label1: 'One metric', label2: 'Or another' },
   registers: ['special'],
@@ -29,6 +32,7 @@ MonitorManager.registerMetric({
 MonitorManager.registerMetric({
   name: 'shared_counter',
   type: 'counter',
+  title: 'Metric in multiple registries',
   description: 'Metric in multiple registries',
   labels: { label1: 'One metric', label2: 'Or another' },
   registers: ['special', 'default'],
@@ -104,6 +108,7 @@ suite(testing.suiteName(), function() {
       MonitorManager.registerMetric({
         name: 'test_counter_xx',
         type: 'counter',
+        title: 'Duplicate metric',
         description: 'Duplicate metric',
       });
     }, /Cannot register metric test_counter_xx twice/);
@@ -112,6 +117,7 @@ suite(testing.suiteName(), function() {
       MonitorManager.registerMetric({
         name: 'service_histogram_xx',
         type: 'histogram',
+        title: 'Duplicate metric',
         description: 'Duplicate metric',
         serviceName: 'taskcluster-testing-service',
       });
@@ -123,6 +129,7 @@ suite(testing.suiteName(), function() {
       MonitorManager.registerMetric({
         name: 'invalid_type_metric',
         type: 'invalid',
+        title: 'This metric has an invalid type',
         description: 'This metric has an invalid type',
       });
     }, /Invalid metric type invalid/);
@@ -130,6 +137,7 @@ suite(testing.suiteName(), function() {
       MonitorManager.registerMetric({
         name: 'invalid_labels',
         type: 'counter',
+        title: 'This metric has invalid label names',
         description: 'This metric has invalid label names',
         labels: { valid: 'yes', '0invalid': 'no' },
       });
@@ -140,6 +148,7 @@ suite(testing.suiteName(), function() {
       MonitorManager.registerMetric({
         name: 'empty_registers',
         type: 'counter',
+        title: 'This metric has an invalid registers',
         description: 'This metric has an invalid registers',
         registers: [],
       });
