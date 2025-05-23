@@ -351,7 +351,7 @@ export class QueueService {
    * Count number of pending tasks for a given task queue
    *
    * @param {String} taskQueueId
-   * @returns {Number} number of pending tasks
+   * @returns {Promise<Number>} number of pending tasks
    */
   async countPendingTasks(taskQueueId) {
     const [{ queue_pending_tasks_count }] = await this.db.fns.queue_pending_tasks_count(taskQueueId);
@@ -362,7 +362,7 @@ export class QueueService {
    * Count number of currently claimed tasks for a given task queue
    *
    * @param {String} taskQueueId
-   * @returns {Number} number of claimed tasks
+   * @returns {Promise<Number>} number of claimed tasks
    */
   async countClaimedTasks(taskQueueId) {
     const [{ queue_claimed_tasks_count }] = await this.db.fns.queue_claimed_tasks_count(taskQueueId);

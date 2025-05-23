@@ -4,7 +4,24 @@ import { Logger } from './logger.js';
 import TimeKeeper from './timekeeper.js';
 import { hrtime } from 'process';
 
+/**
+* @typedef {object} MonitorOptions
+* @property {import('./monitormanager.js').MonitorManager} manager
+* @property {string[]} name
+* @property {object} metadata
+* @property {boolean} verify
+* @property {boolean} fake
+* @property {boolean} patchGlobal
+* @property {boolean} bailOnUnhandledRejection
+* @property {number} resourceInterval
+* @property {string | null} processName
+* @property {boolean} monitorProcess
+*/
+
 class Monitor {
+  /**
+   * @param {MonitorOptions} options
+   */
   constructor({
     manager,
     name,
@@ -23,10 +40,11 @@ class Monitor {
     this.verify = verify;
     this.fake = fake;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+    this.processName = processName;
 
     this.log = {};
-    Object.entries(this.manager.types).forEach(([name, meta]) => {
-      this._register({ name, ...meta });
+    Object.entries(this.manager.types).forEach(([_, meta]) => {
+      this._register({ ...meta });
     });
 
     this._log = new Logger({
@@ -106,6 +124,96 @@ class Monitor {
     });
   }
 
+  /**
+   * Initiate metrics exposure with configured methods
+   * Prometheus plugin will use server and push configurations to expose metrics
+   *
+   * @param {string} [exposedRegistry='default'] - Registry to expose
+   */
+  exposeMetrics(exposedRegistry = 'default') {
+    if (!this.manager._prometheus) {
+      this.info('Not exposing metrics as prometheus plugin has not been configured');
+      return;
+    }
+    this.manager._prometheus.exposeMetrics(exposedRegistry);
+  }
+
+  /**
+   * Increment a Prometheus counter metric
+   * @param {string} name - Metric name
+   * @param {number} [value=1] - Value to increment by
+   * @param {Record<string, any>} [labels={}] - Labels to apply
+   */
+  increment(name, value = 1, labels = {}) {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    this.manager._prometheus.increment(name, value, labels);
+
+  }
+
+  /**
+   * Decrement a Prometheus gauge metric
+   * @param {string} name - Metric name
+   * @param {number} [value=1] - Value to decrement by
+   * @param {Record<string, any>} [labels={}] - Labels to apply
+   */
+  decrement(name, value = 1, labels = {}) {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    this.manager._prometheus.decrement(name, value, labels);
+  }
+
+  /**
+   * Set a Prometheus gauge metric value
+   * @param {string} name - Metric name
+   * @param {number} value - Value to set
+   * @param {Record<string, any>} [labels={}] - Labels to apply
+   */
+  set(name, value, labels = {}) {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    this.manager._prometheus.set(name, value, labels);
+  }
+
+  /**
+   * Observe a value for a Prometheus histogram or summary
+   * @param {string} name - Metric name
+   * @param {number} value - Value to observe
+   * @param {Record<string, any>} [labels={}] - Labels to apply
+   */
+  observe(name, value, labels = {}) {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    this.manager._prometheus.observe(name, value, labels);
+  }
+
+  /**
+   * Start a timer for a Prometheus histogram or summary
+   * @param {string} name - Metric name
+   * @param {object} [labels={}] - Initial labels to apply
+   * @returns {function} Function to call to end timing
+   */
+  startPromTimer(name, labels = {}) {
+    if (!this.manager._prometheus) {
+      return () => 0;
+    }
+    return this.manager._prometheus.startTimer(name, labels);
+  }
+
+  /**
+   * push metrics if prometheus is enabled and push options are provided
+   */
+  async pushMetrics() {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    await this.manager._prometheus.push();
+  }
+
   taskclusterPerRequestInstance({ requestId, traceId }) {
     return this.childMonitor({ traceId, requestId });
   }
@@ -170,6 +278,9 @@ class Monitor {
   /**
    * Monitor a one-shot process.  This function's promise never resolves!
    * (except in testing, with MockMonitor)
+   *
+   * @param {string} name
+   * @param {() => Promise<void>} fn
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
@@ -280,6 +391,10 @@ class Monitor {
 
     if (this.manager._reporter) {
       await this.manager._reporter.flush();
+    }
+
+    if (this.manager._prometheus) {
+      await this.manager._prometheus.terminate();
     }
   }
 

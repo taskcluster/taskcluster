@@ -201,3 +201,88 @@ MonitorManager.register({
     errorsCount: 'Count of errors encountered (most likely missing objects)',
   },
 });
+
+const commonLabels = {
+  provisionerId: 'ProvisionerID part of the taskQueueId',
+  workerType: 'WorkerType part of the taskQueueId',
+};
+
+MonitorManager.registerMetric({
+  name: 'completed_tasks',
+  type: 'counter',
+  title: 'Counter for completed tasks',
+  description: 'Counter for completed tasks',
+  labels: commonLabels,
+  registers: ['default'],
+});
+
+MonitorManager.registerMetric({
+  name: 'failed_tasks',
+  type: 'counter',
+  title: 'Counter for failed tasks',
+  description: 'Counter for failed tasks',
+  labels: commonLabels,
+  registers: ['default'],
+});
+
+MonitorManager.registerMetric({
+  name: 'exception_tasks',
+  type: 'counter',
+  title: 'Counter for task exception',
+  description: 'Counter for task exception',
+  labels: commonLabels,
+  registers: ['default'],
+});
+
+MonitorManager.registerMetric({
+  name: 'pending_tasks',
+  type: 'gauge',
+  title: 'Total number of pending tasks',
+  description: 'Total number of pending tasks',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+MonitorManager.registerMetric({
+  name: 'claimed_tasks',
+  type: 'gauge',
+  title: 'Total number of claimed tasks',
+  description: 'Total number of claimed tasks',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'workers_total',
+  type: 'gauge',
+  title: 'Total number of workers',
+  description: 'Total number of workers',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'quarantined_workers',
+  type: 'gauge',
+  title: 'Total number of quarantined workers',
+  description: 'Total number of quarantined workers',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'running_workers',
+  type: 'gauge',
+  title: 'Total number of workers in running state',
+  description: 'Total number of workers in running state',
+  labels: commonLabels,
+  registers: ['totals'],
+});
+
+MonitorManager.registerMetric({
+  name: 'idle_workers',
+  type: 'gauge',
+  title: 'Total number of idle workers',
+  description: 'Total number of idle workers (not quarantined, not running)',
+  labels: commonLabels,
+  registers: ['totals'],
+});

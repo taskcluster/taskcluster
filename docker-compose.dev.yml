@@ -509,6 +509,23 @@ services:
       - queue-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-worker-info"
+  queue-background-workerMetrics:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/queue:/app/services/queue
+    profiles:
+      - background
+      - queue
+      - queue-background
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js queue-metrics"
   secrets-web:
     image: ${IMAGE_DEV}
     environment:

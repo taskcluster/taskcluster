@@ -168,7 +168,7 @@ the same service (so `v1/more-data.json` may refer to
 
 Every reference must:
 * have a valid `$schema`, defined in the references;
-* have a schema that, in turn, hsa metaschema `/schemas/common/metadata-metaschema.json#`;
+* have a schema that, in turn, has metaschema `/schemas/common/metadata-metaschema.json#`;
 * validate against the schema indicated by `$schema`.
 
 # File Contents

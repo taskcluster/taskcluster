@@ -157,3 +157,31 @@ MonitorManager.register({
     action: 'Type of action: create, edit, delete, etc..',
   },
 });
+
+// Register built-in Prometheus metrics
+MonitorManager.registerMetric({
+  name: 'http_requests_total',
+  type: 'counter',
+  title: 'Total number of HTTP requests',
+  description: 'Total number of HTTP requests',
+  labels: {
+    method: 'HTTP method',
+    path: 'HTTP path',
+    status: 'Response status code',
+    service: 'Serice name',
+  },
+});
+
+MonitorManager.registerMetric({
+  name: 'http_request_duration_seconds',
+  type: 'histogram',
+  title: 'HTTP request duration in seconds',
+  description: 'HTTP request duration in seconds',
+  labels: {
+    method: 'HTTP method',
+    path: 'HTTP path',
+    status: 'Response status code',
+    service: 'Serice name',
+  },
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
+});

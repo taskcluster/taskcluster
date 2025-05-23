@@ -62,7 +62,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github'), MonitorManager.metricsReference('github')],
     }).then(ref => ref.generateReferences()),
   },
 

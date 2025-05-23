@@ -43,6 +43,7 @@ queue/expireTaskGroups) exec node services/queue/src/main.js expire-task-groups;
 queue/expireTaskDependency) exec node services/queue/src/main.js expire-task-dependency;;
 queue/expireQueueMessages) exec node services/queue/src/main.js expire-queue-messages;;
 queue/expireWorkerInfo) exec node services/queue/src/main.js expire-worker-info;;
+queue/workerMetrics) exec node services/queue/src/main.js queue-metrics;;
 secrets/web) exec node services/secrets/src/main.js server;;
 secrets/expire) exec node services/secrets/src/main.js expire;;
 secrets/write-docs) exec node services/secrets/src/main.js writeDocs;;

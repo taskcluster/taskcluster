@@ -133,7 +133,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks'), MonitorManager.metricsReference('hooks')],
     }).then(ref => ref.generateReferences()),
   },
 

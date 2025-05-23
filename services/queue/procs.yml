@@ -46,3 +46,7 @@ expireWorkerInfo:
   schedule: '5 0 * * *'
   deadline: 86400
   command: node services/queue/src/main.js expire-worker-info
+workerMetrics:
+  type: background
+  subType: 'iterate'
+  command: node services/queue/src/main.js queue-metrics
