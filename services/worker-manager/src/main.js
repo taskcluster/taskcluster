@@ -113,7 +113,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager'), MonitorManager.metricsReference('worker-manager')],
     }).then(ref => ref.generateReferences()),
   },
 

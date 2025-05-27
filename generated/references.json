@@ -13756,6 +13756,108 @@
   },
   {
     "content": {
+      "$id": "/schemas/common/metrics-reference-v0.json#",
+      "$schema": "/schemas/common/metadata-metaschema.json#",
+      "additionalProperties": false,
+      "description": "Reference of prometheus metrics exposed by Taskcluster services",
+      "metadata": {
+        "name": "metrics",
+        "version": 0
+      },
+      "properties": {
+        "$schema": {
+          "description": "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
+          "format": "uri",
+          "title": "Metrics Reference",
+          "type": "string"
+        },
+        "metrics": {
+          "description": "Array of metrics",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "buckets": {
+                "description": "For histogram metrics, the bucket boundaries.",
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "description": {
+                "description": "A description of this metric",
+                "type": "string"
+              },
+              "labels": {
+                "additionalProperties": true,
+                "description": "The set of labels with their descriptions that can be attached to this metric. Each key should be a valid prometheus label: ^[a-zA-Z][a-zA-Z0-9_]*$",
+                "type": "object"
+              },
+              "name": {
+                "description": "The service-specific name of this metric.",
+                "pattern": "^[a-z][a-zA-Z0-9_]*",
+                "type": "string"
+              },
+              "percentiles": {
+                "description": "For summary metrics, the percentiles to calculate.",
+                "items": {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "registers": {
+                "description": "Metric can belong to one or several registries that can be used to separate metrics aggregation.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "title": {
+                "description": "Title of this metric",
+                "type": "string"
+              },
+              "type": {
+                "description": "The type of metric (counter, gauge, histogram, summary).",
+                "enum": [
+                  "counter",
+                  "gauge",
+                  "histogram",
+                  "summary"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "type",
+              "description"
+            ],
+            "title": "Metric Definition",
+            "type": "object"
+          },
+          "title": "Metrics",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "serviceName": {
+          "description": "Name of the taskcluster service",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Service Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "serviceName",
+        "$schema",
+        "metrics"
+      ],
+      "title": "Metrics Reference File",
+      "type": "object"
+    },
+    "filename": "schemas/common/metrics-reference-v0.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/common/metaschema.json#",
       "$ref": "http://json-schema.org/draft-06/schema#",
       "$schema": "http://json-schema.org/draft-06/schema#",
@@ -15815,6 +15917,54 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "worker-manager"
+    },
+    "filename": "references/worker-manager/v1/metrics.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "worker-manager",
       "types": [
@@ -17355,6 +17505,54 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "web-server"
+    },
+    "filename": "references/web-server/v1/metrics.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "web-server",
       "types": [
@@ -17636,6 +17834,54 @@
       ]
     },
     "filename": "references/web-server/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "secrets"
+    },
+    "filename": "references/secrets/v1/metrics.json"
   },
   {
     "content": {
@@ -17977,6 +18223,171 @@
       "title": "Secrets Service"
     },
     "filename": "references/secrets/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "description": "Total number of claimed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "claimed_tasks",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of claimed tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "Counter for completed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "completed_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for completed tasks",
+          "type": "counter"
+        },
+        {
+          "description": "Counter for task exception",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "exception_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for task exception",
+          "type": "counter"
+        },
+        {
+          "description": "Counter for failed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "failed_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for failed tasks",
+          "type": "counter"
+        },
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        },
+        {
+          "description": "Total number of idle workers (not quarantined, not running)",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "idle_workers",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of idle workers",
+          "type": "gauge"
+        },
+        {
+          "description": "Total number of pending tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "pending_tasks",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of pending tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "Total number of quarantined workers",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "quarantined_workers",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of quarantined workers",
+          "type": "gauge"
+        },
+        {
+          "description": "Total number of workers in running state",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "running_workers",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of workers in running state",
+          "type": "gauge"
+        },
+        {
+          "description": "Total number of workers",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "workers_total",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of workers",
+          "type": "gauge"
+        }
+      ],
+      "serviceName": "queue"
+    },
+    "filename": "references/queue/v1/metrics.json"
   },
   {
     "content": {
@@ -20007,6 +20418,54 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "purge-cache"
+    },
+    "filename": "references/purge-cache/v1/metrics.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "purge-cache",
       "types": [
@@ -20330,6 +20789,54 @@
       "title": "Purge Cache Service"
     },
     "filename": "references/purge-cache/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "object"
+    },
+    "filename": "references/object/v1/metrics.json"
   },
   {
     "content": {
@@ -20689,6 +21196,54 @@
       "title": "Object Service"
     },
     "filename": "references/object/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "notify"
+    },
+    "filename": "references/notify/v1/metrics.json"
   },
   {
     "content": {
@@ -21219,34 +21774,94 @@
         "/references/auth/v1/api.json",
         "/references/auth/v1/exchanges.json",
         "/references/auth/v1/logs.json",
+        "/references/auth/v1/metrics.json",
         "/references/built-in-workers/v1/logs.json",
+        "/references/built-in-workers/v1/metrics.json",
         "/references/github/v1/api.json",
         "/references/github/v1/exchanges.json",
         "/references/github/v1/logs.json",
+        "/references/github/v1/metrics.json",
         "/references/hooks/v1/api.json",
         "/references/hooks/v1/exchanges.json",
         "/references/hooks/v1/logs.json",
+        "/references/hooks/v1/metrics.json",
         "/references/index/v1/api.json",
         "/references/index/v1/logs.json",
+        "/references/index/v1/metrics.json",
         "/references/notify/v1/api.json",
         "/references/notify/v1/exchanges.json",
         "/references/notify/v1/logs.json",
+        "/references/notify/v1/metrics.json",
         "/references/object/v1/api.json",
         "/references/object/v1/logs.json",
+        "/references/object/v1/metrics.json",
         "/references/purge-cache/v1/api.json",
         "/references/purge-cache/v1/logs.json",
+        "/references/purge-cache/v1/metrics.json",
         "/references/queue/v1/api.json",
         "/references/queue/v1/exchanges.json",
         "/references/queue/v1/logs.json",
+        "/references/queue/v1/metrics.json",
         "/references/secrets/v1/api.json",
         "/references/secrets/v1/logs.json",
+        "/references/secrets/v1/metrics.json",
         "/references/web-server/v1/logs.json",
+        "/references/web-server/v1/metrics.json",
         "/references/worker-manager/v1/api.json",
         "/references/worker-manager/v1/exchanges.json",
-        "/references/worker-manager/v1/logs.json"
+        "/references/worker-manager/v1/logs.json",
+        "/references/worker-manager/v1/metrics.json"
       ]
     },
     "filename": "references/manifest.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "index"
+    },
+    "filename": "references/index/v1/metrics.json"
   },
   {
     "content": {
@@ -21685,6 +22300,54 @@
       "title": "Index Service"
     },
     "filename": "references/index/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "hooks"
+    },
+    "filename": "references/hooks/v1/metrics.json"
   },
   {
     "content": {
@@ -22294,6 +22957,54 @@
       "title": "Hooks Service"
     },
     "filename": "references/hooks/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "github"
+    },
+    "filename": "references/github/v1/metrics.json"
   },
   {
     "content": {
@@ -22975,6 +23686,54 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "built-in-workers"
+    },
+    "filename": "references/built-in-workers/v1/metrics.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
       "serviceName": "built-in-workers",
       "types": [
@@ -23129,6 +23888,54 @@
       ]
     },
     "filename": "references/built-in-workers/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/metrics-reference-v0.json#",
+      "metrics": [
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "HTTP request duration in seconds",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_request_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "HTTP request duration in seconds",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of HTTP requests",
+          "labels": {
+            "method": "HTTP method",
+            "path": "HTTP path",
+            "service": "Serice name",
+            "status": "Response status code"
+          },
+          "name": "http_requests_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of HTTP requests",
+          "type": "counter"
+        }
+      ],
+      "serviceName": "auth"
+    },
+    "filename": "references/auth/v1/metrics.json"
   },
   {
     "content": {

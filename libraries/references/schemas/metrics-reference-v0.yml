@@ -1,0 +1,78 @@
+$schema: "/schemas/common/metadata-metaschema.json#"
+$id: "/schemas/common/metrics-reference-v0.json#"
+title: Metrics Reference File
+description: Reference of prometheus metrics exposed by Taskcluster services
+metadata:
+  name: metrics
+  version: 0
+type: object
+properties:
+  serviceName:
+    title: Service Name
+    description: Name of the taskcluster service
+    type: string
+    pattern: '^[a-z][a-z0-9_-]*$'
+  $schema:
+    description: >-
+      Link to schema for this reference. That is a link to this very document.
+      Typically used to identify what kind of reference this file is.
+    title: Metrics Reference
+    type: string
+    format: uri
+  metrics:
+    type: array
+    title: Metrics
+    description: Array of metrics
+    uniqueItems: true
+    items:
+      type: object
+      title: Metric Definition
+      properties:
+        name:
+          description: 'The service-specific name of this metric.'
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9_]*'
+        type:
+          description: 'The type of metric (counter, gauge, histogram, summary).'
+          enum:
+            - counter
+            - gauge
+            - histogram
+            - summary
+        title:
+          description: 'Title of this metric'
+          type: string
+        description:
+          description: 'A description of this metric'
+          type: string
+        labels:
+          description: 'The set of labels with their descriptions that can be attached to this metric. Each key should be a valid prometheus label: ^[a-zA-Z][a-zA-Z0-9_]*$'
+          type: object
+          additionalProperties: true
+        buckets:
+          description: 'For histogram metrics, the bucket boundaries.'
+          type: array
+          items:
+            type: number
+        percentiles:
+          description: 'For summary metrics, the percentiles to calculate.'
+          type: array
+          items:
+            type: number
+            minimum: 0
+            maximum: 1
+        registers:
+          description: 'Metric can belong to one or several registries that can be used to separate metrics aggregation.'
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+      required:
+        - name
+        - type
+        - description
+additionalProperties: false
+required:
+  - serviceName
+  - $schema
+  - metrics

@@ -54,7 +54,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), MonitorManager.reference('object')],
+      references: [builder.reference(), MonitorManager.reference('object'), MonitorManager.metricsReference('object')],
     }).then(ref => ref.generateReferences()),
   },
 
