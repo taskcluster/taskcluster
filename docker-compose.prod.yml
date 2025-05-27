@@ -180,6 +180,13 @@ services:
       - cron
       - queue
       - queue-cron
+  queue-background-workerMetrics:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - background
+      - queue
+      - queue-background
   secrets-web:
     environment:
       NODE_ENV: production

@@ -754,6 +754,24 @@ services:
       - cron
       - queue
       - queue-cron
+  queue-background-workerMetrics:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/workerMetrics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
   secrets-web:
     image: ${IMAGE}
     networks:
