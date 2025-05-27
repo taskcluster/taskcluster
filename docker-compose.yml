@@ -93,6 +93,14 @@ services:
       MINIO_ENDPOINT: http://s3:9000
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: miniopassword
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - local
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
   ui:
     image: ${IMAGE}
     networks:

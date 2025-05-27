@@ -1704,6 +1704,17 @@
           "title": "Process settings for this service",
           "type": "object"
         },
+        "prometheus_config": {
+          "oneOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "public_artifact_bucket": {
           "type": "string"
         },

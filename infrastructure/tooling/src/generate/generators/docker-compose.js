@@ -124,6 +124,9 @@ const defaultValues = {
   PUBLIC_URL: 'http://taskcluster',
   ADDITIONAL_ALLOWED_CORS_ORIGIN: '',
   REGISTERED_CLIENTS: '[]',
+
+  // Exposing prometheus metrics
+  PROMETHEUS_CONFIG: '{"server": {"ip": "0.0.0.0", "port": 9100 }}',
 };
 
 const nodemonCmd = (service) => {
@@ -345,6 +348,13 @@ tasks.push({
             MINIO_ROOT_USER: 'minioadmin',
             MINIO_ROOT_PASSWORD: 'miniopassword',
           },
+        }),
+        prometheus: serviceDefinition('prometheus', {
+          image: 'prom/prometheus:latest',
+          ports: ['9090:9090'],
+          volumes: [
+            './docker/prometheus.yml:/etc/prometheus/prometheus.yml',
+          ],
         }),
         ui: serviceDefinition('ui', {
           command: 'ui/web',
