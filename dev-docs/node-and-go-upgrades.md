@@ -31,8 +31,7 @@ To update the go version:
 * Run `yarn generate`. Some `go` errors may occur, for example on major version updates.
 * Run `go mod tidy`
 * Run `go fmt ./...`
-* Run `go install golang.org/x/tools/cmd/goimports@latest`
-* Run `"$(go env GOPATH)/bin/goimports" -w .` (or non-bash equivalent)
+* Run `go tool goimports -w .`
 * Run `yarn generate` again, should finish cleanly.
 * Create a changelog file and commit
 * Build and push new images (see below)

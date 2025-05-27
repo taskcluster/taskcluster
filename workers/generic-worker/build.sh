@@ -131,9 +131,6 @@ proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
 CGO_ENABLED=0 go install "${proj_root}/tools/livelog"
 CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy"
 CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask"
-CGO_ENABLED=0 go install golang.org/x/lint/golint@latest
-CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@latest
-CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@latest
 
 if $TEST; then
 ####################################################################
@@ -142,9 +139,9 @@ if $TEST; then
 # when a new major release is made.
 ####################################################################
   CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v84/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
-  golint $(go list ./...) | sed "s*${PWD}/**"
-  ineffassign .
-  goimports -w .
+  go tool golint $(go list ./...) | sed "s*${PWD}/**"
+  go tool ineffassign .
+  go tool goimports -w .
 
 fi
 
