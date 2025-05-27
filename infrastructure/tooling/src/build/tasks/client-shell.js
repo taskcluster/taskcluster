@@ -8,13 +8,9 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      await execCommand({
-        dir: artifactsDir,
-        command: ['go', 'install', 'github.com/goreleaser/goreleaser/v2@v2.7.0'],
-        utils,
-      });
-
       let goreleaserCmd = [
+        'go',
+        'tool',
         'goreleaser',
         'release',
         '--clean',

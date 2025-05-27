@@ -96,8 +96,7 @@ tasks:
         - go mod tidy
         - git diff
         - test $(git status --porcelain | wc -l) == 0
-        - go install golang.org/x/tools/cmd/goimports@latest
-        - '"$(go env GOPATH)/bin/goimports" -w .'
+        - go tool goimports -w .
         - git diff
         - test $(git status --porcelain | wc -l) == 0
   build/test-multiuser-ubuntu-24.04-amd64:
