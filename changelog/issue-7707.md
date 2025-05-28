@@ -1,5 +1,5 @@
 audience: deployers
-level: major
+level: minor
 reference: issue 7707
 ---
 
