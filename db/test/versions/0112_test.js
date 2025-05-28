@@ -12,10 +12,10 @@ suite(testing.suiteName(), function() {
     await helper.upgradeTo(PREV_VERSION);
 
     await helper.assertTable('queue_workers');
-    await helper.assertNoIndexOnColumn('queue_workers', 'idx_queue_workers_task_queue_id', 'task_queue_id');
+    await helper.assertNoIndexOnColumn('queue_workers', 'queue_workers_task_queue_idx', 'task_queue_id');
 
     await helper.upgradeTo(THIS_VERSION);
     await helper.assertTable('queue_workers');
-    await helper.assertIndexOnColumn('queue_workers', 'idx_queue_workers_task_queue_id', 'task_queue_id');
+    await helper.assertIndexOnColumn('queue_workers', 'queue_workers_task_queue_idx', 'task_queue_id');
   });
 });

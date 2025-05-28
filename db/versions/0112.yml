@@ -2,11 +2,11 @@ version: 112
 description: Queue metrics
 migrationScript: |-
   begin
-    CREATE INDEX idx_queue_workers_task_queue_id ON queue_workers (task_queue_id, expires);
+    CREATE INDEX queue_workers_task_queue_idx ON queue_workers (task_queue_id, expires);
   end
 downgradeScript: |-
   begin
-    DROP INDEX idx_queue_workers_task_queue_id;
+    DROP INDEX queue_workers_task_queue_idx;
   end
 methods:
   queue_worker_stats:

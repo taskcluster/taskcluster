@@ -620,7 +620,6 @@ CREATE INDEX github_builds_organization_repository_sha_idx ON github_builds USIN
 CREATE INDEX github_builds_pr ON github_builds USING btree (organization, repository, pull_request_number);
 CREATE INDEX github_checks_check_suite_id_check_run_id_idx ON github_checks USING btree (check_suite_id, check_run_id);
 CREATE INDEX hooks_last_fires_time ON hooks_last_fires USING btree (hook_group_id, hook_id, task_create_time);
-CREATE INDEX idx_queue_workers_task_queue_id ON queue_workers USING btree (task_queue_id, expires);
 CREATE INDEX queue_claimed_task_queue_idx ON queue_claimed_tasks USING btree (task_queue_id, worker_group, worker_id);
 CREATE INDEX queue_claimed_task_run_idx ON queue_claimed_tasks USING btree (task_id, run_id);
 CREATE INDEX queue_claimed_task_vis_idx ON queue_claimed_tasks USING btree (visible);
@@ -629,6 +628,7 @@ CREATE INDEX queue_pending_task_vis_idx ON queue_pending_tasks USING btree (visi
 CREATE INDEX queue_resolved_task_idx ON queue_resolved_tasks USING btree (task_id);
 CREATE INDEX queue_task_deadline_idx ON queue_task_deadlines USING btree (task_id);
 CREATE INDEX queue_task_deadline_vis_idx ON queue_task_deadlines USING btree (visible);
+CREATE INDEX queue_workers_task_queue_idx ON queue_workers USING btree (task_queue_id, expires);
 CREATE INDEX sha512_index_namespaces_idx ON index_namespaces USING btree (public.sha512(parent), name);
 CREATE INDEX sha512_indexed_tasks_idx ON indexed_tasks USING btree (public.sha512(namespace), name);
 CREATE INDEX task_dependencies_dependent_task_id_idx ON task_dependencies USING btree (dependent_task_id) WHERE (NOT satisfied);

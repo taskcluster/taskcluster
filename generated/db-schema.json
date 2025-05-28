@@ -7695,7 +7695,7 @@
     },
     {
       "description": "Queue metrics",
-      "downgradeScript": "begin\n  DROP INDEX idx_queue_workers_task_queue_id;\nend",
+      "downgradeScript": "begin\n  DROP INDEX queue_workers_task_queue_idx;\nend",
       "methods": {
         "queue_worker_stats": {
           "args": "",
@@ -7707,7 +7707,7 @@
           "serviceName": "queue"
         }
       },
-      "migrationScript": "begin\n  CREATE INDEX idx_queue_workers_task_queue_id ON queue_workers (task_queue_id, expires);\nend",
+      "migrationScript": "begin\n  CREATE INDEX queue_workers_task_queue_idx ON queue_workers (task_queue_id, expires);\nend",
       "version": 112
     }
   ]
