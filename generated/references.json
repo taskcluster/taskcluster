@@ -11242,6 +11242,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -11386,6 +11389,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -11540,6 +11546,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -11559,6 +11568,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -11726,6 +11738,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -11746,6 +11761,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -11765,6 +11783,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -11907,6 +11928,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -11926,6 +11950,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -12114,6 +12141,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -12133,6 +12163,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -12322,6 +12355,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -12362,6 +12398,54 @@
             "write_db_url"
           ],
           "title": "Configuration options for object",
+          "type": "object"
+        },
+        "prometheus": {
+          "additionalProperties": false,
+          "description": "Prometheus configuration\nPodMonitoring resource will be created if prometheus.enabled is true",
+          "properties": {
+            "enabled": {
+              "description": "Enable PodMonitoring",
+              "type": "boolean"
+            },
+            "prefix": {
+              "description": "Optional prefix for all metrics",
+              "type": "string"
+            },
+            "push": {
+              "additionalProperties": false,
+              "properties": {
+                "gateway": {
+                  "description": "URL to push metrics to, i.e. http://pushgateway:9091",
+                  "type": "string"
+                },
+                "groupings": {
+                  "description": "Groupings to use when pushing metrics",
+                  "type": "object"
+                },
+                "jobName": {
+                  "description": "Job name to use when pushing metrics",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "server": {
+              "additionalProperties": false,
+              "description": "Metrics server configuration, one that will serve /metrics endpoint",
+              "properties": {
+                "ip": {
+                  "description": "IP address to listen on, default is 0.0.0.0",
+                  "type": "string"
+                },
+                "port": {
+                  "description": "Port to listen on, default is 9100",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          },
           "type": "object"
         },
         "pulseAmqps": {
@@ -12460,6 +12544,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -12602,6 +12689,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -12622,6 +12712,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -12641,6 +12734,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -12758,6 +12854,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -12777,6 +12876,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -12805,17 +12907,6 @@
               ],
               "title": "Process settings for this service",
               "type": "object"
-            },
-            "prometheus_config": {
-              "oneOf": [
-                {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                {
-                  "type": "array"
-                }
-              ]
             },
             "public_artifact_bucket": {
               "type": "string"
@@ -12936,6 +13027,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13066,6 +13160,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -13115,7 +13212,8 @@
               "configmap",
               "secret",
               "ingress",
-              "serviceaccount"
+              "serviceaccount",
+              "podmonitoring"
             ],
             "type": "string"
           },
@@ -13196,6 +13294,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13376,6 +13477,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13606,6 +13710,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -13625,6 +13732,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13646,6 +13756,9 @@
                     "memory": {
                       "type": "string"
                     },
+                    "metrics": {
+                      "type": "boolean"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -13665,6 +13778,9 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
                     },
                     "replicas": {
                       "type": "integer"

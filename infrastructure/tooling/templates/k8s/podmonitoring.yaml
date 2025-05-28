@@ -1,0 +1,16 @@
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: ${projectName}
+  labels: {$eval: labels}
+
+spec:
+  selector:
+    matchLabels: {$eval: selectorLabels}
+
+  endpoints:
+    - port: prometheus
+      scheme: http
+      path: "/metrics"
+      interval: 30s"

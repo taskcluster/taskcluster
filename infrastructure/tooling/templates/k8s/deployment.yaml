@@ -11,7 +11,15 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
-      labels: {$eval: labels}
+      labels:
+        $if: 'exposesMetrics'
+        then:
+          $merge:
+            - {$eval: labels}
+            - 'prometheus.io/scrape': 'true'
+              'prometheus.io/port': '9100'
+        else:
+          {$eval: labels}
     spec:
       serviceAccountName: ${projectName}
       imagePullSecrets: IMAGE_PULL_SECRETS_STRING
@@ -49,6 +57,11 @@ spec:
         - $if: 'needsService'
           then:
             containerPort: 80
+        - $if: 'exposesMetrics'
+          then:
+            name: prometheus
+            containerPort: 9100
+            protocol: TCP
         readinessProbe:
           $if: 'needsService'
           then:
