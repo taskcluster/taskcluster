@@ -13,4 +13,4 @@ spec:
     - port: prometheus
       scheme: http
       path: "/metrics"
-      interval: 30s"
+      interval: 30s
