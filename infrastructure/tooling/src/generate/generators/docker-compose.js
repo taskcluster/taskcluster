@@ -8,6 +8,7 @@ const COMPOSE_FILENAME = 'docker-compose.yml';
 const DEV_COMPOSE_FILENAME = 'docker-compose.dev.yml';
 const PROD_COMPOSE_FILENAME = 'docker-compose.prod.yml';
 const NGINX_FILENAME = 'nginx.conf';
+const PROMETHEUS_FILENAME = 'prometheus.yml';
 const ENV_FILE_PATH = './docker/env/';
 
 const ports = {
@@ -30,6 +31,8 @@ const ports = {
 
 const servicePorts = (service) => (ports[service] || []);
 const serviceHostPort = (service) => ports[service][0].split(':')[1];
+
+const METRICS_PORT = 9100;
 
 const staticClients = [
   { 'clientId': 'static/taskcluster/built-in-workers', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
@@ -126,7 +129,7 @@ const defaultValues = {
   REGISTERED_CLIENTS: '[]',
 
   // Exposing prometheus metrics
-  PROMETHEUS_CONFIG: '{"server": {"ip": "0.0.0.0", "port": 9100 }}',
+  PROMETHEUS_CONFIG: `{"server": {"ip": "0.0.0.0", "port": ${METRICS_PORT} }}`,
 };
 
 const nodemonCmd = (service) => {
@@ -664,5 +667,35 @@ ${SERVICES.filter(name => !!ports[name]).map(name => `
 `;
 
     await writeRepoFile(path.join('.', 'docker', NGINX_FILENAME), conf);
+  },
+});
+
+tasks.push({
+  title: `Generate prometheus.yml`,
+  requires: [...SERVICES.map(name => `procslist-${name}`)],
+  provides: ['target-prometheus.yml'],
+  run: async (requirements, utils) => {
+    const targets = [];
+
+    SERVICES.forEach(name => {
+      const procs = requirements[`procslist-${name}`];
+      Object.keys(procs).filter(procName => !!procs[procName].metrics).forEach(procName => {
+        const svc = [name, procs[procName].type, procName];
+        if (svc[2] === 'web') {
+          svc.splice(2, 1);
+        }
+        targets.push(`${svc.join('-')}:${METRICS_PORT}`);
+      });
+    });
+    const prometheusYml = {
+      global: {
+        scrape_interval: '30s',
+      },
+      scrape_configs: [{
+        job_name: 'taskcluster-services',
+        static_configs: [{ targets }],
+      }],
+    };
+    await writeRepoYAML(path.join('.', 'docker', PROMETHEUS_FILENAME), prometheusYml);
   },
 });
