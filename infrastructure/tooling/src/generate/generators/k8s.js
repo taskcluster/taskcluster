@@ -50,6 +50,7 @@ const SHARED_CONFIG = {
   error_config: '.Values.errorConfig',
   application_name: '.Values.applicationName',
   new_relic: '.Values.newRelic',
+  prometheus_config: '.Values.prometheus',
 };
 
 // default cpu, memory values per proc.  These are based on observations of
@@ -110,6 +111,11 @@ const labels = (projectName, component) => ({
   'app.kubernetes.io/component': `${projectName}-${component.toLowerCase()}`,
   'app.kubernetes.io/part-of': 'taskcluster',
 });
+const metricsSelectorLabels = (projectName) => ({
+  'app.kubernetes.io/part-of': 'taskcluster',
+  'app.kubernetes.io/instance': '{{ .Release.Name }}',
+  'prometheus.io/scrape': 'true',
+});
 
 // json-e can't create a "naked" string for go templates to use to render an integer.
 // we have to do some post-processing to use "advanced" go template features
@@ -131,6 +137,13 @@ const postJsoneProcessing = (rendered, replacements, context) => {
 
 const wrapConditionalResource = (rendered, resourceName) => {
   return `{{- if not (has "${resourceName}" .Values.skipResourceTypes) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
+const wrapConditionalPodmonitoringResource = (rendered) => {
+  return `{{- if and (default false .Values.prometheus.enabled) (not (has "podmonitoring" .Values.skipResourceTypes)) -}}
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
@@ -188,6 +201,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
   const ingresses = [];
   for (const [proc, conf] of Object.entries(procs)) {
     let tmpl;
+    const exposesMetrics = !!procs[proc].metrics;
     const context = {
       projectName: `taskcluster-${name}`,
       serviceName: name,
@@ -195,6 +209,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       configProcName: proc.replace(/-/g, '_'),
       procName: proc,
       needsService: false,
+      exposesMetrics,
       wrapReplicas: false,
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
       labels: labels(`taskcluster-${name}`, proc),
@@ -373,6 +388,26 @@ tasks.push({
 });
 
 tasks.push({
+  title: `Generate pod monitoring`,
+  requires: ['k8s-templates'],
+  provides: [],
+  run: async (requirements, utils) => {
+    const templates = requirements['k8s-templates'];
+
+    // podmonitoring for prometheus metrics
+    const podmon = jsone(templates['podmonitoring'], {
+      projectName: 'taskcluster-monitoring',
+      labels: labels('taskcluster-monitoring', 'podmonitoring'),
+      selectorLabels: metricsSelectorLabels('taskcluster-monitoring'),
+    });
+    await writeRepoFile(
+      path.join(TMPL_DIR, `podmonitoring.yaml`),
+      wrapConditionalPodmonitoringResource(podmon, 'podmonitoring'),
+    );
+  },
+});
+
+tasks.push({
   title: `Generate values.yaml and values.schema.yaml`,
   requires: [
     ...SERVICES.map(name => `configs-${name}`),
@@ -429,7 +464,7 @@ tasks.push({
           description: 'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
           items: {
             type: 'string',
-            enum: ['configmap', 'secret', 'ingress', 'serviceaccount'],
+            enum: ['configmap', 'secret', 'ingress', 'serviceaccount', 'podmonitoring'],
           },
         },
 
@@ -500,6 +535,57 @@ tasks.push({
           type: 'string',
           description: 'Secret name with docker credentials for private registry',
         },
+        prometheus: {
+          type: 'object',
+          description: [
+            'Prometheus configuration',
+            'PodMonitoring resource will be created if prometheus.enabled is true',
+          ].join('\n'),
+          additionalProperties: false,
+          properties: {
+            enabled: {
+              type: 'boolean',
+              description: 'Enable PodMonitoring',
+            },
+            prefix: {
+              type: 'string',
+              description: 'Optional prefix for all metrics',
+            },
+            server: {
+              type: 'object',
+              description: 'Metrics server configuration, one that will serve /metrics endpoint',
+              additionalProperties: false,
+              properties: {
+                port: {
+                  type: 'integer',
+                  description: 'Port to listen on, default is 9100',
+                },
+                ip: {
+                  type: 'string',
+                  description: 'IP address to listen on, default is 0.0.0.0',
+                },
+              },
+            },
+            push: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                gateway: {
+                  type: 'string',
+                  description: 'URL to push metrics to, i.e. http://pushgateway:9091',
+                },
+                jobName: {
+                  type: 'string',
+                  description: 'Job name to use when pushing metrics',
+                },
+                groupings: {
+                  type: 'object',
+                  description: 'Groupings to use when pushing metrics',
+                },
+              },
+            },
+          },
+        },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
       additionalProperties: false,
@@ -523,6 +609,10 @@ tasks.push({
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      prometheus: {
+        enabled: true,
+        server: { port: 9100 },
+      },
     };
 
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
@@ -534,6 +624,7 @@ tasks.push({
       nodeEnv: 'production',
       useKubernetesDnsServiceDiscovery: true,
       skipResourceTypes: [],
+      prometheus: {},
     };
 
     let configs = SERVICES.map(name => ({
@@ -654,40 +745,42 @@ tasks.push({
         }
       };
       exampleConfig[confName].procs = {};
-      Object.entries(cfg.procs).forEach(([n, p]) => {
-        n = n.replace(/-/g, '_');
-        if (['web', 'background'].includes(p.type)) {
-          exampleConfig[confName].procs[n] = {
+      Object.entries(cfg.procs).forEach(([name, proc]) => {
+        name = name.replace(/-/g, '_');
+        if (['web', 'background'].includes(proc.type)) {
+          exampleConfig[confName].procs[name] = {
             // much smaller cpu defaults for dev deployments, since
             // they are generally idle
             cpu: '10m',
           };
-          valuesYAML[confName].procs[n] = {
-            replicas: p.defaultReplicas === undefined ? 1 : p.defaultReplicas,
-            ...defaultResource(confName, n),
+          valuesYAML[confName].procs[name] = {
+            replicas: proc.defaultReplicas === undefined ? 1 : proc.defaultReplicas,
+            ...defaultResource(confName, name),
+            ...(proc.metrics ? { metrics: proc.metrics } : undefined),
           };
-          procSettings.required.push(n);
-          procSettings.properties[n] = {
+          procSettings.required.push(name);
+          procSettings.properties[name] = {
             type: 'object',
             properties: {
               replicas: { type: 'integer' },
               memory: { type: 'string' },
               cpu: { type: 'string' },
+              metrics: { type: 'boolean' },
             },
             required: ['replicas', 'memory', 'cpu'],
             additionalProperties: false,
           };
-        } else if (p.type === 'cron') {
-          exampleConfig[confName].procs[n] = {
+        } else if (proc.type === 'cron') {
+          exampleConfig[confName].procs[name] = {
             // much smaller cpu defaults for dev deployments, since
             // they are generally idle
             cpu: '10m',
           };
-          valuesYAML[confName].procs[n] = {
-            ...defaultResource(confName, n),
+          valuesYAML[confName].procs[name] = {
+            ...defaultResource(confName, name),
           };
-          procSettings.required.push(n);
-          procSettings.properties[n] = {
+          procSettings.required.push(name);
+          procSettings.properties[name] = {
             type: 'object',
             properties: {
               memory: { type: 'string' },

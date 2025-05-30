@@ -14,6 +14,10 @@ forceSSL: false
 trustProxy: true
 nodeEnv: production
 meta: {}
+prometheus:
+  enabled: true
+  server:
+    port: 9100
 auth:
   static_clients:
     - clientId: static/taskcluster/built-in-workers
@@ -215,6 +219,8 @@ queue:
     expireQueueMessages:
       cpu: 10m
     expireWorkerInfo:
+      cpu: 10m
+    workerMetrics:
       cpu: 10m
 secrets:
   taskcluster_access_token: ...

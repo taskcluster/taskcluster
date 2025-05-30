@@ -3868,6 +3868,12 @@ type QueueQueueWorkerSeenWithLastDateActiveFn = {
   expires_in: Date;
  }): Promise<void>;
 };
+type QueueQueueWorkerStatsFn = {
+ (
+ ): Promise<Array<{task_queue_id: string, worker_count: number, quarantined_count: number, claimed_count: number, pending_count: number}>>;
+ (params: {
+ }): Promise<Array<{task_queue_id: string, worker_count: number, quarantined_count: number, claimed_count: number, pending_count: number}>>;
+};
 type QueueQueueWorkerTaskSeenFn = {
  (
    task_queue_id_in: string,
@@ -6219,6 +6225,7 @@ export interface DbFunctions {
   queue_task_deadline_get: QueueQueueTaskDeadlineGetFn;
   queue_task_deadline_put: QueueQueueTaskDeadlinePutFn;
   queue_worker_seen_with_last_date_active: QueueQueueWorkerSeenWithLastDateActiveFn;
+  queue_worker_stats: QueueQueueWorkerStatsFn;
   queue_worker_task_seen: QueueQueueWorkerTaskSeenFn;
   reclaim_task: QueueReclaimTaskFn;
   remove_task: QueueRemoveTaskFn;

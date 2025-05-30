@@ -12782,16 +12782,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"taskcluster-lib-metrics@workspace:libraries/metrics":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-metrics@workspace:libraries/metrics"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
 "taskcluster-lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A.":
   version: 0.0.0-use.local
   resolution: "taskcluster-lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A."

@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: taskcluster-services
+    static_configs:
+      - targets:
+          - queue-web:9100
+          - queue-background-workerMetrics:9100

@@ -4,6 +4,7 @@ forceSSL: false
 nodeEnv: production
 useKubernetesDnsServiceDiscovery: true
 skipResourceTypes: []
+prometheus: {}
 auth:
   procs:
     web:
@@ -162,6 +163,7 @@ queue:
       replicas: 1
       cpu: 400m
       memory: 200Mi
+      metrics: true
     claimResolver:
       replicas: 1
       cpu: 50m
@@ -192,6 +194,11 @@ queue:
     expireWorkerInfo:
       cpu: 200m
       memory: 100Mi
+    workerMetrics:
+      replicas: 1
+      cpu: 50m
+      memory: 100Mi
+      metrics: true
   debug: ''
   autoscaling:
     enabled: false

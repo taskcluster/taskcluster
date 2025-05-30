@@ -132,6 +132,7 @@
    * [`queue_task_deadline_get`](#queue_task_deadline_get)
    * [`queue_task_deadline_put`](#queue_task_deadline_put)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
+   * [`queue_worker_stats`](#queue_worker_stats)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
@@ -2871,6 +2872,7 @@ end
 * [`queue_task_deadline_get`](#queue_task_deadline_get)
 * [`queue_task_deadline_put`](#queue_task_deadline_put)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
+* [`queue_worker_stats`](#queue_worker_stats)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
@@ -5303,6 +5305,76 @@ begin
       queue_workers.task_queue_id = task_queue_id_in and
       queue_workers.worker_group = worker_group_in and
       queue_workers.worker_id = worker_id_in;
+end
+```
+
+</details>
+
+### queue_worker_stats
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `worker_count integer`
+  * `quarantined_count integer`
+  * `claimed_count integer`
+  * `pending_count integer`
+* *Last defined on version*: 112
+
+Retrieve comprehensive statistics for task queues including worker counts,
+quarantined workers, claimed tasks, and pending tasks. This method performs
+a full outer join across queue_workers, queue_claimed_tasks, and
+queue_pending_tasks tables to provide a unified view of queue metrics.
+
+Returns one row per task_queue_id with the following metrics:
+- worker_count: Total number of active workers (not expired)
+- quarantined_count: Number of workers currently under quarantine
+- claimed_count: Number of distinct tasks currently claimed by workers
+- pending_count: Number of distinct tasks waiting to be claimed
+
+All counts default to 0 when no data exists for a given metric.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN QUERY
+  WITH worker_stats AS (
+    SELECT
+      queue_workers.task_queue_id,
+      COUNT(*)::int AS worker_count,
+      SUM(CASE WHEN quarantine_until > now() THEN 1 ELSE 0 END)::int AS quarantined_count
+    FROM queue_workers
+    WHERE expires > now()
+    GROUP BY queue_workers.task_queue_id
+  ),
+  claimed_stats AS (
+    SELECT
+      queue_claimed_tasks.task_queue_id,
+      COUNT(DISTINCT task_id || '_' || run_id)::int AS claimed_count
+    FROM queue_claimed_tasks
+    WHERE taken_until > now()
+    GROUP BY queue_claimed_tasks.task_queue_id
+  ),
+  pending_stats AS (
+    SELECT
+      queue_pending_tasks.task_queue_id,
+      COUNT(DISTINCT task_id || '_' || run_id)::int AS pending_count
+    FROM queue_pending_tasks
+    WHERE expires > now()
+    GROUP BY queue_pending_tasks.task_queue_id
+  )
+  SELECT
+    COALESCE(ws.task_queue_id, cs.task_queue_id, ps.task_queue_id) AS task_queue_id,
+    COALESCE(ws.worker_count, 0) AS worker_count,
+    COALESCE(ws.quarantined_count, 0) AS quarantined_count,
+    COALESCE(cs.claimed_count, 0) AS claimed_count,
+    COALESCE(ps.pending_count, 0) AS pending_count
+  FROM worker_stats ws
+  FULL OUTER JOIN claimed_stats cs ON ws.task_queue_id = cs.task_queue_id
+  FULL OUTER JOIN pending_stats ps ON cs.task_queue_id = ps.task_queue_id;
 end
 ```
 
