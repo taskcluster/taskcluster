@@ -36,7 +36,7 @@
     "@octokit/plugin-retry": "^7.2.1",
     "@octokit/plugin-throttling": "^10.0.0",
     "@octokit/rest": "^18.0.0",
-    "@sentry/node": "^6.0.0",
+    "@sentry/node": "^9.24.0",
     "@slack/web-api": "^6.11.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^2.1.1",
