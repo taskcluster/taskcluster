@@ -590,9 +590,9 @@ slugid==2.0.0 \
     # via
     #   taskcluster
     #   taskcluster-taskgraph
-taskcluster==83.7.0 \
-    --hash=sha256:4b31a5d595cee96995d6543a1c753e970807f0ce25275cb65418170e4f3e5cc3 \
-    --hash=sha256:a56788be0904e9fc97e83ae7fe120d3d8b5b2c49f2af29a437bb761efeb443bb
+taskcluster==84.0.2 \
+    --hash=sha256:459770d016e15714d3e4b9419bca42c6a7fd65395aa251003f6c533a9e5f922e \
+    --hash=sha256:a265eaf46541dded565641ee1d9dc00ee898032b569bfbfbc30884a2cffb1246
     # via -r requirements.in
 taskcluster-taskgraph==14.1.1 \
     --hash=sha256:7b763a7dd307629c088acee19fc6a8a8af830772dcb128544b5a1233fee21ca8 \
