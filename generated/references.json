@@ -12435,7 +12435,7 @@
               "description": "Metrics server configuration, one that will serve /metrics endpoint",
               "properties": {
                 "ip": {
-                  "description": "IP address to listen on, default is 0.0.0.0",
+                  "description": "IP address to listen on, default is 127.0.0.1",
                   "type": "string"
                 },
                 "port": {
@@ -18377,58 +18377,6 @@
       "$schema": "/schemas/common/metrics-reference-v0.json#",
       "metrics": [
         {
-          "description": "Total number of claimed tasks",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "claimed_tasks",
-          "registers": [
-            "totals"
-          ],
-          "title": "Total number of claimed tasks",
-          "type": "gauge"
-        },
-        {
-          "description": "Counter for completed tasks",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "completed_tasks",
-          "registers": [
-            "default"
-          ],
-          "title": "Counter for completed tasks",
-          "type": "counter"
-        },
-        {
-          "description": "Counter for task exception",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "exception_tasks",
-          "registers": [
-            "default"
-          ],
-          "title": "Counter for task exception",
-          "type": "counter"
-        },
-        {
-          "description": "Counter for failed tasks",
-          "labels": {
-            "provisionerId": "ProvisionerID part of the taskQueueId",
-            "workerType": "WorkerType part of the taskQueueId"
-          },
-          "name": "failed_tasks",
-          "registers": [
-            "default"
-          ],
-          "title": "Counter for failed tasks",
-          "type": "counter"
-        },
-        {
           "buckets": [
             0.01,
             0.05,
@@ -18468,12 +18416,64 @@
           "type": "counter"
         },
         {
+          "description": "Total number of claimed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "queue_claimed_tasks",
+          "registers": [
+            "totals"
+          ],
+          "title": "Total number of claimed tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "Counter for completed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "queue_completed_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for completed tasks",
+          "type": "counter"
+        },
+        {
+          "description": "Counter for task exception",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "queue_exception_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for task exception",
+          "type": "counter"
+        },
+        {
+          "description": "Counter for failed tasks",
+          "labels": {
+            "provisionerId": "ProvisionerID part of the taskQueueId",
+            "workerType": "WorkerType part of the taskQueueId"
+          },
+          "name": "queue_failed_tasks",
+          "registers": [
+            "default"
+          ],
+          "title": "Counter for failed tasks",
+          "type": "counter"
+        },
+        {
           "description": "Total number of idle workers (not quarantined, not running)",
           "labels": {
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "idle_workers",
+          "name": "queue_idle_workers",
           "registers": [
             "totals"
           ],
@@ -18486,7 +18486,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "pending_tasks",
+          "name": "queue_pending_tasks",
           "registers": [
             "totals"
           ],
@@ -18499,7 +18499,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "quarantined_workers",
+          "name": "queue_quarantined_workers",
           "registers": [
             "totals"
           ],
@@ -18512,7 +18512,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "running_workers",
+          "name": "queue_running_workers",
           "registers": [
             "totals"
           ],
@@ -18525,7 +18525,7 @@
             "provisionerId": "ProvisionerID part of the taskQueueId",
             "workerType": "WorkerType part of the taskQueueId"
           },
-          "name": "workers_total",
+          "name": "queue_workers_total",
           "registers": [
             "totals"
           ],

@@ -19,7 +19,7 @@ const styles = withStyles(theme => ({
 // A card containing links to the api, log, and exchange references.  This is
 // intended only for use in docs/reference/<tier>/<service>/README.mdx, as it
 // uses relative links that are only valid from that document.
-const ReferenceLinks = ({ classes, api, exchanges, logs }) => {
+const ReferenceLinks = ({ classes, api, exchanges, logs, metrics }) => {
   const location = useLocation();
 
   return (
@@ -39,6 +39,11 @@ const ReferenceLinks = ({ classes, api, exchanges, logs }) => {
         {logs && (
           <Typography variant="body2" component="li">
             <Link to={`${location.pathname}/logs`}>Log Messages</Link>
+          </Typography>
+        )}
+        {metrics && (
+          <Typography variant="body2" component="li">
+            <Link to={`${location.pathname}/metrics`}>Metrics</Link>
           </Typography>
         )}
       </ul>

@@ -108,9 +108,7 @@ export class MonitorManager {
     assert(description, `Must provide a description for metric ${name}`);
     assert(Array.isArray(registers) && registers.length > 0, 'Must provide at least one register');
 
-    const key = serviceName ? `${serviceName}:${name}` : name;
-
-    if (MonitorManager.#registeredMetrics[key]) {
+    if (MonitorManager.#registeredMetrics[name]) {
       throw new Error(`Cannot register metric ${name} twice`);
     }
 
@@ -135,7 +133,7 @@ export class MonitorManager {
 
     mmDebug(`registering metric ${name} ${serviceName ? `for service ${serviceName}` : 'globally'}`);
 
-    MonitorManager.#registeredMetrics[key] = {
+    MonitorManager.#registeredMetrics[name] = {
       name,
       type,
       title,

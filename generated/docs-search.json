@@ -378,6 +378,13 @@
     "title": "Monitoring Services"
   },
   {
+    "element": "h2",
+    "id": "prometheus-metrics",
+    "path": "/manual/deploying/monitoring",
+    "subtitle": "Prometheus Metrics",
+    "title": "Monitoring Services"
+  },
+  {
     "element": "h1",
     "id": "---catch-all",
     "path": "/manual/deploying/object-service",
@@ -1258,6 +1265,62 @@
     "path": "/manual/design/logs",
     "subtitle": "Trace and Request Ids",
     "title": "Structured Logs"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/manual/design/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "labels",
+    "path": "/manual/design/metrics",
+    "subtitle": "Labels",
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "metric-registration",
+    "path": "/manual/design/metrics",
+    "subtitle": "Metric Registration",
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "metric-types",
+    "path": "/manual/design/metrics",
+    "subtitle": "Metric Types",
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "prometheus-integration",
+    "path": "/manual/design/metrics",
+    "subtitle": "Prometheus Integration",
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "reference-documentation",
+    "path": "/manual/design/metrics",
+    "subtitle": "Reference Documentation",
+    "title": "Metrics"
+  },
+  {
+    "element": "h3",
+    "id": "registration-fields",
+    "path": "/manual/design/metrics",
+    "subtitle": "Registration Fields",
+    "title": "Metrics"
+  },
+  {
+    "element": "h2",
+    "id": "using-metrics",
+    "path": "/manual/design/metrics",
+    "subtitle": "Using Metrics",
+    "title": "Metrics"
   },
   {
     "element": "h1",
