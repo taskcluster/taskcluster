@@ -562,7 +562,7 @@ tasks.push({
                 },
                 ip: {
                   type: 'string',
-                  description: 'IP address to listen on, default is 0.0.0.0',
+                  description: 'IP address to listen on, default is 127.0.0.1',
                 },
               },
             },

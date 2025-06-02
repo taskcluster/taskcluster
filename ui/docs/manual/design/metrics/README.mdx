@@ -1,0 +1,81 @@
+---
+filename: design/metrics/README.mdx
+title: Metrics
+order: 11
+---
+
+# Metrics
+
+Taskcluster services output metrics data for monitoring and observability. Metrics are quantitative measurements — such as counters, gauges, histograms, and summaries — that help track the behavior and performance of services over time.
+
+Metrics are typically consumed by Prometheus, which can scrape and visualize these values for alerting and analysis.
+
+## Metric Registration
+
+Metrics must be registered before they can be used. Registration is performed using the `MonitorManager.registerMetric` method. Each metric has a unique name, type, and associated metadata.
+
+**Example registration:**
+
+```js
+MonitorManager.registerMetric({
+  name: 'queue_tasks_created',
+  type: 'counter',
+  title: 'Tasks Created',
+  description: 'Number of tasks created by the service',
+  labels: { provisionerId: 'Provisioner ID', workerType: 'Type of worker' },
+  registers: ['default'],
+});
+```
+
+### Registration Fields
+
+- `name` (string): Unique identifier for the metric (must match `/^[a-z][a-zA-Z0-9_]*$/`).
+- `type` (string): One of `counter`, `gauge`, `histogram`, or `summary`.
+- `title` (string): Human-readable title for the metric.
+- `description` (string): Description of what the metric measures.
+- `labels` (object, optional): Key-value pairs describing label names and their meaning.
+- `registers` (array): List of registers (default is `['default']`). Useful for metric separation if you have multiple jobs within same service
+- `buckets` (array, optional): For histograms, the bucket boundaries.
+- `percentiles` (array, optional): For summaries, the percentiles to calculate.
+- `serviceName` (string, optional): If set, the metric is only registered for the given service.
+
+## Metric Types
+
+- **Counter**: Monotonically increasing value (e.g., number of requests).
+- **Gauge**: Value that can go up or down (e.g., current memory usage).
+- **Histogram**: Measures the distribution of values (e.g., request durations).
+- **Summary**: Similar to histogram, but calculates configurable quantiles.
+
+## Using Metrics
+
+Once registered, metrics can be used via the monitor instance:
+
+```js
+const monitor = MonitorManager.setup({ serviceName: 'my-service' });
+
+monitor.increment('tasks_created', 1, { provisionerId: 'misc', workerType: 'large' });
+
+monitor.set('current_workers', 5, { provisionerId: 'misc', workerType: 'large' });
+
+monitor.observe('request_duration', 1.23, { endpoint: '/api/do-thing' });
+```
+
+## Labels
+
+Labels allow you to partition metric data by dimensions such as worker type, endpoint, or status. When using a metric, provide label values as an object.
+
+## Prometheus Integration
+
+Metrics are exposed in a Prometheus-compatible format. Prometheus can scrape the `/metrics` endpoint to collect and store these values for querying and alerting.
+
+In order for metrics to be exposed, the service must be configured with a `PROMETHEUS_CONFIG` environment variable, for example:
+
+```
+PROMETHEUS_CONFIG={"server": {"ip": "0.0.0.0", "port": 9100 }}
+```
+
+This specifies the IP address and port where the `/metrics` endpoint will be available for Prometheus to scrape.
+
+## Reference Documentation
+
+The [reference documentation](/docs/reference) defines the metrics output by each service and the meaning assigned to their labels and values.

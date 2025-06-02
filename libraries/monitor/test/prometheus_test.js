@@ -7,7 +7,7 @@ import testing from 'taskcluster-lib-testing';
 
 // Register metrics once to be used across all tests
 MonitorManager.registerMetric({
-  name: 'test_counter',
+  name: 'testing_service_test_counter',
   type: 'counter',
   title: 'A test counter metric',
   description: 'A test counter metric',
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
   test('starts server and responds to metrics', async function() {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    monitor.increment('test_counter');
+    monitor.increment('testing_service_test_counter');
     assert.ok(monitor.manager._prometheus.isEnabled);
 
     const res = await request.get(`http://localhost:${TEST_PORT}/metrics`);
@@ -91,7 +91,7 @@ suite(testing.suiteName(), function() {
   test('push gateway successfully sends metrics', async function() {
     const pushGateway = nock('http://push-gateway.test:9091')
       .put('/metrics/job/push-test-job/instance/test-instance', (body) => {
-        return body.includes('testing_service_http_requests_total') &&
+        return body.includes('http_requests_total') &&
                body.includes('label1="push-value"') &&
                body.includes('label2="test"');
       })
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
 
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    monitor.increment('test_counter', 5, { label1: 'push-value', label2: 'test' });
+    monitor.increment('testing_service_test_counter', 5, { label1: 'push-value', label2: 'test' });
 
     await monitor.pushMetrics();
     assert.ok(pushGateway.isDone(), 'Push gateway received the metrics with correct data');

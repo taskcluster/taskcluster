@@ -86,7 +86,8 @@ const primaryTypographyProps = { variant: 'body1' };
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange', 'logs', 'schema']).isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs', 'schema', 'metric'])
+      .isRequired,
     /** The reference entry, or {$id, schema} for a schema. */
     entry: object,
     /** Required when `type` is `topic-exchange`. */
@@ -198,6 +199,37 @@ export default class Entry extends Component {
         <Grid item xs={1}>
           <div>
             <StatusLabel state={upperCase(entry.level)} />
+          </div>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  renderMetricsAccordionSummary = () => {
+    const { entry, classes } = this.props;
+
+    return (
+      <Grid className={classes.gridContainer} container spacing={1}>
+        <Grid item xs={4}>
+          <div>
+            <Typography variant="body2" id={entry.type} component="h3">
+              {entry.name}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={4}>
+          <div>
+            <Typography variant="body2" component="h3">
+              {entry.title}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={2}>
+          <div>{entry.registers.join(', ')}</div>
+        </Grid>
+        <Grid item xs={2}>
+          <div>
+            <StatusLabel state={upperCase(entry.type)} />
           </div>
         </Grid>
       </Grid>
@@ -552,6 +584,56 @@ export default class Entry extends Component {
     );
   };
 
+  renderMetricsExpansionDetails = () => {
+    const { classes, entry } = this.props;
+    const { expanded } = this.state;
+
+    return (
+      expanded && (
+        <List className={classes.list}>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Description"
+              secondary={<Markdown>{entry.description}</Markdown>}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Registers"
+              secondary={
+                <div>
+                  {entry.registers.map(register => (
+                    <code key={register}>{register}</code>
+                  ))}
+                </div>
+              }
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Labels"
+              secondary={
+                <DataTable
+                  size="medium"
+                  items={Object.keys(entry.labels)}
+                  renderRow={field => (
+                    <TableRow key={field}>
+                      <TableCell>{field}</TableCell>
+                      <TableCell>{entry.labels[field]}</TableCell>
+                    </TableRow>
+                  )}
+                />
+              }
+            />
+          </ListItem>
+        </List>
+      )
+    );
+  };
+
   renderSchemaExpansionDetails = () => {
     const { classes, entry } = this.props;
     const { expanded } = this.state;
@@ -598,6 +680,7 @@ export default class Entry extends Component {
     const isSchemaType = type === 'schema';
     const isExchangeType = type === 'topic-exchange';
     const isLogType = type === 'logs';
+    const isMetricType = type === 'metric';
     const isFunctionType = type === 'function';
     const entryHashKey = this.getEntryHashKey(type);
 
@@ -618,12 +701,14 @@ export default class Entry extends Component {
           {isExchangeType && this.renderExchangeAccordionSummary()}
           {isLogType && this.renderLogsAccordionSummary()}
           {isFunctionType && this.renderFunctionAccordionSummary()}
+          {isMetricType && this.renderMetricsAccordionSummary()}
         </AccordionSummary>
         <AccordionDetails>
           {isSchemaType && this.renderSchemaExpansionDetails()}
           {isExchangeType && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}
+          {isMetricType && this.renderMetricsExpansionDetails()}
         </AccordionDetails>
       </Accordion>
     );

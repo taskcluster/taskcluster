@@ -69,3 +69,37 @@ have their schedules and maximum allowed duration defined here. All times are re
 | worker-manager | expire-launch-configs        | taskcluster.worker-manager | 86400              | At 01:00 AM                 |
 | worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                 |
 <!-- END MONITORING TABLE -->
+
+## Prometheus Metrics
+
+
+Taskcluster can be configured to expose metrics for Prometheus scraping. This is supported via a monitor plugin, which starts a metrics server on configured service and background job when enabled.
+
+To enable Prometheus metrics, add a top-level `prometheus` property to your Helm values file:
+
+```yaml
+prometheus:
+  enabled: true
+  prefix: tc
+  server:
+    ip: 0.0.0.0
+    port: 9100
+```
+
+- `enabled`: Set to `true` to enable metrics.
+- `prefix`: (Optional) Prefix for all metric names (will not be prefixed by default).
+- `server.ip`: (Optional) IP address to bind the metrics server (default: `127.0.0.1`).
+- `server.port`: (Optional) Port for the metrics server (default: `9100`).
+
+Each service and background job will expose a `/metrics` endpoint on the configured port for Prometheus to scrape.
+
+If your Kubernetes cluster does not support the `monitoring.googleapis.com/v1/PodMonitoring` resource, add `"podmonitoring"` to `.skipResourceTypes[]` in your Helm values to prevent deployment failures.
+
+Below is the list of services and jobs that expose metrics:
+
+<!-- BEGIN METRICS TABLE -->
+| Service | Name          | Type       | Reference                                           |
+| ------- | ------------- | ---------- | --------------------------------------------------- |
+| queue   | web           | web        | [reference](/docs/reference/platform/queue/metrics) |
+| queue   | workerMetrics | background | [reference](/docs/reference/platform/queue/metrics) |
+<!-- END METRICS TABLE -->
