@@ -1354,7 +1354,7 @@
           "description": "Metrics server configuration, one that will serve /metrics endpoint",
           "properties": {
             "ip": {
-              "description": "IP address to listen on, default is 0.0.0.0",
+              "description": "IP address to listen on, default is 127.0.0.1",
               "type": "string"
             },
             "port": {

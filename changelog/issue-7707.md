@@ -3,7 +3,16 @@ level: minor
 reference: issue 7707
 ---
 
-Introduces prometheus metrics to the monitor and exposes few runtime queue metrics.
-Prometheus is now a monitor plugin that can be used to expose metrics.
-Metrics are registered similarly to the log types with `MonitorManager.registerMetric()`
-Configured services and background job would run a separate server on `:9100` port to expose metrics for scraping.
+Adds Prometheus metrics support to the monitor via a new plugin. Metrics can now be registered using `MonitorManager.registerMetric()`, similar to log types. When enabled, each configured service and background job starts a separate server on port `9100` to expose metrics for Prometheus scraping.
+
+Example minimal Kubernetes `values.yml` configuration:
+```yaml
+prometheus:
+  enabled: true
+  prefix: tc
+  server:
+    ip: 0.0.0.0
+    port: 9100
+```
+
+If your cluster does not support the `monitoring.googleapis.com/v1/PodMonitoring` resource, add `"podmonitoring"` to `.skipResourceTypes[]` to prevent deployment failures.

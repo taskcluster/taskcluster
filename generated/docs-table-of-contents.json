@@ -859,13 +859,36 @@
             },
             "name": "logs",
             "next": {
-              "path": "manual/design/env-vars",
-              "title": "Standard Environment Variables"
+              "path": "manual/design/metrics",
+              "title": "Metrics"
             },
             "path": "manual/design/logs",
             "prev": {
               "path": "manual/design/apis/reference-format",
               "title": "Reference Formats"
+            },
+            "up": {
+              "path": "manual/design",
+              "title": "System Design"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "filename": "design/metrics/README.mdx",
+              "order": 11,
+              "title": "Metrics"
+            },
+            "name": "metrics",
+            "next": {
+              "path": "manual/design/env-vars",
+              "title": "Standard Environment Variables"
+            },
+            "path": "manual/design/metrics",
+            "prev": {
+              "path": "manual/design/logs",
+              "title": "Structured Logs"
             },
             "up": {
               "path": "manual/design",
@@ -886,8 +909,8 @@
             },
             "path": "manual/design/env-vars",
             "prev": {
-              "path": "manual/design/logs",
-              "title": "Structured Logs"
+              "path": "manual/design/metrics",
+              "title": "Metrics"
             },
             "up": {
               "path": "manual/design",
@@ -2536,13 +2559,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/queue/worker-hierarchy",
-                  "title": "Worker Hierarchy"
+                  "path": "reference/platform/queue/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/queue/logs",
                 "prev": {
                   "path": "reference/platform/queue/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/queue/worker-hierarchy",
+                  "title": "Worker Hierarchy"
+                },
+                "path": "reference/platform/queue/metrics",
+                "prev": {
+                  "path": "reference/platform/queue/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2563,8 +2609,8 @@
                 },
                 "path": "reference/platform/queue/worker-hierarchy",
                 "prev": {
-                  "path": "reference/platform/queue/logs",
-                  "title": "logs"
+                  "path": "reference/platform/queue/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",

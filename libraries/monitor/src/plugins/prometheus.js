@@ -54,7 +54,7 @@ export class PrometheusPlugin {
    */
   constructor({ serviceName, prefix, server, push }) {
     this.serviceName = serviceName;
-    this.prefix = [prefix, serviceName].filter(Boolean).map(part => String(part).replace(/-/g, '_').toLowerCase());
+    this.prefix = [prefix];
     this.serverOptions = server;
     this.pushOptions = push;
     this.server = null;
@@ -130,7 +130,7 @@ export class PrometheusPlugin {
     /** @type {import('prom-client').Metric<string>} */
     let metric;
     const metricOptions = {
-      name: [...this.prefix, name].join('_'),
+      name: [...this.prefix, name].filter(a => a).join('_'),
       help: description,
       labelNames: Object.keys(labels),
       registers: registers.map(name => this.#getRegistry(name)),
