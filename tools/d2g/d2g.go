@@ -6,6 +6,7 @@ package d2g
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"github.com/taskcluster/taskcluster/v84/internal/scopes"
 	"github.com/taskcluster/taskcluster/v84/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v84/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/host"
 
 	"slices"
 
@@ -406,6 +408,7 @@ func runCommand(
 	}
 	if config["allowGPUs"].(bool) {
 		command.WriteString(" --gpus " + config["gpus"].(string))
+		ensureNvidiaDevicesLoaded()
 		entries, err := directoryReader("/dev")
 		if err != nil {
 			return nil, "", fmt.Errorf("cannot read /dev to find nvidia devices")
@@ -703,4 +706,14 @@ func (ril *RegistryImageLoader) ChainOfTrustCommand() string {
 		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' %s)"'"}}' > chain-of-trust-additional-data.json`,
 		ril.Image.String(),
 	)
+}
+
+// ensureNvidiaDevicesLoaded runs `nvidia-smi` to ensure that
+// the following additional devices are loaded:
+// /dev/nvidia-uvm and /dev/nvidia-uvm-tools.
+func ensureNvidiaDevicesLoaded() {
+	err := host.Run("/usr/bin/nvidia-smi")
+	if err != nil {
+		log.Printf("Error running nvidia-smi: %v", err)
+	}
 }
