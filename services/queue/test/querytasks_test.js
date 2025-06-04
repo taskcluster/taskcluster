@@ -36,6 +36,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     },
   };
 
+  test('pendingTasks params validation', async () => {
+    await assert.rejects(
+      () => helper.queue.pendingTasks(
+        '1/1',
+      ), err => err.code === 'InvalidRequestArguments');
+  });
+
   test('pendingTasks >= 1', async () => {
     const taskId1 = slugid.v4();
     const taskId2 = slugid.v4();

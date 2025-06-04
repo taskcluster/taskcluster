@@ -57,9 +57,10 @@ const PRIORITY_LEVELS = [
  */
 
 // Common patterns URL parameters
-let SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
-let GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
-let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
+const RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
+const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$');
 
 /**
  * API end-point for version v1/
@@ -141,7 +142,7 @@ let builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
-    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+    taskQueueId: TASK_QUEUE_ID_PATTERN,
     provisionerId: GENERIC_ID_PATTERN,
     workerType: GENERIC_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
