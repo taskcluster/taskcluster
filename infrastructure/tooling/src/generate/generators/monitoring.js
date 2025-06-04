@@ -16,7 +16,7 @@ const serviceDocType = {
   'purge-cache': 'core',
   secrets: 'core',
   'web-server': 'core',
-  'worker-manger': 'core',
+  'worker-manager': 'core',
 };
 
 export const tasks = [];

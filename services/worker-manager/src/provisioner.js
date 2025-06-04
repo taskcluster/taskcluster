@@ -16,7 +16,7 @@ export class Provisioner {
    * @param {object} options.iterateConf
    * @param {Worker} options.Worker
    * @param {WorkerPool} options.WorkerPool
-   * @param {object&{alert: Function}} options.monitor
+   * @param {import('taskcluster-lib-monitor').Monitor} options.monitor
    * @param {object} options.notify
    * @param {import('taskcluster-lib-postgres').Database} options.db
    * @param {string} options.ownName
@@ -182,10 +182,15 @@ export class Provisioner {
         }
       }));
 
+      const duration = elapsedTime();
       this.monitor.log.workerPoolProvisioned({
         workerPoolId: workerPool.workerPoolId,
         providerId: workerPool.providerId,
-        duration: elapsedTime(),
+        duration,
+      });
+      this.monitor.metric.provisionDuration(duration, {
+        workerPoolId: workerPool.workerPoolId,
+        providerId: workerPool.providerId,
       });
     }
   }

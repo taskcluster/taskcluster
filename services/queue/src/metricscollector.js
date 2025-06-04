@@ -98,12 +98,12 @@ class WorkerMetricsCollector {
     for (const stats of Object.values(tqStats)) {
       const labels = splitTaskQueueId(stats.task_queue_id);
 
-      this.monitor.set('pending_tasks', stats.pending_count, labels);
-      this.monitor.set('claimed_tasks', stats.claimed_count, labels);
-      this.monitor.set('workers_total', stats.worker_count, labels);
-      this.monitor.set('quarantined_workers', stats.quarantined_count, labels);
-      this.monitor.set('running_workers', stats.claimed_count, labels);
-      this.monitor.set('idle_workers',
+      this.monitor.metric.pendingTasks(stats.pending_count, labels);
+      this.monitor.metric.claimedTasks(stats.claimed_count, labels);
+      this.monitor.metric.workersTotal(stats.worker_count, labels);
+      this.monitor.metric.quarantinedWorkers(stats.quarantined_count, labels);
+      this.monitor.metric.runningWorkers(stats.claimed_count, labels);
+      this.monitor.metric.idleWorkers(
         Math.max(0, stats.worker_count - stats.quarantined_count - stats.claimed_count),
         labels);
     }

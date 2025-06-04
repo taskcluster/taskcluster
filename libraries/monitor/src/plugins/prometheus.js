@@ -26,7 +26,7 @@ import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pus
 
 /**
  * @typedef {object} MetricDefinition
- * @property {string} name - Name of the metric.
+ * @property {string} name - Prometheus name for the metric
  * @property {'counter' | 'gauge' | 'histogram' | 'summary'} type - Type of metric.
  * @property {string} title - Human readable title of the metric.
  * @property {string} description - Description of the metric.
@@ -186,7 +186,7 @@ export class PrometheusPlugin {
    * @param {number} [value=1] - The value to increment by.
    * @param {Record<string, string | number | boolean>} [labels={}] - Labels for the metric.
    */
-  increment(name, value = 1, labels = {}) {
+  inc(name, value = 1, labels = {}) {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'counter' || metricInfo.type === 'gauge',
       `Cannot increment metric ${name} of type ${metricInfo.type}`);
@@ -206,7 +206,7 @@ export class PrometheusPlugin {
    * @param {number} [value=1] - The value to decrement by.
    * @param {Record<string, string | number | boolean>} [labels={}] - Labels for the metric.
    */
-  decrement(name, value = 1, labels = {}) {
+  dec(name, value = 1, labels = {}) {
     const metricInfo = this.getMetric(name);
     assert(metricInfo.type === 'gauge', `Cannot decrement metric ${name} of type ${metricInfo.type}`);
 

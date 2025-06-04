@@ -74,8 +74,20 @@ export class Estimator {
     // how many extra we want if we do want any
     const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
 
+    this.exposeMetrics({ workerPoolId, existingCapacity, stoppingCapacity,
+      requestedCapacity, desiredCapacity, totalIdleCapacity, adjustedPendingTasks,
+      pendingTasks, claimedTasks });
+
     // subtract the instances that are starting up from that number to spawn
     // if the value is <= 0, than we don't need to spawn any new instance
     return Math.max(toSpawn - requestedCapacity, 0);
+  }
+
+  /**
+   * @param {Record<string, string|number>} options
+   */
+  exposeMetrics({ workerPoolId, ...metrics }) {
+    Object.keys(metrics).forEach(name =>
+      this.monitor.metric[name](metrics[name], { workerPoolId }));
   }
 }

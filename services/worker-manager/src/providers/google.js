@@ -462,9 +462,18 @@ export class GoogleProvider extends Provider {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
+      this.monitor.metric.scanSeen(seen, {
+        providerId: this.providerId,
+        workerPoolId,
+      });
+
       if (this.errors[workerPoolId].length) {
         await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
+      this.monitor.metric.scanErrors(this.errors[workerPoolId].length, {
+        providerId: this.providerId,
+        workerPoolId,
+      });
     }));
   }
 

@@ -123,7 +123,7 @@ upon invoking it.
 Similar to message types, you can register metrics that will be exposed to Prometheus:
 
 ```js
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('apiRequestDuration', {
   name: 'api_request_duration_seconds',
   type: 'histogram',
   description: 'API request duration in seconds',
@@ -136,14 +136,14 @@ MonitorManager.registerMetric({
   serviceName: null, // null means this is a global metric
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('activeUsers', {
   name: 'active_users',
   type: 'gauge',
   description: 'Number of active users',
   serviceName: 'auth-service', // Specific to this service
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('apiRequestsTotal', {
   name: 'api_requests_total',
   type: 'counter',
   description: 'Count of API requests',
@@ -153,7 +153,7 @@ MonitorManager.registerMetric({
   },
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('requestProcessingTime', {
   name: 'request_processing_time',
   type: 'summary',
   description: 'Summary of request processing time',
@@ -162,6 +162,8 @@ MonitorManager.registerMetric({
   registers: ['default', 'special'], // allow metric to be present in multiple registries
 });
 ```
+
+First argument is the id of the metric that can be used in `monitor.metric.$name()` calls
 
 The options to `registerMetric` are:
 
@@ -250,25 +252,17 @@ The messages these child monitors produce will have a value of `Logger` correspo
 
 ### Prometheus Metrics Methods
 
-If Prometheus is enabled, monitor instances provide the following methods for metrics:
+If Prometheus is enabled, monitor instances provide metrics object with all registered metrics as functions.
 
 ```js
 // Increment a counter
-monitor.increment('api_requests_total', 1, { method: 'GET', status: '200' });
-
-// Decrement a gauge
-monitor.decrement('active_connections', 1);
+monitor.metric.apiRequestsTotal(1, { method: 'GET', status: '200' });
 
 // Set a gauge to a specific value
-monitor.set('active_users', 42);
+monitor.metric.activeUsers(42);
 
 // Observe a value for a histogram or summary
-monitor.observe('request_duration_seconds', 0.157, { path: '/api/v1/task' });
-
-// Start a timer and get a function to end it
-const end = monitor.startPromTimer('api_request_duration_seconds', { method: 'POST' });
-// ... do some work ...
-const durationSeconds = end({ status: 'success' }); // Add more labels at end time
+monitor.metric.requestDurationSeconds(0.157, { path: '/api/v1/task' });
 ```
 
 ### Exposing Metrics

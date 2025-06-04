@@ -36,7 +36,7 @@ const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
  * @property {string} type - The type of the log type - will be logged as {type} field
  * @property {string} title - The title of the log type
  * @property {string} description - A description of the log type
- * @property {'any' | 'emerg' | 'alert' | 'crit' | 'err' | 'warn' | 'notice' | 'info' | 'debug'} level
+ * @property {'any' | 'emerg' | 'alert' | 'crit' | 'err' | 'warning' | 'notice' | 'info' | 'debug'} level
  *   - The level of the log type
  * @property {number} version - The version of the log type
  * @property {Record<string,string>} fields - An object containing allowed fields
@@ -67,7 +67,7 @@ const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
 export class MonitorManager {
   /** @type {Record<string, LogTypeOptions>} */
   static #registeredTypes = {};
-  /** @type {Record<string, MetricDefinition>} */
+  /** @type {Record<string, Omit<MetricDefinition, 'metric'>>} */
   static #registeredMetrics = {};
 
   // initialized in setup
@@ -87,9 +87,10 @@ export class MonitorManager {
 
   /**
    * Register a new metric.
+   * @param {string} id - internal name for the metric that will be used to change value
    * @param {MetricDefinition} options
    */
-  static registerMetric({
+  static registerMetric(id, {
     name,
     type,
     title,
@@ -100,7 +101,8 @@ export class MonitorManager {
     percentiles = undefined,
     serviceName = undefined,
   }) {
-    assert(name, `Must provide a name for this metric ${name}`);
+    assert(id, `Must provide an internal metric name for this metric ${name}`);
+    assert(name, `Must provide a name for this metric ${type} ${title}`);
     assert(/^[a-z][a-zA-Z0-9_]*$/.test(name), `Invalid metric name ${name}`);
     assert(METRIC_TYPES.includes(type),
       `Invalid metric type ${type}. Must be one of: counter, gauge, histogram, summary`);
@@ -108,32 +110,35 @@ export class MonitorManager {
     assert(description, `Must provide a description for metric ${name}`);
     assert(Array.isArray(registers) && registers.length > 0, 'Must provide at least one register');
 
-    if (MonitorManager.#registeredMetrics[name]) {
-      throw new Error(`Cannot register metric ${name} twice`);
+    if (MonitorManager.#registeredMetrics[id]) {
+      throw new Error(`Cannot register metric ${id} twice`);
     }
+    const registeredNames = Object.values(MonitorManager.#registeredMetrics).find(
+      (registeredMetric) => registeredMetric.name === name);
+    assert(!registeredNames, `Cannot register metric ${name} twice`);
 
     Object.keys(labels).forEach(label => {
-      assert(/^[a-zA-Z][a-zA-Z0-9_]*$/.test(label), `Invalid label name ${label} for metric ${name}`);
+      assert(/^[a-zA-Z][a-zA-Z0-9_]*$/.test(label), `Invalid label name ${label} for metric ${id}`);
     });
 
     if (type === 'histogram' && buckets) {
-      assert(Array.isArray(buckets), `Buckets must be an array for histogram ${name}`);
+      assert(Array.isArray(buckets), `Buckets must be an array for histogram ${id}`);
       buckets.forEach(bucket => {
-        assert(typeof bucket === 'number', `Bucket values must be numbers for histogram ${name}`);
+        assert(typeof bucket === 'number', `Bucket values must be numbers for histogram ${id}`);
       });
     }
 
     if (type === 'summary' && percentiles) {
-      assert(Array.isArray(percentiles), `Percentiles must be an array for summary ${name}`);
+      assert(Array.isArray(percentiles), `Percentiles must be an array for summary ${id}`);
       percentiles.forEach(percentile => {
         assert(typeof percentile === 'number' && percentile > 0 && percentile < 1,
-          `Percentile values must be numbers between 0 and 1 for summary ${name}`);
+          `Percentile values must be numbers between 0 and 1 for summary ${id}`);
       });
     }
 
-    mmDebug(`registering metric ${name} ${serviceName ? `for service ${serviceName}` : 'globally'}`);
+    mmDebug(`registering metric ${id} ${serviceName ? `for service ${serviceName}` : 'globally'}`);
 
-    MonitorManager.#registeredMetrics[name] = {
+    MonitorManager.#registeredMetrics[id] = {
       name,
       type,
       title,

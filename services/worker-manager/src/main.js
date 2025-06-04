@@ -223,10 +223,11 @@ let load = loader({
   workerScanner: {
     requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
     setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+      const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
         providers,
-        monitor: monitor.childMonitor('worker-scanner'),
+        monitor: scanMonitor,
         iterateConf: cfg.app.workerScannerIterateConfig || {},
         providersFilter: {
           cond: '<>', // only run for providers that are not Azure
@@ -235,6 +236,7 @@ let load = loader({
         db,
       });
       await workerScanner.initiate();
+      scanMonitor.exposeMetrics('scan');
       return workerScanner;
     },
   },
@@ -242,10 +244,11 @@ let load = loader({
   workerScannerAzure: {
     requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
     setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+      const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
         providers,
-        monitor: monitor.childMonitor('worker-scanner'),
+        monitor: scanMonitor,
         iterateConf: cfg.app.workerScannerIterateConfig || {},
         providersFilter: {
           cond: '=', // only run for providers that are Azure
@@ -254,6 +257,7 @@ let load = loader({
         db,
       });
       await workerScanner.initiate();
+      scanMonitor.exposeMetrics('scan');
       return workerScanner;
     },
   },
@@ -261,14 +265,17 @@ let load = loader({
   provisioner: {
     requires: ['cfg', 'monitor', 'providers', 'notify', 'db'],
     setup: async ({ cfg, monitor, providers, notify, db }, ownName) => {
-      return new Provisioner({
+      const childMonitor = monitor.childMonitor('provisioner');
+      const provisioner = new Provisioner({
         ownName,
-        monitor: monitor.childMonitor('provisioner'),
+        monitor: childMonitor,
         providers,
         notify,
         db,
         iterateConf: cfg.app.provisionerIterateConfig || {},
       });
+      childMonitor.exposeMetrics('provision');
+      return provisioner;
     },
   },
 

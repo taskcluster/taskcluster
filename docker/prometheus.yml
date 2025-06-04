@@ -6,3 +6,5 @@ scrape_configs:
       - targets:
           - queue-web:9100
           - queue-background-workerMetrics:9100
+          - worker-manager-background-provisioner:9100
+          - worker-manager-background-workerscanner:9100

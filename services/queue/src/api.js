@@ -1661,7 +1661,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.increment('completed_tasks', 1, metricLabels);
+    this.monitor.metric.completedTasks(1, metricLabels);
     this.monitor.log.taskCompleted({ taskId, runId });
   } else {
     await this.publisher.taskFailed({
@@ -1671,7 +1671,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.increment('failed_tasks', 1, metricLabels);
+    this.monitor.metric.failedTasks(1, metricLabels);
     this.monitor.log.taskFailed({ taskId, runId });
   }
 
@@ -1833,7 +1833,7 @@ builder.declare({
   this.monitor.log.taskException({ taskId, runId });
 
   const metricLabels = splitTaskQueueId(task.taskQueueId);
-  this.monitor.increment('exception_tasks', 1, metricLabels);
+  this.monitor.metric.exceptionTasks(1, metricLabels);
 
   // If a newRun was created and it is a retry with state pending then we
   // better publish messages about it. If we're not retrying the task, the task

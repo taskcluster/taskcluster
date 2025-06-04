@@ -159,7 +159,7 @@ MonitorManager.register({
 });
 
 // Register built-in Prometheus metrics
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('httpRequestsTotal', {
   name: 'http_requests_total',
   type: 'counter',
   title: 'Total number of HTTP requests',
@@ -172,7 +172,7 @@ MonitorManager.registerMetric({
   },
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('httpRequestDurationSeconds', {
   name: 'http_request_duration_seconds',
   type: 'histogram',
   title: 'HTTP request duration in seconds',

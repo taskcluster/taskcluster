@@ -56,6 +56,20 @@ class Monitor {
       taskclusterVersion: this.manager.taskclusterVersion,
     });
 
+    this._metric = {};
+    Object.entries(this.manager.metrics).forEach(([name, definition]) => {
+      this._registerMetric(name, definition);
+    });
+    // safe metrics with catching unknown metric names
+    this.metric = new Proxy(this._metric, {
+      get(target, prop) {
+        if (!(prop in target)) {
+          throw new Error(`Metric "${prop}" is not registered`);
+        }
+        return target[prop];
+      },
+    });
+
     if (patchGlobal) {
       this._patchGlobal();
     }
@@ -136,72 +150,6 @@ class Monitor {
       return;
     }
     this.manager._prometheus.exposeMetrics(exposedRegistry);
-  }
-
-  /**
-   * Increment a Prometheus counter metric
-   * @param {string} name - Metric name
-   * @param {number} [value=1] - Value to increment by
-   * @param {Record<string, any>} [labels={}] - Labels to apply
-   */
-  increment(name, value = 1, labels = {}) {
-    if (!this.manager._prometheus) {
-      return;
-    }
-    this.manager._prometheus.increment(name, value, labels);
-
-  }
-
-  /**
-   * Decrement a Prometheus gauge metric
-   * @param {string} name - Metric name
-   * @param {number} [value=1] - Value to decrement by
-   * @param {Record<string, any>} [labels={}] - Labels to apply
-   */
-  decrement(name, value = 1, labels = {}) {
-    if (!this.manager._prometheus) {
-      return;
-    }
-    this.manager._prometheus.decrement(name, value, labels);
-  }
-
-  /**
-   * Set a Prometheus gauge metric value
-   * @param {string} name - Metric name
-   * @param {number} value - Value to set
-   * @param {Record<string, any>} [labels={}] - Labels to apply
-   */
-  set(name, value, labels = {}) {
-    if (!this.manager._prometheus) {
-      return;
-    }
-    this.manager._prometheus.set(name, value, labels);
-  }
-
-  /**
-   * Observe a value for a Prometheus histogram or summary
-   * @param {string} name - Metric name
-   * @param {number} value - Value to observe
-   * @param {Record<string, any>} [labels={}] - Labels to apply
-   */
-  observe(name, value, labels = {}) {
-    if (!this.manager._prometheus) {
-      return;
-    }
-    this.manager._prometheus.observe(name, value, labels);
-  }
-
-  /**
-   * Start a timer for a Prometheus histogram or summary
-   * @param {string} name - Metric name
-   * @param {object} [labels={}] - Initial labels to apply
-   * @returns {function} Function to call to end timing
-   */
-  startPromTimer(name, labels = {}) {
-    if (!this.manager._prometheus) {
-      return () => 0;
-    }
-    return this.manager._prometheus.startTimer(name, labels);
   }
 
   /**
@@ -410,6 +358,31 @@ class Monitor {
       }
       let lv = level === 'any' ? overrides.level : level;
       this._log[lv](type, { v: version, ...fields });
+    };
+  }
+
+  /**
+   * Creates callable functions for the metric
+   * @param {string} id - Internal metric id
+   * @param {import('./plugins/prometheus.js').MetricDefinition} definition - Metric definition
+   */
+  _registerMetric(id, definition) {
+    // we assume all metrics would only use single method
+    const typeToMethod = {
+      counter: 'inc',
+      gauge: 'set',
+      histogram: 'observe',
+      summary: 'observe',
+    };
+
+    assert(!this._metric[id], `${id} metric already defined.`);
+
+    const methodName = typeToMethod[definition.type];
+    this._metric[id] = (value, labels = {}) => {
+      if (!this.manager._prometheus) {
+        return;
+      }
+      this.manager._prometheus[methodName](definition.name, value, labels);
     };
   }
 

@@ -5,10 +5,12 @@ provisioner:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js runProvisioner
+  metrics: true
 workerscanner:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js workerScanner
+  metrics: true
 workerscanner-azure:
   type: background
   subType: 'iterate'

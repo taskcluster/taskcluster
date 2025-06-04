@@ -17,7 +17,7 @@ Metrics must be registered before they can be used. Registration is performed us
 **Example registration:**
 
 ```js
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('tasksCreated', {
   name: 'queue_tasks_created',
   type: 'counter',
   title: 'Tasks Created',
@@ -28,6 +28,8 @@ MonitorManager.registerMetric({
 ```
 
 ### Registration Fields
+
+First argument is the name of the metric that will be used to update its value in code.
 
 - `name` (string): Unique identifier for the metric (must match `/^[a-z][a-zA-Z0-9_]*$/`).
 - `type` (string): One of `counter`, `gauge`, `histogram`, or `summary`.
@@ -53,11 +55,11 @@ Once registered, metrics can be used via the monitor instance:
 ```js
 const monitor = MonitorManager.setup({ serviceName: 'my-service' });
 
-monitor.increment('tasks_created', 1, { provisionerId: 'misc', workerType: 'large' });
+monitor.metric.tasksCreated(1, { provisionerId: 'misc', workerType: 'large' });
 
-monitor.set('current_workers', 5, { provisionerId: 'misc', workerType: 'large' });
+monitor.metric.currentWorkers(5, { provisionerId: 'misc', workerType: 'large' });
 
-monitor.observe('request_duration', 1.23, { endpoint: '/api/do-thing' });
+monitor.metric.requestDuration(1.23, { endpoint: '/api/do-thing' });
 ```
 
 ## Labels

@@ -98,8 +98,10 @@ If your Kubernetes cluster does not support the `monitoring.googleapis.com/v1/Po
 Below is the list of services and jobs that expose metrics:
 
 <!-- BEGIN METRICS TABLE -->
-| Service | Name          | Type       | Reference                                           |
-| ------- | ------------- | ---------- | --------------------------------------------------- |
-| queue   | web           | web        | [reference](/docs/reference/platform/queue/metrics) |
-| queue   | workerMetrics | background | [reference](/docs/reference/platform/queue/metrics) |
+| Service        | Name          | Type       | Reference                                                |
+| -------------- | ------------- | ---------- | -------------------------------------------------------- |
+| queue          | web           | web        | [reference](/docs/reference/platform/queue/metrics)      |
+| queue          | workerMetrics | background | [reference](/docs/reference/platform/queue/metrics)      |
+| worker-manager | provisioner   | background | [reference](/docs/reference/core/worker-manager/metrics) |
+| worker-manager | workerscanner | background | [reference](/docs/reference/core/worker-manager/metrics) |
 <!-- END METRICS TABLE -->

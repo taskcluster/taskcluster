@@ -16105,6 +16105,150 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "description": "This number represents difference in pending tasks and idle capacity.\nAdjustment is needed to make sure workers that are still running and are currently\nnot doing any work, will soon pick up those tasks, so we don't need additional workers for those.\nAssumption is that those idling workers would pick up tasks soon.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_adjusted_pending_tasks",
+          "registers": [
+            "provision"
+          ],
+          "title": "Adjusted pending tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents the number of claimed tasks.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_claimed_tasks",
+          "registers": [
+            "provision"
+          ],
+          "title": "Claimed tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents calculation of the estimator for a given worker pool,\nwith regards to min and max capacity of the worker pool, number of adjusted\npending tasks and scaling ratio. Refer to estimator.js for exact logic.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_desired_capacity",
+          "registers": [
+            "provision"
+          ],
+          "title": "Desired capacity",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents the running capacity of running and not quarantined workers.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_existing_capacity",
+          "registers": [
+            "provision"
+          ],
+          "title": "Existing capacity",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents the number of pending tasks.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_pending_tasks",
+          "registers": [
+            "provision"
+          ],
+          "title": "Pending tasks",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents the running capacity of workers that are requested.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_requested_capacity",
+          "registers": [
+            "provision"
+          ],
+          "title": "Requested capacity",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents the running capacity of workers that are stopping.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_stopping_capacity",
+          "registers": [
+            "provision"
+          ],
+          "title": "Stopping capacity",
+          "type": "gauge"
+        },
+        {
+          "description": "This number represents difference in existing capacity\n(running capacity of running and not quarantined workers), and the number of\nclaimed tasks.",
+          "labels": {
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_total_idle_capacity",
+          "registers": [
+            "provision"
+          ],
+          "title": "Total idle capacity",
+          "type": "gauge"
+        },
+        {
+          "buckets": [
+            0.01,
+            0.05,
+            0.1,
+            0.5,
+            1,
+            5,
+            10
+          ],
+          "description": "Time it took to provision a single worker pool",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_pool_provision_seconds",
+          "registers": [
+            "provision"
+          ],
+          "title": "Worker pool provision duration",
+          "type": "histogram"
+        },
+        {
+          "description": "Total number of errors for worker pool during scanning",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_pool_scan_errors",
+          "registers": [
+            "scan"
+          ],
+          "title": "Worker pool errors during scan",
+          "type": "gauge"
+        },
+        {
+          "description": "Total number of workers checked for given workerPoolId during scanning.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_pool_scan_seen_workers",
+          "registers": [
+            "scan"
+          ],
+          "title": "Worker pool workers checked during scan",
+          "type": "gauge"
         }
       ],
       "serviceName": "worker-manager"

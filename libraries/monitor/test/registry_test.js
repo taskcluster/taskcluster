@@ -3,7 +3,7 @@ import _ from 'lodash';
 import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('testCounter', {
   name: 'test_counter_xx',
   type: 'counter',
   title: 'A test counter metric',
@@ -11,7 +11,7 @@ MonitorManager.registerMetric({
   labels: { label1: 'One metric', label2: 'Or another' },
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('serviceHistogram', {
   name: 'service_histogram_xx',
   type: 'histogram',
   title: 'A service-specific histogram metric',
@@ -21,7 +21,7 @@ MonitorManager.registerMetric({
   serviceName: 'taskcluster-testing-service',
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('separateCounter', {
   name: 'separate_counter',
   type: 'counter',
   title: 'A test counter metric belonging to a different registry',
@@ -29,7 +29,7 @@ MonitorManager.registerMetric({
   labels: { label1: 'One metric', label2: 'Or another' },
   registers: ['special'],
 });
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('sharedCounter', {
   name: 'shared_counter',
   type: 'counter',
   title: 'Metric in multiple registries',
@@ -105,7 +105,7 @@ suite(testing.suiteName(), function() {
 
   test('throws on duplicate metric registration', function() {
     assert.throws(() => {
-      MonitorManager.registerMetric({
+      MonitorManager.registerMetric('aa1', {
         name: 'test_counter_xx',
         type: 'counter',
         title: 'Duplicate metric',
@@ -114,7 +114,7 @@ suite(testing.suiteName(), function() {
     }, /Cannot register metric test_counter_xx twice/);
 
     assert.throws(() => {
-      MonitorManager.registerMetric({
+      MonitorManager.registerMetric('aa2', {
         name: 'service_histogram_xx',
         type: 'histogram',
         title: 'Duplicate metric',
@@ -126,7 +126,7 @@ suite(testing.suiteName(), function() {
 
   test('validates metric type and labels', function() {
     assert.throws(() => {
-      MonitorManager.registerMetric({
+      MonitorManager.registerMetric('aa3', {
         name: 'invalid_type_metric',
         type: 'invalid',
         title: 'This metric has an invalid type',
@@ -134,7 +134,7 @@ suite(testing.suiteName(), function() {
       });
     }, /Invalid metric type invalid/);
     assert.throws(() => {
-      MonitorManager.registerMetric({
+      MonitorManager.registerMetric('aa4', {
         name: 'invalid_labels',
         type: 'counter',
         title: 'This metric has invalid label names',
@@ -145,7 +145,7 @@ suite(testing.suiteName(), function() {
   });
   test('validates registers', function() {
     assert.throws(() => {
-      MonitorManager.registerMetric({
+      MonitorManager.registerMetric('aa5', {
         name: 'empty_registers',
         type: 'counter',
         title: 'This metric has an invalid registers',
@@ -163,11 +163,11 @@ suite(testing.suiteName(), function() {
       debug: true,
       prometheusConfig: {},
     });
-    monitor.increment('test_counter_xx');
-    monitor.increment('test_counter_xx', 10);
-    monitor.observe('service_histogram_xx', 33);
-    monitor.increment('separate_counter');
-    monitor.increment('shared_counter');
+    monitor.metric.testCounter();
+    monitor.metric.testCounter(10);
+    monitor.metric.serviceHistogram(33);
+    monitor.metric.separateCounter();
+    monitor.metric.sharedCounter();
 
     const metrics = await monitor.manager._prometheus.metricsJson();
     const counter = metrics.find(({ name }) => name.endsWith('test_counter_xx'));
@@ -200,10 +200,7 @@ suite(testing.suiteName(), function() {
       prometheusConfig: {},
     });
     assert.throws(() => {
-      monitor.increment('this_metric_never_existed');
-    }, /Metric this_metric_never_existed was not registered/);
-    assert.throws(() => {
-      monitor.set('was not registered', 0);
-    }, /Metric was not registered was not registered/);
+      monitor.metric.unknownMetric();
+    }, /Metric "unknownMetric" is not registered/);
   });
 });
