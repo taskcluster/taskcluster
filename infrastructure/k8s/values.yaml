@@ -257,10 +257,12 @@ worker_manager:
       replicas: 1
       cpu: 50m
       memory: 200Mi
+      metrics: true
     workerscanner:
       replicas: 1
       cpu: 200m
       memory: 200Mi
+      metrics: true
     workerscanner_azure:
       replicas: 1
       cpu: 200m

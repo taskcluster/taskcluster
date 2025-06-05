@@ -3349,13 +3349,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/azure",
-                  "title": "Azure Provider Type"
+                  "path": "reference/core/worker-manager/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
                   "path": "reference/core/worker-manager/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/worker-manager/azure",
+                  "title": "Azure Provider Type"
+                },
+                "path": "reference/core/worker-manager/metrics",
+                "prev": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3376,8 +3399,8 @@
                 },
                 "path": "reference/core/worker-manager/azure",
                 "prev": {
-                  "path": "reference/core/worker-manager/logs",
-                  "title": "logs"
+                  "path": "reference/core/worker-manager/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",

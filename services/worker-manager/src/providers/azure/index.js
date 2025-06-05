@@ -1104,8 +1104,18 @@ export class AzureProvider extends Provider {
         }
 
         await Promise.all(errors.map(error => this.reportError({ workerPool, ...error })));
+        this.monitor.metric.scanErrors(errors.length, {
+          providerId: this.providerId,
+          workerPoolId,
+        });
       }),
     );
+
+    Object.entries(this.seen).forEach(([workerPoolId, seen]) =>
+      this.monitor.metric.scanSeen(seen, {
+        providerId: this.providerId,
+        workerPoolId,
+      }));
   }
 
   /**

@@ -6,7 +6,7 @@ import MonitorManager from '../src/monitormanager.js';
 import testing from 'taskcluster-lib-testing';
 
 // Register metrics once to be used across all tests
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('testingServiceTestCounter', {
   name: 'testing_service_test_counter',
   type: 'counter',
   title: 'A test counter metric',
@@ -14,8 +14,8 @@ MonitorManager.registerMetric({
   labels: { label1: 'One metric', label2: 'Or another' },
 });
 
-MonitorManager.registerMetric({
-  name: 'service_histogram',
+MonitorManager.registerMetric('testingServiceHistogram', {
+  name: 'testing_service_histogram',
   type: 'histogram',
   title: 'A service-specific histogram metric',
   description: 'A service-specific histogram metric',
@@ -24,8 +24,8 @@ MonitorManager.registerMetric({
   serviceName: 'taskcluster-testing-service',
 });
 
-MonitorManager.registerMetric({
-  name: 'separate_registry_metric',
+MonitorManager.registerMetric('testingServiceGauge', {
+  name: 'testing_service_gauge',
   type: 'gauge',
   title: 'Something to not be exposed by default',
   description: 'Some metric',
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
   test('starts server and responds to metrics', async function() {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    monitor.increment('testing_service_test_counter');
+    monitor.metric.testingServiceTestCounter(1);
     assert.ok(monitor.manager._prometheus.isEnabled);
 
     const res = await request.get(`http://localhost:${TEST_PORT}/metrics`);
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
 
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    monitor.increment('testing_service_test_counter', 5, { label1: 'push-value', label2: 'test' });
+    monitor.metric.testingServiceTestCounter(5, { label1: 'push-value', label2: 'test' });
 
     await monitor.pushMetrics();
     assert.ok(pushGateway.isDone(), 'Push gateway received the metrics with correct data');

@@ -207,7 +207,7 @@ const commonLabels = {
   workerType: 'WorkerType part of the taskQueueId',
 };
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('completedTasks', {
   name: 'queue_completed_tasks',
   type: 'counter',
   title: 'Counter for completed tasks',
@@ -216,7 +216,7 @@ MonitorManager.registerMetric({
   registers: ['default'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('failedTasks', {
   name: 'queue_failed_tasks',
   type: 'counter',
   title: 'Counter for failed tasks',
@@ -225,7 +225,7 @@ MonitorManager.registerMetric({
   registers: ['default'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('exceptionTasks', {
   name: 'queue_exception_tasks',
   type: 'counter',
   title: 'Counter for task exception',
@@ -234,7 +234,7 @@ MonitorManager.registerMetric({
   registers: ['default'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('pendingTasks', {
   name: 'queue_pending_tasks',
   type: 'gauge',
   title: 'Total number of pending tasks',
@@ -243,7 +243,7 @@ MonitorManager.registerMetric({
   registers: ['totals'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('claimedTasks', {
   name: 'queue_claimed_tasks',
   type: 'gauge',
   title: 'Total number of claimed tasks',
@@ -252,7 +252,7 @@ MonitorManager.registerMetric({
   registers: ['totals'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('workersTotal', {
   name: 'queue_workers_total',
   type: 'gauge',
   title: 'Total number of workers',
@@ -261,7 +261,7 @@ MonitorManager.registerMetric({
   registers: ['totals'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('quarantinedWorkers', {
   name: 'queue_quarantined_workers',
   type: 'gauge',
   title: 'Total number of quarantined workers',
@@ -270,7 +270,7 @@ MonitorManager.registerMetric({
   registers: ['totals'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('runningWorkers', {
   name: 'queue_running_workers',
   type: 'gauge',
   title: 'Total number of workers in running state',
@@ -279,7 +279,7 @@ MonitorManager.registerMetric({
   registers: ['totals'],
 });
 
-MonitorManager.registerMetric({
+MonitorManager.registerMetric('idleWorkers', {
   name: 'queue_idle_workers',
   type: 'gauge',
   title: 'Total number of idle workers',

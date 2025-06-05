@@ -238,3 +238,139 @@ MonitorManager.register({
     remainingCapacity: 'An object with launchConfigId as a key and remaining capacity',
   },
 });
+
+const commonLabels = {
+  workerPoolId: 'The worker pool ID',
+};
+
+MonitorManager.registerMetric('existingCapacity', {
+  name: 'worker_manager_existing_capacity',
+  type: 'gauge',
+  title: 'Existing capacity',
+  description: `
+    This number represents the running capacity of running and not quarantined workers.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('stoppingCapacity', {
+  name: 'worker_manager_stopping_capacity',
+  type: 'gauge',
+  title: 'Stopping capacity',
+  description: `
+    This number represents the running capacity of workers that are stopping.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('requestedCapacity', {
+  name: 'worker_manager_requested_capacity',
+  type: 'gauge',
+  title: 'Requested capacity',
+  description: `
+    This number represents the running capacity of workers that are requested.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('desiredCapacity', {
+  name: 'worker_manager_desired_capacity',
+  type: 'gauge',
+  title: 'Desired capacity',
+  description: `
+    This number represents calculation of the estimator for a given worker pool,
+    with regards to min and max capacity of the worker pool, number of adjusted
+    pending tasks and scaling ratio. Refer to estimator.js for exact logic.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('totalIdleCapacity', {
+  name: 'worker_manager_total_idle_capacity',
+  type: 'gauge',
+  title: 'Total idle capacity',
+  description: `
+    This number represents difference in existing capacity
+    (running capacity of running and not quarantined workers), and the number of
+    claimed tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('adjustedPendingTasks', {
+  name: 'worker_manager_adjusted_pending_tasks',
+  type: 'gauge',
+  title: 'Adjusted pending tasks',
+  description: `
+    This number represents difference in pending tasks and idle capacity.
+    Adjustment is needed to make sure workers that are still running and are currently
+    not doing any work, will soon pick up those tasks, so we don't need additional workers for those.
+    Assumption is that those idling workers would pick up tasks soon.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('pendingTasks', {
+  name: 'worker_manager_pending_tasks',
+  type: 'gauge',
+  title: 'Pending tasks',
+  description: `
+    This number represents the number of pending tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('claimedTasks', {
+  name: 'worker_manager_claimed_tasks',
+  type: 'gauge',
+  title: 'Claimed tasks',
+  description: `
+    This number represents the number of claimed tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('provisionDuration', {
+  name: 'worker_manager_worker_pool_provision_seconds',
+  type: 'histogram',
+  title: 'Worker pool provision duration',
+  description: 'Time it took to provision a single worker pool',
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['provision'],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
+});
+
+MonitorManager.registerMetric('scanSeen', {
+  name: 'worker_manager_worker_pool_scan_seen_workers',
+  type: 'gauge',
+  title: 'Worker pool workers checked during scan',
+  description: 'Total number of workers checked for given workerPoolId during scanning.',
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('scanErrors', {
+  name: 'worker_manager_worker_pool_scan_errors',
+  type: 'gauge',
+  title: 'Worker pool errors during scan',
+  description: 'Total number of errors for worker pool during scanning',
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['scan'],
+});
