@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-github",
-  "version": "84.0.2",
+  "version": "84.1.0",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

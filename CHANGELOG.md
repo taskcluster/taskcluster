@@ -3,6 +3,68 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.1.0
+
+### GENERAL
+
+▶ [patch] [#7712](https://github.com/taskcluster/taskcluster/issues/7712)
+Upgrades to go1.24.3 [SECURITY].
+
+More details [here](https://go.dev/doc/devel/release#go1.24.3).
+
+### DEPLOYERS
+
+▶ [minor] [#7707](https://github.com/taskcluster/taskcluster/issues/7707)
+Adds Prometheus metrics support to the monitor via a new plugin. Metrics can now be registered using `MonitorManager.registerMetric()`, similar to log types. When enabled, each configured service and background job starts a separate server on port `9100` to expose metrics for Prometheus scraping.
+
+Example minimal Kubernetes `values.yml` configuration:
+```yaml
+prometheus:
+  enabled: true
+  prefix: tc
+  server:
+    ip: 0.0.0.0
+    port: 9100
+```
+
+If your cluster does not support the `monitoring.googleapis.com/v1/PodMonitoring` resource, add `"podmonitoring"` to `.skipResourceTypes[]` to prevent deployment failures.
+
+### ADMINS
+
+▶ [minor] [#7646](https://github.com/taskcluster/taskcluster/issues/7646)
+The github service will now respect github rate limits instead of hammering against it as fast as it can
+
+### USERS
+
+▶ [patch] [#7757](https://github.com/taskcluster/taskcluster/issues/7757)
+Fixed input validation for some queue service endpoints to return a 400 error instead of a 500 error when validation fails.
+
+### DEVELOPERS
+
+▶ [patch] [#7612](https://github.com/taskcluster/taskcluster/issues/7612)
+Exposes worker-manager provision loop metrics to prometheus.
+
+▶ [patch]
+Modernized logger interface by replacing deprecated `logger.warn` with `logger.warning` to avoid DeprecationWarning in Python environments.
+
+### Automated Package Updates
+
+<details>
+<summary>10 Dependabot updates</summary>
+
+* build(deps-dev): bump the client-web-node-deps group (77d81f2f3d)
+* build(deps): bump github.com/shirou/gopsutil/v4 in the go-deps group (562d2925c9)
+* build(deps): bump the node-deps group with 17 updates (d146d04abe)
+* build(deps): bump taskcluster from 83.7.0 to 84.0.2 in /taskcluster (8bca2bb982)
+* build(deps): bump taskcluster-taskgraph (b88065dff3)
+* build(deps): bump debug in /clients/client in the client-node-deps group (9b413949b7)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (d6b8b95eb4)
+* build(deps): bump the client-rust-deps group (16c9599f28)
+* build(deps): bump github.com/go-jose/go-jose/v4 from 4.0.4 to 4.0.5 (303865a185)
+* build(deps): bump github.com/golang-jwt/jwt/v5 from 5.2.1 to 5.2.2 (4e1a71989f)
+
+</details>
+
 ## v84.0.2
 
 ### USERS

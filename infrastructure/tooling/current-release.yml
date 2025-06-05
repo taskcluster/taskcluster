@@ -1,1 +1,1 @@
-image: taskcluster/taskcluster:v84.0.2
+image: taskcluster/taskcluster:v84.1.0

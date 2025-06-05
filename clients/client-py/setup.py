@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 import sys
 
-VERSION = '84.0.2'
+VERSION = '84.1.0'
 
 tests_require = [
     'pytest',
