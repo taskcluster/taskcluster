@@ -1,23 +1,23 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
+/* eslint-disable padding-line-between-statements */
+/* eslint-disable no-continue */
+/* eslint-disable no-restricted-syntax */
 // @ts-check
 
 /**
- * This file contains the main logic code for converting Taskcluster data structures
- * into Firefox Profiler data structures.
+ * This file contains the main logic code for converting Taskcluster data
+ * structures into Firefox Profiler data structures.
  */
 
-import {
-  asAny,
-  encodeUintArrayForUrlComponent,
-  getServer,
-  log,
-} from "./utils.js";
+import { asAny, encodeUintArrayForUrlComponent, getServer, log } from './utils';
 import {
   getEmptyProfile,
   getEmptyThread,
   UniqueStringArray,
   getProfile,
-} from "./profiler.js";
-import { getTasks } from "./taskcluster.js";
+} from './profiler';
+import { getTasks } from './taskcluster';
 
 /**
  * @typedef {import("./types").Task} Task
@@ -25,8 +25,8 @@ import { getTasks } from "./taskcluster.js";
  */
 
 // TODO - Figure out how to configure preferences in the new Taskcluster UI.
-log("Override the profiler origin with window.profilerOrigin");
-asAny(window).profilerOrigin = "https://profiler.firefox.com";
+log('Override the profiler origin with window.profilerOrigin');
+asAny(window).profilerOrigin = 'https://profiler.firefox.com';
 
 /**
  * @typedef {Object} LogRow
@@ -43,8 +43,8 @@ asAny(window).profilerOrigin = "https://profiler.firefox.com";
  * @returns {LogRow[]} The parsed log rows.
  */
 function readLogFile(lines) {
-  const logPattern =
-    /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z]+)\]\s*(?<message>.*)/;
+  /* eslint-disable max-len */
+  const logPattern = /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z]+)\]\s*(?<message>.*)/;
   // ^\s*                                                                                     Skip any beginning whitespace.
   //     \[                                                            \]                     "[taskcluster:warn 2024-05-20T14:40:11.353Z]"
   //       (?<component>\w+)                                                                  Capture the component name, here "taskcluster"
@@ -53,21 +53,23 @@ function readLogFile(lines) {
   //                                               (?<time>[\d\-T:.Z]+)                       Capture the timestamp
   //                                                                     \s*                  Ignore whitespace
   //                                                                        (?<message>.*)    Capture the rest as the message
-
+  /* eslint-enable max-len */
   /** @type {LogRow[]} */
   const logRows = [];
-
   // Find the first time.
   let time;
+
   for (const line of lines) {
     const match = line.match(logPattern);
+
     if (match && match.groups) {
       time = new Date(match.groups.time);
       break;
     }
   }
+
   if (!time) {
-    throw new Error("Could not find a time in the log rows");
+    throw new Error('Could not find a time in the log rows');
   }
 
   for (const line of lines) {
@@ -76,6 +78,7 @@ function readLogFile(lines) {
     }
 
     const match = line.match(logPattern);
+
     if (match && match.groups) {
       time = new Date(match.groups.time);
       logRows.push({
@@ -85,7 +88,7 @@ function readLogFile(lines) {
       });
     } else {
       logRows.push({
-        component: "no timestamp",
+        component: 'no timestamp',
         time,
         message: line,
       });
@@ -110,7 +113,7 @@ function fixupLogRows(logRows) {
 
   for (const logRow of logRows) {
     // Remove the date-time part from the log string
-    logRow.message = logRow.message.replace(regex, "");
+    logRow.message = logRow.message.replace(regex, '');
   }
 
   return logRows;
@@ -123,39 +126,39 @@ function fixupLogRows(logRows) {
 function getCategories() {
   return [
     {
-      name: "none",
-      color: "grey",
-      subcategories: ["Other"],
+      name: 'none',
+      color: 'grey',
+      subcategories: ['Other'],
     },
     {
-      name: "fetches",
-      color: "purple",
-      subcategories: ["Other"],
+      name: 'fetches',
+      color: 'purple',
+      subcategories: ['Other'],
     },
     {
-      name: "vcs",
-      color: "orange",
-      subcategories: ["Other"],
+      name: 'vcs',
+      color: 'orange',
+      subcategories: ['Other'],
     },
     {
-      name: "setup",
-      color: "lightblue",
-      subcategories: ["Other"],
+      name: 'setup',
+      color: 'lightblue',
+      subcategories: ['Other'],
     },
     {
-      name: "taskcluster",
-      color: "green",
-      subcategories: ["Other"],
+      name: 'taskcluster',
+      color: 'green',
+      subcategories: ['Other'],
     },
     {
-      name: "Task",
-      color: "lightblue",
-      subcategories: ["Other"],
+      name: 'Task',
+      color: 'lightblue',
+      subcategories: ['Other'],
     },
     {
-      name: "Log",
-      color: "green",
-      subcategories: ["Other"],
+      name: 'Log',
+      color: 'green',
+      subcategories: ['Other'],
     },
   ];
 }
@@ -167,37 +170,37 @@ function getCategories() {
  */
 function getLiveLogRowSchema() {
   return {
-    name: "LiveLogRow",
-    tooltipLabel: "{marker.data.message}",
-    tableLabel: "{marker.data.message}",
-    chartLabel: "{marker.data.message}",
-    display: ["marker-chart", "marker-table", "timeline-overview"],
+    name: 'LiveLogRow',
+    tooltipLabel: '{marker.data.message}',
+    tableLabel: '{marker.data.message}',
+    chartLabel: '{marker.data.message}',
+    display: ['marker-chart', 'marker-table', 'timeline-overview'],
     data: [
       {
-        key: "startTime",
-        label: "Start time",
-        format: "string",
+        key: 'startTime',
+        label: 'Start time',
+        format: 'string',
       },
       {
-        key: "message",
-        label: "Log Message",
-        format: "string",
+        key: 'message',
+        label: 'Log Message',
+        format: 'string',
         searchable: true,
       },
       {
-        key: "hour",
-        label: "Hour",
-        format: "string",
+        key: 'hour',
+        label: 'Hour',
+        format: 'string',
       },
       {
-        key: "date",
-        label: "Date",
-        format: "string",
+        key: 'date',
+        label: 'Date',
+        format: 'string',
       },
       {
-        key: "time",
-        label: "Time",
-        format: "time",
+        key: 'time',
+        label: 'Time',
+        format: 'time',
       },
     ],
   };
@@ -205,53 +208,53 @@ function getLiveLogRowSchema() {
 
 function getTaskSchema() {
   return {
-    name: "Task",
-    tooltipLabel: "{marker.data.taskName}",
-    tableLabel: "{marker.data.taskName}",
-    chartLabel: "{marker.data.taskName}",
-    display: ["marker-chart", "marker-table", "timeline-overview"],
+    name: 'Task',
+    tooltipLabel: '{marker.data.taskName}',
+    tableLabel: '{marker.data.taskName}',
+    chartLabel: '{marker.data.taskName}',
+    display: ['marker-chart', 'marker-table', 'timeline-overview'],
     data: [
       {
-        key: "startTime",
-        label: "Start time",
-        format: "string",
+        key: 'startTime',
+        label: 'Start time',
+        format: 'string',
       },
       {
-        key: "taskName",
-        label: "Task Name",
-        format: "string",
+        key: 'taskName',
+        label: 'Task Name',
+        format: 'string',
         searchable: true,
       },
       {
-        key: "time",
-        label: "Time",
-        format: "time",
+        key: 'time',
+        label: 'Time',
+        format: 'time',
       },
       {
-        key: "taskURL",
-        label: "Task",
-        format: "url",
+        key: 'taskURL',
+        label: 'Task',
+        format: 'url',
       },
       {
-        key: "taskGroupURL",
-        label: "Task Group",
-        format: "url",
+        key: 'taskGroupURL',
+        label: 'Task Group',
+        format: 'url',
       },
 
       {
-        key: "taskId",
-        label: "Task ID",
-        format: "string",
+        key: 'taskId',
+        label: 'Task ID',
+        format: 'string',
       },
       {
-        key: "taskGroupId",
-        label: "Task Group ID",
-        format: "string",
+        key: 'taskGroupId',
+        label: 'Task Group ID',
+        format: 'string',
       },
       {
-        key: "taskGroupProfile",
-        label: "Task Group Profile",
-        format: "url",
+        key: 'taskGroupProfile',
+        label: 'Task Group Profile',
+        format: 'url',
       },
     ],
   };
@@ -267,6 +270,7 @@ function getTaskSchema() {
  */
 function buildProfileFromLogRows(logRows, task, taskId) {
   const profile = getEmptyProfile();
+
   profile.meta.markerSchema = [getLiveLogRowSchema(), getTaskSchema()];
   profile.meta.categories = getCategories();
 
@@ -277,25 +281,29 @@ function buildProfileFromLogRows(logRows, task, taskId) {
   // Compute and save the profile start time.
   let profileStartTime = Infinity;
   let lastLogRowTime = 0;
+
   for (const logRow of logRows) {
     if (logRow.time) {
       profileStartTime = Math.min(profileStartTime, Number(logRow.time));
       lastLogRowTime = Math.max(lastLogRowTime, Number(logRow.time));
     }
   }
+
   profile.meta.startTime = profileStartTime;
 
   // Create the thread that we'll attach the markers to.
   const thread = getEmptyThread();
-  thread.name = "Live Log";
+
+  thread.name = 'Live Log';
   profile.threads.push(thread);
   thread.isMainThread = true;
-  const markers = thread.markers;
+  const { markers } = thread;
 
   // Map a category name to its index.
 
   /** @type {Record<string, number>} */
   const categoryIndexDict = {};
+
   profile.meta.categories.forEach((category, index) => {
     categoryIndexDict[category.name] = index;
   });
@@ -305,16 +313,17 @@ function buildProfileFromLogRows(logRows, task, taskId) {
   {
     // Add the task.
     const durationMarker = 1;
+
     markers.startTime.push(0);
     markers.endTime.push(lastLogRowTime - profileStartTime);
     markers.phase.push(durationMarker);
 
-    markers.category.push(categoryIndexDict["Task"] ?? 0);
+    markers.category.push(categoryIndexDict.Task ?? 0);
     markers.name.push(stringArray.indexForString(task.metadata.name));
 
     markers.data.push({
-      type: "Task",
-      name: "Task",
+      type: 'Task',
+      name: 'Task',
       taskName: task.metadata.name,
       taskGroupURL: `${getServer()}/tasks/groups/${task.taskGroupId}`,
       taskURL: `${getServer()}/tasks/${taskId}`,
@@ -327,15 +336,16 @@ function buildProfileFromLogRows(logRows, task, taskId) {
   for (const logRow of logRows) {
     const runStart = Number(logRow.time);
     const instantMarker = 0;
+
     markers.startTime.push(runStart - profileStartTime);
     markers.endTime.push(null);
     markers.phase.push(instantMarker);
-    markers.category.push(categoryIndexDict["Log"] || 0);
+    markers.category.push(categoryIndexDict.Log || 0);
     markers.name.push(stringArray.indexForString(logRow.component));
 
     markers.data.push({
-      type: "LiveLogRow",
-      name: "LiveLogRow",
+      type: 'LiveLogRow',
+      name: 'LiveLogRow',
       message: logRow.message,
       hour: logRow.time.toISOString().substr(11, 8),
       date: logRow.time.toISOString().substr(0, 10),
@@ -349,11 +359,12 @@ function buildProfileFromLogRows(logRows, task, taskId) {
 }
 
 /**
- * Fetches log rows from the specified TaskCluster URL.
+ * Fetches log rows from the specified Taskcluster URL.
  *
  * @param {string} taskId - The Task ID to fetch logs for.
  * @param {Task} task
- * @returns {Promise<Profile>} A promise that resolves to an array of LogRow objects.
+ * @returns {Promise<Profile>} A promise that resolves to an array of
+ *                             LogRow objects.
  */
 async function fetchLogsAndBuildProfile(taskId, task) {
   const url = `https://firefoxci.taskcluster-artifacts.net/${taskId}/0/public/logs/live_backing.log`;
@@ -364,19 +375,23 @@ async function fetchLogsAndBuildProfile(taskId, task) {
   }
 
   const logText = await response.text();
-  const logLines = logText.split("\n");
-  log("Log text", { logText });
+  const logLines = logText.split('\n');
+
+  log('Log text', { logText });
 
   const logRows = readLogFile(logLines);
+
   fixupLogRows(logRows);
 
-  log("Log rows", { logRows });
+  log('Log rows', { logRows });
+
   return buildProfileFromLogRows(logRows, task, taskId);
 }
 
 /**
  * @param {string} message
  */
+// eslint-disable-next-line no-unused-vars
 function updateStatusMessage(message) {
   // TODO - Needs a Taskcluster UI implementation
 }
@@ -389,71 +404,75 @@ function updateStatusMessage(message) {
  * @param {Profile} profile
  * @param {string} params
  */
-async function injectProfile(profile, params = "") {
+async function injectProfile(profile, params = '') {
   const { profilerOrigin } = asAny(window);
-
-  const profilerURL = profilerOrigin + "/from-post-message/" + params;
-
-  const profilerWindow = window.open(profilerURL, "_blank");
+  const profilerURL = `${profilerOrigin}/from-post-message/${params}`;
+  const profilerWindow = window.open(profilerURL, '_blank');
 
   if (!profilerWindow) {
-    console.error("Failed to open the new window.");
+    console.error('Failed to open the new window.');
+
     return;
   }
 
   // Wait for the profiler page to respond that it is ready.
   let isReady = false;
-
   /**
    * @param {MessageEvent} event
    */
   const listener = ({ data }) => {
-    if (data?.name === "ready:response") {
-      log("The profiler is ready. Injecting the profile.");
+    if (data?.name === 'ready:response') {
+      log('The profiler is ready. Injecting the profile.');
       isReady = true;
       const message = {
-        name: "inject-profile",
+        name: 'inject-profile',
         profile,
       };
+
       profilerWindow.postMessage(message, profilerOrigin);
-      window.removeEventListener("message", listener);
+      window.removeEventListener('message', listener);
     }
   };
 
-  window.addEventListener("message", listener);
+  window.addEventListener('message', listener);
+
   while (!isReady) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    profilerWindow.postMessage({ name: "ready:request" }, profilerOrigin);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    profilerWindow.postMessage({ name: 'ready:request' }, profilerOrigin);
   }
 
-  window.removeEventListener("message", listener);
+  window.removeEventListener('message', listener);
 }
 
 /**
  * @param {string} taskId
  */
 async function getProfileFromTaskId(taskId) {
-  updateStatusMessage("Fetching the logs…");
+  updateStatusMessage('Fetching the logs…');
+
   try {
     const taskUrl = `${getServer()}/api/queue/v1/task/${taskId}`;
     const response = await fetch(taskUrl);
     /** @type {Task} */
     const task = await response.json();
+
     if (!response.ok) {
       console.error(task);
+
       return;
     }
-    log("Task", task);
+
+    log('Task', task);
 
     const profile = await fetchLogsAndBuildProfile(taskId, task);
 
-    log("Profile", profile);
+    log('Profile', profile);
 
     await injectProfile(profile);
     updateStatusMessage(`Profile for task "${taskId}" was opened.`);
   } catch (error) {
     console.error(error);
-    updateStatusMessage("There was an error, see the console for more details");
+    updateStatusMessage('There was an error, see the console for more details');
   }
 }
 
@@ -462,11 +481,10 @@ async function getProfileFromTaskId(taskId) {
  */
 async function getProfileFromTaskGroup(taskGroupId) {
   try {
-    updateStatusMessage("Loading tasks");
+    updateStatusMessage('Loading tasks');
 
     // TODO - This may need UI surfacing.
     const fetchDependentTasks = false;
-
     const result = await getTasks(
       [taskGroupId],
       getServer(),
@@ -474,7 +492,7 @@ async function getProfileFromTaskGroup(taskGroupId) {
       updateStatusMessage
     );
 
-    log("Fetched TaskGroups", result);
+    log('Fetched TaskGroups', result);
 
     if (!result) {
       // TODO - If there is no result, report this in the UI.
@@ -483,17 +501,21 @@ async function getProfileFromTaskGroup(taskGroupId) {
 
     const { taskGroups } = result;
     const profile = getProfile(taskGroups, new URL(getServer()));
-
     const threadSelection = encodeUintArrayForUrlComponent(
       profile.threads.map((_thread, i) => i)
     );
-
     // By default select all the threads.
     const params = `?thread=${threadSelection}`;
+
     await injectProfile(profile, params);
     updateStatusMessage(`Profile for task group "${taskGroupId}" was opened.`);
   } catch (error) {
     console.error(error);
-    updateStatusMessage("There was an error, see the console for more details");
+    updateStatusMessage('There was an error, see the console for more details');
   }
 }
+
+export default {
+  getProfileFromTaskGroup,
+  getProfileFromTaskId,
+};

@@ -1,3 +1,13 @@
+/* eslint-disable max-len */
+
+type TaskState =
+  | 'completed'
+  | 'running'
+  | 'failed'
+  | 'exception'
+  | 'pending'
+  | 'unscheduled';
+
 interface Run {
   runId: 0;
   state: TaskState; // "completed";
@@ -18,9 +28,9 @@ export interface Task {
   schedulerId: string; // "translations-level-1";
   projectId: string; // "none";
   taskGroupId: string; // "Fo1npr9eTFqsAj4DFlqBbA";
-  dependencies: string[], // ["CTPPid-iT8WUEzf-j6YKUw", "Fn-77WB6SFKBuQGE62-SMg", ... ]
+  dependencies: string[]; // ["CTPPid-iT8WUEzf-j6YKUw", "Fn-77WB6SFKBuQGE62-SMg", ... ]
   requires: string; // "all-completed";
-  routes: ["checks"];
+  routes: ['checks'];
   priority: string; // "low";
   retries: 5;
   created: string; // "2023-09-19T18:58:07.341Z";
@@ -31,13 +41,13 @@ export interface Task {
     // This was all the same for translations.
     artifacts: [
       {
-        name: "public/build",
-        path: "artifacts",
-        type: "directory"
+        name: 'public/build';
+        path: 'artifacts';
+        type: 'directory';
       }
-    ],
+    ];
     // The command comes in the form of an array, e.g. ["echo", "hello"]
-    command: Array<string[]>
+    command: Array<string[]>;
   };
   metadata: {
     name: string; // "all-ru-en";
@@ -49,7 +59,7 @@ export interface Task {
     kind: string; // "all";
     label?: string; // "all-ru-en";
     createdForUser: string; // "eu9ene@users.noreply.github.com";
-    "worker-implementation": string; // "succeed";
+    'worker-implementation': string; // "succeed";
   };
   extra: {
     index: { rank: 0 };
@@ -78,22 +88,14 @@ export interface TaskAndStatus {
 }
 
 export interface TaskGroup {
-  taskGroupId: string, // "Fo1npr9eTFqsAj4DFlqBbA",
-  schedulerId: string, // "translations-level-1",
-  expires: string,// "2024-09-18T19:57:56.114Z",
-  tasks: TaskAndStatus[],
-  continuationToken?: string
+  taskGroupId: string; // "Fo1npr9eTFqsAj4DFlqBbA",
+  schedulerId: string; // "translations-level-1",
+  expires: string; // "2024-09-18T19:57:56.114Z",
+  tasks: TaskAndStatus[];
+  continuationToken?: string;
 }
 
 export interface TimeRange {
   start: number | null;
   end: number | null;
 }
-
-type TaskState =
-  | "completed"
-  | "running"
-  | "failed"
-  | "exception"
-  | "pending"
-  | "unscheduled"
