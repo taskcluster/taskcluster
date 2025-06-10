@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -84,6 +85,14 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
+	formatUrl := func(rawUrl string) (string, error) {
+		parsedUrl, err := url.ParseRequestURI(rawUrl)
+		if err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("%s://%s%s?<redacted>", parsedUrl.Scheme, parsedUrl.Host, parsedUrl.Path), nil
+	}
 	httpCall := func() (putResp *http.Response, tempError error, permError error) {
 		var transferContent *os.File
 		transferContent, permError = os.Open(transferContentFile)
@@ -108,13 +117,6 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		if enc := s3Artifact.ContentEncoding; enc != "" {
 			httpRequest.Header.Set("Content-Encoding", enc)
 		}
-		requestHeaders, dumpError := httputil.DumpRequestOut(httpRequest, false)
-		if dumpError != nil {
-			log.Print("Could not dump request, never mind...")
-		} else {
-			log.Print("Request")
-			log.Print(string(requestHeaders))
-		}
 		putResp, tempError = httpClient.Do(httpRequest)
 		if tempError != nil {
 			return
@@ -127,7 +129,13 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		return
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	log.Printf("%v put requests issued to %v", putAttempts, response.PutURL)
+	formattedUrl, err := formatUrl(response.PutURL)
+	if err != nil {
+		log.Print("Could not parse PutUrl, something has gone very wrong...")
+	} else {
+		log.Printf("%v put requests issued to %v", putAttempts, formattedUrl)
+	}
+
 	if putResp != nil {
 		defer putResp.Body.Close()
 		respBody, dumpError := httputil.DumpResponse(putResp, true)
