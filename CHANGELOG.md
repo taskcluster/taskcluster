@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.1.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.16.0 and go1.24.4 [SECURITY].
+
+### USERS
+
+▶ [patch] [#7498](https://github.com/taskcluster/taskcluster/issues/7498)
+Optimizes UI memory usage for some pages that were caching table data
+
+### OTHER
+
+▶ Additional change not described here: [bug 1971309](http://bugzil.la/1971309).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump requests from 2.32.3 to 2.32.4 in /taskcluster (8c55b3772c)
+
+</details>
+
 ## v84.1.0
 
 ### GENERAL
