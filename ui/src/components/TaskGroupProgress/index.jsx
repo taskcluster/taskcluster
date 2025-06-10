@@ -23,7 +23,7 @@ import PlaylistRemoveIcon from 'mdi-react/PlaylistRemoveIcon';
 import Spinner from '../Spinner';
 import { task, pageInfo, taskState } from '../../utils/prop-types';
 import { TASK_STATE, THEME } from '../../utils/constants';
-import { memoize } from '../../utils/memoize';
+import { clearAllCaches, memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import Helmet from '../Helmet';
 
@@ -47,6 +47,61 @@ const initialStatusCount = {
   pending: 0,
   unscheduled: 0,
 };
+const getStatusCount = memoize(
+  taskGroupCompactEdges => {
+    const statusCount = { ...initialStatusCount };
+
+    taskGroupCompactEdges &&
+      taskGroupCompactEdges.forEach(
+        ({
+          node: {
+            status: { state },
+          },
+        }) => {
+          switch (state) {
+            case TASK_STATE.COMPLETED: {
+              statusCount.completed += 1;
+              break;
+            }
+
+            case TASK_STATE.FAILED: {
+              statusCount.failed += 1;
+              break;
+            }
+
+            case TASK_STATE.EXCEPTION: {
+              statusCount.exception += 1;
+              break;
+            }
+
+            case TASK_STATE.UNSCHEDULED: {
+              statusCount.unscheduled += 1;
+              break;
+            }
+
+            case TASK_STATE.RUNNING: {
+              statusCount.running += 1;
+              break;
+            }
+
+            case TASK_STATE.PENDING: {
+              statusCount.pending += 1;
+              break;
+            }
+
+            default: {
+              break;
+            }
+          }
+        }
+      );
+
+    return statusCount;
+  },
+  {
+    serializer: taskGroupCompactEdges => sorted(taskGroupCompactEdges),
+  }
+);
 
 @withStyles(theme => ({
   statusButton: {
@@ -153,62 +208,6 @@ export default class TaskGroupProgress extends Component {
     previousTaskGroupId: this.props.taskGroupId,
   };
 
-  getStatusCount = memoize(
-    taskGroupCompactEdges => {
-      const statusCount = { ...initialStatusCount };
-
-      taskGroupCompactEdges &&
-        taskGroupCompactEdges.forEach(
-          ({
-            node: {
-              status: { state },
-            },
-          }) => {
-            switch (state) {
-              case TASK_STATE.COMPLETED: {
-                statusCount.completed += 1;
-                break;
-              }
-
-              case TASK_STATE.FAILED: {
-                statusCount.failed += 1;
-                break;
-              }
-
-              case TASK_STATE.EXCEPTION: {
-                statusCount.exception += 1;
-                break;
-              }
-
-              case TASK_STATE.UNSCHEDULED: {
-                statusCount.unscheduled += 1;
-                break;
-              }
-
-              case TASK_STATE.RUNNING: {
-                statusCount.running += 1;
-                break;
-              }
-
-              case TASK_STATE.PENDING: {
-                statusCount.pending += 1;
-                break;
-              }
-
-              default: {
-                break;
-              }
-            }
-          }
-        );
-
-      return statusCount;
-    },
-    {
-      serializer: taskGroupCompactEdges => sorted(taskGroupCompactEdges),
-    }
-  );
-
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId, taskGroup, onUpdate } = props;
 
@@ -220,7 +219,7 @@ export default class TaskGroupProgress extends Component {
     }
 
     const newStatusCount = taskGroup.edges
-      ? this.getStatusCount(taskGroup.edges)
+      ? getStatusCount(taskGroup.edges)
       : {};
 
     if (onUpdate && !equals(state.statusCount, newStatusCount)) {
@@ -292,6 +291,10 @@ export default class TaskGroupProgress extends Component {
 
     return TASK_STATE.COMPLETED;
   };
+
+  componentWillUnmount() {
+    clearAllCaches([getStatusCount]);
+  }
 
   render() {
     const { classes, onStatusClick, taskGroupLoaded } = this.props;
