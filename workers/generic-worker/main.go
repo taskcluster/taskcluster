@@ -224,6 +224,8 @@ func loadConfig(configFile *gwconfig.File) error {
 		PublicConfig: gwconfig.PublicConfig{
 			PublicEngineConfig:             *gwconfig.DefaultPublicEngineConfig(),
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
+			AbsoluteHighMemoryThreshold:    524288000, // 500 MiB
+			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
@@ -245,6 +247,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			MaxTaskRunTime:                 86400, // 86400s is 24 hours
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
+			RelativeHighMemoryThreshold:    90,
 			RequiredDiskSpaceMegabytes:     10240,
 			RootURL:                        "",
 			RunAfterUserCreation:           "",
@@ -787,10 +790,11 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 		panic(cee)
 	}
 	task.result = task.Commands[index].Execute()
+	task.Infof("%v", task.result)
+
 	if ae := task.StatusManager.AbortException(); ae != nil {
 		return ae
 	}
-	task.Infof("%v", task.result)
 
 	switch {
 	case task.result.Failed():

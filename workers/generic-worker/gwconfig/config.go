@@ -27,6 +27,8 @@ type (
 	PublicConfig struct {
 		PublicEngineConfig
 		PublicPlatformConfig
+		AbsoluteHighMemoryThreshold    uint64         `json:"absoluteHighMemoryThreshold"`
+		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint           `json:"checkForNewDeploymentEverySecs"`
@@ -58,6 +60,7 @@ type (
 		PrivateIP                      net.IP         `json:"privateIP"`
 		ProvisionerID                  string         `json:"provisionerId"`
 		PublicIP                       net.IP         `json:"publicIP"`
+		RelativeHighMemoryThreshold    uint64         `json:"relativeHighMemoryThreshold"`
 		Region                         string         `json:"region"`
 		RequiredDiskSpaceMegabytes     uint           `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string         `json:"rootURL"`

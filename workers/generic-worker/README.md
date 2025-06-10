@@ -114,6 +114,25 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          absoluteHighMemoryThreshold       Number of bytes the resource monitor uses to
+                                            determine when to abort a task due to high
+                                            memory usage. The is an absolute number of bytes
+                                            needed of available memory before aborting the task.
+                                            For example, if the value is 524288000, then the worker will
+                                            abort a task if the memory available is 200MiB or less
+                                            for longer than allowedHighMemoryDurationSecs seconds.
+                                            Can be used in conjunction with relativeHighMemoryThreshold.
+                                            Does nothing if disableOOMProtection is set to true.
+                                            [default: 524288000] (500MiB)
+          allowedHighMemoryDurationSecs     The number of seconds the resource monitor will
+                                            allow the system memory usage to be above the high
+                                            memory thresholds (see absoluteHighMemoryThreshold
+                                            and relativeHighMemoryThreshold) before aborting
+                                            the task. If the memory usage is above the high
+                                            memory thresholds for longer than this time, the
+                                            worker will abort the task. Does nothing if
+                                            disableOOMProtection is set to true.
+                                            [default: 5]
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -161,8 +180,9 @@ and reports back results to the queue.
                                             [default: false]
           disableOOMProtection              If true, the worker will continue to monitor system
                                             memory usage, but will not abort tasks when the
-                                            system memory usage is at 90% or higher for five
-                                            consecutive measurements at 0.5s intervals.
+                                            system memory usage hits the absoluteHighMemoryThreshold
+                                            AND relativeHighMemoryThreshold for longer than
+                                            allowedHighMemoryDurationSecs seconds.
                                             [default: false]
           downloadsDir                      The directory to cache downloaded files for
                                             populating preloaded caches and readonly mounts. The
@@ -259,6 +279,17 @@ and reports back results to the queue.
           publicIP                          The IP address for VNC access.  Also used by chain of
                                             trust when present.
           region                            The EC2 region of the worker. Used by chain of trust.
+          relativeHighMemoryThreshold       A percent used by the resource monitor to determine
+                                            when to abort a task due to high memory usage.
+                                            This is a relative value, meaning that it is
+                                            relative to the total memory available on the
+                                            worker. For example, if the value is 90, then
+                                            the worker will abort a task if the memory
+                                            usage is at 90% or higher for longer than
+                                            allowedHighMemoryDurationSecs seconds. Can be used
+                                            in conjunction with absoluteHighMemoryThreshold.
+                                            Does nothing if disableOOMProtection is set to true.
+                                            [default: 90]
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough

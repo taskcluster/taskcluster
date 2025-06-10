@@ -431,13 +431,15 @@ type (
 		// Since: generic-worker 53.1.0
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 
-		// The resource monitor features reports Peak System Memory Used,
-		// Average System Memory Used and Total Available Memory in the
-		// task log for each task command executed. It also will abort
-		// any task command that causes the available system memory to be
-		// reduced to less than or equal to 10% of the total system memory
-		// for five consecutive measurements at 0.5s intervals. When this
-		// happens, the task will be resolved as failed.
+		// The resource monitor feature reports Peak System Memory Used,
+		// Average System Memory Used, Average Available System Memory,
+		// and Total System Memory in the task log for each task command
+		// executed. It also will abort any task command if the used
+		// system memory exceeds worker config relativeHighMemoryThreshold
+		// _AND_ available system memory drops below worker config
+		// absoluteHighMemoryThreshold available system memory for longer
+		// than worker config allowedHighMemoryDuration seconds. When
+		// this happens, the task will be resolved as failed.
 		//
 		// Since: generic-worker 83.4.0
 		//
@@ -1172,7 +1174,7 @@ func JSONSchema() string {
             },
             "resourceMonitor": {
               "default": true,
-              "description": "The resource monitor features reports Peak System Memory Used,\nAverage System Memory Used and Total Available Memory in the\ntask log for each task command executed. It also will abort\nany task command that causes the available system memory to be\nreduced to less than or equal to 10% of the total system memory\nfor five consecutive measurements at 0.5s intervals. When this\nhappens, the task will be resolved as failed.\n\nSince: generic-worker 83.4.0",
+              "description": "The resource monitor feature reports Peak System Memory Used,\nAverage System Memory Used, Average Available System Memory,\nand Total System Memory in the task log for each task command\nexecuted. It also will abort any task command if the used\nsystem memory exceeds worker config relativeHighMemoryThreshold\n_AND_ available system memory drops below worker config\nabsoluteHighMemoryThreshold available system memory for longer\nthan worker config allowedHighMemoryDuration seconds. When\nthis happens, the task will be resolved as failed.\n\nSince: generic-worker 83.4.0",
               "title": "Resource monitor",
               "type": "boolean"
             },
