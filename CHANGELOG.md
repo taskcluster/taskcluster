@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.1.2
+
+### DEPLOYERS
+
+▶ [patch] [#7763](https://github.com/taskcluster/taskcluster/issues/7763)
+Helm chart forces metrics-only deployments to have `replicas: 0` if `prometheus.enabled` is `false`
+
+### USERS
+
+▶ [patch] [#7771](https://github.com/taskcluster/taskcluster/issues/7771)
+Fixes UI error on TaskGroup page
+
 ## v84.1.1
 
 ### GENERAL
