@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { isEmpty, map, pipe, sort as rSort, path } from 'ramda';
-import memoize from 'fast-memoize';
 import { any, arrayOf, string } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { Badge, Tooltip } from '@material-ui/core';
+import { memoize } from '../../utils/memoize';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';

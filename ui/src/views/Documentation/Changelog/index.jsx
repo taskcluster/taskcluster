@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import memoize from 'fast-memoize';
 import { titleCase } from 'title-case';
 import Grid from '@material-ui/core/Grid';
 import Autocomplete from '@material-ui/lab/Autocomplete/Autocomplete';
 import { compareVersions, validate } from 'compare-versions';
 import Switch from '@material-ui/core/Switch';
 import { Chip, FormControlLabel } from '@material-ui/core';
+import { memoize } from '../../../utils/memoize';
 import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md';
 import TextField from '../../../components/TextField';

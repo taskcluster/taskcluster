@@ -3,7 +3,6 @@ import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
 import { lowerCase } from 'lower-case';
-import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import { FixedSizeList as List } from 'react-window';
 import { WindowScroller } from 'react-virtualized';
@@ -14,6 +13,7 @@ import Table from '@material-ui/core/Table';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableHead from '@material-ui/core/TableHead';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { memoize } from '../../utils/memoize';
 import StatusLabel from '../StatusLabel';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
@@ -50,35 +50,6 @@ const valueFromNode = (node, sortBy) => {
 
   return mapping[sortBy];
 };
-
-const createSortedTasks = memoize(
-  (tasks, sortBy, sortDirection, filter, searchTerm) => {
-    const filteredTasks = filterTasks(tasks, filter, searchTerm);
-
-    if (!sortBy) {
-      return filteredTasks;
-    }
-
-    return filteredTasks.sort((a, b) => {
-      const firstElement =
-        sortDirection === 'desc'
-          ? valueFromNode(b.node, sortBy)
-          : valueFromNode(a.node, sortBy);
-      const secondElement =
-        sortDirection === 'desc'
-          ? valueFromNode(a.node, sortBy)
-          : valueFromNode(b.node, sortBy);
-
-      return sort(firstElement, secondElement);
-    });
-  },
-  {
-    serializer: ([tasks, sortBy, sortDirection, filter, searchTerm]) =>
-      `${
-        tasks ? sorted(tasks) : ''
-      }-${sortBy}-${sortDirection}-${filter}-${searchTerm}`,
-  }
-);
 
 @withStyles(theme => ({
   listItemCell: {
@@ -219,6 +190,35 @@ export default class TaskGroupTable extends Component {
     };
   }
 
+  createSortedTasks = memoize(
+    (tasks, sortBy, sortDirection, filter, searchTerm) => {
+      const filteredTasks = filterTasks(tasks, filter, searchTerm);
+
+      if (!sortBy) {
+        return filteredTasks;
+      }
+
+      return filteredTasks.sort((a, b) => {
+        const firstElement =
+          sortDirection === 'desc'
+            ? valueFromNode(b.node, sortBy)
+            : valueFromNode(a.node, sortBy);
+        const secondElement =
+          sortDirection === 'desc'
+            ? valueFromNode(a.node, sortBy)
+            : valueFromNode(b.node, sortBy);
+
+        return sort(firstElement, secondElement);
+      });
+    },
+    {
+      serializer: ([tasks, sortBy, sortDirection, filter, searchTerm]) =>
+        `${
+          tasks ? sorted(tasks) : ''
+        }-${sortBy}-${sortDirection}-${filter}-${searchTerm}`,
+    }
+  );
+
   handleHeaderClick = ({ target }) => {
     const sortBy = target.id;
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -241,7 +241,7 @@ export default class TaskGroupTable extends Component {
     const { sortBy, sortDirection, tasks } = this.state;
     const { classes, filter, searchTerm, showTimings } = this.props;
     const iconSize = 16;
-    const items = createSortedTasks(
+    const items = this.createSortedTasks(
       tasks,
       sortBy,
       sortDirection,

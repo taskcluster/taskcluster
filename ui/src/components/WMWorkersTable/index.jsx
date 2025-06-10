@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import { formatDistanceStrict } from 'date-fns';
 import { arrayOf } from 'prop-types';
 import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import { memoize } from '../../utils/memoize';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';

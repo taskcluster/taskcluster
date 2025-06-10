@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { camelCase } from 'camel-case';
+import { memoize } from '../../utils/memoize';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
