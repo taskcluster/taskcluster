@@ -105,6 +105,9 @@ const DEFAULT_RESOURCES = {
   'references.web': ['10m', '10Mi'],
 };
 
+// those would have replicas: 0 if prometheus.enabled is false
+const METRICS_ONLY_DEPLOYMENTS = ['queue.workerMetrics'];
+
 const labels = (projectName, component) => ({
   'app.kubernetes.io/name': projectName,
   'app.kubernetes.io/instance': '{{ .Release.Name }}',
@@ -214,6 +217,11 @@ const renderTemplates = async (name, vars, procs, templates) => {
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
       labels: labels(`taskcluster-${name}`, proc),
     };
+    const replacements = {
+      REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
+      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+    };
+
     switch (conf['type']) {
       case 'web': {
         tmpl = 'deployment';
@@ -240,6 +248,9 @@ const renderTemplates = async (name, vars, procs, templates) => {
       }
       case 'background': {
         tmpl = 'deployment';
+        if (METRICS_ONLY_DEPLOYMENTS.includes(`${context.configName}.${context.configProcName}`)) {
+          replacements.REPLICA_CONFIG_STRING = `{{ if .Values.prometheus.enabled  }}${replacements.REPLICA_CONFIG_STRING}{{ else }}0{{end}}`;
+        }
         break;
       }
       case 'cron': {
@@ -251,12 +262,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
       default: continue; // We don't do anything with build/heroku-only
     }
     const rendered = jsone(templates[tmpl], context);
-
-    const processed = postJsoneProcessing(rendered, {
-      REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
-      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
-    }, context);
-
+    const processed = postJsoneProcessing(rendered, replacements, context);
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
   }

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/component: taskcluster-queue-workermetrics
     app.kubernetes.io/part-of: taskcluster
 spec:
-  replicas: {{ int (.Values.queue.procs.workerMetrics.replicas) }}
+  replicas: {{ if .Values.prometheus.enabled  }}{{ int (.Values.queue.procs.workerMetrics.replicas) }}{{ else }}0{{end}}
   selector:
     matchLabels: *ref_0
   template:
