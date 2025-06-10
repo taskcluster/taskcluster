@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import { camelCase } from 'camel-case';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import { memoize } from '../../utils/memoize';
 import Button from '../Button';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';

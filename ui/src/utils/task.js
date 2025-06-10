@@ -1,6 +1,6 @@
-import memoize from 'fast-memoize';
 import { curry, pipe, map, dropRepeatsWith } from 'ramda';
 import { lowerCase } from 'lower-case';
+import { memoize } from './memoize';
 
 export const taskLastRun = task => {
   const sorted = [...task?.status?.runs].sort((a, b) => b.runId - a.runId);

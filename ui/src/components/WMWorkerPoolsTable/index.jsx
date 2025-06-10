@@ -13,7 +13,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
-import memoize from 'fast-memoize';
+import { memoize } from '../../utils/memoize';
 import {
   WorkerManagerWorkerPoolSummary,
   pageInfo,

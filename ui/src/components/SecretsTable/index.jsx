@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { func, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import { memoize } from '../../utils/memoize';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
