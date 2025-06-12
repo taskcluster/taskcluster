@@ -437,9 +437,9 @@ type (
 		// executed. It also will abort any task command if the used
 		// system memory exceeds worker config relativeHighMemoryThreshold
 		// _AND_ available system memory drops below worker config
-		// absoluteHighMemoryThreshold available system memory for longer
-		// than worker config allowedHighMemoryDuration seconds. When
-		// this happens, the task will be resolved as failed.
+		// absoluteHighMemoryThreshold for longer than worker config
+		// allowedHighMemoryDuration seconds. When this happens, the
+		// task will be resolved as failed.
 		//
 		// Since: generic-worker 83.4.0
 		//
@@ -1174,7 +1174,7 @@ func JSONSchema() string {
             },
             "resourceMonitor": {
               "default": true,
-              "description": "The resource monitor feature reports Peak System Memory Used,\nAverage System Memory Used, Average Available System Memory,\nand Total System Memory in the task log for each task command\nexecuted. It also will abort any task command if the used\nsystem memory exceeds worker config relativeHighMemoryThreshold\n_AND_ available system memory drops below worker config\nabsoluteHighMemoryThreshold available system memory for longer\nthan worker config allowedHighMemoryDuration seconds. When\nthis happens, the task will be resolved as failed.\n\nSince: generic-worker 83.4.0",
+              "description": "The resource monitor feature reports Peak System Memory Used,\nAverage System Memory Used, Average Available System Memory,\nand Total System Memory in the task log for each task command\nexecuted. It also will abort any task command if the used\nsystem memory exceeds worker config relativeHighMemoryThreshold\n_AND_ available system memory drops below worker config\nabsoluteHighMemoryThreshold for longer than worker config\nallowedHighMemoryDuration seconds. When this happens, the\ntask will be resolved as failed.\n\nSince: generic-worker 83.4.0",
               "title": "Resource monitor",
               "type": "boolean"
             },

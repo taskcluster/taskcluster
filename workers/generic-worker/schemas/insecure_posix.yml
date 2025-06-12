@@ -294,9 +294,9 @@ oneOf:
             executed. It also will abort any task command if the used
             system memory exceeds worker config relativeHighMemoryThreshold
             _AND_ available system memory drops below worker config
-            absoluteHighMemoryThreshold available system memory for longer
-            than worker config allowedHighMemoryDuration seconds. When
-            this happens, the task will be resolved as failed.
+            absoluteHighMemoryThreshold for longer than worker config
+            allowedHighMemoryDuration seconds. When this happens, the
+            task will be resolved as failed.
 
             Since: generic-worker 83.4.0
           default: true
