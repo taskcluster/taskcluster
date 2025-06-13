@@ -51,6 +51,82 @@ const valueFromNode = (node, sortBy) => {
   return mapping[sortBy];
 };
 
+const ItemRenderer = ({ data, index, style }) => {
+  const { items, classes, showTimings, iconSize } = data;
+  const taskGroup = items[index].node;
+  const run = taskLastRun(taskGroup);
+
+  return (
+    <TableRow
+      style={style}
+      className={classes.tableRow}
+      component="div"
+      role="row">
+      <TableCell
+        size="small"
+        className={
+          showTimings ? classes.tableFirstShortCell : classes.tableFirstCell
+        }
+        component="div"
+        role="cell">
+        <Link
+          title={taskGroup.metadata.name}
+          className={classes.listItemCell}
+          to={`/tasks/${taskGroup.taskId}`}>
+          <Typography variant="body2" className={classes.taskGroupName}>
+            {taskGroup.metadata.name}
+          </Typography>
+          <span>
+            <LinkIcon size={iconSize} />
+          </span>
+        </Link>
+      </TableCell>
+      {showTimings && (
+        <TableCell
+          size="small"
+          className={classes.tableTimeCell}
+          component="div"
+          role="cell">
+          <abbr title={run?.from}>
+            {run?.from ? <DateDistance from={run.from} /> : 'n/a'}
+          </abbr>
+        </TableCell>
+      )}
+      {showTimings && (
+        <TableCell
+          size="small"
+          className={classes.tableTimeCell}
+          component="div"
+          role="cell">
+          <abbr title={run?.to}>
+            {run?.to ? <DateDistance from={run.to} /> : 'n/a'}
+          </abbr>
+        </TableCell>
+      )}
+      <TableCell
+        size="small"
+        className={classes.tableSecondCell}
+        component="div"
+        role="cell">
+        <span>
+          {run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}
+        </span>
+      </TableCell>
+      <TableCell
+        size="small"
+        className={classes.tableThirdCell}
+        component="div"
+        role="cell">
+        <span>
+          <StatusLabel state={taskGroup.status.state} />
+        </span>
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const ItemRendererMemo = React.memo(ItemRenderer);
+
 @withStyles(theme => ({
   listItemCell: {
     display: 'flex',
@@ -178,14 +254,10 @@ export default class TaskGroupTable extends Component {
   state = {
     sortBy: 'Name',
     sortDirection: 'asc',
-    tasks: [],
   };
 
-  static getDerivedStateFromProps(props) {
-    const { taskGroupConnection } = props;
-
+  static getDerivedStateFromProps() {
     return {
-      tasks: [...taskGroupConnection.edges],
       windowHeight: window.innerHeight,
     };
   }
@@ -212,6 +284,7 @@ export default class TaskGroupTable extends Component {
       });
     },
     {
+      maxSize: 2,
       serializer: ([tasks, sortBy, sortDirection, filter, searchTerm]) =>
         `${
           tasks ? sorted(tasks) : ''
@@ -238,8 +311,9 @@ export default class TaskGroupTable extends Component {
   };
 
   render() {
-    const { sortBy, sortDirection, tasks } = this.state;
+    const { sortBy, sortDirection } = this.state;
     const { classes, filter, searchTerm, showTimings } = this.props;
+    const tasks = this.props.taskGroupConnection.edges;
     const iconSize = 16;
     const items = this.createSortedTasks(
       tasks,
@@ -249,78 +323,6 @@ export default class TaskGroupTable extends Component {
       searchTerm ? lowerCase(searchTerm) : ''
     );
     const itemCount = items.length;
-    const ItemRenderer = ({ index, style }) => {
-      const taskGroup = items[index].node;
-      const run = taskLastRun(taskGroup);
-
-      return (
-        <TableRow
-          style={style}
-          className={classes.tableRow}
-          component="div"
-          role="row">
-          <TableCell
-            size="small"
-            className={
-              showTimings ? classes.tableFirstShortCell : classes.tableFirstCell
-            }
-            component="div"
-            role="cell">
-            <Link
-              title={taskGroup.metadata.name}
-              className={classes.listItemCell}
-              to={`/tasks/${taskGroup.taskId}`}>
-              <Typography variant="body2" className={classes.taskGroupName}>
-                {taskGroup.metadata.name}
-              </Typography>
-              <span>
-                <LinkIcon size={iconSize} />
-              </span>
-            </Link>
-          </TableCell>
-          {showTimings && (
-            <TableCell
-              size="small"
-              className={classes.tableTimeCell}
-              component="div"
-              role="cell">
-              <abbr title={run?.from}>
-                {run?.from ? <DateDistance from={run.from} /> : 'n/a'}
-              </abbr>
-            </TableCell>
-          )}
-          {showTimings && (
-            <TableCell
-              size="small"
-              className={classes.tableTimeCell}
-              component="div"
-              role="cell">
-              <abbr title={run?.to}>
-                {run?.to ? <DateDistance from={run.to} /> : 'n/a'}
-              </abbr>
-            </TableCell>
-          )}
-          <TableCell
-            size="small"
-            className={classes.tableSecondCell}
-            component="div"
-            role="cell">
-            <span>
-              {run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}
-            </span>
-          </TableCell>
-          <TableCell
-            size="small"
-            className={classes.tableThirdCell}
-            component="div"
-            role="cell">
-            <span>
-              <StatusLabel state={taskGroup.status.state} />
-            </span>
-          </TableCell>
-        </TableRow>
-      );
-    };
 
     return (
       <div role="table">
@@ -425,8 +427,9 @@ export default class TaskGroupTable extends Component {
               itemCount={itemCount}
               itemSize={48}
               className={classes.windowScrollerOverride}
-              overscanCount={50}>
-              {ItemRenderer}
+              overscanCount={50}
+              itemData={{ iconSize, items, showTimings, classes }}>
+              {ItemRendererMemo}
             </List>
           </Fragment>
         ) : (

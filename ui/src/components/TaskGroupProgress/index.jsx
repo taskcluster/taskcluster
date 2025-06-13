@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { bool, func, shape, arrayOf, string } from 'prop-types';
-import { equals, sum, pipe, filter, map, sort as rSort } from 'ramda';
+import { bool, func, shape, number, string } from 'prop-types';
+import { sum } from 'ramda';
 import { lowerCase } from 'lower-case';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
@@ -21,87 +21,9 @@ import CloseIcon from 'mdi-react/CloseIcon';
 import AutorenewIcon from 'mdi-react/AutorenewIcon';
 import PlaylistRemoveIcon from 'mdi-react/PlaylistRemoveIcon';
 import Spinner from '../Spinner';
-import { task, pageInfo, taskState } from '../../utils/prop-types';
+import { taskState } from '../../utils/prop-types';
 import { TASK_STATE, THEME } from '../../utils/constants';
-import { clearAllCaches, memoize } from '../../utils/memoize';
-import sort from '../../utils/sort';
 import Helmet from '../Helmet';
-
-const sorted = pipe(
-  filter(taskGroup => taskGroup.node.metadata.name),
-  rSort((a, b) => sort(a.node.metadata.name, b.node.metadata.name)),
-  map(
-    ({
-      node: {
-        metadata: { name },
-        status: { state },
-      },
-    }) => `${name}-${state}`
-  )
-);
-const initialStatusCount = {
-  completed: 0,
-  failed: 0,
-  exception: 0,
-  running: 0,
-  pending: 0,
-  unscheduled: 0,
-};
-const getStatusCount = memoize(
-  taskGroupCompactEdges => {
-    const statusCount = { ...initialStatusCount };
-
-    taskGroupCompactEdges &&
-      taskGroupCompactEdges.forEach(
-        ({
-          node: {
-            status: { state },
-          },
-        }) => {
-          switch (state) {
-            case TASK_STATE.COMPLETED: {
-              statusCount.completed += 1;
-              break;
-            }
-
-            case TASK_STATE.FAILED: {
-              statusCount.failed += 1;
-              break;
-            }
-
-            case TASK_STATE.EXCEPTION: {
-              statusCount.exception += 1;
-              break;
-            }
-
-            case TASK_STATE.UNSCHEDULED: {
-              statusCount.unscheduled += 1;
-              break;
-            }
-
-            case TASK_STATE.RUNNING: {
-              statusCount.running += 1;
-              break;
-            }
-
-            case TASK_STATE.PENDING: {
-              statusCount.pending += 1;
-              break;
-            }
-
-            default: {
-              break;
-            }
-          }
-        }
-      );
-
-    return statusCount;
-  },
-  {
-    serializer: taskGroupCompactEdges => sorted(taskGroupCompactEdges),
-  }
-);
 
 @withStyles(theme => ({
   statusButton: {
@@ -177,8 +99,6 @@ export default class TaskGroupProgress extends Component {
   static propTypes = {
     /** The selected task state. This will change the card icon. */
     filter: taskState,
-    /** Callback fired when statusCount changes with the statusCount. */
-    onUpdate: func,
     /** Callback fired when the a state card is clicked */
     onStatusClick: func.isRequired,
     /**
@@ -189,45 +109,21 @@ export default class TaskGroupProgress extends Component {
     taskGroupLoaded: bool,
     /** The task group ID being inspected. */
     taskGroupId: string.isRequired,
-    /** A Task GraphQL PageConnection instance. */
-    taskGroup: shape({
-      pageInfo,
-      edges: arrayOf(task),
-    }),
+    /** Status counts for each task state. */
+    statusCount: shape({
+      completed: number.isRequired,
+      failed: number.isRequired,
+      exception: number.isRequired,
+      running: number.isRequired,
+      pending: number.isRequired,
+      unscheduled: number.isRequired,
+    }).isRequired,
   };
 
   static defaultProps = {
-    onUpdate: null,
-    taskGroup: null,
     filter: null,
     taskGroupLoaded: true,
   };
-
-  state = {
-    statusCount: initialStatusCount,
-    previousTaskGroupId: this.props.taskGroupId,
-  };
-
-  static getDerivedStateFromProps(props, state) {
-    const { taskGroupId, taskGroup, onUpdate } = props;
-
-    if (!taskGroup || state.previousTaskGroupId !== taskGroupId) {
-      return {
-        statusCount: initialStatusCount,
-        previousTaskGroupId: taskGroupId,
-      };
-    }
-
-    const newStatusCount = taskGroup.edges
-      ? getStatusCount(taskGroup.edges)
-      : {};
-
-    if (onUpdate && !equals(state.statusCount, newStatusCount)) {
-      onUpdate(newStatusCount);
-    }
-
-    return { statusCount: newStatusCount };
-  }
 
   getStatusIcon = status => {
     if (this.props.filter === status) {
@@ -273,7 +169,7 @@ export default class TaskGroupProgress extends Component {
       pending,
       running,
       unscheduled,
-    } = this.state.statusCount;
+    } = this.props.statusCount;
     const allTasks = sum([completed, exception, pending, running, unscheduled]);
     const unfinishedTasks = sum([pending, running, unscheduled]);
 
@@ -292,13 +188,8 @@ export default class TaskGroupProgress extends Component {
     return TASK_STATE.COMPLETED;
   };
 
-  componentWillUnmount() {
-    clearAllCaches([getStatusCount]);
-  }
-
   render() {
-    const { classes, onStatusClick, taskGroupLoaded } = this.props;
-    const { statusCount } = this.state;
+    const { classes, onStatusClick, taskGroupLoaded, statusCount } = this.props;
     const showDots = Object.values(statusCount).reduce((a, b) => a + b) === 0;
     const taskGroupState = this.getTaskGroupState();
 

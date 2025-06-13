@@ -1,7 +1,7 @@
 import fastMemoize from 'fast-memoize';
 import crypto from 'crypto';
 
-const MAX_SIZE = 50;
+const MAX_SIZE = 10;
 const MAX_KEY_LENGTH = 200;
 
 /**
