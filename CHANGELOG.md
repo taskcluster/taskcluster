@@ -3,6 +3,37 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.2.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7770](https://github.com/taskcluster/taskcluster/issues/7770)
+Generic Worker: adds additional resource monitoring auto-abortion configuration to better fine-tune how your worker aborts running task processes.
+
+  * `absoluteHighMemoryThreshold`: The minimum amount of available memory (in bytes) required before considering task abortion. If available memory drops below this value, it may trigger an abort. Default: `524288000` (500MiB).
+  * `relativeHighMemoryThreshold`: The percentage of total system memory usage that, if exceeded, contributes to the decision to abort the task. Default: `90`.
+  * `allowedHighMemoryDurationSecs`: The maximum duration (in seconds) that high memory usage conditions can persist before the task is aborted. Default: `5`.
+
+Generic Worker will auto-abort a task if the total system memory used percentage is greater than `relativeHighMemoryThreshold` _AND_ the available memory is less than `absoluteHighMemoryThreshold` for longer than `allowedHighMemoryDurationSecs`, unless `disableOOMProtection` is enabled.
+
+### USERS
+
+▶ [patch] [#7769](https://github.com/taskcluster/taskcluster/issues/7769)
+Generic Worker: resource monitor will print out its usage summary after aborting the task.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump brace-expansion from 1.1.11 to 1.1.12 in /ui/test/e2e (9730050be2)
+* build(deps): bump brace-expansion from 1.1.11 to 1.1.12 (6298cb2045)
+* build(deps): bump brace-expansion from 1.1.11 to 1.1.12 in /ui (f3154fd82e)
+* build(deps): bump brace-expansion in /clients/client-web (e1544fb357)
+* build(deps): bump github.com/cloudflare/circl from 1.3.8 to 1.6.1 (c8320ed1c1)
+
+</details>
+
 ## v84.1.2
 
 ### DEPLOYERS
