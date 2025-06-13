@@ -344,10 +344,8 @@ func GWTest(t *testing.T) *Test {
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 		PublicConfig: gwconfig.PublicConfig{
-			PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
-			AbsoluteHighMemoryThreshold:   524288000, // 500 MiB
-			AllowedHighMemoryDurationSecs: 5,
-			AvailabilityZone:              "outer-space",
+			PublicPlatformConfig: *gwconfig.DefaultPublicPlatformConfig(),
+			AvailabilityZone:     "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			CachesDir:                      cachesDir,
@@ -367,6 +365,7 @@ func GWTest(t *testing.T) *Test {
 			EnableResourceMonitor:     true,
 			EnableTaskclusterProxy:    true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+			HighMemoryTimeoutSecs:     5,
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
 			InstanceType:              "p3.enormous",
@@ -375,14 +374,15 @@ func GWTest(t *testing.T) *Test {
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
 			// generic-worker instance running the test suite.
-			LiveLogPortBase:             30583,
-			MaxTaskRunTime:              300,
-			NumberOfTasksToRun:          1,
-			PrivateIP:                   net.ParseIP("87.65.43.21"),
-			ProvisionerID:               "test-provisioner",
-			PublicIP:                    net.ParseIP("12.34.56.78"),
-			RelativeHighMemoryThreshold: 90,
-			Region:                      "test-worker-group",
+			LiveLogPortBase:         30583,
+			MaxSystemMemoryPercent:  90,
+			MaxTaskRunTime:          300,
+			MinAvailableMemoryBytes: 524288000, // 500 MiB
+			NumberOfTasksToRun:      1,
+			PrivateIP:               net.ParseIP("87.65.43.21"),
+			ProvisionerID:           "test-provisioner",
+			PublicIP:                net.ParseIP("12.34.56.78"),
+			Region:                  "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
 			RequiredDiskSpaceMegabytes:     16,

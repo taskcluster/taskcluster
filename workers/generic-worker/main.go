@@ -224,8 +224,6 @@ func loadConfig(configFile *gwconfig.File) error {
 		PublicConfig: gwconfig.PublicConfig{
 			PublicEngineConfig:             *gwconfig.DefaultPublicEngineConfig(),
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
-			AbsoluteHighMemoryThreshold:    524288000, // 500 MiB
-			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
 			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
@@ -240,14 +238,16 @@ func loadConfig(configFile *gwconfig.File) error {
 			EnableOSGroups:                 true,
 			EnableResourceMonitor:          true,
 			EnableTaskclusterProxy:         true,
+			HighMemoryTimeoutSecs:          5,
 			IdleTimeoutSecs:                0,
 			InteractivePort:                53654,
 			LiveLogExecutable:              "livelog",
 			LiveLogPortBase:                60098,
-			MaxTaskRunTime:                 86400, // 86400s is 24 hours
+			MaxSystemMemoryPercent:         90,
+			MaxTaskRunTime:                 86400,     // 86400s is 24 hours
+			MinAvailableMemoryBytes:        524288000, // 500 MiB
 			NumberOfTasksToRun:             0,
 			ProvisionerID:                  "test-provisioner",
-			RelativeHighMemoryThreshold:    90,
 			RequiredDiskSpaceMegabytes:     10240,
 			RootURL:                        "",
 			RunAfterUserCreation:           "",
