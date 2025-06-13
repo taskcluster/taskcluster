@@ -48,9 +48,9 @@ func (r *ResourceMonitorTask) RequiredScopes() scopes.Required {
 func (r *ResourceMonitorTask) Start() *CommandExecutionError {
 	for _, c := range r.task.Commands {
 		c.ResourceMonitor = process.MonitorResources(
-			config.AbsoluteHighMemoryThreshold,
-			config.RelativeHighMemoryThreshold,
-			time.Duration(config.AllowedHighMemoryDurationSecs)*time.Second,
+			config.MinAvailableMemoryBytes,
+			config.MaxSystemMemoryPercent,
+			time.Duration(config.HighMemoryTimeoutSecs)*time.Second,
 			config.DisableOOMProtection,
 			r.task.Warnf,
 			func() {
@@ -58,8 +58,8 @@ func (r *ResourceMonitorTask) Start() *CommandExecutionError {
 					&CommandExecutionError{
 						Cause: fmt.Errorf(
 							"task aborted due to sustained memory usage above %d%% and available memory less than %v",
-							config.RelativeHighMemoryThreshold,
-							process.FormatMemoryString(config.AbsoluteHighMemoryThreshold),
+							config.MaxSystemMemoryPercent,
+							process.FormatMemoryString(config.MinAvailableMemoryBytes),
 						),
 						TaskStatus: failed,
 					},

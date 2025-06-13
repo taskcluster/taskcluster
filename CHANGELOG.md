@@ -10,11 +10,11 @@
 ▶ [minor] [#7770](https://github.com/taskcluster/taskcluster/issues/7770)
 Generic Worker: adds additional resource monitoring auto-abortion configuration to better fine-tune how your worker aborts running task processes.
 
-  * `absoluteHighMemoryThreshold`: The minimum amount of available memory (in bytes) required before considering task abortion. If available memory drops below this value, it may trigger an abort. Default: `524288000` (500MiB).
-  * `relativeHighMemoryThreshold`: The percentage of total system memory usage that, if exceeded, contributes to the decision to abort the task. Default: `90`.
-  * `allowedHighMemoryDurationSecs`: The maximum duration (in seconds) that high memory usage conditions can persist before the task is aborted. Default: `5`.
+  * `minAvailableMemoryBytes`: The minimum amount of available memory (in bytes) required to avoid task abortion. If available memory falls below this threshold, abortion may be triggered. Default: `524288000` (500MiB).
+  * `maxSystemMemoryPercent`: The maximum percentage of total system memory usage allowed before considering task abortion. Default: `90`.
+  * `highMemoryTimeoutSecs`: The maximum duration (in seconds) that high memory usage (exceeding `maxSystemMemoryPercent` and below `minAvailableMemoryBytes`) can persist before aborting the task. Default: `5`.
 
-Generic Worker will auto-abort a task if the total system memory used percentage is greater than `relativeHighMemoryThreshold` _AND_ the available memory is less than `absoluteHighMemoryThreshold` for longer than `allowedHighMemoryDurationSecs`, unless `disableOOMProtection` is enabled.
+Generic Worker will auto-abort a task if the total system memory used percentage is greater than `maxSystemMemoryPercent` _AND_ the available memory is less than `minAvailableMemoryBytes` for longer than `highMemoryTimeoutSecs`, unless `disableOOMProtection` is enabled.
 
 ### USERS
 

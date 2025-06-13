@@ -27,8 +27,6 @@ type (
 	PublicConfig struct {
 		PublicEngineConfig
 		PublicPlatformConfig
-		AbsoluteHighMemoryThreshold    uint64         `json:"absoluteHighMemoryThreshold"`
-		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
 		CheckForNewDeploymentEverySecs uint           `json:"checkForNewDeploymentEverySecs"`
@@ -48,6 +46,7 @@ type (
 		EnableOSGroups                 bool           `json:"enableOSGroups"`
 		EnableResourceMonitor          bool           `json:"enableResourceMonitor"`
 		EnableTaskclusterProxy         bool           `json:"enableTaskclusterProxy"`
+		HighMemoryTimeoutSecs          uint64         `json:"highMemoryTimeoutSecs"`
 		IdleTimeoutSecs                uint           `json:"idleTimeoutSecs"`
 		InstanceID                     string         `json:"instanceId"`
 		InstanceType                   string         `json:"instanceType"`
@@ -55,12 +54,13 @@ type (
 		LiveLogExecutable              string         `json:"livelogExecutable"`
 		LiveLogPortBase                uint16         `json:"livelogPortBase"`
 		LiveLogExposePort              uint16         `json:"livelogExposePort"`
+		MaxSystemMemoryPercent         uint64         `json:"maxSystemMemoryPercent"`
 		MaxTaskRunTime                 uint32         `json:"maxTaskRunTime"`
+		MinAvailableMemoryBytes        uint64         `json:"minAvailableMemoryBytes"`
 		NumberOfTasksToRun             uint           `json:"numberOfTasksToRun"`
 		PrivateIP                      net.IP         `json:"privateIP"`
 		ProvisionerID                  string         `json:"provisionerId"`
 		PublicIP                       net.IP         `json:"publicIP"`
-		RelativeHighMemoryThreshold    uint64         `json:"relativeHighMemoryThreshold"`
 		Region                         string         `json:"region"`
 		RequiredDiskSpaceMegabytes     uint           `json:"requiredDiskSpaceMegabytes"`
 		RootURL                        string         `json:"rootURL"`
