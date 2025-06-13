@@ -41,9 +41,10 @@ type (
 	}
 
 	ResourceUsage struct {
-		AverageSystemMemoryUsed uint64
-		PeakSystemMemoryUsed    uint64
-		TotalMemoryAvailable    uint64
+		AverageAvailableSystemMemory uint64
+		AverageSystemMemoryUsed      uint64
+		PeakSystemMemoryUsed         uint64
+		TotalSystemMemory            uint64
 	}
 )
 
@@ -127,28 +128,30 @@ func (c *Command) String() string {
 }
 
 func (r *Result) String() string {
+	var usageStr string
+	if r.Usage != nil && r.Usage.TotalSystemMemory > 0 {
+		usageStr = fmt.Sprintf(" Average Available System Memory: %v\n"+
+			"      Average System Memory Used: %v\n"+
+			"         Peak System Memory Used: %v\n"+
+			"             Total System Memory: %v\n",
+			FormatMemoryString(r.Usage.AverageAvailableSystemMemory),
+			FormatMemoryString(r.Usage.AverageSystemMemoryUsed),
+			FormatMemoryString(r.Usage.PeakSystemMemoryUsed),
+			FormatMemoryString(r.Usage.TotalSystemMemory),
+		)
+	}
 	if r.Aborted {
-		return fmt.Sprintf("Command ABORTED after %v: %v", r.Duration, r.SystemError)
+		return fmt.Sprintf("Command ABORTED after %v: %v\n%v", r.Duration, r.SystemError, usageStr)
 	}
 	if r.SystemError != nil {
 		return fmt.Sprintf("System error executing command: %v", r.SystemError)
 	}
-	var usageStr string
-	if r.Usage != nil && r.Usage.TotalMemoryAvailable > 0 {
-		usageStr = fmt.Sprintf(" Average System Memory Used: %v\n"+
-			"    Peak System Memory Used: %v\n"+
-			"        Total System Memory: %v\n",
-			formatMemoryString(r.Usage.AverageSystemMemoryUsed),
-			formatMemoryString(r.Usage.PeakSystemMemoryUsed),
-			formatMemoryString(r.Usage.TotalMemoryAvailable),
-		)
-	}
 	return fmt.Sprintf(""+
-		"                  Exit Code: %v\n"+
-		"                  User Time: %v\n"+
-		"                Kernel Time: %v\n"+
-		"                  Wall Time: %v\n%v"+
-		"                     Result: %v",
+		"                       Exit Code: %v\n"+
+		"                       User Time: %v\n"+
+		"                     Kernel Time: %v\n"+
+		"                       Wall Time: %v\n%v"+
+		"                          Result: %v",
 		r.ExitCode(),
 		r.UserTime,
 		r.KernelTime,
@@ -174,11 +177,11 @@ func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stderr = writer
 }
 
-// formatMemoryString formats a memory size in bytes into a human-readable string.
+// FormatMemoryString formats a memory size in bytes into a human-readable string.
 // The function returns a string with the value formatted to two decimal places
 // and appended with the appropriate unit: "B" for bytes, "KiB" for kibibyte,
 // "MiB" for mebibyte, or "GiB" for gibibyte.
-func formatMemoryString(bytes uint64) string {
+func FormatMemoryString(bytes uint64) string {
 	val := float64(bytes)
 	if val < 1024 {
 		return fmt.Sprintf("%f B", val)
@@ -197,21 +200,30 @@ func formatMemoryString(bytes uint64) string {
 // MonitorResources returns a function that monitors the system's memory usage at 500ms
 // intervals while a command is executing.
 // It tracks peak memory used, total memory available, and calculates the average memory used.
-// If memory usage exceeds 90% for five consecutive measurements, it calls the provided abort function.
-// The abort function is called with a boolean indicating if a warning was previously issued.
-// If the abort function returns true (indicating the task will be aborted), the monitoring stops.
+// If memory usage exceeds relativeHighMemoryThreshold and available memory is less than
+// absoluteHighMemoryThreshold for longer than allowedHighMemoryDurationSecs seconds,
+// it calls the provided abort function. After the abort function is called, the monitoring stops.
 // The function sends the collected ResourceUsage data through usageChan when monitoring stops.
 // The monitoring can also be stopped by sending a signal through usageMeasurementsDone.
-func MonitorResources(abort func(previouslyWarned bool) bool) func(chan *ResourceUsage, chan struct{}) {
+func MonitorResources(
+	absoluteHighMemoryThreshold,
+	relativeHighMemoryThreshold uint64,
+	allowedHighMemoryDuration time.Duration,
+	disableOOMProtection bool,
+	warn func(string, ...any),
+	abort func(),
+) func(chan *ResourceUsage, chan struct{}) {
 	return func(usageChan chan *ResourceUsage, usageMeasurementsDone chan struct{}) {
-		var consecutiveHighMemoryUsage, numOfMeasurements, totalMemoryUsed uint64
+		var numOfMeasurements, totalAvailableMemory, totalMemoryUsed uint64
 		previouslyWarned := false
 		usage := new(ResourceUsage)
 		ticker := time.NewTicker(500 * time.Millisecond)
+		var highMemoryStartTime time.Time
 
 		defer func() {
 			ticker.Stop()
 			if numOfMeasurements > 0 {
+				usage.AverageAvailableSystemMemory = totalAvailableMemory / numOfMeasurements
 				usage.AverageSystemMemoryUsed = totalMemoryUsed / numOfMeasurements
 			}
 			usageChan <- usage
@@ -226,25 +238,45 @@ func MonitorResources(abort func(previouslyWarned bool) bool) func(chan *Resourc
 					if vm.Used > usage.PeakSystemMemoryUsed {
 						usage.PeakSystemMemoryUsed = vm.Used
 					}
-					if usage.TotalMemoryAvailable == 0 {
-						usage.TotalMemoryAvailable = vm.Total
+					if usage.TotalSystemMemory == 0 {
+						usage.TotalSystemMemory = vm.Total
 					}
 					totalMemoryUsed += vm.Used
+					totalAvailableMemory += vm.Available
 
-					// if memory used is greater than 90%
-					// for 5 measurements consecutively, then
-					// kill the process
-					if vm.UsedPercent >= 90.0 {
-						consecutiveHighMemoryUsage++
-						if consecutiveHighMemoryUsage >= 5 {
-							if abort(previouslyWarned) {
-								return
+					// if memory used is greater than relativeHighMemoryThreshold
+					// and available memory is less than absoluteHighMemoryThreshold,
+					// then kill the process after allowedHighMemoryDuration has passed
+					if vm.UsedPercent > float64(relativeHighMemoryThreshold) && vm.Available < absoluteHighMemoryThreshold {
+						if highMemoryStartTime.IsZero() {
+							highMemoryStartTime = time.Now()
+						}
+						if time.Since(highMemoryStartTime) > allowedHighMemoryDuration {
+							if disableOOMProtection {
+								if !previouslyWarned {
+									warn(
+										"Memory usage above %d%% and available memory less than %v persisted for over %v!",
+										relativeHighMemoryThreshold,
+										FormatMemoryString(absoluteHighMemoryThreshold),
+										allowedHighMemoryDuration,
+									)
+									warn("OOM protections are disabled, continuing task...")
+									previouslyWarned = true
+								}
 							} else {
-								previouslyWarned = true
+								warn(
+									"Memory usage above %d%% and available memory less than %v persisted for over %v!",
+									relativeHighMemoryThreshold,
+									FormatMemoryString(absoluteHighMemoryThreshold),
+									allowedHighMemoryDuration,
+								)
+								abort()
+								return
 							}
 						}
 					} else {
-						consecutiveHighMemoryUsage = 0
+						highMemoryStartTime = time.Time{}
+						previouslyWarned = false
 					}
 				}
 			case <-usageMeasurementsDone:

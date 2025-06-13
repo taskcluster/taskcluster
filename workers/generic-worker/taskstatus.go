@@ -183,9 +183,6 @@ func (tsm *TaskStatusManager) reclaim() error {
 			task.queueMux.Unlock()
 			tsm.status = tcrsp.Status
 			tsm.takenUntil = tcrsp.TakenUntil
-			if err != nil {
-				log.Printf("SERIOUS BUG: invalid credentials in queue claim response body: %v", err)
-			}
 			log.Printf("Reclaimed task %v successfully.", task.TaskID)
 			return nil
 		},

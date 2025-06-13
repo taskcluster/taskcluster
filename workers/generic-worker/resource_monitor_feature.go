@@ -1,7 +1,8 @@
 package main
 
 import (
-	"errors"
+	"fmt"
+	"time"
 
 	"github.com/taskcluster/taskcluster/v84/internal/scopes"
 	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/process"
@@ -46,28 +47,28 @@ func (r *ResourceMonitorTask) RequiredScopes() scopes.Required {
 
 func (r *ResourceMonitorTask) Start() *CommandExecutionError {
 	for _, c := range r.task.Commands {
-		c.ResourceMonitor = process.MonitorResources(func(previouslyWarned bool) bool {
-			if config.DisableOOMProtection {
-				if !previouslyWarned {
-					r.task.Warn("Sustained memory usage above 90%!")
-					r.task.Warn("OOM protections are disabled, continuing task...")
+		c.ResourceMonitor = process.MonitorResources(
+			config.AbsoluteHighMemoryThreshold,
+			config.RelativeHighMemoryThreshold,
+			time.Duration(config.AllowedHighMemoryDurationSecs)*time.Second,
+			config.DisableOOMProtection,
+			r.task.Warnf,
+			func() {
+				err := r.task.StatusManager.Abort(
+					&CommandExecutionError{
+						Cause: fmt.Errorf(
+							"task aborted due to sustained memory usage above %d%% and available memory less than %v",
+							config.RelativeHighMemoryThreshold,
+							process.FormatMemoryString(config.AbsoluteHighMemoryThreshold),
+						),
+						TaskStatus: failed,
+					},
+				)
+				if err != nil {
+					r.task.Warnf("Error when aborting task: %v", err)
 				}
-				return false
-			} else {
-				r.task.Warn("Sustained memory usage above 90%!")
-				r.task.Warn("Aborting task to prevent OOM issues...")
-			}
-			err := r.task.StatusManager.Abort(
-				&CommandExecutionError{
-					Cause:      errors.New("task aborted due to sustained memory usage above 90%"),
-					TaskStatus: failed,
-				},
-			)
-			if err != nil {
-				r.task.Warnf("Error when aborting task: %v", err)
-			}
-			return true
-		})
+			},
+		)
 	}
 	return nil
 }
