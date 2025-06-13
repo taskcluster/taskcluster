@@ -200,14 +200,14 @@ func FormatMemoryString(bytes uint64) string {
 // MonitorResources returns a function that monitors the system's memory usage at 500ms
 // intervals while a command is executing.
 // It tracks peak memory used, total memory available, and calculates the average memory used.
-// If memory usage exceeds relativeHighMemoryThreshold and available memory is less than
-// absoluteHighMemoryThreshold for longer than allowedHighMemoryDurationSecs seconds,
+// If memory usage exceeds maxMemoryUsagePercent and available memory is less than
+// minAvailableMemoryBytes for longer than allowedHighMemoryDurationSecs seconds,
 // it calls the provided abort function. After the abort function is called, the monitoring stops.
 // The function sends the collected ResourceUsage data through usageChan when monitoring stops.
 // The monitoring can also be stopped by sending a signal through usageMeasurementsDone.
 func MonitorResources(
-	absoluteHighMemoryThreshold,
-	relativeHighMemoryThreshold uint64,
+	minAvailableMemoryBytes,
+	maxMemoryUsagePercent uint64,
 	allowedHighMemoryDuration time.Duration,
 	disableOOMProtection bool,
 	warn func(string, ...any),
@@ -244,10 +244,10 @@ func MonitorResources(
 					totalMemoryUsed += vm.Used
 					totalAvailableMemory += vm.Available
 
-					// if memory used is greater than relativeHighMemoryThreshold
-					// and available memory is less than absoluteHighMemoryThreshold,
+					// if memory used is greater than maxMemoryUsagePercent
+					// and available memory is less than minAvailableMemoryBytes,
 					// then kill the process after allowedHighMemoryDuration has passed
-					if vm.UsedPercent > float64(relativeHighMemoryThreshold) && vm.Available < absoluteHighMemoryThreshold {
+					if vm.UsedPercent > float64(maxMemoryUsagePercent) && vm.Available < minAvailableMemoryBytes {
 						if highMemoryStartTime.IsZero() {
 							highMemoryStartTime = time.Now()
 						}
@@ -256,8 +256,8 @@ func MonitorResources(
 								if !previouslyWarned {
 									warn(
 										"Memory usage above %d%% and available memory less than %v persisted for over %v!",
-										relativeHighMemoryThreshold,
-										FormatMemoryString(absoluteHighMemoryThreshold),
+										maxMemoryUsagePercent,
+										FormatMemoryString(minAvailableMemoryBytes),
 										allowedHighMemoryDuration,
 									)
 									warn("OOM protections are disabled, continuing task...")
@@ -266,8 +266,8 @@ func MonitorResources(
 							} else {
 								warn(
 									"Memory usage above %d%% and available memory less than %v persisted for over %v!",
-									relativeHighMemoryThreshold,
-									FormatMemoryString(absoluteHighMemoryThreshold),
+									maxMemoryUsagePercent,
+									FormatMemoryString(minAvailableMemoryBytes),
 									allowedHighMemoryDuration,
 								)
 								abort()
