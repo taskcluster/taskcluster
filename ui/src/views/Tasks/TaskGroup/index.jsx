@@ -162,6 +162,48 @@ const updateTaskGroupIdHistory = id => {
   },
 }))
 export default class TaskGroup extends Component {
+  static calculateStatusCountStatic(taskGroup) {
+    const statusCount = {
+      completed: 0,
+      failed: 0,
+      exception: 0,
+      running: 0,
+      pending: 0,
+      unscheduled: 0,
+    };
+
+    if (taskGroup && taskGroup.edges) {
+      taskGroup.edges.forEach(({ node }) => {
+        const { state } = node.status;
+
+        switch (state) {
+          case TASK_STATE.COMPLETED:
+            statusCount.completed += 1;
+            break;
+          case TASK_STATE.FAILED:
+            statusCount.failed += 1;
+            break;
+          case TASK_STATE.EXCEPTION:
+            statusCount.exception += 1;
+            break;
+          case TASK_STATE.RUNNING:
+            statusCount.running += 1;
+            break;
+          case TASK_STATE.PENDING:
+            statusCount.pending += 1;
+            break;
+          case TASK_STATE.UNSCHEDULED:
+            statusCount.unscheduled += 1;
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    return statusCount;
+  }
+
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId } = props.match.params;
     const { taskActions, taskGroup } = props.data;
@@ -175,6 +217,11 @@ export default class TaskGroup extends Component {
       taskGroup && taskGroup.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
+    const statusCount =
+      isFromSameTaskGroupId && taskGroup
+        ? TaskGroup.calculateStatusCountStatic(taskGroup)
+        : state.statusCount;
+    const previousStatusCount = state.statusCount;
 
     if (
       isFromSameTaskGroupId &&
@@ -204,6 +251,8 @@ export default class TaskGroup extends Component {
         actionData,
         previousTaskGroupId: taskGroupId,
         taskGroupLoaded,
+        statusCount,
+        previousStatusCount,
       };
     }
 
@@ -212,6 +261,9 @@ export default class TaskGroup extends Component {
       taskGroupWasRunningOnPageLoad: isFromSameTaskGroupId
         ? state.taskGroupWasRunningOnPageLoad
         : false,
+      statusCount,
+      previousStatusCount,
+      taskGroupForTable: isFromSameTaskGroupId ? taskGroup : null,
     };
   }
 
@@ -221,6 +273,10 @@ export default class TaskGroup extends Component {
     this.previousCursor = INITIAL_CURSOR;
     this.listener = null;
     this.tasks = new Map();
+
+    // Batching for table updates
+    this.pendingTableUpdate = null;
+    this.tableUpdateTimer = null;
   }
 
   state = {
@@ -242,6 +298,17 @@ export default class TaskGroup extends Component {
     taskGroupWasRunningOnPageLoad: false,
     statsOpen: false,
     taskGroupInfo: false,
+    statusCount: {
+      completed: 0,
+      failed: 0,
+      exception: 0,
+      running: 0,
+      pending: 0,
+      unscheduled: 0,
+    },
+    previousStatusCount: {},
+    taskGroupForTable: null,
+
     snackbar: {
       message: '',
       variant: 'success',
@@ -278,6 +345,14 @@ export default class TaskGroup extends Component {
         groupNotifySuccess,
       },
     });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+
+    if (this.tableUpdateTimer) {
+      clearTimeout(this.tableUpdateTimer);
+    }
   }
 
   unsubscribe = () => {
@@ -327,8 +402,6 @@ export default class TaskGroup extends Component {
           return previousResult;
         }
 
-        let edges;
-
         if (
           this.state.notifyPreferences.groupNotifyTaskFailed &&
           tasksSubscriptions.state === TASK_STATE.EXCEPTION
@@ -346,6 +419,8 @@ export default class TaskGroup extends Component {
             icon: logoFailed,
           });
         }
+
+        let edges;
 
         if (this.tasks.has(tasksSubscriptions.taskId)) {
           // already have this task, so just update the state
@@ -381,9 +456,28 @@ export default class TaskGroup extends Component {
           });
         }
 
-        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
-          dotProp.set(taskGroup, 'edges', edges)
+        // Return updated result so Apollo updates its cache
+        const updatedResult = dotProp.set(
+          previousResult,
+          'taskGroup',
+          taskGroup => dotProp.set(taskGroup, 'edges', edges)
         );
+        // Update status count immediately for TaskGroupProgress
+        const newStatusCount = this.calculateStatusCount(
+          updatedResult.taskGroup
+        );
+
+        if (
+          JSON.stringify(newStatusCount) !==
+          JSON.stringify(this.state.statusCount)
+        ) {
+          this.setState({ statusCount: newStatusCount });
+          this.handleCountUpdate(newStatusCount);
+        }
+
+        this.scheduleTableUpdate(updatedResult.taskGroup);
+
+        return updatedResult;
       },
     });
 
@@ -393,7 +487,25 @@ export default class TaskGroup extends Component {
     };
   };
 
-  groupActionDisabled(name) {
+  calculateStatusCount = taskGroup =>
+    TaskGroup.calculateStatusCountStatic(taskGroup);
+
+  scheduleTableUpdate = taskGroup => {
+    this.pendingTableUpdate = taskGroup;
+
+    if (this.tableUpdateTimer) {
+      clearTimeout(this.tableUpdateTimer);
+    }
+
+    this.tableUpdateTimer = setTimeout(() => {
+      if (this.pendingTableUpdate) {
+        this.setState({ taskGroupForTable: this.pendingTableUpdate });
+        this.pendingTableUpdate = null;
+      }
+    }, 300);
+  };
+
+  groupActionDisabled = name => {
     const { taskGroupInfo } = this;
 
     switch (name) {
@@ -406,7 +518,7 @@ export default class TaskGroup extends Component {
       default:
         return false;
     }
-  }
+  };
 
   componentDidUpdate(prevProps) {
     const {
@@ -429,6 +541,15 @@ export default class TaskGroup extends Component {
       taskGroup.pageInfo.hasNextPage
     ) {
       this.fetchMoreTasks();
+    }
+
+    // Check if statusCount changed and call handleCountUpdate
+    if (
+      this.state.previousStatusCount &&
+      JSON.stringify(this.state.statusCount) !==
+        JSON.stringify(this.state.previousStatusCount)
+    ) {
+      this.handleCountUpdate(this.state.statusCount);
     }
   }
 
@@ -812,10 +933,9 @@ export default class TaskGroup extends Component {
             <TaskGroupProgress
               taskGroupId={taskGroupId}
               taskGroupLoaded={taskGroupLoaded}
-              taskGroup={taskGroup}
+              statusCount={this.state.statusCount}
               filter={filter}
               onStatusClick={this.handleStatusClick}
-              onUpdate={this.handleCountUpdate}
             />
             <Grid container className={classes.firstGrid}>
               <Grid item xs={6}>
@@ -891,7 +1011,7 @@ export default class TaskGroup extends Component {
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}
-            taskGroupConnection={taskGroup}
+            taskGroupConnection={this.state.taskGroupForTable || taskGroup}
             showTimings={statsOpen}
           />
         )}

@@ -10,10 +10,16 @@ it('should render TaskGroupProgress', () => {
       <TaskGroupProgress
         taskGroupId="abc"
         taskGroupLoaded={false}
-        taskGroup={{ edges: [] }}
+        statusCount={{
+          completed: 0,
+          failed: 0,
+          exception: 0,
+          running: 0,
+          pending: 0,
+          unscheduled: 0,
+        }}
         filter="RUNNING"
         onStatusClick={nop}
-        onUpdate={nop}
       />
     </MemoryRouter>
   );
