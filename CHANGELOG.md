@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v84.2.1
+
+### USERS
+
+▶ [patch] [#7498](https://github.com/taskcluster/taskcluster/issues/7498)
+Further UI memory optimizations for the TaskGroup page to avoid using too much memory during intensive updates.
+
 ## v84.2.0
 
 ### WORKER-DEPLOYERS
