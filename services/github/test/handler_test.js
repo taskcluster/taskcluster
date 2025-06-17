@@ -981,6 +981,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert.equal(build.state, 'pending');
       });
 
+      test('valid issue_comment (user is collaborator) no tasks created', async function () {
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          ref: COMMIT_SHA,
+          content: {
+            ...validYamlCommentsJson,
+            tasks: [],
+          },
+        });
+
+        await simulateIssueCommentMessage({ user: 'lotas' });
+
+        assert(handlers.createTasks.notCalled);
+        assert(instGithub.issues.createComment.calledOnce);
+      });
+
       test('valid issue_comment (user is not a collaborator) skips task creation', async function () {
         await simulateIssueCommentMessage({ user: 'notCollaborator' });
 

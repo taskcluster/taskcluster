@@ -239,6 +239,17 @@ export async function jobHandler(message) {
     }
     if (!graphConfig.tasks || graphConfig.tasks.length === 0) {
       debug(`intree config for ${organization}/${repository}@${sha} compiled with zero tasks. Skipping.`);
+
+      // If triggered by a comment, let everyone know we couldn't create tasks
+      if (message.payload.details['event.type'].startsWith('issue_comment')) {
+        await this.createComment({
+          instGithub, organization, repository, pullNumber, sha, debug,
+          body: {
+            summary: 'No Taskcluster jobs started for this command',
+            details: 'Task graph produced empty list of tasks',
+          },
+        });
+      }
       return;
     }
   } catch (e) {
