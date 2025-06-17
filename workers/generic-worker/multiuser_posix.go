@@ -116,11 +116,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func platformTargets(arguments map[string]any) ExitCode {
-	log.Print("Internal error - no target found to run, yet command line parsing successful")
-	return INTERNAL_ERROR
-}
-
 // we put this in init() instead of startup() as we want tests to be able to change
 // it - note we shouldn't have these nasty global vars, I can only apologise, and
 // say taskcluster-worker will be much nicer
@@ -167,9 +162,6 @@ func (task *TaskRun) EnvVars() []string {
 	}
 	log.Printf("Environment: %#v", taskEnvArray)
 	return taskEnvArray
-}
-
-func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
 func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {

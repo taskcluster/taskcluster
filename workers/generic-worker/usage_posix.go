@@ -6,15 +6,7 @@ func installServiceSummary() string {
 	return ""
 }
 
-func customTargetsSummary() string {
-	return ""
-}
-
 func installService() string {
-	return ""
-}
-
-func customTargets() string {
 	return ""
 }
 
