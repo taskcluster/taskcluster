@@ -19,7 +19,6 @@ type CommandRequest struct {
 	Args    []string `json:"args"`
 }
 
-
 type CommandResponse struct {
 	PID   int    `json:"pid,omitempty"`
 	Error string `json:"error,omitempty"`
