@@ -336,9 +336,9 @@ oneOf:
             Average System Memory Used, Average Available System Memory,
             and Total System Memory in the task log for each task command
             executed. It also will abort any task command if the used
-            system memory exceeds worker config relativeHighMemoryThreshold
+            system memory exceeds worker config maxMemoryUsagePercent
             _AND_ available system memory drops below worker config
-            absoluteHighMemoryThreshold for longer than worker config
+            minAvailableMemoryBytes for longer than worker config
             allowedHighMemoryDuration seconds. When this happens, the
             task will be resolved as failed.
 

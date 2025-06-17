@@ -345,7 +345,6 @@ func GWTest(t *testing.T) *Test {
 		},
 		PublicConfig: gwconfig.PublicConfig{
 			PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
-			AbsoluteHighMemoryThreshold:   524288000, // 500 MiB
 			AllowedHighMemoryDurationSecs: 5,
 			AvailabilityZone:              "outer-space",
 			// Need common caches directory across tests, since files
@@ -375,14 +374,15 @@ func GWTest(t *testing.T) *Test {
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
 			// generic-worker instance running the test suite.
-			LiveLogPortBase:             30583,
-			MaxTaskRunTime:              300,
-			NumberOfTasksToRun:          1,
-			PrivateIP:                   net.ParseIP("87.65.43.21"),
-			ProvisionerID:               "test-provisioner",
-			PublicIP:                    net.ParseIP("12.34.56.78"),
-			RelativeHighMemoryThreshold: 90,
-			Region:                      "test-worker-group",
+			LiveLogPortBase:         30583,
+			MaxMemoryUsagePercent:   90,
+			MaxTaskRunTime:          300,
+			MinAvailableMemoryBytes: 524288000, // 500 MiB
+			NumberOfTasksToRun:      1,
+			PrivateIP:               net.ParseIP("87.65.43.21"),
+			ProvisionerID:           "test-provisioner",
+			PublicIP:                net.ParseIP("12.34.56.78"),
+			Region:                  "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
 			RequiredDiskSpaceMegabytes:     16,
