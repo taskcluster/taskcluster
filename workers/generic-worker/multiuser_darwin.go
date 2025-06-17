@@ -19,6 +19,12 @@ type CommandRequest struct {
 	Args    []string `json:"args"`
 }
 
+
+type CommandResponse struct {
+	PID   int    `json:"pid,omitempty"`
+	Error string `json:"error,omitempty"`
+}
+
 func defaultTasksDir() string {
 	return "/Users"
 }
@@ -113,6 +119,8 @@ func handleConnection(conn net.Conn) {
 
 	var request CommandRequest
 	decoder := json.NewDecoder(conn)
+	encoder := json.NewEncoder(conn)
+
 	if err := decoder.Decode(&request); err != nil {
 		fmt.Println("Error decoding request:", err)
 		return
@@ -124,8 +132,11 @@ func handleConnection(conn net.Conn) {
 
 	if err := cmd.Start(); err != nil {
 		fmt.Println("Error starting command:", err)
+		_ = encoder.Encode(CommandResponse{Error: err.Error()})
 		return
 	}
+
+	_ = encoder.Encode(CommandResponse{PID: cmd.Process.Pid})
 
 	fmt.Printf("Started command: %s with PID %d\n", request.Command, cmd.Process.Pid)
 }
