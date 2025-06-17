@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/kc"
+	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/kc"
 )
 
 var cachedInteractiveUsername string = ""

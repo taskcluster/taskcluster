@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v85.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR]
+Generic Worker: renamed the following worker configuration options to avoid confusion:
+
+  * `absoluteHighMemoryThreshold` --> `minAvailableMemoryBytes`
+  * `relativeHighMemoryThreshold` --> `maxMemoryUsagePercent`
+
 ## v84.2.1
 
 ### USERS

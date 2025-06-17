@@ -708,10 +708,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `get_audit_history(entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v85.0.0)
-
 ## github
 
 * [`create_github_build_pr`](#create_github_build_pr)
@@ -8569,7 +8565,3 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `update_worker_2(worker_pool_id_in text, worker_group_in text, worker_id_in text, provider_id_in text, created_in timestamptz, expires_in timestamptz, state_in text, provider_data_in jsonb, capacity_in integer, last_modified_in timestamptz, last_checked_in timestamptz, etag_in uuid, secret_in jsonb)` (compatibility guaranteed until v85.0.0)

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/host"
 )
 
 // A resource is something that can be deleted. Rating provides an indication

@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v84/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v84/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v84/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v84/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v84/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v85/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v85/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v85/tools/workerproto/testing"
 )
 
 func TestHandleMessage(t *testing.T) {

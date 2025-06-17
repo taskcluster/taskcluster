@@ -7,7 +7,7 @@ package main
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v84/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v85/clients/client-go"
 )
 
 type (

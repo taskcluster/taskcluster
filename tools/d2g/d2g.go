@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v84/internal/scopes"
-	"github.com/taskcluster/taskcluster/v84/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v84/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v85/internal/scopes"
+	"github.com/taskcluster/taskcluster/v85/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v85/tools/d2g/genericworker"
 
 	"slices"
 

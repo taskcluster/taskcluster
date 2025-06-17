@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v84/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v84/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v84/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v84/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v84/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v85/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v85/tools/workerproto/testing"
 )
 
 func TestShutdownMessage(t *testing.T) {

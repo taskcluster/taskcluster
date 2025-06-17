@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v84/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v84/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v85/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v85/internal/mocktc/tc"
 )
 
 type AuthProvider struct {
