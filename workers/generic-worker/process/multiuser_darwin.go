@@ -7,7 +7,26 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os/exec"
+	"sync"
 )
+
+type Command struct {
+	// ResourceMonitor is a function that monitors the system's resource usage.
+	// It should send the resource usage data to the first channel of type
+	// *ResourceUsage and stop measuring usage when the second channel of
+	// type struct{} is closed.
+	ResourceMonitor func(chan *ResourceUsage, chan struct{})
+	mutex           sync.RWMutex
+	*exec.Cmd
+	// abort channel is closed when Kill() is called so that Execute() can
+	// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
+	// sometimes does not return promptly.
+	abort chan struct{}
+	// only used by darwin_multiuser, to store value of PID created by
+	// launch agent
+	remotePID int
+}
 
 type CommandRequest struct {
 	Path string   `json:"path"`
