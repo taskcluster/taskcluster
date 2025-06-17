@@ -126,12 +126,10 @@ func handleConnection(conn net.Conn) {
 	if request.Stderr {
 		cmd.Stderr = os.Stderr
 	}
-	if request.SysProcAttr {
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			Setpgid: request.Setpgid,
-			Setctty: request.Setctty,
-			Setsid:  request.Setsid,
-		}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: request.Setpgid,
+		Setctty: request.Setctty,
+		Setsid:  request.Setsid,
 	}
 
 	if err := cmd.Start(); err != nil {

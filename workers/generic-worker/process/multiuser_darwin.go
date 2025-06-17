@@ -29,16 +29,15 @@ type Command struct {
 }
 
 type CommandRequest struct {
-	Path        string   `json:"path"`
-	Args        []string `json:"args"`
-	Env         []string `json:"env"`
-	Dir         string   `json:"dir"`
-	Stderr      bool     `json:"stderr"`
-	Stdout      bool     `json:"stdout"`
-	SysProcAttr bool     `json:"sysProcAttr"`
-	Setctty     bool     `json:"setctty"`
-	Setpgid     bool     `json:"setpgid"`
-	Setsid      bool     `json:"setsid"`
+	Path    string   `json:"path"`
+	Args    []string `json:"args"`
+	Env     []string `json:"env"`
+	Dir     string   `json:"dir"`
+	Stderr  bool     `json:"stderr"`
+	Stdout  bool     `json:"stdout"`
+	Setctty bool     `json:"setctty"`
+	Setpgid bool     `json:"setpgid"`
+	Setsid  bool     `json:"setsid"`
 }
 
 type CommandResponse struct {
@@ -49,22 +48,18 @@ type CommandResponse struct {
 func (c *Command) Start() error {
 
 	// If command is meant to run as current user, don't send it to the launch agent...
-	if c.Credential == nil || c.Credential.Uid == 0 {
+	if c.Cmd.SysProcAttr == nil || c.Cmd.SysProcAttr.Credential == nil || c.Cmd.SysProcAttr.Credential.Uid == 0 {
 		return c.Cmd.Start()
 	}
 
 	request := CommandRequest{
-		Path: c.Cmd.Path,
-		Args: c.Cmd.Args,
-		Env:  c.Cmd.Env,
-		Dir:  c.Cmd.Dir,
-	}
-
-	if c.Cmd.SysProcAttr != nil {
-		request.SysProcAttr = true
-		request.Setctty = c.Cmd.SysProcAttr.Setctty
-		request.Setpgid = c.Cmd.SysProcAttr.Setpgid
-		request.Setsid = c.Cmd.SysProcAttr.Setsid
+		Path:    c.Cmd.Path,
+		Args:    c.Cmd.Args,
+		Env:     c.Cmd.Env,
+		Dir:     c.Cmd.Dir,
+		Setctty: c.Cmd.SysProcAttr.Setctty,
+		Setpgid: c.Cmd.SysProcAttr.Setpgid,
+		Setsid:  c.Cmd.SysProcAttr.Setsid,
 	}
 
 	socketPath := "/tmp/launch-agent.sock"
