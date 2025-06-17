@@ -48,6 +48,11 @@ type CommandResponse struct {
 
 func (c *Command) Start() error {
 
+	// If command is meant to run as current user, don't send it to the launch agent...
+	if c.Credential == nil || c.Credential.Uid == 0 {
+		return c.Cmd.Start()
+	}
+
 	request := CommandRequest{
 		Path: c.Cmd.Path,
 		Args: c.Cmd.Args,
@@ -71,9 +76,10 @@ func (c *Command) Start() error {
 	}
 	defer conn.Close()
 
-	// Send the request
 	encoder := json.NewEncoder(conn)
 	decoder := json.NewDecoder(conn)
+
+	// Send the request
 	if err := encoder.Encode(request); err != nil {
 		return fmt.Errorf("error sending request: %w", err)
 	}
