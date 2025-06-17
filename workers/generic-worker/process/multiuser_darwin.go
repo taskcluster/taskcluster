@@ -54,7 +54,7 @@ func (c *Command) Start() error {
 	// Connect to the Launch Agent's Unix Domain Socket
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
-		return fmt.Errorf("Error connecting to launch agent: %w", err)
+		return fmt.Errorf("error connecting to launch agent: %w", err)
 	}
 	defer conn.Close()
 
@@ -62,13 +62,13 @@ func (c *Command) Start() error {
 	encoder := json.NewEncoder(conn)
 	decoder := json.NewDecoder(conn)
 	if err := encoder.Encode(request); err != nil {
-		return fmt.Errorf("Error sending request: %w", err)
+		return fmt.Errorf("error sending request: %w", err)
 	}
 
 	// Read response
 	var response CommandResponse
 	if err := decoder.Decode(&response); err != nil {
-		return fmt.Errorf("Error reading response: %w", err)
+		return fmt.Errorf("error reading response: %w", err)
 	}
 
 	if response.Error != "" {
