@@ -11,18 +11,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v84/workers/generic-worker/runtime"
 )
-
-type CommandRequest struct {
-	Command string   `json:"command"`
-	Args    []string `json:"args"`
-}
-
-type CommandResponse struct {
-	PID   int    `json:"pid,omitempty"`
-	Error string `json:"error,omitempty"`
-}
 
 func defaultTasksDir() string {
 	return "/Users"
@@ -116,7 +107,7 @@ func launchAgent() error {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	var request CommandRequest
+	var request process.CommandRequest
 	decoder := json.NewDecoder(conn)
 	encoder := json.NewEncoder(conn)
 
@@ -125,17 +116,17 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 
-	cmd := exec.Command(request.Command, request.Args...)
+	cmd := exec.Command(request.Path, request.Args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Start(); err != nil {
 		fmt.Println("Error starting command:", err)
-		_ = encoder.Encode(CommandResponse{Error: err.Error()})
+		_ = encoder.Encode(process.CommandResponse{Error: err.Error()})
 		return
 	}
 
-	_ = encoder.Encode(CommandResponse{PID: cmd.Process.Pid})
+	_ = encoder.Encode(process.CommandResponse{PID: cmd.Process.Pid})
 
-	fmt.Printf("Started command: %s with PID %d\n", request.Command, cmd.Process.Pid)
+	fmt.Printf("Started command: %s with PID %d\n", request.Path, cmd.Process.Pid)
 }
