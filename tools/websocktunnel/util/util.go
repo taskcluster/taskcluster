@@ -23,8 +23,8 @@ var (
 
 // MakeWsURL converts http:// to ws://
 func MakeWsURL(url string) string {
-	if strings.HasPrefix(url, "http") {
-		return "ws" + strings.TrimPrefix(url, "http")
+	if u, trimmed := strings.CutPrefix(url, "http"); trimmed {
+		return "ws" + u
 	}
 	return url
 }
