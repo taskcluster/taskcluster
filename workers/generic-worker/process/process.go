@@ -27,7 +27,10 @@ type (
 		// abort channel is closed when Kill() is called so that Execute() can
 		// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
 		// sometimes does not return promptly.
-		abort chan struct{}
+		abort     chan struct{}
+		// only used by darwin_multiuser, to store value of PID created by
+		// launch agent
+		remotePID int
 	}
 
 	Result struct {
