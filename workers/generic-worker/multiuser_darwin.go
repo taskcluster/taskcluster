@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/taskcluster/taskcluster/v84/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v84/workers/generic-worker/runtime"
@@ -117,8 +118,21 @@ func handleConnection(conn net.Conn) {
 	}
 
 	cmd := exec.Command(request.Path, request.Args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Dir = request.Dir
+	cmd.Env = request.Env
+	if request.Stdout {
+		cmd.Stdout = os.Stdout
+	}
+	if request.Stderr {
+		cmd.Stderr = os.Stderr
+	}
+	if request.SysProcAttr {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setpgid: request.Setpgid,
+			Setctty: request.Setctty,
+			Setsid:  request.Setsid,
+		}
+	}
 
 	if err := cmd.Start(); err != nil {
 		fmt.Println("Error starting command:", err)

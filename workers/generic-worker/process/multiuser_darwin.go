@@ -29,10 +29,16 @@ type Command struct {
 }
 
 type CommandRequest struct {
-	Path string   `json:"path"`
-	Args []string `json:"args"`
-	Env  []string `json:"env"`
-	Dir  string   `json:"dir"`
+	Path        string   `json:"path"`
+	Args        []string `json:"args"`
+	Env         []string `json:"env"`
+	Dir         string   `json:"dir"`
+	Stderr      bool     `json:"stderr"`
+	Stdout      bool     `json:"stdout"`
+	SysProcAttr bool     `json:"sysProcAttr"`
+	Setctty     bool     `json:"setctty"`
+	Setpgid     bool     `json:"setpgid"`
+	Setsid      bool     `json:"setsid"`
 }
 
 type CommandResponse struct {
@@ -47,6 +53,13 @@ func (c *Command) Start() error {
 		Args: c.Cmd.Args,
 		Env:  c.Cmd.Env,
 		Dir:  c.Cmd.Dir,
+	}
+
+	if c.Cmd.SysProcAttr != nil {
+		request.SysProcAttr = true
+		request.Setctty = c.Cmd.SysProcAttr.Setctty
+		request.Setpgid = c.Cmd.SysProcAttr.Setpgid
+		request.Setsid = c.Cmd.SysProcAttr.Setsid
 	}
 
 	socketPath := "/tmp/launch-agent.sock"
