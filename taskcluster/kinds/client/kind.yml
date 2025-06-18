@@ -66,7 +66,7 @@ tasks:
       docker-image: {in-tree: browser-test}
     run:
       command: >-
-        {{ corepack yarn --immutable &> /dev/null || exit \99; }} &&
+        {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         cd clients/client-web &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
