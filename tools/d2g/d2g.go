@@ -400,6 +400,7 @@ func runCommand(
 	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
 		command.WriteString(" --security-opt=seccomp=unconfined")
 	}
+	command.WriteString(" --add-host=localhost.localdomain:127.0.0.1") // bug 1559766
 	command.WriteString(createVolumeMountsString(dwPayload, wdcs, gwArtifacts, config))
 	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
 		command.WriteString(" --add-host=taskcluster:host-gateway")

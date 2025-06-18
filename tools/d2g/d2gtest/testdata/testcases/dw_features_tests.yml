@@ -32,10 +32,10 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE
-          --security-opt=seccomp=unconfined --add-host=taskcluster:host-gateway -e
-          RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo
-          "Hello world"'
+          --security-opt=seccomp=unconfined --add-host=localhost.localdomain:127.0.0.1
+          --add-host=taskcluster:host-gateway -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+          -e TASKCLUSTER_PROXY_URL -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -83,8 +83,8 @@ testSuite:
       - - /usr/bin/env
         - bash
         - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID
-          -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
+          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
           -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
@@ -129,8 +129,9 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged
-          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          --add-host=localhost.localdomain:127.0.0.1 -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
+          -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
+          -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -174,8 +175,8 @@ testSuite:
       - - /usr/bin/env
         - bash
         - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 -e RUN_ID
-          -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
+        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
+          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
           -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
       features:
         backingLog: true
