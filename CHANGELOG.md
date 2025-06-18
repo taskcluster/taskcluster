@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v85.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7789](https://github.com/taskcluster/taskcluster/issues/7789)
+Generic Worker: Artifact uploads properly fail on 4xx status codes. Issue first noticed in v84.1.1
+
+### USERS
+
+▶ [patch] [#7786](https://github.com/taskcluster/taskcluster/issues/7786)
+Github service comments back when taskcluster command in issue comment didn't produce any tasks
+
+▶ [patch] [bug 1559766](http://bugzil.la/1559766)
+d2g adds `localhost.localdomain` to /etc/hosts
+
 ## v85.0.0
 
 ### WORKER-DEPLOYERS
