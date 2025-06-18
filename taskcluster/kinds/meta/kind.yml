@@ -26,7 +26,7 @@ tasks:
     description: taskcluster package meta tests
     run:
       command: >-
-        corepack yarn &&
+        corepack yarn &> /dev/null &&
         set -o pipefail && corepack yarn test:meta | cat
   generate:
     dependencies:
@@ -34,7 +34,7 @@ tasks:
     description: check that `corepack yarn generate` was run
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         ./db/test-setup.sh --users &&
         set -o pipefail &&
         corepack yarn generate | cat &&
@@ -47,19 +47,19 @@ tasks:
     description: taskcluster build dry-run
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         corepack yarn build --dry-run
   changelog-pr:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-pull-request]
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         corepack yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         corepack yarn changelog:check

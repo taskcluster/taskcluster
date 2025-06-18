@@ -19,14 +19,14 @@ tasks:
     description: db library tests
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         ./db/test-setup.sh &&
         cd db && corepack yarn test
   upgrade:
-    description: corepack yarn db:upgrade tests
+    description: yarn db:upgrade tests
     run:
       command: >-
-        corepack yarn --immutable &&
+        corepack yarn --immutable &> /dev/null &&
         ./db/test-setup.sh --users &&
         export ADMIN_DB_URL="$TEST_DB_URL" &&
         export USERNAME_PREFIX="test" &&

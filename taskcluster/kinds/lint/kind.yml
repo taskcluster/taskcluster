@@ -20,7 +20,7 @@ tasks:
       docker-image: {in-tree: ci}
     run:
       command: >-
-        corepack yarn &&
+        corepack yarn &> /dev/null &&
         corepack yarn lint
   golang:
     description: go lint
@@ -32,7 +32,7 @@ tasks:
           mount-point: /builds/worker/checkouts
     run:
       command: >-
-        corepack yarn &&
+        corepack yarn &> /dev/null &&
         corepack yarn lint:go
   python:
     description: python flake8
