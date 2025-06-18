@@ -23,9 +23,9 @@ tasks:
     description: UI Browser Tests
     run:
       command: >-
-        {{ corepack yarn --immutable || exit 99; }} &&
+        {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         cd ui &&
-        {{ corepack yarn --immutable || exit 99; }} &&
+        {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         corepack yarn lint &&
         corepack yarn test --coverage &&
         corepack yarn build
