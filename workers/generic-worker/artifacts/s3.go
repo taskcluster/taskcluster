@@ -85,7 +85,7 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 
 	// perform http PUT to upload to S3...
 	httpClient := &http.Client{}
-	formatUrl := func(rawUrl string) (string, error) {
+	formatURL := func(rawUrl string) (string, error) {
 		parsedUrl, err := url.ParseRequestURI(rawUrl)
 		if err != nil {
 			return "", err
@@ -129,8 +129,8 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		return
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
-	formattedUrl, err := formatUrl(response.PutURL)
-	if err != nil {
+	formattedUrl, formatURLErr := formatURL(response.PutURL)
+	if formatURLErr != nil {
 		log.Print("Could not parse PutUrl, something has gone very wrong...")
 	} else {
 		log.Printf("%v put requests issued to %v", putAttempts, formattedUrl)
