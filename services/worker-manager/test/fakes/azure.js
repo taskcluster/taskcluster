@@ -1,8 +1,8 @@
 import { FakeCloud } from './fake.js';
 import { strict as assert } from 'assert';
-import auth from '@azure/ms-rest-nodeauth';
-import armCompute from '@azure/arm-compute';
-import armNetwork from '@azure/arm-network';
+import { ClientSecretCredential } from '@azure/identity';
+import { ComputeManagementClient } from '@azure/arm-compute';
+import { NetworkManagementClient } from '@azure/arm-network';
 
 import msRestAzure from '@azure/ms-rest-azure-js';
 
@@ -20,12 +20,15 @@ export class FakeAzure extends FakeCloud {
   }
 
   _patch() {
-    this.sinon.stub(auth, 'loginWithServicePrincipalSecret').returns('fake-credentials');
-    this.sinon.stub(armCompute, 'ComputeManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(ClientSecretCredential.prototype, 'getToken').resolves({
+      token: 'fake-credentials',
+      expiresOnTimestamp: Date.now() + 3600 * 1000,
+    });
+    this.sinon.stub(ComputeManagementClient).callsFake((creds, subId) => {
       assert.equal(creds, 'fake-credentials');
       return this.computeClient;
     });
-    this.sinon.stub(armNetwork, 'NetworkManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(NetworkManagementClient).callsFake((creds, subId) => {
       assert.equal(creds, 'fake-credentials');
       return this.networkClient;
     });
