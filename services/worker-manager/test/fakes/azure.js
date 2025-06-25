@@ -1,8 +1,8 @@
 import { FakeCloud } from './fake.js';
 import { strict as assert } from 'assert';
-import auth from '@azure/ms-rest-nodeauth';
-import armCompute from '@azure/arm-compute';
-import armNetwork from '@azure/arm-network';
+import { ClientSecretCredential } from '@azure/identity';
+import { ComputeManagementClient } from '@azure/arm-compute';
+import { NetworkManagementClient } from '@azure/arm-network';
 
 import msRestAzure from '@azure/ms-rest-azure-js';
 
@@ -20,14 +20,9 @@ export class FakeAzure extends FakeCloud {
   }
 
   _patch() {
-    this.sinon.stub(auth, 'loginWithServicePrincipalSecret').returns('fake-credentials');
-    this.sinon.stub(armCompute, 'ComputeManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.computeClient;
-    });
-    this.sinon.stub(armNetwork, 'NetworkManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.networkClient;
+    this.sinon.stub(ClientSecretCredential.prototype, 'getToken').resolves({
+      token: 'fake-credentials',
+      expiresOnTimestamp: Date.now() + 3600 * 1000,
     });
     this.sinon.stub(msRestAzure, 'AzureServiceClient').callsFake((creds) => {
       assert.equal(creds, 'fake-credentials');
@@ -46,14 +41,14 @@ export class FakeAzure extends FakeCloud {
       ip: new ResourceManager(this, 'ip', 'azure-ip.yml'),
     };
 
-    this.computeClient = {
-      virtualMachines: this._managers['vm'],
-      disks: this._managers['disk'],
-    };
-    this.networkClient = {
-      networkInterfaces: this._managers['nic'],
-      publicIPAddresses: this._managers['ip'],
-    };
+    this.computeClient = this.sinon.createStubInstance(ComputeManagementClient);
+    this.computeClient.virtualMachines = this._managers['vm'];
+    this.computeClient.disks = this._managers['disk'];
+
+    this.networkClient = this.sinon.createStubInstance(NetworkManagementClient);
+    this.networkClient.networkInterfaces = this._managers['nic'];
+    this.networkClient.publicIPAddresses = this._managers['ip'];
+
     this.restClient = new FakeRestClient(this);
   }
 }

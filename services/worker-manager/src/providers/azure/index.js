@@ -6,9 +6,9 @@ import crypto from 'crypto';
 import got from 'got';
 import { rootCertificates } from 'tls';
 import { WorkerPool, Worker } from '../../data.js';
-import auth from '@azure/ms-rest-nodeauth';
-import armCompute from '@azure/arm-compute';
-import armNetwork from '@azure/arm-network';
+import { ClientSecretCredential } from '@azure/identity';
+import { ComputeManagementClient } from '@azure/arm-compute';
+import { NetworkManagementClient } from '@azure/arm-network';
 import msRestJS from '@azure/ms-rest-js';
 import msRestAzure from '@azure/ms-rest-azure-js';
 import { ApiError, Provider } from '../provider.js';
@@ -149,9 +149,9 @@ export class AzureProvider extends Provider {
       }
     });
 
-    let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
-    this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
-    this.networkClient = new armNetwork.NetworkManagementClient(credentials, subscriptionId);
+    let credentials = new ClientSecretCredential(domain, clientId, secret);
+    this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
     this.restClient = new msRestAzure.AzureServiceClient(credentials);
   }
 
