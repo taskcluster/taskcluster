@@ -4,10 +4,15 @@ package main
 
 import (
 	"log"
+
+	gwruntime "github.com/taskcluster/taskcluster/v85/workers/generic-worker/runtime"
 )
 
 func defaultTasksDir() string {
 	return "/Users"
+}
+
+func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 }
 
 func platformTargets(arguments map[string]any) ExitCode {

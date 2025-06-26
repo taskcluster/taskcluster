@@ -164,9 +164,6 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
-}
-
 func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
 	if dir == "" || newOwnerUsername == "" || cache == nil {
 		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
