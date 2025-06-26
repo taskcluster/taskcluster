@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v85/internal/scopes"
-	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v86/internal/scopes"
+	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/process"
 )
 
 type (

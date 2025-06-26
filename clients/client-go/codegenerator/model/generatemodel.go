@@ -11,8 +11,8 @@ import (
 	"regexp"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster/v85/clients/client-go/codegenerator/model"
-	"github.com/taskcluster/taskcluster/v85/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v86/clients/client-go/codegenerator/model"
+	"github.com/taskcluster/taskcluster/v86/tools/jsonschema2go"
 )
 
 var (

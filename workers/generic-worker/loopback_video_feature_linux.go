@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v85/internal/scopes"
-	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v86/internal/scopes"
+	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/host"
 )
 
 type LoopbackVideoFeature struct {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v85/internal/scopes"
-	"github.com/taskcluster/taskcluster/v85/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v86/internal/scopes"
+	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/fileutil"
 )
 
 var metadataFilename = filepath.Join(cwd, "generic-worker-metadata.json")

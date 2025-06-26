@@ -3,6 +3,43 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v86.0.0
+
+### USERS
+
+▶ [MAJOR] [#7356](https://github.com/taskcluster/taskcluster/issues/7356)
+Generic Worker multiuser engine on macOS now executes all task commands via a
+Launch Agent running in the context of the desktop session. This means that
+task commands now have full access to desktop session services, such as the
+clipboard.
+
+# Deployment Instructions - macOS
+
+On macOS it is *essential* that after updating the generic-worker binary,
+before starting the worker up, that the file `next-task-user.json` is deleted.
+This file should only be deleted when upgrading the worker, not every time the
+worker runs. This will cause Generic Worker to create new task users, which is
+needed for the launch agent to work. Otherwise the new Generic Worker would try
+to use task users created by the old Generic Worker user, which would not work.
+Note, the full path to this file can be seen in the generic worker logs, if you
+are not sure where to find it on the file system.
+
+Note, this only needs to be done once when installing the new version of
+Generic Worker. After that, Generic Worker will continue to mange this file
+itself as normal.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump newrelic from 7.5.2 to 12.20.0 (80c25f9efb)
+* build(deps): bump pbkdf2 from 3.1.2 to 3.1.3 in /clients/client-web (790be611e0)
+* build(deps): bump pbkdf2 from 3.1.2 to 3.1.3 in /ui (7a87b74d2a)
+* build(deps): bump urllib3 from 2.2.2 to 2.5.0 in /taskcluster (32210df987)
+
+</details>
+
 ## v85.0.1
 
 ### WORKER-DEPLOYERS

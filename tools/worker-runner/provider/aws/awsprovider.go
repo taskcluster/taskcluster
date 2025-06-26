@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v85/clients/client-go"
-	"github.com/taskcluster/taskcluster/v85/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v85/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v85/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
+	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v86/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/meta-data/spot/termination-time"
