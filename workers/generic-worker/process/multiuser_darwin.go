@@ -126,34 +126,44 @@ func (c *Command) Start() error {
 	c.conn = conn
 
 	fds := []int{}
+	gofuncs := []func(){}
 
 	if c.Stdin != nil {
 		request.Stdin = true
-		stdinReader, stdinWriter, _ := os.Pipe()
-		go func() {
-			defer stdinWriter.Close()
+		stdinReader, stdinWriter, errPipe := os.Pipe()
+		if errPipe != nil {
+			return fmt.Errorf("failed to create stdin pipe: %w", errPipe)
+		}
+		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(stdinWriter, c.Stdin)
-		}()
+			stdinWriter.Close()
+		})
 		fds = append(fds, int(stdinReader.Fd()))
 	}
 
 	if c.Stdout != nil {
 		request.Stdout = true
-		stdoutReader, stdoutWriter, _ := os.Pipe()
-		go func() {
-			defer stdoutReader.Close()
+		stdoutReader, stdoutWriter, errPipe := os.Pipe()
+		if errPipe != nil {
+			return fmt.Errorf("failed to create stdout pipe: %w", errPipe)
+		}
+		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stdout, stdoutReader)
-		}()
+			stdoutReader.Close()
+		})
 		fds = append(fds, int(stdoutWriter.Fd()))
 	}
 
 	if c.Stderr != nil {
 		request.Stderr = true
-		stderrReader, stderrWriter, _ := os.Pipe()
-		go func() {
-			defer stderrReader.Close()
+		stderrReader, stderrWriter, errPipe := os.Pipe()
+		if errPipe != nil {
+			return fmt.Errorf("failed to create stderr pipe: %w", errPipe)
+		}
+		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stderr, stderrReader)
-		}()
+			stderrReader.Close()
+		})
 		fds = append(fds, int(stderrWriter.Fd()))
 	}
 
@@ -172,6 +182,12 @@ func (c *Command) Start() error {
 	_, _, err = conn.(*net.UnixConn).WriteMsgUnix(payload, rights, nil)
 	if err != nil {
 		return fmt.Errorf("failed to write to unix socket: %w", err)
+	}
+
+	// Only start io/copy go routines after writing FDs to the socket, to avoid
+	// prematurely consuming/publishing data
+	for _, f := range gofuncs {
+		go f()
 	}
 
 	log.Print("Request sent, reading response")
