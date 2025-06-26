@@ -1,3 +1,5 @@
+//go:build insecure
+
 package main
 
 import (
