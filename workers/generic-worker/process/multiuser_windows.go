@@ -121,10 +121,10 @@ func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, en
 }
 
 func (c *Command) Kill() (killOutput string, err error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 	// abort even if process hasn't started
 	close(c.abort)
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
 		return "", nil
