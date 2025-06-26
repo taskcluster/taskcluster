@@ -38,6 +38,7 @@ type (
 		KernelTime  time.Duration
 		UserTime    time.Duration
 		Usage       *ResourceUsage
+		ExitCode    int
 	}
 
 	ResourceUsage struct {
@@ -54,20 +55,24 @@ type (
 //	-2 if the process crashed
 //	-3 it could not be established what happened
 //	-4 if process was aborted
-func (r *Result) ExitCode() int {
-	if r.Aborted {
-		return -4
-	}
-	if r.SystemError != nil {
-		return -2
-	}
-	if r.ExitError == nil {
-		return 0
-	}
-	if status, ok := r.ExitError.Sys().(syscall.WaitStatus); ok {
-		return status.ExitStatus() // -1 if not exited
-	}
-	return -3
+func (r *Result) SetExitCode() {
+	log.Print("Setting exit code")
+	c := func() int {
+		if r.Aborted {
+			return -4
+		}
+		if r.SystemError != nil {
+			return -2
+		}
+		if r.ExitError == nil {
+			return 0
+		}
+		if status, ok := r.ExitError.Sys().(syscall.WaitStatus); ok {
+			return status.ExitStatus() // -1 if not exited
+		}
+		return -3
+	}()
+	r.ExitCode = c
 }
 
 func (c *Command) Execute() (r *Result) {
@@ -105,6 +110,7 @@ func (c *Command) Execute() (r *Result) {
 	case err = <-exitErr:
 		r.UserTime = c.ProcessState.UserTime()
 		r.KernelTime = c.ProcessState.SystemTime()
+		r.SetExitCode()
 		if err != nil {
 			if exiterr, ok := err.(*exec.ExitError); ok {
 				r.ExitError = exiterr
@@ -152,7 +158,7 @@ func (r *Result) String() string {
 		"                     Kernel Time: %v\n"+
 		"                       Wall Time: %v\n%v"+
 		"                          Result: %v",
-		r.ExitCode(),
+		r.ExitCode,
 		r.UserTime,
 		r.KernelTime,
 		r.Duration,

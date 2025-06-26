@@ -462,8 +462,8 @@ func (taskMount *TaskMount) shouldPurgeCaches() bool {
 		return false
 	}
 
-	if slices.Contains(taskMount.task.Payload.OnExitStatus.PurgeCaches, int64(taskMount.task.result.ExitCode())) {
-		taskMount.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode())
+	if slices.Contains(taskMount.task.Payload.OnExitStatus.PurgeCaches, int64(taskMount.task.result.ExitCode)) {
+		taskMount.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode)
 		return true
 	}
 

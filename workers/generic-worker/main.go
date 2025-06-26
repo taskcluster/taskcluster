@@ -798,9 +798,9 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	switch {
 	case task.result.Failed():
-		if task.IsIntermittentExitCode(int64(task.result.ExitCode())) {
+		if task.IsIntermittentExitCode(int64(task.result.ExitCode)) {
 			return &CommandExecutionError{
-				Cause:      fmt.Errorf("task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode()),
+				Cause:      fmt.Errorf("task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", task.result.ExitCode),
 				Reason:     intermittentTask,
 				TaskStatus: errored,
 			}
