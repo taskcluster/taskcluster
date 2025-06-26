@@ -13,3 +13,15 @@ func enableTaskFeatures() string {
           enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
                                             used in the task payload. [default: true]`
 }
+
+func exitCode83() string {
+	return ""
+}
+
+func customTargetsSummary() string {
+	return ""
+}
+
+func customTargets() string {
+	return ""
+}

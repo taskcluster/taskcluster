@@ -311,3 +311,7 @@ func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 	}
 	m["config"].(map[string]any)["headlessTasks"] = c.HeadlessTasks
 }
+
+func engineInit() {
+	process.Headless = config.HeadlessTasks
+}
