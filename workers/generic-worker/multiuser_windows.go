@@ -375,15 +375,12 @@ func platformTargets(arguments map[string]any) ExitCode {
 	case arguments["grant-winsta-access"]:
 		sid := arguments["--sid"].(string)
 		err := GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid)
-		if err != nil {
-			log.Printf("Error granting %v full control of interactive windows station and desktop:", sid)
-			log.Printf("%v", err)
-			return CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP
-		}
-		return 0
+		exitOnError(CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP, err, "Error granting %v full control of interactive windows station and desktop:", sid)
+	default:
+		log.Print("Internal error - no target found to run, yet command line parsing successful")
+		return INTERNAL_ERROR
 	}
-	log.Print("Internal error - no target found to run, yet command line parsing successful")
-	return INTERNAL_ERROR
+	return 0
 }
 
 func CreateRunGenericWorkerBatScript(batScriptFilePath string, extraOpts string) error {
