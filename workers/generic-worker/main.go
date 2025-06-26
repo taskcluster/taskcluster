@@ -388,6 +388,7 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("Invalid config: %v", err)
 		return INVALID_CONFIG
 	}
+	engineInit()
 
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)

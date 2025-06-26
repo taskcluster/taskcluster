@@ -228,3 +228,6 @@ func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 
 func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 }
+
+func engineInit() {
+}

@@ -11,6 +11,10 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
+var (
+	Headless bool = false
+)
+
 func (r *Result) Succeeded() bool {
 	return r.SystemError == nil && r.ExitError == nil && !r.Aborted
 }

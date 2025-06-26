@@ -99,10 +99,17 @@ func ReadFrame(r io.Reader) ([]byte, error) {
 	return buf, nil
 }
 
+// shouldNotUseAgent returns true if c should not be started via the Generic
+// Worker Launch Agent, but instead should be launched as a regular subprocess.
+func (c *Command) shouldNotUseAgent() bool {
+	return Headless || c.SysProcAttr == nil || c.SysProcAttr.Credential == nil || c.SysProcAttr.Credential.Uid == 0
+}
+
 func (c *Command) Start() error {
 
-	// If command is meant to run as current user, don't send it to the launch agent...
-	if c.SysProcAttr == nil || c.SysProcAttr.Credential == nil || c.SysProcAttr.Credential.Uid == 0 {
+	// If command is meant to run as current user, or in headless mode (no
+	// desktop => no launch agent) don't send it to the launch agent...
+	if c.shouldNotUseAgent() {
 		return c.Cmd.Start()
 	}
 
@@ -209,8 +216,8 @@ func (c *Command) Start() error {
 }
 
 func (c *Command) Wait() error {
-	// If command is meant to run as current user, don't send it to the launch agent...
-	if c.SysProcAttr == nil || c.SysProcAttr.Credential == nil || c.SysProcAttr.Credential.Uid == 0 {
+	// If not using Generic Worker launch agent, use the standard library Wait method instead
+	if c.shouldNotUseAgent() {
 		return c.Cmd.Wait()
 	}
 	defer c.conn.Close()
