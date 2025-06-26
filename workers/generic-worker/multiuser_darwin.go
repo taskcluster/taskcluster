@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -24,6 +25,53 @@ func defaultTasksDir() string {
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+
+	homeDir := filepath.Join("/Users", nextTaskUser.Name)
+	logPath := filepath.Join(homeDir, "gw-launch-agent.log")
+	libraryDir := filepath.Join(homeDir, "Library")
+	agentDir := filepath.Join(libraryDir, "LaunchAgents")
+	plistPath := filepath.Join(agentDir, "com.mozilla.genericworker.launchagent.plist")
+
+	plist := `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.mozilla.genericworker.launchagent</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>` + gwruntime.GenericWorkerBinary() + `</string>
+        <string>launch-agent</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>` + logPath + `</string>
+    <key>StandardErrorPath</key>
+    <string>` + logPath + `</string>
+</dict>
+</plist>`
+
+	if err := os.MkdirAll(agentDir, 0755); err != nil {
+		panic(err)
+	}
+
+	if err := os.WriteFile(plistPath, []byte(plist), 0644); err != nil {
+		panic(err)
+	}
+
+	for _, path := range []string{
+		libraryDir,
+		agentDir,
+		plistPath,
+	} {
+		if err := makeFileOrDirReadWritableForUser(false, path, nextTaskUser); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func platformTargets(arguments map[string]any) ExitCode {
