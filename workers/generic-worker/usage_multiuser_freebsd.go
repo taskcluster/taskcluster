@@ -10,6 +10,10 @@ func enableTaskFeatures() string {
                                             used in the task payload. [default: true]`
 }
 
+func exitCode83() string {
+	return ""
+}
+
 func customTargetsSummary() string {
 	return ""
 }

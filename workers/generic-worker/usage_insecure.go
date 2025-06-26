@@ -14,6 +14,10 @@ func exitCode82() string {
 	return ""
 }
 
+func exitCode83() string {
+	return ""
+}
+
 func customTargetsSummary() string {
 	return ""
 }
