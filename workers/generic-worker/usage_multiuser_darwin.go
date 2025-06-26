@@ -1,4 +1,4 @@
-//go:build multiuser && (darwin || freebsd)
+//go:build multiuser
 
 package main
 
@@ -8,4 +8,12 @@ func enableTaskFeatures() string {
                                             task payload. [default: true]
           enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
                                             used in the task payload. [default: true]`
+}
+
+func customTargetsSummary() string {
+	return ""
+}
+
+func customTargets() string {
+	return ""
 }

@@ -13,3 +13,11 @@ func exitCode77() string {
 func exitCode82() string {
 	return ""
 }
+
+func customTargetsSummary() string {
+	return ""
+}
+
+func customTargets() string {
+	return ""
+}
