@@ -135,9 +135,13 @@ func (c *Command) Start() error {
 	fds := []int{}
 	gofuncs := []func(){}
 
+	// declare outside of if statements so that file descriptors don't get garbage collected
+	var stdinReader, stdinWriter, stdoutReader, stdoutWriter, stderrReader, stderrWriter *os.File
+	var errPipe error
+
 	if c.Stdin != nil {
 		request.Stdin = true
-		stdinReader, stdinWriter, errPipe := os.Pipe()
+		stdinReader, stdinWriter, errPipe = os.Pipe()
 		if errPipe != nil {
 			return fmt.Errorf("failed to create stdin pipe: %w", errPipe)
 		}
@@ -150,7 +154,7 @@ func (c *Command) Start() error {
 
 	if c.Stdout != nil {
 		request.Stdout = true
-		stdoutReader, stdoutWriter, errPipe := os.Pipe()
+		stdoutReader, stdoutWriter, errPipe = os.Pipe()
 		if errPipe != nil {
 			return fmt.Errorf("failed to create stdout pipe: %w", errPipe)
 		}
@@ -163,7 +167,7 @@ func (c *Command) Start() error {
 
 	if c.Stderr != nil {
 		request.Stderr = true
-		stderrReader, stderrWriter, errPipe := os.Pipe()
+		stderrReader, stderrWriter, errPipe = os.Pipe()
 		if errPipe != nil {
 			return fmt.Errorf("failed to create stderr pipe: %w", errPipe)
 		}
