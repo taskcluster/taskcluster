@@ -26,7 +26,7 @@ func listenOnRandomPort() (net.Listener, uint16, error) {
 		return nil, 0, err
 	}
 
-	port, err := strconv.Atoi(portStr)
+	port, err := strconv.ParseUint(portStr, 10, 16)
 	if err != nil {
 		return nil, 0, err
 	}

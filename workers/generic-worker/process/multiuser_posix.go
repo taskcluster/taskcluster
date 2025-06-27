@@ -28,12 +28,12 @@ func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *Platform
 		return nil, fmt.Errorf("failed to lookup user: %w", err)
 	}
 
-	uid, err := strconv.Atoi(usr.Uid)
+	uid, err := strconv.ParseUint(usr.Uid, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert UID to int: %w", err)
 	}
 
-	gid, err := strconv.Atoi(usr.Gid)
+	gid, err := strconv.ParseUint(usr.Gid, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert GID to int: %w", err)
 	}
@@ -45,7 +45,7 @@ func TaskUserPlatformData(u *gwruntime.OSUser, headlessTasks bool) (pd *Platform
 
 	var gids []uint32
 	for _, gidStr := range groupIDs {
-		gid, err := strconv.Atoi(gidStr)
+		gid, err := strconv.ParseUint(gidStr, 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert GID to int: %w", err)
 		}
