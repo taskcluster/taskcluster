@@ -109,7 +109,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())
@@ -149,7 +149,7 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())
