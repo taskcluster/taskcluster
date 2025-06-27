@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v86.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker: Fix for intermittent "sendmsg: bad file descriptor" on macOS multiuser.
+
 ## v86.0.0
 
 ### USERS
