@@ -4,6 +4,7 @@ package main
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcqueue"
@@ -37,7 +38,8 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	t.Helper()
 	runningTests = true
-	testConfig.HeadlessTasks = true
+	// macOS CI tests to not run in headless in order to exercise the launch agent as much as possible
+	testConfig.HeadlessTasks = (runtime.GOOS != "darwin")
 	testConfig.EnableRunTaskAsCurrentUser = true
 	testConfig.EnableD2G(t)
 	// Needed for tests that don't call RunWorker()
