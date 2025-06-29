@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
 	"time"
 
@@ -148,6 +149,9 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(stdinWriter, c.Stdin)
 			stdinWriter.Close()
+			// not sure if this is needed, but let's make sure both ends of the
+			// pipe are not garbage collected until we've finished using them!
+			runtime.KeepAlive(stdinReader)
 		})
 		fds = append(fds, int(stdinReader.Fd()))
 	}
@@ -161,6 +165,9 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stdout, stdoutReader)
 			stdoutReader.Close()
+			// not sure if this is needed, but let's make sure both ends of the
+			// pipe are not garbage collected until we've finished using them!
+			runtime.KeepAlive(stdoutWriter)
 		})
 		fds = append(fds, int(stdoutWriter.Fd()))
 	}
@@ -174,6 +181,9 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stderr, stderrReader)
 			stderrReader.Close()
+			// not sure if this is needed, but let's make sure both ends of the
+			// pipe are not garbage collected until we've finished using them!
+			runtime.KeepAlive(stderrWriter)
 		})
 		fds = append(fds, int(stderrWriter.Fd()))
 	}
