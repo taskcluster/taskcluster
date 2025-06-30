@@ -41,7 +41,7 @@ func TestLocalExposeHTTP(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 
 	exposer := makeLocalExposer(t)
 	exposure, err := exposer.ExposeHTTP(uint16(testPort))
