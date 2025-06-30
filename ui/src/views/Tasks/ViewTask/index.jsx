@@ -131,43 +131,14 @@ export default class ViewTask extends Component {
     const {
       data: { task },
     } = props;
-    const taskActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
 
     if (taskId !== state.previousTaskId && task) {
-      const { taskActions: actions } = task;
-
       updateTaskIdHistory(taskId);
 
-      actions &&
-        actions.actions.forEach(action => {
-          const schema = action.schema || {};
-
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (
-            task &&
-            task.tags &&
-            taskInContext(action.context, task.tags) &&
-            !taskActions.some(({ name }) => name === action.name)
-          ) {
-            taskActions.push(action);
-          } else {
-            return;
-          }
-
-          actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
-          actionData[action.name] = {
-            action,
-          };
-        });
       const caches = getCachesFromTask(task);
 
       return {
-        taskActions,
-        actionInputs,
-        actionData,
+        dialogOpen: false,
         previousTaskId: taskId,
         caches,
         selectedCaches: new Set(caches),
@@ -177,12 +148,42 @@ export default class ViewTask extends Component {
     return null;
   }
 
+  getTaskActionsData() {
+    const taskActions = [];
+    const actionInputs = {};
+    const actionData = {};
+    const {
+      data: { task },
+    } = this.props;
+
+    if (Array.isArray(task?.taskActions?.actions)) {
+      task?.taskActions?.actions.forEach(action => {
+        // if an action with this name has already been selected,
+        // don't consider this version
+        if (
+          task &&
+          task.tags &&
+          taskInContext(action.context, task.tags) &&
+          !taskActions.some(({ name }) => name === action.name)
+        ) {
+          taskActions.push(action);
+        } else {
+          return;
+        }
+
+        const schema = action.schema || {};
+
+        actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
+        actionData[action.name] = { action };
+      });
+    }
+
+    return { taskActions, actionInputs, actionData };
+  }
+
   state = {
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
-    taskActions: [],
-    actionInputs: {},
-    actionData: {},
     selectedAction: null,
     dialogOpen: false,
     actionLoading: false,
@@ -200,7 +201,7 @@ export default class ViewTask extends Component {
       data: { task, subscribeToMore, refetch },
     } = this.props;
 
-    if (task && taskId !== task) {
+    if (task && taskId !== task.taskId) {
       this.subscribe(task.taskId, subscribeToMore, refetch);
     }
   }
@@ -292,7 +293,7 @@ export default class ViewTask extends Component {
       client,
       data: { task },
     } = this.props;
-    const { actionInputs, actionData } = this.state;
+    const { actionInputs, actionData } = this.getTaskActionsData();
     const form = actionInputs[name];
     const { action } = actionData[name];
     const taskId = await submitTaskAction({
@@ -872,14 +873,12 @@ export default class ViewTask extends Component {
     } = this.props;
     const {
       dialogActionProps,
-      actionData,
-      taskActions,
       selectedAction,
       dialogOpen,
-      actionInputs,
       actionLoading,
       dialogError,
     } = this.state;
+    const { actionData, taskActions, actionInputs } = this.getTaskActionsData();
     let tags;
 
     if (task) {
