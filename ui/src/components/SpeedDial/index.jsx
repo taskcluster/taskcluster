@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
@@ -17,23 +18,36 @@ const styles = withStyles(theme => ({
  * Render a dynamically expanding set of floating action buttons.
  */
 function SpeedDial(props) {
-  const { classes, children, className, ...rest } = props;
+  const { classes, children, className, location, ...rest } = props;
   const [open, setOpen] = useState(false);
-  let timeout;
+  const timeout = useRef(null);
 
   function resetTimeout() {
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+      timeout.current = null;
     }
   }
+
+  // hide upon navigation
+  useEffect(() => {
+    return () => {
+      resetTimeout();
+      setOpen(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    resetTimeout();
+    setOpen(false);
+  }, [location.pathname]);
 
   function handleClose(evt) {
     if (evt.type === 'click') {
       setOpen(false);
     } else {
       resetTimeout();
-      timeout = setTimeout(() => setOpen(false), 4000);
+      timeout.current = setTimeout(() => setOpen(false), 4000);
     }
   }
 
@@ -48,7 +62,7 @@ function SpeedDial(props) {
 
   function handleMouseLeave() {
     if (open) {
-      timeout = setTimeout(() => setOpen(false), 4000);
+      timeout.current = setTimeout(() => setOpen(false), 4000);
     }
   }
 
@@ -79,4 +93,4 @@ SpeedDial.propTypes = {
   children: oneOfType([arrayOf(node), node]).isRequired,
 };
 
-export default styles(SpeedDial);
+export default withRouter(styles(SpeedDial));
