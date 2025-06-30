@@ -3,6 +3,22 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v86.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker: prefer `strconv.ParseUint()` over `strconv.Atoi()` when resulting int is converted to an int type of smaller size to prevent unexpected values.
+
+### USERS
+
+▶ [patch] [#6951](https://github.com/taskcluster/taskcluster/issues/6951)
+Fixes UI issue with state when tasks change. Sometimes actions could be fired against wrong task group.
+
+▶ [patch]
+Generic Worker multiuser on macOS now ensures finalisers are not called on
+launch agent pipes while they are still in use.
+
 ## v86.0.1
 
 ### WORKER-DEPLOYERS
