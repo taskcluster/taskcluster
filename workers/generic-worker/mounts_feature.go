@@ -523,7 +523,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
 		err := MkdirAll(taskMount, parentDir)
 		if err != nil {
-			return fmt.Errorf("[mounts] Not able to create directory %v: %v", parentDir, err)
+			return fmt.Errorf("not able to create directory %v: %v", parentDir, err)
 		}
 		err = RenameCrossDevice(src, target)
 		if err != nil {
@@ -561,7 +561,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			// no preloaded content => just create dir in place
 			err := MkdirAll(taskMount, target)
 			if err != nil {
-				return fmt.Errorf("[mounts] Not able to create directory %v: %v", target, err)
+				return fmt.Errorf("not able to create directory %v: %v", target, err)
 			}
 		}
 	}
