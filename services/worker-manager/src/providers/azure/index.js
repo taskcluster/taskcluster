@@ -6,11 +6,7 @@ import crypto from 'crypto';
 import got from 'got';
 import { rootCertificates } from 'tls';
 import { WorkerPool, Worker } from '../../data.js';
-import { ClientSecretCredential } from '@azure/identity';
-import { ComputeManagementClient } from '@azure/arm-compute';
-import { NetworkManagementClient } from '@azure/arm-network';
-import msRestJS from '@azure/ms-rest-js';
-import msRestAzure from '@azure/ms-rest-azure-js';
+import azureApi from './azure-api.js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
@@ -149,10 +145,10 @@ export class AzureProvider extends Provider {
       }
     });
 
-    let credentials = new ClientSecretCredential(domain, clientId, secret);
-    this.computeClient = new ComputeManagementClient(credentials, subscriptionId);
-    this.networkClient = new NetworkManagementClient(credentials, subscriptionId);
-    this.restClient = new msRestAzure.AzureServiceClient(credentials);
+    let credentials = new azureApi.ClientSecretCredential(domain, clientId, secret);
+    this.computeClient = new azureApi.ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new azureApi.NetworkManagementClient(credentials, subscriptionId);
+    this.restClient = new azureApi.AzureServiceClient(credentials);
   }
 
   /**
@@ -633,7 +629,7 @@ export class AzureProvider extends Provider {
       // NB: we don't respect azure's Retry-After header, we assume our iteration
       // will wait long enough, and we keep trying
       // see here: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations
-      req = new msRestJS.WebResource(op, 'GET');
+      req = new azureApi.msRestJS.WebResource(op, 'GET');
       // sendLongRunningRequest polls until finished but this is just reading
       // the status of an operation so it shouldn't block long
       // it's ok if we hit an error here, that will trigger resource teardown
