@@ -4784,12 +4784,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-loose@npm:^8.5.1":
-  version: 8.5.1
-  resolution: "acorn-loose@npm:8.5.1"
+"acorn-loose@npm:^8.5.0":
+  version: 8.5.0
+  resolution: "acorn-loose@npm:8.5.0"
   dependencies:
     acorn: "npm:^8.14.0"
-  checksum: 10c0/f3aee342516bc8b2a9094ebe83c7a90b54d6fd24ff0e1bcee36ca18aa3aa199579784e7ca9dff522608322e82749086f4e161635040897306e8959f1cf67bc6e
+  checksum: 10c0/221df4224ccad267d46775323d956636dd0e4ef263d18450258daff1a33d99e8e00e6214465bdc658fc961cc77fc60cef2f0f4710ec93543ce179f287da0ea80
   languageName: node
   linkType: hard
 
@@ -13634,7 +13634,7 @@ __metadata:
     "@sentry/node": "npm:^6.0.0"
     "@slack/web-api": "npm:^6.11.0"
     "@types/pg": "npm:^8.15.4"
-    acorn-loose: "npm:^8.5.1"
+    acorn-loose: "npm:^8.5.0"
     acorn-walk: "npm:^8.3.4"
     ajv: "npm:^8.17.1"
     ajv-formats: "npm:^2.1.1"

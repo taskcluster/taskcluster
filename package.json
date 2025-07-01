@@ -134,7 +134,7 @@
     "@aws-sdk/client-sns": "^3.840.0",
     "@aws-sdk/client-sqs": "^3.840.0",
     "@types/pg": "^8.15.4",
-    "acorn-loose": "^8.5.1",
+    "acorn-loose": "^8.5.0",
     "acorn-walk": "^8.3.4",
     "apollo-link-ws": "^1.0.20",
     "app-root-dir": "^1.0.2",
