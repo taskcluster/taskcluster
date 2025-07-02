@@ -148,7 +148,6 @@ export class AzureProvider extends Provider {
     let credentials = new azureApi.ClientSecretCredential(domain, clientId, secret);
     this.computeClient = new azureApi.ComputeManagementClient(credentials, subscriptionId);
     this.networkClient = new azureApi.NetworkManagementClient(credentials, subscriptionId);
-    this.restClient = new azureApi.AzureServiceClient(credentials);
   }
 
   /**
@@ -616,67 +615,6 @@ export class AzureProvider extends Provider {
   }
 
   /**
-   * Checks the status of ongoing Azure operations
-   * Returns true if the operation is in progress, false otherwise
-   *
-   * op: a URL for tracking the ongoing status of an Azure operation
-   * errors: a list that will have any errors found for that operation appended to it
-   */
-  async handleOperation({ op, errors, monitor, worker }) {
-    monitor.debug({ message: 'handling operation', op });
-    let req, resp;
-    try {
-      // NB: we don't respect azure's Retry-After header, we assume our iteration
-      // will wait long enough, and we keep trying
-      // see here: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations
-      req = new azureApi.msRestJS.WebResource(op, 'GET');
-      // sendLongRunningRequest polls until finished but this is just reading
-      // the status of an operation so it shouldn't block long
-      // it's ok if we hit an error here, that will trigger resource teardown
-      resp = await this._enqueue('opRead', () => this.restClient.sendLongRunningRequest(req));
-    } catch (err) {
-      monitor.debug({ message: 'reading operation failed', op, error: err.message });
-      // this was a connection error of some sort, so we don't really know anything about
-      // the status of the operation.  Return true on the assumption that this was a transient
-      // connection failure and the operation is probably still running.  We'll come back
-      // and poll the operation again on the next checkWorker call.
-      return true;
-    }
-    // Rest API has different error semantics than the SDK
-    if (resp.status === 404) {
-      // operation not found because it has either expired or does not exist
-      // nothing more to do
-      monitor.debug({ message: 'operation does not exist', op });
-      return false;
-    }
-
-    let body = resp.parsedBody;
-    if (body) {
-      // status is guaranteed to exist if the operation was found
-      if (body.status === 'InProgress') {
-        monitor.debug({ message: 'operation in progress', op });
-        return true;
-      }
-      if (body.error) {
-        monitor.debug({ message: 'operation failed', op, error: body.error.message });
-        errors.push({
-          kind: 'operation-error',
-          title: 'Operation Error',
-          description: body.error.message,
-          extra: {
-            code: body.error.code,
-          },
-          launchConfigId: worker?.launchConfigId ?? undefined,
-        });
-        return false;
-      }
-    }
-
-    monitor.debug({ message: 'operation complete', op });
-    return false;
-  }
-
-  /**
    * provisionResource generically provisions individual resources
    * Handles cases where:
    *  we have not yet created a resource and need to create one,
@@ -718,15 +656,11 @@ export class AzureProvider extends Provider {
         if (failProvisioningStates.has(resource.provisioningState)) {
           // the resource was created but not successfully (how Microsoft!), so
           // bail out of the whole provisioning process
-          await worker.update(this.db, worker => {
-            worker.providerData[resourceType].operation = undefined;
-          });
           await this.removeWorker({ worker, reason: `${resourceType} has state ${resource.provisioningState}` });
         } else {
           // we found the resource
           await worker.update(this.db, worker => {
             worker.providerData[resourceType].id = resource.id;
-            worker.providerData[resourceType].operation = undefined;
             modifyFn(worker, resource);
           });
         }
@@ -737,27 +671,6 @@ export class AzureProvider extends Provider {
         if (err.statusCode !== 404) {
           throw err;
         }
-        // if we've made the request
-        // we should have an operation, check status
-        if (typeData.operation) {
-          let op = await this.handleOperation({
-            op: typeData.operation,
-            errors: this.errors[worker.workerPoolId],
-            monitor,
-            worker,
-          });
-          if (!op) {
-            // if the operation has expired or does not exist
-            // chances are our instance has been deleted off band
-            await worker.update(this.db, worker => {
-              worker.providerData[resourceType].operation = undefined;
-            });
-            await this.removeWorker({ worker, reason: 'operation expired' });
-          }
-          // operation is still in progress or has failed, so don't try to
-          // create the resource
-          return worker;
-        }
       }
     }
 
@@ -765,15 +678,11 @@ export class AzureProvider extends Provider {
     if (!typeData.id) {
       debug('creating resource');
       // we need to create the resource
-      let resourceRequest = await this._enqueue('query', () => client.beginCreateOrUpdate(
+      await this._enqueue('query', () => client.beginCreateOrUpdateAndWait(
         worker.providerData.resourceGroupName,
         typeData.name,
         { ...resourceConfig, tags: worker.providerData.tags },
       ));
-      // track operation
-      await worker.update(this.db, worker => {
-        worker.providerData[resourceType].operation = resourceRequest.getPollState().azureAsyncOperationHeaderValue;
-      });
     }
 
     return worker;
@@ -1171,10 +1080,8 @@ export class AzureProvider extends Provider {
           // resource has been deleted and isn't in the API or never existed
           await worker.update(this.db, worker => {
             if (index !== undefined) {
-              worker.providerData[resourceType][index].operation = undefined;
               worker.providerData[resourceType][index].id = false;
             } else {
-              worker.providerData[resourceType].operation = undefined;
               worker.providerData[resourceType].id = false;
             }
           });
@@ -1191,7 +1098,7 @@ export class AzureProvider extends Provider {
     if (typeData.id || shouldDelete) {
       // we need to delete the resource
       debug('deleting resource');
-      let deleteRequest = await this._enqueue('query', () => client.beginDeleteMethod(
+      await this._enqueue('query', () => client.beginDeleteAndWait(
         worker.providerData.resourceGroupName,
         typeData.name,
       ));
@@ -1205,10 +1112,6 @@ export class AzureProvider extends Provider {
           resource = worker.providerData[resourceType];
         }
         resource.id = false;
-        let pollState = deleteRequest.getPollState();
-        if (_.has(pollState, 'azureAsyncOperationHeaderValue')) {
-          resource.operation = pollState.azureAsyncOperationHeaderValue;
-        }
       });
     }
     return false;
