@@ -256,7 +256,7 @@ func (c *Client) reconnect() {
 
 	sessionConfig := wsmux.Config{
 		// Log:              c.logger,
-		StreamBufferSize: 4 * 1024,
+		StreamBufferSize: 32 * 1024,
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
 	c.url.Store(url)
