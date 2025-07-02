@@ -8,7 +8,7 @@ import slugid from 'slugid';
 /**
  * Fake the Azure SDK.
  *
- * Instances have `computeClient`, `networkClient`, and `restClient` properties
+ * Instances have `computeClient`, `networkClient` properties
  * that allow access to fakes for those interfaces.
  */
 export class FakeAzure extends FakeCloud {
@@ -17,10 +17,6 @@ export class FakeAzure extends FakeCloud {
   }
 
   _patch() {
-    this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {
-      assert.equal(creds?.getToken()?.token, 'fake-credentials');
-      return this.restClient;
-    });
     this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.computeClient;
@@ -56,8 +52,6 @@ export class FakeAzure extends FakeCloud {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
     };
-
-    this.restClient = new FakeRestClient(this);
   }
 }
 
@@ -76,12 +70,6 @@ class ResourceRequest {
     this.parameters = parameters;
     this.status = 'InProgress';
     this.error = undefined;
-  }
-
-  getPollState() {
-    return {
-      azureAsyncOperationHeaderValue: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
-    };
   }
 }
 
@@ -105,7 +93,7 @@ class ResourceManager {
     throw makeError(`${this.resourceType} ${key} not found`, 404);
   }
 
-  async beginCreateOrUpdate(resourceGroupName, name, parameters) {
+  async beginCreateOrUpdateAndWait(resourceGroupName, name, parameters) {
     const key = `${resourceGroupName}/${name}`;
     if (this._resources.has(key)) {
       throw makeError(`${this.resourceType} ${key} already exists`, 409);
@@ -121,7 +109,7 @@ class ResourceManager {
     return req;
   }
 
-  async beginDeleteMethod(resourceGroupName, name) {
+  async beginDeleteAndWait(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     if (!this._resources.has(key)) {
       throw makeError(`${this.resourceType} ${key} does not exist`, 404);
@@ -267,31 +255,5 @@ export class VMResourceManager extends ResourceManager {
     } else {
       this._instanceViews.delete(key);
     }
-  }
-}
-
-export class FakeRestClient {
-  constructor(fake) {
-    this.fake = fake;
-  }
-
-  async sendLongRunningRequest(req) {
-    // op is op/<resourceType>/<resourceGroupName>/<resource>
-    const op = req.url.split('/');
-    assert.equal(op[0], 'op');
-    const manager = this.fake._managers[op[1]];
-    const key = `${op[2]}/${op[3]}`;
-    const resourceReq = manager._requests.get(key);
-    if (!resourceReq) {
-      return { status: 404 };
-    }
-
-    return {
-      status: 200,
-      parsedBody: {
-        status: resourceReq.status,
-        error: resourceReq.error,
-      },
-    };
   }
 }

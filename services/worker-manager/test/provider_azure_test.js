@@ -63,15 +63,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const name = worker.providerData[resourceType].name;
       switch (expectations[resourceType]) {
         case 'none':
-          assert(!worker.providerData[resourceType].operation);
           assert(!worker.providerData[resourceType].id);
           break;
         case 'inprogress':
-          assert.equal(worker.providerData[resourceType].operation, `op/${resourceType}/rgrp/${name}`);
           assert(!worker.providerData[resourceType].id);
           break;
         case 'allocated':
-          assert(!worker.providerData[resourceType].operation);
           assert.equal(worker.providerData[resourceType].id, `id/${name}`);
           break;
         case undefined: // caller doesn't care about state of this resource
