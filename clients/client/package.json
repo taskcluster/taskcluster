@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "http-proxy": "^1.18.0",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.1",
     "nock": "^13.5.5"
   },
   "engines": {
