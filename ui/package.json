@@ -64,7 +64,6 @@
     "localforage": "^1.7.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "lower-case": "^2.0.1",
     "markdown-it": "^14.1.0",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^4.0.1",
@@ -99,8 +98,7 @@
     "taskcluster-client-web": "^68.0.4",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
-    "title-case": "^3.0.2",
-    "upper-case": "^2.0.1"
+    "title-case": "^3.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -1,7 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { lowerCase } from 'lower-case';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ListItem from '@material-ui/core/ListItem';
@@ -22,7 +21,7 @@ const getDocsSectionFromPathname = pathname => {
   }
 
   const item = DOCS_MENU_ITEMS.find(({ label }) => {
-    if (pathname.startsWith(join(DOCS_PATH_PREFIX, lowerCase(label)))) {
+    if (pathname.startsWith(join(DOCS_PATH_PREFIX, label.toLowerCase()))) {
       return true;
     }
 
@@ -287,9 +286,9 @@ export default class DocsSidebarList extends Component {
             <Collapse
               in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>
-                {docsTableOfContents[lowerCase(item.label)] &&
+                {docsTableOfContents[item.label.toLowerCase()] &&
                   docsTableOfContents[
-                    lowerCase(item.label)
+                    item.label.toLowerCase()
                   ].children.map(child => this.renderNode(child, true))}
               </div>
             </Collapse>

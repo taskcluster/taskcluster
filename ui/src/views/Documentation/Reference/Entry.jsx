@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
-import { upperCase } from 'upper-case';
 import { toString, path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -144,7 +143,7 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={2}>
           <div className={classes.functionStatusLabel}>
-            <StatusLabel state={upperCase(entry.stability)} />
+            <StatusLabel state={entry.stability.toUpperCase()} />
           </div>
         </Grid>
       </Grid>
@@ -198,7 +197,7 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={1}>
           <div>
-            <StatusLabel state={upperCase(entry.level)} />
+            <StatusLabel state={entry.level.toUpperCase()} />
           </div>
         </Grid>
       </Grid>
@@ -229,7 +228,7 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={2}>
           <div>
-            <StatusLabel state={upperCase(entry.type)} />
+            <StatusLabel state={entry.type.toUpperCase()} />
           </div>
         </Grid>
       </Grid>
@@ -364,7 +363,7 @@ export default class Entry extends Component {
                   <StatusLabel
                     className={classes.statusLabel}
                     mini
-                    state={upperCase('AllOf' in scopes ? 'and' : 'or')}
+                    state={'AllOf' in scopes ? 'AND' : 'OR'}
                   />
                 )}
               </Fragment>
@@ -385,7 +384,7 @@ export default class Entry extends Component {
           <ListItemText
             primaryTypographyProps={primaryTypographyProps}
             primary="Method"
-            secondary={<StatusLabel state={upperCase(entry.method)} />}
+            secondary={<StatusLabel state={entry.method.toUpperCase()} />}
           />
         </ListItem>
         <ListItem>
@@ -419,7 +418,7 @@ export default class Entry extends Component {
           <ListItemText
             primaryTypographyProps={primaryTypographyProps}
             primary="Stability"
-            secondary={<StatusLabel state={upperCase(entry.stability)} />}
+            secondary={<StatusLabel state={entry.stability.toUpperCase()} />}
           />
         </ListItem>
         {entry.description ? (

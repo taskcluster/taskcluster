@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
 import { titleCase } from 'title-case';
-import { upperCase } from 'upper-case';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -113,7 +112,7 @@ export default class DenylistTable extends Component {
     titleCase(str)
       .split(' ')
       .map(word => {
-        const pretty = word === 'Irc' ? upperCase(word) : word;
+        const pretty = word === 'Irc' ? word.toUpperCase() : word;
 
         return pretty;
       })

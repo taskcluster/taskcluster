@@ -1,5 +1,4 @@
 import { curry, pipe, map, dropRepeatsWith } from 'ramda';
-import { lowerCase } from 'lower-case';
 import { memoize } from './memoize';
 
 export const taskLastRun = task => {
@@ -54,7 +53,7 @@ export const filterTasksByState = curry((filter, tasks) =>
 export const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
     ? tasks.filter(({ node: { metadata: { name } } }) =>
-        (name ? lowerCase(name) : '').includes(searchTerm)
+        (name ? name.toLowerCase() : '').includes(searchTerm)
       )
     : tasks
 );
