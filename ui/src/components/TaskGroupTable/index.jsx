@@ -2,7 +2,6 @@ import React, { Fragment, Component } from 'react';
 import { string, arrayOf, shape, bool } from 'prop-types';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
-import { lowerCase } from 'lower-case';
 import { withStyles } from '@material-ui/core/styles';
 import { FixedSizeList as List } from 'react-window';
 import { WindowScroller } from 'react-virtualized';
@@ -320,7 +319,7 @@ export default class TaskGroupTable extends Component {
       sortBy,
       sortDirection,
       filter,
-      searchTerm ? lowerCase(searchTerm) : ''
+      searchTerm ? searchTerm.toLowerCase() : ''
     );
     const itemCount = items.length;
 
@@ -435,7 +434,7 @@ export default class TaskGroupTable extends Component {
         ) : (
           <Typography variant="body2" className={classes.noTasksText}>
             No
-            {filter ? ` ${lowerCase(filter)}` : ''} tasks available
+            {filter ? ` ${filter.toLowerCase()}` : ''} tasks available
           </Typography>
         )}
       </div>

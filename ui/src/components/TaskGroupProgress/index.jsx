@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { bool, func, shape, number, string } from 'prop-types';
 import { sum } from 'ramda';
-import { lowerCase } from 'lower-case';
 import { titleCase } from 'title-case';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -198,7 +197,7 @@ export default class TaskGroupProgress extends Component {
         <Helmet state={taskGroupState} />
         {Object.keys(TASK_STATE).map(status => {
           const Icon = this.getStatusIcon(status);
-          const count = statusCount[lowerCase(status)];
+          const count = statusCount[status.toLowerCase()];
 
           return (
             <ButtonBase
@@ -208,7 +207,7 @@ export default class TaskGroupProgress extends Component {
               variant="contained"
               onClick={onStatusClick}
               className={classNames(
-                classes[`${lowerCase(status)}Button`],
+                classes[`${status.toLowerCase()}Button`],
                 classes.statusButton,
                 {
                   [classes.noTasksButton]: count === 0,
