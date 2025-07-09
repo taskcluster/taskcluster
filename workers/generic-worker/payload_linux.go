@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v87/tools/d2g"
+	"github.com/taskcluster/taskcluster/v87/tools/d2g/dockerworker"
 )
 
 func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {

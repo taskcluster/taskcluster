@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v87.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js 22.17.0 and yarn 4.9.2
+
+▶ [patch]
+Upgrades to go1.24.5 [SECURITY].
+
+Go release notes [here](https://go.dev/doc/devel/release#go1.24.5).
+
+### USERS
+
+▶ [MAJOR]
+Client (python): Drops python 3.8 support, adds support and tests for 3.12 and 3.13.
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps-dev): bump mocha from 10.8.2 to 11.7.1 in /clients/client (1853c97ab3)
+* build(deps-dev): bump open-editor from 3.0.0 to 5.1.0 (114a914b6a)
+* build(deps): bump the node-deps group with 14 updates (1ea24128f8)
+* build(deps): bump the client-rust-deps group (e4e55a9e9d)
+* build(deps-dev): bump the client-web-node-deps group (bb9b1dcb61)
+* build(deps): bump taskcluster-taskgraph (ebeaba0a9f)
+* build(deps): bump taskcluster from 84.0.2 to 86.0.2 in /taskcluster (bf2b5c068e)
+* build(deps): bump the go-deps group with 6 updates (5e14931dc2)
+
+</details>
+
 ## v86.0.2
 
 ### WORKER-DEPLOYERS

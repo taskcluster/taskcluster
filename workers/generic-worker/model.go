@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v86/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v87/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v87/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v87/tools/d2g"
+	"github.com/taskcluster/taskcluster/v87/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/process"
 )
 
 type (

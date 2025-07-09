@@ -5,8 +5,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v86/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v87/workers/generic-worker/runtime"
 )
 
 func makeFileReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
