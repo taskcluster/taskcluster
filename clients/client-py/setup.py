@@ -58,8 +58,8 @@ class Tox(TestCommand):
         errno = tox.cmdline(args=args)
         sys.exit(errno)
 
-if sys.version_info[0] == 3 and sys.version_info[:2] < (3, 8):
-    raise Exception('This library does not support Python 3 versions below 3.8')
+if sys.version_info[0] == 3 and sys.version_info[:2] < (3, 9):
+    raise Exception('This library does not support Python 3 versions below 3.9')
 
 with open('README.md', encoding='utf8') as f:
     long_description = f.read()
@@ -89,9 +89,10 @@ if __name__ == '__main__':
         cmdclass={'test': Tox},
         zip_safe=False,
         classifiers=[
-            'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
             'Programming Language :: Python :: 3.11',
+            'Programming Language :: Python :: 3.12',
+            'Programming Language :: Python :: 3.13',
         ],
     )
