@@ -162,7 +162,7 @@ if (!module.parent) {
 
 // ES6
 import { fileURLToPath } from "url";
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 ```

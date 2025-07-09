@@ -17,7 +17,6 @@ import { WorkerScanner } from './worker-scanner.js';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
 import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
 
 let load = loader({
   cfg: {
@@ -290,7 +289,7 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

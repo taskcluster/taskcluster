@@ -12,7 +12,6 @@ import SchemaSet from 'taskcluster-lib-validate';
 import { App } from 'taskcluster-lib-app';
 import libReferences from 'taskcluster-lib-references';
 import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import { fileURLToPath } from 'url';
 
 // Create component loader
 export const load = loader({
@@ -152,7 +151,7 @@ export const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

@@ -21,7 +21,6 @@ import slack from '@slack/web-api';
 import SlackBot from './slack.js';
 import tcdb from 'taskcluster-db';
 import './monitor.js';
-import { fileURLToPath } from 'url';
 
 // Create component loader
 const load = loader({
@@ -239,7 +238,7 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

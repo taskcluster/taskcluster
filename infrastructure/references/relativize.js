@@ -1,6 +1,5 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import References from 'taskcluster-lib-references';
 
 export const build = async (input, output, rootUrl) => {
@@ -14,7 +13,7 @@ export const build = async (input, output, rootUrl) => {
   await fs.writeFile(path.join(output, 'references', 'references.json'), JSON.stringify(serializable, null, 2));
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   if (!process.env.TASKCLUSTER_ROOT_URL) {
     console.error('TASKCLUSTER_ROOT_URL is not set');
     process.exit(1);
