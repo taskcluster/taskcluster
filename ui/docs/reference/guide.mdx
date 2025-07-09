@@ -19,7 +19,7 @@ Platform services are services that any deployment of Taskcluster would include,
 For example, there's no Taskcluster without a [queue](platform/queue) to hold tasks, or without an [authentication service](platform/auth) to control access to APIs.
 
 Core services are not essential, but still aim to provide general functionality.
-For example, despite its utility at Mozilla, an deployment of Taskcluster could conceivably be done without the [secrets service](core/secrets).
+For example, despite its utility at Mozilla, a deployment of Taskcluster could conceivably be done without the [secrets service](core/secrets).
 
 ## External Services
 
@@ -50,10 +50,11 @@ The [taskcluster-notify service](core/notify) handles sending notifications to u
 
 Taskcluster allows a great deal of flexibility in task execution, so the available options for workers are many.
 
-The project provides several implementations of workers.
-[Docker-worker](workers/docker-worker) runs tasks on Linux in docker containers.
-[Generic-worker](workers/generic-worker) runs tasks witout containers, and has thorough support for Windows.
-[Taskcluster-worker](workers/taskcluster-worker) aims to be the single implementation that is used everywhere, sporting "engines" for specific circumstances.
+The project provides several implementations of workers.  
+[Docker-worker](workers/docker-worker) runs tasks on Linux in docker containers.  
+[Generic-worker](workers/generic-worker) runs tasks witout containers, and has thorough support for Windows.  
+# dolanor: broken links. Does it still exist?
+[Taskcluster-worker](workers/taskcluster-worker) aims to be the single implementation that is used everywhere, sporting "engines" for specific circumstances.  
 
 Other users of Taskcluster have built worker implementations as well.
 For example, release engineering has built "scriptworker" which can execute tasks using predefined scripts for higher security.
