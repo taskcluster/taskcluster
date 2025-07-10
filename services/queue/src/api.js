@@ -437,6 +437,7 @@ const cancelSingleTask = async (task, ctx) => {
     await ctx.publisher.taskException(_.defaults({
       status,
       runId,
+      task: { tags: task.tags || {} },
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
     ctx.monitor.log.taskException({ taskId: task.taskId, runId });
   }
@@ -1157,6 +1158,7 @@ builder.declare({
       this.publisher.taskPending({
         status: status,
         runId: runId,
+        task: { tags: task.tags || {} },
       }, task.routes),
     ]);
     this.monitor.log.taskPending({ taskId, runId });

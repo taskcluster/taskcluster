@@ -148,6 +148,7 @@ class DeadlineResolver {
       await this.publisher.taskException({
         status: task.status(),
         runId,
+        task: { tags: task.tags || {} },
       }, task.routes);
       this.monitor.log.taskException({ taskId, runId });
 
