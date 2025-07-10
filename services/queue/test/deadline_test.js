@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import debugFactory from 'debug';
 const debug = debugFactory('test:deadline');
 import assert from 'assert';
@@ -32,6 +33,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         owner: 'jonsafj@mozilla.com',
         source: 'https://github.com/taskcluster/taskcluster-queue',
       },
+      tags: {
+        purpose: 'taskcluster-testing',
+      },
     };
     return { taskId: slugid.v4(), task };
   };
@@ -60,6 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await testing.poll(async () => {
       helper.assertPulseMessage('task-exception', m => (
         m.payload.status.state === 'exception' &&
+        _.isEqual(m.payload.task.tags, task.tags) &&
         m.payload.status.runs.length === 1 &&
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));

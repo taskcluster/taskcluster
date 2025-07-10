@@ -280,6 +280,7 @@ class DependencyTracker {
         this.publisher.taskPending({
           status: status,
           runId: 0,
+          task: { tags: task.tags || {} },
         }, task.routes),
       ]);
       this.monitor.log.taskPending({ taskId: task.taskId, runId: 0 });
