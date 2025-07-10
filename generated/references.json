@@ -3724,6 +3724,9 @@
           "format": "date-time",
           "type": "string"
         },
+        "task": {
+          "$ref": "task-pulse-definition.json#"
+        },
         "version": {
           "description": "Message version",
           "enum": [

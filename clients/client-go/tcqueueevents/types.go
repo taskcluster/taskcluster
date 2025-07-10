@@ -453,6 +453,12 @@ type (
 		// isn't reclaimed.
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitzero"`
+
 		// Message version
 		//
 		// Possible values:
