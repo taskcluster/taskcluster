@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import url from 'url';
 
 /**
  * Render {$const: <key>} into JSON schema and update $ref
@@ -40,11 +39,12 @@ export const checkRefs = (schema, serviceName) => {
   const check = val => {
     if (_.isObject(val)) {
       if (typeof val.$ref === 'string' && _.keys(val).length === 1) {
-        const ref = url.parse(val.$ref);
-        if (ref.hostname || ref.protocol) {
+        const ref = URL.parse(val.$ref);
+        // if url is parsed, it is absolute
+        if (ref !== null) {
           throw new Error(`Disallowed $ref '${ref}': absolute URIs are not allowed`);
         }
-        if (ref.path && ref.path.startsWith('/')) {
+        if (val.$ref.startsWith('/')) {
           throw new Error(`Disallowed $ref '${ref}': rooted URIs (starting with /) are not allowed`);
         }
         return;
