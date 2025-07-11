@@ -15,7 +15,7 @@ Be careful to never remove a provider which still has worker pools.
 Note that worker pools persist for some time after they are "deleted", until all workers are stopped and a periodic task finally reaps the worker pool.
 
 Be careful, too, not to change a provider configuration in such a way that the worker manager's internal state will be invalidated.
-For example, do not change the cloud accout for a provider.
+For example, do not change the cloud account for a provider.
 Instead, create a new provider for the new account and migrate worker pools to that new provider.
 
 ## Provider Configuration
