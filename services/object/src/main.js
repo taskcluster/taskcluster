@@ -10,7 +10,6 @@ import config from 'taskcluster-lib-config';
 import { Backends } from './backends/index.js';
 import { Middleware } from './middleware/index.js';
 import expireObjects from './expire.js';
-import { fileURLToPath } from 'url';
 
 let load = loader({
   cfg: {
@@ -101,7 +100,7 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

@@ -8,7 +8,6 @@ import { MonitorManager } from 'taskcluster-lib-monitor';
 import { App } from 'taskcluster-lib-app';
 import libReferences from 'taskcluster-lib-references';
 import config from 'taskcluster-lib-config';
-import { fileURLToPath } from 'url';
 
 let debug = Debug('secrets:server');
 
@@ -101,7 +100,7 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

@@ -27,7 +27,6 @@ import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
 
 import githubStrategy from './login/strategies/github.js';
 import mozillaAuth0Strategy from './login/strategies/mozilla-auth0.js';
@@ -315,7 +314,7 @@ const load = loader(
 );
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

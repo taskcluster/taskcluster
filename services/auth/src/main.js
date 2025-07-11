@@ -17,7 +17,6 @@ import makeSentryManager from './sentrymanager.js';
 import * as libPulse from 'taskcluster-lib-pulse';
 import googleapis from '@googleapis/iamcredentials';
 import assert from 'assert';
-import { fileURLToPath } from 'url';
 import { syncStaticClients } from './static-clients.js';
 
 // Create component loader
@@ -243,7 +242,7 @@ const load = Loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 

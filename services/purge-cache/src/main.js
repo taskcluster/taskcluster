@@ -10,7 +10,6 @@ import libReferences from 'taskcluster-lib-references';
 import taskcluster from 'taskcluster-client';
 import tcdb from 'taskcluster-db';
 import builder from './api.js';
-import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -100,7 +99,7 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   load.crashOnError(process.argv[2]);
 }
 
