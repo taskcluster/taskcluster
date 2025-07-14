@@ -50,6 +50,7 @@ worker_type_definitions
 generic-worker.config
 directory-caches.json
 file-caches.json
+d2g-image-cache.json
 tasks-resolved-count.txt
 current-task-user.json
 next-task-user.json

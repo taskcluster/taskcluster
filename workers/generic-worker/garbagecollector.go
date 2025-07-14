@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/host"
 )
@@ -73,6 +74,10 @@ func runGarbageCollection(r Resources) error {
 			err := host.Run("/usr/bin/env", "bash", "-c", "docker image prune --all --force")
 			if err != nil {
 				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)
+			}
+			err = os.Remove("d2g-image-cache.json")
+			if err != nil {
+				return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 			}
 			currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
 			if err != nil {
