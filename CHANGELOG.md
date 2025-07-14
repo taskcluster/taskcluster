@@ -3,6 +3,49 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v87.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7840](https://github.com/taskcluster/taskcluster/issues/7840)
+Generic Worker: adds `status` subcommand to output task ID if a task is currently being executed.
+
+Example output while a task is running:
+
+```bash
+$ generic-worker status
+{
+  "currentTaskIds": [
+    "fz7IO4uCTtevuLBoq8Qz3w"
+  ]
+}
+```
+
+Example output while worker is idle:
+
+```bash
+$ generic-worker status
+{
+  "currentTaskIds": []
+}
+```
+
+### USERS
+
+▶ [patch] [#7842](https://github.com/taskcluster/taskcluster/issues/7842)
+The `task-running` event now includes `task.tags`, consistent with other lifecycle events.
+
+▶ [patch] [#7846](https://github.com/taskcluster/taskcluster/issues/7846)
+UI: properly handle Worker Pool config changes and enable/disable `Save Worker Pool` button dynamically.
+
+▶ [patch] [#7842](https://github.com/taskcluster/taskcluster/issues/7842)
+task-pending and task-exception pulse message now consistently include the task's tags.
+
+### DEVELOPERS
+
+▶ [patch] [#7833](https://github.com/taskcluster/taskcluster/issues/7833)
+Node deprecated `url.parse` in favor of `URL.parse()`
+
 ## v87.0.0
 
 ### GENERAL
