@@ -8,7 +8,6 @@ import express from 'express';
 import graphqlPlayground from 'graphql-playground-middleware-express';
 const playground = graphqlPlayground.default;
 import passport from 'passport';
-import url from 'url';
 import MemoryStoreFactory from 'memorystore';
 const MemoryStore = MemoryStoreFactory(session);
 import credentials from './credentials.js';
@@ -70,7 +69,7 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     saveUninitialized: false,
     unset: 'destroy',
     cookie: {
-      secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
+      secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
       httpOnly: true,
       // 1 week
       maxAge: 7 * 24 * 60 * 60 * 1000,
