@@ -1,5 +1,5 @@
 audience: developers
-level: minor
+level: patch
 reference: issue 7833
 ---
 
