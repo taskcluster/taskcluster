@@ -4,11 +4,17 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/taskcluster/taskcluster/v87/internal/scopes"
+	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/process"
 )
+
+var imageCache ImageCache
 
 type (
 	D2GFeature struct {
@@ -17,6 +23,8 @@ type (
 	D2GTaskFeature struct {
 		task *TaskRun
 	}
+
+	ImageCache map[string]string
 )
 
 func (df *D2GFeature) Name() string {
@@ -24,6 +32,7 @@ func (df *D2GFeature) Name() string {
 }
 
 func (df *D2GFeature) Initialise() error {
+	imageCache.loadFromFile("d2g-image-cache.json")
 	return nil
 }
 
@@ -51,30 +60,52 @@ func (dtf *D2GTaskFeature) RequiredScopes() scopes.Required {
 
 func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	imageLoader := dtf.task.D2GInfo.Image.ImageLoader()
-	cmd, err := process.NewCommandNoOutputStreams([]string{
-		"/usr/bin/env",
-		"bash",
-		"-c",
-		imageLoader.LoadCommand(),
-	}, taskContext.TaskDir, []string{}, dtf.task.pd)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not create process to load docker image: %v", err))
-	}
-	out, err := cmd.Output()
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not load docker image: %v\n%v", err, string(out)))
+
+	var key string
+	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
+	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
+		// DockerImageName or NamedDockerImage, no image artifact
+		key = dtf.task.D2GInfo.Image.String()
+	} else {
+		// DockerImageArtifact or IndexedDockerImage
+		key, err = fileutil.CalculateSHA256(imageArtifactPath)
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not calculate SHA256 of docker image artifact: %v", err))
+		}
 	}
 
-	imageID := strings.TrimSpace(string(out))
+	imageID := imageCache[key]
+
+	if imageID == "" {
+		dtf.task.Info("[d2g] Loading docker image")
+		cmd, err := process.NewCommandNoOutputStreams([]string{
+			"/usr/bin/env",
+			"bash",
+			"-c",
+			imageLoader.LoadCommand(),
+		}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+		}
+		out, err := cmd.Output()
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
+		}
+
+		imageID = strings.TrimSpace(string(out))
+		imageCache[key] = imageID
+	} else {
+		dtf.task.Infof("[d2g] Using cached docker image %q", imageID)
+	}
 
 	if dtf.task.Payload.Env == nil {
 		dtf.task.Payload.Env = make(map[string]string)
 	}
 
 	dtf.task.Payload.Env["D2G_IMAGE_ID"] = imageID
-	err = dtf.task.setVariable("D2G_IMAGE_ID", imageID)
+	err := dtf.task.setVariable("D2G_IMAGE_ID", imageID)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not set D2G_IMAGE_ID environment variable: %v", err))
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not set D2G_IMAGE_ID environment variable: %v", err))
 	}
 
 	if dtf.task.DockerWorkerPayload.Features.ChainOfTrust {
@@ -85,11 +116,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			imageLoader.ChainOfTrustCommand(),
 		}, taskContext.TaskDir, []string{fmt.Sprintf("D2G_IMAGE_ID=%s", imageID)}, dtf.task.pd)
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("could not create process to create chain of trust additional data file: %v", err))
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to create chain of trust additional data file: %v", err))
 		}
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("could not create chain of trust additional data file: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create chain of trust additional data file: %v\n%v", err, string(out)))
 		}
 	}
 	return nil
@@ -104,11 +135,11 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 			dtf.task.D2GInfo.ContainerName,
 		}, taskContext.TaskDir, []string{}, dtf.task.pd)
 		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("could not create process to commit docker container: %v", e)))
+			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to commit docker container: %v", e)))
 		}
 		out, e := cmd.CombinedOutput()
 		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("could not commit docker container: %v\n%v", e, string(out))))
+			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not commit docker container: %v\n%v", e, string(out))))
 		}
 
 		cmd, e = process.NewCommandNoOutputStreams([]string{
@@ -118,11 +149,11 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 			fmt.Sprintf("docker save %s | gzip > image.tar.gz", dtf.task.D2GInfo.ContainerName),
 		}, taskContext.TaskDir, []string{}, dtf.task.pd)
 		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("could not create process to save docker image: %v", e)))
+			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to save docker image: %v", e)))
 		}
 		out, e = cmd.CombinedOutput()
 		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("could not save docker image: %v\n%v", e, string(out))))
+			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not save docker image: %v\n%v", e, string(out))))
 		}
 	}
 
@@ -134,11 +165,11 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 			artifact.DestPath,
 		}, taskContext.TaskDir, []string{}, dtf.task.pd)
 		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("could not create process to copy artifact: %v", e)))
+			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to copy artifact: %v", e)))
 		}
 		out, e := cmd.CombinedOutput()
 		if e != nil {
-			dtf.task.Warnf("Artifact %q not found at %q: %v\n%v", artifact.Name, artifact.SrcPath, e, string(out))
+			dtf.task.Warnf("[d2g] Artifact %q not found at %q: %v\n%v", artifact.Name, artifact.SrcPath, e, string(out))
 		}
 	}
 
@@ -150,10 +181,26 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		dtf.task.D2GInfo.ContainerName,
 	}, taskContext.TaskDir, []string{}, dtf.task.pd)
 	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("could not create process to remove docker container: %v", e)))
+		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to remove docker container: %v", e)))
 	}
 	out, e := cmd.CombinedOutput()
 	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("could not remove docker container: %v\n%v", e, string(out))))
+		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not remove docker container: %v\n%v", e, string(out))))
+	}
+
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&imageCache, "d2g-image-cache.json")))
+	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
+}
+
+func (ic *ImageCache) loadFromFile(stateFile string) {
+	_, err := os.Stat(stateFile)
+	if err != nil {
+		log.Printf("[d2g] No %v file found, creating empty ImageCache", stateFile)
+		*ic = ImageCache{}
+		return
+	}
+	err = loadFromJSONFile(ic, stateFile)
+	if err != nil {
+		panic(err)
 	}
 }

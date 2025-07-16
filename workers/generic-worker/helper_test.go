@@ -437,6 +437,7 @@ func GWTest(t *testing.T) *Test {
 	for _, file := range []string{
 		filepath.Join(cwd, "file-caches.json"),
 		filepath.Join(cwd, "directory-caches.json"),
+		filepath.Join(cwd, "d2g-image-cache.json"),
 	} {
 		err := os.RemoveAll(file)
 		if err != nil {
