@@ -3,6 +3,37 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v87.1.1
+
+### GENERAL
+
+▶ [patch] [#7849](https://github.com/taskcluster/taskcluster/issues/7849)
+Generic Worker (D2G): caches loaded docker images.
+
+▶ [patch]
+Upgrades decision task to v14.4.1, rust toolchain to 1.88.0, and golangci-lint version to 2.2.2.
+
+▶ [patch]
+Upgrades to Node.js v22.17.1 [SECURITY].
+
+https://nodejs.org/en/blog/vulnerability/july-2025-security-releases
+
+### USERS
+
+▶ [patch] [#7856](https://github.com/taskcluster/taskcluster/issues/7856)
+Fixes `queue.taskQueueCounts()` numbers for the total claimed tasks.
+Due to the internal structure some task/runs might have had duplicate entries in the `queue_claimed_tasks` table
+which led to slightly higher counts returned by `queue_claimed_tasks_count(taskQueue)` function.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump aiohttp from 3.10.2 to 3.12.14 in /taskcluster (433a83c71c)
+
+</details>
+
 ## v87.1.0
 
 ### WORKER-DEPLOYERS
