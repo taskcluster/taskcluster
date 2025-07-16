@@ -4798,9 +4798,11 @@ end
 * *Arguments*:
   * `task_queue_id_in text`
 * *Returns*: `integer`
-* *Last defined on version*: 104
+* *Last defined on version*: 113
 
 Count the number of claimed tasks for given task queue.
+Because queue_claimed_tasks table might have several records for the same task-run
+when the task is being reclaimed, we count distinct (task_id, run_id)
 
 
 <details><summary>Function Body</summary>
@@ -4808,7 +4810,7 @@ Count the number of claimed tasks for given task queue.
 ```
 begin
   return (
-    select count(*)
+    select count(distinct (task_id, run_id))
     from queue_claimed_tasks
     where task_queue_id = task_queue_id_in
       and taken_until > now()
@@ -5316,7 +5318,7 @@ end
   * `quarantined_count integer`
   * `claimed_count integer`
   * `pending_count integer`
-* *Last defined on version*: 112
+* *Last defined on version*: 113
 
 Retrieve comprehensive statistics for task queues including worker counts,
 quarantined workers, claimed tasks, and pending tasks. This method performs
@@ -5330,6 +5332,8 @@ Returns one row per task_queue_id with the following metrics:
 - pending_count: Number of distinct tasks waiting to be claimed
 
 All counts default to 0 when no data exists for a given metric.
+
+Updated from 112 version to increase distinct performance
 
 
 <details><summary>Function Body</summary>
@@ -5349,7 +5353,7 @@ begin
   claimed_stats AS (
     SELECT
       queue_claimed_tasks.task_queue_id,
-      COUNT(DISTINCT task_id || '_' || run_id)::int AS claimed_count
+      COUNT(DISTINCT (task_id, run_id))::int AS claimed_count
     FROM queue_claimed_tasks
     WHERE taken_until > now()
     GROUP BY queue_claimed_tasks.task_queue_id
@@ -5357,7 +5361,7 @@ begin
   pending_stats AS (
     SELECT
       queue_pending_tasks.task_queue_id,
-      COUNT(DISTINCT task_id || '_' || run_id)::int AS pending_count
+      COUNT(DISTINCT (task_id, run_id))::int AS pending_count
     FROM queue_pending_tasks
     WHERE expires > now()
     GROUP BY queue_pending_tasks.task_queue_id
