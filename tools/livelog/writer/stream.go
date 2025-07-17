@@ -8,7 +8,10 @@ import (
 	"sync"
 )
 
-const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
+// 32KiB for improved I/O performance
+// this value is used inside the go stdlib
+// for io.Copy() so this should be safe
+const READ_BUFFER_SIZE = 32 * 1024
 
 type Event struct {
 	Number int
@@ -43,7 +46,9 @@ type Stream struct {
 
 func NewStream(read io.Reader) (*Stream, error) {
 	dir, err := os.MkdirTemp(TempDir, "livelog")
+	cleanup := func() { _ = os.RemoveAll(dir) }
 	if err != nil {
+		cleanup()
 		return nil, err
 	}
 
@@ -54,6 +59,7 @@ func NewStream(read io.Reader) (*Stream, error) {
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 
 	if openErr != nil {
+		cleanup()
 		return nil, openErr
 	}
 
