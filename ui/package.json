@@ -68,7 +68,7 @@
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^4.0.1",
     "material-ui-json-schema-viewer": "^2.0.0",
-    "mdi-react": "^6.2.0",
+    "mdi-react": "^9.4.0",
     "mdx-loader": "^3.0.2",
     "mitt": "^3.0.1",
     "param-case": "^3.0.3",
