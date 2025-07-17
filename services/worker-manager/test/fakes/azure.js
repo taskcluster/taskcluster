@@ -78,9 +78,12 @@ class ResourceRequest {
     this.error = undefined;
   }
 
-  getPollState() {
+  getOperationState() {
     return {
-      azureAsyncOperationHeaderValue: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      status: this.status,
+      config: {
+        operationLocation: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      },
     };
   }
 }
@@ -121,7 +124,7 @@ class ResourceManager {
     return req;
   }
 
-  async beginDeleteMethod(resourceGroupName, name) {
+  async beginDelete(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     if (!this._resources.has(key)) {
       throw makeError(`${this.resourceType} ${key} does not exist`, 404);

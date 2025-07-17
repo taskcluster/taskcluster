@@ -772,7 +772,7 @@ export class AzureProvider extends Provider {
       ));
       // track operation
       await worker.update(this.db, worker => {
-        worker.providerData[resourceType].operation = resourceRequest.getPollState().azureAsyncOperationHeaderValue;
+        worker.providerData[resourceType].operation = resourceRequest.getOperationState()?.config?.operationLocation;
       });
     }
 
@@ -1191,7 +1191,7 @@ export class AzureProvider extends Provider {
     if (typeData.id || shouldDelete) {
       // we need to delete the resource
       debug('deleting resource');
-      let deleteRequest = await this._enqueue('query', () => client.beginDeleteMethod(
+      let deleteRequest = await this._enqueue('query', () => client.beginDelete(
         worker.providerData.resourceGroupName,
         typeData.name,
       ));
@@ -1205,9 +1205,9 @@ export class AzureProvider extends Provider {
           resource = worker.providerData[resourceType];
         }
         resource.id = false;
-        let pollState = deleteRequest.getPollState();
-        if (_.has(pollState, 'azureAsyncOperationHeaderValue')) {
-          resource.operation = pollState.azureAsyncOperationHeaderValue;
+        let pollState = deleteRequest.getOperationState();
+        if (pollState?.config?.operationLocation) {
+          resource.operation = pollState?.config?.operationLocation;
         }
       });
     }
