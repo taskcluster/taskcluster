@@ -6,11 +6,7 @@ import crypto from 'crypto';
 import got from 'got';
 import { rootCertificates } from 'tls';
 import { WorkerPool, Worker } from '../../data.js';
-import auth from '@azure/ms-rest-nodeauth';
-import armCompute from '@azure/arm-compute';
-import armNetwork from '@azure/arm-network';
-import msRestJS from '@azure/ms-rest-js';
-import msRestAzure from '@azure/ms-rest-azure-js';
+import azureApi from './azure-api.js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
@@ -149,10 +145,10 @@ export class AzureProvider extends Provider {
       }
     });
 
-    let credentials = await auth.loginWithServicePrincipalSecret(clientId, secret, domain);
-    this.computeClient = new armCompute.ComputeManagementClient(credentials, subscriptionId);
-    this.networkClient = new armNetwork.NetworkManagementClient(credentials, subscriptionId);
-    this.restClient = new msRestAzure.AzureServiceClient(credentials);
+    let credentials = new azureApi.ClientSecretCredential(domain, clientId, secret);
+    this.computeClient = new azureApi.ComputeManagementClient(credentials, subscriptionId);
+    this.networkClient = new azureApi.NetworkManagementClient(credentials, subscriptionId);
+    this.restClient = new azureApi.AzureServiceClient(credentials);
   }
 
   /**
@@ -633,7 +629,7 @@ export class AzureProvider extends Provider {
       // NB: we don't respect azure's Retry-After header, we assume our iteration
       // will wait long enough, and we keep trying
       // see here: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations
-      req = new msRestJS.WebResource(op, 'GET');
+      req = new azureApi.msRestJS.WebResource(op, 'GET');
       // sendLongRunningRequest polls until finished but this is just reading
       // the status of an operation so it shouldn't block long
       // it's ok if we hit an error here, that will trigger resource teardown
@@ -776,7 +772,7 @@ export class AzureProvider extends Provider {
       ));
       // track operation
       await worker.update(this.db, worker => {
-        worker.providerData[resourceType].operation = resourceRequest.getPollState().azureAsyncOperationHeaderValue;
+        worker.providerData[resourceType].operation = resourceRequest.getOperationState()?.config?.operationLocation;
       });
     }
 
@@ -1195,7 +1191,7 @@ export class AzureProvider extends Provider {
     if (typeData.id || shouldDelete) {
       // we need to delete the resource
       debug('deleting resource');
-      let deleteRequest = await this._enqueue('query', () => client.beginDeleteMethod(
+      let deleteRequest = await this._enqueue('query', () => client.beginDelete(
         worker.providerData.resourceGroupName,
         typeData.name,
       ));
@@ -1209,9 +1205,9 @@ export class AzureProvider extends Provider {
           resource = worker.providerData[resourceType];
         }
         resource.id = false;
-        let pollState = deleteRequest.getPollState();
-        if (_.has(pollState, 'azureAsyncOperationHeaderValue')) {
-          resource.operation = pollState.azureAsyncOperationHeaderValue;
+        let pollState = deleteRequest.getOperationState();
+        if (pollState?.config?.operationLocation) {
+          resource.operation = pollState?.config?.operationLocation;
         }
       });
     }

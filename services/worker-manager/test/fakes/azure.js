@@ -1,10 +1,7 @@
 import { FakeCloud } from './fake.js';
 import { strict as assert } from 'assert';
-import auth from '@azure/ms-rest-nodeauth';
-import armCompute from '@azure/arm-compute';
-import armNetwork from '@azure/arm-network';
 
-import msRestAzure from '@azure/ms-rest-azure-js';
+import azureApi from '../../src/providers/azure/azure-api.js';
 
 import slugid from 'slugid';
 
@@ -20,19 +17,24 @@ export class FakeAzure extends FakeCloud {
   }
 
   _patch() {
-    this.sinon.stub(auth, 'loginWithServicePrincipalSecret').returns('fake-credentials');
-    this.sinon.stub(armCompute, 'ComputeManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.computeClient;
-    });
-    this.sinon.stub(armNetwork, 'NetworkManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.networkClient;
-    });
-    this.sinon.stub(msRestAzure, 'AzureServiceClient').callsFake((creds) => {
-      assert.equal(creds, 'fake-credentials');
+    this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.restClient;
     });
+    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.computeClient;
+    });
+    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.networkClient;
+    });
+    this.sinon.stub(azureApi, 'ClientSecretCredential').returns({
+      getToken() {
+        return { token: 'fake-credentials', expiresOnTimestamp: Date.now() + 3600 * 1000 };
+      },
+    });
+
     this._reset();
   }
 
@@ -54,6 +56,7 @@ export class FakeAzure extends FakeCloud {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
     };
+
     this.restClient = new FakeRestClient(this);
   }
 }
@@ -75,9 +78,12 @@ class ResourceRequest {
     this.error = undefined;
   }
 
-  getPollState() {
+  getOperationState() {
     return {
-      azureAsyncOperationHeaderValue: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      status: this.status,
+      config: {
+        operationLocation: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      },
     };
   }
 }
@@ -118,7 +124,7 @@ class ResourceManager {
     return req;
   }
 
-  async beginDeleteMethod(resourceGroupName, name) {
+  async beginDelete(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     if (!this._resources.has(key)) {
       throw makeError(`${this.resourceType} ${key} does not exist`, 404);
