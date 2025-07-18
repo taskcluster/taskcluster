@@ -93,7 +93,8 @@ images:
   - ${_DEPLOY_IMAGE_NAME}:latest
 options:
   dynamicSubstitutions: true
-  machineType: E2_HIGHCPU_8
+  pool:
+    name: projects/${PROJECT_ID}/locations/us-east1/workerPools/Taskcluster-Dev-Private-Worker-Pool
   env:
     - USE_GKE_GCLOUD_AUTH_PLUGIN=True
 substitutions:
