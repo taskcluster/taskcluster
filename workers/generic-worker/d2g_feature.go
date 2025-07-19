@@ -93,6 +93,16 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 
 		imageID = strings.TrimSpace(string(out))
+		// if imageID is already a value in the cache
+		// then we need to remove that entry before
+		// caching the new key/imageID pair
+		// https://github.com/taskcluster/taskcluster/issues/7861
+		for k, v := range imageCache {
+			if v == imageID {
+				delete(imageCache, k)
+				break
+			}
+		}
 		imageCache[key] = imageID
 	} else {
 		dtf.task.Infof("[d2g] Using cached docker image %q", imageID)
