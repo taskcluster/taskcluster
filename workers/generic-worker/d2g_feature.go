@@ -14,17 +14,20 @@ import (
 	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/process"
 )
 
-var imageCache ImageCache
-
 type (
 	D2GFeature struct {
 	}
 
 	D2GTaskFeature struct {
-		task *TaskRun
+		task       *TaskRun
+		imageCache ImageCache
 	}
 
-	ImageCache map[string]string
+	ImageCache map[string]*Image
+	Image      struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
 )
 
 func (df *D2GFeature) Name() string {
@@ -32,7 +35,6 @@ func (df *D2GFeature) Name() string {
 }
 
 func (df *D2GFeature) Initialise() error {
-	imageCache.loadFromFile("d2g-image-cache.json")
 	return nil
 }
 
@@ -46,7 +48,8 @@ func (df *D2GFeature) IsRequested(task *TaskRun) bool {
 
 func (df *D2GFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &D2GTaskFeature{
-		task: task,
+		task:       task,
+		imageCache: ImageCache{},
 	}
 }
 
@@ -59,8 +62,13 @@ func (dtf *D2GTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
+	// load cache on every start in case the garbage
+	// collector has pruned docker images between tasks
+	dtf.imageCache.loadFromFile("d2g-image-cache.json")
+
 	imageLoader := dtf.task.D2GInfo.Image.ImageLoader()
 
+	var isImageArtifact bool
 	var key string
 	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
 	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
@@ -68,15 +76,16 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		key = dtf.task.D2GInfo.Image.String()
 	} else {
 		// DockerImageArtifact or IndexedDockerImage
+		isImageArtifact = true
 		key, err = fileutil.CalculateSHA256(imageArtifactPath)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not calculate SHA256 of docker image artifact: %v", err))
 		}
 	}
 
-	imageID := imageCache[key]
+	image := dtf.imageCache[key]
 
-	if imageID == "" {
+	if image == nil {
 		dtf.task.Info("[d2g] Loading docker image")
 		cmd, err := process.NewCommandNoOutputStreams([]string{
 			"/usr/bin/env",
@@ -92,18 +101,46 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
 		}
 
-		imageID = strings.TrimSpace(string(out))
-		imageCache[key] = imageID
+		imageName := strings.TrimSpace(string(out))
+		imageID := imageName
+
+		// DockerImageArtifact or IndexedDockerImage, need to get
+		// sha256 of the image to differentiate between images
+		// with the same name/tag
+		if isImageArtifact {
+			cmd, err = process.NewCommandNoOutputStreams([]string{
+				"/usr/bin/env",
+				"bash",
+				"-c",
+				fmt.Sprintf("docker images --no-trunc -q %s", imageName),
+			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
+			}
+			out, err = cmd.Output()
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not get sha256 of docker image: %v\n%v", err, string(out)))
+			}
+
+			imageID = strings.Split(strings.TrimSpace(string(out)), ":")[1]
+		}
+
+		image = &Image{
+			ID:   imageID,
+			Name: imageName,
+		}
+		dtf.imageCache[key] = image
+		dtf.task.Infof("[d2g] Loaded docker image %q", image.Name)
 	} else {
-		dtf.task.Infof("[d2g] Using cached docker image %q", imageID)
+		dtf.task.Infof("[d2g] Using cached docker image %q", image.Name)
 	}
 
 	if dtf.task.Payload.Env == nil {
 		dtf.task.Payload.Env = make(map[string]string)
 	}
 
-	dtf.task.Payload.Env["D2G_IMAGE_ID"] = imageID
-	err := dtf.task.setVariable("D2G_IMAGE_ID", imageID)
+	dtf.task.Payload.Env["D2G_IMAGE_ID"] = image.ID
+	err := dtf.task.setVariable("D2G_IMAGE_ID", image.ID)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not set D2G_IMAGE_ID environment variable: %v", err))
 	}
@@ -114,7 +151,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			"bash",
 			"-c",
 			imageLoader.ChainOfTrustCommand(),
-		}, taskContext.TaskDir, []string{fmt.Sprintf("D2G_IMAGE_ID=%s", imageID)}, dtf.task.pd)
+		}, taskContext.TaskDir, []string{fmt.Sprintf("D2G_IMAGE_ID=%s", image.ID)}, dtf.task.pd)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to create chain of trust additional data file: %v", err))
 		}
@@ -188,7 +225,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not remove docker container: %v\n%v", e, string(out))))
 	}
 
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&imageCache, "d2g-image-cache.json")))
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
 }
 
