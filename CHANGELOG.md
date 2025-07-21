@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v87.1.2
+
+### GENERAL
+
+▶ [patch] [#7861](https://github.com/taskcluster/taskcluster/issues/7861)
+Generic Worker (D2G): fixes docker image caching issue when the worker loaded different images with the same image name, overwriting the previously loaded docker image.
+
+▶ [patch] [#7863](https://github.com/taskcluster/taskcluster/issues/7863)
+Generic Worker (D2G): reloads cache on d2g task feature start to fix `Unable to find image '<image>' locally` issue due to garbage collection running between tasks and pruning all docker images.
+
+### USERS
+
+▶ [patch] [#7844](https://github.com/taskcluster/taskcluster/issues/7844)
+Worker Manager: bumps Azure SDKs to use latest API versions in order to deploy v6 SKUs.
+
 ## v87.1.1
 
 ### GENERAL
