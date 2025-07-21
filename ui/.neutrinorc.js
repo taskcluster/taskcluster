@@ -167,7 +167,7 @@ module.exports = {
     },
     (neutrino) => {
       neutrino.config.resolve
-        .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
+        .alias.set('@taskcluster/ui', resolve(__dirname, 'src/'));
     },
     (neutrino) => {
       // Generate env.js, combining env vars into the build, when

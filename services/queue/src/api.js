@@ -1,9 +1,9 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import taskcluster from 'taskcluster-client';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import taskcluster from '@taskcluster/client';
 import taskCreds from './task-creds.js';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
 import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils.js';
 import { loadArtifactsRoutes } from './artifacts.js';
@@ -67,9 +67,9 @@ const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0
  *
  * @type {APIBuilder<{
  *  cfg: object;
- *  db: import('taskcluster-db').Database;
- *  monitor: import('taskcluster-lib-monitor').Monitor;
- *  publisher: import('taskcluster-lib-pulse').PulsePublisher; // TODO add generic type
+ *  db: import('@taskcluster/lib-postgres').Database;
+ *  monitor: import('@taskcluster/lib-monitor').Monitor;
+ *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
  *  taskGroupExpiresExtension: object; // todo
  *  signPublicArtifactUrls: object; // todo
  *  publicBucket: import('./bucket.js');

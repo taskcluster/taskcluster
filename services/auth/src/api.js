@@ -1,6 +1,6 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import scopeUtils from 'taskcluster-lib-scopes';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import slugid from 'slugid';
 import _ from 'lodash';
 import createSignatureValidator from './signaturevalidator.js';

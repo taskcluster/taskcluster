@@ -11,7 +11,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
  * Read the common schemas from this library's schemas/ directory.  Note
  * that this differs slightly from services' schemas/ directories, in that
  * the files each contain an (abstract) $id, cannot use $const, and are free
- * to $ref anything they like -- all things taskcluster-lib-validate does not
+ * to $ref anything they like -- all things @taskcluster/lib-validate does not
  * allow for services.
  */
 export const getCommonSchemas = async () => {

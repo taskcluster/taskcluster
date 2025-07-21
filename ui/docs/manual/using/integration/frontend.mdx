@@ -3,7 +3,7 @@ filename: using/integration/frontend.mdx
 title: Frontend Applications
 order: 10
 ---
-import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
+import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
 
 # Frontend Applications
 
@@ -50,7 +50,7 @@ To start, let's add a few library dependencies before the closing body tag:
 <script src="https://unpkg.com/hawk/lib/browser.js"></script>
 <script>window.hawk = hawk; /* hawk's "browser" client doesn't expose itself on window */</script>
 <script src="https://wzrd.in/standalone/query-string"></script>
-<script src="https://unpkg.com/taskcluster-client-web"></script>
+<script src="https://unpkg.com/@taskcluster/client-web"></script>
 ```
 
 Next, let's add an empty script tag to contain our custom functionality,
@@ -153,7 +153,7 @@ Great, now that we have credentials to identify a user,
 we can now call Taskcluster API methods; we will call `auth.currentScopes`
 in our example. In the previous step we changed the action link to say
 "Call Taskcluster API". Our next step will be to perform this work using
-taskcluster-client-web. Let's add a click handler to the action link:
+@taskcluster/client-web. Let's add a click handler to the action link:
 
 ```js
 link.addEventListener('click', (e) => {

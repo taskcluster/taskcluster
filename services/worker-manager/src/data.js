@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import taskcluster from 'taskcluster-client';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import taskcluster from '@taskcluster/client';
 import { MAX_MODIFY_ATTEMPTS } from './util.js';
-import { paginateResults } from 'taskcluster-lib-api';
+import { paginateResults } from '@taskcluster/lib-api';
 
-/** @typedef {import('taskcluster-lib-postgres').Database} Database */
+/** @typedef {import('@taskcluster/lib-postgres').Database} Database */
 
 /**
  * Create error

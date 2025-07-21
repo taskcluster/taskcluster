@@ -1,5 +1,5 @@
 import { loadChecks } from './checks/index.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import libScopes from 'taskcluster-lib-scopes';
 import { TaskGraph } from 'console-taskgraph';
 import chalk from 'chalk';

@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 
 /** Declaration of exchanges offered by the auth */
 const exchanges = new Exchanges({

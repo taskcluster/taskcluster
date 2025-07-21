@@ -831,6 +831,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@taskcluster/client-web@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/client-web@workspace:."
+  dependencies:
+    "@babel/core": "npm:^7.27.7"
+    chai: "npm:^4.3.10"
+    chai-as-promised: "npm:^8.0.1"
+    crypto-js: "npm:^4.2.0"
+    dotenv: "npm:^16.5.0"
+    eslint: "npm:^9.30.0"
+    hawk: "npm:^9.0.2"
+    karma: "npm:^6.4.4"
+    karma-cli: "npm:^2.0.0"
+    karma-coverage: "npm:^2.2.1"
+    karma-firefox-launcher: "npm:^2.1.3"
+    karma-mocha: "npm:^2.0.1"
+    karma-mocha-reporter: "npm:^2.2.5"
+    karma-sourcemap-loader: "npm:^0.4.0"
+    karma-webpack: "npm:^4.0.2"
+    query-string: "npm:^7.0.0"
+    taskcluster-lib-urls: "npm:^13.0.0"
+    webpack: "npm:^4.47.0"
+    webpack-cli: "npm:^4.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -6347,32 +6373,6 @@ __metadata:
   checksum: 10c0/a5eca3eb50bc11552d453488344e6507156b9193efd7635e98e867fab275d527af53d8866e2370cd09dfe74378a18111622ace35af6a608e5223a7d27fe99537
   languageName: node
   linkType: hard
-
-"taskcluster-client-web@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-client-web@workspace:."
-  dependencies:
-    "@babel/core": "npm:^7.27.7"
-    chai: "npm:^4.3.10"
-    chai-as-promised: "npm:^8.0.1"
-    crypto-js: "npm:^4.2.0"
-    dotenv: "npm:^16.5.0"
-    eslint: "npm:^9.30.0"
-    hawk: "npm:^9.0.2"
-    karma: "npm:^6.4.4"
-    karma-cli: "npm:^2.0.0"
-    karma-coverage: "npm:^2.2.1"
-    karma-firefox-launcher: "npm:^2.1.3"
-    karma-mocha: "npm:^2.0.1"
-    karma-mocha-reporter: "npm:^2.2.5"
-    karma-sourcemap-loader: "npm:^0.4.0"
-    karma-webpack: "npm:^4.0.2"
-    query-string: "npm:^7.0.0"
-    taskcluster-lib-urls: "npm:^13.0.0"
-    webpack: "npm:^4.47.0"
-    webpack-cli: "npm:^4.0.0"
-  languageName: unknown
-  linkType: soft
 
 "taskcluster-lib-urls@npm:^13.0.0":
   version: 13.0.1

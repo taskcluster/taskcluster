@@ -13,7 +13,7 @@ import {
 } from '../src/index.js';
 
 import path from 'path';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'assert';
 import { dollarQuote } from '../src/util.js';
 

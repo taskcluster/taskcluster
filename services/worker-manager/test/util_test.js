@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as util from '../src/util.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function () {
   suite('workerPoolId', function () {

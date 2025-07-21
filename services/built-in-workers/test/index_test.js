@@ -1,6 +1,6 @@
 import helper from './helper.js';
 import slugid from 'slugid';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   helper.withFakeQueue();

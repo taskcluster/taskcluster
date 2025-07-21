@@ -132,7 +132,7 @@ methods:
  * test for new migration
  * @param {number} version
  */
-const testTemplate = version => `import testing from 'taskcluster-lib-testing';
+const testTemplate = version => `import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   // add tests if necessary

@@ -1,5 +1,5 @@
 import { cleanRouteAndParams } from '../src/utils.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'assert';
 
 suite(testing.suiteName(), function() {

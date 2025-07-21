@@ -1,7 +1,7 @@
 import assert from 'assert';
 import _ from 'lodash';
 import MonitorManager from '../src/monitormanager.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 MonitorManager.registerMetric('testCounter', {
   name: 'test_counter_xx',

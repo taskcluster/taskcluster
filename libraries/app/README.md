@@ -4,11 +4,11 @@ This library supports Taskcluster microservices, providing a pre-built Express
 server based on a common configuration format.
 
 The usage is pretty simple.  It is generally invoked in a
-[taskcluster-lib-loader](../loader)
+[@taskcluster/lib-loader](../loader)
 stanza named server, like this:
 
 ```js
-import { App } from 'taskcluster-lib-app';
+import { App } from '@taskcluster/lib-app';
 ...
   server: {
     requires: ['cfg', 'api', 'docs'],
@@ -25,7 +25,7 @@ import { App } from 'taskcluster-lib-app';
 
 The configuration (here `cfg.server`) has the following options:
 
- * `apis`: a list of taskcluster-lib-api APIs
+ * `apis`: a list of @taskcluster/lib-api APIs
  * `port`: port to run the server on
  * `env`: either 'development' or 'production'
  * `forceSSL`: true to redirect to https using sslify; set to true for production
@@ -34,7 +34,7 @@ The configuration (here `cfg.server`) has the following options:
  * `robotsTxt`: include a /robots.txt; *default is true*
 
 The values of the `apis` key are from
-[taskcluster-lib-api](../api); each
+[@taskcluster/lib-api](../api); each
 is the result of the `APIBuilder.build` method in that library. In particular,
 each object should have an `express(app)` method which configures an Express
 app for the API.

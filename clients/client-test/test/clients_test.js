@@ -1,5 +1,5 @@
 // This file is auto-generated, don't edit
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 
 test('Main clients exposed', function () {

@@ -10,7 +10,7 @@ import assert from 'assert';
  * @param {{
  *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
  *   context: Record<string, any>,
- *   monitor: import('taskcluster-lib-monitor').Monitor
+ *   monitor: import('@taskcluster/lib-monitor').Monitor
  * }} options
  * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */

@@ -2,7 +2,7 @@ import helper from './helper.js';
 import assert from 'assert';
 import nock from 'nock';
 import githubAuth, { getCachedInstallationToken, getPrivatePEM } from '../src/github-auth.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const WITH_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\nsomekey\nline2\n-----END RSA PRIVATE KEY-----';
 const WITH_ESCAPED_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\\nsomekey\\nline2\\n-----END RSA PRIVATE KEY-----';

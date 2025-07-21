@@ -106,7 +106,7 @@ export class WeightedRandomConfig {
 export class LaunchConfigSelector {
   /**
    * @param {object} options
-   * @param {import('taskcluster-lib-postgres').Database} options.db
+   * @param {import('@taskcluster/lib-postgres').Database} options.db
    * @param {{ debug: Function, log: { launchConfigSelectorsDebug: Function } } &object} options.monitor
    */
   constructor({ db, monitor }) {

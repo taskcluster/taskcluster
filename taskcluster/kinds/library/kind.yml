@@ -39,4 +39,4 @@ task-overrides:
       command: >-
         corepack yarn --immutable &> /dev/null &&
         service rabbitmq-server start &&
-        corepack yarn workspace taskcluster-lib-pulse coverage:report
+        corepack yarn workspace @taskcluster/lib-pulse coverage:report

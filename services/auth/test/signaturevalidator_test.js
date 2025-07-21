@@ -3,10 +3,10 @@ import _ from 'lodash';
 import assert from 'assert';
 import slugid from 'slugid';
 import crypto from 'crypto';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import createSignatureValidator from '../src/signaturevalidator.js';
 import utils from 'taskcluster-lib-scopes';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 
 suite(testing.suiteName(), function() {

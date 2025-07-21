@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 import debugFactory from 'debug';
 const debug = debugFactory('workerinfo');

@@ -24,12 +24,12 @@ export class Provider {
    *   rootUrl: string,
    *   providerId: string,
    *   providerType: string,
-   *   db: import('taskcluster-lib-postgres').Database,
+   *   db: import('@taskcluster/lib-postgres').Database,
    *   estimator: import('../estimator.js').Estimator,
    *   Worker: import('../data.js').Worker,
    *   WorkerPoolError: import('../data.js').WorkerPoolError,
    *   validator: Function,
-   *   publisher: import('taskcluster-lib-pulse').PulsePublisher,
+   *   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
    *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
    * }} opts
    */

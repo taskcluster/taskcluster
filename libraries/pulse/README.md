@@ -27,7 +27,7 @@ interacting with a Client are not important -- just construct one and move on.
 Create a credentials function, choosing among:
 
 ```javascript
-import pulse from 'taskcluster-lib-pulse';
+import pulse from '@taskcluster/lib-pulse';
 
 let credentials;
 
@@ -51,7 +51,7 @@ Next, create a `Client` to handle (re)connecting to Pulse:
 const client = new pulse.Client({
   namespace: 'my-service',
   credentials, // from above
-  monitor: .., // taskcluster-lib-monitor instance
+  monitor: .., // @taskcluster/lib-monitor instance
 });
 ```
 
@@ -213,7 +213,7 @@ client.onConnected(async (conn) => {
 
 ## Fakes for Testing
 
-This library coordinates with [taskcluster-lib-testing](../testing) to support both fake produces and fake consumers.
+This library coordinates with [@taskcluster/lib-testing](../testing) to support both fake produces and fake consumers.
 
 Note that while the producer and consumer behavior is properly faked, AMQP connections themselves are not faked.
 Services that interact dirctly with AMQP will need their own, more careful approaches to testing.
@@ -226,7 +226,7 @@ invoking a callback for each message.
 Construct a PulseConsumer with the async `consume` function:
 
 ```javascript
-import pulse from 'taskcluster-lib-pulse';
+import pulse from '@taskcluster/lib-pulse';
 let pc = await pulse.consume({
   client,                // Client object for connecting to the server
   bindings: [{           // exchange/routingKey patterns to bind to
@@ -250,7 +250,7 @@ This will create a queue using a pulse-compatible queue name based on
 If `routingKeyReference` is provided for the exchange from which messages
 arrive, then the listener will parse the routing key and make it available as a
 dictionary on the message.  Note that bindings are easily constructed using the
-taskcluster-client library.
+@taskcluster/client library.
 
 The instance starts consuming messages immediately. When the `consume` function's
 promise has resolved, the queue exists and all bindings are in place.
@@ -343,7 +343,7 @@ support for sending messages is quite simple, but this component also handles
 declaring exchanges, message schemas, and so on, and producing a reference
 document that can be consumed by client libraries to generate easy-to-use
 clients. All of this is similar to what
-[taskcluster-lib-api](../api) does
+[@taskcluster/lib-api](../api) does
 for HTTP APIs.
 
 ## Declaring Exchanges
@@ -352,7 +352,7 @@ Begin by creating an `Exchanges` instance. This will collect all exchange
 definitions for the service.
 
 ```javascript
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 
 const exchanges = new Exchanges({
   serviceName: 'myservice',
@@ -367,11 +367,11 @@ const exchanges = new Exchanges({
 ```
 
 The `serviceName` should match that passed to
-[taskcluster-lib-validate](../validate).
+[@taskcluster/lib-validate](../validate).
 The `projectName` is used to construct exchange and queue names.  It should
 match the pulse namespace (at least in production deployments) and the name
 passed to
-[taskcluster-lib-monitor](../monitor),
+[@taskcluster/lib-monitor](../monitor),
 
 Having created the `exchanges` instance, declare exchanges on it:
 
@@ -450,7 +450,7 @@ By convention, these are prefixed with `route.`.
 The `exchanges.reference()` method will return a reference document suitable
 for publication under `<rootUrl>/references`.
 
-This is typically passed to [taskcluster-lib-references](../references) like this:
+This is typically passed to [@taskcluster/lib-references](../references) like this:
 
 ```javascript
 await libReferences.fromService({
@@ -466,8 +466,8 @@ To publish messages, create a new pulse publisher:
 ```javascript
 const publisher = await exchanges.publisher({
   rootUrl: cfg.taskcluster.rootUrl,
-  schemaset, // from taskcluster-lib-validate
-  client,    // taskcluster-lib-pulse Client instance
+  schemaset, // from @taskcluster/lib-validate
+  client,    // @taskcluster/lib-pulse Client instance
   sendDeadline: 12000,
 });
 ```

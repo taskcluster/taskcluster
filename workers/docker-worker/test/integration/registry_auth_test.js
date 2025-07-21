@@ -6,7 +6,7 @@ const Registry = require('./helper/docker_registry');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
 const { removeImage } = require('../../src/util/remove_image');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 const CREDENTIALS = {

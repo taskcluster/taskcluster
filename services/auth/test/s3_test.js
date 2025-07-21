@@ -9,7 +9,7 @@ import {
 import helper from './helper.js';
 import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (mock) {

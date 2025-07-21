@@ -1,9 +1,9 @@
 {
-  "name": "taskcluster-lib-app",
+  "name": "@taskcluster/lib-app",
   "private": true,
   "version": "87.1.3",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
-  "description": "taskcluster-lib-app",
+  "description": "@taskcluster/lib-app",
   "license": "MPL-2.0",
   "scripts": {
     "coverage": "c8 yarn test",

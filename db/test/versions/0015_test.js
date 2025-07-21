@@ -1,5 +1,5 @@
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'assert';
 import crypto from 'crypto';
 

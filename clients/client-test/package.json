@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-client-test",
+  "name": "@taskcluster/client-test",
   "version": "87.1.3",
   "description": "Node client test",
   "license": "MPL-2.0",
@@ -11,21 +11,8 @@
     "http-proxy": "^1.18.0",
     "mocha": "^10.2.0",
     "nock": "^13.5.5",
-    "taskcluster-client": "link:../client",
-    "taskcluster-db": "link:db",
-    "taskcluster-lib-api": "link:../libraries/api",
-    "taskcluster-lib-app": "link:../libraries/app",
-    "taskcluster-lib-config": "link:../libraries/config",
-    "taskcluster-lib-iterate": "link:../libraries/iterate",
-    "taskcluster-lib-loader": "link:../libraries/loader",
-    "taskcluster-lib-monitor": "link:../libraries/monitor",
-    "taskcluster-lib-postgres": "link:../libraries/postgres",
-    "taskcluster-lib-pulse": "link:../libraries/pulse",
-    "taskcluster-lib-references": "link:../libraries/references",
     "taskcluster-lib-scopes": "^11.0.0",
-    "taskcluster-lib-testing": "link:../libraries/testing",
-    "taskcluster-lib-urls": "^13.0.0",
-    "taskcluster-lib-validate": "link:../libraries/validate"
+    "taskcluster-lib-urls": "^13.0.0"
   },
   "engines": {
     "node": "22.17.1"

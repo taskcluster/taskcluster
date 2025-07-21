@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const loadWebhookJson = async filename => {

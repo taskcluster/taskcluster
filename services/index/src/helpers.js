@@ -1,7 +1,7 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { paginateResults } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 /** Regular expression for valid namespaces */
 export const namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;

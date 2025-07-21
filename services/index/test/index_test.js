@@ -4,8 +4,8 @@ const debug = debugFactory('index:test:index_test');
 import helper from './helper.js';
 import slugid from 'slugid';
 import _ from 'lodash';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

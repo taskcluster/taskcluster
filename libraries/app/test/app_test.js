@@ -3,7 +3,7 @@ import { App } from '../src/index.js';
 import request from 'superagent';
 import express from 'express';
 import isUUID from 'is-uuid';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import path from 'path';
 import mockFs from 'mock-fs';
 

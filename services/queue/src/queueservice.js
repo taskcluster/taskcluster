@@ -3,7 +3,7 @@ import makeDebug from 'debug';
 const debug = makeDebug('app:queue');
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where

@@ -1,4 +1,4 @@
-declare module 'taskcluster-lib-loader' {
+declare module '@taskcluster/lib-loader' {
   /**
    * A generic type for the shape of a single component definition
    * in the componentDirectory.

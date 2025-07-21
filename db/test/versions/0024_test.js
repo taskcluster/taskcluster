@@ -1,4 +1,4 @@
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   // this version only redefines a method, which is tested in unit tests,

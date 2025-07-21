@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 
 /** Declaration of exchanges used by hooks  */
 let exchanges = new Exchanges({

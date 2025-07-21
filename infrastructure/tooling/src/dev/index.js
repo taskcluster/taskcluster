@@ -19,7 +19,7 @@ import awsResources from './aws.js';
 import taskclusterResources from './taskcluster.js';
 import helm from './helm.js';
 import { makePgUrl } from './util.js';
-import { upgrade, downgrade } from 'taskcluster-db';
+import { upgrade, downgrade } from '@taskcluster/db';
 
 const USER_CONF_FILE = 'dev-config.yml';
 export const readUserConfig = async () => {

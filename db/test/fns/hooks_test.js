@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import slug from 'slugid';
 import { strict as assert } from 'assert';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'hooks' });

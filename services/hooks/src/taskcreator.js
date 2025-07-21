@@ -1,5 +1,5 @@
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:taskcreator');
 import _ from 'lodash';

@@ -4,7 +4,7 @@ import credentials from './credentials.js';
 import formatError from './formatError.js';
 import scopeUtils from 'taskcluster-lib-scopes';
 import { decryptToken } from './decryptToken.js';
-import { ErrorReply } from 'taskcluster-lib-api';
+import { ErrorReply } from '@taskcluster/lib-api';
 
 export default ({ cfg, server, schema, context, path, authFactory }) => {
 

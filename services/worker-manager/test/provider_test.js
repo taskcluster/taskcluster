@@ -1,10 +1,10 @@
 import assert from 'assert';
 import helper from './helper.js';
 import { Provider } from '../src/providers/provider.js';
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

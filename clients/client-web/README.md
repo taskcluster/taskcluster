@@ -1,12 +1,12 @@
 # Taskcluster Client for Web
 
-[![Download](https://img.shields.io/badge/yarn-taskcluster--client--web-brightgreen)](https://yarnpkg.com/en/package/taskcluster-client-web)
+[![Download](https://img.shields.io/badge/yarn-taskcluster--client--web-brightgreen)](https://yarnpkg.com/en/package/@taskcluster/client-web)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 **A Taskcluster client library for the browser.**
 
 This library differs from
-[taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client) by
+[@taskcluster/client](https://yarnpkg.com/en/package/@taskcluster/client) by
 providing a version that is compatible with the browser out of the box and does
 not require a build step to use.
 
@@ -15,10 +15,10 @@ not require a build step to use.
 You can install this package using Yarn or npm:
 
 ```bash
-yarn add taskcluster-client-web
+yarn add @taskcluster/client-web
 ```
 ```bash
-npm install --save taskcluster-client-web
+npm install --save @taskcluster/client-web
 ```
 
 ## Usage
@@ -31,25 +31,25 @@ The following importing standards are supported:
 **ES imports**
 
 ```js
-import * as taskcluster from 'taskcluster-client-web';
-import { Queue } from 'taskcluster-client-web';
+import * as taskcluster from '@taskcluster/client-web';
+import { Queue } from '@taskcluster/client-web';
 ```
 
 **CommonJS require**
 
 ```js
-const taskcluster = require('taskcluster-client-web');
-const { Queue } = require('taskcluster-client-web');
+const taskcluster = require('@taskcluster/client-web');
+const { Queue } = require('@taskcluster/client-web');
 ```
 
 **AMD/UMD require**
 
 ```js
-require(['taskcluster-client-web'], (taskcluster) => {
+require(['@taskcluster/client-web'], (taskcluster) => {
   // ...
 });
 
-require(['taskcluster-client-web'], ({ Queue }) => {
+require(['@taskcluster/client-web'], ({ Queue }) => {
   // ...
 });
 ```
@@ -64,7 +64,7 @@ _Note: while these examples use ES imports, your actual usage will depend on
 what your build process or installation method support._
 
 ```js
-import { Queue } from 'taskcluster-client-web';
+import { Queue } from '@taskcluster/client-web';
 
 const taskId = '...';
 
@@ -105,7 +105,7 @@ scopes than you do, you can specify which scopes your request should be allowed
 to use with `authorizedScopes`.
 
 ```js
-import { Queue } from 'taskcluster-client-web';
+import { Queue } from '@taskcluster/client-web';
 
 // Create a Queue Client class can only define tasks for a specific workerType
 const queue = new Queue({
@@ -162,7 +162,7 @@ take a look at the section on building signed URLs, which is possible for all
 illustrated in the following example:
 
 ```js
-import { Queue } from 'taskcluster-client-web';
+import { Queue } from '@taskcluster/client-web';
 
 // Create queue instance
 const queue = new Queue({ rootUrl });
@@ -193,7 +193,7 @@ It's fairly safe to provide someone with a signed URL for a
 specific artifact that is protected by a scope, for example:
 
 ```js
-import { Queue } from 'taskcluster-client-web';
+import { Queue } from '@taskcluster/client-web';
 
 // Create queue instance
 const queue = new Queue({ rootUrl, credentials });
@@ -210,7 +210,7 @@ queue
   .then(signedUrl => { /* ... });
 ```
 
-**NOTE**: This method returns a promise, unlike in [taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client).
+**NOTE**: This method returns a promise, unlike in [@taskcluster/client](https://yarnpkg.com/en/package/@taskcluster/client).
 If you are not using a credentials agent, but have passed `credentials` to the client constructor, you can use the synchronous `buildSignedUrlSync` instead.
 
 Please note that the `payload` parameter cannot be encoded in the signed URL
@@ -231,7 +231,7 @@ than 31 days, and you can only revoke them by revoking the credentials that were
 used to issue them, which can take up to one hour.
 
 ```js
-import { createTemporaryCredentials } from 'taskcluster-client-web';
+import { createTemporaryCredentials } from '@taskcluster/client-web';
 
 const credentials = createTemporaryCredentials({
   // Name of temporary credential (optional)
@@ -261,7 +261,7 @@ to offset `Date` objects into the future. Therefore this library comes with two
 utility functions for this purpose.
 
 ```js
-import { fromNow, fromNowJSON } from 'taskcluster-client-web';
+import { fromNow, fromNowJSON } from '@taskcluster/client-web';
 
 const dateObject = fromNow('2 days 3 hours 1 minute');
 const dateString = fromNowJSON('2 days 3 hours 1 minute');
@@ -276,7 +276,7 @@ are minus-prefixed (`-`), the date object will be offset into the past. This is
 useful in some corner cases.
 
 ```js
-import { fromNow } from 'taskcluster-client-web';
+import { fromNow } from '@taskcluster/client-web';
 
 const dateObject = fromNow('- 1 year 2 months 3 weeks 5 seconds');
 
@@ -305,7 +305,7 @@ argument. This is useful if offsetting the task expiration relative to the the t
 deadline or doing something similar.
 
 ```js
-import { fromNow } from 'taskcluster-client-web';
+import { fromNow } from '@taskcluster/client-web';
 
 const dateObject1 = fromNow('2 days 3 hours');
 // dateObject1 = now() + 2 days and 3 hours
@@ -318,7 +318,7 @@ In Node.js you can rely on the `slugid` module to generate slug IDs, but in the 
 expose the preferred slug ID generation function as `slugid()`.
 
 ```js
-import { slugid } from 'taskcluster-client-web';
+import { slugid } from '@taskcluster/client-web';
 
 // Generate new taskId
 const taskId = slugid();
@@ -354,7 +354,7 @@ authorization checks.
 ### Credential Agents
 
 This is common server-side when using
-[taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client), but
+[@taskcluster/client](https://yarnpkg.com/en/package/@taskcluster/client), but
 for web applications the credentials are usually acquired through some
 user-login process. For such cases, the client uses a `credentialAgent` to get
 Taskcluster credentials corresponding to the logged-in user. Agents can be

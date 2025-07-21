@@ -2,7 +2,7 @@ import helper from './helper.js';
 import assert from 'assert';
 import _ from 'lodash';
 import got from 'got';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 /**
  * Tests of endpoints in the api _other than_

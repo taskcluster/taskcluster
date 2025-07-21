@@ -1,7 +1,7 @@
 import { CronExpressionParser as parser } from 'cron-parser';
-import taskcluster from 'taskcluster-client';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import taskcluster from '@taskcluster/client';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import nextDate from '../src/nextdate.js';
 import _ from 'lodash';
 import Ajv from 'ajv';

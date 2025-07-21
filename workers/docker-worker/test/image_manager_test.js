@@ -6,9 +6,9 @@ const { createHash } = require('crypto');
 const slugid = require('slugid');
 const { createLogger } = require('../src/log');
 const { NAMESPACE, TASK_ID, ROOT_URL } = require('./fixtures/image_artifacts');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const monitor = require('./fixtures/monitor');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('./helper');
 
 let docker = Docker();

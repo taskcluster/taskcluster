@@ -13,7 +13,7 @@ export const tasks = [{
 
     // update client tests to include all exposed apis
     const clientsTest = `// This file is auto-generated, don't edit
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 
 test('Main clients exposed', function () {

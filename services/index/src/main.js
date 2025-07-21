@@ -1,17 +1,17 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('index:bin:server');
-import taskcluster from 'taskcluster-client';
-import tcdb from 'taskcluster-db';
+import taskcluster from '@taskcluster/client';
+import tcdb from '@taskcluster/db';
 import Handlers from './handlers.js';
 import builder from './api.js';
-import Config from 'taskcluster-lib-config';
-import loader from 'taskcluster-lib-loader';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import SchemaSet from 'taskcluster-lib-validate';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import Config from '@taskcluster/lib-config';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import SchemaSet from '@taskcluster/lib-validate';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import { fileURLToPath } from 'url';
 
 // Create component loader

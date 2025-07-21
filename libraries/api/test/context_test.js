@@ -1,5 +1,5 @@
-import SchemaSet from 'taskcluster-lib-validate';
-import { App } from 'taskcluster-lib-app';
+import SchemaSet from '@taskcluster/lib-validate';
+import { App } from '@taskcluster/lib-app';
 import { APIBuilder } from '../src/index.js';
 import assert from 'assert';
 import request from 'superagent';
@@ -7,7 +7,7 @@ import slugid from 'slugid';
 import sinon from 'sinon';
 import path from 'path';
 import { monitor } from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

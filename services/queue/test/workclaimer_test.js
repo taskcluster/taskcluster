@@ -1,8 +1,8 @@
 import assume from 'assume';
 import slugid from 'slugid';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import WorkClaimer from '../src/workclaimer.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {

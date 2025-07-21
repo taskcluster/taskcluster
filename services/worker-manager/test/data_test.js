@@ -1,8 +1,8 @@
 import assert from 'assert';
 import helper from './helper.js';
 import _ from 'lodash';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import { Worker, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'crypto';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import yaml from 'js-yaml';
 import assert from 'assert';
-import { consume } from 'taskcluster-lib-pulse';
+import { consume } from '@taskcluster/lib-pulse';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';
 import { statusHandler } from './status.js';

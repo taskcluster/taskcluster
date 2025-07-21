@@ -2,12 +2,12 @@ import assert from 'assert';
 import Debug from 'debug';
 import pg from 'pg';
 const { Pool } = pg;
-import { WRITE } from 'taskcluster-lib-postgres';
-import { resetDb } from 'taskcluster-lib-testing';
-import tcdb from 'taskcluster-db';
+import { WRITE } from '@taskcluster/lib-postgres';
+import { resetDb } from '@taskcluster/lib-testing';
+import tcdb from '@taskcluster/db';
 import debugFactory from 'debug';
 const debug = debugFactory('db-helper');
-import { UNDEFINED_TABLE, UNDEFINED_COLUMN, runOnlineBatches } from 'taskcluster-lib-postgres';
+import { UNDEFINED_TABLE, UNDEFINED_COLUMN, runOnlineBatches } from '@taskcluster/lib-postgres';
 
 export const dbUrl = process.env.TEST_DB_URL;
 assert(dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");

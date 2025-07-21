@@ -24,7 +24,7 @@ import {
   REPO_ROOT,
 } from '../utils/index.js';
 
-import { schema as readSchema } from 'taskcluster-db';
+import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 

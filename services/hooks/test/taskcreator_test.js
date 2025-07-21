@@ -2,12 +2,12 @@ import assert from 'assert';
 import assume from 'assume';
 import taskcreator from '../src/taskcreator.js';
 import helper from './helper.js';
-import taskcluster from 'taskcluster-client';
-import { sleep } from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import { sleep } from '@taskcluster/lib-testing';
 import _ from 'lodash';
 import hookDef from './test_definition.js';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { hookUtils } from '../src/utils.js';
 
 suite(testing.suiteName(), function() {

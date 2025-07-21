@@ -1,8 +1,8 @@
 import assert from 'assert';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { LEVELS } from '@taskcluster/lib-monitor';
 import { WorkerPool, Worker } from '../src/data.js';
 import { ApiError } from '../src/providers/provider.js';
 

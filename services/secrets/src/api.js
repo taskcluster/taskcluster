@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({
   SECRET: {

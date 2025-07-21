@@ -66,7 +66,7 @@ provide credentials. So in most cases, services load load configuration with
 
 The default options are shown here:
 ```js
-import config from 'taskcluster-lib-config';
+import config from '@taskcluster/lib-config';
 
 const cfg = config({
   files: [ // Files to load configuration from

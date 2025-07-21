@@ -70,4 +70,4 @@ Here are a few bullet-point practical principles we follow in developing and rev
 
 * *Database access has lots of rules* - special care is required around database design.
   Important user-facing features such as downtime-free upgrades depend on adherence to these rules.
-  See the [taskcluster-lib-postgres](../libraries/postgres) and [db](../db) documentation for details.
+  See the [@taskcluster/lib-postgres](../libraries/postgres) and [db](../db) documentation for details.

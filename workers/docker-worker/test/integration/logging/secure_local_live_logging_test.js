@@ -2,7 +2,7 @@ const https = require('https');
 const slugid = require('slugid');
 const url = require('url');
 const assert = require('assert');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 
 const DockerWorker = require('../../dockerworker');
 const helper = require('../../helper');
