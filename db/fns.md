@@ -148,7 +148,7 @@
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
-   * [`expire_secrets`](#expire_secrets)
+   * [`expire_secrets_return_names`](#expire_secrets_return_names)
    * [`get_secret`](#get_secret)
    * [`get_secrets`](#get_secrets)
    * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
@@ -6064,7 +6064,7 @@ end
 ## secrets
 
 * [`delete_secret`](#delete_secret)
-* [`expire_secrets`](#expire_secrets)
+* [`expire_secrets_return_names`](#expire_secrets_return_names)
 * [`get_secret`](#get_secret)
 * [`get_secrets`](#get_secrets)
 * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
@@ -6092,27 +6092,24 @@ end
 
 </details>
 
-### expire_secrets
+### expire_secrets_return_names
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 42
+* *Returns*: `table`
+  * `name text`
+* *Last defined on version*: 114
 
-Delete all secrets with an 'expires' in the past.
+Delete all secrets with an 'expires' in the past and return names
 
 <details><summary>Function Body</summary>
 
 ```
-declare
-  count integer;
 begin
-  delete from secrets where secrets.expires < now();
-  if found then
-    get diagnostics count = row_count;
-    return count;
-  end if;
-  return 0;
+  return query
+  delete from secrets
+  where secrets.expires < now()
+  returning secrets.name;
 end
 ```
 
@@ -6235,6 +6232,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `expire_secrets()` (compatibility guaranteed until v89.0.0)
 
 ## web_server
 

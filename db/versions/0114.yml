@@ -1,0 +1,19 @@
+version: 114
+description: Expired secrets leaving audit trails
+methods:
+  expire_secrets:
+    deprecated: true
+
+  expire_secrets_return_names:
+    description: Delete all secrets with an 'expires' in the past and return names
+    mode: write
+    serviceName: secrets
+    args: ''
+    returns: table(name text)
+    body: |-
+      begin
+        return query
+        delete from secrets
+        where secrets.expires < now()
+        returning secrets.name;
+      end

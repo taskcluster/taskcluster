@@ -4215,11 +4215,18 @@ type SecretsDeleteSecretFn = {
   name_in: string;
  }): Promise<void>;
 };
-type SecretsExpireSecretsFn = {
+/** @deprecated */
+type SecretsExpireSecretsDeprecatedFn = {
  (
  ): Promise<[{ expire_secrets: number }]>;
  (params: {
  }): Promise<[{ expire_secrets: number }]>;
+};
+type SecretsExpireSecretsReturnNamesFn = {
+ (
+ ): Promise<Array<{name: string}>>;
+ (params: {
+ }): Promise<Array<{name: string}>>;
 };
 type SecretsGetSecretFn = {
  (
@@ -6242,7 +6249,7 @@ export interface DbFunctions {
 
   // Secrets
   delete_secret: SecretsDeleteSecretFn;
-  expire_secrets: SecretsExpireSecretsFn;
+  expire_secrets_return_names: SecretsExpireSecretsReturnNamesFn;
   get_secret: SecretsGetSecretFn;
   get_secrets: SecretsGetSecretsFn;
   insert_secrets_audit_history: SecretsInsertSecretsAuditHistoryFn;
@@ -6496,6 +6503,7 @@ export interface DeprecatedDbFunctions {
   update_task_queue: QueueUpdateTaskQueueDeprecatedFn;
 
   // Secrets
+  expire_secrets: SecretsExpireSecretsDeprecatedFn;
   secrets_entities_create: SecretsSecretsEntitiesCreateDeprecatedFn;
   secrets_entities_load: SecretsSecretsEntitiesLoadDeprecatedFn;
   secrets_entities_modify: SecretsSecretsEntitiesModifyDeprecatedFn;

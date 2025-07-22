@@ -7733,6 +7733,24 @@
         }
       },
       "version": 113
+    },
+    {
+      "description": "Expired secrets leaving audit trails",
+      "methods": {
+        "expire_secrets": {
+          "deprecated": true
+        },
+        "expire_secrets_return_names": {
+          "args": "",
+          "body": "begin\n  return query\n  delete from secrets\n  where secrets.expires < now()\n  returning secrets.name;\nend",
+          "deprecated": false,
+          "description": "Delete all secrets with an 'expires' in the past and return names",
+          "mode": "write",
+          "returns": "table(name text)",
+          "serviceName": "secrets"
+        }
+      },
+      "version": 114
     }
   ]
 }
