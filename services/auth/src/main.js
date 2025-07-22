@@ -6,7 +6,7 @@ import tcdb from 'taskcluster-db';
 import { MonitorManager } from 'taskcluster-lib-monitor';
 import { App } from 'taskcluster-lib-app';
 import Config from 'taskcluster-lib-config';
-import builder from './api.js';
+import builder, { AUDIT_ENTRY_TYPE } from './api.js';
 import debugFactory from 'debug';
 const debug = debugFactory('server');
 import exchanges from './exchanges.js';
@@ -223,8 +223,26 @@ const load = Loader({
     setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Purging expired clients');
-        const [{ expire_clients: count }] = await db.fns.expire_clients();
-        debug(`Purged ${count} expired clients`);
+        const records = await db.fns.expire_clients_return_client_ids();
+        debug(`Purged ${records.length} expired clients`);
+
+        const clientId = 'static/taskcluster/auth';
+        for (const { client_id: name } of records) {
+          monitor.log.auditEvent({
+            service: 'auth',
+            entity: 'client',
+            entityId: name,
+            clientId,
+            action: AUDIT_ENTRY_TYPE.CLIENT.EXPIRED,
+          });
+
+          await db.fns.insert_auth_audit_history(
+            name,
+            'client',
+            clientId,
+            AUDIT_ENTRY_TYPE.CLIENT.CREATED,
+          );
+        }
       });
     },
   },

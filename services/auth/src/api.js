@@ -21,6 +21,7 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
     ENABLED: 'client enabled',
     DISABLED: 'client disabled',
     ACCESS_TOKEN_RESET: 'access token reset',
+    EXPIRED: 'expired',
   },
   ROLE: {
     CREATED: 'created',

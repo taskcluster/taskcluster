@@ -211,6 +211,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         list: ['hello', 'world'],
       });
 
+      // check audit trail
+      const results = await helper.db.fns.get_combined_audit_history(null, expireKey, 'secret', 2, 0);
+      assert.deepEqual(results.map(({ action_type }) => action_type).sort(), ['created', 'expired']);
+
       try {
         await client.get(expireKey);
       } catch (err) {

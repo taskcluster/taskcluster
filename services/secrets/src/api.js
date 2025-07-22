@@ -6,6 +6,7 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
     CREATED: 'created',
     UPDATED: 'updated',
     DELETED: 'deleted',
+    EXPIRED: 'expired',
   },
 });
 const secretToJson = (db, item) => ({
