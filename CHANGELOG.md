@@ -3,6 +3,16 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#7854](https://github.com/taskcluster/taskcluster/issues/7854)
+Renames all Node packages to be in the `@taskcluster` scope.
+
+ * `taskcluster-client` --> `@taskcluster/client`
+ * `taskcluster-client-web` --> `@taskcluster/client-web`
+
 ## v87.1.3
 
 ### USERS

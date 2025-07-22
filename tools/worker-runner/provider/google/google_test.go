@@ -3,13 +3,13 @@ package google
 import (
 	"testing"
 
-	ptesting "github.com/taskcluster/taskcluster/v87/tools/workerproto/testing"
+	ptesting "github.com/taskcluster/taskcluster/v88/tools/workerproto/testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v87/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v87/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v87/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v87/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v88/tools/workerproto"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {

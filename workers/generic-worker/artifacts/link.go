@@ -3,9 +3,9 @@ package artifacts
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v87/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v87/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v87/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v88/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/gwconfig"
 )
 
 type LinkArtifact struct {

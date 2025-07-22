@@ -47,7 +47,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v87/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
 )
 
 type Secrets tcclient.Client

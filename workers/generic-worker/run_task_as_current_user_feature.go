@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v87/internal/scopes"
+	"github.com/taskcluster/taskcluster/v88/internal/scopes"
 )
 
 type RunTaskAsCurrentUserFeature struct {
