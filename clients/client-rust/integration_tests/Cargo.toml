@@ -18,8 +18,8 @@ taskcluster-download = { path = "../download" }
 httptest = "0.16"
 tempfile = "3"
 ring = "0.17"
-tokio = { version = "1.45", features = ["macros", "fs"] }
+tokio = { version = "1.46", features = ["macros", "fs"] }
 anyhow = "1.0"
 slugid = "1.0.0"
-serde_json = "1.0.140"
+serde_json = "1.0.141"
 reqwest = { version = "0.12", features = ["json"] }
