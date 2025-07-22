@@ -191,6 +191,7 @@ export default class ViewTask extends Component {
     dialogError: null,
     caches: null,
     selectedCaches: null,
+    formInputs: null,
   };
 
   listener = null;
@@ -252,12 +253,14 @@ export default class ViewTask extends Component {
   }
 
   handleActionClick = name => () => {
-    const { action } = this.state.actionData[name];
+    const { actionData, actionInputs } = this.getTaskActionsData();
+    const { action } = actionData[name];
 
     this.setState({
       dialogError: null,
       dialogOpen: true,
       selectedAction: action,
+      formInputs: actionInputs[name] ?? '',
     });
   };
 
@@ -293,13 +296,13 @@ export default class ViewTask extends Component {
       client,
       data: { task },
     } = this.props;
-    const { actionInputs, actionData } = this.getTaskActionsData();
-    const form = actionInputs[name];
+    const { formInputs } = this.state;
+    const { actionData } = this.getTaskActionsData();
     const { action } = actionData[name];
     const taskId = await submitTaskAction({
       task,
       taskActions: task.taskActions,
-      form,
+      form: formInputs,
       action,
       apolloClient: client,
     });
@@ -529,13 +532,9 @@ export default class ViewTask extends Component {
     this.handleEdit(task);
   };
 
-  handleFormChange = (value, name) =>
+  handleFormChange = value =>
     this.setState({
-      actionInputs: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
-        ...this.state.actionInputs,
-        [name]: value,
-      },
+      formInputs: value,
     });
 
   handlePurgeWorkerCacheClick = () => {
@@ -877,8 +876,9 @@ export default class ViewTask extends Component {
       dialogOpen,
       actionLoading,
       dialogError,
+      formInputs,
     } = this.state;
-    const { actionData, taskActions, actionInputs } = this.getTaskActionsData();
+    const { actionData, taskActions } = this.getTaskActionsData();
     let tags;
 
     if (task) {
@@ -1086,7 +1086,7 @@ export default class ViewTask extends Component {
                   body: (
                     <TaskActionForm
                       action={selectedAction}
-                      form={actionInputs[selectedAction.name]}
+                      form={formInputs}
                       onFormChange={this.handleFormChange}
                     />
                   ),
