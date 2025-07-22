@@ -29,5 +29,8 @@
   "files": [
     "src"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./src/index.js"
 }
