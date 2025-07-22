@@ -109,11 +109,18 @@ type AuthDeleteClientFn = {
   client_id_in: string;
  }): Promise<void>;
 };
-type AuthExpireClientsFn = {
+/** @deprecated */
+type AuthExpireClientsDeprecatedFn = {
  (
  ): Promise<[{ expire_clients: number }]>;
  (params: {
  }): Promise<[{ expire_clients: number }]>;
+};
+type AuthExpireClientsReturnClientIdsFn = {
+ (
+ ): Promise<Array<{client_id: string}>>;
+ (params: {
+ }): Promise<Array<{client_id: string}>>;
 };
 /** @deprecated */
 type AuthGetAuditHistoryDeprecatedFn = {
@@ -6097,7 +6104,7 @@ export interface DbFunctions {
   // Auth
   create_client: AuthCreateClientFn;
   delete_client: AuthDeleteClientFn;
-  expire_clients: AuthExpireClientsFn;
+  expire_clients_return_client_ids: AuthExpireClientsReturnClientIdsFn;
   get_client: AuthGetClientFn;
   get_clients: AuthGetClientsFn;
   get_combined_audit_history: AuthGetCombinedAuditHistoryFn;
@@ -6321,6 +6328,7 @@ export interface DeprecatedDbFunctions {
   clients_entities_modify: AuthClientsEntitiesModifyDeprecatedFn;
   clients_entities_remove: AuthClientsEntitiesRemoveDeprecatedFn;
   clients_entities_scan: AuthClientsEntitiesScanDeprecatedFn;
+  expire_clients: AuthExpireClientsDeprecatedFn;
   get_audit_history: AuthGetAuditHistoryDeprecatedFn;
   roles_entities_create: AuthRolesEntitiesCreateDeprecatedFn;
   roles_entities_load: AuthRolesEntitiesLoadDeprecatedFn;

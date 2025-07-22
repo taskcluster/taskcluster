@@ -93,7 +93,7 @@ let load = loader({
         const records = (await db.fns.expire_secrets_return_names());
         debug(`Expired ${records.length} secrets`);
 
-        const clientId = cfg.taskcluster.credentials.clientId ?? 'static/taskcluster/secrets';
+        const clientId = 'static/taskcluster/secrets';
         for (const { name } of records) {
           monitor.log.auditEvent({
             service: 'secrets',

@@ -4,7 +4,7 @@
  * [auth functions](#auth)
    * [`create_client`](#create_client)
    * [`delete_client`](#delete_client)
-   * [`expire_clients`](#expire_clients)
+   * [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
    * [`get_client`](#get_client)
    * [`get_clients`](#get_clients)
    * [`get_combined_audit_history`](#get_combined_audit_history)
@@ -213,7 +213,7 @@
 
 * [`create_client`](#create_client)
 * [`delete_client`](#delete_client)
-* [`expire_clients`](#expire_clients)
+* [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
 * [`get_client`](#get_client)
 * [`get_clients`](#get_clients)
 * [`get_combined_audit_history`](#get_combined_audit_history)
@@ -315,29 +315,24 @@ end
 
 </details>
 
-### expire_clients
+### expire_clients_return_client_ids
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 41
+* *Returns*: `table`
+  * `client_id text`
+* *Last defined on version*: 114
 
-Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
+Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids
 
 <details><summary>Function Body</summary>
 
 ```
-declare
-  count integer;
 begin
+  return query
   delete from clients
-  where expires < now() and delete_on_expiration;
-
-  if found then
-    get diagnostics count = row_count;
-    return count;
-  end if;
-  return 0;
+  where expires < now() and delete_on_expiration
+  returning clients.client_id;
 end
 ```
 
@@ -707,6 +702,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `expire_clients()` (compatibility guaranteed until v89.0.0)
 
 ## github
 

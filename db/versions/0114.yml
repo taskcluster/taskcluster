@@ -1,5 +1,5 @@
 version: 114
-description: Expired secrets leaving audit trails
+description: Expired secrets and clients leaving audit trails
 methods:
   expire_secrets:
     deprecated: true
@@ -16,4 +16,22 @@ methods:
         delete from secrets
         where secrets.expires < now()
         returning secrets.name;
+      end
+
+  expire_clients:
+    deprecated: true
+
+  expire_clients_return_client_ids:
+    description: |-
+      Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids
+    mode: write
+    serviceName: auth
+    args: ''
+    returns: table(client_id text)
+    body: |-
+      begin
+        return query
+        delete from clients
+        where expires < now() and delete_on_expiration
+        returning clients.client_id;
       end

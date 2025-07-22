@@ -7735,8 +7735,20 @@
       "version": 113
     },
     {
-      "description": "Expired secrets leaving audit trails",
+      "description": "Expired secrets and clients leaving audit trails",
       "methods": {
+        "expire_clients": {
+          "deprecated": true
+        },
+        "expire_clients_return_client_ids": {
+          "args": "",
+          "body": "begin\n  return query\n  delete from clients\n  where expires < now() and delete_on_expiration\n  returning clients.client_id;\nend",
+          "deprecated": false,
+          "description": "Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids",
+          "mode": "write",
+          "returns": "table(client_id text)",
+          "serviceName": "auth"
+        },
         "expire_secrets": {
           "deprecated": true
         },
