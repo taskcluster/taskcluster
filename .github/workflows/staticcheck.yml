@@ -20,7 +20,7 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.3.1
+    - uses: dominikh/staticcheck-action@v1.4.0
       with:
         working-directory: workers/generic-worker
         build-tags: multiuser
@@ -42,7 +42,7 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.3.1
+    - uses: dominikh/staticcheck-action@v1.4.0
       with:
         working-directory: workers/generic-worker
         build-tags: insecure
@@ -64,7 +64,7 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@v1.3.1
+    - uses: dominikh/staticcheck-action@v1.4.0
       with:
         working-directory: ${{ matrix.dir }}
         install-go: false
