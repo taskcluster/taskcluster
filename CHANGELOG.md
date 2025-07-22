@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v87.1.3
+
+### USERS
+
+▶ [patch] [#7719](https://github.com/taskcluster/taskcluster/issues/7719)
+Expired secrets leave an audit event/record.
+
+▶ [patch]
+Fixes UI actions form that was broken with the last refactoring.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump form-data from 3.0.1 to 3.0.4 in /ui (c313008655)
+* build(deps): bump golang.org/x/oauth2 from 0.26.0 to 0.27.0 (2927b91eba)
+
+</details>
+
 ## v87.1.2
 
 ### GENERAL
