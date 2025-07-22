@@ -209,7 +209,7 @@ module.exports = {
         '\\.graphql$': 'jest-transform-graphql',
       },
       transformIgnorePatterns: [
-        "node_modules/(?!is-absolute-url|taskcluster-client-web)"
+        "node_modules/(?!is-absolute-url|@taskcluster/client-web)"
       ],
     }),
   ],

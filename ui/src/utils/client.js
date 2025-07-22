@@ -1,4 +1,4 @@
-import { WorkerManager } from 'taskcluster-client-web';
+import { WorkerManager } from '@taskcluster/client-web';
 
 export const getClient = ({ Class, user, ...options }) => {
   return new Class({

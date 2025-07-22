@@ -1,6 +1,6 @@
 import { getClient } from './client';
 
-const { Queue, Index } = require('taskcluster-client-web');
+const { Queue, Index } = require('@taskcluster/client-web');
 
 /**
  * Get a signed URL that can be used to fetch the given task.  This URL is
