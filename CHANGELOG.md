@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.0.1
+
+### GENERAL
+
+▶ [patch]
+Fix releases of `@taskcluser/client` and `@taskcluster/client-web` by making their access public by default.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump the node-deps group with 11 updates (5b4dda73b8)
+* build(deps): bump the go-deps group with 5 updates (a725a57f99)
+* build(deps-dev): bump the client-web-node-deps group (af59ea099e)
+* build(deps): bump the client-rust-deps group (586d3f5ecb)
+* build(deps): bump dominikh/staticcheck-action (c285fbb710)
+
+</details>
+
 ## v88.0.0
 
 ### GENERAL
