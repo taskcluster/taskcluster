@@ -6,7 +6,7 @@ import { annotateError } from './util.js';
 import Keyring from './Keyring.js';
 import { strict as assert } from 'assert';
 import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 import pgConnectionString from 'pg-connection-string';
 const { parse: parseConnectionString } = pgConnectionString;
 

@@ -30,11 +30,11 @@ No transpilation should be used: write JS that can be interpreted directly by th
 
 ## Implementation
 
-### taskcluster-lib-loader
+### @taskcluster/lib-loader
 
-The main entry-point for the service should be a file called `main.js`, which should use [taskcluster-lib-loader](../../libraries/loader) for loading components.
+The main entry-point for the service should be a file called `main.js`, which should use [@taskcluster/lib-loader](../../libraries/loader) for loading components.
 
-### taskcluster-lib-api
+### @taskcluster/lib-api
 
 The API definition should be in a file called `api.js`:
 
@@ -91,7 +91,7 @@ api.declare({
 
 Do not use `res.status(..)` to return error messages.
 Instead, use `res.reportError(code, message, details)`.
-The `taskcluster-lib-api` library provides most of the codes you will need, specifically `InvalidInput`, `ResourceNotFound`, and `ResourceConflict`.
+The `@taskcluster/lib-api` library provides most of the codes you will need, specifically `InvalidInput`, `ResourceNotFound`, and `ResourceConflict`.
 
 Prefer to use these built-in codes.
 If you have a case where you must return a different HTTP code, or clients need to be able to distinguish the errors programmatically, add a new error code:
@@ -117,10 +117,10 @@ res.reportError('SomethingReallyBad',
 
 Be friendly and document the errors in the API's `description` property, as they are not automatically documented.
 
-### taskcluster-lib-monitor
+### @taskcluster/lib-monitor
 
 *Do not use* `taskcluster-lib-stats` or `raven`.
-Instead, use `taskcluster-lib-monitor` as described in its documentation.
+Instead, use `@taskcluster/lib-monitor` as described in its documentation.
 
 ### taskcluster-web-server
 

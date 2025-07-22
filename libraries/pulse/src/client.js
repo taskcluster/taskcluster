@@ -1,7 +1,7 @@
 import events from 'events';
 import amqplib from 'amqplib';
 import assert from 'assert';
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 import URL from 'url';
 
 let clientCounter = 0;
@@ -55,7 +55,7 @@ MonitorManager.register({
  * * recycleInterval (ms; default 1h)
  * * retirementDelay (ms; default 30s)
  * * minReconnectionInterval (ms; default 15s)
- * * monitor (taskcluster-lib-monitor instance)
+ * * monitor (@taskcluster/lib-monitor instance)
  *
  * The pulse namespace for this user is available as `client.namespace`.
  */

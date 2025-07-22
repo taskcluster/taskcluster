@@ -5,7 +5,7 @@ import helper from './helper.js';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import { setIsProduction } from '../src/middleware/express-error.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   // Create test api

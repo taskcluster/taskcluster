@@ -2,7 +2,7 @@ import jparam from 'json-parameterization';
 import _ from 'lodash';
 import slugid from 'slugid';
 import jsone from 'json-e';
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 import TopoSort from 'topo-sort';
 import { GITHUB_TASKS_FOR } from './constants.js';
 

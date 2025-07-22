@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
 import assert from 'assert';
 import helper from './helper.js';
 import { FakeAzure } from './fakes/index.js';
 import { AzureProvider } from '../src/providers/azure/index.js';
 import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import forge from 'node-forge';
 import fs from 'fs';
 import path from 'path';

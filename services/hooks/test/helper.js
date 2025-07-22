@@ -1,8 +1,8 @@
 import { globalAgent } from 'http';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import taskcreator from '../src/taskcreator.js';
 
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';

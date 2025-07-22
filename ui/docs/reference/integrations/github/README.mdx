@@ -1,11 +1,11 @@
-import ReferenceLinks from 'taskcluster-ui/components/ReferenceLinks';
+import ReferenceLinks from '@taskcluster/ui/components/ReferenceLinks';
 
 <ReferenceLinks api exchanges logs />
 
 # Github Service
 
-import Warning from 'taskcluster-ui/views/Documentation/components/Warning';
-import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
+import SiteSpecific from '@taskcluster/ui/components/SiteSpecific';
 
 This service monitors all of the repositories associated with an organization for changes and schedules Taskcluster tasks for any repository which contains a `.taskcluster.yml` configuration file.
 The goal of this project is to provide project owners a method for scheduling jobs in Taskcluster which is quick and straight forward.

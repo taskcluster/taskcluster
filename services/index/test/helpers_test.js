@@ -1,5 +1,5 @@
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helpers from '../src/helpers.js';
 
 suite(testing.suiteName(), function() {

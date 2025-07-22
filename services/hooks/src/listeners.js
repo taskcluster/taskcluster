@@ -1,5 +1,5 @@
 import assert from 'assert';
-import pulse from 'taskcluster-lib-pulse';
+import pulse from '@taskcluster/lib-pulse';
 import pSynchronize from 'p-synchronize';
 import _ from 'lodash';
 import { queueUtils, hookUtils } from './utils.js';

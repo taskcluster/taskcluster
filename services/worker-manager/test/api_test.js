@@ -1,9 +1,9 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import slug from 'slugid';
 import assert from 'assert';
 import helper from './helper.js';
 import { WorkerPool, Worker } from '../src/data.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import fs from 'fs';
 import path from 'path';
 

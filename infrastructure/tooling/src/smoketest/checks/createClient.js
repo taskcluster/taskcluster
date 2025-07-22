@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { retryAssertionFailures } from '../util.js';
 
 export const scopeExpression = {

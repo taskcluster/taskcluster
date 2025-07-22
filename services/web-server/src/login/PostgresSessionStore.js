@@ -1,5 +1,5 @@
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { NOOP } from '../utils/constants.js';
 import hash from '../utils/hash.js';
 
@@ -10,7 +10,7 @@ export default function ({ session, db, options = {} }) {
   assert(db, 'A database is required');
 
   const {
-    // Session timeout in a format that `fromNow` (taskcluster-client) understands. Defaults to 1 day
+    // Session timeout in a format that `fromNow` (@taskcluster/client) understands. Defaults to 1 day
     sessionTimeout = '1 day',
   } = options;
 

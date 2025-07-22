@@ -1,6 +1,6 @@
 import { hrtime } from 'process';
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 /**
  * We consider a "workerPoolId" to be a string of the shape "<provisionerId>/<workerType>".

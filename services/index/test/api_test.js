@@ -3,11 +3,11 @@ import debugFactory from 'debug';
 const debug = debugFactory('index:test:api_test');
 import helper from './helper.js';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import request from 'superagent';
 import assume from 'assume';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

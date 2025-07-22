@@ -1,7 +1,7 @@
 import assert from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import * as uuid from 'uuid';
 import gcpCompute from '@googleapis/compute';
 import gcpIam from '@googleapis/iam';

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';
 import {
@@ -16,7 +16,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
 import nock from 'nock';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { globalAgent } from 'http';
 
 export const load = testing.stickyLoader(loadMain);

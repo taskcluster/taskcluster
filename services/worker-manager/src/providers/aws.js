@@ -6,7 +6,7 @@ import {
   DescribeInstanceStatusCommand,
   TerminateInstancesCommand,
 } from '@aws-sdk/client-ec2';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';

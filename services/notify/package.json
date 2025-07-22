@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-notify",
+  "name": "@taskcluster/notify",
   "version": "87.1.3",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",

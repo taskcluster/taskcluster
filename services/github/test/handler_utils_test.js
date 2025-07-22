@@ -1,7 +1,7 @@
 import helper from './helper.js';
 import assert from 'assert';
 import MockDate from 'mockdate';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { GithubCheckOutput, GithubCheck, getTimeDifference } from '../src/handlers/utils.js';
 import { CHECK_RUN_STATES } from '../src/constants.js';
 

@@ -1,13 +1,13 @@
 import '../../prelude.js';
 import Debug from 'debug';
-import tcdb from 'taskcluster-db';
+import tcdb from '@taskcluster/db';
 import builder, { AUDIT_ENTRY_TYPE } from '../src/api.js';
-import loader from 'taskcluster-lib-loader';
-import SchemaSet from 'taskcluster-lib-validate';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import config from 'taskcluster-lib-config';
+import loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import config from '@taskcluster/lib-config';
 import { fileURLToPath } from 'url';
 
 let debug = Debug('secrets:server');

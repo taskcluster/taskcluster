@@ -83,6 +83,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@taskcluster/client@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/client@workspace:."
+  dependencies:
+    debug: "npm:^4.1.1"
+    got: "npm:^14.4.2"
+    hawk: "npm:^9.0.1"
+    http-proxy: "npm:^1.18.0"
+    lodash: "npm:^4.17.4"
+    mocha: "npm:^11.7.1"
+    nock: "npm:^13.5.5"
+    slugid: "npm:^5.0.1"
+    taskcluster-lib-urls: "npm:^13.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@types/http-cache-semantics@npm:^4.0.4":
   version: 4.0.4
   resolution: "@types/http-cache-semantics@npm:4.0.4"
@@ -924,22 +940,6 @@ __metadata:
   checksum: 10c0/ea1d3c275dd604c974670f63943ed9bd83623edc102430c05adb8efc56ba492746b6e95386e7831b872ec3807fd89dd8eb43f735195f37b5ec343e4234cc7e89
   languageName: node
   linkType: hard
-
-"taskcluster-client@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-client@workspace:."
-  dependencies:
-    debug: "npm:^4.1.1"
-    got: "npm:^14.4.2"
-    hawk: "npm:^9.0.1"
-    http-proxy: "npm:^1.18.0"
-    lodash: "npm:^4.17.4"
-    mocha: "npm:^11.7.1"
-    nock: "npm:^13.5.5"
-    slugid: "npm:^5.0.1"
-    taskcluster-lib-urls: "npm:^13.0.0"
-  languageName: unknown
-  linkType: soft
 
 "taskcluster-lib-urls@npm:^13.0.0":
   version: 13.0.1

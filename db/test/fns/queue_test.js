@@ -2,12 +2,12 @@ import { strict as assert } from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 const { cloneDeep, range } = _;
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import { INVALID_PARAMETER_VALUE, UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import { INVALID_PARAMETER_VALUE, UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import taskcluster from '@taskcluster/client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });
@@ -97,7 +97,7 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    // TODO: This requires support from the taskcluster-lib-postgres library
+    // TODO: This requires support from the @taskcluster/lib-postgres library
     // helper.dbTest('adding pending task notifies channel', async function (db) {
     //   const notifications = [];
 

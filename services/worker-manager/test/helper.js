@@ -1,9 +1,9 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { FakeEC2, FakeAzure, FakeGoogle } from './fakes/index.js';
 import { Worker } from '../src/data.js';
 import { globalAgent } from 'http';
 
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';

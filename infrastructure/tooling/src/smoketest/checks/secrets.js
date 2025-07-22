@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 
 export const scopeExpression = {

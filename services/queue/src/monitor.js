@@ -1,4 +1,4 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 /**
  * For ease of debugging, all log messages about tasks have a top-level

@@ -1,4 +1,4 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import helpers from './helpers.js';
 
 /**

@@ -1,4 +1,4 @@
-import { MonitorManager, LEVELS } from 'taskcluster-lib-monitor';
+import { MonitorManager, LEVELS } from '@taskcluster/lib-monitor';
 
 let monitor;
 

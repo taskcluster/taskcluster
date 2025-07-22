@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-client",
+  "name": "@taskcluster/client",
   "version": "87.1.3",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",

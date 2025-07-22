@@ -33,7 +33,7 @@ In some cases, this can be accomplished with a `docker` command (e.g., to run Ra
 ## Getting Secrets
 
 For tests that require credentials, it should be possible to supply them in a `user-config.yml` file.
-The `taskcluster-lib-config` library makes this easy.
+The `@taskcluster/lib-config` library makes this easy.
 
 The service repository should have a `user-config-example.yml` which has all the necessary settings filled with an illustrative example value or the string '...'.
 This helps people to know which credentials they need and how to set them up.
@@ -96,7 +96,7 @@ Each file should have a top-level suite (or mockSuite) with its title generated 
 
 ```javascript
 import frobs from '../src/frobs.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   test('frobnicates', async function() {
@@ -123,7 +123,7 @@ If the environment variable `NO_TEST_SKIP` is set, lack of credentials should be
 
 ### Storing and Retrieving Secrets
 
-Use the `taskcluster-lib-testing` `Secrets` class to handle retrieving secrets during test runs.
+Use the `@taskcluster/lib-testing` `Secrets` class to handle retrieving secrets during test runs.
 It takes a secret name, pointing to a secret defining a set of environment variables.
 That secret should be named `project/taskcluster/testing/<projectName>`.
 
@@ -148,7 +148,7 @@ suite('spawning EC2 instances (mock)', function() {
 
 The following is a partial list of useful mock implementations.
 
-* `fakeauth` in `taskcluster-lib-testing` provides a fake implementation of the Auth service for testing services that define APIs.
+* `fakeauth` in `@taskcluster/lib-testing` provides a fake implementation of the Auth service for testing services that define APIs.
 * The `aws-mock-s3` package provides good support for mocking the `S3` component of the AWS SDK.
 * The `nock` package is useful for intercepting HTTP requests very low in the node HTTP client implementation, and is especially helpful when mocking other TC services.
   For example, `fakeauth` uses `nock`.

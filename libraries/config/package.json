@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-lib-config",
+  "name": "@taskcluster/lib-config",
   "private": true,
   "version": "87.1.3",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",

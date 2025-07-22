@@ -2,7 +2,7 @@ const assert = require('assert');
 const Reclaimer = require('../src/task').Reclaimer;
 const fakeLog = require('debug')('fakeRuntime.log');
 const EventEmitter = require('events');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 
 suite(suiteName(), function() {
   let fakeRuntime, fakeTask;

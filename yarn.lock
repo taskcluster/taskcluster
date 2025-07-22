@@ -4397,6 +4397,328 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@taskcluster/auth@workspace:services/auth":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/auth@workspace:services/auth"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/built-in-workers@workspace:services/built-in-workers":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/built-in-workers@workspace:services/built-in-workers"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/client@link:clients/client::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/client@link:clients/client::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/db@link:db::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/db@link:db::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/db@workspace:db":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/db@workspace:db"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/github@workspace:services/github":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/github@workspace:services/github"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/hooks@workspace:services/hooks":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/hooks@workspace:services/hooks"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/index@workspace:services/index":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/index@workspace:services/index"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-api@link:libraries/api::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-api@link:libraries/api::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-api@workspace:libraries/api":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-api@workspace:libraries/api"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-app@link:libraries/app::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-app@link:libraries/app::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-app@workspace:libraries/app":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-app@workspace:libraries/app"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-config@link:libraries/config::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-config@link:libraries/config::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-config@workspace:libraries/config":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-config@workspace:libraries/config"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-iterate@link:libraries/iterate::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-iterate@link:libraries/iterate::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-iterate@workspace:libraries/iterate":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-iterate@workspace:libraries/iterate"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-loader@link:libraries/loader::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-loader@link:libraries/loader::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-loader@workspace:libraries/loader":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-loader@workspace:libraries/loader"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-monitor@workspace:libraries/monitor":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-monitor@workspace:libraries/monitor"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-postgres@link:libraries/postgres::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-postgres@link:libraries/postgres::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-postgres@workspace:libraries/postgres":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-postgres@workspace:libraries/postgres"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-pulse@link:libraries/pulse::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-pulse@link:libraries/pulse::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-pulse@workspace:libraries/pulse":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-pulse@workspace:libraries/pulse"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-references@link:libraries/references::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-references@link:libraries/references::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-references@workspace:libraries/references":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-references@workspace:libraries/references"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-testing@link:libraries/testing::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-testing@link:libraries/testing::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-testing@workspace:libraries/testing":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-testing@workspace:libraries/testing"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/lib-validate@link:libraries/validate::locator=taskcluster%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-validate@link:libraries/validate::locator=taskcluster%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@taskcluster/lib-validate@workspace:libraries/validate":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/lib-validate@workspace:libraries/validate"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/notify@workspace:services/notify":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/notify@workspace:services/notify"
+  dependencies:
+    "@aws-sdk/client-sns": "npm:^3.840.0"
+    "@aws-sdk/client-sqs": "npm:^3.840.0"
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/object@workspace:services/object":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/object@workspace:services/object"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/purge-cache@workspace:services/purge-cache":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/purge-cache@workspace:services/purge-cache"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/queue@workspace:services/queue":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/queue@workspace:services/queue"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/secrets@workspace:services/secrets":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/secrets@workspace:services/secrets"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/web-server@workspace:services/web-server":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/web-server@workspace:services/web-server"
+  dependencies:
+    c8: "npm:^8.0.1"
+    cross-env: "npm:^7.0.3"
+    eslint: "npm:^8.57.0"
+    eslint-formatter-codeframe: "npm:^7.32.1"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
+"@taskcluster/worker-manager@workspace:services/worker-manager":
+  version: 0.0.0-use.local
+  resolution: "@taskcluster/worker-manager@workspace:services/worker-manager"
+  dependencies:
+    c8: "npm:^8.0.1"
+    eslint: "npm:^8.57.0"
+    mocha: "npm:^10.8.2"
+  languageName: unknown
+  linkType: soft
+
 "@types/body-parser@npm:*":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
@@ -12875,222 +13197,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"taskcluster-auth@workspace:services/auth":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-auth@workspace:services/auth"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-built-in-workers@workspace:services/built-in-workers":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-built-in-workers@workspace:services/built-in-workers"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-client@link:clients/client::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-client@link:clients/client::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-db@link:db::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-db@link:db::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-db@workspace:db":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-db@workspace:db"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-github@workspace:services/github":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-github@workspace:services/github"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-hooks@workspace:services/hooks":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-hooks@workspace:services/hooks"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-index@workspace:services/index":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-index@workspace:services/index"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-api@link:libraries/api::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-api@link:libraries/api::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-api@workspace:libraries/api":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-api@workspace:libraries/api"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-app@link:libraries/app::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-app@link:libraries/app::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-app@workspace:libraries/app":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-app@workspace:libraries/app"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-config@link:libraries/config::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-config@link:libraries/config::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-config@workspace:libraries/config":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-config@workspace:libraries/config"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-iterate@link:libraries/iterate::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-iterate@link:libraries/iterate::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-iterate@workspace:libraries/iterate":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-iterate@workspace:libraries/iterate"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-loader@link:libraries/loader::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-loader@link:libraries/loader::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-loader@workspace:libraries/loader":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-loader@workspace:libraries/loader"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-monitor@link:libraries/monitor::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-monitor@workspace:libraries/monitor":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-monitor@workspace:libraries/monitor"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-postgres@link:libraries/postgres::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-postgres@link:libraries/postgres::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-postgres@workspace:libraries/postgres":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-postgres@workspace:libraries/postgres"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-pulse@link:libraries/pulse::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-pulse@link:libraries/pulse::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-pulse@workspace:libraries/pulse":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-pulse@workspace:libraries/pulse"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-lib-references@link:libraries/references::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-references@link:libraries/references::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-references@workspace:libraries/references":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-references@workspace:libraries/references"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
 "taskcluster-lib-scopes@npm:^11.0.0":
   version: 11.0.0
   resolution: "taskcluster-lib-scopes@npm:11.0.0"
@@ -13100,118 +13206,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"taskcluster-lib-testing@link:libraries/testing::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-testing@link:libraries/testing::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-testing@workspace:libraries/testing":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-testing@workspace:libraries/testing"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
 "taskcluster-lib-urls@npm:^13.0.0":
   version: 13.0.1
   resolution: "taskcluster-lib-urls@npm:13.0.1"
   checksum: 10c0/4801205a499f11cd4950506848421a14d1f06f0093df4492254ef7c292772167b37089a9aa37d48753fa914ff71c15b7eaf344fef84ae7e90957aa37ccf8bd45
   languageName: node
   linkType: hard
-
-"taskcluster-lib-validate@link:libraries/validate::locator=taskcluster%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-validate@link:libraries/validate::locator=taskcluster%40workspace%3A."
-  languageName: node
-  linkType: soft
-
-"taskcluster-lib-validate@workspace:libraries/validate":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-lib-validate@workspace:libraries/validate"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-notify@workspace:services/notify":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-notify@workspace:services/notify"
-  dependencies:
-    "@aws-sdk/client-sns": "npm:^3.840.0"
-    "@aws-sdk/client-sqs": "npm:^3.840.0"
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-object@workspace:services/object":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-object@workspace:services/object"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-purge-cache@workspace:services/purge-cache":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-purge-cache@workspace:services/purge-cache"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-queue@workspace:services/queue":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-queue@workspace:services/queue"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-secrets@workspace:services/secrets":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-secrets@workspace:services/secrets"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-web-server@workspace:services/web-server":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-web-server@workspace:services/web-server"
-  dependencies:
-    c8: "npm:^8.0.1"
-    cross-env: "npm:^7.0.3"
-    eslint: "npm:^8.57.0"
-    eslint-formatter-codeframe: "npm:^7.32.1"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
-
-"taskcluster-worker-manager@workspace:services/worker-manager":
-  version: 0.0.0-use.local
-  resolution: "taskcluster-worker-manager@workspace:services/worker-manager"
-  dependencies:
-    c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
-    mocha: "npm:^10.8.2"
-  languageName: unknown
-  linkType: soft
 
 "taskcluster@workspace:.":
   version: 0.0.0-use.local
@@ -13244,6 +13244,19 @@ __metadata:
     "@octokit/rest": "npm:^18.0.0"
     "@sentry/node": "npm:^6.0.0"
     "@slack/web-api": "npm:^6.11.0"
+    "@taskcluster/client": "link:clients/client"
+    "@taskcluster/db": "link:db"
+    "@taskcluster/lib-api": "link:libraries/api"
+    "@taskcluster/lib-app": "link:libraries/app"
+    "@taskcluster/lib-config": "link:libraries/config"
+    "@taskcluster/lib-iterate": "link:libraries/iterate"
+    "@taskcluster/lib-loader": "link:libraries/loader"
+    "@taskcluster/lib-monitor": "link:libraries/monitor"
+    "@taskcluster/lib-postgres": "link:libraries/postgres"
+    "@taskcluster/lib-pulse": "link:libraries/pulse"
+    "@taskcluster/lib-references": "link:libraries/references"
+    "@taskcluster/lib-testing": "link:libraries/testing"
+    "@taskcluster/lib-validate": "link:libraries/validate"
     "@types/pg": "npm:^8.15.4"
     acorn-loose: "npm:^8.5.0"
     acorn-walk: "npm:^8.3.4"
@@ -13349,21 +13362,8 @@ __metadata:
     snake-case: "npm:^3.0.3"
     subscriptions-transport-ws: "npm:^0.11.0"
     superagent: "npm:^6.0.0"
-    taskcluster-client: "link:clients/client"
-    taskcluster-db: "link:db"
-    taskcluster-lib-api: "link:libraries/api"
-    taskcluster-lib-app: "link:libraries/app"
-    taskcluster-lib-config: "link:libraries/config"
-    taskcluster-lib-iterate: "link:libraries/iterate"
-    taskcluster-lib-loader: "link:libraries/loader"
-    taskcluster-lib-monitor: "link:libraries/monitor"
-    taskcluster-lib-postgres: "link:libraries/postgres"
-    taskcluster-lib-pulse: "link:libraries/pulse"
-    taskcluster-lib-references: "link:libraries/references"
     taskcluster-lib-scopes: "npm:^11.0.0"
-    taskcluster-lib-testing: "link:libraries/testing"
     taskcluster-lib-urls: "npm:^13.0.0"
-    taskcluster-lib-validate: "link:libraries/validate"
     topo-sort: "npm:^1.0.0"
     type-is: "npm:^1.6.15"
     typescript: "npm:^5.8.3"

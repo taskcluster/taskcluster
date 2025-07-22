@@ -1,10 +1,10 @@
 const assert = require('assert');
 const slugid = require('slugid');
 const settings = require('../settings');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const DockerWorker = require('../dockerworker');
 const TestWorker = require('../testworker');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, skipping) {

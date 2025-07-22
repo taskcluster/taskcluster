@@ -1,5 +1,5 @@
 {
-  "name": "taskcluster-db",
+  "name": "@taskcluster/db",
   "private": true,
   "version": "87.1.3",
   "license": "MPL-2.0",

@@ -1,5 +1,5 @@
-import * as tcpg from 'taskcluster-lib-postgres';
-import testing from 'taskcluster-lib-testing';
+import * as tcpg from '@taskcluster/lib-postgres';
+import testing from '@taskcluster/lib-testing';
 import pgConnectionString from 'pg-connection-string';
 const { parse: parseDbURL } = pgConnectionString;
 import { REPO_ROOT, writeRepoFile, execCommand, checkExecutableExists } from '../../utils/index.js';

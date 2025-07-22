@@ -20,7 +20,7 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain node dependencies for taskcluster-client
+  # Maintain node dependencies for @taskcluster/client
   - package-ecosystem: "npm"
     directory: "/clients/client"
     schedule:
@@ -35,7 +35,7 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain node dependencies for taskcluster-client-web
+  # Maintain node dependencies for @taskcluster/client-web
   - package-ecosystem: "npm"
     directory: "/clients/client-web"
     schedule:
@@ -65,7 +65,7 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain node dependencies for taskcluster-ui
+  # Maintain node dependencies for @taskcluster/ui
   - package-ecosystem: "npm"
     directory: "/ui"
     schedule:
@@ -80,7 +80,7 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain node dependencies for taskcluster-ui e2e tests
+  # Maintain node dependencies for @taskcluster/ui e2e tests
   - package-ecosystem: "npm"
     directory: "/ui/test/e2e"
     schedule:

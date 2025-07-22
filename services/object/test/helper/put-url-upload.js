@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import request from 'superagent';
 import crypto from 'crypto';
 import assert from 'assert';

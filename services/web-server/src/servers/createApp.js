@@ -14,8 +14,8 @@ import credentials from './credentials.js';
 import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
-import { traceMiddleware } from 'taskcluster-lib-app';
-import { loadVersion } from 'taskcluster-lib-api';
+import { traceMiddleware } from '@taskcluster/lib-app';
+import { loadVersion } from '@taskcluster/lib-api';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

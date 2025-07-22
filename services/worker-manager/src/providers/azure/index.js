@@ -1,6 +1,6 @@
 import assert from 'assert';
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import forge from 'node-forge';
 import crypto from 'crypto';
 import got from 'got';

@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import oauth2orize from 'oauth2orize';
 import _ from 'lodash';

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import load from '../src/main.js';
-import taskcluster from 'taskcluster-client';
-import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from '@taskcluster/lib-testing';
 import sinon from 'sinon';
 import GithubClient from '../src/login/clients/GithubClient.js';
 import libUrls from 'taskcluster-lib-urls';

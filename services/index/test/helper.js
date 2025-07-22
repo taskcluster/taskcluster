@@ -1,10 +1,10 @@
 import assert from 'assert';
 import builder from '../src/api.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
 import { globalAgent } from 'http';
 
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 export const load = testing.stickyLoader(loadMain);
 

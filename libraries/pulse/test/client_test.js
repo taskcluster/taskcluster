@@ -4,7 +4,7 @@ import assume from 'assume';
 import debugModule from 'debug';
 import slugid from 'slugid';
 import helper from './helper.js';
-import { suiteName } from 'taskcluster-lib-testing';
+import { suiteName } from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {

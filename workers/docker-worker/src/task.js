@@ -6,7 +6,7 @@ const Debug = require('debug');
 const DockerProc = require('dockerode-process');
 const { PassThrough } = require('stream');
 const States = require('./states');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const promiseRetry = require('promise-retry');
 const os = require('os');
 

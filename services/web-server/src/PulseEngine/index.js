@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import PulseIterator from './PulseIterator.js';
 import MessageIterator from './MessageIterator.js';
 import EventIterator from './EventIterator.js';

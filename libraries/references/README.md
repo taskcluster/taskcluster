@@ -1,6 +1,6 @@
 # References Library
 
-Taskcluster-lib-references is responsible for handling the API reference data,
+@taskcluster/lib-references is responsible for handling the API reference data,
 including manifests, API references, exchange references, and JSON schemas.
 
 It exports a class, `References`, that manages reading and writing this data in
@@ -32,7 +32,7 @@ during the cluster build process:
 ```
 
 This is a subset of the
-[taskcluster-lib-docs](../docs)
+[@taskcluster/lib-docs](../docs)
 documentation tarball format, and `metadata.json` is defined there.  The
 library will in fact load any `.json` files in `references` and interpret them
 according to their schema.  So, the `$schema` property of every file in
@@ -105,7 +105,7 @@ so schema operations on schemas should not be performed on the abstract form.
 To create a References instance, use one of the following methods:
 
 ```js
-import References from 'taskcluster-lib-references';
+import References from '@taskcluster/lib-references';
 
 // Build from a built services format (which is always abstract)
 references = await References.fromBuiltServices({directory: '/build/directory'});
@@ -185,7 +185,7 @@ library as a devDependency and add a test file like this:
 import builder from '../src/api.js';
 import exchanges from '../src/exchanges.js';
 import helper from './helper.js';
-import References from 'taskcluster-lib-references';
+import References from '@taskcluster/lib-references';
 
 suite('references_test.js', function() {
   test('references validate', async function() {

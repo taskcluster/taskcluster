@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 import assert from 'assert';
 
 /** Declaration of exchanges offered by the queue */

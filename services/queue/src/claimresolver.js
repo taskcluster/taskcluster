@@ -1,6 +1,6 @@
 import assert from 'assert';
 import QueueService from './queueservice.js';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
 import { sleep } from './utils.js';
 

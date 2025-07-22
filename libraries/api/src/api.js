@@ -1,7 +1,7 @@
 import express from 'express';
 import assert from 'assert';
 import libUrls from 'taskcluster-lib-urls';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { buildReportErrorMethod } from './middleware/errors.js';
 import { callHandler } from './middleware/handle.js';
 import { validateSchemas } from './middleware/schema.js';

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { setSetupRetryInterval } from '../src/providers/index.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

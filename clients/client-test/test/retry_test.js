@@ -1,9 +1,9 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
-import { APIBuilder } from 'taskcluster-lib-api';
-import { App } from 'taskcluster-lib-app';
-import SchemaSet from 'taskcluster-lib-validate';
+import testing from '@taskcluster/lib-testing';
+import { APIBuilder } from '@taskcluster/lib-api';
+import { App } from '@taskcluster/lib-app';
+import SchemaSet from '@taskcluster/lib-validate';
 import { monitorManager, monitor } from './monitor.js';
 
 const rootUrl = `http://localhost:60526`;

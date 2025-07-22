@@ -99,7 +99,7 @@ const schemaMdx = (title, $id) => `---
 title: ${title.replace(/^.* - /, 'Task Payload - ')}
 order: 1000
 ---
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 <SchemaTable schema="${$id}" />
 `;

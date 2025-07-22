@@ -1,8 +1,8 @@
 import fs from 'fs';
 import helper from './helper.js';
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 const TC_DEV_INSTALLATION_ID = 28513985;
 

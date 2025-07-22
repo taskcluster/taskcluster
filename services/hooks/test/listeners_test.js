@@ -1,9 +1,9 @@
 import assert from 'assert';
 import assume from 'assume';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { queueUtils } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

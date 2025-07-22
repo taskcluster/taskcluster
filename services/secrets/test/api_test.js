@@ -1,8 +1,8 @@
 import helper from './helper.js';
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);

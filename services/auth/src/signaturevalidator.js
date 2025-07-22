@@ -188,7 +188,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
  * {
  *    clientLoader:   async (clientId) => {clientId, expires, accessToken, scopes},
  *    expandScopes:   (scopes) => scopes,
- *    monitor:        // an instance of taskcluster-lib-monitor
+ *    monitor:        // an instance of @taskcluster/lib-monitor
  * }
  *
  * The function returned takes an object:

@@ -4,12 +4,12 @@ import assert from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 import request from 'superagent';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { Netmask } from 'netmask';
 import { createArtifactCallsCompatible } from '../src/artifacts.js';
 import assume from 'assume';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {

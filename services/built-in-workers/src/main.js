@@ -1,9 +1,9 @@
 import '../../prelude.js';
-import loader from 'taskcluster-lib-loader';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import libReferences from 'taskcluster-lib-references';
-import taskcluster from 'taskcluster-client';
-import config from 'taskcluster-lib-config';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import libReferences from '@taskcluster/lib-references';
+import taskcluster from '@taskcluster/client';
+import config from '@taskcluster/lib-config';
 import TaskQueue from './TaskQueue.js';
 import { fileURLToPath } from 'url';
 

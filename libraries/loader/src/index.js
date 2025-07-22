@@ -1,7 +1,7 @@
 import assert from 'assert';
 import TopoSort from 'topo-sort';
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-loader');
+const debug = debugFactory('@taskcluster/lib-loader');
 
 /**
  * Validate component definition

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import References from 'taskcluster-lib-references';
+import References from '@taskcluster/lib-references';
 
 export const build = async (input, output, rootUrl) => {
   const serializable = JSON.parse(await fs.readFile(input, { encoding: 'utf8' }));

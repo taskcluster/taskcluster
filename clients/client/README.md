@@ -1,6 +1,6 @@
 # Taskcluster Client for JS
 
-[![Download](https://img.shields.io/badge/yarn-taskcluster--client-brightgreen)](https://yarnpkg.com/en/package/taskcluster-client)
+[![Download](https://img.shields.io/badge/yarn-taskcluster--client-brightgreen)](https://yarnpkg.com/en/package/@taskcluster/client)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 **A Taskcluster client library for (server-side) JS.**
@@ -22,7 +22,7 @@ required, and it's unusual to configure any other options aside from
 `credentials`.
 
 ```js
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 // Instantiate the Queue Client class
 const queue = new taskcluster.Queue({
@@ -342,11 +342,11 @@ const dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 ### Generating SlugIDs
 
 In node you can rely on the `slugid` module to generate slugids, but we already
-need it in `taskcluster-client` and expose the preferred slugid generation
+need it in `@taskcluster/client` and expose the preferred slugid generation
 function as `taskcluster.slugid()`.
 
 ```js
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 // Generate new taskId
 const taskId = taskcluster.slugid();
@@ -470,17 +470,17 @@ authorization checks.
 
 ### Listening for Events
 
-**NOTE** `PulseListener` is no longer included in `taskcluster-client`;
+**NOTE** `PulseListener` is no longer included in `@taskcluster/client`;
 instead, use `PulseConsumer` from
-[taskcluster-lib-pulse](../../libraries/pulse).
+[@taskcluster/lib-pulse](../../libraries/pulse).
 
 However, this library helpfully includes bindings for exchanges declared by
-various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
+various Taskcluster services.  To use these with `@taskcluster/lib-pulse`,
 create an `..Events` instance, call the apprporiate methods on it to construct
 a binding, and pass that to `pulse.consume`:
 
 ```js
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 // Instantiate the QueueEvents Client class
 const queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
@@ -501,11 +501,11 @@ argument checking still takes place, and a function of your design will be calle
 instead of calling the external service.
 
 This is set up when constructing the client. Typically, this occurs in a
-`taskcluster-lib-loader` entry.
+`@taskcluster/lib-loader` entry.
 
 ```javascript
 setup(function () {
-  // inject the dependency with a stickyLoader from taskcluster-lib-testing
+  // inject the dependency with a stickyLoader from @taskcluster/lib-testing
   helper.load.inject('secrets', new taskcluster.Secrets({
     fake: {
       get: (name) => 'my-hardcoded-secret',

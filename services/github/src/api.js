@@ -1,4 +1,4 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';

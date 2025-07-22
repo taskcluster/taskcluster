@@ -1,5 +1,5 @@
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   test('sleep', async function() {

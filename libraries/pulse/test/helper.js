@@ -1,5 +1,5 @@
-import { Secrets, withMonitor } from 'taskcluster-lib-testing';
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { Secrets, withMonitor } from '@taskcluster/lib-testing';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 withMonitor({ }, { noLoader: true });
 

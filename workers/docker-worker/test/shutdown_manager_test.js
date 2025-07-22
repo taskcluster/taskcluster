@@ -2,7 +2,7 @@ const ShutdownManager = require('../src/shutdown_manager');
 const assert = require('assert').strict;
 const monitor = require('./fixtures/monitor');
 const Debug = require('debug');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 
 const log = Debug('log');
 

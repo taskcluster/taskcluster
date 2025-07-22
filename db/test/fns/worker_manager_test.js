@@ -2,11 +2,11 @@ import _ from 'lodash';
 import slug from 'slugid';
 import { strict as assert } from 'assert';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import tc from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 
-/** @typedef {import('taskcluster-lib-postgres').Database} Database */
+/** @typedef {import('@taskcluster/lib-postgres').Database} Database */
 
 suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'worker_manager' });

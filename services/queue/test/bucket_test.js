@@ -5,7 +5,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('test:bucket_test');
 import request from 'superagent';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withS3(mock, skipping);

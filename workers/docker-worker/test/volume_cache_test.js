@@ -13,7 +13,7 @@ const rmrf = require('rimraf');
 const cmd = require('./integration/helper/cmd');
 const pipe = require('promisepipe');
 const monitor = require('./fixtures/monitor');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
 

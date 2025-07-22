@@ -31,12 +31,12 @@ const defaultMetrics = () => ({
  * To avoid calls being stuck for a long period of time, we can also pass `timeout` and
  * `throwOnTimeout`.
  *
- * You must provide a taskcluster-lib-monitor logger to this class.
+ * You must provide a @taskcluster/lib-monitor logger to this class.
  *
  * Finally, it takes an `errorHandler` which is a function that takes an error and `tries` counter
  * as the arguments and must throw an error or return an object containing three values:
  *   backoff: which is a time in ms for how long requests should be paused
- *   level: a taskcluster-lib-monitor logging level for the message about this
+ *   level: a @taskcluster/lib-monitor logging level for the message about this
  *   reason: a human-readable reason for the backoff
  * If you throw an error, this class will pass the error right back along to where
  * you called enqueue in the first place. This should be used for errors that are
