@@ -27,6 +27,7 @@
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@sentry/browser": "^6.0.0",
+    "@taskcluster/client-web": "^88.0.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^2.1.1",
     "apollo-cache-inmemory": "^1.5.1",
@@ -95,7 +96,6 @@
     "shebang-loader": "^0.0.1",
     "snake-case": "^3.0.3",
     "subscriptions-transport-ws": "^0.11.0",
-    "taskcluster-client-web": "^87.1.2",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0",
     "title-case": "^3.0.2"
