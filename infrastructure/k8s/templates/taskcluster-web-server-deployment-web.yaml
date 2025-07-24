@@ -41,6 +41,8 @@ spec:
               value: '{{ .Values.useKubernetesDnsServiceDiscovery }}'
             - name: NODE_ENV
               value: production
+            - name: GRAPHQL_SUBSCRIPTION_ENDPOINT
+              value: '{{ .Values.web_server.graphql_subscription_endpoint }}'
           envFrom:
             - secretRef:
                 name: taskcluster-web-server
