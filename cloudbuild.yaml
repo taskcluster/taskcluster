@@ -80,7 +80,7 @@ steps:
   - name: node:${_NODE_VERSION}
     args:
       - '-c'
-      - corepack enable && yarn && yarn smoketest
+      - sleep 10 && corepack enable && yarn && yarn smoketest
     id: Smoketest
     entrypoint: bash
     env:
