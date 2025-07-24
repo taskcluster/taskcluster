@@ -1,4 +1,4 @@
 audience: users
 level: patch
 ---
-fix typos
+Fixes documentation typos and links
