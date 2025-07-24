@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.0.2
+
+### GENERAL
+
+▶ [patch]
+UI: use `@taskcluster/client-web` package.
+
+▶ [patch] [#7680](https://github.com/taskcluster/taskcluster/issues/7680)
+Worker Manager (AWS): terminates workers that are in the stopped state.
+
+### OTHER
+
+▶ Additional change not described here: [#6854](https://github.com/taskcluster/taskcluster/issues/6854).
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump axios from 1.10.0 to 1.11.0 (8cdc1849b7)
+* build(deps): bump taskcluster from 86.0.2 to 87.1.3 in /taskcluster (eca9d426f6)
+* build(deps-dev): bump aws-sdk-client-mock from 3.1.0 to 4.1.0 (8a8b006c81)
+
+</details>
+
 ## v88.0.1
 
 ### GENERAL
