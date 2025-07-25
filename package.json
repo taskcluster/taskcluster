@@ -168,7 +168,7 @@
     "sinon": "^21.0.0",
     "snake-case": "^3.0.3",
     "typescript": "^5.8.3",
-    "ws": "^7.5.10",
+    "ws": "^8.18.3",
     "yarn-minify": "^1.0.1",
     "zen-observable": "^0.10.0",
     "zurvan": "^0.8.0"
