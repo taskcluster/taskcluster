@@ -13409,7 +13409,7 @@ __metadata:
     typescript: "npm:^5.8.3"
     uuid: "npm:^9.0.0"
     walk: "npm:^2.3.9"
-    ws: "npm:^7.5.10"
+    ws: "npm:^8.18.3"
     yarn-minify: "npm:^1.0.1"
     zen-observable: "npm:^0.10.0"
     zurvan: "npm:^0.8.0"
@@ -14228,7 +14228,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.5.10":
+"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0":
   version: 7.5.10
   resolution: "ws@npm:7.5.10"
   peerDependencies:
@@ -14243,7 +14243,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.17.1":
+"ws@npm:^8.17.1, ws@npm:^8.18.3":
   version: 8.18.3
   resolution: "ws@npm:8.18.3"
   peerDependencies:
