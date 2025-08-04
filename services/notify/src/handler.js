@@ -2,6 +2,7 @@ import _ from 'lodash';
 import jsone from 'json-e';
 import { consume } from '@taskcluster/lib-pulse';
 import libUrls from 'taskcluster-lib-urls';
+import utils from './utils.js';
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
@@ -83,7 +84,6 @@ class Handler {
 
   async onMessage(message) {
     let { status } = message.payload;
-
     // If task was canceled, we don't send a notification since this was a deliberate user action
     if (status.state === 'exception') {
       if (this.ignoreTaskReasonResolved.includes((_.last(status.runs) || {}).reasonResolved)) {
@@ -94,6 +94,9 @@ class Handler {
     // Load task definition
     let taskId = status.taskId;
     let task = await this.queue.task(taskId);
+    let artifact = await this.queue.latestArtifact(taskId, 'public/logs/live.log');
+    const res = await utils.throttleRequest({ url: artifact.url, method: 'GET' });
+
     let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
     let groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${task.taskGroupId}/tasks`);
     let runCount = status.runs.length;
