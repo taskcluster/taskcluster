@@ -13,7 +13,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"runtime"
 	"sync"
 	"time"
 
@@ -36,6 +35,8 @@ type (
 		// Once command has run, Result is updated (similar to cmd.ProcessState)
 		result *Result
 		conn   net.Conn
+		// keeps files reachable
+		auxFiles []*os.File
 	}
 
 	CommandRequest struct {
@@ -151,7 +152,7 @@ func (c *Command) Start() error {
 			stdinWriter.Close()
 			// not sure if this is needed, but let's make sure both ends of the
 			// pipe are not garbage collected until we've finished using them!
-			runtime.KeepAlive(stdinReader)
+			c.auxFiles = append(c.auxFiles, stdinReader)
 		})
 		fds = append(fds, int(stdinReader.Fd()))
 	}
@@ -167,7 +168,7 @@ func (c *Command) Start() error {
 			stdoutReader.Close()
 			// not sure if this is needed, but let's make sure both ends of the
 			// pipe are not garbage collected until we've finished using them!
-			runtime.KeepAlive(stdoutWriter)
+			c.auxFiles = append(c.auxFiles, stdoutWriter)
 		})
 		fds = append(fds, int(stdoutWriter.Fd()))
 	}
@@ -183,7 +184,7 @@ func (c *Command) Start() error {
 			stderrReader.Close()
 			// not sure if this is needed, but let's make sure both ends of the
 			// pipe are not garbage collected until we've finished using them!
-			runtime.KeepAlive(stderrWriter)
+			c.auxFiles = append(c.auxFiles, stderrWriter)
 		})
 		fds = append(fds, int(stderrWriter.Fd()))
 	}
@@ -234,6 +235,9 @@ func (c *Command) Wait() error {
 	if c.shouldNotUseAgent() {
 		return c.Cmd.Wait()
 	}
+	defer func() {
+		c.auxFiles = nil
+	}()
 	defer c.conn.Close()
 	if c.result.SystemError != nil {
 		return c.result.SystemError
