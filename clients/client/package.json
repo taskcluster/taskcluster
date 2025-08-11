@@ -23,7 +23,7 @@
     "nock": "^13.5.5"
   },
   "engines": {
-    "node": "22.17.1"
+    "node": "22.18.0"
   },
   "type": "module",
   "files": [
