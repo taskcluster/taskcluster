@@ -809,6 +809,7 @@ export class AzureProvider extends Provider {
       let ipConfig = {
         location: worker.providerData.location,
         publicIPAllocationMethod: 'Dynamic',
+        sku: { name: 'Standard' },
       };
 
       titleString = "IP Creation Error";
