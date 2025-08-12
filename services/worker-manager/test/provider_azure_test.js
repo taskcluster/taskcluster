@@ -549,7 +549,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assertProvisioningState({ ip: 'inprogress' });
       const ipParams = fake.networkClient.publicIPAddresses.getFakeRequestParameters('rgrp', ipName);
       assert.equal(ipParams.location, 'westus');
-      assert.equal(ipParams.publicIPAllocationMethod, 'Dynamic');
+      assert.equal(ipParams.publicIPAllocationMethod, 'Static');
 
       debug('second call');
       await provider.provisionResources({ worker, monitor });
