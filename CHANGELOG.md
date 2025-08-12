@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.0.3
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.18.0 and go1.24.6 [SECURITY].
+
+▶ [patch] [#7903](https://github.com/taskcluster/taskcluster/issues/7903)
+Worker Manager (Azure): uses `Standard` SKU public IP addresses, as `Basic` will be retired on September 30, 2025. [Official announcement](https://azure.microsoft.com/en-us/updates?id=upgrade-to-standard-sku-public-ip-addresses-in-azure-by-30-september-2025-basic-sku-will-be-retired)
+
+▶ [patch] [#7914](https://github.com/taskcluster/taskcluster/issues/7914)
+Worker Manager (Azure): uses `Static` public IP allocation with the `Standard` SKU.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7905](https://github.com/taskcluster/taskcluster/issues/7905)
+Generic Worker launch agent on macOS for multiuser engine was crashing due to a bug in the launch daemon that was garbage collecting file handles while the agent was using them. This resulted in the launch agent crashing. This has been fixed by keeping file handles alive in the daemon.
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps-dev): bump eslint (a58d067a5e)
+* build(deps): bump the python-deps group in /taskcluster with 2 updates (0e24bd2ac3)
+* build(deps): bump tmp from 0.2.1 to 0.2.5 in /ui/test/e2e (ed9d0409c2)
+* build(deps): bump the client-rust-deps group across 1 directory with 3 updates (30b03ebaf3)
+* build(deps): bump the go-deps group across 1 directory with 6 updates (35817ce475)
+* build(deps): bump the node-deps group across 1 directory with 11 updates (7b5b1c43e0)
+* build(deps): bump tmp from 0.2.1 to 0.2.4 in /clients/client-web (cdb41112c0)
+
+</details>
+
 ## v88.0.2
 
 ### GENERAL
