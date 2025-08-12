@@ -808,7 +808,7 @@ export class AzureProvider extends Provider {
       // IP
       let ipConfig = {
         location: worker.providerData.location,
-        publicIPAllocationMethod: 'Dynamic',
+        publicIPAllocationMethod: 'Static',
         sku: { name: 'Standard' },
       };
 
