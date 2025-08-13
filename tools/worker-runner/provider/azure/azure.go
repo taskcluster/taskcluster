@@ -154,7 +154,9 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(15 * time.Second)
+	// Microsoft recommends once per second
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#polling-frequency
+	p.terminationTicker = time.NewTicker(1 * time.Second)
 	go func() {
 		for {
 			<-p.terminationTicker.C
