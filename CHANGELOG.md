@@ -5,7 +5,10 @@
 
 ## v88.0.5
 
-No changes
+### GENERAL
+
+▶ [patch]
+Reverts taskcluster/taskcluster#7920 due to https://github.com/google/go-containerregistry/issues/2072 which broke release v88.0.4.
 
 ## v88.0.4
 
