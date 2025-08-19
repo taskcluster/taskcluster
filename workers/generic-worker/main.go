@@ -143,12 +143,19 @@ func main() {
 			// include worker-runner protocol traffic, but for the moment it simply
 			// provides a way to channel generic-worker logging to worker-runner
 			if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
-				f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
-				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
+				// Connect to input pipe (client->server) for writing
+				inputPipeName := protocolPipe + "-input"
+				fw, err := os.OpenFile(inputPipeName, os.O_WRONLY, 0)
+				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to input pipe %s: %s", inputPipeName, err)
 
-				os.Stdin = f
-				os.Stdout = f
-				os.Stderr = f
+				// Connect to output pipe (server->client) for reading
+				outputPipeName := protocolPipe + "-output"
+				fr, err := os.OpenFile(outputPipeName, os.O_RDONLY, 0)
+				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to output pipe %s: %s", outputPipeName, err)
+
+				os.Stdin = fr  // Read from output pipe (server->client)
+				os.Stdout = fw // Write to input pipe (client->server)
+				os.Stderr = fw // Write to input pipe (client->server)
 			}
 		}
 

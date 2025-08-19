@@ -106,6 +106,7 @@ func (p *AWSProvider) checkTerminationTime() bool {
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]any{
