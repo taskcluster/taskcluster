@@ -96,7 +96,7 @@ func (m *serviceRunMethod) connectPipeToProtocol(protocolPipe string, inputWrite
 			return
 		}
 
-		log.Printf("Worker connecteed on protocolPipe")
+		log.Printf("Worker connected on protocolPipe")
 		listener.Close()
 
 		// copy bidirectionally between this connection and the protocol transport, and do not
