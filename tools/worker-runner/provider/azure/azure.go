@@ -125,6 +125,7 @@ func (p *AzureProvider) checkTerminationTime() bool {
 			}
 			log.Printf("Azure Metadata Service says a %s maintenance event is imminent\n", evt.EventType)
 			if p.proto != nil && p.proto.Capable("graceful-termination") {
+				log.Println("Sending graceful-termination request with finish-tasks=false")
 				p.proto.Send(workerproto.Message{
 					Type: "graceful-termination",
 					Properties: map[string]any{
