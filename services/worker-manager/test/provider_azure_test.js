@@ -86,12 +86,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = 'F9:38:8E:A2:C9:B7:D6:32:B6:6A:2B:0B:40:6D:F1:D3:7D:39:01:F6';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 03';
+  const intermediateCertFingerprint = 'BE:68:D0:AD:AA:23:45:B4:8E:50:73:20:B6:95:D3:86:08:0E:5B:25';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 04';
   const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt';
   const azureSignatures = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good.json'), 'utf-8'));
   const allCertificates = loadCertificates();
 
