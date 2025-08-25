@@ -140,12 +140,15 @@ func TestCheckTerminationTime(t *testing.T) {
 		mds.ScheduledEventsError = nil
 
 		evt := struct {
-			EventId      string
-			EventType    string
-			ResourceType string
-			Resources    []string
-			EventStatus  string
-			NotBefore    string
+			EventId           string
+			EventType         string
+			ResourceType      string
+			Resources         []string
+			EventStatus       string
+			NotBefore         string
+			Description       string
+			EventSource       string
+			DurationInSeconds int
 		}{
 			EventType: "Preempt",
 		}
