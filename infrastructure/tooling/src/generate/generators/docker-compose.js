@@ -432,6 +432,7 @@ tasks.push({
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
             './ui/package.json:/app/ui/package.json',
+            './ui/webpack.config.js:/app/ui/webpack.config.js',
             './ui/src:/app/ui/src',
             './ui/docs:/app/ui/docs',
             './CHANGELOG.md:/app/CHANGELOG.md',
