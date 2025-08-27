@@ -7768,6 +7768,15 @@
       "description": "optimize w-m errors queries",
       "downgradeScript": "begin\n  DROP INDEX idx_worker_pool_errors_pool_id_extra_code;\n  DROP INDEX idx_workers_pool_id_state_capacity;\nend",
       "methods": {
+        "get_hook_groups": {
+          "args": "",
+          "body": "begin\n  return query\n  select distinct hooks.hook_group_id\n  from hooks\n  order by hooks.hook_group_id;\nend",
+          "deprecated": false,
+          "description": "Get existing hooks groups",
+          "mode": "read",
+          "returns": "table(hook_group_id text)",
+          "serviceName": "hooks"
+        }
       },
       "migrationScript": "begin\n  CREATE INDEX idx_worker_pool_errors_pool_id_extra_code ON worker_pool_errors (worker_pool_id, ((extra->>'code')));\n  CREATE INDEX idx_workers_pool_id_state_capacity ON workers (worker_pool_id, state, capacity);\nend",
       "version": 115

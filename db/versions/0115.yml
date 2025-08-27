@@ -10,4 +10,18 @@ downgradeScript: |-
     DROP INDEX idx_worker_pool_errors_pool_id_extra_code;
     DROP INDEX idx_workers_pool_id_state_capacity;
   end
-methods: {}
+methods:
+  get_hook_groups:
+    description: |-
+      Get existing hooks groups
+    mode: read
+    serviceName: hooks
+    args: ''
+    returns: table(hook_group_id text)
+    body: |-
+      begin
+        return query
+        select distinct hooks.hook_group_id
+        from hooks
+        order by hooks.hook_group_id;
+      end
