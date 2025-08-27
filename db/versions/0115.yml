@@ -1,0 +1,13 @@
+version: 115
+description: optimize w-m errors queries
+migrationScript: |-
+  begin
+    CREATE INDEX idx_worker_pool_errors_pool_id_extra_code ON worker_pool_errors (worker_pool_id, ((extra->>'code')));
+    CREATE INDEX idx_workers_pool_id_state_capacity ON workers (worker_pool_id, state, capacity);
+  end
+downgradeScript: |-
+  begin
+    DROP INDEX idx_worker_pool_errors_pool_id_extra_code;
+    DROP INDEX idx_workers_pool_id_state_capacity;
+  end
+methods: {}

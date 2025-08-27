@@ -7763,6 +7763,14 @@
         }
       },
       "version": 114
+    },
+    {
+      "description": "optimize w-m errors queries",
+      "downgradeScript": "begin\n  DROP INDEX idx_worker_pool_errors_pool_id_extra_code;\n  DROP INDEX idx_workers_pool_id_state_capacity;\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  CREATE INDEX idx_worker_pool_errors_pool_id_extra_code ON worker_pool_errors (worker_pool_id, ((extra->>'code')));\n  CREATE INDEX idx_workers_pool_id_state_capacity ON workers (worker_pool_id, state, capacity);\nend",
+      "version": 115
     }
   ]
 }

@@ -5,31 +5,49 @@ import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsSt
 import StatusGroup from '../StatusDashboard/StatusGroup';
 import Button from '../Button';
 
-const MiniTable = ({ data, title, onStatClick, selectedKey }) => (
+const MiniTable = ({
+  data,
+  title,
+  onStatClick,
+  selectedKey,
+  pageSize = 15,
+}) => (
   <div>
     <table aria-label={title} style={{ width: '100%' }}>
       <thead>
         <tr>
-          <th align="left">{title}</th>
+          <th align="left">
+            {title}
+            {Object.keys(data).length > pageSize ? ` (top ${pageSize})` : ''}
+          </th>
           <th align="left">Count</th>
         </tr>
       </thead>
       <tbody>
-        {Object.entries(data).map(([key, value]) => (
-          <tr
-            key={key}
-            style={{ backgroundColor: selectedKey === key ? '#55555533' : '' }}
-            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-            <td>
-              {onStatClick ? (
-                <Button onClick={() => onStatClick(key)}>{key}</Button>
-              ) : (
-                key
-              )}
-            </td>
-            <td>{value}</td>
-          </tr>
-        ))}
+        {Object.entries(data)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, pageSize)
+          .map(([key, value]) => (
+            <tr
+              key={key}
+              style={{
+                backgroundColor: selectedKey === key ? '#55555533' : '',
+              }}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              <td>
+                {onStatClick ? (
+                  <Button
+                    style={{ padding: 0 }}
+                    onClick={() => onStatClick(key)}>
+                    {key}
+                  </Button>
+                ) : (
+                  key
+                )}
+              </td>
+              <td>{value}</td>
+            </tr>
+          ))}
       </tbody>
     </table>
   </div>
