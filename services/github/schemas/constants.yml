@@ -2,9 +2,10 @@
 # Identifier patterns, min and max length, these limitations are applied to
 # all common identifiers. It's not personal, it's just that without these
 # limitation, the identifiers won't be useful as routing keys in RabbitMQ
-# topic exchanges. Specifically, the length limitation and the fact that
-# identifiers can't contain dots `.` is critical.
-github-identifier-pattern:     "^([a-zA-Z0-9-_%]*)$"
+# topic exchanges. Specifically, the length limitation is critical.
+# Dots `.` are allowed because GitHub permits them in names, but the github
+# service replaces them with `%` before publishing routing keys.
+github-identifier-pattern:     "^([a-zA-Z0-9-_.%]*)$"
 github-identifier-min-length:  1
 github-identifier-max-length:  100
 github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
