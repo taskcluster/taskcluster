@@ -3564,13 +3564,6 @@
   },
   {
     "element": "h2",
-    "id": "feature-dockersave",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `dockerSave`",
-    "title": "Features"
-  },
-  {
-    "element": "h2",
     "id": "feature-interactive",
     "path": "/reference/workers/docker-worker/features",
     "subtitle": "Feature: `interactive`",

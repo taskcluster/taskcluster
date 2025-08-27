@@ -51,7 +51,6 @@ testSuite:
         TASKCLUSTER_CACHES: /builds/worker/checkouts
       features:
         chainOfTrust: true
-        dockerSave: true
         interactive: true
         taskclusterProxy: true
       image: mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06
@@ -76,10 +75,6 @@ testSuite:
         optional: true
         path: artifact1
         type: directory
-      - name: public/dockerImage.tar.gz
-        optional: true
-        path: image.tar.gz
-        type: file
       command:
       - - /usr/bin/env
         - bash
