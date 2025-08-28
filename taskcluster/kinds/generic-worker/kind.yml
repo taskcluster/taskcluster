@@ -187,6 +187,8 @@ tasks:
     worker:
       taskcluster-proxy: true
       run-task-as-current-user: false
+      os-groups:
+        - docker
       artifacts:
         - path: gopath{go_version}/bin/generic-worker
           name: public/build/generic-worker-linux-amd64
