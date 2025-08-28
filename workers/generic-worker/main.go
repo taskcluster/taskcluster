@@ -1101,8 +1101,6 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
 	combinedErr := fmt.Errorf("%s, args: %v, root cause: %v, exit code: %d", logMessage, args, err, exitCode)
-	if WorkerRunnerProtocol != nil {
-		errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
-	}
+	errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
 	os.Exit(int(exitCode))
 }
