@@ -67,7 +67,7 @@ References:
 
 ## Feature: `dockerSave`
 
-Status: Unstable, api may be changed
+Status: deprecated, not supported in generic-worker
 
 When this feature is activated, after the task finishes, a copy of the container is saved using `docker commit`, converted into a tarball with `docker save`, and uploaded to s3 under the filename `public/dockerImage.tar`. The image itself will have repository `task-${taskId}-${runId}:latest` and tag `:latest`.
 
