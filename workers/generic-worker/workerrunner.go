@@ -43,7 +43,8 @@ func (w *loggingWriter) Write(p []byte) (n int, err error) {
 			},
 		})
 	} else {
-		w.backup.Println(message)
+		log.Println(message)
+		// w.backup.Println(message)
 	}
 
 	n = len(p)
@@ -97,7 +98,7 @@ func startProtocol() {
 	})
 
 	WorkerRunnerProtocol.AddCapability("error-report")
-	WorkerRunnerProtocol.AddCapability("log")
+	// WorkerRunnerProtocol.AddCapability("log")
 
 	WorkerRunnerProtocol.Start(true)
 }
