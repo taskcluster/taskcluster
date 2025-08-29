@@ -4,5 +4,5 @@
 arrow
 pyyaml
 taskcluster
-taskcluster-taskgraph>=14.0.0
+taskcluster-taskgraph>=15.1.0
 toml
