@@ -940,6 +940,12 @@ type HooksGetHookFn = {
   hook_id_in: string;
  }): Promise<Array<{hook_group_id: string, hook_id: string, metadata: JsonB, task: JsonB, bindings: JsonB, schedule: JsonB, encrypted_trigger_token: JsonB, encrypted_next_task_id: JsonB, next_scheduled_date: Date, trigger_schema: JsonB}>>;
 };
+type HooksGetHookGroupsFn = {
+ (
+ ): Promise<Array<{hook_group_id: string}>>;
+ (params: {
+ }): Promise<Array<{hook_group_id: string}>>;
+};
 type HooksGetHooksFn = {
  (
    hook_group_id_in: string | null,
@@ -6139,6 +6145,7 @@ export interface DbFunctions {
   delete_last_fires: HooksDeleteLastFiresFn;
   expire_last_fires: HooksExpireLastFiresFn;
   get_hook: HooksGetHookFn;
+  get_hook_groups: HooksGetHookGroupsFn;
   get_hooks: HooksGetHooksFn;
   get_hooks_queues: HooksGetHooksQueuesFn;
   get_last_fire: HooksGetLastFireFn;

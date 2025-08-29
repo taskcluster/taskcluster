@@ -532,6 +532,17 @@ suite(testing.suiteName(), function() {
     helper.dbTest('delete_hook does not throw when no such row', async function(db) {
       await db.fns.delete_hook('hook/group/id', 'hook-id');
     });
+
+    helper.dbTest('get_hook_groups returns unique groups', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/3', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups();
+      assert.equal(rows.length, 2);
+      assert.equal(rows[0].hook_group_id, 'baz');
+      assert.equal(rows[1].hook_group_id, 'foo');
+    });
   });
 
   suite(`${testing.suiteName()} - hooks audit history`, function() {

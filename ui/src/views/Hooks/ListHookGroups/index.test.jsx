@@ -3,7 +3,7 @@ import { render, waitFor, act } from '@testing-library/react';
 import { ApolloProvider } from 'react-apollo';
 import setupClient from 'apollo-client-mock';
 import { MemoryRouter } from 'react-router-dom';
-import ListHooks from './index';
+import ListHookGroups from './index';
 
 const typeDefs = `
   type User {
@@ -11,15 +11,14 @@ const typeDefs = `
   }
 `;
 
-it('should render ListHooks page', async () => {
+it('should render ListHookGroupss page', async () => {
   const createClient = setupClient({}, typeDefs);
 
   await act(async () => {
     const { asFragment } = render(
       <MemoryRouter keyLength={0}>
         <ApolloProvider client={createClient()}>
-          <ListHooks
-            match={{ params: { hookGroupId: 'hg1' } }}
+          <ListHookGroups
             location={{
               search: {
                 slice: jest.fn().mockReturnValue('search=test'),

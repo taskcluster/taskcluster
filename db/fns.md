@@ -37,6 +37,7 @@
    * [`delete_last_fires`](#delete_last_fires)
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
+   * [`get_hook_groups`](#get_hook_groups)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
@@ -1185,6 +1186,7 @@ end
 * [`delete_last_fires`](#delete_last_fires)
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
+* [`get_hook_groups`](#get_hook_groups)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
@@ -1442,6 +1444,29 @@ begin
   where
     hooks.hook_group_id = hook_group_id_in and
     hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
+
+### get_hook_groups
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 115
+
+Get existing hooks groups
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select distinct hooks.hook_group_id
+  from hooks
+  order by hooks.hook_group_id;
 end
 ```
 

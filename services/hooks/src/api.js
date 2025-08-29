@@ -39,7 +39,6 @@ builder.declare({
   route: '/hooks',
   name: 'listHookGroups',
   scopes: 'hooks:list-hooks:',
-  idempotent: true,
   category: 'Hooks',
   output: 'list-hook-groups-response.yml',
   title: 'List hook groups',
@@ -48,13 +47,9 @@ builder.declare({
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
 }, async function(req, res) {
-  const groups = new Set();
-  const hooks = (await this.db.fns.get_hooks(null, null, null, null)).map(hookUtils.fromDb);
-
-  hooks.forEach(hook => {
-    groups.add(hook.hookGroupId);
-  });
-  return res.reply({ groups: Array.from(groups) });
+  const hookGroups = await this.db.fns.get_hook_groups();
+  const groups = hookGroups.map(row => row.hook_group_id);
+  return res.reply({ groups });
 });
 
 /** Get hooks in a given group **/
@@ -63,7 +58,6 @@ builder.declare({
   route: '/hooks/:hookGroupId',
   name: 'listHooks',
   scopes: 'hooks:list-hooks:<hookGroupId>',
-  idempotent: true,
   category: 'Hooks',
   output: 'list-hooks-response.yml',
   title: 'List hooks in a given group',
@@ -89,7 +83,6 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId',
   name: 'hook',
   scopes: 'hooks:get:<hookGroupId>:<hookId>',
-  idempotent: true,
   output: 'hook-definition.yml',
   title: 'Get hook definition',
   category: 'Hooks',
@@ -188,7 +181,6 @@ builder.declare({
   method: 'put',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'createHook',
-  idempotent: true,
   scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
@@ -319,7 +311,6 @@ builder.declare({
   method: 'post',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'updateHook',
-  idempotent: true,
   scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
@@ -436,7 +427,6 @@ builder.declare({
   method: 'delete',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'removeHook',
-  idempotent: true,
   scopes: 'hooks:modify-hook:<hookGroupId>/<hookId>',
   title: 'Delete a hook',
   stability: 'stable',
@@ -707,7 +697,6 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId/last-fires',
   name: 'listLastFires',
   scopes: 'hooks:list-last-fires:<hookGroupId>/<hookId>',
-  idempotent: true,
   output: 'list-lastFires-response.yml',
   title: 'Get information about recent hook fires',
   stability: 'stable',

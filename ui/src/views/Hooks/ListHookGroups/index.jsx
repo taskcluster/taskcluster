@@ -10,21 +10,14 @@ import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
-import HooksListTable from '../../../components/HooksListTable';
-import hooksQuery from './hooks.graphql';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Link from '../../../utils/Link';
+import HookGroupsTable from '../../../components/HookGroupsTable';
+import hookGroupsQuery from './hookGroups.graphql';
 
 @withApollo
-@graphql(hooksQuery, {
-  options: ({ match: { params } }) => ({
+@graphql(hookGroupsQuery, {
+  options: {
     fetchPolicy: 'network-only',
-    variables: {
-      filter: {
-        hookGroupId: params.hookGroupId,
-      },
-    },
-  }),
+  },
 })
 @withStyles(theme => ({
   actionButton: {
@@ -45,7 +38,7 @@ import Link from '../../../utils/Link';
     },
   },
 }))
-export default class ListHooks extends Component {
+export default class ListHookGroups extends Component {
   handleCreateHook = () => {
     this.props.history.push('/hooks/create');
   };
@@ -66,43 +59,34 @@ export default class ListHooks extends Component {
       classes,
       description,
       data: { loading, error, hookGroups },
-      match,
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hooks = hookGroups?.map(group => group?.hooks).flat();
+    const hookGroupIds = hookGroups?.map(group => group?.hookGroupId).flat();
 
     return (
       <Dashboard
-        title="Hooks"
+        title="Hooks Groups"
         helpView={<HelpView description={description} />}
         search={
           <Search
-            placeholder="Hook contains"
+            placeholder="Hook group contains"
             defaultValue={search}
             onSubmit={this.handleHookSearchSubmit}
           />
         }>
-        <div style={{ flexGrow: 1 }}>
-          <Breadcrumbs>
-            <Link to="/hooks">
-              <Typography variant="body2">Hooks</Typography>
-            </Link>
-            <Typography variant="body2" color="textSecondary">
-              {match.params?.hookGroupId}
-            </Typography>
-          </Breadcrumbs>
-        </div>
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
-          (hooks?.length ? (
-            <HooksListTable
+          (hookGroupIds?.length ? (
+            <HookGroupsTable
               searchTerm={search}
-              hooks={hooks}
+              hookGroups={hookGroupIds}
               classes={classes}
             />
           ) : (
-            <Typography variant="subtitle1">No hooks are defined</Typography>
+            <Typography variant="subtitle1">
+              No hook groups are defined
+            </Typography>
           ))}
         <Button
           spanProps={{ className: classes.actionButton }}
