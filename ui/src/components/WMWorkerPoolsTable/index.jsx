@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import { shape, func, arrayOf, string } from 'prop-types';
+import { shape, func, arrayOf, string, bool } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
@@ -69,6 +69,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     }).isRequired,
     deleteRequest: func.isRequired,
     searchTerm: string,
+    errorStatsLoading: bool,
   };
 
   static defaultProps = {
@@ -203,6 +204,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     const {
       match: { path },
       classes,
+      errorStatsLoading,
     } = this.props;
     const { actionLoading } = this.state;
     const iconSize = 16;
@@ -272,7 +274,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
                   className={classes.hiddenLabel}>
                   Total Errors:
                 </Hidden>
-                {workerPool.errorsCount}
+                {errorStatsLoading ? '...' : workerPool.errorsCount}
               </div>
               <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
             </TableCellItem>

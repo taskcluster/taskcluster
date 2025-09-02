@@ -37,6 +37,7 @@
    * [`delete_last_fires`](#delete_last_fires)
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
+   * [`get_hook_groups`](#get_hook_groups)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
@@ -1185,6 +1186,7 @@ end
 * [`delete_last_fires`](#delete_last_fires)
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
+* [`get_hook_groups`](#get_hook_groups)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
@@ -1442,6 +1444,29 @@ begin
   where
     hooks.hook_group_id = hook_group_id_in and
     hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
+
+### get_hook_groups
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 115
+
+Get existing hooks groups
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select distinct hooks.hook_group_id
+  from hooks
+  order by hooks.hook_group_id;
 end
 ```
 
@@ -8474,7 +8499,7 @@ end
   * `updated_launch_configs text[]`
   * `created_launch_configs text[]`
   * `archived_launch_configs text[]`
-* *Last defined on version*: 105
+* *Last defined on version*: 116
 
 Creates or updates launch configs and marks the old ones as archived.
 If a launch config already exist but is archived, it would be unarchived.
@@ -8524,10 +8549,11 @@ begin
           wp_launch_config_id
           USING ERRCODE = 'unique_violation';
       END IF;
-      -- make sure it is not archived
+      -- make sure it is not archived and workerManager specific fields are updated
       UPDATE worker_pool_launch_configs
       SET is_archived = false,
-          last_modified = now()
+          last_modified = now(),
+          configuration = config
       WHERE
         worker_pool_id = worker_pool_id_in
         AND launch_config_id = wp_launch_config_id;
