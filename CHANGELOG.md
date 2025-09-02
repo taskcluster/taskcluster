@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7918](https://github.com/taskcluster/taskcluster/issues/7918)
+Worker-manager updates launch config when only "workerManager" part is updated,
+to make sure dynamic properties like `publicIp`, `capacityPerInstance` or `maxCapacity` are being updated
+
+### USERS
+
+▶ [patch] [#7796](https://github.com/taskcluster/taskcluster/issues/7796)
+UI data loading optimizations for hooks page - first screen only show hook groups, and the second one shows all hooks for a given hook group.
+This way we avoid loading and displaying all possible hooks on a single page.
+
+▶ [patch] [#7928](https://github.com/taskcluster/taskcluster/issues/7928)
+UI data loading optimizations on worker pools page.
+
+### DEVELOPERS
+
+▶ [minor] [#5265](https://github.com/taskcluster/taskcluster/issues/5265)
+Removed neutrino. The UI now uses webpack/jest directly
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump github.com/ulikunitz/xz from 0.5.12 to 0.5.14 (b781871e53)
+* build(deps): bump cipher-base from 1.0.4 to 1.0.6 in /clients/client-web (089f8b2128)
+* build(deps): bump sha.js from 2.4.11 to 2.4.12 in /ui (4ea4a70e71)
+* build(deps): bump sha.js from 2.4.11 to 2.4.12 in /clients/client-web (7e50b237fc)
+* build(deps): bump cipher-base from 1.0.4 to 1.0.6 in /ui (5e44e35dca)
+
+</details>
+
 ## v88.0.5
 
 ### GENERAL
