@@ -1103,3 +1103,23 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 		t.Fatalf("Expected vs actual mismatch. Expected: %#v, Actual: %#v, Raw: %s", expected, cotCert, certString)
 	}
 }
+
+func TestD2GDind(t *testing.T) {
+	setup(t)
+	payload := dockerworker.DockerWorkerPayload{
+		Command: []string{
+			"/bin/bash",
+			"-c",
+			"echo hello world",
+		},
+		Image: json.RawMessage(`"ubuntu:latest"`),
+		Features: dockerworker.FeatureFlags{
+			Dind: true,
+		},
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+}
