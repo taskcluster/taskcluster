@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.1.2
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js 22.19.0, go1.25.1, and yarn 4.9.4.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Worker Runner: adds additional logging around sending `graceful-termination` request to worker.
+
+Worker Runner (windows): fixes protocol pipe connection so that Generic Worker can communicate with Worker Runner. This allows `graceful-termination` requests to be properly sent and received, among other message types. You must include `--with-worker-runner` in your Generic Worker service configuration on the `run` subcommand.
+
 ## v88.1.1
 
 ### GENERAL
