@@ -1,5 +1,5 @@
-FROM golang:1.25.0-bookworm AS golang
-FROM node:22.18.0-bookworm
+FROM golang:1.25.1-bookworm AS golang
+FROM node:22.19.0-bookworm
 
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
