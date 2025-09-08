@@ -115,6 +115,7 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 	if err == nil && value == "TRUE" {
 		log.Println("GCP Metadata Service says termination is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]any{
