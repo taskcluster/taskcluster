@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v88.1.3
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Worker Runner (Windows): capture Generic Worker service exit code and exit early if the worker is rebooting, preventing a Worker Manager `removeWorker` API call.
+
 ## v88.1.2
 
 ### GENERAL
