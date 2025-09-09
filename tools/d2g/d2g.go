@@ -30,12 +30,7 @@ type (
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
 		FileMounts() ([]genericworker.FileMount, error)
-		String() string
-		ImageLoader() ImageLoader
-	}
-	ImageLoader interface {
-		LoadCommand() string
-		ChainOfTrustCommand() string
+		String(shellEscape bool) string
 	}
 	ConversionInfo struct {
 		ContainerName string
@@ -419,8 +414,7 @@ func runCommand(
 		}
 	}
 	command.WriteString(envMappings(dwPayload, config))
-	// note, dwImage.String() is already shell escaped
-	command.WriteString(" " + dwImage.String())
+	command.WriteString(" " + dwImage.String(true))
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return [][]string{
 		{
@@ -682,26 +676,4 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		envStrBuilder.WriteString(envSetting(envVarName))
 	}
 	return envStrBuilder.String()
-}
-
-func (fil *FileImageLoader) LoadCommand() string {
-	return "docker load --input dockerimage | sed -n '0,/^Loaded image: /s/^Loaded image: //p'"
-}
-
-func (fil *FileImageLoader) ChainOfTrustCommand() string {
-	return fmt.Sprintf(
-		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' %s)"'","imageArtifactHash":"sha256:'"$(sha256sum dockerimage | sed 's/ .*//')"'"}}' > chain-of-trust-additional-data.json`,
-		fil.Image.String(),
-	)
-}
-
-func (ril *RegistryImageLoader) LoadCommand() string {
-	return "docker pull -q " + ril.Image.String()
-}
-
-func (ril *RegistryImageLoader) ChainOfTrustCommand() string {
-	return fmt.Sprintf(
-		`echo '{"environment":{"imageHash":"'"$(docker inspect --format='{{index .Id}}' %s)"'"}}' > chain-of-trust-additional-data.json`,
-		ril.Image.String(),
-	)
 }

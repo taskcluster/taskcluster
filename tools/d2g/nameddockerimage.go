@@ -9,12 +9,9 @@ func (ndi *NamedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{}, nil
 }
 
-func (ndi *NamedDockerImage) String() string {
-	return shell.Escape(ndi.Name)
-}
-
-func (ndi *NamedDockerImage) ImageLoader() ImageLoader {
-	return &RegistryImageLoader{
-		Image: ndi,
+func (ndi *NamedDockerImage) String(shellEscape bool) string {
+	if shellEscape {
+		return shell.Escape(ndi.Name)
 	}
+	return ndi.Name
 }

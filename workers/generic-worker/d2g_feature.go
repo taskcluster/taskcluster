@@ -66,14 +66,12 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	// collector has pruned docker images between tasks
 	dtf.imageCache.loadFromFile("d2g-image-cache.json")
 
-	imageLoader := dtf.task.D2GInfo.Image.ImageLoader()
-
 	var isImageArtifact bool
 	var key string
 	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
 	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
 		// DockerImageName or NamedDockerImage, no image artifact
-		key = dtf.task.D2GInfo.Image.String()
+		key = dtf.task.D2GInfo.Image.String(false)
 	} else {
 		// DockerImageArtifact or IndexedDockerImage
 		isImageArtifact = true
@@ -87,12 +85,24 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	if image == nil {
 		dtf.task.Info("[d2g] Loading docker image")
-		cmd, err := process.NewCommandNoOutputStreams([]string{
-			"/usr/bin/env",
-			"bash",
-			"-c",
-			imageLoader.LoadCommand(),
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
+
+		var cmd *process.Command
+		var err error
+		if isImageArtifact {
+			cmd, err = process.NewCommandNoOutputStreams([]string{
+				"docker",
+				"load",
+				"--input",
+				"dockerimage",
+			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		} else {
+			cmd, err = process.NewCommandNoOutputStreams([]string{
+				"docker",
+				"pull",
+				"--quiet",
+				key,
+			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		}
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
 		}
@@ -102,6 +112,9 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 
 		imageName := strings.TrimSpace(string(out))
+		if isImageArtifact {
+			imageName = strings.TrimPrefix(imageName, "Loaded image: ")
+		}
 		imageID := imageName
 
 		// DockerImageArtifact or IndexedDockerImage, need to get
@@ -109,10 +122,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		// with the same name/tag
 		if isImageArtifact {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
-				"/usr/bin/env",
-				"bash",
-				"-c",
-				fmt.Sprintf("docker images --no-trunc -q %s", imageName),
+				"docker",
+				"images",
+				"--no-trunc",
+				"--quiet",
+				imageName,
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
 			if err != nil {
 				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
@@ -147,17 +161,31 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	if dtf.task.DockerWorkerPayload.Features.ChainOfTrust {
 		cmd, err := process.NewCommandNoOutputStreams([]string{
-			"/usr/bin/env",
-			"bash",
-			"-c",
-			imageLoader.ChainOfTrustCommand(),
-		}, taskContext.TaskDir, []string{fmt.Sprintf("D2G_IMAGE_ID=%s", image.ID)}, dtf.task.pd)
+			"docker",
+			"inspect",
+			"--format={{index .Id}}",
+			image.ID,
+		}, taskContext.TaskDir, []string{}, dtf.task.pd)
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to create chain of trust additional data file: %v", err))
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to inspect docker image: %v", err))
 		}
-		out, err := cmd.CombinedOutput()
+		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create chain of trust additional data file: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not inspect docker image: %v\n%v", err, string(out)))
+		}
+		imageHash := strings.TrimSpace(string(out))
+
+		var chainOfTrustAdditionalData string
+		if isImageArtifact {
+			chainOfTrustAdditionalData = fmt.Sprintf(`{"environment":{"imageHash":"%s","imageArtifactHash":"sha256:%s"}}`, imageHash, key)
+		} else {
+			chainOfTrustAdditionalData = fmt.Sprintf(`{"environment":{"imageHash":"%s"}}`, imageHash)
+		}
+
+		chainOfTrustAdditionalDataPath := filepath.Join(taskContext.TaskDir, "chain-of-trust-additional-data.json")
+		err = os.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
 	return nil
