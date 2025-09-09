@@ -37,12 +37,7 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1'
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+          --env-file env.list 'my-little/pony:4.1' foo bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -95,12 +90,7 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${D2G_IMAGE_ID}"
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+          --env-file env.list "${D2G_IMAGE_ID}" foo bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -159,12 +149,7 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${D2G_IMAGE_ID}"
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+          --env-file env.list "${D2G_IMAGE_ID}" foo bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -219,12 +204,7 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1'
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+          --env-file env.list 'my-little/pony:4.1' foo bar
       features:
         backingLog: true
         chainOfTrust: true

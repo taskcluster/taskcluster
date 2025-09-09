@@ -188,6 +188,18 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
+
+	envFile, err := os.Create(filepath.Join(taskContext.TaskDir, "env.list"))
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not create env.list file: %v", err))
+	}
+	defer envFile.Close()
+
+	_, err = envFile.WriteString(dtf.task.D2GInfo.EnvVars)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
+	}
+
 	return nil
 }
 

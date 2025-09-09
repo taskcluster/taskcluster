@@ -35,6 +35,7 @@ type (
 	ConversionInfo struct {
 		ContainerName string
 		CopyArtifacts []CopyArtifact
+		EnvVars       string
 		Image         Image
 	}
 	CopyArtifact struct {
@@ -208,6 +209,7 @@ func ConvertPayload(
 	}
 	conversionInfo.ContainerName = containerName
 	conversionInfo.CopyArtifacts = copyArtifacts(dwPayload, gwPayload.Artifacts)
+	conversionInfo.EnvVars = envMappings(dwPayload, config)
 	conversionInfo.Image = dwImage
 
 	gwFileMounts, err := dwImage.FileMounts()
@@ -218,7 +220,7 @@ func ConvertPayload(
 	if err != nil {
 		return
 	}
-	setEnv(dwPayload, gwPayload)
+
 	setFeatures(dwPayload, gwPayload, config)
 	setLogs(dwPayload, gwPayload)
 	setMaxRunTime(dwPayload, gwPayload)
@@ -400,7 +402,8 @@ func runCommand(
 			}
 		}
 	}
-	command.WriteString(envMappings(dwPayload, config))
+	// Use env file that's created by D2G task feature
+	command.WriteString(" --env-file env.list")
 	command.WriteString(" " + dwImage.String(true))
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return [][]string{
@@ -429,10 +432,6 @@ func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []ge
 		)
 	}
 	return artifacts
-}
-
-func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
-	gwPayload.Env = dwPayload.Env
 }
 
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config map[string]any) {
@@ -589,10 +588,6 @@ func createVolumeMountsString(
 	return volumeMounts.String()
 }
 
-func envSetting(envVarName string) string {
-	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
-}
-
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	var parsed any
 	err := json.Unmarshal(*payloadImage, &parsed)
@@ -645,14 +640,14 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_VIDEO_DEVICE")
 	}
 
-	envVarNames := []string{}
-	for envVarName := range dwPayload.Env {
-		envVarNames = append(envVarNames, envVarName)
+	envVars := []string{}
+	for envVarName, value := range dwPayload.Env {
+		envVars = append(envVars, fmt.Sprintf("%s=%s", envVarName, value))
 	}
-	envVarNames = append(envVarNames, additionalEnvVars...)
-	slices.Sort(envVarNames)
-	for _, envVarName := range envVarNames {
-		envStrBuilder.WriteString(envSetting(envVarName))
+	envVars = append(envVars, additionalEnvVars...)
+	slices.Sort(envVars)
+	for _, envVar := range envVars {
+		envStrBuilder.WriteString(envVar + "\n")
 	}
 	return envStrBuilder.String()
 }
