@@ -151,6 +151,9 @@ func (m *serviceRunMethod) wait() error {
 		if err != nil {
 			return fmt.Errorf("error querying service %s status: %s", m.serviceName, err)
 		}
+		if status.ServiceSpecificExitCode == 67 {
+			return fmt.Errorf("%s requested immediate reboot", m.serviceName)
+		}
 		if status.State != svc.StartPending && status.State != svc.Running {
 			break
 		}
