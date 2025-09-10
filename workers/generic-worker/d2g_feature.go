@@ -192,36 +192,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 }
 
 func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
-	if dtf.task.DockerWorkerPayload.Features.DockerSave {
-		cmd, e := process.NewCommandNoOutputStreams([]string{
-			"docker",
-			"commit",
-			dtf.task.D2GInfo.ContainerName,
-			dtf.task.D2GInfo.ContainerName,
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to commit docker container: %v", e)))
-		}
-		out, e := cmd.CombinedOutput()
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not commit docker container: %v\n%v", e, string(out))))
-		}
-
-		cmd, e = process.NewCommandNoOutputStreams([]string{
-			"/usr/bin/env",
-			"bash",
-			"-c",
-			fmt.Sprintf("docker save %s | gzip > image.tar.gz", dtf.task.D2GInfo.ContainerName),
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to save docker image: %v", e)))
-		}
-		out, e = cmd.CombinedOutput()
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not save docker image: %v\n%v", e, string(out))))
-		}
-	}
-
 	for _, artifact := range dtf.task.D2GInfo.CopyArtifacts {
 		cmd, e := process.NewCommandNoOutputStreams([]string{
 			"docker",

@@ -218,7 +218,6 @@ func ConvertPayload(
 	if err != nil {
 		return
 	}
-
 	setEnv(dwPayload, gwPayload)
 	setFeatures(dwPayload, gwPayload, config)
 	setLogs(dwPayload, gwPayload)
@@ -350,18 +349,6 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 		gwArtifacts[i] = *gwArt
 	}
 
-	if dwPayload.Features.DockerSave {
-		gwArt := new(genericworker.Artifact)
-		defaults.SetDefaults(gwArt)
-
-		gwArt.Name = "public/dockerImage.tar.gz"
-		gwArt.Path = "image.tar.gz"
-		gwArt.Type = "file"
-		gwArt.Optional = true
-
-		gwArtifacts = append(gwArtifacts, *gwArt)
-	}
-
 	return gwArtifacts
 }
 
@@ -429,14 +416,6 @@ func runCommand(
 func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []CopyArtifact {
 	artifacts := []CopyArtifact{}
 	for i := range gwArtifacts {
-		// An image artifact will be in the generic worker payload when
-		// dockerSave is enabled. That artifact will not be found in either the
-		// docker worker payload or the container after the run command is
-		// complete, so no cp command is needed for it. The image artifact is
-		// created after the run command is complete.
-		if _, ok := dwPayload.Artifacts[gwArtifacts[i].Name]; !ok {
-			continue
-		}
 		// Volume artifact mounts do not need to be copied
 		if dwPayload.Artifacts[gwArtifacts[i].Name].Type == "volume" {
 			continue
