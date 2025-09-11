@@ -190,6 +190,12 @@ func ConvertPayload(
 
 	setArtifacts(dwPayload, gwPayload)
 
+	if gwPayload.Env == nil {
+		gwPayload.Env = map[string]string{}
+	}
+	envVarsWithNewlines := ""
+	conversionInfo.EnvVars, envVarsWithNewlines = envMappings(dwPayload, gwPayload.Env, config)
+
 	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
 	dwImage, err := imageObject(&dwPayload.Image)
 	if err != nil {
@@ -203,13 +209,12 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
 	if err != nil {
 		return
 	}
 	conversionInfo.ContainerName = containerName
 	conversionInfo.CopyArtifacts = copyArtifacts(dwPayload, gwPayload.Artifacts)
-	conversionInfo.EnvVars = envMappings(dwPayload, config)
 	conversionInfo.Image = dwImage
 
 	gwFileMounts, err := dwImage.FileMounts()
@@ -359,6 +364,7 @@ func runCommand(
 	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
+	envVarsWithNewlines string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) ([][]string, string, error) {
@@ -403,7 +409,7 @@ func runCommand(
 		}
 	}
 	// Use env file that's created by D2G task feature
-	command.WriteString(" --env-file env.list")
+	command.WriteString(fmt.Sprintf("%s --env-file env.list", envVarsWithNewlines))
 	command.WriteString(" " + dwImage.String(true))
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return [][]string{
@@ -473,10 +479,11 @@ func setCommand(
 	gwPayload *genericworker.GenericWorkerPayload,
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	envVarsWithNewlines string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
@@ -588,6 +595,10 @@ func createVolumeMountsString(
 	return volumeMounts.String()
 }
 
+func envSetting(envVarName string) string {
+	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
+}
+
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	var parsed any
 	err := json.Unmarshal(*payloadImage, &parsed)
@@ -620,7 +631,8 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) string {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, gwEnv map[string]string, config map[string]any) (string, string) {
+	envListStrBuilder := strings.Builder{}
 	envStrBuilder := strings.Builder{}
 
 	additionalEnvVars := []string{
@@ -641,13 +653,23 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 	}
 
 	envVars := []string{}
+	envVarsWithNewlines := []string{}
 	for envVarName, value := range dwPayload.Env {
+		if strings.Contains(value, "\n") {
+			envVarsWithNewlines = append(envVarsWithNewlines, envVarName)
+			gwEnv[envVarName] = value
+			continue
+		}
 		envVars = append(envVars, fmt.Sprintf("%s=%s", envVarName, value))
 	}
 	envVars = append(envVars, additionalEnvVars...)
 	slices.Sort(envVars)
 	for _, envVar := range envVars {
-		envStrBuilder.WriteString(envVar + "\n")
+		envListStrBuilder.WriteString(envVar + "\n")
 	}
-	return envStrBuilder.String()
+	slices.Sort(envVarsWithNewlines)
+	for _, envVar := range envVarsWithNewlines {
+		envStrBuilder.WriteString(envSetting(envVar))
+	}
+	return envListStrBuilder.String(), envStrBuilder.String()
 }

@@ -1,6 +1,6 @@
 testSuite:
-  description: Test that environment variables are properly escaped.
-  name: Environment variable escaping test
+  description: Test that environment variables are properly passed in.
+  name: Environment variable test
   payloadTests:
   - d2gConfig:
       allowChainOfTrust: true
@@ -21,7 +21,12 @@ testSuite:
       command:
       - echo "Hello world"
       env:
-        ' test123 --help  ; whoami ; ': testing
+        ' test123 --help  ; whoami ; ': |-
+          testing
+          123
+        anotherOne: |
+          line1
+          line2
       image: ubuntu
       maxRunTime: 3600
     genericWorkerTaskPayload:
@@ -30,7 +35,15 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+          -e ' test123 --help  ; whoami ; ' -e anotherOne --env-file env.list ubuntu
+          'echo "Hello world"'
+      env:
+        ' test123 --help  ; whoami ; ': |-
+          testing
+          123
+        anotherOne: |
+          line1
+          line2
       features:
         backingLog: true
         liveLog: true
