@@ -30,10 +30,14 @@ withMonitor(helper);
 /** @param {string} errorCode */
 helper.expectMonitorError = async (errorCode) => {
   const monitor = await helper.load('monitor');
-  assert.equal(monitor.manager.messages.length, 1);
-  const Fields = monitor.manager.messages[0].Fields;
-  assert.equal(Fields?.code || Fields?.name, errorCode);
-  monitor.manager.reset();
+  const errorMessage = monitor.manager.messages.find(msg => {
+    const Fields = msg.Fields;
+    return (Fields?.code || Fields?.name) === errorCode;
+  });
+  assert.ok(errorMessage, `Expected to find monitor error with code: ${errorCode}`);
+  // Clear only the error message we found, keeping others for the teardown check
+  const errorIndex = monitor.manager.messages.indexOf(errorMessage);
+  monitor.manager.messages.splice(errorIndex, 1);
 };
 
 helper.rootUrl = libUrls.testRootUrl();

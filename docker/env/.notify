@@ -9,6 +9,7 @@ READ_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 WRITE_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 LEVEL=info
 ERROR_CONFIG=
+PROMETHEUS_CONFIG={"server": {"ip": "0.0.0.0", "port": 9100 }}
 PORT=80
 NODE_ENV=development
 FORCE_SSL=false

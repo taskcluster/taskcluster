@@ -217,12 +217,17 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'denier', 'db'],
-    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { notifier, denier, db },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { notifier, denier, db },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
