@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/part-of: taskcluster
 data:
   LEVEL: '{{ if typeIs "<nil>" .Values.index.level }}{{ else }}{{ if typeIs "string" .Values.index.level }}{{ .Values.index.level }}{{ else }}{{ .Values.index.level | toJson }}{{ end }}{{ end }}'
+  PROMETHEUS_CONFIG: '{{ if typeIs "<nil>" .Values.prometheus }}{{ else }}{{ if typeIs "string" .Values.prometheus }}{{ .Values.prometheus }}{{ else }}{{ .Values.prometheus | toJson }}{{ end }}{{ end }}'
   FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
   TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
   KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.index.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.index.keep_alive_timeout_seconds }}{{ .Values.index.keep_alive_timeout_seconds }}{{ else }}{{ .Values.index.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'

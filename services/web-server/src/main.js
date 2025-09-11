@@ -181,6 +181,8 @@ const load = loader(
           authFactory,
         });
 
+        monitor.exposeMetrics('default');
+
         return httpServer;
       },
     },
