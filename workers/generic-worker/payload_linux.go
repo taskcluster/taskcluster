@@ -38,7 +38,7 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	}
 
 	// Convert task.DockerWorkerPayload to gwPayload
-	gwPayload, conversionInfo, err := d2g.ConvertPayload(task.DockerWorkerPayload, config.D2GConfig, os.ReadDir)
+	gwPayload, conversionInfo, err := d2g.ConvertPayload(task.DockerWorkerPayload, taskContext.TaskDir, config.D2GConfig, os.ReadDir)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
 	}

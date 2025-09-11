@@ -20,7 +20,6 @@ import (
 	"slices"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/shell"
 )
 
 type (
@@ -78,7 +77,7 @@ func ConvertTaskDefinition(
 		return nil, fmt.Errorf("cannot unmarshal Docker Worker payload: %v", err)
 	}
 
-	gwPayload, _, err := ConvertPayload(dwPayload, config, directoryReader)
+	gwPayload, _, err := ConvertPayload(dwPayload, "", config, directoryReader)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert Docker Worker payload: %v", err)
 	}
@@ -181,6 +180,7 @@ func ConvertScopes(
 // converted separately (see d2g.ConvertScopes function).
 func ConvertPayload(
 	dwPayload *dockerworker.DockerWorkerPayload,
+	taskDir string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (gwPayload *genericworker.GenericWorkerPayload, conversionInfo ConversionInfo, err error) {
@@ -202,7 +202,7 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, taskDir, config, directoryReader)
 	if err != nil {
 		return
 	}
@@ -357,6 +357,7 @@ func runCommand(
 	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
+	taskDir string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) ([][]string, string, error) {
@@ -365,30 +366,28 @@ func runCommand(
 		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
 	}
 
-	command := strings.Builder{}
-
 	// Docker Worker used to attach a pseudo tty, see:
 	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString(fmt.Sprintf("docker run -t --name %v", containerName))
+	dockerArgs := []string{"docker", "run", "-t", "--name", containerName}
 
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
-	command.WriteString(" --memory-swap -1 --pids-limit -1")
+	dockerArgs = append(dockerArgs, "--memory-swap", "-1", "--pids-limit", "-1")
 	if dwPayload.Capabilities.Privileged && config["allowPrivileged"].(bool) {
-		command.WriteString(" --privileged")
+		dockerArgs = append(dockerArgs, "--privileged")
 	} else if dwPayload.Features.AllowPtrace && config["allowPtrace"].(bool) {
-		command.WriteString(" --cap-add=SYS_PTRACE")
+		dockerArgs = append(dockerArgs, "--cap-add=SYS_PTRACE")
 	}
 	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
-		command.WriteString(" --security-opt=seccomp=unconfined")
+		dockerArgs = append(dockerArgs, "--security-opt=seccomp=unconfined")
 	}
-	command.WriteString(" --add-host=localhost.localdomain:127.0.0.1") // bug 1559766
-	command.WriteString(createVolumeMountsString(dwPayload, wdcs, gwArtifacts, config))
+	dockerArgs = append(dockerArgs, "--add-host=localhost.localdomain:127.0.0.1") // bug 1559766
+	dockerArgs = append(dockerArgs, createVolumeMountsArgs(dwPayload, wdcs, gwArtifacts, taskDir, config)...)
 	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
-		command.WriteString(" --add-host=taskcluster:host-gateway")
+		dockerArgs = append(dockerArgs, "--add-host=taskcluster:host-gateway")
 	}
 	if config["allowGPUs"].(bool) {
-		command.WriteString(" --gpus " + config["gpus"].(string))
+		dockerArgs = append(dockerArgs, "--gpus", config["gpus"].(string))
 		entries, err := directoryReader("/dev")
 		if err != nil {
 			return nil, "", fmt.Errorf("cannot read /dev to find nvidia devices")
@@ -396,21 +395,14 @@ func runCommand(
 		for _, e := range entries {
 			deviceName := e.Name()
 			if strings.HasPrefix(deviceName, "nvidia") {
-				command.WriteString(" --device=/dev/" + deviceName)
+				dockerArgs = append(dockerArgs, "--device=/dev/"+deviceName)
 			}
 		}
 	}
-	command.WriteString(envMappings(dwPayload, config))
-	command.WriteString(" " + dwImage.String(true))
-	command.WriteString(" " + shell.Escape(dwPayload.Command...))
-	return [][]string{
-		{
-			"/usr/bin/env",
-			"bash",
-			"-cx",
-			command.String(),
-		},
-	}, containerName, nil
+	dockerArgs = append(dockerArgs, createEnvArgs(dwPayload, config)...)
+	dockerArgs = append(dockerArgs, dwImage.String(false))
+	dockerArgs = append(dockerArgs, dwPayload.Command...)
+	return [][]string{dockerArgs}, containerName, nil
 }
 
 func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []CopyArtifact {
@@ -474,10 +466,11 @@ func setCommand(
 	gwPayload *genericworker.GenericWorkerPayload,
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	taskDir string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, taskDir, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
@@ -555,42 +548,39 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(
+func createVolumeMountsArgs(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	wdcs []genericworker.WritableDirectoryCache,
 	gwArtifacts []genericworker.Artifact,
+	taskDir string,
 	config map[string]any,
-) string {
-	volumeMounts := strings.Builder{}
+) []string {
+	var args []string
 	for _, wdc := range wdcs {
-		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
+		args = append(args, "-v", filepath.Join(taskDir, wdc.Directory)+":"+dwPayload.Cache[wdc.CacheName])
 	}
 	for _, gwArtifact := range gwArtifacts {
 		if strings.HasPrefix(gwArtifact.Path, "volume") {
-			volumeMounts.WriteString(` -v "$(pwd)/` + gwArtifact.Path + ":" + dwPayload.Artifacts[gwArtifact.Name].Path + `"`)
+			args = append(args, "-v", filepath.Join(taskDir, gwArtifact.Path)+":"+dwPayload.Artifacts[gwArtifact.Name].Path)
 		}
 	}
 	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
-		volumeMounts.WriteString(" --device=/dev/kvm")
+		args = append(args, "--device=/dev/kvm")
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory && config["allowHostSharedMemory"].(bool) {
 		// need to use volume mount here otherwise we get
 		// docker: Error response from daemon: error
 		// gathering device information while adding
 		// custom device "/dev/shm": not a device node
-		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+		args = append(args, "-v", "/dev/shm:/dev/shm")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
-		volumeMounts.WriteString(` --device="${TASKCLUSTER_VIDEO_DEVICE}"`)
+		args = append(args, "--device=${TASKCLUSTER_VIDEO_DEVICE}")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackAudio && config["allowLoopbackAudio"].(bool) {
-		volumeMounts.WriteString(" --device=/dev/snd")
+		args = append(args, "--device=/dev/snd")
 	}
-	return volumeMounts.String()
-}
-
-func envSetting(envVarName string) string {
-	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
+	return args
 }
 
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
@@ -625,8 +615,8 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) string {
-	envStrBuilder := strings.Builder{}
+func createEnvArgs(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) []string {
+	var args []string
 
 	additionalEnvVars := []string{
 		"RUN_ID",
@@ -652,7 +642,7 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 	envVarNames = append(envVarNames, additionalEnvVars...)
 	slices.Sort(envVarNames)
 	for _, envVarName := range envVarNames {
-		envStrBuilder.WriteString(envSetting(envVarName))
+		args = append(args, "-e", envVarName)
 	}
-	return envStrBuilder.String()
+	return args
 }
