@@ -70,12 +70,17 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends', 'middleware'],
-    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db, backends, middleware },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { cfg, db, backends, middleware },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

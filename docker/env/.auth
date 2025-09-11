@@ -13,6 +13,7 @@ SCHEMAS_BUCKET=
 REFS_BUCKET=
 LEVEL=info
 ERROR_CONFIG=
+PROMETHEUS_CONFIG={"server": {"ip": "0.0.0.0", "port": 9100 }}
 PORT=80
 NODE_ENV=development
 FORCE_SSL=false

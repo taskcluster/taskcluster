@@ -122,22 +122,27 @@ const load = loader({
   api: {
     requires: [
       'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        publisher,
-        cfg,
-        github,
-        db,
-        ajv,
-        monitor: monitor.childMonitor('api-context'),
-        queueClient,
-        intree,
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          publisher,
+          cfg,
+          github,
+          db,
+          ajv,
+          monitor: monitor.childMonitor('api-context'),
+          queueClient,
+          intree,
+          schemaset,
+        },
+        monitor: monitor.childMonitor('api'),
         schemaset,
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

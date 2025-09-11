@@ -16047,8 +16047,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -16062,8 +16062,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -17779,8 +17779,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -17794,8 +17794,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -18111,8 +18111,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -18126,8 +18126,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -18500,8 +18500,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -18515,8 +18515,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -20692,8 +20692,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -20707,8 +20707,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -21066,8 +21066,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -21081,8 +21081,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -21473,8 +21473,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -21488,8 +21488,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -22091,8 +22091,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -22106,8 +22106,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -22577,8 +22577,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -22592,8 +22592,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -23234,8 +23234,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -23249,8 +23249,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -23960,8 +23960,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -23975,8 +23975,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
@@ -24153,6 +24153,32 @@
       "$schema": "/schemas/common/metrics-reference-v0.json#",
       "metrics": [
         {
+          "description": "Total number of failed authentication attempts",
+          "labels": {
+            "reason": "Failure reason category",
+            "scheme": "Attempted authentication scheme"
+          },
+          "name": "auth_failure_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of failed authentication attempts",
+          "type": "counter"
+        },
+        {
+          "description": "Total number of successful authentication attempts",
+          "labels": {
+            "clientId": "Client ID that authenticated",
+            "scheme": "Authentication scheme (hawk, bewit, none)"
+          },
+          "name": "auth_success_total",
+          "registers": [
+            "default"
+          ],
+          "title": "Total number of successful authentication attempts",
+          "type": "counter"
+        },
+        {
           "buckets": [
             0.01,
             0.05,
@@ -24165,8 +24191,8 @@
           "description": "HTTP request duration in seconds",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_request_duration_seconds",
@@ -24180,8 +24206,8 @@
           "description": "Total number of HTTP requests",
           "labels": {
             "method": "HTTP method",
-            "path": "HTTP path",
-            "service": "Serice name",
+            "name": "API method name",
+            "service": "Service name",
             "status": "Response status code"
           },
           "name": "http_requests_total",
