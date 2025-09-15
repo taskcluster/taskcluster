@@ -34,16 +34,11 @@ testSuite:
       - - /usr/bin/env
         - bash
         - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ' test123 --help  ; whoami ; ' -e anotherOne --env-file env.list ubuntu
-          'echo "Hello world"'
-      env:
-        ' test123 --help  ; whoami ; ': |-
-          testing
-          123
-        anotherOne: |
-          line1
+        - |-
+          docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1 -e ' test123 --help  ; whoami ; =testing
+          123' -e 'anotherOne=line1
           line2
+          ' --env-file env.list ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
