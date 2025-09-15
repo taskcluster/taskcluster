@@ -3776,9 +3776,11 @@ end
   * `  worker_group text`
   * `  worker_id text`
   * `  claimed timestamptz `
-* *Last defined on version*: 94
+* *Last defined on version*: 117
 
 Get all tasks that are currently claimed by workers in a given task queue.
+Returns only the latest claim for each unique task ID to avoid duplicates
+when tasks are being reclaimed.
 
 <details><summary>Function Body</summary>
 
@@ -3813,11 +3815,17 @@ begin
     q.worker_id,
     q.claimed
   from queue_claimed_tasks q
-  left join tasks on tasks.task_id=q.task_id
+  inner join tasks on tasks.task_id = q.task_id
   where q.task_queue_id = task_queue_id_in
-    and tasks.task_id is not null
     and (after_claimed_in is null or q.claimed > after_claimed_in)
     and (after_task_id_in is null or q.task_id != after_task_id_in)
+    and not exists (
+      select 1
+      from queue_claimed_tasks q2
+      where q2.task_id = q.task_id
+        and q2.task_queue_id = q.task_queue_id
+        and q2.claimed > q.claimed
+    )
   order by q.claimed asc
   limit get_page_limit(page_size_in);
 end
