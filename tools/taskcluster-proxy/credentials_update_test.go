@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v89/clients/client-go"
 )
 
 type RoutesTest struct {

@@ -704,10 +704,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `expire_clients()` (compatibility guaranteed until v89.0.0)
-
 ## github
 
 * [`create_github_build_pr`](#create_github_build_pr)
@@ -6264,10 +6260,6 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `expire_secrets()` (compatibility guaranteed until v89.0.0)
 
 ## web_server
 

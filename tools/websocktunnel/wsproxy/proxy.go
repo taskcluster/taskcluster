@@ -12,8 +12,8 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v88/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v88/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v89/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v89/tools/websocktunnel/wsmux"
 
 	"maps"
 

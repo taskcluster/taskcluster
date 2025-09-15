@@ -3,6 +3,42 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v89.0.0
+
+### USERS
+
+▶ [MAJOR]
+The `dind` and `dockerSave` features are no longer supported in docker-worker
+payloads (whether in docker-worker itself or in generic-worker via D2G).  Tasks
+requesting those features will fail with an exception.
+
+▶ [patch] [#7605](https://github.com/taskcluster/taskcluster/issues/7605)
+Fixes duplicate tasks shown in claimed tasks list. This can happen when task is being reclaimed
+and multiple entries might still exist in queue_claimed_tasks table
+
+▶ [patch]
+D2G: don't write env vars out to Generic Worker's environment. Instead, pass them as `-e <name>=<value>`. Follow-up to https://github.com/taskcluster/taskcluster/pull/7945#discussion_r2348906304.
+
+▶ [patch] [#7938](https://github.com/taskcluster/taskcluster/issues/7938)
+D2G: pass Docker Worker environment variables to container using `--env-file` in `docker run` command.
+
+▶ [patch]
+D2G: remove calls out to bash shells to load docker image and create chain of trust additional data file.
+
+### DEVELOPERS
+
+▶ [patch] [#7500](https://github.com/taskcluster/taskcluster/issues/7500)
+Github build is marked as failed after there are no retries left, instead of staying "neutral"
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump axios from 1.11.0 to 1.12.1 (472e669404)
+
+</details>
+
 ## v88.1.3
 
 ### WORKER-DEPLOYERS

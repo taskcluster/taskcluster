@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v89/clients/client-go/tcqueue"
 )
 
 func TestDesktopIntegration(t *testing.T) {
