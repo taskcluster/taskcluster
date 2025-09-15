@@ -46,8 +46,7 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION
-          -e TASK_GROUP_ID -e TASK_ID ubuntu 'echo "Hello world"'
+          --env-file env.list ubuntu 'echo "Hello world"'
       features:
         backingLog: true
         liveLog: true
@@ -99,9 +98,8 @@ testSuite:
         - bash
         - -cx
         - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -v "$(pwd)/volume0:/home/worker/artifacts" -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE
-          -e TASKCLUSTER_ROOT_URL -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID
-          -e TASK_ID ubuntu 'echo "Hello world"'
+          -v "$(pwd)/volume0:/home/worker/artifacts" --env-file env.list ubuntu 'echo
+          "Hello world"'
       features:
         backingLog: true
         liveLog: true

@@ -35,6 +35,7 @@ type (
 	ConversionInfo struct {
 		ContainerName string
 		CopyArtifacts []CopyArtifact
+		EnvVars       string
 		Image         Image
 	}
 	CopyArtifact struct {
@@ -189,6 +190,12 @@ func ConvertPayload(
 
 	setArtifacts(dwPayload, gwPayload)
 
+	if gwPayload.Env == nil {
+		gwPayload.Env = map[string]string{}
+	}
+	envVarsWithNewlines := ""
+	conversionInfo.EnvVars, envVarsWithNewlines = envMappings(dwPayload, gwPayload.Env, config)
+
 	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
 	dwImage, err := imageObject(&dwPayload.Image)
 	if err != nil {
@@ -202,7 +209,7 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
 	if err != nil {
 		return
 	}
@@ -218,7 +225,7 @@ func ConvertPayload(
 	if err != nil {
 		return
 	}
-	setEnv(dwPayload, gwPayload)
+
 	setFeatures(dwPayload, gwPayload, config)
 	setLogs(dwPayload, gwPayload)
 	setMaxRunTime(dwPayload, gwPayload)
@@ -357,6 +364,7 @@ func runCommand(
 	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
+	envVarsWithNewlines string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) ([][]string, string, error) {
@@ -400,7 +408,8 @@ func runCommand(
 			}
 		}
 	}
-	command.WriteString(envMappings(dwPayload, config))
+	// Use env file that's created by D2G task feature
+	command.WriteString(fmt.Sprintf("%s --env-file env.list", envVarsWithNewlines))
 	command.WriteString(" " + dwImage.String(true))
 	command.WriteString(" " + shell.Escape(dwPayload.Command...))
 	return [][]string{
@@ -429,10 +438,6 @@ func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []ge
 		)
 	}
 	return artifacts
-}
-
-func setEnv(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload) {
-	gwPayload.Env = dwPayload.Env
 }
 
 func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config map[string]any) {
@@ -474,10 +479,11 @@ func setCommand(
 	gwPayload *genericworker.GenericWorkerPayload,
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
+	envVarsWithNewlines string,
 	config map[string]any,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
@@ -625,7 +631,8 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) string {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, gwEnv map[string]string, config map[string]any) (string, string) {
+	envListStrBuilder := strings.Builder{}
 	envStrBuilder := strings.Builder{}
 
 	additionalEnvVars := []string{
@@ -645,14 +652,24 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_VIDEO_DEVICE")
 	}
 
-	envVarNames := []string{}
-	for envVarName := range dwPayload.Env {
-		envVarNames = append(envVarNames, envVarName)
+	envVars := []string{}
+	envVarsWithNewlines := []string{}
+	for envVarName, value := range dwPayload.Env {
+		if strings.Contains(value, "\n") {
+			envVarsWithNewlines = append(envVarsWithNewlines, envVarName)
+			gwEnv[envVarName] = value
+			continue
+		}
+		envVars = append(envVars, fmt.Sprintf("%s=%s", envVarName, value))
 	}
-	envVarNames = append(envVarNames, additionalEnvVars...)
-	slices.Sort(envVarNames)
-	for _, envVarName := range envVarNames {
-		envStrBuilder.WriteString(envSetting(envVarName))
+	envVars = append(envVars, additionalEnvVars...)
+	slices.Sort(envVars)
+	for _, envVar := range envVars {
+		envListStrBuilder.WriteString(envVar + "\n")
 	}
-	return envStrBuilder.String()
+	slices.Sort(envVarsWithNewlines)
+	for _, envVar := range envVarsWithNewlines {
+		envStrBuilder.WriteString(envSetting(envVar))
+	}
+	return envListStrBuilder.String(), envStrBuilder.String()
 }

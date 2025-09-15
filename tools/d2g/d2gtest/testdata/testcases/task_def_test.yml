@@ -70,9 +70,8 @@ testSuite:
           - bash
           - -cx
           - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-            -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-            /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
+            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
         features:
           backingLog: true
           liveLog: true
@@ -173,9 +172,8 @@ testSuite:
           - bash
           - -cx
           - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-            -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-            /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
+            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
         features:
           backingLog: true
           liveLog: true
@@ -279,9 +277,8 @@ testSuite:
           - bash
           - -cx
           - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-            -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID ubuntu:latest
-            /bin/bash -c 'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
+            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
         features:
           backingLog: true
           liveLog: true
