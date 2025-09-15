@@ -20,7 +20,6 @@ import (
 	"slices"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/shell"
 )
 
 type (
@@ -30,7 +29,7 @@ type (
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
 		FileMounts() ([]genericworker.FileMount, error)
-		String(shellEscape bool) string
+		String() string
 	}
 	ConversionInfo struct {
 		ContainerName string
@@ -370,30 +369,31 @@ func runCommand(
 		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
 	}
 
-	command := strings.Builder{}
-
-	// Docker Worker used to attach a pseudo tty, see:
-	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
-	command.WriteString(fmt.Sprintf("docker run -t --name %v", containerName))
+	args := []string{"docker", "run", "-t", "--name", containerName}
 
 	// Do not limit resource usage by the containerName. See
 	// https://docs.docker.com/reference/cli/docker/container/run/
-	command.WriteString(" --memory-swap -1 --pids-limit -1")
+	args = append(args, "--memory-swap", "-1", "--pids-limit", "-1")
+
 	if dwPayload.Capabilities.Privileged && config["allowPrivileged"].(bool) {
-		command.WriteString(" --privileged")
+		args = append(args, "--privileged")
 	} else if dwPayload.Features.AllowPtrace && config["allowPtrace"].(bool) {
-		command.WriteString(" --cap-add=SYS_PTRACE")
+		args = append(args, "--cap-add=SYS_PTRACE")
 	}
+
 	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
-		command.WriteString(" --security-opt=seccomp=unconfined")
+		args = append(args, "--security-opt=seccomp=unconfined")
 	}
-	command.WriteString(" --add-host=localhost.localdomain:127.0.0.1") // bug 1559766
-	command.WriteString(createVolumeMountsString(dwPayload, wdcs, gwArtifacts, config))
+
+	args = append(args, "--add-host=localhost.localdomain:127.0.0.1") // bug 1559766
+	args = append(args, createVolumeMountArgs(dwPayload, wdcs, gwArtifacts, config)...)
+
 	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
-		command.WriteString(" --add-host=taskcluster:host-gateway")
+		args = append(args, "--add-host=taskcluster:host-gateway")
 	}
+
 	if config["allowGPUs"].(bool) {
-		command.WriteString(" --gpus " + config["gpus"].(string))
+		args = append(args, "--gpus", config["gpus"].(string))
 		entries, err := directoryReader("/dev")
 		if err != nil {
 			return nil, "", fmt.Errorf("cannot read /dev to find nvidia devices")
@@ -401,22 +401,18 @@ func runCommand(
 		for _, e := range entries {
 			deviceName := e.Name()
 			if strings.HasPrefix(deviceName, "nvidia") {
-				command.WriteString(" --device=/dev/" + deviceName)
+				args = append(args, "--device=/dev/"+deviceName)
 			}
 		}
 	}
+
+	args = append(args, parseEnvArgs(envVarsWithNewlines)...)
 	// Use env file that's created by D2G task feature
-	command.WriteString(fmt.Sprintf("%s --env-file env.list", envVarsWithNewlines))
-	command.WriteString(" " + dwImage.String(true))
-	command.WriteString(" " + shell.Escape(dwPayload.Command...))
-	return [][]string{
-		{
-			"/usr/bin/env",
-			"bash",
-			"-cx",
-			command.String(),
-		},
-	}, containerName, nil
+	args = append(args, "--env-file", "env.list")
+	args = append(args, dwImage.String())
+	args = append(args, dwPayload.Command...)
+
+	return [][]string{args}, containerName, nil
 }
 
 func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []genericworker.Artifact) []CopyArtifact {
@@ -558,42 +554,55 @@ func fileNameWithoutExtension(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func createVolumeMountsString(
+func createVolumeMountArgs(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	wdcs []genericworker.WritableDirectoryCache,
 	gwArtifacts []genericworker.Artifact,
 	config map[string]any,
-) string {
-	volumeMounts := strings.Builder{}
+) []string {
+	var args []string
 	for _, wdc := range wdcs {
-		volumeMounts.WriteString(` -v "$(pwd)/` + wdc.Directory + ":" + dwPayload.Cache[wdc.CacheName] + `"`)
+		args = append(args, "-v", fmt.Sprintf("__TASK_DIR__/%s:%s", wdc.Directory, dwPayload.Cache[wdc.CacheName]))
 	}
 	for _, gwArtifact := range gwArtifacts {
 		if strings.HasPrefix(gwArtifact.Path, "volume") {
-			volumeMounts.WriteString(` -v "$(pwd)/` + gwArtifact.Path + ":" + dwPayload.Artifacts[gwArtifact.Name].Path + `"`)
+			args = append(args, "-v", fmt.Sprintf("__TASK_DIR__/%s:%s", gwArtifact.Path, dwPayload.Artifacts[gwArtifact.Name].Path))
 		}
 	}
 	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
-		volumeMounts.WriteString(" --device=/dev/kvm")
+		args = append(args, "--device=/dev/kvm")
 	}
 	if dwPayload.Capabilities.Devices.HostSharedMemory && config["allowHostSharedMemory"].(bool) {
 		// need to use volume mount here otherwise we get
 		// docker: Error response from daemon: error
 		// gathering device information while adding
 		// custom device "/dev/shm": not a device node
-		volumeMounts.WriteString(" -v /dev/shm:/dev/shm")
+		args = append(args, "-v", "/dev/shm:/dev/shm")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
-		volumeMounts.WriteString(` --device="${TASKCLUSTER_VIDEO_DEVICE}"`)
+		args = append(args, "--device=__TASKCLUSTER_VIDEO_DEVICE__")
 	}
 	if dwPayload.Capabilities.Devices.LoopbackAudio && config["allowLoopbackAudio"].(bool) {
-		volumeMounts.WriteString(" --device=/dev/snd")
+		args = append(args, "--device=/dev/snd")
 	}
-	return volumeMounts.String()
+	return args
 }
 
 func envSetting(envVarName string) string {
-	return fmt.Sprintf(" -e %s", shell.Escape(envVarName))
+	return fmt.Sprintf(" -e %s", envVarName)
+}
+
+func parseEnvArgs(envVarsWithNewlines string) []string {
+	var args []string
+	// envVarsWithNewlines contains strings like " -e VAR=value -e VAR2=value2"
+	// We need to parse these into separate -e arguments
+	for envVar := range strings.SplitSeq(envVarsWithNewlines, " -e ") {
+		if envVar == "" {
+			continue
+		}
+		args = append(args, "-e", envVar)
+	}
+	return args
 }
 
 func imageObject(payloadImage *json.RawMessage) (Image, error) {

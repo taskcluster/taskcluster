@@ -39,8 +39,8 @@ func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {
 	return []genericworker.FileMount{fm}, nil
 }
 
-func (idi *IndexedDockerImage) String(shellEscape bool) string {
-	return `"${D2G_IMAGE_ID}"`
+func (idi *IndexedDockerImage) String() string {
+	return "__D2G_IMAGE_ID__"
 }
 
 func fileExtension(path string) string {

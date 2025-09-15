@@ -66,12 +66,23 @@ testSuite:
         source: https://community-tc.services.mozilla.com/tasks/create
       payload:
         command:
-        - - /usr/bin/env
-          - bash
-          - -cx
-          - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
-            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+        - - docker
+          - run
+          - -t
+          - --name
+          - taskcontainer
+          - --memory-swap
+          - "-1"
+          - --pids-limit
+          - "-1"
+          - --add-host=localhost.localdomain:127.0.0.1
+          - --device=/dev/kvm
+          - --env-file
+          - env.list
+          - ubuntu:latest
+          - /bin/bash
+          - -c
+          - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
         features:
           backingLog: true
           liveLog: true
@@ -168,12 +179,23 @@ testSuite:
         source: https://community-tc.services.mozilla.com/tasks/create
       payload:
         command:
-        - - /usr/bin/env
-          - bash
-          - -cx
-          - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
-            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+        - - docker
+          - run
+          - -t
+          - --name
+          - taskcontainer
+          - --memory-swap
+          - "-1"
+          - --pids-limit
+          - "-1"
+          - --add-host=localhost.localdomain:127.0.0.1
+          - --device=/dev/kvm
+          - --env-file
+          - env.list
+          - ubuntu:latest
+          - /bin/bash
+          - -c
+          - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
         features:
           backingLog: true
           liveLog: true
@@ -273,12 +295,23 @@ testSuite:
         source: https://community-tc.services.mozilla.com/tasks/create
       payload:
         command:
-        - - /usr/bin/env
-          - bash
-          - -cx
-          - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-            --device=/dev/kvm --env-file env.list ubuntu:latest /bin/bash -c 'for
-            ((i=1;i<=600;i++)); do echo $i; sleep 1; done'
+        - - docker
+          - run
+          - -t
+          - --name
+          - taskcontainer
+          - --memory-swap
+          - "-1"
+          - --pids-limit
+          - "-1"
+          - --add-host=localhost.localdomain:127.0.0.1
+          - --device=/dev/kvm
+          - --env-file
+          - env.list
+          - ubuntu:latest
+          - /bin/bash
+          - -c
+          - for ((i=1;i<=600;i++)); do echo $i; sleep 1; done
         features:
           backingLog: true
           liveLog: true
