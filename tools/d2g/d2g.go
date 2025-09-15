@@ -190,11 +190,8 @@ func ConvertPayload(
 
 	setArtifacts(dwPayload, gwPayload)
 
-	if gwPayload.Env == nil {
-		gwPayload.Env = map[string]string{}
-	}
 	envVarsWithNewlines := ""
-	conversionInfo.EnvVars, envVarsWithNewlines = envMappings(dwPayload, gwPayload.Env, config)
+	conversionInfo.EnvVars, envVarsWithNewlines = envMappings(dwPayload, config)
 
 	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
 	dwImage, err := imageObject(&dwPayload.Image)
@@ -631,7 +628,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, gwEnv map[string]string, config map[string]any) (string, string) {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) (string, string) {
 	envListStrBuilder := strings.Builder{}
 	envStrBuilder := strings.Builder{}
 
@@ -656,8 +653,10 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, gwEnv map[string]s
 	envVarsWithNewlines := []string{}
 	for envVarName, value := range dwPayload.Env {
 		if strings.Contains(value, "\n") {
-			envVarsWithNewlines = append(envVarsWithNewlines, envVarName)
-			gwEnv[envVarName] = value
+			envVarsWithNewlines = append(
+				envVarsWithNewlines,
+				fmt.Sprintf("%s=%s", envVarName, value),
+			)
 			continue
 		}
 		envVars = append(envVars, fmt.Sprintf("%s=%s", envVarName, value))
