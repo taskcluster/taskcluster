@@ -93,7 +93,7 @@ GIT_REVISION="$(git rev-parse HEAD)"
 # ui/docs/reference/workers/generic-worker/support-tiers.mdx
 if ${ALL_PLATFORMS}; then
   install multiuser windows amd64
-  install multiuser windows 386
+  install multiuser windows arm64
 
   install multiuser darwin  amd64
   install multiuser darwin  arm64
