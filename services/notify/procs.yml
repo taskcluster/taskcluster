@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/notify/src/main.js server
+  metrics: true
 handler:
   type: background
   command: node services/notify/src/main.js handler

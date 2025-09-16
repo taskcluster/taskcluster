@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/worker-manager/src/main.js server
+  metrics: true
 provisioner:
   type: background
   subType: 'iterate'

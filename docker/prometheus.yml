@@ -4,7 +4,17 @@ scrape_configs:
   - job_name: taskcluster-services
     static_configs:
       - targets:
+          - auth-web:9100
+          - github-web:9100
+          - hooks-web:9100
+          - index-web:9100
+          - notify-web:9100
+          - object-web:9100
+          - purge-cache-web:9100
           - queue-web:9100
           - queue-background-workerMetrics:9100
+          - secrets-web:9100
+          - web-server-web:9100
+          - worker-manager-web:9100
           - worker-manager-background-provisioner:9100
           - worker-manager-background-workerscanner:9100

@@ -163,6 +163,7 @@ const load = loader(
           ],
         });
         await server.start();
+        monitor.exposeMetrics('default');
 
         // https://www.apollographql.com/docs/apollo-server/migration
         app.use(

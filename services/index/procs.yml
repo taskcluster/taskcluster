@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/index/src/main.js server
+  metrics: true
 handlers:
   type: background
   command: node services/index/src/main.js handlers

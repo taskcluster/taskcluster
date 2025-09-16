@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/hooks/src/main.js server
+  metrics: true
 scheduler:
   type: background
   command: node services/hooks/src/main.js scheduler

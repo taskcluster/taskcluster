@@ -78,15 +78,20 @@ export const load = loader({
 
   api: {
     requires: ['cfg', 'schemaset', 'monitor', 'queue', 'db'],
-    setup: async ({ cfg, schemaset, monitor, queue, db }) => builder.build({
-      context: {
-        queue,
-        db,
-      },
-      rootUrl: cfg.taskcluster.rootUrl,
-      schemaset,
-      monitor: monitor.childMonitor('api'),
-    }),
+    setup: async ({ cfg, schemaset, monitor, queue, db }) => {
+      const api = builder.build({
+        context: {
+          queue,
+          db,
+        },
+        rootUrl: cfg.taskcluster.rootUrl,
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
