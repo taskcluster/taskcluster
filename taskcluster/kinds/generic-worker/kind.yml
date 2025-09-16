@@ -318,12 +318,4 @@ tasks:
         - set GORACE=history_size=7
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
         - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v89/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
-        - |
-          :: assumption here is that if something inside the if fails, we'll get a non zero exit code
-          :: i've also made it an if/else so that one of them has to run, as there should always be a
-          :: linter
-          if exist ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64 (
-            ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
-          ) else (
-            ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-386\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
-          )
+        - ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m

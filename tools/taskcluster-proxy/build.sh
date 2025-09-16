@@ -56,7 +56,7 @@ function install {
 
 if ${ALL_PLATFORMS}; then
   # build windows first
-  install windows 386
+  install windows arm64
   install windows amd64
   # darwin
   install darwin     amd64
