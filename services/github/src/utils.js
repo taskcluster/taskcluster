@@ -121,6 +121,46 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
 };
 
 /**
+ * Validates that a pull request event has all required fields for processing.
+ * Returns an object with { valid: boolean, reason?: string }
+ */
+export const validatePullRequestEvent = (pullRequest) => {
+  // Check for pull request object
+  if (!pullRequest) {
+    return { valid: false, reason: 'Pull request data is missing' };
+  }
+
+  // Check base repository (always required)
+  if (!pullRequest.base || !pullRequest.base.repo) {
+    return { valid: false, reason: 'Pull request base repository is missing' };
+  }
+
+  // Check head repository - can be null if deleted/inaccessible
+  if (!pullRequest.head || !pullRequest.head.repo) {
+    // This is a known GitHub behavior when source repo is deleted or private
+    return {
+      valid: false,
+      reason: 'Pull request head repository is missing (possibly deleted or inaccessible)',
+    };
+  }
+
+  // Validate required fields in head repo
+  if (!pullRequest.head.repo.name || !pullRequest.head.repo.clone_url) {
+    return {
+      valid: false,
+      reason: 'Pull request head repository is missing required fields (name or clone_url)',
+    };
+  }
+
+  // Validate SHA
+  if (!pullRequest.head.sha) {
+    return { valid: false, reason: 'Pull request head SHA is missing' };
+  }
+
+  return { valid: true };
+};
+
+/**
  * Extract taskcluster command from the comment body
  *
  * Command is anything after `/taskcluster` keyword and before the next whitespace

@@ -15,7 +15,7 @@ import {
   GITHUB_BUILD_STATES,
 } from './constants.js';
 
-import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand } from './utils.js';
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand, validatePullRequestEvent } from './utils.js';
 import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -280,6 +280,7 @@ builder.declare({
   let msg = {};
   let publisherKey = '';
 
+  // Log that webhook was received (before any validation/processing)
   this.monitor.log.webhookReceived({ eventId, eventType, installationId });
 
   debugMonitor.debug({
@@ -294,7 +295,7 @@ builder.declare({
 
     switch (eventType) {
 
-      case EVENT_TYPES.PULL_REQUEST:
+      case EVENT_TYPES.PULL_REQUEST: {
         if (shouldSkipPullRequest(body)) {
           debugMonitor.debug({
             message: 'Skipping pull_request event',
@@ -303,6 +304,28 @@ builder.declare({
           return resolve(res, 200, 'Skipping pull_request event');
         }
 
+        // CRITICAL: Validate BEFORE creating the event
+        // This prevents unprocessable events from entering the system
+        const validation = validatePullRequestEvent(body.pull_request);
+        if (!validation.valid) {
+          const message = `Pull request event validation failed: ${validation.reason}`;
+          // Log validation failure for debugging
+          debugMonitor.debug({
+            message,
+            organization: body.organization?.login,
+            repository: body.repository?.name,
+            pullNumber: body.number,
+            reason: validation.reason,
+          });
+
+          // Return 400 and DO NOT create/publish the event
+          // Downstream handlers cannot process events without valid repo data
+          return resolve(res, 400, message);
+        }
+
+        // Validation passed, continue processing
+
+        // Only proceed to create event if validation passes
         msg.organization = sanitizeGitHubField(body.repository.owner.login);
         msg.action = body.action;
         msg.details = getPullRequestDetails(body);
@@ -311,6 +334,7 @@ builder.declare({
         msg.tasks_for = GITHUB_TASKS_FOR.PULL_REQUEST;
         msg.branch = body.pull_request.head.ref;
         break;
+      }
 
       case EVENT_TYPES.PUSH:
         if (shouldSkipCommit(body)) {

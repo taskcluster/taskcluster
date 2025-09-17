@@ -17,6 +17,12 @@ export async function taskGroupCreationHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Task group ${taskGroupId} was defined. Creating group status...`);
 
+  const builds = await this.context.db.fns.get_github_build_pr(taskGroupId);
+  if (!builds || builds.length === 0) {
+    debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook.`);
+    return;
+  }
+
   const [{
     sha,
     event_type,
@@ -24,7 +30,7 @@ export async function taskGroupCreationHandler(message) {
     installation_id,
     organization,
     repository,
-  }] = await this.context.db.fns.get_github_build_pr(taskGroupId);
+  }] = builds;
   debug = debug.refine({ event_id, sha, owner: organization, repo: repository, installation_id });
 
   const statusContext = `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`;

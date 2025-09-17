@@ -90,4 +90,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Push with bad secret', 'webhook.push.bad_secret.json', 403);
   statusTest('Release with bad secret', 'webhook.release.bad_secret.json', 403);
   statusTest('CheckRun created', 'webhook.check_run.created.json', 403);
+  statusTest('Pull Request with incomplete repository data', 'webhook.pull_request.null_head_repo.json', 400);
 });

@@ -1853,6 +1853,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.equal(false, github.inst(9988).checks.create.called);
     });
 
+    test('skip task group creation when build is not defined', async function () {
+      // Test taskGroupCreation handler with missing build
+      await simulateExchangeMessage({
+        taskGroupId: 'no-build-task-group',
+        exchange: 'exchange/taskcluster-github/v1/task-group-creation-requested',
+        routingKey: 'route.statuses',
+      });
+
+      // Verify no GitHub API calls were made
+      assert.equal(false, github.inst(9988).repos.createCommitStatus.called);
+    });
+
+    test('handle missing build in status handler for task-defined event', async function () {
+      // Test the specific scenario from issue #3455 line 911
+      await simulateExchangeMessage({
+        taskGroupId: 'missing-build-group',
+        exchange: 'exchange/taskcluster-queue/v1/task-defined',
+        routingKey: 'route.checks',
+        taskId: 'test-task-id',
+      });
+
+      // Should not throw and should not make GitHub API calls
+      assert.equal(false, github.inst(9988).checks.create.called);
+      assert.equal(false, github.inst(9988).checks.update.called);
+    });
+
     test('undefined started and resolved timestamps in check run output', async function () {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });

@@ -14,6 +14,7 @@ import {
   ansi2txt,
   generateXHubSignature,
   checkGithubSignature,
+  validatePullRequestEvent,
 } from '../src/utils.js';
 
 suite(testing.suiteName(), function() {
@@ -244,6 +245,88 @@ suite(testing.suiteName(), function() {
         action: 'edited',
         comment: {},
       }));
+    });
+  });
+
+  suite('validatePullRequestEvent', function() {
+    test('validates complete pull request', function() {
+      const pr = {
+        base: { repo: { name: 'base-repo', clone_url: 'https://github.com/org/base.git' } },
+        head: {
+          repo: { name: 'head-repo', clone_url: 'https://github.com/org/head.git' },
+          sha: 'abc123',
+        },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, true);
+    });
+
+    test('rejects null pull request', function() {
+      const result = validatePullRequestEvent(null);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /missing/i);
+    });
+
+    test('rejects missing head repo', function() {
+      const pr = {
+        base: { repo: { name: 'base-repo', clone_url: 'https://github.com/org/base.git' } },
+        head: { repo: null, sha: 'abc123' },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /head repository/i);
+    });
+
+    test('rejects missing head SHA', function() {
+      const pr = {
+        base: { repo: { name: 'base-repo', clone_url: 'https://github.com/org/base.git' } },
+        head: {
+          repo: { name: 'head-repo', clone_url: 'https://github.com/org/head.git' },
+          sha: null,
+        },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /SHA/i);
+    });
+
+    test('rejects missing base repo', function() {
+      const pr = {
+        base: { repo: null },
+        head: {
+          repo: { name: 'head-repo', clone_url: 'https://github.com/org/head.git' },
+          sha: 'abc123',
+        },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /base repository/i);
+    });
+
+    test('rejects missing head repo name', function() {
+      const pr = {
+        base: { repo: { name: 'base-repo', clone_url: 'https://github.com/org/base.git' } },
+        head: {
+          repo: { name: null, clone_url: 'https://github.com/org/head.git' },
+          sha: 'abc123',
+        },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /required fields/i);
+    });
+
+    test('rejects missing head repo clone_url', function() {
+      const pr = {
+        base: { repo: { name: 'base-repo', clone_url: 'https://github.com/org/base.git' } },
+        head: {
+          repo: { name: 'head-repo', clone_url: null },
+          sha: 'abc123',
+        },
+      };
+      const result = validatePullRequestEvent(pr);
+      assert.equal(result.valid, false);
+      assert.match(result.reason, /required fields/i);
     });
   });
 
