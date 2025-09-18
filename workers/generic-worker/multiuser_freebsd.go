@@ -5,7 +5,7 @@ package main
 import (
 	"log"
 
-	gwruntime "github.com/taskcluster/taskcluster/v89/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v90/workers/generic-worker/runtime"
 )
 
 func defaultTasksDir() string {

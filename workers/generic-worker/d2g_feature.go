@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v89/internal/scopes"
-	"github.com/taskcluster/taskcluster/v89/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v89/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v90/internal/scopes"
+	"github.com/taskcluster/taskcluster/v90/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v90/workers/generic-worker/process"
 )
 
 type (

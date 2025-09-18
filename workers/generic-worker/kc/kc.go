@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v89/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v90/workers/generic-worker/host"
 )
 
 var (

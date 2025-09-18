@@ -15,10 +15,10 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/taskcluster/taskcluster/v89/internal/scopes"
-	d2g "github.com/taskcluster/taskcluster/v89/tools/d2g"
-	"github.com/taskcluster/taskcluster/v89/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v89/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v90/internal/scopes"
+	d2g "github.com/taskcluster/taskcluster/v90/tools/d2g"
+	"github.com/taskcluster/taskcluster/v90/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v90/tools/d2g/genericworker"
 )
 
 func ExampleConvertScopes_mixture() {

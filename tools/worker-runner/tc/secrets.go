@@ -1,8 +1,8 @@
 package tc
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v89/clients/client-go"
-	"github.com/taskcluster/taskcluster/v89/clients/client-go/tcsecrets"
+	tcclient "github.com/taskcluster/taskcluster/v90/clients/client-go"
+	"github.com/taskcluster/taskcluster/v90/clients/client-go/tcsecrets"
 )
 
 // An interface containing the functions required of Secrets, allowing

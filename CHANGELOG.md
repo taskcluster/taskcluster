@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.0
+
+### DEPLOYERS
+
+▶ [patch] [#7942](https://github.com/taskcluster/taskcluster/issues/7942)
+New metrics are being exposed to prometheus for scraping:
+- `http_requests_total` http requests per service/method/name
+- `http_request_duration_seconds` http request duration histogram
+- `auth_success_total` successful authentication attempt per clientId and scheme
+- `auth_failure_total` failed authentication attempts and reasons
+
+Existing queue metrics `queue_failed_tasks`, `queue_exception_tasks` now includes `reasonResolved` label
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7947](https://github.com/taskcluster/taskcluster/issues/7947)
+Generic Worker (Windows): Windows/386 platform is now unsupported and no longer built/released. Windows arm64 support has been added as a Tier-2 platform (guaranteeing to build).
+
+### USERS
+
+▶ [patch]
+D2G: remove call out to bash during garbage collection of docker images
+
+### OTHER
+
+▶ Additional change not described here: [#7942](https://github.com/taskcluster/taskcluster/issues/7942).
+
 ## v89.0.0
 
 ### USERS

@@ -45,7 +45,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v89/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v90/clients/client-go"
 )
 
 type PurgeCache tcclient.Client
