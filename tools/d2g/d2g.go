@@ -369,6 +369,8 @@ func runCommand(
 		containerName = fmt.Sprintf("%s_%s", containerName, slugid.Nice())
 	}
 
+	// Docker Worker used to attach a pseudo tty, see:
+	// https://github.com/taskcluster/taskcluster/blob/6b99f0ef71d9d8628c50adc17424167647a1c533/workers/docker-worker/src/task.js#L384
 	args := []string{"docker", "run", "-t", "--name", containerName}
 
 	// Do not limit resource usage by the containerName. See
