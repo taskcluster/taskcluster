@@ -311,11 +311,14 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 	// report it anyway.
 	remainingTime := time.Until(time.Time(tdr.Expires))
 	if remainingTime.Seconds() < 120 {
+		message := "You've been extremely unlucky. This test depends on task " + taskID + " that was created six years ago"
 		if remainingTime.Seconds() > 0 {
-			t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six years ago but is due to expire in less than two minutes (in %v). Wait until task purged and try again!", taskID, remainingTime)
+			message += fmt.Sprintf(" but is due to expire in less than two minutes (in %v).", remainingTime)
 		} else {
-			t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six years ago, has expired (%v ago), but has not yet been purged from database. Wait until task purged and try again!", taskID, -remainingTime)
+			message += fmt.Sprintf(", has expired (%v ago), but has not yet been purged from database.", -remainingTime)
 		}
+		message += " Wait until task purged from database (at time of writing, purge task process runs once per day at ten past midnight (00:10) UCT; see https://github.com/taskcluster/taskcluster/blob/76217b7aae8ff6aab0c586875966e4b9dbf8573d/services/queue/procs.yml#L25-L29) and try again!"
+		t.Fatal(message)
 	}
 	t.Logf("Depend on task %q which expires in %v.", taskID, remainingTime)
 	return
