@@ -27,6 +27,9 @@ module.exports = (_, { mode }) => ({
   devtool: mode === "production" ? false : "cheap-module-eval-source-map",
   target: "web",
   context: __dirname,
+  watchOptions: {
+    ignored: (p) => !p.startsWith(__dirname),
+  },
   externals: { bindings: "bindings" },
   output: {
     path: `${__dirname}/build`,
