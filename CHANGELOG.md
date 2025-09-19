@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.1
+
+### GENERAL
+
+▶ [patch]
+D2G: creates a `Config` struct type for D2G-specific config used in the repo.
+
+### USERS
+
+▶ [patch]
+D2G: remove call out to bash shell that ran the `docker run` command. Directly call `docker` as the resulting Generic Worker payload command.
+
 ## v90.0.0
 
 ### DEPLOYERS
