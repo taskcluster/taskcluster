@@ -111,7 +111,10 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
 		}
 
-		imageName := strings.TrimSpace(string(out))
+		// Only use the first line of output for image name
+		// as docker load can output multiple tags for the
+		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
+		imageName := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
 		if isImageArtifact {
 			imageName = strings.TrimPrefix(imageName, "Loaded image: ")
 		}
@@ -136,7 +139,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				return executionError(internalError, errored, fmt.Errorf("[d2g] could not get sha256 of docker image: %v\n%v", err, string(out)))
 			}
 
-			imageID = strings.Split(strings.TrimSpace(string(out)), ":")[1]
+			// Only use the first line of output for image ID
+			// as docker images can output multiple sha256's for the
+			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
+			idLine := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
+			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
 
 		image = &Image{
