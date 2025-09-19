@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.2
+
+### USERS
+
+▶ [patch] [#7967](https://github.com/taskcluster/taskcluster/issues/7967)
+D2G: accounts for image artifacts that may contain multiple tags for the same image, previously causing a worker error: `runtime error: index out of range [1] with length 1`.
+
 ## v90.0.1
 
 ### GENERAL
