@@ -18,6 +18,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/yaml"
 )
 
 func init() {
@@ -39,8 +40,14 @@ To convert a task definition (JSON), you must use the task definition flag (-t, 
 func convert(cmd *cobra.Command, args []string) (err error) {
 	isTaskDef, _ := cmd.Flags().GetBool("task-def")
 	filePath, _ := cmd.Flags().GetString("file")
+	// Default file extension is json(temporary, handled for piped input)
+	fileExtension := "json"
 
-	input, err := userInput(filePath)
+	// Read file extension(temporary, handled for piped input)
+	if len(filePath) >= 4 {
+		fileExtension = filePath[len(filePath)-4:]
+	}
+	input, err := userInput(filePath, fileExtension)
 	if err != nil {
 		return err
 	}
@@ -120,16 +127,23 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("failed to unmarshal generic worker task definition: %v", err)
 		}
 
-		gwPayloadJSON, err := json.Marshal(gwTaskDef["payload"])
+		gwPayload, err := json.Marshal(gwTaskDef["payload"])
 		if err != nil {
 			return fmt.Errorf("failed to marshal generic worker payload: %v", err)
 		}
-		err = validateJSON(gwPayloadJSON, genericworker.JSONSchema())
+		err = validateJSON(gwPayload, genericworker.JSONSchema())
 		if err != nil {
 			return fmt.Errorf("output validation failed: %v", err)
 		}
 
-		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
+		// Convert to original extension given by user
+		if isYAMLExtension(fileExtension) {
+			gwPayload, err = yaml.JSONToYAML(gwPayload)
+			if err != nil {
+				return fmt.Errorf("failed to convert from JSON To YAML: %v", err)
+			}
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), string(gwPayload))
 	} else {
 		// Convert dwPayload to gwPayload
 		gwPayload, _, err := d2g.ConvertPayload(dwPayload, d2gConfig, os.ReadDir)
@@ -149,16 +163,30 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("output validation failed: %v", err)
 		}
 
+		// Convert to original extension given by user
+		if isYAMLExtension(fileExtension) {
+			formattedActualGWPayload, err = yaml.JSONToYAML(formattedActualGWPayload)
+			if err != nil {
+				return fmt.Errorf("failed to convert from JSON To YAML: %v", err)
+			}
+		}
 		fmt.Fprintln(cmd.OutOrStdout(), string(formattedActualGWPayload))
 	}
 
 	return nil
 }
 
-func userInput(filePath string) (input json.RawMessage, err error) {
+func userInput(filePath string, fileExtension string) (input json.RawMessage, err error) {
 	if filePath != "" {
 		// Read input from file
 		input, err = os.ReadFile(filePath)
+		// Check if input is in yaml, then convert to json
+		if isYAMLExtension(fileExtension) {
+			input, err = yaml.YAMLToJSON(input)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert YAML To JSON: %v", err)
+			}
+		}
 		if err != nil {
 			return nil, fmt.Errorf("failed to read input file: %v", err)
 		}
@@ -203,4 +231,9 @@ func validateJSON(input []byte, schema string) error {
 	}
 
 	return nil
+}
+
+func isYAMLExtension(fileExtension string) bool {
+	fileExtensionLower := strings.ToLower(fileExtension)
+	return fileExtensionLower == "yaml" || fileExtensionLower == ".yml"
 }
