@@ -78,17 +78,21 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to convert input to a docker worker payload definition: %v", err)
 	}
 
-	d2gConfig := map[string]any{
-		"allowChainOfTrust":     true,
-		"allowDisableSeccomp":   true,
-		"allowHostSharedMemory": true,
-		"allowInteractive":      true,
-		"allowKVM":              true,
-		"allowLoopbackAudio":    true,
-		"allowLoopbackVideo":    true,
-		"allowPrivileged":       true,
-		"allowPtrace":           true,
-		"allowTaskclusterProxy": true,
+	d2gConfig := d2g.Config{
+		EnableD2G:             true,
+		AllowChainOfTrust:     true,
+		AllowDisableSeccomp:   true,
+		AllowGPUs:             false,
+		AllowHostSharedMemory: true,
+		AllowInteractive:      true,
+		AllowKVM:              true,
+		AllowLoopbackAudio:    true,
+		AllowLoopbackVideo:    true,
+		AllowPrivileged:       true,
+		AllowPtrace:           true,
+		AllowTaskclusterProxy: true,
+		GPUs:                  "all",
+		LogTranslation:        true,
 	}
 
 	if isTaskDef {

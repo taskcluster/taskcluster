@@ -48,11 +48,27 @@ type (
 	RegistryImageLoader struct {
 		Image Image
 	}
+	Config struct {
+		EnableD2G             bool   `json:"enableD2G"`
+		AllowChainOfTrust     bool   `json:"allowChainOfTrust"`
+		AllowDisableSeccomp   bool   `json:"allowDisableSeccomp"`
+		AllowGPUs             bool   `json:"allowGPUs"`
+		AllowHostSharedMemory bool   `json:"allowHostSharedMemory"`
+		AllowInteractive      bool   `json:"allowInteractive"`
+		AllowKVM              bool   `json:"allowKVM"`
+		AllowLoopbackAudio    bool   `json:"allowLoopbackAudio"`
+		AllowLoopbackVideo    bool   `json:"allowLoopbackVideo"`
+		AllowPrivileged       bool   `json:"allowPrivileged"`
+		AllowPtrace           bool   `json:"allowPtrace"`
+		AllowTaskclusterProxy bool   `json:"allowTaskclusterProxy"`
+		GPUs                  string `json:"gpus"`
+		LogTranslation        bool   `json:"logTranslation"`
+	}
 )
 
 func ConvertTaskDefinition(
 	dwTaskDef json.RawMessage,
-	config map[string]any,
+	config Config,
 	scopeExpander scopes.ScopeExpander,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (json.RawMessage, error) {
@@ -181,7 +197,7 @@ func ConvertScopes(
 // converted separately (see d2g.ConvertScopes function).
 func ConvertPayload(
 	dwPayload *dockerworker.DockerWorkerPayload,
-	config map[string]any,
+	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (gwPayload *genericworker.GenericWorkerPayload, conversionInfo ConversionInfo, err error) {
 	gwPayload = new(genericworker.GenericWorkerPayload)
@@ -361,7 +377,7 @@ func runCommand(
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
 	envVarsWithNewlines string,
-	config map[string]any,
+	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) ([][]string, string, error) {
 	containerName := "taskcontainer"
@@ -377,25 +393,25 @@ func runCommand(
 	// https://docs.docker.com/reference/cli/docker/container/run/
 	args = append(args, "--memory-swap", "-1", "--pids-limit", "-1")
 
-	if dwPayload.Capabilities.Privileged && config["allowPrivileged"].(bool) {
+	if dwPayload.Capabilities.Privileged && config.AllowPrivileged {
 		args = append(args, "--privileged")
-	} else if dwPayload.Features.AllowPtrace && config["allowPtrace"].(bool) {
+	} else if dwPayload.Features.AllowPtrace && config.AllowPtrace {
 		args = append(args, "--cap-add=SYS_PTRACE")
 	}
 
-	if dwPayload.Capabilities.DisableSeccomp && config["allowDisableSeccomp"].(bool) {
+	if dwPayload.Capabilities.DisableSeccomp && config.AllowDisableSeccomp {
 		args = append(args, "--security-opt=seccomp=unconfined")
 	}
 
 	args = append(args, "--add-host=localhost.localdomain:127.0.0.1") // bug 1559766
 	args = append(args, createVolumeMountArgs(dwPayload, wdcs, gwArtifacts, config)...)
 
-	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
+	if dwPayload.Features.TaskclusterProxy && config.AllowTaskclusterProxy {
 		args = append(args, "--add-host=taskcluster:host-gateway")
 	}
 
-	if config["allowGPUs"].(bool) {
-		args = append(args, "--gpus", config["gpus"].(string))
+	if config.AllowGPUs {
+		args = append(args, "--gpus", config.GPUs)
 		entries, err := directoryReader("/dev")
 		if err != nil {
 			return nil, "", fmt.Errorf("cannot read /dev to find nvidia devices")
@@ -435,21 +451,21 @@ func copyArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwArtifacts []ge
 	return artifacts
 }
 
-func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config map[string]any) {
-	if config["allowChainOfTrust"].(bool) {
+func setFeatures(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *genericworker.GenericWorkerPayload, config Config) {
+	if config.AllowChainOfTrust {
 		gwPayload.Features.ChainOfTrust = dwPayload.Features.ChainOfTrust
 	}
-	if config["allowTaskclusterProxy"].(bool) {
+	if config.AllowTaskclusterProxy {
 		// need to keep TaskclusterProxy to true if it's already been enabled for IndexedDockerImages
 		gwPayload.Features.TaskclusterProxy = gwPayload.Features.TaskclusterProxy || dwPayload.Features.TaskclusterProxy
 	}
-	if config["allowInteractive"].(bool) {
+	if config.AllowInteractive {
 		gwPayload.Features.Interactive = dwPayload.Features.Interactive
 	}
-	if config["allowLoopbackAudio"].(bool) {
+	if config.AllowLoopbackAudio {
 		gwPayload.Features.LoopbackAudio = dwPayload.Capabilities.Devices.LoopbackAudio
 	}
-	if config["allowLoopbackVideo"].(bool) {
+	if config.AllowLoopbackVideo {
 		gwPayload.Features.LoopbackVideo = dwPayload.Capabilities.Devices.LoopbackVideo
 	}
 
@@ -475,7 +491,7 @@ func setCommand(
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
 	envVarsWithNewlines string,
-	config map[string]any,
+	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
 	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
@@ -560,7 +576,7 @@ func createVolumeMountArgs(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	wdcs []genericworker.WritableDirectoryCache,
 	gwArtifacts []genericworker.Artifact,
-	config map[string]any,
+	config Config,
 ) []string {
 	var args []string
 	for _, wdc := range wdcs {
@@ -571,20 +587,20 @@ func createVolumeMountArgs(
 			args = append(args, "-v", fmt.Sprintf("__TASK_DIR__/%s:%s", gwArtifact.Path, dwPayload.Artifacts[gwArtifact.Name].Path))
 		}
 	}
-	if dwPayload.Capabilities.Devices.KVM && config["allowKVM"].(bool) {
+	if dwPayload.Capabilities.Devices.KVM && config.AllowKVM {
 		args = append(args, "--device=/dev/kvm")
 	}
-	if dwPayload.Capabilities.Devices.HostSharedMemory && config["allowHostSharedMemory"].(bool) {
+	if dwPayload.Capabilities.Devices.HostSharedMemory && config.AllowHostSharedMemory {
 		// need to use volume mount here otherwise we get
 		// docker: Error response from daemon: error
 		// gathering device information while adding
 		// custom device "/dev/shm": not a device node
 		args = append(args, "-v", "/dev/shm:/dev/shm")
 	}
-	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
+	if dwPayload.Capabilities.Devices.LoopbackVideo && config.AllowLoopbackVideo {
 		args = append(args, "--device=__TASKCLUSTER_VIDEO_DEVICE__")
 	}
-	if dwPayload.Capabilities.Devices.LoopbackAudio && config["allowLoopbackAudio"].(bool) {
+	if dwPayload.Capabilities.Devices.LoopbackAudio && config.AllowLoopbackAudio {
 		args = append(args, "--device=/dev/snd")
 	}
 	return args
@@ -639,7 +655,7 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]any) (string, string) {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config Config) (string, string) {
 	envListStrBuilder := strings.Builder{}
 	envStrBuilder := strings.Builder{}
 
@@ -652,11 +668,11 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config map[string]
 		"TASK_ID",
 	}
 
-	if dwPayload.Features.TaskclusterProxy && config["allowTaskclusterProxy"].(bool) {
+	if dwPayload.Features.TaskclusterProxy && config.AllowTaskclusterProxy {
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_PROXY_URL")
 	}
 
-	if dwPayload.Capabilities.Devices.LoopbackVideo && config["allowLoopbackVideo"].(bool) {
+	if dwPayload.Capabilities.Devices.LoopbackVideo && config.AllowLoopbackVideo {
 		additionalEnvVars = append(additionalEnvVars, "TASKCLUSTER_VIDEO_DEVICE")
 	}
 
