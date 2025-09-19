@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/taskcluster/v90/tools/d2g"
@@ -64,4 +65,16 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	task.D2GInfo = &conversionInfo
 
 	return nil
+}
+
+// Get an environment variable from the first command that has it set.
+func (task *TaskRun) getVariable(variable string) (string, bool) {
+	for _, cmd := range task.Commands {
+		for _, envVar := range cmd.Env {
+			if value, found := strings.CutPrefix(envVar, variable+"="); found {
+				return value, true
+			}
+		}
+	}
+	return "", false
 }

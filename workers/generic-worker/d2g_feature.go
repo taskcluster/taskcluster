@@ -71,7 +71,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
 	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
 		// DockerImageName or NamedDockerImage, no image artifact
-		key = dtf.task.D2GInfo.Image.String(false)
+		key = dtf.task.D2GInfo.Image.String()
 	} else {
 		// DockerImageArtifact or IndexedDockerImage
 		isImageArtifact = true
@@ -153,12 +153,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		dtf.task.Payload.Env = make(map[string]string)
 	}
 
-	dtf.task.Payload.Env["D2G_IMAGE_ID"] = image.ID
-	err := dtf.task.setVariable("D2G_IMAGE_ID", image.ID)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("[d2g] could not set D2G_IMAGE_ID environment variable: %v", err))
-	}
-
 	if dtf.task.DockerWorkerPayload.Features.ChainOfTrust {
 		cmd, err := process.NewCommandNoOutputStreams([]string{
 			"docker",
@@ -199,6 +193,8 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
 	}
+
+	dtf.evaluateCommandPlaceholders(image.ID)
 
 	return nil
 }
@@ -249,5 +245,31 @@ func (ic *ImageCache) loadFromFile(stateFile string) {
 	err = loadFromJSONFile(ic, stateFile)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string) {
+	videoDevice, _ := dtf.task.getVariable("TASKCLUSTER_VIDEO_DEVICE")
+	placeholders := strings.NewReplacer(
+		"__D2G_IMAGE_ID__", imageID,
+		"__TASK_DIR__", taskContext.TaskDir,
+		"__TASKCLUSTER_VIDEO_DEVICE__", videoDevice,
+	)
+
+	// Update commands in the payload so that
+	// task.formatCommand() correctly logs out
+	// the commands with placeholders replaced
+	// before task execution
+	for _, command := range dtf.task.Payload.Command {
+		for i, arg := range command {
+			command[i] = placeholders.Replace(arg)
+		}
+	}
+
+	// Update commands that are actually executed
+	for _, command := range dtf.task.Commands {
+		for i, arg := range command.Args {
+			command.Args[i] = placeholders.Replace(arg)
+		}
 	}
 }

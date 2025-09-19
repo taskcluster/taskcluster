@@ -76,12 +76,31 @@ testSuite:
         path: artifact1
         type: directory
       command:
-      - - /usr/bin/env
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --privileged
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - __TASK_DIR__/cache0:/builds/worker/checkouts
+        - --add-host=taskcluster:host-gateway
+        - --env-file
+        - env.list
+        - mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06
+        - /builds/worker/bin/run-task
+        - --gecko-checkout=/builds/worker/checkouts/gecko
+        - --gecko-sparse-profile=build/sparse-profiles/taskgraph
+        - --
         - bash
         - -cx
-        - |-
-          docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged --add-host=localhost.localdomain:127.0.0.1 -v "$(pwd)/cache0:/builds/worker/checkouts" --add-host=taskcluster:host-gateway --env-file env.list 'mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06' /builds/worker/bin/run-task --gecko-checkout=/builds/worker/checkouts/gecko --gecko-sparse-profile=build/sparse-profiles/taskgraph -- bash -cx 'cd /builds/worker/checkouts/gecko && ln -s /builds/worker/artifacts artifacts && ./mach --log-no-times taskgraph decision --pushlog-id='\''40334'\'' --pushdate='\''1666263365'\'' --project='\''mozilla-central'\'' --owner='\''ctuns@mozilla.com'\'' --level='\''3'\'' --tasks-for='\''hg-push'\'' --repository-type=hg --base-repository="$GECKO_BASE_REPOSITORY" --base-rev="$GECKO_BASE_REV" --head-repository="$GECKO_HEAD_REPOSITORY" --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
-          '
+        - |
+          cd /builds/worker/checkouts/gecko && ln -s /builds/worker/artifacts artifacts && ./mach --log-no-times taskgraph decision --pushlog-id='40334' --pushdate='1666263365' --project='mozilla-central' --owner='ctuns@mozilla.com' --level='3' --tasks-for='hg-push' --repository-type=hg --base-repository="$GECKO_BASE_REPOSITORY" --base-rev="$GECKO_BASE_REV" --head-repository="$GECKO_HEAD_REPOSITORY" --head-ref="$GECKO_HEAD_REF" --head-rev="$GECKO_HEAD_REV"
       features:
         backingLog: true
         chainOfTrust: true
