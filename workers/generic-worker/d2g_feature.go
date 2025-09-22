@@ -92,6 +92,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"load",
+				"--quiet",
 				"--input",
 				"dockerimage",
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
@@ -111,12 +112,26 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
 		}
 
-		// Only use the first line of output for image name
-		// as docker load can output multiple tags for the
+		// Default to use the first line of output for image
+		// name as docker load can output multiple tags for the
 		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-		imageName := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
+		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+		imageName := lines[0]
 		if isImageArtifact {
-			imageName = strings.TrimPrefix(imageName, "Loaded image: ")
+			imageNameFound := false
+			// Find the first line with "Loaded image: " prefix
+			// (see https://github.com/taskcluster/taskcluster/issues/7969)
+			for _, line := range lines {
+				if name, found := strings.CutPrefix(line, "Loaded image: "); found {
+					imageName = name
+					imageNameFound = true
+					break
+				}
+			}
+
+			if !imageNameFound {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
+			}
 		}
 		imageID := imageName
 
