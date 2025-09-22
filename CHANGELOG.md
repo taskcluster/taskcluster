@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.3
+
+### USERS
+
+▶ [patch] [#7969](https://github.com/taskcluster/taskcluster/issues/7969)
+D2G: fixes issue with loading the docker image artifact if the image already exists with a separate ID, causing the following output to be improperly parsed by D2G: `The image <imageName> already exists, renaming the old one with ID <sha> to empty string`.
+
 ## v90.0.2
 
 ### USERS
