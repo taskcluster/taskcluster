@@ -205,8 +205,8 @@ func ConvertPayload(
 
 	setArtifacts(dwPayload, gwPayload)
 
-	envVarsWithNewlines := ""
-	conversionInfo.EnvVars, envVarsWithNewlines = envMappings(dwPayload, config)
+	var nonEnvListArgs []string
+	conversionInfo.EnvVars, nonEnvListArgs = envMappings(dwPayload, config)
 
 	gwWritableDirectoryCaches := writableDirectoryCaches(dwPayload.Cache)
 	dwImage, err := imageObject(&dwPayload.Image)
@@ -221,7 +221,7 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return
 	}
@@ -376,7 +376,7 @@ func runCommand(
 	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
-	envVarsWithNewlines string,
+	nonEnvListArgs []string,
 	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) ([][]string, string, error) {
@@ -424,7 +424,7 @@ func runCommand(
 		}
 	}
 
-	args = append(args, parseEnvArgs(envVarsWithNewlines)...)
+	args = append(args, nonEnvListArgs...)
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
 	args = append(args, dwImage.String())
@@ -490,11 +490,11 @@ func setCommand(
 	gwPayload *genericworker.GenericWorkerPayload,
 	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
-	envVarsWithNewlines string,
+	nonEnvListArgs []string,
 	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, envVarsWithNewlines, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
@@ -606,23 +606,6 @@ func createVolumeMountArgs(
 	return args
 }
 
-func envSetting(envVarName string) string {
-	return fmt.Sprintf(" -e %s", envVarName)
-}
-
-func parseEnvArgs(envVarsWithNewlines string) []string {
-	var args []string
-	// envVarsWithNewlines contains strings like " -e VAR=value -e VAR2=value2"
-	// We need to parse these into separate -e arguments
-	for envVar := range strings.SplitSeq(envVarsWithNewlines, " -e ") {
-		if envVar == "" {
-			continue
-		}
-		args = append(args, "-e", envVar)
-	}
-	return args
-}
-
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	var parsed any
 	err := json.Unmarshal(*payloadImage, &parsed)
@@ -655,9 +638,9 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 }
 
-func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config Config) (string, string) {
+func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config Config) (string, []string) {
 	envListStrBuilder := strings.Builder{}
-	envStrBuilder := strings.Builder{}
+	nonEnvListArgs := []string{}
 
 	additionalEnvVars := []string{
 		"RUN_ID",
@@ -677,25 +660,35 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config Config) (st
 	}
 
 	envVars := []string{}
-	envVarsWithNewlines := []string{}
+	nonEnvListVars := []string{}
 	for envVarName, value := range dwPayload.Env {
-		if strings.Contains(value, "\n") {
-			envVarsWithNewlines = append(
-				envVarsWithNewlines,
-				fmt.Sprintf("%s=%s", envVarName, value),
+		keyValue := fmt.Sprintf("%s=%s", envVarName, value)
+		// Env vars with newlines cannot be passed via --env-file
+		// as they would be interpreted as multiple env vars.
+		// Also, long env vars (over 64KiB) cannot be used in
+		// --env-file as docker fails with: bufio.Scanner: token too long
+		// see https://github.com/taskcluster/taskcluster/issues/7974
+		if strings.Contains(value, "\n") || len(keyValue) > 65536 {
+			nonEnvListVars = append(
+				nonEnvListVars,
+				envVarName,
 			)
 			continue
 		}
-		envVars = append(envVars, fmt.Sprintf("%s=%s", envVarName, value))
+		envVars = append(envVars, keyValue)
+	}
+	slices.Sort(nonEnvListVars)
+	for _, envVarName := range nonEnvListVars {
+		nonEnvListArgs = append(
+			nonEnvListArgs,
+			"-e",
+			fmt.Sprintf("%s=%s", envVarName, dwPayload.Env[envVarName]),
+		)
 	}
 	envVars = append(envVars, additionalEnvVars...)
 	slices.Sort(envVars)
 	for _, envVar := range envVars {
 		envListStrBuilder.WriteString(envVar + "\n")
 	}
-	slices.Sort(envVarsWithNewlines)
-	for _, envVar := range envVarsWithNewlines {
-		envStrBuilder.WriteString(envSetting(envVar))
-	}
-	return envListStrBuilder.String(), envStrBuilder.String()
+	return envListStrBuilder.String(), nonEnvListArgs
 }
