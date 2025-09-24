@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -109,7 +110,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
 		// Default to use the first line of output for image
@@ -151,7 +152,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			}
 			out, err = cmd.Output()
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not get sha256 of docker image: %v\n%v", err, string(out)))
+				return executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
 			}
 
 			// Only use the first line of output for image ID
@@ -187,7 +188,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not inspect docker image: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, formatCommandError("[d2g] could not inspect docker image", err, out))
 		}
 		imageHash := strings.TrimSpace(string(out))
 
@@ -234,7 +235,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		}
 		out, e := cmd.CombinedOutput()
 		if e != nil {
-			dtf.task.Warnf("[d2g] Artifact %q not found at %q: %v\n%v", artifact.Name, artifact.SrcPath, e, string(out))
+			dtf.task.Warnf("%v", formatCommandError(fmt.Sprintf("[d2g] Artifact %q not found at %q", artifact.Name, artifact.SrcPath), e, out))
 		}
 	}
 
@@ -250,7 +251,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	}
 	out, e := cmd.CombinedOutput()
 	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not remove docker container: %v\n%v", e, string(out))))
+		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
 	}
 
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
@@ -294,4 +295,16 @@ func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string) {
 			command.Args[i] = placeholders.Replace(arg)
 		}
 	}
+}
+
+// formatCommandError creates a detailed error message from command execution failure
+// For cmd.Output(), out contains stdout and stderr may be in ExitError
+// For cmd.CombinedOutput(), out contains both stdout and stderr combined
+func formatCommandError(prefix string, err error, out []byte) error {
+	errorMsg := fmt.Sprintf("%s: %v\n%v", prefix, err, string(out))
+	if exitErr, ok := err.(*exec.ExitError); ok && len(exitErr.Stderr) > 0 {
+		// This is from cmd.Output() where stderr is separate
+		errorMsg = fmt.Sprintf("%s: %v\nstdout: %v\nstderr: %v", prefix, err, string(out), string(exitErr.Stderr))
+	}
+	return fmt.Errorf("%s", errorMsg)
 }
