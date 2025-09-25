@@ -152,6 +152,13 @@ export class AzureProvider extends Provider {
   }
 
   /**
+   * @param {import('../../../@types/index.d.ts').AzureLaunchConfig} cfg
+   */
+  isARMTemplateConfig(cfg) {
+    return cfg && typeof cfg === 'object' && 'armDeployment' in cfg;
+  }
+
+  /**
    * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
    */
   async provision({ workerPool, workerPoolStats }) {
@@ -172,6 +179,13 @@ export class AzureProvider extends Provider {
     } = Provider.interpretLifecycle(workerPool.config);
 
     const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn });
+
+    // Check for ARM template configurations (not yet implemented)
+    for (const lc of cfgs) {
+      if (this.isARMTemplateConfig(lc.configuration)) {
+        throw new ApiError('ARM template deployments are not yet implemented. Please use traditional resource-based configuration instead.');
+      }
+    }
 
     // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async lc => {

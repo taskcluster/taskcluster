@@ -500,6 +500,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(vmConfig.networkProfile.testProperty, 4);
       assert(vmConfig.networkProfile.networkInterfaces); // still set..
     });
+
+    test('provision with ARM template config throws not implemented error', async function() {
+      await assert.rejects(
+        () => provisionWorkerPool({
+          armDeployment: {
+            mode: 'Incremental',
+            templateSpec: {
+              id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+            },
+          },
+        }),
+        /ARM template deployments are not yet implemented/,
+      );
+    });
   });
 
   suite('provisionResources', function() {
