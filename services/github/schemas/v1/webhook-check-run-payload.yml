@@ -1,0 +1,111 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Check Run Webhook Payload"
+description: |
+  Validates GitHub check run event webhook payload.
+
+type: object
+properties:
+  action:
+    type: string
+    enum: ["created", "completed", "rerequested", "requested_action"]
+  check_run:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      head_sha:
+        type: string
+        pattern: "^[a-f0-9]{40}$"
+      status:
+        type: string
+        enum: ["queued", "in_progress", "completed"]
+      conclusion:
+        oneOf:
+          - type: "null"
+          - type: string
+            enum: ["success", "failure", "neutral", "cancelled", "timed_out", "action_required", "skipped"]
+      name:
+        type: string
+        minLength: 1
+      check_suite:
+        type: object
+        properties:
+          id:
+            type: integer
+            minimum: 1
+          head_branch:
+            oneOf:
+              - type: "null"
+              - type: string
+                minLength: 1
+          head_sha:
+            type: string
+            pattern: "^[a-f0-9]{40}$"
+        required: [id, head_sha]
+        additionalProperties: true
+      pull_requests:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              minimum: 1
+            number:
+              type: integer
+              minimum: 1
+            head:
+              type: object
+              properties:
+                sha:
+                  type: string
+                  pattern: "^[a-f0-9]{40}$"
+              required: [sha]
+              additionalProperties: true
+            base:
+              type: object
+              properties:
+                sha:
+                  type: string
+                  pattern: "^[a-f0-9]{40}$"
+              required: [sha]
+              additionalProperties: true
+          required: [id, number, head, base]
+          additionalProperties: true
+    required: [id, head_sha, status, name, check_suite, pull_requests]
+    additionalProperties: true
+  repository:
+    type: object
+    properties:
+      full_name:
+        type: string
+        pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+      owner:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+    required: [full_name, owner]
+    additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, check_run, repository, installation, sender]
+additionalProperties: true

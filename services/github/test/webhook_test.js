@@ -75,6 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // skipped events
   statusTest('Issue Comment created', 'webhook.issue_comment.created.json', 200, TC_DEV_INSTALLATION_ID);
   statusTest('Issue Comment deleted', 'webhook.issue_comment.deleted.json', 200, TC_DEV_INSTALLATION_ID);
+  statusTest('Ping', 'webhook.ping.json', 200);
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {
@@ -90,4 +91,71 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Push with bad secret', 'webhook.push.bad_secret.json', 403);
   statusTest('Release with bad secret', 'webhook.release.bad_secret.json', 403);
   statusTest('CheckRun created', 'webhook.check_run.created.json', 403);
+
+  // Webhook Payload Validation Tests
+  statusTest('PR with missing head.repo returns 400',
+    'webhook.pull_request.missing_head_repo.json', 400);
+
+  statusTest('PR with invalid SHA returns 400',
+    'webhook.pull_request.invalid_sha.json', 400);
+
+  statusTest('Push with missing repository returns 400',
+    'webhook.push.missing_repository.json', 400);
+
+  statusTest('Push with invalid ref pattern returns 400',
+    'webhook.push.invalid_ref.json', 400);
+
+  // Verify error message includes schema reference
+  test('Validation error includes schema URL', async function() {
+    const response = await helper.jsonHttpRequest(
+      './test/data/webhooks/webhook.pull_request.missing_head_repo.json',
+    );
+
+    assert.equal(response.statusCode, 400);
+    const body = await helper.readResponseBody(response);
+    const error = JSON.parse(body);
+
+    assert.equal(error.code, 'InputValidationError');
+    assert.ok(error.requestInfo.params.schema);
+    // With the new OneOf pattern, the error references the top-level schema
+    assert.ok(error.requestInfo.params.schema.includes('github-webhook-event'));
+  });
+
+  // Test that OneOf pattern correctly validates different event types
+  test('OneOf schema validates all supported webhook event types', async function() {
+    const validEvents = [
+      { file: 'webhook.pull_request.open.json', eventType: 'pull_request' },
+      { file: 'webhook.push.json', eventType: 'push' },
+      { file: 'webhook.issue_comment.edited.json', eventType: 'issue_comment' },
+      { file: 'webhook.release.json', eventType: 'release' },
+      { file: 'webhook.installation.json', eventType: 'installation' },
+      { file: 'webhook.check_run.rerequested.json', eventType: 'check_run' },
+      { file: 'webhook.ping.json', eventType: 'ping' },
+    ];
+
+    for (const { file, eventType } of validEvents) {
+      const response = await helper.jsonHttpRequest('./test/data/webhooks/' + file);
+      // Should pass validation (200 or 204 status)
+      assert.ok(response.statusCode < 400,
+        `${eventType} event should pass validation, got ${response.statusCode}`);
+      response.connection.destroy();
+    }
+  });
+
+  // Test that validation properly rejects malformed payloads
+  test('Schema validation rejects malformed payloads for each event type', async function() {
+    const invalidEvents = [
+      { file: 'webhook.pull_request.missing_head_repo.json', reason: 'missing required field' },
+      { file: 'webhook.pull_request.invalid_sha.json', reason: 'invalid SHA format' },
+      { file: 'webhook.push.missing_repository.json', reason: 'missing repository' },
+      { file: 'webhook.push.invalid_ref.json', reason: 'invalid ref pattern' },
+    ];
+
+    for (const { file, reason } of invalidEvents) {
+      const response = await helper.jsonHttpRequest('./test/data/webhooks/' + file);
+      assert.equal(response.statusCode, 400,
+        `Should reject payload with ${reason}`);
+      response.connection.destroy();
+    }
+  });
 });

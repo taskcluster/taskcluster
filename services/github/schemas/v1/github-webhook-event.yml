@@ -1,0 +1,16 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Webhook Event"
+description: |
+  Validates GitHub webhook event payloads. Supports multiple event types
+  using OneOf pattern.
+
+oneOf:
+  - $ref: "webhook-pull-request-payload.json#"
+  - $ref: "webhook-push-payload.json#"
+  - $ref: "webhook-issue-comment-payload.json#"
+  - $ref: "webhook-release-payload.json#"
+  - $ref: "webhook-installation-payload.json#"
+  - $ref: "webhook-check-run-payload.json#"
+  - $ref: "webhook-ping-payload.json#"
+
+additionalProperties: true

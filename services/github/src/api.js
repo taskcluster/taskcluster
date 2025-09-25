@@ -218,6 +218,7 @@ export default builder;
 builder.declare({
   method: 'post',
   route: '/github',
+  input: 'github-webhook-event.yml',
   name: 'githubWebHookConsumer',
   scopes: null,
   title: 'Consume GitHub WebHook',
