@@ -45,10 +45,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -98,10 +94,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -158,10 +150,6 @@ testSuite:
           artifact: test/path
           namespace: test.namespace
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -219,10 +207,6 @@ testSuite:
           namespace: test.namespace
         file: dockerimage
         format: lz4
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -279,10 +263,6 @@ testSuite:
           artifact: test/path.zst
           namespace: test.namespace
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -338,10 +318,6 @@ testSuite:
           artifact: public/test/path
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -398,10 +374,6 @@ testSuite:
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
         format: lz4
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -457,10 +429,6 @@ testSuite:
           artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -522,10 +490,6 @@ testSuite:
           artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

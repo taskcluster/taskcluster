@@ -82,10 +82,6 @@ testSuite:
           artifact: public/bugmon.tar.zst
           namespace: project.fuzzing.orion.bugmon.master
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

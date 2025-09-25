@@ -52,10 +52,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -107,10 +103,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -163,10 +155,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -218,10 +206,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -275,10 +259,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -330,10 +310,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -387,10 +363,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -442,10 +414,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -498,10 +466,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -554,10 +518,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
