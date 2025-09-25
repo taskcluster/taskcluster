@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.4
+
+### USERS
+
+▶ [patch] [bug 1990389](http://bugzil.la/1990389)
+D2G: add stderr logging if any docker commands fail within the task feature.
+
+▶ [patch] [#7974](https://github.com/taskcluster/taskcluster/issues/7974)
+D2G: fixes `docker: invalid env file (env.list): bufio.Scanner: token too long` error when providing the `docker run` command an `--env-file` that contains a line longer than 64KiB. D2G now passes the variable directly to the run command with `-e <envVarName>=<envVarValue>` to work around this constraint.
+
+▶ [patch]
+D2G: removes exit codes 125, 128 from `payload.onExitStatus.retry` array, as docker pulls now happen outside of the payload being run (inside the D2G task feature startup).
+
 ## v90.0.3
 
 ### USERS
