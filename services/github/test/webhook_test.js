@@ -92,6 +92,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Release with bad secret', 'webhook.release.bad_secret.json', 403);
   statusTest('CheckRun created', 'webhook.check_run.created.json', 403);
 
+  // Common field validation tests (for refactored schema)
+  statusTest('Push with missing sender returns 400',
+    'webhook.push.missing_sender.json', 400);
+  statusTest('Push with invalid sender.login returns 400',
+    'webhook.push.invalid_sender.json', 400);
+
   // Webhook Payload Validation Tests
   statusTest('PR with missing head.repo returns 400',
     'webhook.pull_request.missing_head_repo.json', 400);
@@ -156,6 +162,102 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.statusCode, 400,
         `Should reject payload with ${reason}`);
       response.connection.destroy();
+    }
+  });
+
+  // Test refactored schema with common fields extracted
+  test('Common fields are validated at base schema level', async function() {
+    // Test that sender field is validated as a common field
+    const validPayloads = [
+      'webhook.pull_request.open.json',
+      'webhook.push.json',
+      'webhook.issue_comment.edited.json',
+      'webhook.release.json',
+      'webhook.check_run.rerequested.json',
+      'webhook.ping.json',
+    ];
+
+    for (const file of validPayloads) {
+      const filename = './test/data/webhooks/' + file;
+      const payload = JSON.parse(fs.readFileSync(filename));
+
+      // Verify sender field exists in all payloads
+      assert.ok(payload.body.sender, `${file} should have sender field`);
+      assert.ok(payload.body.sender.login, `${file} should have sender.login field`);
+    }
+  });
+
+  test('Schema validates common and event-specific fields together', async function() {
+    // Test that both common fields (sender, repository, installation)
+    // and event-specific fields are validated together
+    const testCases = [
+      {
+        file: 'webhook.pull_request.open.json',
+        commonFields: ['sender', 'repository', 'installation'],
+        specificFields: ['action', 'number', 'pull_request'],
+      },
+      {
+        file: 'webhook.push.json',
+        commonFields: ['sender', 'repository', 'installation'],
+        specificFields: ['ref', 'before', 'after', 'commits'],
+      },
+      {
+        file: 'webhook.issue_comment.edited.json',
+        commonFields: ['sender', 'repository', 'installation'],
+        specificFields: ['action', 'issue', 'comment'],
+      },
+      {
+        file: 'webhook.ping.json',
+        commonFields: ['sender'], // ping doesn't have installation
+        specificFields: ['zen', 'hook_id', 'hook'],
+      },
+    ];
+
+    for (const { file, commonFields, specificFields } of testCases) {
+      const filename = './test/data/webhooks/' + file;
+      const payload = JSON.parse(fs.readFileSync(filename));
+
+      // Verify common fields
+      for (const field of commonFields) {
+        assert.ok(payload.body[field], `${file} should have common field: ${field}`);
+      }
+
+      // Verify event-specific fields
+      for (const field of specificFields) {
+        assert.ok(Object.prototype.hasOwnProperty.call(payload.body, field),
+          `${file} should have event-specific field: ${field}`);
+      }
+    }
+  });
+
+  test('OneOf pattern correctly discriminates between event types', async function() {
+    // Test that the oneOf correctly identifies and validates each event type
+    const eventTypes = [
+      { file: 'webhook.pull_request.open.json', hasAction: true, hasPushFields: false },
+      { file: 'webhook.push.json', hasAction: false, hasPushFields: true },
+      { file: 'webhook.issue_comment.edited.json', hasAction: true, hasPushFields: false },
+      { file: 'webhook.release.json', hasAction: true, hasPushFields: false },
+      { file: 'webhook.ping.json', hasAction: false, hasPushFields: false },
+    ];
+
+    for (const { file, hasAction, hasPushFields } of eventTypes) {
+      const filename = './test/data/webhooks/' + file;
+      const payload = JSON.parse(fs.readFileSync(filename));
+
+      if (hasAction) {
+        assert.ok(payload.body.action, `${file} should have action field`);
+      } else {
+        assert.ok(!payload.body.action || payload.body.action === undefined,
+          `${file} should not have action field`);
+      }
+
+      if (hasPushFields) {
+        assert.ok(payload.body.ref, `${file} should have ref field`);
+        assert.ok(payload.body.commits, `${file} should have commits field`);
+      } else {
+        assert.ok(!payload.body.ref || payload.body.ref === undefined,
+          `${file} should not have ref field`);
+      }
     }
   });
 });

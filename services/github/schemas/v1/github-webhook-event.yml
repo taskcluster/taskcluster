@@ -2,8 +2,57 @@ $schema: "/schemas/common/metaschema.json#"
 title: "GitHub Webhook Event"
 description: |
   Validates GitHub webhook event payloads. Supports multiple event types
-  using OneOf pattern.
+  using OneOf pattern with common fields extracted.
 
+type: object
+
+# Common fields across all webhook event types
+properties:
+  # sender field is present in ALL webhook types
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+    description: "The user who triggered the webhook event"
+
+# Semi-common fields that appear in most (but not all) webhook types
+# are defined here for clarity but made optional via not including in required
+  repository:
+    description: "Repository where the event occurred (not present in installation events)"
+    type: object
+    properties:
+      full_name:
+        type: string
+        pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+      owner:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+    required: [full_name, owner]
+    additionalProperties: true
+
+  installation:
+    description: "GitHub App installation info (not present in ping events)"
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+
+# Required common field
+required: [sender]
+
+# Event-specific validation and fields
 oneOf:
   - $ref: "webhook-pull-request-payload.json#"
   - $ref: "webhook-push-payload.json#"
