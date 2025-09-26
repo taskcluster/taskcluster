@@ -54,20 +54,6 @@ helper.jsonHttpRequest = function(jsonFile, options) {
   });
 };
 
-// Read the response body from an HTTP response
-helper.readResponseBody = function(response) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    response.on('data', chunk => {
-      body += chunk;
-    });
-    response.on('end', () => {
-      resolve(body);
-    });
-    response.on('error', reject);
-  });
-};
-
 helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'github');
 };
