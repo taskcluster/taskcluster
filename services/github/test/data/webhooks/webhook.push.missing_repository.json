@@ -3,7 +3,7 @@
     "X-GitHub-Event": "push",
     "X-GitHub-Delivery": "test-missing-repository",
     "content-type": "application/json",
-    "X-Hub-Signature": "sha1=ccc8b247c1b160bfb8b870cbdefc651b2e0000cc"
+    "X-Hub-Signature": "sha1=07ead4baeb6a3d3ba447acdd5863630e773e8086"
   },
   "body": {
     "ref": "refs/heads/main",
@@ -22,7 +22,11 @@
         "message": "Test commit"
       }
     ],
-    "installation": {"id": 5808},
-    "sender": {"login": "testuser"}
+    "installation": {
+      "id": 5808
+    },
+    "sender": {
+      "login": "testuser"
+    }
   }
 }
