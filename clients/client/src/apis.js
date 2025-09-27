@@ -835,6 +835,7 @@ export default {
           ],
           "category": "Github Service",
           "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
+          "input": "v1/github-webhook-event.json#",
           "method": "post",
           "name": "githubWebHookConsumer",
           "query": [

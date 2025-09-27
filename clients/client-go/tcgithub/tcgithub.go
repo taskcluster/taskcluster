@@ -135,9 +135,9 @@ func (github *Github) Version() error {
 // release, check run or pull request.
 //
 // See #githubWebHookConsumer
-func (github *Github) GithubWebHookConsumer() error {
+func (github *Github) GithubWebHookConsumer(payload *GitHubWebhookEvent) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/github", nil, nil)
 	return err
 }
 

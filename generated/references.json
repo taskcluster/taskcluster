@@ -8196,6 +8196,508 @@
   },
   {
     "content": {
+      "$id": "/schemas/github/v1/github-webhook-event.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ref"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "repository",
+              "ref",
+              "before",
+              "after",
+              "pusher",
+              "commits",
+              "installation"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "pull_request": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "pull_request"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "pull_request",
+              "repository",
+              "installation",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "comment": {
+                "type": "object"
+              },
+              "issue": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "issue",
+              "comment"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "issue",
+              "comment",
+              "repository",
+              "installation",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "release": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "release"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "release",
+              "repository",
+              "installation",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "check_run": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "check_run"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "check_run",
+              "repository",
+              "installation",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "action": {
+                "enum": [
+                  "created",
+                  "deleted",
+                  "suspend",
+                  "unsuspend",
+                  "new_permissions_accepted"
+                ]
+              },
+              "installation": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "installation",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "additionalProperties": true,
+            "properties": {
+              "zen": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "zen"
+            ],
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "zen"
+            ]
+          }
+        }
+      ],
+      "description": "Validates GitHub webhook event payloads to prevent errors from missing or\nmalformed fields. This schema enforces required fields that the application\ndepends on, preventing TypeErrors identified in PR #7958.\n",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "after": {
+          "pattern": "^[a-f0-9]{40}$",
+          "type": "string"
+        },
+        "before": {
+          "pattern": "^[a-f0-9]{40}$",
+          "type": "string"
+        },
+        "check_run": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "check_suite": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "comment": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "commits": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "pattern": "^[a-f0-9]{40}$",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "head_commit": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          ]
+        },
+        "hook": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "hook_id": {
+          "type": "integer"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "issue": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "number": {
+          "type": "integer"
+        },
+        "pull_request": {
+          "additionalProperties": true,
+          "properties": {
+            "base": {
+              "additionalProperties": true,
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "repo": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "clone_url": {
+                      "format": "uri",
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "owner": {
+                      "oneOf": [
+                        {
+                          "additionalProperties": true,
+                          "properties": {
+                            "login": {
+                              "pattern": "^([a-zA-Z0-9-_%]*)$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "login"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": true,
+                          "properties": {
+                            "name": {
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "type": "object"
+                        }
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "full_name",
+                    "owner"
+                  ],
+                  "type": "object"
+                },
+                "sha": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sha",
+                "ref",
+                "repo"
+              ],
+              "type": "object"
+            },
+            "head": {
+              "additionalProperties": true,
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "repo": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "clone_url": {
+                      "format": "uri",
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "owner": {
+                      "oneOf": [
+                        {
+                          "additionalProperties": true,
+                          "properties": {
+                            "login": {
+                              "pattern": "^([a-zA-Z0-9-_%]*)$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "login"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": true,
+                          "properties": {
+                            "name": {
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "type": "object"
+                        }
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "full_name",
+                    "owner"
+                  ],
+                  "type": "object"
+                },
+                "sha": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sha",
+                "ref",
+                "repo"
+              ],
+              "type": "object"
+            },
+            "number": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "state": {
+              "type": "string"
+            },
+            "user": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "number",
+            "state",
+            "head",
+            "base",
+            "user"
+          ],
+          "type": "object"
+        },
+        "pusher": {
+          "additionalProperties": true,
+          "properties": {
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "ref": {
+          "pattern": "^refs/(heads|tags)/.*$",
+          "type": "string"
+        },
+        "release": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "clone_url": {
+              "format": "uri",
+              "type": "string"
+            },
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "full_name",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        },
+        "zen": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sender"
+      ],
+      "title": "GitHub Webhook Event",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/github-webhook-event.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/github/v1/github-rerun-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -23766,6 +24268,7 @@
           ],
           "category": "Github Service",
           "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
+          "input": "v1/github-webhook-event.json#",
           "method": "post",
           "name": "githubWebHookConsumer",
           "query": [

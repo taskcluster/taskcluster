@@ -453,6 +453,11 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v90/clients/client-go\""] = true
 			}
 		}
+	case "null":
+		// null type in JSON Schema maps to any in Go since nil alone isn't a type
+		typ = "any"
+		typeCategory = "primitive"
+		comment += "//\n// Can be null\n"
 	}
 
 	if URL := jsonSubSchema.SourceURL; URL != "" {

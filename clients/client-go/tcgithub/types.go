@@ -4,11 +4,47 @@ package tcgithub
 
 import (
 	"encoding/json"
+	"errors"
 
 	tcclient "github.com/taskcluster/taskcluster/v90/clients/client-go"
 )
 
 type (
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Ref string `json:"ref"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// One of:
+	//  	//  	//   * Var3
+	//  	//  	//   * Var4
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repo json.RawMessage `json:"repo"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	SHA string `json:"sha"`
+	//  }
+	//
+	// Additional properties allowed
+	Base json.RawMessage
+
 	Build struct {
 
 		// The initial creation time of the build. This is when it became pending.
@@ -107,10 +143,1702 @@ type (
 		Target_URL string `json:"target_url,omitempty"`
 	}
 
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// All of:
+	//   * GitHubWebhookEvent1
+	//   * GitHubWebhookEvent2
+	//   * GitHubWebhookEvent3
+	//   * GitHubWebhookEvent4
+	//   * GitHubWebhookEvent5
+	//   * GitHubWebhookEvent6
+	//   * GitHubWebhookEvent7
+	GitHubWebhookEvent json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent1 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent2 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent3 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent4 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent5 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent6 json.RawMessage
+
+	// Validates GitHub webhook event payloads to prevent errors from missing or
+	// malformed fields. This schema enforces required fields that the application
+	// depends on, preventing TypeErrors identified in PR #7958.
+	//
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Action string `json:"action,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	After string `json:"after,omitempty"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	Before string `json:"before,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Run json.RawMessage `json:"check_run,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Check_Suite json.RawMessage `json:"check_suite,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Comment json.RawMessage `json:"comment,omitempty"`
+	//
+	//	//  	Commits []json.RawMessage `json:"commits,omitempty"`
+	//
+	//  	// One of:
+	//  	//   * Var1
+	//  	//   * Var2
+	//  	//
+	//	//  	Head_Commit json.RawMessage `json:"head_commit,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Hook json.RawMessage `json:"hook,omitempty"`
+	//
+	//	//  	Hook_ID int64 `json:"hook_id,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	ID int64 `json:"id,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Installation json.RawMessage `json:"installation,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Issue json.RawMessage `json:"issue,omitempty"`
+	//
+	//	//  	Number int64 `json:"number,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var3
+	//  	//  	//  	//  	//   * Var4
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Base json.RawMessage `json:"base"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Ref string `json:"ref"`
+	//  	//  	//
+	//  	//  	//  	// Defined properties:
+	//  	//  	//  	//
+	//  	//  	//  	//  struct {
+	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//  	//
+	//  	//  	//  	//  	// One of:
+	//  	//  	//  	//  	//   * Var5
+	//  	//  	//  	//  	//   * Var6
+	//  	//  	//  	//  	//
+	//  	//  	//  	//	//  	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  	//  }
+	//  	//  	//  	//
+	//  	//  	//  	// Additional properties allowed
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	SHA string `json:"sha"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Head json.RawMessage `json:"head"`
+	//  	//
+	//  	//  	// Mininum:    1
+	//  	//  	//
+	//  	//	//  	//  	Number int64 `json:"number"`
+	//  	//
+	//  	//	//  	//  	State string `json:"state"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	User json.RawMessage `json:"user"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pull_Request json.RawMessage `json:"pull_request,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Min length: 1
+	//  	//  	//
+	//  	//	//  	//  	Name string `json:"name"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Pusher json.RawMessage `json:"pusher,omitempty"`
+	//
+	//  	// Syntax:     ^refs/(heads|tags)/.*$
+	//  	//
+	//	//  	Ref string `json:"ref,omitempty"`
+	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Release json.RawMessage `json:"release,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Login string `json:"login,omitempty"`
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repository json.RawMessage `json:"repository,omitempty"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Sender json.RawMessage `json:"sender"`
+	//
+	//	//  	Zen string `json:"zen,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	GitHubWebhookEvent7 json.RawMessage
+
 	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 	//
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	GithubGUID string
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Ref string `json:"ref"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//
+	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//
+	//  	//	//  	//  	Full_Name string `json:"full_name"`
+	//  	//
+	//  	//  	// One of:
+	//  	//  	//   * Var5
+	//  	//  	//   * Var6
+	//  	//  	//
+	//  	//	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Repo json.RawMessage `json:"repo"`
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	SHA string `json:"sha"`
+	//  }
+	//
+	// Additional properties allowed
+	Head json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Mininum:    1
+	//  	//
+	//	//  	ID int64 `json:"id,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	Installation json.RawMessage
 
 	// Emulate one of the github events with mocked payload.
 	// Some of the events have sub-actions, that can be specified.
@@ -138,6 +1866,20 @@ type (
 		//   * "github-issue-comment"
 		Type string `json:"type"`
 	}
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//
+	//	//  	Login string `json:"login,omitempty"`
+	//
+	//	//  	Name string `json:"name,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	Owner json.RawMessage
 
 	// .taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.
 	// The difference is that `github-pull-request-untrusted` will use different set of scopes.
@@ -182,6 +1924,105 @@ type (
 		Type string `json:"type"`
 	}
 
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Ref string `json:"ref"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//
+	//  	//  	//  	// One of:
+	//  	//  	//  	//   * Var3
+	//  	//  	//  	//   * Var4
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//
+	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//
+	//  	//	//  	//  	SHA string `json:"sha"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Base json.RawMessage `json:"base"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//	//  	//  	Ref string `json:"ref"`
+	//  	//
+	//  	//  	// Defined properties:
+	//  	//  	//
+	//  	//  	//  struct {
+	//  	//  	//
+	//  	//  	//	//  	//  	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//  	//  	//
+	//  	//  	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Full_Name string `json:"full_name"`
+	//  	//  	//
+	//  	//  	//  	// One of:
+	//  	//  	//  	//   * Var5
+	//  	//  	//  	//   * Var6
+	//  	//  	//  	//
+	//  	//  	//	//  	//  	//  	Owner json.RawMessage `json:"owner"`
+	//  	//  	//  }
+	//  	//  	//
+	//  	//  	// Additional properties allowed
+	//  	//  	//
+	//  	//	//  	//  	Repo json.RawMessage `json:"repo"`
+	//  	//
+	//  	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//  	//
+	//  	//	//  	//  	SHA string `json:"sha"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Head json.RawMessage `json:"head"`
+	//
+	//  	// Mininum:    1
+	//  	//
+	//	//  	Number int64 `json:"number"`
+	//
+	//	//  	State string `json:"state"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	User json.RawMessage `json:"user"`
+	//  }
+	//
+	// Additional properties allowed
+	Pull_Request json.RawMessage
+
 	// Github sends `push` event for commits and for tags.
 	// To distinguish between those two, the `ref` property is used.
 	// If you want to mock a tag push, please specify `ref` property in the overrides:
@@ -204,6 +2045,18 @@ type (
 		//   * "github-push"
 		Type string `json:"type"`
 	}
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Min length: 1
+	//  	//
+	//	//  	Name string `json:"name"`
+	//  }
+	//
+	// Additional properties allowed
+	Pusher json.RawMessage
 
 	// Emulate one of the github events with mocked payload.
 	// Some of the events have sub-actions, that can be specified.
@@ -282,6 +2135,75 @@ type (
 		Tasks []json.RawMessage `json:"tasks"`
 	}
 
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//
+	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//
+	//	//  	Full_Name string `json:"full_name"`
+	//
+	//  	// One of:
+	//  	//   * Var3
+	//  	//   * Var4
+	//  	//
+	//	//  	Owner json.RawMessage `json:"owner"`
+	//  }
+	//
+	// Additional properties allowed
+	Repo json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//
+	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//
+	//	//  	Full_Name string `json:"full_name"`
+	//
+	//  	// One of:
+	//  	//   * Var5
+	//  	//   * Var6
+	//  	//
+	//	//  	Owner json.RawMessage `json:"owner"`
+	//  }
+	//
+	// Additional properties allowed
+	Repo1 json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//	//  	Clone_URL string `json:"clone_url,omitempty"`
+	//
+	//  	// Syntax:     ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$
+	//  	//
+	//	//  	Full_Name string `json:"full_name"`
+	//
+	//  	// Defined properties:
+	//  	//
+	//  	//  struct {
+	//  	//
+	//  	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//  	//
+	//  	//	//  	//  	Login string `json:"login,omitempty"`
+	//  	//
+	//  	//	//  	//  	Name string `json:"name,omitempty"`
+	//  	//  }
+	//  	//
+	//  	// Additional properties allowed
+	//  	//
+	//	//  	Owner json.RawMessage `json:"owner"`
+	//  }
+	//
+	// Additional properties allowed
+	Repository json.RawMessage
+
 	// Any Taskcluster-specific Github repository information.
 	RepositoryResponse struct {
 
@@ -289,9 +2211,512 @@ type (
 		Installed bool `json:"installed"`
 	}
 
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//
+	//	//  	Login string `json:"login"`
+	//  }
+	//
+	// Additional properties allowed
+	Sender json.RawMessage
+
 	// The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'
 	//
 	// Possible values:
 	//   * "Unknown"
 	UnknownGithubGUID string
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//
+	//	//  	Login string `json:"login"`
+	//  }
+	//
+	// Additional properties allowed
+	User json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	ID string `json:"id,omitempty"`
+	//
+	//	//  	Message string `json:"message,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	Var json.RawMessage
+
+	// Can be null
+	Var1 any
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^[a-f0-9]{40}$
+	//  	//
+	//	//  	ID string `json:"id,omitempty"`
+	//
+	//	//  	Message string `json:"message,omitempty"`
+	//  }
+	//
+	// Additional properties allowed
+	Var2 json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//
+	//	//  	Login string `json:"login"`
+	//  }
+	//
+	// Additional properties allowed
+	Var3 json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Min length: 1
+	//  	//
+	//	//  	Name string `json:"name"`
+	//  }
+	//
+	// Additional properties allowed
+	Var4 json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Syntax:     ^([a-zA-Z0-9-_%]*)$
+	//  	//
+	//	//  	Login string `json:"login"`
+	//  }
+	//
+	// Additional properties allowed
+	Var5 json.RawMessage
+
+	// Defined properties:
+	//
+	//  struct {
+	//
+	//  	// Min length: 1
+	//  	//
+	//	//  	Name string `json:"name"`
+	//  }
+	//
+	// Additional properties allowed
+	Var6 json.RawMessage
 )
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Base is of type json.RawMessage...
+func (m *Base) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Base) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Base: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent is of type json.RawMessage...
+func (m *GitHubWebhookEvent) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent1 is of type json.RawMessage...
+func (m *GitHubWebhookEvent1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent1) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent1: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent2 is of type json.RawMessage...
+func (m *GitHubWebhookEvent2) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent2) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent2: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent3 is of type json.RawMessage...
+func (m *GitHubWebhookEvent3) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent3) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent3: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent4 is of type json.RawMessage...
+func (m *GitHubWebhookEvent4) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent4) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent4: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent5 is of type json.RawMessage...
+func (m *GitHubWebhookEvent5) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent5) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent5: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent6 is of type json.RawMessage...
+func (m *GitHubWebhookEvent6) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent6) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent6: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// GitHubWebhookEvent7 is of type json.RawMessage...
+func (m *GitHubWebhookEvent7) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *GitHubWebhookEvent7) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("GitHubWebhookEvent7: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Head is of type json.RawMessage...
+func (m *Head) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Head) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Head: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Installation is of type json.RawMessage...
+func (m *Installation) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Installation) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Installation: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Owner is of type json.RawMessage...
+func (m *Owner) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Owner) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Owner: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Pull_Request is of type json.RawMessage...
+func (m *Pull_Request) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Pull_Request) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Pull_Request: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Pusher is of type json.RawMessage...
+func (m *Pusher) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Pusher) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Pusher: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Repo is of type json.RawMessage...
+func (m *Repo) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Repo) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Repo: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Repo1 is of type json.RawMessage...
+func (m *Repo1) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Repo1) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Repo1: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Repository is of type json.RawMessage...
+func (m *Repository) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Repository) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Repository: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Sender is of type json.RawMessage...
+func (m *Sender) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Sender) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Sender: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// User is of type json.RawMessage...
+func (m *User) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *User) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("User: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var is of type json.RawMessage...
+func (m *Var) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var2 is of type json.RawMessage...
+func (m *Var2) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var2) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var2: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var3 is of type json.RawMessage...
+func (m *Var3) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var3) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var3: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var4 is of type json.RawMessage...
+func (m *Var4) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var4) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var4: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var5 is of type json.RawMessage...
+func (m *Var5) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var5) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var5: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
+
+// MarshalJSON calls json.RawMessage method of the same name. Required since
+// Var6 is of type json.RawMessage...
+func (m *Var6) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
+	return (&x).MarshalJSON()
+}
+
+// UnmarshalJSON is a copy of the json.RawMessage implementation.
+func (m *Var6) UnmarshalJSON(data []byte) error {
+	if m == nil {
+		return errors.New("Var6: UnmarshalJSON on nil pointer")
+	}
+	*m = append((*m)[0:0], data...)
+	return nil
+}
