@@ -236,6 +236,7 @@ class Github(AsyncBaseClient):
         },
         "githubWebHookConsumer": {
             'args': [],
+            'input': 'v1/github-webhook-event.json#',
             'method': 'post',
             'name': 'githubWebHookConsumer',
             'route': '/github',

@@ -137,10 +137,10 @@ impl Github {
     ///
     /// Capture a GitHub event and publish it via pulse, if it's a push,
     /// release, check run or pull request.
-    pub async fn githubWebHookConsumer(&self) -> Result<(), Error> {
+    pub async fn githubWebHookConsumer(&self, payload: &Value) -> Result<(), Error> {
         let method = "POST";
         let (path, query) = Self::githubWebHookConsumer_details();
-        let body = None;
+        let body = Some(payload);
         let resp = self.client.request(method, path, query, body).await?;
         resp.bytes().await?;
         Ok(())
