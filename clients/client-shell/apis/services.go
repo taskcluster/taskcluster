@@ -520,7 +520,7 @@ var services = map[string]definitions.Service{
 				Route:       "/github",
 				Args:        []string{},
 				Query:       []string{},
-				Input:       "",
+				Input:       "v1/github-webhook-event.json#",
 			},
 			definitions.Entry{
 				Name:        "builds",

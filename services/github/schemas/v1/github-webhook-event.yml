@@ -1,0 +1,317 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Webhook Event"
+description: |
+  Validates GitHub webhook event payloads to prevent errors from missing or
+  malformed fields. This schema enforces required fields that the application
+  depends on, preventing TypeErrors identified in PR #7958.
+
+type: object
+
+# Core properties that must be present and valid
+properties:
+  # sender is required for ALL webhook events
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+
+  # repository - validated when present
+  repository:
+    type: object
+    properties:
+      full_name:
+        type: string
+        pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+      clone_url:
+        type: string
+        format: uri
+      owner:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          name:
+            type: string
+        additionalProperties: true
+    required: [full_name, owner]
+    additionalProperties: true
+
+  # installation ID for GitHub App
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    additionalProperties: true
+
+  # Pull request event specific validation
+  pull_request:
+    type: object
+    properties:
+      number:
+        type: integer
+        minimum: 1
+      state:
+        type: string
+      head:
+        type: object
+        properties:
+          sha:
+            type: string
+            pattern: "^[a-f0-9]{40}$"
+          ref:
+            type: string
+          repo:
+            # repo MUST be an object (not null) for PR #7958 fix
+            type: object
+            properties:
+              full_name:
+                type: string
+                pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+              clone_url:
+                type: string
+                format: uri
+              owner:
+                type: object
+                oneOf:
+                  - type: object
+                    properties:
+                      login:
+                        type: string
+                        pattern: {$const: github-identifier-pattern}
+                    required: [login]
+                    additionalProperties: true
+                  - type: object
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                    required: [name]
+                    additionalProperties: true
+            required: [full_name, owner]
+            additionalProperties: true
+        required: [sha, ref, repo]
+        additionalProperties: true
+      base:
+        type: object
+        properties:
+          sha:
+            type: string
+            pattern: "^[a-f0-9]{40}$"
+          ref:
+            type: string
+          repo:
+            # repo MUST be an object (not null) for PR #7958 fix
+            type: object
+            properties:
+              full_name:
+                type: string
+                pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+              clone_url:
+                type: string
+                format: uri
+              owner:
+                type: object
+                oneOf:
+                  - type: object
+                    properties:
+                      login:
+                        type: string
+                        pattern: {$const: github-identifier-pattern}
+                    required: [login]
+                    additionalProperties: true
+                  - type: object
+                    properties:
+                      name:
+                        type: string
+                        minLength: 1
+                    required: [name]
+                    additionalProperties: true
+            required: [full_name, owner]
+            additionalProperties: true
+        required: [sha, ref, repo]
+        additionalProperties: true
+      user:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+    required: [number, state, head, base, user]
+    additionalProperties: true
+
+  # Push event specific
+  ref:
+    type: string
+    pattern: "^refs/(heads|tags)/.*$"
+  before:
+    type: string
+    pattern: "^[a-f0-9]{40}$"
+  after:
+    type: string
+    pattern: "^[a-f0-9]{40}$"
+  pusher:
+    type: object
+    properties:
+      name:
+        type: string
+        minLength: 1
+    required: [name]
+    additionalProperties: true
+  head_commit:
+    oneOf:
+      - type: "null"
+      - type: object
+        properties:
+          id:
+            type: string
+            pattern: "^[a-f0-9]{40}$"
+          message:
+            type: string
+        additionalProperties: true
+  commits:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: "^[a-f0-9]{40}$"
+        message:
+          type: string
+      additionalProperties: true
+
+  # Issue comment specific
+  issue:
+    type: object
+    additionalProperties: true
+  comment:
+    type: object
+    additionalProperties: true
+
+  # Release specific
+  release:
+    type: object
+    additionalProperties: true
+
+  # Check run specific
+  check_run:
+    type: object
+    additionalProperties: true
+  check_suite:
+    type: object
+    additionalProperties: true
+
+  # Ping specific
+  zen:
+    type: string
+  hook_id:
+    type: integer
+  hook:
+    type: object
+    additionalProperties: true
+
+  # Common action field
+  action:
+    type: string
+
+  # PR/Issue number
+  number:
+    type: integer
+
+# Sender is always required
+required: [sender]
+
+# Conditional validation based on event type
+allOf:
+  # Push events must have repository and push-specific fields
+  - if:
+      type: object
+      properties:
+        ref:
+          type: string
+      required: [ref]
+      additionalProperties: true
+    then:
+      required: [repository, ref, before, after, pusher, commits, installation]
+
+  # Pull request events must have pull_request and repository
+  - if:
+      type: object
+      properties:
+        pull_request:
+          type: object
+      required: [pull_request]
+      additionalProperties: true
+    then:
+      required: [pull_request, repository, installation, action]
+
+  # Issue comment events
+  - if:
+      type: object
+      properties:
+        issue:
+          type: object
+        comment:
+          type: object
+      required: [issue, comment]
+      additionalProperties: true
+    then:
+      required: [issue, comment, repository, installation, action]
+
+  # Release events
+  - if:
+      type: object
+      properties:
+        release:
+          type: object
+      required: [release]
+      additionalProperties: true
+    then:
+      required: [release, repository, installation, action]
+
+  # Check run events
+  - if:
+      type: object
+      properties:
+        check_run:
+          type: object
+      required: [check_run]
+      additionalProperties: true
+    then:
+      required: [check_run, repository, installation, action]
+
+  # Installation events
+  - if:
+      type: object
+      properties:
+        installation:
+          type: object
+        action:
+          enum: ["created", "deleted", "suspend", "unsuspend", "new_permissions_accepted"]
+      required: [action]
+      additionalProperties: true
+    then:
+      required: [installation, action]
+
+  # Ping events - simple connectivity test
+  - if:
+      type: object
+      properties:
+        zen:
+          type: string
+      required: [zen]
+      additionalProperties: true
+    then:
+      required: [zen]  # Only require zen field for ping events
+
+# Allow additional properties for forward compatibility
+additionalProperties: true
