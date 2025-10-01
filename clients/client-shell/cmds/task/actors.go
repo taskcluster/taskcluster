@@ -1,8 +1,10 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -101,6 +103,7 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 	}
 
 	exactRetrigger, _ := flagSet.GetBool("exact")
+	editDefinition, _ := flagSet.GetString("edit-definition")
 
 	newTaskID := slugid.Nice()
 	now := time.Now().UTC()
@@ -148,6 +151,18 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 		Routes:        newRoutes,
 		Scopes:        t.Scopes,
 		Tags:          t.Tags,
+	}
+
+	if editDefinition != "" {
+		edits, err := parseEditDefinition(editDefinition)
+		if err != nil {
+			return fmt.Errorf("invalid edit definition: %v", err)
+		}
+
+		err = applyEditsToTaskDefinition(newT, edits)
+		if err != nil {
+			return fmt.Errorf("failed to apply edits: %v", err)
+		}
 	}
 
 	c, err := q.CreateTask(newTaskID, newT)
@@ -203,5 +218,84 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	}
 
 	fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
+	return nil
+}
+
+func parseEditDefinition(editDef string) (map[string]any, error) {
+	var edits map[string]any
+	err := json.Unmarshal([]byte(editDef), &edits)
+	if err != nil {
+		return nil, fmt.Errorf("invalid JSON format: %v", err)
+	}
+	return edits, nil
+}
+
+func applyEditsToTaskDefinition(taskDef *tcqueue.TaskDefinitionRequest, edits map[string]any) error {
+	taskData, err := convertTaskDefToMap(taskDef)
+	if err != nil {
+		return fmt.Errorf("failed to convert task definition to map for editing: %v", err)
+	}
+
+	for path, value := range edits {
+		err = setNestedValue(taskData, path, value)
+		if err != nil {
+			return fmt.Errorf("failed to set field '%s' to '%v': %v", path, value, err)
+		}
+	}
+
+	updatedTaskDef, err := convertMapToTaskDef(taskData)
+	if err != nil {
+		return fmt.Errorf("failed to convert edited map back to task definition: %v", err)
+	}
+
+	*taskDef = *updatedTaskDef
+	return nil
+}
+
+func convertTaskDefToMap(taskDef *tcqueue.TaskDefinitionRequest) (map[string]any, error) {
+	data, err := json.Marshal(taskDef)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal task definition to JSON: %v", err)
+	}
+
+	var result map[string]any
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON to map: %v", err)
+	}
+	return result, nil
+}
+
+func convertMapToTaskDef(data map[string]any) (*tcqueue.TaskDefinitionRequest, error) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal edited data to JSON: %v", err)
+	}
+
+	var taskDef tcqueue.TaskDefinitionRequest
+	err = json.Unmarshal(jsonData, &taskDef)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON to task definition: %v", err)
+	}
+	return &taskDef, nil
+}
+
+func setNestedValue(data map[string]any, path string, value any) error {
+	keys := strings.Split(path, ".")
+	current := data
+
+	for i, key := range keys[:len(keys)-1] {
+		if current[key] == nil {
+			current[key] = make(map[string]any)
+		}
+
+		next, ok := current[key].(map[string]any)
+		if !ok {
+			return fmt.Errorf("cannot set nested value: path '%s' is not an object (found %T instead)", strings.Join(keys[:i+1], "."), current[key])
+		}
+		current = next
+	}
+
+	current[keys[len(keys)-1]] = value
 	return nil
 }

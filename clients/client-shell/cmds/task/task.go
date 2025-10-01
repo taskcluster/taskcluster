@@ -56,6 +56,7 @@ func init() {
 	artifactsCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
 
 	retriggerCmd.Flags().BoolP("exact", "e", false, "Retrigger in exact mode. WARNING: THIS MAY HAVE SIDE EFFECTS. USE AFTER YOU READ THE SOURCE CODE.")
+	retriggerCmd.Flags().StringP("edit-definition", "d", "", "Edit specific fields in task definition (JSON format)")
 
 	rerunCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
 	rerunCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
