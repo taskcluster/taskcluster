@@ -40,7 +40,44 @@ export interface AWSConfigSchema extends BaseProviderConfig {
   launchConfigs: AWSLaunchConfig[];
 }
 
-export interface AzureLaunchConfig extends BaseLaunchConfig {
+interface AzureARMDeployment {
+  mode: 'Incremental' | 'Complete';
+  templateSpec?: {
+    id: string;
+  };
+  template?: Record<string, any>;
+  templateLink?: {
+    uri: string;
+    contentVersion?: string;
+    queryString?: string;
+  };
+  parameters?: Record<string, {
+    value?: any;
+    reference?: {
+      keyVault: {
+        id: string;
+      };
+      secretName: string;
+      secretVersion?: string;
+    };
+  }>;
+  parametersLink?: {
+    uri: string;
+    contentVersion?: string;
+  };
+  debugSetting?: {
+    detailLevel?: 'requestContent' | 'responseContent' | 'requestContent,responseContent';
+  };
+  onErrorDeployment?: {
+    type: 'LastSuccessful' | 'SpecificDeployment';
+    deploymentName?: string;
+  };
+  expressionEvaluationOptions?: {
+    scope: 'Inner' | 'Outer';
+  };
+}
+
+interface AzureResourceBasedLaunchConfig extends BaseLaunchConfig {
   workerManager?: WorkerManagerConfig & {
     publicIp?: boolean;
     ignoreFailedProvisioningStates?: string[];
@@ -83,6 +120,18 @@ export interface AzureLaunchConfig extends BaseLaunchConfig {
   };
   [key: string]: any; // additional properties allowed
 }
+
+interface AzureARMTemplateLaunchConfig extends BaseLaunchConfig {
+  workerManager?: WorkerManagerConfig & {
+    publicIp?: boolean;
+    ignoreFailedProvisioningStates?: string[];
+  };
+  armDeployment: AzureARMDeployment;
+  resourceGroupOverride?: string;
+  [key: string]: any; // additional properties allowed
+}
+
+export type AzureLaunchConfig = AzureResourceBasedLaunchConfig | AzureARMTemplateLaunchConfig;
 
 export interface AzureConfigSchema extends BaseProviderConfig {
   launchConfigs: AzureLaunchConfig[];
