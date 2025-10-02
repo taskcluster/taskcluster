@@ -29,6 +29,10 @@ export class FakeAzure extends FakeCloud {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.networkClient;
     });
+    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.deploymentsClient;
+    });
     this.sinon.stub(azureApi, 'ClientSecretCredential').returns({
       getToken() {
         return { token: 'fake-credentials', expiresOnTimestamp: Date.now() + 3600 * 1000 };
@@ -46,6 +50,7 @@ export class FakeAzure extends FakeCloud {
       disk: new ResourceManager(this, 'disk'),
       nic: new ResourceManager(this, 'nic', 'azure-nic.yml'),
       ip: new ResourceManager(this, 'ip', 'azure-ip.yml'),
+      deployment: new DeploymentManager(this, 'deployment'),
     };
 
     this.computeClient = {
@@ -56,6 +61,7 @@ export class FakeAzure extends FakeCloud {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
     };
+    this.deploymentsClient = this._managers['deployment'];
 
     this.restClient = new FakeRestClient(this);
   }
@@ -269,6 +275,77 @@ export class VMResourceManager extends ResourceManager {
       this._instanceViews.set(key, instanceView);
     } else {
       this._instanceViews.delete(key);
+    }
+  }
+}
+
+export class DeploymentManager extends ResourceManager {
+  constructor(fake, resourceType) {
+    super(fake, resourceType);
+    this._deployments = new Map();
+  }
+
+  // SDK Methods
+
+  async get(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    if (this._deployments.has(key)) {
+      return this._deployments.get(key);
+    }
+    throw makeError(`${this.resourceType} ${key} not found`, 404);
+  }
+
+  async beginCreateOrUpdate(resourceGroupName, name, parameters) {
+    const key = `${resourceGroupName}/${name}`;
+
+    // Create deployment object
+    const deployment = {
+      id: `id/${name}`,
+      name,
+      properties: {
+        provisioningState: 'Succeeded',
+        outputs: {
+          vmName: {
+            type: 'String',
+            value: parameters.parameters?.vmName?.value || 'fake-vm-name',
+          },
+        },
+      },
+    };
+
+    this._deployments.set(key, deployment);
+
+    const req = new ResourceRequest('create', this.resourceType, resourceGroupName, name, parameters);
+    req.status = 'Complete';
+    this._requests.set(key, req);
+
+    return req;
+  }
+
+  // Fake Manipulation
+
+  /**
+   * Set deployment provisioning state for testing
+   */
+  setFakeDeploymentState(resourceGroupName, name, state, error = null) {
+    const key = `${resourceGroupName}/${name}`;
+    const deployment = this._deployments.get(key);
+    if (deployment) {
+      deployment.properties.provisioningState = state;
+      if (error) {
+        deployment.properties.error = { message: error };
+      }
+    }
+  }
+
+  /**
+   * Set deployment outputs for testing
+   */
+  setFakeDeploymentOutputs(resourceGroupName, name, outputs) {
+    const key = `${resourceGroupName}/${name}`;
+    const deployment = this._deployments.get(key);
+    if (deployment) {
+      deployment.properties.outputs = outputs;
     }
   }
 }

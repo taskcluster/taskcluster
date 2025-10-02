@@ -320,16 +320,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // check that the VM config is correct since this suite does not
       // go all the way to creating the VM
-      const config = {
-        ...worker.providerData.vm.config,
-        osProfile: {
-          ...worker.providerData.vm.config.osProfile,
-          adminUsername: 'user',
-          adminPassword: 'pass',
-        },
-        tags: worker.providerData.tags,
-      };
-      fake.validate(config, 'azure-vm.yml');
+      // (only for sequential provisioning workers, not ARM templates)
+      if (worker.providerData.vm.config) {
+        const config = {
+          ...worker.providerData.vm.config,
+          osProfile: {
+            ...worker.providerData.vm.config.osProfile,
+            adminUsername: 'user',
+            adminPassword: 'pass',
+          },
+          tags: worker.providerData.tags,
+        };
+        fake.validate(config, 'azure-vm.yml');
+      }
 
       return worker;
     };
@@ -502,18 +505,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(vmConfig.networkProfile.networkInterfaces); // still set..
     });
 
-    test('provision with ARM template config throws not implemented error', async function() {
-      await assert.rejects(
-        () => provisionWorkerPool({
-          armDeployment: {
-            mode: 'Incremental',
-            templateSpec: {
-              id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
-            },
+    test('provision with ARM template config creates deployment worker', async function() {
+      const workerPool = await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateSpec: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
           },
-        }),
-        /ARM template deployments are not yet implemented/,
-      );
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      // Verify worker has ARM deployment method
+      assert.equal(worker.providerData.deploymentMethod, 'arm-template');
+      assert.ok(worker.providerData.deployment);
+      assert.ok(worker.providerData.deployment.name);
+      assert.ok(worker.providerData.armDeployment);
+      assert.equal(worker.providerData.armDeployment.mode, 'Incremental');
     });
   });
 
