@@ -224,6 +224,7 @@ builder.declare({
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
+  noPublish: true, // Webhook endpoint is server-side only, not called by clients
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release, check run or pull request.',
