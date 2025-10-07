@@ -257,7 +257,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const azureRootCAs = new Map([
         ['df3c24f9bfd666761b268073fe06d1cc8d4f82a4', 'DigiCert Global Root G2'],
         ['a8985d3a65e5e5c4b2d7d66d40c6dd2fb19c5436', 'DigiCert Global Root CA'],
-        ['d4de20d05e66fc53fe1a50882c78db2852cae474', 'Baltimore CyberTrust Root'],
         ['58e8abb0361533fb80f79b1b6d29d3ff8d5f00f0', 'D-TRUST Root Class 3 CA 2 2009'],
         ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
         ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
