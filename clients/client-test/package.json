@@ -15,7 +15,7 @@
     "taskcluster-lib-urls": "^13.0.0"
   },
   "engines": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
   "type": "module"
 }
