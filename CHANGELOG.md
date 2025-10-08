@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v90.0.5
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.20.0, go1.25.2 [SECURITY], yarn 4.10.3, and golangci-lint 4.5.0.
+
+### USERS
+
+▶ [patch] [#8004](https://github.com/taskcluster/taskcluster/issues/8004)
+D2G: always pulls named docker images to fetch latest tag.
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump taskcluster from 88.0.5 to 90.0.4 in /taskcluster (ef55684a67)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (e77e96731f)
+* build(deps): bump the client-rust-deps group (ef66adc8d6)
+* build(deps): bump pyyaml in /taskcluster in the python-deps group (e107bc2cd5)
+* build(deps): bump the go-deps group with 9 updates (a42d2e1b63)
+* build(deps-dev): bump the client-web-node-deps group (a800bf4397)
+* build(deps): bump the client-node-deps group (d828bb8ffd)
+* build(deps): bump actions/checkout from 4 to 5 (0a6c085f71)
+* build(deps): bump actions/setup-go from 5 to 6 (5b7aa019ff)
+
+</details>
+
 ## v90.0.4
 
 ### USERS
