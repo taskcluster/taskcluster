@@ -84,7 +84,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	image := dtf.imageCache[key]
 
-	if image == nil {
+	// Always want to re-pull the docker image
+	// if it's not an image artifact, as the
+	// tag could be outdated
+	// (see https://github.com/taskcluster/taskcluster/issues/8004)
+	if image == nil || !isImageArtifact {
 		dtf.task.Info("[d2g] Loading docker image")
 
 		var cmd *process.Command
