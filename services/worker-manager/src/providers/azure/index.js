@@ -10,9 +10,23 @@ import azureApi from './azure-api.js';
 import { ApiError, Provider } from '../provider.js';
 import { CloudAPI } from '../cloudapi.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
-import { nicerId, dnToString, workerConfigWithSecrets, getCertFingerprint, getAuthorityAccessInfo, cloneCaStore } from './utils.js';
+import { nicerId, dnToString, workerConfigWithSecrets, getCertFingerprint, getAuthorityAccessInfo, cloneCaStore, generateAdmin, ArmDeploymentProvisioningState } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */
+/** @typedef {import('../../data.js').WorkerPoolLaunchConfig} WorkerPoolLaunchConfig */
+/** @typedef {import('../provider.js').ProviderConfigOptions} ProviderConfigOptions */
+
+/** @typedef {{
+ *    lc: WorkerPoolLaunchConfig,
+ *    workerPool: WorkerPool,
+ *    terminateAfter: number,
+ *    reregistrationTimeout: number,
+ *    queueInactivityTimeout: number,
+ *    nameSuffix: string,
+ *    virtualMachineName: string,
+ *    computerName: string,
+ *  }} ProvisionOptions
+ */
 
 // Azure provisioning and VM power states
 // see here: https://docs.microsoft.com/en-us/azure/virtual-machines/states-billing
@@ -33,8 +47,13 @@ const InstanceStates = {
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/networkinterfaces/createorupdate#provisioningstate
 const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
 
+const DEPLOYMENT_METHOD_ARM = 'arm-template';
+
 export class AzureProvider extends Provider {
 
+  /**
+   * @param {{ providerConfig: { resourceGroupName: string } } & ProviderConfigOptions} opts
+   */
   constructor({
     providerConfig,
     ...conf
@@ -45,6 +64,7 @@ export class AzureProvider extends Provider {
     this.downloadTimeout = 5000; // 5 seconds
 
     this.seen = {};
+    /** @type {Record<string, any>} */
     this.errors = {};
     this.cloudApi = null;
   }
@@ -148,7 +168,45 @@ export class AzureProvider extends Provider {
     let credentials = new azureApi.ClientSecretCredential(domain, clientId, secret);
     this.computeClient = new azureApi.ComputeManagementClient(credentials, subscriptionId);
     this.networkClient = new azureApi.NetworkManagementClient(credentials, subscriptionId);
+    this.deploymentsClient = new azureApi.DeploymentsClient(credentials, subscriptionId);
     this.restClient = new azureApi.AzureServiceClient(credentials);
+  }
+
+  /**
+   * base64 encoded json with some custom data
+   * @param {{ workerPoolId: string, workerGroup: string }} opts
+   */
+  #buildCustomData({ workerPoolId, workerGroup }) {
+    return Buffer.from(JSON.stringify({
+      workerPoolId,
+      workerGroup,
+      providerId: this.providerId,
+      rootUrl: this.rootUrl,
+      workerConfig: {}, // deprecated
+    })).toString('base64');
+  }
+
+  /**
+   * Deployment tags attached to each resource deployed
+   * @param {{
+   *  workerPoolId: string,
+   *  workerGroup: string,
+   *  workerPool: WorkerPool,
+   *  lc: WorkerPoolLaunchConfig,
+   *  }} opts
+   */
+  #deploymentTags({ workerPoolId, workerGroup, workerPool, lc }) {
+    return {
+      ...(lc.configuration.tags || {}),
+      'created-by': `taskcluster-wm-${this.providerId}`,
+      'managed-by': 'taskcluster',
+      'provider-id': this.providerId,
+      'worker-group': workerGroup,
+      'worker-pool-id': workerPoolId,
+      'root-url': this.rootUrl,
+      'owner': workerPool.owner,
+      'launch-config-id': lc.launchConfigId,
+    };
   }
 
   /**
@@ -171,151 +229,361 @@ export class AzureProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn });
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
-    // Create "empty" workers to provision in provisionResources loop
     await Promise.all(cfgs.map(async lc => {
-      const cfg = lc.configuration;
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // 38 chars is workerId limit, and we have a 3-character prefix (`vm-`), so this is 35 characters.
       const nameSuffix = `${nicerId()}${nicerId()}`.slice(0, 35);
       const virtualMachineName = `vm-${nameSuffix}`;
       // Windows computer name cannot be more than 15 characters long, be entirely numeric,
       // or contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \\ | ; : . " , < > / ?
+      // computerName is part of osProfile
       const computerName = nicerId().slice(0, 15);
-      const ipAddressName = `pip-${nicerId()}`.slice(0, 24);
-      const networkInterfaceName = `nic-${nicerId()}`.slice(0, 24);
 
-      // workerGroup is the azure location; this is a required field in the config
-      const workerGroup = cfg.location;
-      assert(workerGroup, 'cfg.location is not set');
-
-      // Note: worker-runner 1.0.3 and higher ignore customData due to
-      // https://github.com/MicrosoftDocs/azure-docs/issues/30370
-      const customData = Buffer.from(JSON.stringify({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        rootUrl: this.rootUrl,
-        // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
-        workerConfig: cfg.workerConfig || {},
-      })).toString('base64');
-
-      // make a list of the disk resources, for later deletion
-      const disks = [];
-
-      // osDisk is required.  Azure would name it for us, but we give it a name up-front
-      // so that we can delete it on de-provisioning
-      let osDisk = {
-        ...cfg.storageProfile.osDisk,
-        name: `disk-${nameSuffix}-os`,
+      /** @type {ProvisionOptions} */
+      const provisionArgs = {
+        lc, workerPool, terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+        nameSuffix, virtualMachineName, computerName,
       };
-      disks.push({ name: osDisk.name, id: true });
 
-      // dataDisks is optional.  Azure will not generate names for data disks,
-      // so we must invent names for them here.  We disallow users from naming
-      // disk, since that would try to share the same disk among multiple vms,
-      // but give each disk a unique name so that we can find it later to
-      // delete it.
-      let dataDisks = [];
-      if (_.has(cfg, 'storageProfile.dataDisks')) {
-        let i = 1;
-        for (let disk of cfg.storageProfile.dataDisks) {
-          const name = `disk-${nameSuffix}-${i++}`;
-          disks.push({ name, id: true });
-          dataDisks.push({ ...disk, name });
-        }
+      const isArmDeployment = !!lc.configuration.armDeployment;
+      if (isArmDeployment) {
+        await this.#provisionARMTemplateWorker(provisionArgs);
+      } else {
+        await this.#provisionSequentialWorker(provisionArgs);
+      }
+    }));
+  }
+
+  /** @param {ProvisionOptions} opts */
+  async #provisionSequentialWorker({
+    lc, workerPool, terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    nameSuffix, virtualMachineName, computerName,
+  }) {
+    const { workerPoolId } = workerPool;
+    const cfg = lc.configuration;
+
+    const ipAddressName = `pip-${nicerId()}`.slice(0, 24);
+    const networkInterfaceName = `nic-${nicerId()}`.slice(0, 24);
+
+    // workerGroup is the azure location; this is a required field in the config
+    const workerGroup = cfg.location;
+    assert(workerGroup, 'cfg.location is not set');
+
+    const customData = this.#buildCustomData({ workerPoolId, workerGroup });
+
+    // make a list of the disk resources, for later deletion
+    const disks = [];
+
+    // osDisk is required.  Azure would name it for us, but we give it a name up-front
+    // so that we can delete it on de-provisioning
+    let osDisk = {
+      ...cfg.storageProfile.osDisk,
+      name: `disk-${nameSuffix}-os`,
+    };
+    disks.push({ name: osDisk.name, id: true });
+
+    // dataDisks is optional.  Azure will not generate names for data disks,
+    // so we must invent names for them here.  We disallow users from naming
+    // disk, since that would try to share the same disk among multiple vms,
+    // but give each disk a unique name so that we can find it later to
+    // delete it.
+    let dataDisks = [];
+    if (_.has(cfg, 'storageProfile.dataDisks')) {
+      let i = 1;
+      for (let disk of cfg.storageProfile.dataDisks) {
+        const name = `disk-${nameSuffix}-${i++}`;
+        disks.push({ name, id: true });
+        dataDisks.push({ ...disk, name });
+      }
+    }
+
+    const config = {
+      ..._.omit(cfg, ['capacityPerInstance', 'workerConfig', 'workerManager']),
+      osProfile: {
+        ...cfg.osProfile,
+        // adminUsername and adminPassword will be added later
+        // because we are saving this config to providerData
+        // and they are obfuscated / intended to be secret
+        computerName,
+        customData,
+      },
+      networkProfile: {
+        ...cfg.networkProfile,
+        // we add this when we have the NIC provisioned
+        networkInterfaces: [],
+      },
+      storageProfile: {
+        ...cfg.storageProfile,
+        osDisk,
+        dataDisks,
+      },
+    };
+
+    // #7257 Public IP will only be provisioned if requested (see #4987)
+    const needPublicIp = cfg?.workerManager?.publicIp ?? false;
+    const skipPublicIp = !needPublicIp;
+
+    let providerData = {
+      location: cfg.location,
+      resourceGroupName: this.providerConfig.resourceGroupName,
+      workerConfig: cfg.workerConfig,
+      skipPublicIp,
+      tags: this.#deploymentTags({ workerPoolId, workerGroup, workerPool, lc }),
+      vm: {
+        name: virtualMachineName,
+        computerName,
+        config,
+        operation: false,
+        id: false,
+        vmId: false,
+      },
+      ip: {
+        name: ipAddressName,
+        operation: false,
+        id: false,
+      },
+      nic: {
+        name: networkInterfaceName,
+        operation: false,
+        id: false,
+      },
+      disks,
+      subnet: {
+        id: cfg.subnetId,
+      },
+      ignoreFailedProvisioningStates: cfg?.workerManager?.ignoreFailedProvisioningStates
+        ?? cfg.ignoreFailedProvisioningStates,
+    };
+
+    const worker = Worker.fromApi({
+      workerPoolId,
+      providerId: this.providerId,
+      workerGroup,
+      workerId: virtualMachineName,
+      capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
+      providerData: {
+        ...providerData,
+        terminateAfter,
+        reregistrationTimeout,
+        queueInactivityTimeout,
+      },
+      launchConfigId: lc.launchConfigId,
+    });
+    await worker.create(this.db);
+    await this.onWorkerRequested({ worker, terminateAfter });
+
+    // Start requesting resources immediately
+    await this.checkWorker({ worker });
+  }
+
+  /** @param {ProvisionOptions} opts */
+  async #provisionARMTemplateWorker({
+    lc, workerPool, terminateAfter, reregistrationTimeout, queueInactivityTimeout,
+    nameSuffix, virtualMachineName, computerName,
+  }) {
+    const { workerPoolId } = workerPool;
+    const cfg = lc.configuration;
+
+    const armDeployment = cfg.armDeployment;
+    assert(armDeployment, 'armDeployment is not set');
+
+    const deploymentName = `deploy-${nameSuffix}`;
+
+    // For ARM templates, location must come from parameters
+    const workerGroup = armDeployment.parameters?.location?.value;
+    assert(workerGroup, 'armDeployment.parameters.location is not set');
+
+    const { adminUsername, adminPassword } = generateAdmin();
+    const customData = this.#buildCustomData({ workerPoolId, workerGroup });
+
+    // Pass armDeployment as-is to Azure API, only override parameters with generated values
+    const deploymentProperties = {
+      ...armDeployment,
+      parameters: {
+        ...armDeployment.parameters,
+        // Override with generated/required parameters
+        adminUsername: { value: adminUsername },
+        adminPassword: { value: adminPassword },
+        computerName: { value: computerName },
+        customData: { value: customData },
+        vmName: { value: virtualMachineName },
+      },
+    };
+
+    const resourceGroupName = cfg.resourceGroupOverride || this.providerConfig.resourceGroupName;
+    // TODO: Ensure group exists
+
+    const providerData = {
+      deploymentMethod: DEPLOYMENT_METHOD_ARM,
+      location: workerGroup,
+      resourceGroupName,
+      workerConfig: cfg.workerConfig,
+      armDeployment,
+      tags: this.#deploymentTags({ workerPoolId, workerGroup, workerPool, lc }),
+      deployment: {
+        name: deploymentName,
+        operation: false,
+        id: false,
+      },
+      vm: {
+        computerName,
+        name: virtualMachineName,
+        id: false,
+        vmId: false,
+        customData,
+      },
+      terminateAfter,
+      reregistrationTimeout,
+      queueInactivityTimeout,
+    };
+
+    const worker = Worker.fromApi({
+      workerPoolId,
+      providerId: this.providerId,
+      workerGroup,
+      workerId: virtualMachineName,
+      capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
+      providerData,
+      launchConfigId: lc.launchConfigId,
+    });
+    await worker.create(this.db);
+    await this.onWorkerRequested({ worker, terminateAfter });
+
+    // triggering arm deployment right away
+
+    this.monitor.debug({
+      message: 'creating ARM deployment', deploymentName, resourceGroup: providerData.resourceGroupName,
+    });
+
+    try {
+      const deploymentRequest = await this._enqueue('query', () =>
+        this.deploymentsClient.deployments.beginCreateOrUpdate(
+          resourceGroupName,
+          deploymentName,
+          { properties: deploymentProperties, tags: providerData.tags },
+        ));
+
+      // Track deployment operation
+      await worker.update(this.db, worker => {
+        worker.providerData.deployment.operation = deploymentRequest.getOperationState()?.config?.operationLocation;
+      });
+    } catch (err) {
+      const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+
+      await this.reportError({
+        workerPool,
+        kind: 'creation-error',
+        title: 'Failed to create ARM deployment',
+        description: err.message,
+        extra: {
+          workerId: worker.id,
+          workerGroup: worker.workerGroup,
+          armDeployment, // safe to log adminpassword of the failed deployment?
+          params: deploymentProperties.properties,
+        },
+        launchConfigId: worker.launchConfigId,
+      });
+      await this.removeWorker({ worker, reason: `ARM Deployment failure: ${err.message}` });
+    }
+  }
+
+  async #checkARMDeployment({ worker, monitor }) {
+    if (worker.providerData.deployment.id) {
+      // deployment already has id, so it's complete
+      return true;
+    }
+
+    try {
+      monitor.debug('querying deployment by name');
+      const deployment = await this._enqueue('query', () =>
+        this.deploymentsClient.deployments.get(
+          worker.providerData.resourceGroupName,
+          worker.providerData.deployment.name,
+        ));
+
+      const provisioningState = deployment.properties?.provisioningState;
+      monitor.debug({ message: 'deployment provisioning state', provisioningState });
+
+      const ongoingProvisioningStates = [
+        ArmDeploymentProvisioningState.Accepted,
+        ArmDeploymentProvisioningState.Creating,
+        ArmDeploymentProvisioningState.Created,
+        ArmDeploymentProvisioningState.Updating,
+        ArmDeploymentProvisioningState.Ready,
+        ArmDeploymentProvisioningState.Running,
+      ];
+      if (ongoingProvisioningStates.includes(provisioningState)) {
+        // still happening, will be checked after
+        return false;
       }
 
-      const config = {
-        ..._.omit(cfg, ['capacityPerInstance', 'workerConfig', 'workerManager']),
-        osProfile: {
-          ...cfg.osProfile,
-          // adminUsername and adminPassword will be added later
-          // because we are saving this config to providerData
-          // and they are obfuscated / intended to be secret
-          computerName,
-          customData,
-        },
-        networkProfile: {
-          ...cfg.networkProfile,
-          // we add this when we have the NIC provisioned
-          networkInterfaces: [],
-        },
-        storageProfile: {
-          ...cfg.storageProfile,
-          osDisk,
-          dataDisks,
-        },
-      };
+      const failedProvisioiningStates = [
+        ArmDeploymentProvisioningState.Failed,
+        ArmDeploymentProvisioningState.Canceled,
+        ArmDeploymentProvisioningState.Deleted,
+        ArmDeploymentProvisioningState.Deleting,
+      ];
+      if (failedProvisioiningStates.includes(provisioningState)) {
+        const errorMessage = deployment.properties?.error?.message || 'Deployment failed';
+        await worker.update(this.db, worker => {
+          worker.providerData.deployment.operation = undefined;
+        });
+        await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
+        return false;
+      }
 
-      // #7257 Public IP will only be provisioned if requested (see #4987)
-      const needPublicIp = cfg?.workerManager?.publicIp ?? false;
-      const skipPublicIp = !needPublicIp;
+      if (provisioningState === ArmDeploymentProvisioningState.Succeeded) {
+        const outputs = deployment.properties?.outputs || {};
+        const vmName = outputs.vmName?.value || worker.providerData.vm.name;
 
-      let providerData = {
-        location: cfg.location,
-        resourceGroupName: this.providerConfig.resourceGroupName,
-        workerConfig: cfg.workerConfig,
-        skipPublicIp,
-        tags: {
-          ...(cfg.tags || {}),
-          'created-by': `taskcluster-wm-${this.providerId}`,
-          'managed-by': 'taskcluster',
-          'provider-id': this.providerId,
-          'worker-group': workerGroup,
-          'worker-pool-id': workerPoolId,
-          'root-url': this.rootUrl,
-          'owner': workerPool.owner,
-          'launch-config-id': lc.launchConfigId,
-        },
-        vm: {
-          name: virtualMachineName,
-          computerName,
-          config,
-          operation: false,
-          id: false,
-          vmId: false,
-        },
-        ip: {
-          name: ipAddressName,
-          operation: false,
-          id: false,
-        },
-        nic: {
-          name: networkInterfaceName,
-          operation: false,
-          id: false,
-        },
-        disks,
-        subnet: {
-          id: cfg.subnetId,
-        },
-        ignoreFailedProvisioningStates: cfg?.workerManager?.ignoreFailedProvisioningStates
-          ?? cfg.ignoreFailedProvisioningStates,
-      };
+        await worker.update(this.db, worker => {
+          worker.providerData.deployment.id = deployment.id;
+          worker.providerData.deployment.operation = undefined;
+          worker.providerData.deployment.outputs = outputs;
+          worker.providerData.vm.name = vmName;
+          worker.providerData.provisioningComplete = true;
+        });
+        return true;
+      }
 
-      const worker = Worker.fromApi({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        workerId: virtualMachineName,
-        capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
-        providerData: {
-          ...providerData,
-          terminateAfter,
-          reregistrationTimeout,
-          queueInactivityTimeout,
-        },
-        launchConfigId: lc.launchConfigId,
-      });
-      await worker.create(this.db);
-      await this.onWorkerRequested({ worker, terminateAfter });
-
-      // Start requesting resources immediately
-      // it will only provision at most one resource, as they are done async
-      await this.checkWorker({ worker });
-    }));
+      // Still in progress
+      if (worker.providerData.deployment.operation) {
+        let op = await this.handleOperation({
+          op: worker.providerData.deployment.operation,
+          errors: this.errors[worker.workerPoolId],
+          monitor,
+          worker,
+        });
+        if (!op) {
+          await worker.update(this.db, worker => {
+            worker.providerData.deployment.operation = undefined;
+          });
+          await this.removeWorker({ worker, reason: 'deployment operation expired' });
+        }
+      }
+    } catch (err) {
+      if (err.statusCode !== 404) {
+        throw err;
+      }
+      // Deployment not found yet, check if we have operation to track
+      if (worker.providerData.deployment.operation) {
+        let op = await this.handleOperation({
+          op: worker.providerData.deployment.operation,
+          errors: this.errors[worker.workerPoolId],
+          monitor,
+          worker,
+        });
+        if (!op) {
+          await worker.update(this.db, worker => {
+            worker.providerData.deployment.operation = undefined;
+          });
+          await this.removeWorker({ worker, reason: 'deployment operation expired' });
+        }
+      }
+    }
+    return false;
   }
 
   async deprovision({ workerPool }) {
@@ -621,6 +889,8 @@ export class AzureProvider extends Provider {
    *
    * op: a URL for tracking the ongoing status of an Azure operation
    * errors: a list that will have any errors found for that operation appended to it
+   *
+   * @param {{ monitor: any, errors: Record<string, any>, worker: Worker, op: string }} opts
    */
   async handleOperation({ op, errors, monitor, worker }) {
     monitor.debug({ message: 'handling operation', op });
@@ -949,17 +1219,43 @@ export class AzureProvider extends Provider {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    // the vm still exists; if the worker is STOPPING, deprovision it.
+    // Handle STOPPING state first (common for both deployment methods)
     if (worker.state === states.STOPPING) {
       await this.deprovisionResources({ worker, monitor });
-    } else {
-      const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
+      await worker.update(this.db, worker => {
+        worker.lastChecked = new Date();
+      });
+      return;
+    }
 
-      switch (instanceState) {
-        case InstanceStates.OK: {
-          // count this worker as having been seen for later logging
-          this.seen[worker.workerPoolId] += worker.capacity || 1;
+    const isARMTemplate = worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM;
+    const isRequestedNotProvisioned = worker.state === states.REQUESTED && !worker.providerData.provisioningComplete;
 
+    // Handle ARM deployment creation and checking (before querying instance)
+    if (isARMTemplate && isRequestedNotProvisioned) {
+      const deploymentComplete = await this.#checkARMDeployment({ worker, monitor });
+      if (!deploymentComplete) {
+        // Deployment still in progress or failed, checkARMDeployment handles failures
+        await worker.update(this.db, worker => {
+          worker.lastChecked = new Date();
+        });
+        return;
+      }
+    }
+
+    // Query instance state
+    const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
+
+    // Handle instance states
+    switch (instanceState) {
+      case InstanceStates.OK: {
+        // count this worker as having been seen for later logging
+        this.seen[worker.workerPoolId] += worker.capacity || 1;
+
+        // Skip lifecycle checks for ARM workers that just completed provisioning
+        const skipLifecycleChecks = isARMTemplate && isRequestedNotProvisioned;
+
+        if (!skipLifecycleChecks) {
           // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
           if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
             // it is possible that scanner loop was taking longer and worker was already updated since last fetch
@@ -968,53 +1264,61 @@ export class AzureProvider extends Provider {
             if (worker.providerData.terminateAfter < Date.now()) {
               const reason = 'terminateAfter time exceeded';
               await this.removeWorker({ worker, reason });
-              break;
+              await worker.update(this.db, worker => {
+                worker.lastChecked = new Date();
+              });
+              return;
             }
           }
 
           const { isZombie, reason } = Provider.isZombie({ worker });
           if (isZombie) {
             await this.removeWorker({ worker, reason });
-            break;
+            await worker.update(this.db, worker => {
+              worker.lastChecked = new Date();
+            });
+            return;
           }
 
-          // Call provisionResources to allow it to finish up gathering data about the
-          // vm.  This becomes a no-op once all required operations are complete.
-          await this.provisionResources({ worker, monitor });
-
-          break;
-        }
-
-        case InstanceStates.FAILED: {
-          // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
-          await this.removeWorker({ worker, reason: instanceStateReason });
-          break;
-        }
-
-        case InstanceStates.MISSING: {
-          // VM has not been found, so it is either...
-          if (worker.state === states.REQUESTED && !worker.providerData.provisioningComplete) {
-            // ...still being created, in which case we should continue to provision...
+          // Sequential provisioning: continue provisioning to gather VM data
+          if (!isARMTemplate) {
+            // Call provisionResources to allow it to finish up gathering data about the
+            // vm. This becomes a no-op once all required operations are complete.
             await this.provisionResources({ worker, monitor });
-          } else {
-            // ...or RUNNING and has been deleted outside our control, in which
-            // case we should recognize it as removed and start the
-            // deprovisioning process on the next iteration.  STOPPED workers are
-            // not checked, and STOPPING workers are handled above.
-            await this.removeWorker({ worker, reason: instanceStateReason });
           }
-          break;
         }
+        break;
+      }
 
-        default: {
-          throw new Error(`invalid instanceState ${instanceState}: ${instanceStateReason}`);
+      case InstanceStates.FAILED: {
+        // On failure, call `removeWorker`, which logs and marks the worker as STOPPING
+        await this.removeWorker({ worker, reason: instanceStateReason });
+        break;
+      }
+
+      case InstanceStates.MISSING: {
+        // VM has not been found, so it is either...
+        if (!isARMTemplate && isRequestedNotProvisioned) {
+          // ...still being created (sequential provisioning), in which case we should continue to provision...
+          await this.provisionResources({ worker, monitor });
+        } else {
+          // ...or RUNNING and has been deleted outside our control, in which
+          // case we should recognize it as removed and start the
+          // deprovisioning process on the next iteration. STOPPED workers are
+          // not checked, and STOPPING workers are handled above.
+          await this.removeWorker({ worker, reason: instanceStateReason });
         }
+        break;
+      }
+
+      default: {
+        throw new Error(`invalid instanceState ${instanceState}: ${instanceStateReason}`);
       }
     }
 
+    // Update lastChecked timestamp (common for both deployment methods)
     await worker.update(this.db, worker => {
-      const now = new Date();
-      worker.lastChecked = now;
+      worker.lastChecked = new Date();
     });
   }
 
@@ -1229,7 +1533,40 @@ export class AzureProvider extends Provider {
         w.lastModified = now;
         w.state = Worker.states.STOPPING;
       }
+      // additionally store removal reason
+      w.providerData.reasonRemoved = reason;
     });
+  }
+
+  async #deprovisionARMTemplateWorker({ worker, monitor }) {
+    // For ARM template workers, we only need to delete the VM
+    // The ARM template should have configured deleteOption: 'Delete' on all resources
+    // (NIC, IP, disks) so they will be automatically cleaned up when VM is deleted
+
+    monitor.debug('deprovisioning ARM template worker VM');
+
+    // Reuse deprovisionResource for VM deletion
+    let vmDeleted = await this.deprovisionResource({
+      worker,
+      client: this.computeClient.virtualMachines,
+      resourceType: 'vm',
+      monitor,
+    });
+
+    // If VM deletion is not complete yet, return and wait for next check
+    if (!vmDeleted || worker.providerData.vm.id) {
+      return;
+    }
+
+    // VM is fully deleted, update worker state to STOPPED
+    monitor.debug('VM deleted for ARM template worker, setting state to STOPPED');
+    await worker.update(this.db, worker => {
+      const now = new Date();
+      worker.lastModified = now;
+      worker.lastChecked = now;
+      worker.state = Worker.states.STOPPED;
+    });
+    await this.onWorkerStopped({ worker });
   }
 
   /*
@@ -1238,6 +1575,28 @@ export class AzureProvider extends Provider {
    * it is called repeatedly in the worker-scanner until it is complete.
    */
   async deprovisionResources({ worker, monitor }) {
+    // Handle ARM template deployments separately
+    if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM) {
+      try {
+        await this.#deprovisionARMTemplateWorker({ worker, monitor });
+      } catch (err) {
+        this.errors = this.errors || {};
+        this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
+        monitor.debug({ message: 'error removing ARM template worker', error: err.message });
+        this.errors[worker.workerPoolId].push({
+          kind: 'deletion-error',
+          title: 'ARM Template Deletion Error',
+          description: err.message,
+          extra: {
+            code: err.code,
+          },
+          notify: this.notify,
+          WorkerPoolError: this.WorkerPoolError,
+        });
+      }
+      return;
+    }
+
     // After we make the delete request we set id to false
     // some delete operations (i.e. VMs) take a long time though
     // we use the result of deprovisionResource to _ensure_ deletion has completed

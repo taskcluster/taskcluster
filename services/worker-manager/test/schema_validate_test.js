@@ -33,6 +33,11 @@ suite(testing.suiteName(), () => {
         path: 'sample-azure-config.json',
         success: true,
       },
+      {
+        schema: 'v1/config-azure.json#',
+        path: 'sample-azure-arm-config.json',
+        success: true,
+      },
     ],
   });
 });
