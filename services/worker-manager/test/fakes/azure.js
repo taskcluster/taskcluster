@@ -287,7 +287,7 @@ export class DeploymentManager extends ResourceManager {
     this.deployments = {
       get: async (rg, name) => this.get(rg, name),
       beginCreateOrUpdate: async (rg, name, params) => this.beginCreateOrUpdate(rg, name, params),
-    }
+    };
   }
 
   async get(resourceGroupName, name) {

@@ -42,12 +42,10 @@ export interface AWSConfigSchema extends BaseProviderConfig {
 
 interface AzureARMDeployment {
   mode: 'Incremental' | 'Complete';
-  templateSpec?: {
-    id: string;
-  };
   template?: Record<string, any>;
   templateLink?: {
-    uri: string;
+    id?: string; // For template specs
+    uri?: string; // For external templates
     contentVersion?: string;
     queryString?: string;
   };
@@ -118,6 +116,9 @@ interface AzureResourceBasedLaunchConfig extends BaseLaunchConfig {
     }>;
     [key: string]: any;
   };
+  tags: {
+    [key: string]: string;
+  };
   [key: string]: any; // additional properties allowed
 }
 
@@ -128,7 +129,9 @@ interface AzureARMTemplateLaunchConfig extends BaseLaunchConfig {
   };
   armDeployment: AzureARMDeployment;
   resourceGroupOverride?: string;
-  [key: string]: any; // additional properties allowed
+  tags: {
+    [key: string]: string;
+  };
 }
 
 export type AzureLaunchConfig = AzureResourceBasedLaunchConfig | AzureARMTemplateLaunchConfig;

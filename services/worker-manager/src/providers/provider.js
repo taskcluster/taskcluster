@@ -9,6 +9,21 @@ import { Worker, WorkerPoolError } from '../data.js';
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
+/** @typedef {{
+*   monitor: object,
+*   notify: object,
+*   rootUrl: string,
+*   providerId: string,
+*   providerType: string,
+*   db: import('@taskcluster/lib-postgres').Database,
+*   estimator: import('../estimator.js').Estimator,
+*   Worker: import('../data.js').Worker,
+*   WorkerPoolError: import('../data.js').WorkerPoolError,
+*   validator: Function,
+*   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
+*   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+* }} ProviderConfigOptions */
+
 /**
  * The parent class for all providers.
  *
@@ -18,20 +33,7 @@ export class Provider {
   setupFailed = false;
 
   /**
-   * @param {{
-   *   monitor: object,
-   *   notify: object,
-   *   rootUrl: string,
-   *   providerId: string,
-   *   providerType: string,
-   *   db: import('@taskcluster/lib-postgres').Database,
-   *   estimator: import('../estimator.js').Estimator,
-   *   Worker: import('../data.js').Worker,
-   *   WorkerPoolError: import('../data.js').WorkerPoolError,
-   *   validator: Function,
-   *   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
-   *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
-   * }} opts
+   * @param {ProviderConfigOptions} opts
    */
   constructor({
     providerId,

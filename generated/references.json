@@ -2279,6 +2279,11 @@
                     "title": "Capacity Per Instance (Deprecated)",
                     "type": "integer"
                   },
+                  "tags": {
+                    "additionalProperties": true,
+                    "description": "Arbitrary key-value pairs for Azure resource tags",
+                    "type": "object"
+                  },
                   "workerConfig": {
                     "additionalProperties": true,
                     "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
@@ -2326,7 +2331,7 @@
                         "type": "integer"
                       },
                       "publicIp": {
-                        "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n",
+                        "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n\nNote: this is only useful for the single resources deployment. For ARM template\ndeployments you can use template parameters to achieve same results.\n",
                         "title": "Public IP",
                         "type": "boolean"
                       }
@@ -2719,7 +2724,19 @@
       "properties": {
         "armDeployment": {
           "additionalProperties": false,
-          "description": "Azure Resource Manager deployment configuration.\nThese properties are passed directly to the Azure Deployments API.\n\nSECURITY RECOMMENDATION: Use templateSpec for production deployments.\nAvoid templateLink unless using trusted, controlled sources.\n",
+          "description": "Azure Resource Manager deployment configuration.\nThese properties are passed directly to the Azure Deployments API.\n\nSECURITY RECOMMENDATION: Use templateLink with id (template specs) for production deployments.\nAvoid templateLink with uri unless using trusted, controlled sources.\n\nYou must specify exactly ONE of: template (inline) or templateLink (external/template spec).\n",
+          "oneOf": [
+            {
+              "required": [
+                "template"
+              ]
+            },
+            {
+              "required": [
+                "templateLink"
+              ]
+            }
+          ],
           "properties": {
             "debugSetting": {
               "additionalProperties": false,
@@ -2838,7 +2855,15 @@
                 ],
                 "type": "object"
               },
-              "description": "Template parameter values. Each parameter should be an object with a 'value' property\nor a 'reference' property for KeyVault references.\n",
+              "description": "Template parameter values. Each parameter should be an object with a 'value' property\nor a 'reference' property for KeyVault references.\n\nWorker-manager would automatically generate and pass following parameters:\n- adminUsername (osProfile)\n- adminPassword (osProfile)\n- computerName (osProfile)\n- customData (osProfile)\n- vmName\n\nTemplates should support those parameters and use them inside `virtualMachine` resource config, for example:\n\n    \"osProfile\": {\n        \"customData\": \"[parameters('customData')]\",\n        \"computerName\": \"[parameters('computerName')]\",\n        \"adminPassword\": \"[parameters('adminPassword')]\",\n        \"adminUsername\": \"[parameters('adminUsername')]\",\n        \"windowsConfiguration\": {\n          \"timeZone\": \"UTC\",\n          \"enableAutomaticUpdates\": true\n        }\n      }\n\n`location` parameter is required to determine workerGroup\n",
+              "required": [
+                "location",
+                "customData",
+                "vmName",
+                "computerName",
+                "adminPassword",
+                "adminUsername"
+              ],
               "title": "Template Parameters",
               "type": "object"
             },
@@ -2860,41 +2885,50 @@
             },
             "template": {
               "additionalProperties": true,
-              "description": "The inline ARM template (self-contained).\nCannot be used with templateLink or templateSpec.\n",
+              "description": "The inline ARM template (self-contained).\nCannot be used with templateLink.\n",
               "title": "Inline Template",
               "type": "object"
             },
             "templateLink": {
-              "additionalProperties": false,
-              "description": "NOT RECOMMENDED: Only use for trusted sources with proper security controls.\nConsider using templateSpec or inline templates instead.\nCannot be used with template or templateSpec.\n",
-              "properties": {
-                "contentVersion": {
-                  "description": "Template content version",
-                  "type": "string"
+              "description": "Reference to an external template or template spec.\nCannot be used with template.\n\nFor TEMPLATE SPECS (RECOMMENDED for production):\n- Use the 'id' property with full template spec resource ID\n- Template specs are versioned, secure, and support RBAC\n\nFor EXTERNAL TEMPLATES (NOT RECOMMENDED - use only for trusted sources):\n- Use the 'uri' property with template URL\n- For security, prefer Azure Storage with SAS tokens and access controls\n",
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "description": "Full resource ID of the Template Spec version.\nFormat: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Resources/templateSpecs/{specName}/versions/{version}\n",
+                      "pattern": "^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\\.Resources/templateSpecs/[^/]+/versions/[^/]+$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "type": "object"
                 },
-                "queryString": {
-                  "description": "Query string for the URI (e.g., SAS token for blob storage)",
-                  "type": "string"
-                },
-                "uri": {
-                  "description": "Template URI. For security, prefer:\n- Azure Storage with SAS tokens and access controls\n- Private repositories with authentication\n- Internal artifact repositories\n",
-                  "type": "string"
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "contentVersion": {
+                      "description": "Template content version",
+                      "type": "string"
+                    },
+                    "queryString": {
+                      "description": "Query string for the URI (e.g., SAS token for blob storage)",
+                      "type": "string"
+                    },
+                    "uri": {
+                      "description": "Template URI. For security, prefer:\n- Azure Storage with SAS tokens and access controls\n- Private repositories with authentication\n- Internal artifact repositories\n",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uri"
+                  ],
+                  "type": "object"
                 }
-              },
-              "title": "External Template Link",
-              "type": "object"
-            },
-            "templateSpec": {
-              "additionalProperties": false,
-              "description": "RECOMMENDED: Reference to an Azure Template Spec (versioned, secure).\nCannot be used with template or templateLink.\n",
-              "properties": {
-                "id": {
-                  "description": "Full resource ID of the Template Spec version.\nFormat: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Resources/templateSpecs/{specName}/versions/{version}\n",
-                  "pattern": "^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\\.Resources/templateSpecs/[^/]+/versions/[^/]+$",
-                  "type": "string"
-                }
-              },
-              "title": "Template Spec Reference",
+              ],
+              "title": "Template Link (External Template or Template Spec)",
               "type": "object"
             }
           },
