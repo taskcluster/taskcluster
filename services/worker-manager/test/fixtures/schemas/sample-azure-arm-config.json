@@ -5,7 +5,7 @@
     {
       "armDeployment": {
         "mode": "Incremental",
-        "templateSpec": {
+        "templateLink": {
           "id": "/subscriptions/8a205152-b25a-417f-a676-80465535a6c9/resourceGroups/rg-tc-eng-templates/providers/Microsoft.Resources/templateSpecs/windows-spot-worker-f16s/versions/1.0.0"
         },
         "parameters": {

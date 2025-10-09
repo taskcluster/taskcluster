@@ -24,10 +24,15 @@ properties:
       Azure Resource Manager deployment configuration.
       These properties are passed directly to the Azure Deployments API.
 
-      SECURITY RECOMMENDATION: Use templateSpec for production deployments.
-      Avoid templateLink unless using trusted, controlled sources.
+      SECURITY RECOMMENDATION: Use templateLink with id (template specs) for production deployments.
+      Avoid templateLink with uri unless using trusted, controlled sources.
+
+      You must specify exactly ONE of: template (inline) or templateLink (external/template spec).
     required:
       - mode
+    oneOf:
+      - required: [template]
+      - required: [templateLink]
     properties:
       mode:
         type: string
@@ -36,55 +41,90 @@ properties:
           The deployment mode.
           - Incremental: Deploy resources without deleting existing resources not in the template
           - Complete: (USE WITH CAUTION) Deploy resources and delete existing resources not in the template
-      templateSpec:
-        title: Template Spec Reference
-        type: object
-        description: |
-          RECOMMENDED: Reference to an Azure Template Spec (versioned, secure).
-          Cannot be used with template or templateLink.
-        properties:
-          id:
-            type: string
-            pattern: '^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\.Resources/templateSpecs/[^/]+/versions/[^/]+$'
-            description: |
-              Full resource ID of the Template Spec version.
-              Format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Resources/templateSpecs/{specName}/versions/{version}
-        additionalProperties: false
       template:
         title: Inline Template
         type: object
         description: |
           The inline ARM template (self-contained).
-          Cannot be used with templateLink or templateSpec.
+          Cannot be used with templateLink.
         additionalProperties: true
       templateLink:
-        title: External Template Link
+        title: Template Link (External Template or Template Spec)
         type: object
         description: |
-          NOT RECOMMENDED: Only use for trusted sources with proper security controls.
-          Consider using templateSpec or inline templates instead.
-          Cannot be used with template or templateSpec.
-        properties:
-          uri:
-            type: string
-            description: |
-              Template URI. For security, prefer:
-              - Azure Storage with SAS tokens and access controls
-              - Private repositories with authentication
-              - Internal artifact repositories
-          contentVersion:
-            type: string
-            description: Template content version
-          queryString:
-            type: string
-            description: Query string for the URI (e.g., SAS token for blob storage)
-        additionalProperties: false
+          Reference to an external template or template spec.
+          Cannot be used with template.
+
+          For TEMPLATE SPECS (RECOMMENDED for production):
+          - Use the 'id' property with full template spec resource ID
+          - Template specs are versioned, secure, and support RBAC
+
+          For EXTERNAL TEMPLATES (NOT RECOMMENDED - use only for trusted sources):
+          - Use the 'uri' property with template URL
+          - For security, prefer Azure Storage with SAS tokens and access controls
+        oneOf:
+          - type: object
+            required: [id]
+            properties:
+              id:
+                type: string
+                pattern: '^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\.Resources/templateSpecs/[^/]+/versions/[^/]+$'
+                description: |
+                  Full resource ID of the Template Spec version.
+                  Format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Resources/templateSpecs/{specName}/versions/{version}
+            additionalProperties: false
+          - type: object
+            required: [uri]
+            properties:
+              uri:
+                type: string
+                description: |
+                  Template URI. For security, prefer:
+                  - Azure Storage with SAS tokens and access controls
+                  - Private repositories with authentication
+                  - Internal artifact repositories
+              contentVersion:
+                type: string
+                description: Template content version
+              queryString:
+                type: string
+                description: Query string for the URI (e.g., SAS token for blob storage)
+            additionalProperties: false
       parameters:
         title: Template Parameters
         type: object
         description: |
           Template parameter values. Each parameter should be an object with a 'value' property
           or a 'reference' property for KeyVault references.
+
+          Worker-manager would automatically generate and pass following parameters:
+          - adminUsername (osProfile)
+          - adminPassword (osProfile)
+          - computerName (osProfile)
+          - customData (osProfile)
+          - vmName
+
+          Templates should support those parameters and use them inside `virtualMachine` resource config, for example:
+
+              "osProfile": {
+                  "customData": "[parameters('customData')]",
+                  "computerName": "[parameters('computerName')]",
+                  "adminPassword": "[parameters('adminPassword')]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "windowsConfiguration": {
+                    "timeZone": "UTC",
+                    "enableAutomaticUpdates": true
+                  }
+                }
+
+          `location` parameter is required to determine workerGroup
+        required:
+          - location
+          - customData
+          - vmName
+          - computerName
+          - adminPassword
+          - adminUsername
         additionalProperties:
           type: object
           oneOf:

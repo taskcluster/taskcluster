@@ -47,6 +47,9 @@ properties:
                     If `true`, Worker Manager will request a public IPv4 address for the worker.
                     This is set to `false` by default. It is typically only needed for Windows
                     workers that should allow incoming RDP connections from the public internet.
+
+                    Note: this is only useful for the single resources deployment. For ARM template
+                    deployments you can use template parameters to achieve same results.
                 ignoreFailedProvisioningStates:
                   title: "Ignore failed provisioningStates"
                   type: array
@@ -68,6 +71,10 @@ properties:
                 and this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.
                 This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
                 Instead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).
+            tags:
+              type: object
+              description: Arbitrary key-value pairs for Azure resource tags
+              additionalProperties: true
         # deployment-specific properties (exactly one required - ARM templates or resource deployment)
         - oneOf:
           - $ref: 'azure-deployment-resources.json#'

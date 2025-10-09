@@ -508,8 +508,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
-          templateSpec: {
+          templateLink: {
             id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
           },
         },
       });
