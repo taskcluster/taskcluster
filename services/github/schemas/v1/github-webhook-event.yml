@@ -5,6 +5,12 @@ description: |
   malformed fields. Uses OneOf pattern to strictly validate each event type
   with its own schema, preventing TypeErrors identified in PR #7958.
 
+  Validation Philosophy:
+  - STRICT on structure: Required fields, types, and patterns are validated
+  - LENIENT on enum values: Action/status/conclusion accept any string where
+    GitHub may add new values in the future
+  - This prevents rejecting valid webhooks when GitHub adds new action types
+
 oneOf:
   - $ref: "webhook-pull-request-payload.json#"
   - $ref: "webhook-push-payload.json#"

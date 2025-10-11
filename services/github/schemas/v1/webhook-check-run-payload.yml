@@ -7,7 +7,11 @@ type: object
 properties:
   action:
     type: string
-    enum: ["created", "completed", "rerequested", "requested_action"]
+    minLength: 1
+    description: |
+      The action performed on the check run.
+      Known values: created, completed, rerequested, requested_action.
+      GitHub may add new action types; validation accepts any non-empty string.
   check_run:
     type: object
     properties:
@@ -19,12 +23,23 @@ properties:
         pattern: "^[a-f0-9]{40}$"
       status:
         type: string
-        enum: ["queued", "in_progress", "completed"]
+        minLength: 1
+        description: |
+          The status of the check run.
+          Known values: queued, in_progress, completed, waiting, requested, pending.
+          Note: GitHub Actions can set waiting, requested, or pending.
+          GitHub may add new values; validation accepts any non-empty string.
       conclusion:
         oneOf:
           - type: "null"
           - type: string
-            enum: ["success", "failure", "neutral", "cancelled", "timed_out", "action_required", "skipped"]
+            minLength: 1
+            description: |
+              The conclusion of the check run when status is completed.
+              Known values: success, failure, neutral, cancelled, skipped,
+              timed_out, action_required, stale.
+              Note: Only GitHub can set 'stale'.
+              GitHub may add new values; validation accepts any non-empty string.
       name:
         type: string
         minLength: 1

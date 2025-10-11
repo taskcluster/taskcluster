@@ -7,7 +7,11 @@ type: object
 properties:
   action:
     type: string
-    enum: ["created", "deleted", "suspend", "unsuspend", "new_permissions_accepted"]
+    minLength: 1
+    description: |
+      The action performed on the installation.
+      Known values: created, deleted, suspend, unsuspend, new_permissions_accepted.
+      GitHub may add new action types; validation accepts any non-empty string.
   installation:
     type: object
     properties:

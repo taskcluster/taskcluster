@@ -8,7 +8,14 @@ type: object
 properties:
   action:
     type: string
-    enum: ["opened", "closed", "reopened", "synchronize", "edited"]
+    minLength: 1
+    description: |
+      The action performed on the pull request.
+      Common values: opened, closed, reopened, synchronize, edited, assigned,
+      unassigned, labeled, unlabeled, review_requested, review_request_removed,
+      ready_for_review, converted_to_draft, locked, unlocked, auto_merge_enabled,
+      auto_merge_disabled, enqueued, dequeued, milestoned, demilestoned, etc.
+      GitHub may add new action types; validation accepts any non-empty string.
   number:
     type: integer
     minimum: 1

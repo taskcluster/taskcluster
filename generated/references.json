@@ -7761,15 +7761,8 @@
       "description": "Validates GitHub release event webhook payload.\n",
       "properties": {
         "action": {
-          "enum": [
-            "published",
-            "unpublished",
-            "created",
-            "edited",
-            "deleted",
-            "prereleased",
-            "released"
-          ],
+          "description": "The action performed on the release.\nKnown values: published, unpublished, created, edited, deleted, prereleased, released.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
           "type": "string"
         },
         "installation": {
@@ -8052,13 +8045,8 @@
       "description": "Validates GitHub pull request event webhook payload.\nStrictly validates fields that caused issues in PR #7958.\n",
       "properties": {
         "action": {
-          "enum": [
-            "opened",
-            "closed",
-            "reopened",
-            "synchronize",
-            "edited"
-          ],
+          "description": "The action performed on the pull request.\nCommon values: opened, closed, reopened, synchronize, edited, assigned,\nunassigned, labeled, unlabeled, review_requested, review_request_removed,\nready_for_review, converted_to_draft, locked, unlocked, auto_merge_enabled,\nauto_merge_disabled, enqueued, dequeued, milestoned, demilestoned, etc.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
           "type": "string"
         },
         "installation": {
@@ -8433,11 +8421,8 @@
       "description": "Validates GitHub issue comment event webhook payload.\n",
       "properties": {
         "action": {
-          "enum": [
-            "created",
-            "edited",
-            "deleted"
-          ],
+          "description": "The action performed on the issue comment.\nKnown values: created, edited, deleted.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
           "type": "string"
         },
         "comment": {
@@ -8596,13 +8581,8 @@
       "description": "Validates GitHub installation event webhook payload.\n",
       "properties": {
         "action": {
-          "enum": [
-            "created",
-            "deleted",
-            "suspend",
-            "unsuspend",
-            "new_permissions_accepted"
-          ],
+          "description": "The action performed on the installation.\nKnown values: created, deleted, suspend, unsuspend, new_permissions_accepted.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
           "type": "string"
         },
         "installation": {
@@ -8724,12 +8704,8 @@
       "description": "Validates GitHub check run event webhook payload.\n",
       "properties": {
         "action": {
-          "enum": [
-            "created",
-            "completed",
-            "rerequested",
-            "requested_action"
-          ],
+          "description": "The action performed on the check run.\nKnown values: created, completed, rerequested, requested_action.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
           "type": "string"
         },
         "check_run": {
@@ -8770,15 +8746,8 @@
                   "type": "null"
                 },
                 {
-                  "enum": [
-                    "success",
-                    "failure",
-                    "neutral",
-                    "cancelled",
-                    "timed_out",
-                    "action_required",
-                    "skipped"
-                  ],
+                  "description": "The conclusion of the check run when status is completed.\nKnown values: success, failure, neutral, cancelled, skipped,\ntimed_out, action_required, stale.\nNote: Only GitHub can set 'stale'.\nGitHub may add new values; validation accepts any non-empty string.\n",
+                  "minLength": 1,
                   "type": "string"
                 }
               ]
@@ -8845,11 +8814,8 @@
               "type": "array"
             },
             "status": {
-              "enum": [
-                "queued",
-                "in_progress",
-                "completed"
-              ],
+              "description": "The status of the check run.\nKnown values: queued, in_progress, completed, waiting, requested, pending.\nNote: GitHub Actions can set waiting, requested, or pending.\nGitHub may add new values; validation accepts any non-empty string.\n",
+              "minLength": 1,
               "type": "string"
             }
           },
@@ -9374,7 +9340,7 @@
     "content": {
       "$id": "/schemas/github/v1/github-webhook-event.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "description": "Validates GitHub webhook event payloads to prevent errors from missing or\nmalformed fields. Uses OneOf pattern to strictly validate each event type\nwith its own schema, preventing TypeErrors identified in PR #7958.\n",
+      "description": "Validates GitHub webhook event payloads to prevent errors from missing or\nmalformed fields. Uses OneOf pattern to strictly validate each event type\nwith its own schema, preventing TypeErrors identified in PR #7958.\n\nValidation Philosophy:\n- STRICT on structure: Required fields, types, and patterns are validated\n- LENIENT on enum values: Action/status/conclusion accept any string where\n  GitHub may add new values in the future\n- This prevents rejecting valid webhooks when GitHub adds new action types\n",
       "oneOf": [
         {
           "$ref": "webhook-pull-request-payload.json#"

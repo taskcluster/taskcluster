@@ -7,7 +7,11 @@ type: object
 properties:
   action:
     type: string
-    enum: ["created", "edited", "deleted"]
+    minLength: 1
+    description: |
+      The action performed on the issue comment.
+      Known values: created, edited, deleted.
+      GitHub may add new action types; validation accepts any non-empty string.
   issue:
     type: object
     properties:

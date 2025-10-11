@@ -71,6 +71,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('CheckRun rerun', 'webhook.check_run.rerequested.json', 204);
   statusTest('CheckRun rerun by bot', 'webhook.check_run.rerequested-bot.json', 200);
   statusTest('Issue Comment edited', 'webhook.issue_comment.edited.json', 204, TC_DEV_INSTALLATION_ID);
+  statusTest('CheckRun with waiting status', 'webhook.check_run.waiting_status.json', 204);
+  statusTest('CheckRun with stale conclusion', 'webhook.check_run.stale_conclusion.json', 204);
 
   // skipped events
   statusTest('Issue Comment created', 'webhook.issue_comment.created.json', 200, TC_DEV_INSTALLATION_ID);
@@ -235,4 +237,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     }
   });
+
+  // Note: Enum flexibility (accepting new action/status/conclusion values) is tested via
+  // statusTest-based tests above (CheckRun with waiting status, CheckRun with stale conclusion)
+  // which use pre-made test files with valid X-Hub-Signatures
 });
