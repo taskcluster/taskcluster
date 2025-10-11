@@ -133,27 +133,6 @@ impl Github {
         (path, query)
     }
 
-    /// Consume GitHub WebHook
-    ///
-    /// Capture a GitHub event and publish it via pulse, if it's a push,
-    /// release, check run or pull request.
-    pub async fn githubWebHookConsumer(&self) -> Result<(), Error> {
-        let method = "POST";
-        let (path, query) = Self::githubWebHookConsumer_details();
-        let body = None;
-        let resp = self.client.request(method, path, query, body).await?;
-        resp.bytes().await?;
-        Ok(())
-    }
-
-    /// Determine the HTTP request details for githubWebHookConsumer
-    fn githubWebHookConsumer_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
-        let path = "github";
-        let query = None;
-
-        (path, query)
-    }
-
     /// List of Builds
     ///
     /// A paginated list of builds that have been run in
