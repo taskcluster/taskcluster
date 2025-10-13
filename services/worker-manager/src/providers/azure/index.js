@@ -545,6 +545,20 @@ export class AzureProvider extends Provider {
           worker.providerData.vm.name = vmName;
           worker.providerData.provisioningComplete = true;
         });
+
+        // Clean up deployment to avoid hitting the 800 deployments per resource group limit
+        // This should be safe because vm is already running
+        try {
+          monitor.debug({ message: 'deleting ARM deployment after success', deploymentName: worker.providerData.deployment.name });
+          await this._enqueue('query', () =>
+            this.deploymentsClient.deployments.beginDelete(
+              worker.providerData.resourceGroupName,
+              worker.providerData.deployment.name,
+            ));
+        } catch (err) {
+          monitor.debug({ message: 'failed to delete ARM deployment (non-fatal)', error: err.message });
+        }
+
         return true;
       }
 

@@ -529,6 +529,48 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.ok(worker.providerData.armDeployment);
       assert.equal(worker.providerData.armDeployment.mode, 'Incremental');
     });
+
+    test('ARM deployment is cleaned up after successful provisioning', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+
+      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should exist before checkWorker');
+
+      // Scan prepare and check worker to trigger deployment completion check
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+
+      await worker.reload(helper.db);
+
+      // Verify deployment was cleaned up
+      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should be deleted after successful provisioning');
+      assert.ok(worker.providerData.provisioningComplete,
+        'worker should be marked as provisioning complete');
+      assert.ok(worker.providerData.deployment.id,
+        'deployment id should be stored');
+      assert.strictEqual(worker.providerData.deployment.operation, undefined,
+        'deployment operation should be cleared after success');
+    });
   });
 
   suite('provisionResources', function() {

@@ -287,6 +287,8 @@ export class DeploymentManager extends ResourceManager {
     this.deployments = {
       get: async (rg, name) => this.get(rg, name),
       beginCreateOrUpdate: async (rg, name, params) => this.beginCreateOrUpdate(rg, name, params),
+      beginDelete: async (rg, name) => this.beginDelete(rg, name),
+      deploymentExists: (rg, name) => this.deploymentExists(rg, name),
     };
   }
 
@@ -324,6 +326,17 @@ export class DeploymentManager extends ResourceManager {
     return req;
   }
 
+  async beginDelete(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    this._deployments.delete(key);
+
+    const req = new ResourceRequest('delete', this.resourceType, resourceGroupName, name, {});
+    req.status = 'Complete';
+    this._requests.set(key, req);
+
+    return req;
+  }
+
   /**
    * Set deployment provisioning state for testing
    */
@@ -347,6 +360,14 @@ export class DeploymentManager extends ResourceManager {
     if (deployment) {
       deployment.properties.outputs = outputs;
     }
+  }
+
+  /**
+   * Check if deployment exists
+   */
+  deploymentExists(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    return this._deployments.has(key);
   }
 }
 
