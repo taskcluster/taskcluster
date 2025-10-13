@@ -573,6 +573,133 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
+  suite('ARM deployment resource group management', function() {
+    const provisionWorkerPool = async (launchConfig, overrides) => {
+      const workerPool = await makeWorkerPool({
+        config: {
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+          launchConfigs: [{
+            workerManager: {
+              capacityPerInstance: 1,
+            },
+            subnetId: 'some/subnet',
+            location: 'westus',
+            hardwareProfile: { vmSize: 'Basic_A2' },
+            storageProfile: {
+              osDisk: {},
+            },
+            ...launchConfig,
+          }],
+          ...overrides,
+        },
+        owner: 'whatever@example.com',
+        providerData: {},
+        emailOnError: false,
+      });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
+    };
+
+    test('creates resource group if it does not exist', async function() {
+      const customRgName = 'test-custom-rg';
+      assert.ok(!fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
+        'custom RG should not exist before provisioning');
+
+      await provisionWorkerPool({
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'eastus',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      assert.equal(worker.providerData.resourceGroupName, customRgName);
+      assert.ok(fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
+        'custom RG should be created');
+
+      const rg = await fake.resourcesClient.resourceGroups.get(customRgName);
+      assert.equal(rg.location, 'eastus', 'RG should be created with correct location');
+    });
+
+    test('does not create resource group if using fallback from provider config', async function() {
+      const checkExistenceSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
+      const createOrUpdateSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      await provisionWorkerPool({
+        // No armDeploymentResourceGroup specified, should use fallback
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'eastus',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      assert.equal(worker.providerData.resourceGroupName, 'rgrp', 'should use fallback RG');
+      assert.ok(!checkExistenceSpy.called, 'should not check existence for fallback RG');
+      assert.ok(!createOrUpdateSpy.called, 'should not create fallback RG');
+
+      checkExistenceSpy.restore();
+      createOrUpdateSpy.restore();
+    });
+
+    test('does not check resource group if it already exists', async function() {
+      const customRgName = 'test-existing-rg';
+
+      // Pre-create the resource group
+      fake.resourcesClient.resourceGroups.makeFakeResourceGroup(customRgName, 'northeurope');
+
+      const checkExistenceSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
+      const createOrUpdateSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      await provisionWorkerPool({
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'westus',
+            },
+          },
+        },
+      });
+
+      assert.equal(checkExistenceSpy.callCount, 1, 'should check existence once');
+      assert.equal(createOrUpdateSpy.callCount, 0, 'should not create RG if it already exists');
+
+      const rg = await fake.resourcesClient.resourceGroups.get(customRgName);
+      assert.equal(rg.location, 'northeurope', 'existing RG location should not change');
+
+      checkExistenceSpy.restore();
+      createOrUpdateSpy.restore();
+    });
+  });
+
   suite('provisionResources', function() {
     let worker, ipName, nicName, vmName;
     const sandbox = sinon.createSandbox({});

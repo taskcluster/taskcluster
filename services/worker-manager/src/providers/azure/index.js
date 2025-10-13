@@ -67,6 +67,8 @@ export class AzureProvider extends Provider {
     /** @type {Record<string, any>} */
     this.errors = {};
     this.cloudApi = null;
+    /** @type {Map<string, boolean>} Cache for verified resource groups */
+    this.resourceGroupCache = new Map();
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -168,6 +170,7 @@ export class AzureProvider extends Provider {
     let credentials = new azureApi.ClientSecretCredential(domain, clientId, secret);
     this.computeClient = new azureApi.ComputeManagementClient(credentials, subscriptionId);
     this.networkClient = new azureApi.NetworkManagementClient(credentials, subscriptionId);
+    this.resourcesClient = new azureApi.ResourceManagementClient(credentials, subscriptionId);
     this.deploymentsClient = new azureApi.DeploymentsClient(credentials, subscriptionId);
     this.restClient = new azureApi.AzureServiceClient(credentials);
   }
@@ -254,6 +257,35 @@ export class AzureProvider extends Provider {
         await this.#provisionSequentialWorker(provisionArgs);
       }
     }));
+  }
+
+  /**
+   * Ensure that a resource group exists, creating it if necessary
+   * Uses in-memory cache to avoid redundant API calls
+   *
+   * @param {string} resourceGroupName
+   * @param {string} location
+   */
+  async #ensureResourceGroup(resourceGroupName, location) {
+    if (this.resourceGroupCache.has(resourceGroupName)) {
+      return;
+    }
+
+    const exists = await this._enqueue('query', () =>
+      this.resourcesClient.resourceGroups.checkExistence(resourceGroupName));
+
+    if (!exists) {
+      await this._enqueue('query', () =>
+        this.resourcesClient.resourceGroups.createOrUpdate(resourceGroupName, { location }));
+
+      this.monitor.debug({
+        message: 'created resource group',
+        resourceGroupName,
+        location,
+      });
+    }
+
+    this.resourceGroupCache.set(resourceGroupName, true);
   }
 
   /** @param {ProvisionOptions} opts */
@@ -392,8 +424,9 @@ export class AzureProvider extends Provider {
     const deploymentName = `deploy-${nameSuffix}`;
 
     // For ARM templates, location must come from parameters
-    const workerGroup = armDeployment.parameters?.location?.value;
-    assert(workerGroup, 'armDeployment.parameters.location is not set');
+    const location = armDeployment.parameters?.location?.value;
+    assert(location, 'armDeployment.parameters.location is not set');
+    const workerGroup = location; // same as location
 
     const { adminUsername, adminPassword } = generateAdmin();
     const customData = this.#buildCustomData({ workerPoolId, workerGroup });
@@ -412,8 +445,12 @@ export class AzureProvider extends Provider {
       },
     };
 
-    const resourceGroupName = cfg.resourceGroupOverride || this.providerConfig.resourceGroupName;
-    // TODO: Ensure group exists
+    const resourceGroupName = cfg.armDeploymentResourceGroup || this.providerConfig.resourceGroupName;
+
+    // Only ensure existence if explicitly specified (providerConfig RG should already exist)
+    if (cfg.armDeploymentResourceGroup) {
+      await this.#ensureResourceGroup(resourceGroupName, location);
+    }
 
     const providerData = {
       deploymentMethod: DEPLOYMENT_METHOD_ARM,

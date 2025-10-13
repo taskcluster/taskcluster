@@ -29,6 +29,10 @@ export class FakeAzure extends FakeCloud {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.networkClient;
     });
+    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.resourcesClient;
+    });
     this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.deploymentsClient;
@@ -51,6 +55,7 @@ export class FakeAzure extends FakeCloud {
       nic: new ResourceManager(this, 'nic', 'azure-nic.yml'),
       ip: new ResourceManager(this, 'ip', 'azure-ip.yml'),
       deployment: new DeploymentManager(this, 'deployment'),
+      resourceGroup: new ResourceGroupManager(this),
     };
 
     this.computeClient = {
@@ -60,6 +65,9 @@ export class FakeAzure extends FakeCloud {
     this.networkClient = {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
+    };
+    this.resourcesClient = {
+      resourceGroups: this._managers['resourceGroup'],
     };
     this.deploymentsClient = this._managers['deployment'];
 
@@ -368,6 +376,69 @@ export class DeploymentManager extends ResourceManager {
   deploymentExists(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     return this._deployments.has(key);
+  }
+}
+
+export class ResourceGroupManager {
+  constructor(fake) {
+    this.fake = fake;
+    this._resourceGroups = new Map();
+  }
+
+  /**
+   * Check if a resource group exists
+   */
+  async checkExistence(resourceGroupName) {
+    return this._resourceGroups.has(resourceGroupName);
+  }
+
+  /**
+   * Create or update a resource group
+   */
+  async createOrUpdate(resourceGroupName, parameters) {
+    const rg = {
+      id: `/subscriptions/fake-sub/resourceGroups/${resourceGroupName}`,
+      name: resourceGroupName,
+      location: parameters.location,
+      properties: {
+        provisioningState: 'Succeeded',
+      },
+    };
+    this._resourceGroups.set(resourceGroupName, rg);
+    return rg;
+  }
+
+  /**
+   * Get a resource group
+   */
+  async get(resourceGroupName) {
+    if (this._resourceGroups.has(resourceGroupName)) {
+      return this._resourceGroups.get(resourceGroupName);
+    }
+    throw makeError(`Resource group ${resourceGroupName} not found`, 404);
+  }
+
+  /**
+   * Create a fake resource group directly (for testing)
+   */
+  makeFakeResourceGroup(resourceGroupName, location = 'westus') {
+    const rg = {
+      id: `/subscriptions/fake-sub/resourceGroups/${resourceGroupName}`,
+      name: resourceGroupName,
+      location,
+      properties: {
+        provisioningState: 'Succeeded',
+      },
+    };
+    this._resourceGroups.set(resourceGroupName, rg);
+    return rg;
+  }
+
+  /**
+   * Check if a resource group exists in the fake (for testing)
+   */
+  hasFakeResourceGroup(resourceGroupName) {
+    return this._resourceGroups.has(resourceGroupName);
   }
 }
 

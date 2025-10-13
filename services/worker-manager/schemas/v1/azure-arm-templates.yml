@@ -6,17 +6,21 @@ description: |
   Note: workerManager and workerConfig are defined in the parent schema.
 
   [Template Syntax](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax)
+
+  ARM Deployments allows full provisioning of many related resources at once, offloading the provisioning process to Azure Resource Manager.
 type: object
 required:
   - armDeployment
 properties:
-  resourceGroupOverride:
+  armDeploymentResourceGroup:
     title: Resource Group Override
     type: string
     description: |
       Override the resource group for the ARM deployment.
       By default, resource group would be taken from Azure provider configuration provided at deployment time.
-      If resource group doesn't exist, it would be created.
+
+      If resource group doesn't exist, it would be created in the region specified in the armDeployment template.
+      If multiple launch configs define same `armDeplyomentResourceGroup` it would be created at most once.
   armDeployment:
     title: ARM Deployment Configuration
     type: object

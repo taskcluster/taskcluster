@@ -2720,7 +2720,7 @@
       "$id": "/schemas/worker-manager/v1/azure-arm-templates.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": true,
-      "description": "ARM Template deployment configuration for Azure VMs.\nThese properties are passed directly to the Azure Deployments API.\nNote: workerManager and workerConfig are defined in the parent schema.\n\n[Template Syntax](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax)\n",
+      "description": "ARM Template deployment configuration for Azure VMs.\nThese properties are passed directly to the Azure Deployments API.\nNote: workerManager and workerConfig are defined in the parent schema.\n\n[Template Syntax](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax)\n\nARM Deployments allows full provisioning of many related resources at once, offloading the provisioning process to Azure Resource Manager.\n",
       "properties": {
         "armDeployment": {
           "additionalProperties": false,
@@ -2938,8 +2938,8 @@
           "title": "ARM Deployment Configuration",
           "type": "object"
         },
-        "resourceGroupOverride": {
-          "description": "Override the resource group for the ARM deployment.\nBy default, resource group would be taken from Azure provider configuration provided at deployment time.\nIf resource group doesn't exist, it would be created.\n",
+        "armDeploymentResourceGroup": {
+          "description": "Override the resource group for the ARM deployment.\nBy default, resource group would be taken from Azure provider configuration provided at deployment time.\n\nIf resource group doesn't exist, it would be created in the region specified in the armDeployment template.\nIf multiple launch configs define same `armDeplyomentResourceGroup` it would be created at most once.\n",
           "title": "Resource Group Override",
           "type": "string"
         }
