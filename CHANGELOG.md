@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.25.3
+
+### DEVELOPERS
+
+▶ [MAJOR] [#8010](https://github.com/taskcluster/taskcluster/issues/8010)
+Python client follows redirects in artifact download for both async and sync code.
+This was partially fixed in the past in #4057
+
 ## v90.0.5
 
 ### GENERAL

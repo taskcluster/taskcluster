@@ -1,4 +1,4 @@
-module github.com/taskcluster/taskcluster/v90
+module github.com/taskcluster/taskcluster/v91
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
 go 1.25.3
