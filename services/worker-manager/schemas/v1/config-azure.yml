@@ -1,8 +1,9 @@
 $schema: "/schemas/common/metaschema.json#"
 title: Azure Provider Config
 description: |
-  'The config section of a workertype is using a provider with implementation azure must match this.
-  Much of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'
+  'The config section of a workertype using the Azure provider must match this schema.
+  Azure provider supports two deployment modes: traditional resource-by-resource deployment and ARM template deployment.
+  See azure-deployment-resources.json# for traditional VM deployment or azure-arm-templates.json# for ARM template deployment.'
 type: object
 properties:
   minCapacity: { $const: min-capacity }
@@ -13,12 +14,19 @@ properties:
     type: array
     title: Choices
     description: |
-      An array of possible variations of workers for this pool.
-      Each choice must include at least the required properties but can also include anything in
-      the request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)
-      api method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`
-      properties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
-      metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
+      An array of possible variations of workers for this pool. Each launch configuration must use one of two deployment modes:
+
+      **Traditional Resource Deployment (azure-deployment-resources.json#):**
+      Properties are passed to the [virtual machine creation API](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate).
+      worker-manager automatically overrides: `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`.
+      You must provide required fields like `location`, `subnetId`, `hardwareProfile`, and `storageProfile`.
+
+      **ARM Template Deployment (azure-arm-templates.json#):**
+      Properties are passed to the [Azure Deployments API](https://docs.microsoft.com/en-us/rest/api/resources/deployments/createorupdate).
+      worker-manager automatically generates and passes these parameters: `adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`.
+      Your ARM template must accept and use these parameters. You must specify `location` parameter to determine the worker group.
+      Deployments are created in the default resource group from providerConfig, unless overridden with `armDeploymentResourceGroup`.
+      If a custom resource group is specified and doesn't exist, it will be created automatically.
     uniqueItems: true
     items:
       allOf:
