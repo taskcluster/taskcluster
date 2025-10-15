@@ -337,7 +337,7 @@ export class Provider {
    * @param {String} options.kind
    * @param {String} options.title
    * @param {String} options.description
-   * @param {{ workerId?:string, workerGroup?:string } &object} options.extra - extra information about the error
+   * @param {{ workerId?:string, workerGroup?:string } & Record<string, any>} options.extra - extra info about the error
    * @param {String|null} options.launchConfigId
    * @returns {Promise<import('../data.js').WorkerPoolError>}
    */

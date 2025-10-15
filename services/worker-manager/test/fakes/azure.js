@@ -291,12 +291,20 @@ export class DeploymentManager extends ResourceManager {
   constructor(fake, resourceType) {
     super(fake, resourceType);
     this._deployments = new Map();
+    this._deploymentOperations = new Map();
 
     this.deployments = {
       get: async (rg, name) => this.get(rg, name),
       beginCreateOrUpdate: async (rg, name, params) => this.beginCreateOrUpdate(rg, name, params),
       beginDelete: async (rg, name) => this.beginDelete(rg, name),
       deploymentExists: (rg, name) => this.deploymentExists(rg, name),
+      setFakeDeploymentState: (rg, name, state, error) => this.setFakeDeploymentState(rg, name, state, error),
+      setFakeDeploymentOutputs: (rg, name, outputs) => this.setFakeDeploymentOutputs(rg, name, outputs),
+    };
+
+    this.deploymentOperations = {
+      list: (rg, name) => this.listDeploymentOperations(rg, name),
+      setFakeDeploymentOperations: (rg, name, operations) => this.setFakeDeploymentOperations(rg, name, operations),
     };
   }
 
@@ -376,6 +384,28 @@ export class DeploymentManager extends ResourceManager {
   deploymentExists(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     return this._deployments.has(key);
+  }
+
+  /**
+   * List deployment operations (returns async iterator)
+   */
+  async *listDeploymentOperations(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    const operations = this._deploymentOperations.get(key) || [];
+    for (const operation of operations) {
+      yield operation;
+    }
+  }
+
+  /**
+   * Set fake deployment operations for testing
+   * @param {string} resourceGroupName
+   * @param {string} name
+   * @param {Array} operations - Array of operation objects
+   */
+  setFakeDeploymentOperations(resourceGroupName, name, operations) {
+    const key = `${resourceGroupName}/${name}`;
+    this._deploymentOperations.set(key, operations);
   }
 }
 

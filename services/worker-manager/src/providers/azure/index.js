@@ -410,7 +410,11 @@ export class AzureProvider extends Provider {
     await this.checkWorker({ worker });
   }
 
-  /** @param {ProvisionOptions} opts */
+  /**
+   * Create worker for arm template and trigger deployment immediately
+   *
+   * @param {ProvisionOptions} opts
+   */
   async #provisionARMTemplateWorker({
     lc, workerPool, terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     nameSuffix, virtualMachineName, computerName,
@@ -454,7 +458,7 @@ export class AzureProvider extends Provider {
 
     const providerData = {
       deploymentMethod: DEPLOYMENT_METHOD_ARM,
-      location: workerGroup,
+      location,
       resourceGroupName,
       workerConfig: cfg.workerConfig,
       armDeployment,
@@ -465,8 +469,8 @@ export class AzureProvider extends Provider {
         id: false,
       },
       vm: {
-        computerName,
         name: virtualMachineName,
+        computerName,
         id: false,
         vmId: false,
         customData,
@@ -488,13 +492,12 @@ export class AzureProvider extends Provider {
     await worker.create(this.db);
     await this.onWorkerRequested({ worker, terminateAfter });
 
-    // triggering arm deployment right away
-
     this.monitor.debug({
       message: 'creating ARM deployment', deploymentName, resourceGroup: providerData.resourceGroupName,
     });
 
     try {
+      // triggering arm deployment right away
       const deploymentRequest = await this._enqueue('query', () =>
         this.deploymentsClient.deployments.beginCreateOrUpdate(
           resourceGroupName,
@@ -502,7 +505,6 @@ export class AzureProvider extends Provider {
           { properties: deploymentProperties, tags: providerData.tags },
         ));
 
-      // Track deployment operation
       await worker.update(this.db, worker => {
         worker.providerData.deployment.operation = deploymentRequest.getOperationState()?.config?.operationLocation;
       });
@@ -515,10 +517,10 @@ export class AzureProvider extends Provider {
         title: 'Failed to create ARM deployment',
         description: err.message,
         extra: {
-          workerId: worker.id,
-          workerGroup: worker.workerGroup,
-          armDeployment, // safe to log adminpassword of the failed deployment?
-          params: deploymentProperties.properties,
+          workerId: worker.workerId,
+          workerGroup: workerGroup,
+          armDeployment,
+          params: deploymentProperties.parameters, // safe to log adminpassword of the failed deployment?
         },
         launchConfigId: worker.launchConfigId,
       });
@@ -543,29 +545,30 @@ export class AzureProvider extends Provider {
       const provisioningState = deployment.properties?.provisioningState;
       monitor.debug({ message: 'deployment provisioning state', provisioningState });
 
-      const ongoingProvisioningStates = [
-        ArmDeploymentProvisioningState.Accepted,
-        ArmDeploymentProvisioningState.Creating,
-        ArmDeploymentProvisioningState.Created,
-        ArmDeploymentProvisioningState.Updating,
-        ArmDeploymentProvisioningState.Ready,
-        ArmDeploymentProvisioningState.Running,
-      ];
-      if (ongoingProvisioningStates.includes(provisioningState)) {
-        // still happening, will be checked after
-        return false;
-      }
+      // Expected terminal states are Succeded if all good, and Failed/Cancelled if something goes wrong
+      // Deleteing/Deleted states can be ignored, handleOperation should clean it up
 
       const failedProvisioiningStates = [
         ArmDeploymentProvisioningState.Failed,
         ArmDeploymentProvisioningState.Canceled,
-        ArmDeploymentProvisioningState.Deleted,
-        ArmDeploymentProvisioningState.Deleting,
       ];
       if (failedProvisioiningStates.includes(provisioningState)) {
         const errorMessage = deployment.properties?.error?.message || 'Deployment failed';
+        const failedResources = await this.#extractResourcesFromFailedDeployment(worker, monitor);
+
         await worker.update(this.db, worker => {
           worker.providerData.deployment.operation = undefined;
+          ['vm', 'nic', 'ip', 'disks'].forEach(resourceType => {
+            if (resourceType === 'disks') {
+              worker.providerData.disks ??= [];
+              worker.providerData.disks.push(...failedResources.disks);
+            } else {
+              worker.providerData[resourceType] = {
+                ...(worker.providerData[resourceType] || {}),
+                ...failedResources[resourceType],
+              };
+            }
+          });
         });
         await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
         return false;
@@ -585,56 +588,112 @@ export class AzureProvider extends Provider {
 
         // Clean up deployment to avoid hitting the 800 deployments per resource group limit
         // This should be safe because vm is already running
-        try {
-          monitor.debug({ message: 'deleting ARM deployment after success', deploymentName: worker.providerData.deployment.name });
-          await this._enqueue('query', () =>
-            this.deploymentsClient.deployments.beginDelete(
-              worker.providerData.resourceGroupName,
-              worker.providerData.deployment.name,
-            ));
-        } catch (err) {
-          monitor.debug({ message: 'failed to delete ARM deployment (non-fatal)', error: err.message });
-        }
+        await this.deprovisionResource({
+          worker,
+          client: this.deploymentsClient.deployments,
+          resourceType: 'deployment',
+          monitor,
+        });
 
         return true;
-      }
-
-      // Still in progress
-      if (worker.providerData.deployment.operation) {
-        let op = await this.handleOperation({
-          op: worker.providerData.deployment.operation,
-          errors: this.errors[worker.workerPoolId],
-          monitor,
-          worker,
-        });
-        if (!op) {
-          await worker.update(this.db, worker => {
-            worker.providerData.deployment.operation = undefined;
-          });
-          await this.removeWorker({ worker, reason: 'deployment operation expired' });
-        }
       }
     } catch (err) {
       if (err.statusCode !== 404) {
         throw err;
       }
-      // Deployment not found yet, check if we have operation to track
-      if (worker.providerData.deployment.operation) {
-        let op = await this.handleOperation({
-          op: worker.providerData.deployment.operation,
-          errors: this.errors[worker.workerPoolId],
-          monitor,
-          worker,
+    }
+
+    // Deploymet is likely still in progress - check status or operation might be expired or failed
+    if (worker.providerData.deployment.operation) {
+      let op = await this.handleOperation({
+        op: worker.providerData.deployment.operation,
+        errors: this.errors[worker.workerPoolId],
+        monitor,
+        worker,
+      });
+      if (!op) {
+        await worker.update(this.db, worker => {
+          worker.providerData.deployment.operation = undefined;
         });
-        if (!op) {
-          await worker.update(this.db, worker => {
-            worker.providerData.deployment.operation = undefined;
-          });
-          await this.removeWorker({ worker, reason: 'deployment operation expired' });
-        }
+        await this.removeWorker({ worker, reason: 'deployment operation expired' });
       }
     }
     return false;
+  }
+
+  /**
+   * Extract resources created by a failed ARM deployment for cleanup
+   * Queries deployment operations and parses resource IDs into format compatible with sequential deprovisioning
+   * https://learn.microsoft.com/en-us/javascript/api/%40azure/arm-resourcesdeployments/deploymentoperations?view=azure-node-preview#@azure-arm-resourcesdeployments-deploymentoperations-list
+   *
+   * Resources that were not extracted would have id: false which would signal deprovisionResource() to skip it
+   *
+   * @param {Worker} worker
+   * @param {import('@taskcluster/lib-monitor').Monitor} monitor
+   */
+  async #extractResourcesFromFailedDeployment(worker, monitor) {
+    const resources = {
+      vm: { name: 'nonexistent', id: false, operation: undefined },
+      nic: { name: 'nonexistent', id: false, operation: undefined },
+      ip: { name: 'nonexistent', id: false, operation: undefined },
+      disks: [],
+    };
+
+    const operations = [];
+
+    try {
+      monitor.debug('querying deployment operations for failed deployment');
+      for await (const operation of this.deploymentsClient.deploymentOperations.list(
+        worker.providerData.resourceGroupName,
+        worker.providerData.deployment.name,
+      )) {
+        monitor.debug('deployment operation', operation);
+        const { properties } = operation;
+        if (properties?.targetResource?.id) {
+          operations.push(operation);
+        }
+      }
+    } catch (error) {
+      monitor.error({ message: 'failed to query deployment operations', error });
+      return resources;
+    }
+
+    monitor.debug({ message: 'found deployment operations', count: operations.length });
+
+    const resourceTypeMap = {
+      'Microsoft.Compute/virtualMachines': 'vm',
+      'Microsoft.Network/networkInterfaces': 'nic',
+      'Microsoft.Network/publicIPAddresses': 'ip',
+      'Microsoft.Compute/disks': 'disk',
+    };
+
+    // Parse each operation to extract created resources
+    for (const op of operations) {
+      const targetResource = op.properties?.targetResource;
+      const resourceType = targetResource?.resourceType;
+      const resourceId = targetResource.id;
+
+      const mappedType = resourceTypeMap[resourceType];
+      if (!mappedType) {
+        monitor.debug({ message: 'skipping unmapped resource type', resourceType, resourceId });
+        continue;
+      }
+
+      // Parse resource ID to extract name
+      // Format: /subscriptions/{sub}/resourceGroups/{rg}/providers/{provider}/{type}/{name}
+      const resourceName = resourceId.split('/')?.pop();
+
+      monitor.debug({ message: 'extracted resource from deployment', resourceType, resourceName, mappedType });
+
+      if (mappedType === 'disk') {
+        resources.disks.push({ name: resourceName, id: resourceId, operation: undefined });
+      } else {
+        resources[mappedType] = { name: resourceName, id: resourceId, operation: undefined };
+      }
+    }
+
+    monitor.debug({ message: 'extracted resources from failed deployment', resources });
+    return resources;
   }
 
   async deprovision({ workerPool }) {
@@ -1260,6 +1319,7 @@ export class AzureProvider extends Provider {
       } });
 
     // update providerdata from deprecated disk to disks if applicable
+    // TODO: remove this since it was over 5years ago
     if (_.has(worker.providerData, 'disk')) {
       await worker.update(this.db, worker => {
         worker.providerData.disks = [worker.providerData.disk];
@@ -1485,6 +1545,7 @@ export class AzureProvider extends Provider {
    *
    */
   async deprovisionResource({ client, worker, resourceType, monitor, index = undefined }) {
+    // TODO: .id === false is never checked so we likely query over and over and over
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error removing worker: providerData does not contain resourceType ${resourceType}`);
     }
@@ -1596,65 +1657,18 @@ export class AzureProvider extends Provider {
     });
   }
 
-  async #deprovisionARMTemplateWorker({ worker, monitor }) {
-    // For ARM template workers, we only need to delete the VM
-    // The ARM template should have configured deleteOption: 'Delete' on all resources
-    // (NIC, IP, disks) so they will be automatically cleaned up when VM is deleted
-
-    monitor.debug('deprovisioning ARM template worker VM');
-
-    // Reuse deprovisionResource for VM deletion
-    let vmDeleted = await this.deprovisionResource({
-      worker,
-      client: this.computeClient.virtualMachines,
-      resourceType: 'vm',
-      monitor,
-    });
-
-    // If VM deletion is not complete yet, return and wait for next check
-    if (!vmDeleted || worker.providerData.vm.id) {
-      return;
-    }
-
-    // VM is fully deleted, update worker state to STOPPED
-    monitor.debug('VM deleted for ARM template worker, setting state to STOPPED');
-    await worker.update(this.db, worker => {
-      const now = new Date();
-      worker.lastModified = now;
-      worker.lastChecked = now;
-      worker.state = Worker.states.STOPPED;
-    });
-    await this.onWorkerStopped({ worker });
-  }
-
   /*
    * deprovisionResources removes resources corresponding to a VM,
    * while the worker is in the STOPPING state.  Like provisionResources,
    * it is called repeatedly in the worker-scanner until it is complete.
+   *
+   * For the ARM Deployment method main assumption is that template should be
+   * responsible for resource cleanup for successful deployment.
+   * That means that when VM is deleted, all resources should cascade with `deleteOption: 'Delete'`
+   * In case of failed deployments, all partially deployed resources would be
+   * populated back into worker's providerData, so they could be deprovisioned in the same way
    */
   async deprovisionResources({ worker, monitor }) {
-    // Handle ARM template deployments separately
-    if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM) {
-      try {
-        await this.#deprovisionARMTemplateWorker({ worker, monitor });
-      } catch (err) {
-        this.errors = this.errors || {};
-        this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
-        monitor.debug({ message: 'error removing ARM template worker', error: err.message });
-        this.errors[worker.workerPoolId].push({
-          kind: 'deletion-error',
-          title: 'ARM Template Deletion Error',
-          description: err.message,
-          extra: {
-            code: err.code,
-          },
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
-        });
-      }
-      return;
-    }
-
     // After we make the delete request we set id to false
     // some delete operations (i.e. VMs) take a long time though
     // we use the result of deprovisionResource to _ensure_ deletion has completed
@@ -1708,6 +1722,20 @@ export class AzureProvider extends Provider {
       // check for un-deleted disks
       if (!disksDeleted || _.some(worker.providerData.disks.map(i => i['id']))) {
         return;
+      }
+
+      // If this was an ARM deployment, delete the deployment if it still exists at this point
+      // it might be deleted after successful deployment by us
+      if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM && worker.providerData.deployment?.name) {
+        let deploymentDeleted = await this.deprovisionResource({
+          worker,
+          client: this.deploymentsClient.deployments,
+          resourceType: 'deployment',
+          monitor,
+        });
+        if (!deploymentDeleted || worker.providerData.deployment.id) {
+          return;
+        }
       }
 
       // change to stopped

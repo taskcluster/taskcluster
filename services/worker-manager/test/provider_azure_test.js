@@ -566,10 +566,117 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'deployment should be deleted after successful provisioning');
       assert.ok(worker.providerData.provisioningComplete,
         'worker should be marked as provisioning complete');
-      assert.ok(worker.providerData.deployment.id,
-        'deployment id should be stored');
-      assert.strictEqual(worker.providerData.deployment.operation, undefined,
-        'deployment operation should be cleared after success');
+      assert.ok(worker.providerData.deployment.operation,
+        'deployment operation should started at this point');
+    });
+
+    test('failed ARM deployment resources are cleaned up', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+      const vmName = worker.providerData.vm.name;
+
+      // simulate partial deployment failure
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
+        resourceGroupName,
+        deploymentName,
+        [
+          {
+            properties: {
+              provisioningState: 'Succeeded',
+              targetResource: {
+                resourceType: 'Microsoft.Network/publicIPAddresses',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
+              },
+            },
+          },
+          {
+            properties: {
+              provisioningState: 'Succeeded',
+              targetResource: {
+                resourceType: 'Microsoft.Network/networkInterfaces',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/networkInterfaces/fake-nic`,
+              },
+            },
+          },
+          {
+            properties: {
+              provisioningState: 'Failed',
+              targetResource: {
+                resourceType: 'Microsoft.Compute/virtualMachines',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
+              },
+            },
+          },
+        ],
+      );
+
+      fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Failed', 'VM provisioning failed');
+
+      // Trigger deployment check - should extract resources and mark for removal
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      assert.equal(worker.state, 'stopping', 'worker should be marked as stopping');
+      assert.ok(worker.providerData.ip?.name, 'should have extracted IP');
+      assert.ok(worker.providerData.nic?.name, 'should have extracted NIC');
+
+      // Create fake resources for cleanup testing
+      fake.networkClient.publicIPAddresses.makeFakeResource(resourceGroupName, 'fake-ip');
+      fake.networkClient.networkInterfaces.makeFakeResource(resourceGroupName, 'fake-nic');
+
+      // Call deprovisionResources - should merge resources
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      assert.ok(worker.providerData.ip, 'IP should be in providerData');
+      assert.ok(worker.providerData.nic, 'NIC should be in providerData');
+      assert.equal(worker.providerData.ip.name, 'fake-ip', 'IP name should match');
+      assert.equal(worker.providerData.nic.name, 'fake-nic', 'NIC name should match');
+
+      // VM should be skipped (id: false), starts deleting NIC
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish NIC deletion
+      fake.networkClient.networkInterfaces.fakeFinishRequest(resourceGroupName, 'fake-nic');
+
+      // Third call - NIC done, starts deleting IP
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish IP deletion
+      fake.networkClient.publicIPAddresses.fakeFinishRequest(resourceGroupName, 'fake-ip');
+
+      // Fourth call - IP done, no disks, should finalize and mark as STOPPED
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Worker should now be STOPPED and failedDeploymentResources should be cleaned up
+      assert.equal(worker.state, 'stopped', 'worker should be stopped');
+      assert.ok(!worker.providerData.failedDeploymentResources, 'failedDeploymentResources should be cleaned up');
+
+      // Deployment should be deleted
+      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'failed deployment should be deleted');
     });
   });
 
