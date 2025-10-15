@@ -183,7 +183,7 @@ tasks:
 
           # Note: This task is built server side without the context or tooling that
           # exist in tree so we must hard code the hash
-          image: mozillareleases/taskgraph:decision-v15.1.0@sha256:3301db720761ad3442090f108fcebbaf6f49e76a1669f89b8973e4a9831337ab
+          image: mozillareleases/taskgraph:decision-v16.2.1@sha256:cd82d92f7f2be8b4fe772335eb3f370854789cc2415d61e2e322fee7f9a47c19
 
           maxRunTime: 600
 
