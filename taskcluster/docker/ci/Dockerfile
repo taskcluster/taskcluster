@@ -3,6 +3,7 @@ FROM node:22.20.0-bookworm
 
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
+COPY --from=ghcr.io/astral-sh/uv:0.9.2 /uv /uvx /bin/
 
 VOLUME /builds/worker/checkouts
 
@@ -27,7 +28,6 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
     apt-get install -y \
     ca-certificates \
     gnupg \
-    python3-venv && \
     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
     echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update && \
