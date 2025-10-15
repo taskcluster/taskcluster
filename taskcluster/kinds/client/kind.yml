@@ -4,6 +4,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
   - src.transforms:taskcluster_image_versions
   - src.transforms:add_task_env
+  - taskgraph.transforms.matrix
   - taskgraph.transforms.run
   - taskgraph.transforms.task
 
@@ -72,51 +73,28 @@ tasks:
         {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
         sleep 2 &&
         CHROME_BIN=firefox DISPLAY=:99 corepack yarn test
-  py39:
-    description: python3.9 client tests
+  py:
+    description: python{matrix[python]} client tests
+    matrix:
+      set-name: "py{matrix[python]}"
+      substitution-fields: [description, worker]
+      python: ["313", "312", "311", "310", "39"]
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.9-trixie
+      docker-image: {in-tree: python}
+      env:
+        UV_PYTHON: "{matrix[python]}"
     run:
+      using: run-task
+      cwd: '{checkout}'
+      use-caches: [checkout, uv]
       command: >-
-        eval $(python test/client-library-secrets.py) &&
+        set +x &&
+        eval $(python3 test/client-library-secrets.py) &&
+        set -x &&
         cd clients/client-py &&
-        uv run pytest
-  py310:
-    description: python3.10 client tests
-    worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.10-trixie
-    run:
-      command: >-
-        eval $(python test/client-library-secrets.py) &&
-        cd clients/client-py &&
-        uv run pytest
-  py311:
-    description: python3.11 client tests
-    worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.11-trixie
-    run:
-      command: >-
-        eval $(python test/client-library-secrets.py) &&
-        cd clients/client-py &&
-        uv run pytest
-  py312:
-    description: python3.12 client tests
-    worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.12-trixie
-    run:
-      command: >-
-        eval $(python test/client-library-secrets.py) &&
-        cd clients/client-py &&
-        uv run pytest
-  py313:
-    description: python3.13 client tests
-    worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.13-trixie
-    run:
-      command: >-
-        eval $(python test/client-library-secrets.py) &&
-        cd clients/client-py &&
-        uv run pytest
+        uv sync --only-dev &&
+        uv run pytest --cov=taskcluster --cov-report=term-missing -v &&
+        uv run ./lint.sh
   rust:
     description: rust client tests
     worker:

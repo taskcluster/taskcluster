@@ -3,7 +3,8 @@ FROM node:24.11.0-trixie
 
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
-COPY --from=ghcr.io/astral-sh/uv:0.9.2 /uv /uvx /bin/
+# %ARG UV_VERSION
+COPY --from=ghcr.io/astral-sh/uv:$UV_VERSION /uv /uvx /bin/
 
 VOLUME /builds/worker/checkouts
 
