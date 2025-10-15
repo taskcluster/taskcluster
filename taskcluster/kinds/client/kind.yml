@@ -75,7 +75,7 @@ tasks:
   py39:
     description: python3.9 client tests
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.9-alpine
+      docker-image: ghcr.io/astral-sh/uv:python3.9-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
@@ -84,7 +84,7 @@ tasks:
   py310:
     description: python3.10 client tests
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.10-alpine
+      docker-image: ghcr.io/astral-sh/uv:python3.10-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
@@ -93,7 +93,7 @@ tasks:
   py311:
     description: python3.11 client tests
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.11-alpine
+      docker-image: ghcr.io/astral-sh/uv:python3.11-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
@@ -102,7 +102,7 @@ tasks:
   py312:
     description: python3.12 client tests
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.12-alpine
+      docker-image: ghcr.io/astral-sh/uv:python3.12-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
@@ -111,7 +111,7 @@ tasks:
   py313:
     description: python3.13 client tests
     worker:
-      docker-image: ghcr.io/astral-sh/uv:python3.13-alpine
+      docker-image: ghcr.io/astral-sh/uv:python3.13-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&

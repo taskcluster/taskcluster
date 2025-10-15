@@ -1,5 +1,5 @@
-FROM golang:1.25.3-bookworm AS golang
-FROM node:22.20.0-bookworm
+FROM golang:1.25.3-trixie AS golang
+FROM node:22.20.0-trixie
 
 COPY --from=golang /usr/local/go /usr/local/go
 COPY --from=golang /go /go
@@ -27,9 +27,11 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
     apt-get update && \
     apt-get install -y \
     ca-certificates \
-    gnupg \
-    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    gnupg && \
+    install -d /usr/share/postgresql-common/pgdg && \
+    curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    . /etc/os-release && \
+    sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main' > /etc/apt/sources.list.d/pgdg.list" && \
     apt-get update && \
     apt-get install -y postgresql-15 && \
     # add the en_US.UTF8 locale to the system
