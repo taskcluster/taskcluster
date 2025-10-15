@@ -37,10 +37,13 @@ tasks:
   python:
     description: python flake8
     worker:
-      docker-image: {in-tree: ci}
+      docker-image: {in-tree: python}
     run:
+      using: run-task
+      cwd: '{checkout}'
+      use-caches: [checkout, uv]
       command: >-
         uv venv &&
         source .venv/bin/activate &&
         uv pip install flake8 &&
-        sh test/py-lint.sh
+        uv run sh test/py-lint.sh
