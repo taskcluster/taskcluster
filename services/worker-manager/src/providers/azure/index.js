@@ -1125,7 +1125,7 @@ export class AzureProvider extends Provider {
   /*
    * deprovisionResource attempts to delete a resource and verify deletion
    * if the resource has been verified deleted
-   *   * sets providerData[resourceType].id = false, signalling it has been deleted
+   *   * sets providerData[resourceType].deleted = true, signalling it has been deleted
    *   * returns true
    *
    */
@@ -1149,6 +1149,13 @@ export class AzureProvider extends Provider {
       resourceName: typeData.name,
     });
 
+    if (typeData?.deleted === true) {
+      // if resource was already deleted we don't have to query api by name again to make sure it is 404
+      // and avoid being queried multiple times during deprovision cycles
+      debug(`resource ${typeData.name} already deleted`);
+      return true;
+    }
+
     debug(`deprovisionResource for ${resourceType} with index ${index}`);
 
     let shouldDelete = false;
@@ -1167,16 +1174,16 @@ export class AzureProvider extends Provider {
         }
       } catch (err) {
         if (err.statusCode === 404) {
-          debug(`resource ${typeData.name} not found; removing its id`);
-          // if we check for `true` we repeat lots of GET requests
-          // resource has been deleted and isn't in the API or never existed
+          debug(`resource ${typeData.name} not found; removing its id and marking as deleted`);
           await worker.update(this.db, worker => {
             if (index !== undefined) {
               worker.providerData[resourceType][index].operation = undefined;
               worker.providerData[resourceType][index].id = false;
+              worker.providerData[resourceType][index].deleted = true;
             } else {
               worker.providerData[resourceType].operation = undefined;
               worker.providerData[resourceType].id = false;
+              worker.providerData[resourceType].deleted = true;
             }
           });
 
