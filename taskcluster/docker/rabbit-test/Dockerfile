@@ -1,4 +1,4 @@
-FROM node:22.20.0-bookworm
+FROM node:22.20.0-trixie
 
 VOLUME /builds/worker/checkouts
 
