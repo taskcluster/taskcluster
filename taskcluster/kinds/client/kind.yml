@@ -80,7 +80,6 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        uv sync --all-extras &&
         uv run pytest
   py310:
     description: python3.10 client tests
@@ -90,7 +89,6 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        uv sync --all-extras &&
         uv run pytest
   py311:
     description: python3.11 client tests
@@ -100,7 +98,6 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        uv sync --all-extras &&
         uv run pytest
   py312:
     description: python3.12 client tests
@@ -110,7 +107,6 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        uv sync --all-extras &&
         uv run pytest
   py313:
     description: python3.13 client tests
@@ -120,7 +116,6 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        uv sync --all-extras &&
         uv run pytest
   rust:
     description: rust client tests

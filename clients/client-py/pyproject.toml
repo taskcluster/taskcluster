@@ -35,21 +35,7 @@ dependencies = [
     "async_timeout>=2.0.0",
 ]
 
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-    "pytest-asyncio",
-    "httmock",
-    "mock",
-    "flake8",
-    "psutil",
-    "hypothesis",
-    "coverage",
-    "aiofiles",
-    "httptest",
-]
+[dependency-groups]
 dev = [
     "pytest",
     "pytest-cov",

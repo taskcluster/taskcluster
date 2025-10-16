@@ -1651,7 +1651,7 @@ dependencies = [
     { name = "taskcluster-urls" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "aiofiles" },
     { name = "coverage", version = "7.10.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -1672,61 +1672,36 @@ dev = [
     { name = "tox", version = "4.30.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "tox", version = "4.31.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
-test = [
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.7.4" },
+    { name = "async-timeout", specifier = ">=2.0.0" },
+    { name = "mohawk", specifier = ">=0.3.4" },
+    { name = "python-dateutil", specifier = ">=2.8.2" },
+    { name = "requests", specifier = ">=2.4.3" },
+    { name = "slugid", specifier = ">=2" },
+    { name = "taskcluster-urls", specifier = ">=12.1.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
     { name = "aiofiles" },
-    { name = "coverage", version = "7.10.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "coverage", version = "7.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "coverage" },
     { name = "flake8" },
+    { name = "grip" },
     { name = "httmock" },
     { name = "httptest" },
-    { name = "hypothesis", version = "6.141.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "hypothesis", version = "6.142.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "hypothesis" },
     { name = "mock" },
     { name = "psutil" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+    { name = "ruff" },
+    { name = "tox" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiofiles", marker = "extra == 'dev'" },
-    { name = "aiofiles", marker = "extra == 'test'" },
-    { name = "aiohttp", specifier = ">=3.7.4" },
-    { name = "async-timeout", specifier = ">=2.0.0" },
-    { name = "coverage", marker = "extra == 'dev'" },
-    { name = "coverage", marker = "extra == 'test'" },
-    { name = "flake8", marker = "extra == 'dev'" },
-    { name = "flake8", marker = "extra == 'test'" },
-    { name = "grip", marker = "extra == 'dev'" },
-    { name = "httmock", marker = "extra == 'dev'" },
-    { name = "httmock", marker = "extra == 'test'" },
-    { name = "httptest", marker = "extra == 'dev'" },
-    { name = "httptest", marker = "extra == 'test'" },
-    { name = "hypothesis", marker = "extra == 'dev'" },
-    { name = "hypothesis", marker = "extra == 'test'" },
-    { name = "mock", marker = "extra == 'dev'" },
-    { name = "mock", marker = "extra == 'test'" },
-    { name = "mohawk", specifier = ">=0.3.4" },
-    { name = "psutil", marker = "extra == 'dev'" },
-    { name = "psutil", marker = "extra == 'test'" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'test'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'test'" },
-    { name = "pytest-mock", marker = "extra == 'dev'" },
-    { name = "pytest-mock", marker = "extra == 'test'" },
-    { name = "python-dateutil", specifier = ">=2.8.2" },
-    { name = "requests", specifier = ">=2.4.3" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "slugid", specifier = ">=2" },
-    { name = "taskcluster-urls", specifier = ">=12.1.0" },
-    { name = "tox", marker = "extra == 'dev'" },
-]
-provides-extras = ["test", "dev"]
 
 [[package]]
 name = "taskcluster-urls"

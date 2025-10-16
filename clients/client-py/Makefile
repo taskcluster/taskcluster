@@ -5,15 +5,15 @@ UV := $(shell which uv)
 
 .PHONY: test
 test: devel
-	uv run pytest
+	$(UV) run pytest
 
 .PHONY: lint
 lint: devel
-	uv run ruff check taskcluster test
+	$(UV) run ruff check taskcluster test
 
 .PHONY: format
 format: devel
-	uv run ruff format taskcluster test
+	$(UV) run ruff format taskcluster test
 
 .PHONY: update
 update: docs
@@ -28,7 +28,7 @@ clean:
 
 .PHONY: docs
 docs: devel
-	uv run --with grip grip --export README.md
+	$(UV) run --with grip grip --export README.md
 	@echo "Now, upload README.html wherever docs go!"
 
 .PHONY: devel
@@ -37,8 +37,8 @@ devel:
 		echo "uv not found, installing..."; \
 		curl -LsSf https://astral.sh/uv/install.sh | sh; \
 	fi
-	uv sync --all-extras
+	$(UV) sync --all-extras
 
 .PHONY: install
 install:
-	uv pip install -e .
+	$(UV) pip install -e .
