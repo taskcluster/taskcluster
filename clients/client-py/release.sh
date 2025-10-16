@@ -4,7 +4,7 @@
 # a uniform way and upload it to pypi.  It should be the only way that releases
 # are created.
 
-# Note that the VERSION in setup.py should be updated before release!
+# Note that the VERSION in pyproject.toml should be updated before release!
 
 REPOSITORY_URL=https://test.pypi.org/legacy/
 if [ "$1" = "--real" ]; then
@@ -19,20 +19,19 @@ set -e
 
 # begin making the distribution
 rm -f dist/*
-rm -rf .release
-mkdir -p .release
-
-python3 -mvenv .release/py3
-.release/py3/bin/pip install -U pip
-.release/py3/bin/pip install -U setuptools setuptools_rust twine wheel
-.release/py3/bin/python setup.py sdist
-.release/py3/bin/python setup.py bdist_wheel
-
-# Work around https://bitbucket.org/pypa/wheel/issues/147/bdist_wheel-should-start-by-cleaning-up
 rm -rf build/
 
 ls -al dist
 
-# Publish to PyPI using Twine, as recommended by:
-# https://packaging.python.org/tutorials/distributing-packages/#uploading-your-project-to-pypi
-.release/py3/bin/twine upload --repository-url $REPOSITORY_URL dist/*
+# Build and publish using uv
+# Install uv if not already available
+if ! command -v uv &> /dev/null; then
+    echo "uv not found, installing..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# Build the package using uv
+uv build
+
+# Publish to PyPI using uv
+uv publish --publish-url $REPOSITORY_URL

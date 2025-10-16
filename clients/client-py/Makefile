@@ -1,19 +1,26 @@
-TOX_ENV ?= py311
-VENV := .tox/$(TOX_ENV)
+VENV := .venv
 PYTHON := $(VENV)/bin/python
 APIS_JSON=$(PWD)/apis.json
-TOX := $(shell which tox)
+UV := $(shell which uv)
 
 .PHONY: test
 test: devel
-	$(TOX)
+	uv run pytest
+
+.PHONY: lint
+lint: devel
+	uv run ruff check taskcluster test
+
+.PHONY: format
+format: devel
+	uv run ruff format taskcluster test
 
 .PHONY: update
 update: docs
 
 .PHONY: clean
 clean:
-	rm -rf .tox htmlcov .coverage nosetests.xml
+	rm -rf .venv .tox htmlcov .coverage nosetests.xml
 	rm -rf *.egg *.egg-info .eggs/ dist/ build/
 	find . -name "*.py?" -exec rm {} +
 	find . -type d -name __pycache__ -exec rm -rf {} +
@@ -21,11 +28,17 @@ clean:
 
 .PHONY: docs
 docs: devel
-	$(PYTHON) -m pip install grip
-	$(VENV)/bin/grip --export README.md
+	uv run --with grip grip --export README.md
 	@echo "Now, upload README.html wherever docs go!"
 
 .PHONY: devel
 devel:
-	$(TOX) --develop --notest -e $(TOX_ENV)
-	$(PYTHON) devDep.py
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo "uv not found, installing..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
+	uv sync --all-extras
+
+.PHONY: install
+install:
+	uv pip install -e .

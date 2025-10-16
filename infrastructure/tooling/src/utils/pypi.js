@@ -26,10 +26,9 @@ export const pyClientRelease = async ({ dir, username, password, logfile, utils 
         env: {
           ...process.env,
           HOME: homeDir,
-          TWINE_USERNAME: username,
-          TWINE_PASSWORD: password,
-          TWINE_REPOSITORY_URL: 'https://upload.pypi.org/legacy/',
-          TWINE_NON_INTERACTIVE: '1',
+          UV_PUBLISH_USERNAME: username,
+          UV_PUBLISH_PASSWORD: password,
+          UV_PUBLISH_URL: 'https://upload.pypi.org/legacy/',
         },
         cwd: dir,
       });

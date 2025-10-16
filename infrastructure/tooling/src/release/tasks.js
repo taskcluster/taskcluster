@@ -149,10 +149,10 @@ export default ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
-      const pyclient = 'clients/client-py/setup.py';
+      const pyclient = 'clients/client-py/pyproject.toml';
       utils.status({ message: `Update ${pyclient}` });
       await modifyRepoFile(pyclient, contents =>
-        contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
+        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
       changed.push(pyclient);
 
       for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
