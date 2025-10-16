@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.0.1
+
+### GENERAL
+
+▶ [patch]
+Switches CI tasks to use `uv` tool and to the latest stable Debian release (`trixie`).
+
+▶ [patch]
+Upgrades to taskgraph v16.2.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Improves Azure resource deprovisioning by skipping checks on already deleted resources.
+Previously implemented logic was flawed in a way that same resources would be queried over and over.
+Which led to an increased number of cloud api calls and was likely causing some minor delays per each worker being deprovisioned
+
 ## v91.0.0
 
 ### GENERAL
