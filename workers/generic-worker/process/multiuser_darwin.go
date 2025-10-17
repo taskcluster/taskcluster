@@ -51,6 +51,13 @@ type (
 		Setpgid bool     `json:"setpgid"`
 		Setsid  bool     `json:"setsid"`
 	}
+
+	// FDHandshake is sent via WriteMsgUnix with file descriptors (SCM_RIGHTS).
+	// After receiving this, the agent uses ReadFrame to get the full CommandRequest.
+	FDHandshake struct {
+		NumFDs      int `json:"num_fds"`
+		PayloadSize int `json:"payload_size"`
+	}
 )
 
 func connectWithRetry(socketPath string, timeout time.Duration) (net.Conn, error) {
@@ -191,19 +198,41 @@ func (c *Command) Start() error {
 
 	log.Printf("FDs: %#v", fds)
 
-	// Send FDs to the agent using SCM_RIGHTS
-	rights := unix.UnixRights(fds...)
-
+	// Marshal the full command request
 	payload, err := json.Marshal(request)
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
-	log.Printf("Request to be sent from daemon: %v", string(payload))
+	log.Printf("Request to be sent from daemon (%d bytes): %v", len(payload), string(payload))
 
-	_, _, err = conn.(*net.UnixConn).WriteMsgUnix(payload, rights, nil)
+	// Two-phase protocol:
+	// Phase 1: Send file descriptors + handshake via WriteMsgUnix (SCM_RIGHTS)
+	// Phase 2: Send full command request via WriteFrame (no size limit)
+
+	handshake := FDHandshake{
+		NumFDs:      len(fds),
+		PayloadSize: len(payload),
+	}
+
+	handshakeJSON, err := json.Marshal(handshake)
 	if err != nil {
-		return fmt.Errorf("failed to write to unix socket: %w", err)
+		return fmt.Errorf("failed to marshal handshake: %w", err)
+	}
+
+	// Phase 1: Send FDs and handshake
+	rights := unix.UnixRights(fds...)
+	_, _, err = conn.(*net.UnixConn).WriteMsgUnix(handshakeJSON, rights, nil)
+	if err != nil {
+		return fmt.Errorf("failed to write handshake to unix socket: %w", err)
+	}
+
+	log.Printf("Sent handshake: %d FDs, %d byte payload", len(fds), len(payload))
+
+	// Phase 2: Send full command request using framed protocol
+	err = WriteFrame(conn, payload)
+	if err != nil {
+		return fmt.Errorf("failed to write command request frame: %w", err)
 	}
 
 	// Only start io/copy go routines after writing FDs to the socket, to avoid

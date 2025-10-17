@@ -127,11 +127,15 @@ func handleConnection(conn net.Conn) {
 	var n int
 	var flags int
 
-	// Receive FDs
-	oob := make([]byte, 1024)
-	buf := make([]byte, 16384)
+	// Two-phase protocol:
+	// Phase 1: Receive file descriptors + handshake via ReadMsgUnix (SCM_RIGHTS)
+	// Phase 2: Receive full command request via ReadFrame (no size limit)
 
-	n, oobn, flags, _, err = conn.(*net.UnixConn).ReadMsgUnix(buf, oob)
+	// Receive FDs and handshake
+	oob := make([]byte, 1024)
+	handshakeBuf := make([]byte, 16384)
+
+	n, oobn, flags, _, err = conn.(*net.UnixConn).ReadMsgUnix(handshakeBuf, oob)
 
 	r := &process.Result{}
 
@@ -155,17 +159,21 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 
-	msg := buf[:n]
-	log.Printf("Received message: %v", string(msg))
-
-	if flags&unix.MSG_TRUNC != 0 {
-		err = errors.New("command too big to be processed by launch agent - 16KB buffer limit")
-		return
-	}
 	if flags&unix.MSG_CTRUNC != 0 {
 		err = errors.New("generic worker bug: file handles too big for buffer")
 		return
 	}
+
+	handshakeMsg := handshakeBuf[:n]
+	log.Printf("Received handshake: %v", string(handshakeMsg))
+
+	var handshake process.FDHandshake
+	err = json.Unmarshal(handshakeMsg, &handshake)
+	if err != nil {
+		return
+	}
+
+	log.Printf("Handshake: expecting %d FDs and %d byte payload", handshake.NumFDs, handshake.PayloadSize)
 
 	msgs, err = unix.ParseSocketControlMessage(oob[:oobn])
 	if err != nil {
@@ -177,8 +185,27 @@ func handleConnection(conn net.Conn) {
 	}
 	log.Printf("Received FDs: %#v", fds)
 
+	if len(fds) != handshake.NumFDs {
+		err = fmt.Errorf("handshake mismatch: expected %d FDs, got %d", handshake.NumFDs, len(fds))
+		return
+	}
+
+	// Phase 2: Receive full command request via ReadFrame
+	payloadBytes, err := process.ReadFrame(conn)
+	if err != nil {
+		err = fmt.Errorf("failed to read command request frame: %w", err)
+		return
+	}
+
+	log.Printf("Received command request payload: %d bytes", len(payloadBytes))
+
+	if len(payloadBytes) != handshake.PayloadSize {
+		err = fmt.Errorf("payload size mismatch: expected %d bytes, got %d", handshake.PayloadSize, len(payloadBytes))
+		return
+	}
+
 	var request process.CommandRequest
-	err = json.Unmarshal(buf[:n], &request)
+	err = json.Unmarshal(payloadBytes, &request)
 	if err != nil {
 		return
 	}
@@ -226,8 +253,8 @@ func handleConnection(conn net.Conn) {
 	}
 
 	r.Pid = cmd.Process.Pid
-	msg, _ = json.Marshal(*r)
-	_ = process.WriteFrame(conn, msg)
+	pidMsg, _ := json.Marshal(*r)
+	_ = process.WriteFrame(conn, pidMsg)
 
 	log.Printf("Started command: %s with PID %d\n", request.Path, cmd.Process.Pid)
 
