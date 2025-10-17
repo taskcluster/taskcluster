@@ -100,6 +100,15 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 	}
 	exitCode := RunWorker()
 
+	if runtime.GOOS == "darwin" {
+		logPath := filepath.Join("/Users", taskContext.User.Name, "gw-launch-agent.log")
+		data, err := os.ReadFile(logPath)
+		if err != nil {
+			t.Fatalf("Could not read gw-launch-agent log: %v", err)
+		}
+		t.Logf("gw-launch-agent log:\n%s", string(data))
+	}
+
 	if exitCode != expectedExitCode {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, expectedExitCode)
 	} else {
