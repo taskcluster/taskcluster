@@ -80,7 +80,7 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        TOXENV=py39 uvx tox
+        uv run pytest
   py310:
     description: python3.10 client tests
     worker:
@@ -89,7 +89,7 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        TOXENV=py310 uvx tox
+        uv run pytest
   py311:
     description: python3.11 client tests
     worker:
@@ -98,7 +98,7 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        TOXENV=py311 uvx tox
+        uv run pytest
   py312:
     description: python3.12 client tests
     worker:
@@ -107,7 +107,7 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        TOXENV=py312 uvx tox
+        uv run pytest
   py313:
     description: python3.13 client tests
     worker:
@@ -116,7 +116,7 @@ tasks:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        TOXENV=py313 uvx tox
+        uv run pytest
   rust:
     description: rust client tests
     worker:

@@ -204,7 +204,7 @@ def test_success_put_file():
                 pass
 
         p.return_value = FakeResp()
-        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'setup.py')
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'pyproject.toml')
         subject.putFile(path, 'http://www.example.com', 'text/plain')
         p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY, mock.ANY)
 
