@@ -1,0 +1,98 @@
+{
+  "maxCapacity": 1,
+  "minCapacity": 0,
+  "launchConfigs": [
+    {
+      "armDeployment": {
+        "mode": "Incremental",
+        "templateLink": {
+          "id": "/subscriptions/8a205152-b25a-417f-a676-80465535a6c9/resourceGroups/rg-tc-eng-templates/providers/Microsoft.Resources/templateSpecs/windows-spot-worker-f16s/versions/1.0.0"
+        },
+        "parameters": {
+          "vmName": {
+            "value": "tc-worker-win2022"
+          },
+          "location": {
+            "value": "eastus"
+          },
+          "vmSize": {
+            "value": "Standard_F16s_v2"
+          },
+          "priority": {
+            "value": "Spot"
+          },
+          "evictionPolicy": {
+            "value": "Delete"
+          },
+          "subnetId": {
+            "value": "/subscriptions/8a205152-b25a-417f-a676-80465535a6c9/resourceGroups/rg-tc-eng-vnets/providers/Microsoft.Network/virtualNetworks/tc-vnet-eastus/subnets/default"
+          },
+          "imageId": {
+            "value": "/subscriptions/8a205152-b25a-417f-a676-80465535a6c9/resourceGroups/rg-tc-eng-images/providers/Microsoft.Compute/images/imageset-0p83e38fo2fqmnsl6zti-eastus"
+          },
+          "adminUsername": {
+            "value": "azureuser"
+          },
+          "adminPassword": {
+            "reference": {
+              "keyVault": {
+                "id": "/subscriptions/8a205152-b25a-417f-a676-80465535a6c9/resourceGroups/rg-tc-eng-keyvault/providers/Microsoft.KeyVault/vaults/tc-eng-vault"
+              },
+              "secretName": "vm-admin-password"
+            }
+          },
+          "timeZone": {
+            "value": "UTC"
+          },
+          "enableAutomaticUpdates": {
+            "value": false
+          },
+          "osDiskCaching": {
+            "value": "ReadOnly"
+          },
+          "diffDiskOption": {
+            "value": "Local"
+          },
+          "createPublicIp": {
+            "value": true
+          },
+          "tags": {
+            "value": {
+              "Environment": "Production",
+              "WorkerType": "generic-worker-win2022",
+              "ManagedBy": "Taskcluster",
+              "LaunchConfigId": "lc-81d713ae001dfb5f3844"
+            }
+          }
+        }
+      },
+      "workerManager": {
+        "publicIp": true,
+        "launchConfigId": "lc-81d713ae001dfb5f3844",
+        "capacityPerInstance": 1
+      },
+      "workerConfig": {
+        "genericWorker": {
+          "config": {
+            "wstAudience": "communitytc",
+            "deploymentId": "fccf0e942cdc3b68",
+            "wstServerURL": "https://community-websocktunnel.services.mozilla.com",
+            "headlessTasks": true,
+            "idleTimeoutSecs": 300,
+            "livelogExecutable": "C:\\generic-worker\\livelog.exe",
+            "workerTypeMetadata": {
+              "machine-setup": {
+                "script": "https://raw.githubusercontent.com/taskcluster/community-tc-config/e37100a73dc38a60316d389533f737bf0ee912b2/imagesets/generic-worker-win2022/bootstrap.ps1",
+                "maintainer": "pmoore@mozilla.com"
+              }
+            },
+            "shutdownMachineOnIdle": true,
+            "ed25519SigningKeyLocation": "C:\\generic-worker\\generic-worker-ed25519-signing-key.key",
+            "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
+            "shutdownMachineOnInternalError": true
+          }
+        }
+      }
+    }
+  ]
+}
