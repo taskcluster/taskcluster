@@ -38,7 +38,7 @@ task-defaults:
       - cache-name: checkouts
         directory: taskcluster
       - content:
-          url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
         directory: '{go_version}'
         format: tar.gz
       - content:
