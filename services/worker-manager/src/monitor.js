@@ -239,6 +239,24 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'azureResourceGroupEnsured',
+  title: 'Azure Resource Group Create or Update Information',
+  type: 'azure-resource-group-ensure',
+  version: 1,
+  level: 'notice',
+  description: `
+    When ARM template is being deployed with custom resource group name,
+    Azure provider would create or update the resource group.
+    This is to make sure that deployment is run in the existing resource group.
+  `,
+  fields: {
+    workerPoolId: 'Worker Pool ID',
+    resourceGroupName: 'Resource Group Name',
+    location: 'Location',
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
 };

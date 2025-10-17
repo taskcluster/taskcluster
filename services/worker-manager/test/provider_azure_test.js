@@ -640,8 +640,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.ok(worker.providerData.nic?.name, 'should have extracted NIC');
 
       // Create fake resources for cleanup testing
+      fake.computeClient.virtualMachines.makeFakeResource(resourceGroupName, vmName);
       fake.networkClient.publicIPAddresses.makeFakeResource(resourceGroupName, 'fake-ip');
       fake.networkClient.networkInterfaces.makeFakeResource(resourceGroupName, 'fake-nic');
+
+      // Delete the failed deployment from fake so deprovisionResource can mark it as deleted
+      await fake.deploymentsClient.deployments.beginDelete(resourceGroupName, deploymentName);
 
       // Call deprovisionResources - should merge resources
       await provider.deprovisionResources({ worker, monitor });
@@ -652,21 +656,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(worker.providerData.ip.name, 'fake-ip', 'IP name should match');
       assert.equal(worker.providerData.nic.name, 'fake-nic', 'NIC name should match');
 
-      // VM should be skipped (id: false), starts deleting NIC
+      // Second call - starts deleting VM
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish VM deletion
+      fake.computeClient.virtualMachines.fakeFinishRequest(resourceGroupName, vmName);
+
+      // Third call - VM done, starts deleting NIC
       await provider.deprovisionResources({ worker, monitor });
       await worker.reload(helper.db);
 
       // Finish NIC deletion
       fake.networkClient.networkInterfaces.fakeFinishRequest(resourceGroupName, 'fake-nic');
 
-      // Third call - NIC done, starts deleting IP
+      // Fourth call - NIC done, starts deleting IP
       await provider.deprovisionResources({ worker, monitor });
       await worker.reload(helper.db);
 
       // Finish IP deletion
       fake.networkClient.publicIPAddresses.fakeFinishRequest(resourceGroupName, 'fake-ip');
 
-      // Fourth call - IP done, no disks, should finalize and mark as STOPPED
+      // Fifth call - IP done, no disks, deletes deployment and finalizes
       await provider.deprovisionResources({ worker, monitor });
       await worker.reload(helper.db);
 
@@ -1390,16 +1401,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         });
       }
     };
-
-    test('updates deprecated disk providerdata to disks', async function() {
-      await worker.update(helper.db, worker => {
-        delete worker.providerData.disks;
-        worker.providerData.disk = { name: "old_test_disk", id: false };
-      });
-      await provider.checkWorker({ worker });
-      await worker.reload(helper.db);
-      assert.equal(worker.providerData.disks[0].name, "old_test_disk");
-    });
 
     test('calls provisionResources for still-running workers', async function() {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });

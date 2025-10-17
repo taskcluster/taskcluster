@@ -417,9 +417,10 @@ export class ResourceGroupManager {
 
   /**
    * Check if a resource group exists
+   * Returns Azure SDK response format with body property
    */
   async checkExistence(resourceGroupName) {
-    return this._resourceGroups.has(resourceGroupName);
+    return { body: this._resourceGroups.has(resourceGroupName) };
   }
 
   /**

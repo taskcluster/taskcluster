@@ -16551,6 +16551,19 @@
           "version": 1
         },
         {
+          "description": "When ARM template is being deployed with custom resource group name,\nAzure provider would create or update the resource group.\nThis is to make sure that deployment is run in the existing resource group.",
+          "fields": {
+            "location": "Location",
+            "resourceGroupName": "Resource Group Name",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "notice",
+          "name": "azureResourceGroupEnsured",
+          "title": "Azure Resource Group Create or Update Information",
+          "type": "azure-resource-group-ensure",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",

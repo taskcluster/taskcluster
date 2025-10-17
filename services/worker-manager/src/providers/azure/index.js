@@ -265,23 +265,22 @@ export class AzureProvider extends Provider {
    *
    * @param {string} resourceGroupName
    * @param {string} location
+   * @param {string} workerPoolId
    */
-  async #ensureResourceGroup(resourceGroupName, location) {
+  async #ensureResourceGroup(resourceGroupName, location, workerPoolId) {
     if (this.resourceGroupCache.has(resourceGroupName)) {
       return;
     }
 
-    const exists = await this._enqueue('query', () =>
+    const { body: exists } = await this._enqueue('query', () =>
       this.resourcesClient.resourceGroups.checkExistence(resourceGroupName));
 
     if (!exists) {
       await this._enqueue('query', () =>
         this.resourcesClient.resourceGroups.createOrUpdate(resourceGroupName, { location }));
 
-      this.monitor.debug({
-        message: 'created resource group',
-        resourceGroupName,
-        location,
+      this.monitor.log.azureResourceGroupEnsured({
+        workerPoolId, resourceGroupName, location,
       });
     }
 
@@ -453,7 +452,7 @@ export class AzureProvider extends Provider {
 
     // Only ensure existence if explicitly specified (providerConfig RG should already exist)
     if (cfg.armDeploymentResourceGroup) {
-      await this.#ensureResourceGroup(resourceGroupName, location);
+      await this.#ensureResourceGroup(resourceGroupName, location, workerPoolId);
     }
 
     const providerData = {
@@ -475,6 +474,17 @@ export class AzureProvider extends Provider {
         vmId: false,
         customData,
       },
+      ip: {
+        name: 'needs-to-be-fetched-from-deployment',
+        id: false,
+        operation: false,
+      },
+      nic: {
+        name: 'needs-to-be-fetched-from-deployment',
+        id: false,
+        operation: false,
+      },
+      disks: [],
       terminateAfter,
       reregistrationTimeout,
       queueInactivityTimeout,
@@ -529,14 +539,13 @@ export class AzureProvider extends Provider {
   }
 
   async #checkARMDeployment({ worker, monitor }) {
-    if (worker.providerData.deployment.id) {
-      // deployment already has id, so it's complete
-      return true;
+    if (worker.providerData.provisioningComplete) {
+      return;
     }
 
     try {
       monitor.debug('querying deployment by name');
-      const deployment = await this._enqueue('query', () =>
+      const deployment = await this._enqueue('get', () =>
         this.deploymentsClient.deployments.get(
           worker.providerData.resourceGroupName,
           worker.providerData.deployment.name,
@@ -547,7 +556,6 @@ export class AzureProvider extends Provider {
 
       // Expected terminal states are Succeded if all good, and Failed/Cancelled if something goes wrong
       // Deleteing/Deleted states can be ignored, handleOperation should clean it up
-
       const failedProvisioiningStates = [
         ArmDeploymentProvisioningState.Failed,
         ArmDeploymentProvisioningState.Canceled,
@@ -601,23 +609,25 @@ export class AzureProvider extends Provider {
       if (err.statusCode !== 404) {
         throw err;
       }
-    }
 
-    // Deploymet is likely still in progress - check status or operation might be expired or failed
-    if (worker.providerData.deployment.operation) {
-      let op = await this.handleOperation({
-        op: worker.providerData.deployment.operation,
-        errors: this.errors[worker.workerPoolId],
-        monitor,
-        worker,
-      });
-      if (!op) {
-        await worker.update(this.db, worker => {
-          worker.providerData.deployment.operation = undefined;
+      // Deploymet is likely still in progress - check status or operation might be expired or failed
+      if (worker.providerData.deployment.operation) {
+        let op = await this.handleOperation({
+          op: worker.providerData.deployment.operation,
+          errors: this.errors[worker.workerPoolId],
+          monitor,
+          worker,
         });
-        await this.removeWorker({ worker, reason: 'deployment operation expired' });
+        if (!op) {
+          await worker.update(this.db, worker => {
+            worker.providerData.deployment.operation = undefined;
+          });
+          // TODO: should it be removed right away?
+          await this.removeWorker({ worker, reason: 'deployment operation expired' });
+        }
       }
     }
+
     return false;
   }
 
@@ -643,10 +653,11 @@ export class AzureProvider extends Provider {
 
     try {
       monitor.debug('querying deployment operations for failed deployment');
-      for await (const operation of this.deploymentsClient.deploymentOperations.list(
+      const deploymentOperations = await this._enqueue('list', () => this.deploymentsClient.deploymentOperations.list(
         worker.providerData.resourceGroupName,
         worker.providerData.deployment.name,
-      )) {
+      ));
+      for await (const operation of deploymentOperations) {
         monitor.debug('deployment operation', operation);
         const { properties } = operation;
         if (properties?.targetResource?.id) {
@@ -1318,86 +1329,57 @@ export class AzureProvider extends Provider {
         vmName: worker.providerData.vm.name,
       } });
 
-    // update providerdata from deprecated disk to disks if applicable
-    // TODO: remove this since it was over 5years ago
-    if (_.has(worker.providerData, 'disk')) {
-      await worker.update(this.db, worker => {
-        worker.providerData.disks = [worker.providerData.disk];
-      });
-    }
-
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
-    // Handle STOPPING state first (common for both deployment methods)
+    // always update when the worker was last checked
+    await worker.update(this.db, worker => {
+      worker.lastChecked = new Date();
+    });
+
     if (worker.state === states.STOPPING) {
       await this.deprovisionResources({ worker, monitor });
-      await worker.update(this.db, worker => {
-        worker.lastChecked = new Date();
-      });
       return;
     }
 
     const isARMTemplate = worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM;
-    const isRequestedNotProvisioned = worker.state === states.REQUESTED && !worker.providerData.provisioningComplete;
-
-    // Handle ARM deployment creation and checking (before querying instance)
-    if (isARMTemplate && isRequestedNotProvisioned) {
+    if (isARMTemplate) {
+      // Handle ARM deployment creation and checking (before querying instance)
       const deploymentComplete = await this.#checkARMDeployment({ worker, monitor });
       if (!deploymentComplete) {
-        // Deployment still in progress or failed, checkARMDeployment handles failures
-        await worker.update(this.db, worker => {
-          worker.lastChecked = new Date();
-        });
         return;
       }
     }
 
-    // Query instance state
     const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
 
-    // Handle instance states
     switch (instanceState) {
       case InstanceStates.OK: {
         // count this worker as having been seen for later logging
         this.seen[worker.workerPoolId] += worker.capacity || 1;
 
-        // Skip lifecycle checks for ARM workers that just completed provisioning
-        const skipLifecycleChecks = isARMTemplate && isRequestedNotProvisioned;
-
-        if (!skipLifecycleChecks) {
-          // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
-          if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
-            // it is possible that scanner loop was taking longer and worker was already updated since last fetch
-            // so we need to check if terminateAfter is still in the past
-            await worker.reload(this.db);
-            if (worker.providerData.terminateAfter < Date.now()) {
-              const reason = 'terminateAfter time exceeded';
-              await this.removeWorker({ worker, reason });
-              await worker.update(this.db, worker => {
-                worker.lastChecked = new Date();
-              });
-              return;
-            }
-          }
-
-          const { isZombie, reason } = Provider.isZombie({ worker });
-          if (isZombie) {
+        // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
+        if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
+          // it is possible that scanner loop was taking longer and worker was already updated since last fetch
+          // so we need to check if terminateAfter is still in the past
+          await worker.reload(this.db);
+          if (worker.providerData.terminateAfter < Date.now()) {
+            const reason = 'terminateAfter time exceeded';
             await this.removeWorker({ worker, reason });
-            await worker.update(this.db, worker => {
-              worker.lastChecked = new Date();
-            });
             return;
           }
-
-          // Sequential provisioning: continue provisioning to gather VM data
-          if (!isARMTemplate) {
-            // Call provisionResources to allow it to finish up gathering data about the
-            // vm. This becomes a no-op once all required operations are complete.
-            await this.provisionResources({ worker, monitor });
-          }
         }
+
+        const { isZombie, reason } = Provider.isZombie({ worker });
+        if (isZombie) {
+          await this.removeWorker({ worker, reason });
+          return;
+        }
+
+        // Call provisionResources to allow it to finish up gathering data about the
+        // vm. This becomes a no-op once all required operations are complete.
+        await this.provisionResources({ worker, monitor });
         break;
       }
 
@@ -1409,8 +1391,8 @@ export class AzureProvider extends Provider {
 
       case InstanceStates.MISSING: {
         // VM has not been found, so it is either...
-        if (!isARMTemplate && isRequestedNotProvisioned) {
-          // ...still being created (sequential provisioning), in which case we should continue to provision...
+        if (worker.state === states.REQUESTED && !worker.providerData.provisioningComplete) {
+          // ...still being created, in which case we should continue to provision...
           await this.provisionResources({ worker, monitor });
         } else {
           // ...or RUNNING and has been deleted outside our control, in which
@@ -1426,11 +1408,6 @@ export class AzureProvider extends Provider {
         throw new Error(`invalid instanceState ${instanceState}: ${instanceStateReason}`);
       }
     }
-
-    // Update lastChecked timestamp (common for both deployment methods)
-    await worker.update(this.db, worker => {
-      worker.lastChecked = new Date();
-    });
   }
 
   /**
@@ -1454,6 +1431,12 @@ export class AzureProvider extends Provider {
       ));
       const powerStates = instanceView.statuses.map(i => i.code);
       monitor.debug({ message: 'fetched instance view', powerStates });
+
+      // instance info
+      // const vmInfo = await this._enqueue('get', () => this.computeClient.virtualMachines.get(
+      //   worker.providerData.resourceGroupName,
+      //   worker.providerData.vm.name,
+      // ));
 
       if (_.some(powerStates, state => failPowerStates.has(state))) {
         // A VM can transition to one of failPowerStates through an Azure issue of some sort, by being
@@ -1545,7 +1528,6 @@ export class AzureProvider extends Provider {
    *
    */
   async deprovisionResource({ client, worker, resourceType, monitor, index = undefined }) {
-    // TODO: .id === false is never checked so we likely query over and over and over
     if (!_.has(worker.providerData, resourceType)) {
       throw new Error(`Error removing worker: providerData does not contain resourceType ${resourceType}`);
     }
@@ -1662,11 +1644,7 @@ export class AzureProvider extends Provider {
    * while the worker is in the STOPPING state.  Like provisionResources,
    * it is called repeatedly in the worker-scanner until it is complete.
    *
-   * For the ARM Deployment method main assumption is that template should be
-   * responsible for resource cleanup for successful deployment.
-   * That means that when VM is deleted, all resources should cascade with `deleteOption: 'Delete'`
-   * In case of failed deployments, all partially deployed resources would be
-   * populated back into worker's providerData, so they could be deprovisioned in the same way
+   * For faster resource deletions, resources should ideally cascade with `deleteOption: 'Delete'`
    */
   async deprovisionResources({ worker, monitor }) {
     // After we make the delete request we set id to false
