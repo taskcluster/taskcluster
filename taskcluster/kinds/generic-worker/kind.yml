@@ -30,7 +30,7 @@ tasks:
     worker:
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
+            url: 'https://go.dev/dl/{go_version}.windows-amd64.zip'
           directory: '{go_version}'
           format: zip
         - content:
@@ -70,7 +70,7 @@ tasks:
       max-run-time: 300
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
           directory: '{go_version}'
           format: tar.gz
     run:
@@ -113,7 +113,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
           directory: '{go_version}'
           format: tar.gz
         - content:
@@ -193,7 +193,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
           directory: '{go_version}'
           format: tar.gz
         - content:
@@ -217,7 +217,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.darwin-arm64.tar.gz'
+            url: 'https://go.dev/dl/{go_version}.darwin-arm64.tar.gz'
           directory: '{go_version}'
           format: tar.gz
         - content:
@@ -241,7 +241,7 @@ tasks:
           type: file
       mounts:
         - content:
-            url: 'https://storage.googleapis.com/golang/{go_version}.windows-amd64.zip'
+            url: 'https://go.dev/dl/{go_version}.windows-amd64.zip'
           directory: '{go_version}'
           format: zip
         - content:
