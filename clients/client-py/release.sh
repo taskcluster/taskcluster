@@ -18,10 +18,8 @@ cd "$(dirname "${0}")"
 set -e
 
 # begin making the distribution
-rm -f dist/*
+rm -rf dist/
 rm -rf build/
-
-ls -al dist
 
 # Build and publish using uv
 # Install uv if not already available
