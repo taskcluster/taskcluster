@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8025](https://github.com/taskcluster/taskcluster/issues/8025)
+Generic Worker (macOS): updates the socket-based communication between the LaunchAgent and LaunchDaemon to handle any size of payload.
+
+### DEVELOPERS
+
+▶ [patch] [#8020](https://github.com/taskcluster/taskcluster/issues/8020)
+Client (python): declares what python versions are supported. Moves to modern standards with `pyproject.toml` and `uv` usage.
+
 ## v91.0.1
 
 ### GENERAL
