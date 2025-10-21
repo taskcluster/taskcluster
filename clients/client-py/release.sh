@@ -26,6 +26,7 @@ rm -rf build/
 if ! command -v uv &> /dev/null; then
     echo "uv not found, installing..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
+    source $HOME/.local/bin/env
 fi
 
 # Build the package using uv
