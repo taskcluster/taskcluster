@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.0.4
+
+### DEVELOPERS
+
+▶ [patch]
+Client (python): fixes release of client. v91.0.3 did not work in fixing.
+
 ## v91.0.3
 
 ### DEVELOPERS

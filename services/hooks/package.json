@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/hooks",
-  "version": "91.0.3",
+  "version": "91.0.4",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
