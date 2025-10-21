@@ -2264,227 +2264,98 @@
       "$id": "/schemas/worker-manager/v1/config-azure.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
-      "description": "'The config section of a workertype is using a provider with implementation azure must match this.\nMuch of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'\n",
+      "description": "'The config section of a workertype using the Azure provider must match this schema.\nAzure provider supports two deployment modes: traditional resource-by-resource deployment and ARM template deployment.\nSee azure-deployment-resources.json# for traditional VM deployment or azure-arm-templates.json# for ARM template deployment.'\n",
       "properties": {
         "launchConfigs": {
-          "description": "An array of possible variations of workers for this pool.\nEach choice must include at least the required properties but can also include anything in\nthe request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)\napi method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`\nproperties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`\nmetadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.\n",
+          "description": "An array of possible variations of workers for this pool. Each launch configuration must use one of two deployment modes:\n\n**Traditional Resource Deployment (azure-deployment-resources.json#):**\nProperties are passed to the [virtual machine creation API](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate).\nworker-manager automatically overrides: `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`.\nYou must provide required fields like `location`, `subnetId`, `hardwareProfile`, and `storageProfile`.\n\n**ARM Template Deployment (azure-arm-templates.json#):**\nProperties are passed to the [Azure Deployments API](https://docs.microsoft.com/en-us/rest/api/resources/deployments/createorupdate).\nworker-manager automatically generates and passes these parameters:\n  `location`, `adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`.\nYour ARM template must accept and use these parameters. You must specify `location` parameter to determine the worker group.\nDeployments are created in the default resource group from providerConfig, unless overridden with `armDeploymentResourceGroup`.\nIf a custom resource group is specified and doesn't exist, it will be created automatically.\n",
           "items": {
-            "additionalProperties": true,
-            "properties": {
-              "billingProfile": {
+            "allOf": [
+              {
                 "additionalProperties": true,
-                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile",
-                "properties": {
-                  "maxPrice": {
-                    "description": "the maximum price to pay for a spot virtual machine in US Dollars",
-                    "title": "Max Price",
-                    "type": "number"
-                  }
-                },
-                "required": [
-                ],
-                "title": "Billing Profile",
-                "type": "object"
-              },
-              "capacityPerInstance": {
-                "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
-                "minimum": 1,
-                "title": "Capacity Per Instance (Deprecated)",
-                "type": "integer"
-              },
-              "hardwareProfile": {
-                "additionalProperties": true,
-                "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile",
-                "properties": {
-                  "vmSize": {
-                    "title": "Virtual machine type",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "vmSize"
-                ],
-                "title": "Hardware Profile",
-                "type": "object"
-              },
-              "ignoreFailedProvisioningStates": {
-                "description": "Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead",
-                "items": {
-                  "type": "string"
-                },
-                "title": "Ignore failed provisioningStates",
-                "type": "array",
-                "uniqueItems": true
-              },
-              "location": {
-                "description": "The Azure location this worker should be spawned in",
-                "title": "Location",
-                "type": "string"
-              },
-              "networkProfile": {
-                "additionalProperties": true,
-                "description": "Container object for network interfaces for the VM\nSee here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile\n",
-                "properties": {
-                  "networkInterfaces": {
-                    "items": {
-                      "additionalProperties": true,
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "primary": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                      ],
-                      "title": "Network Interface Reference",
-                      "type": "object"
-                    },
-                    "title": "Network Interfaces",
-                    "type": "array",
-                    "uniqueItems": false
-                  }
-                },
-                "required": [
-                  "networkInterfaces"
-                ],
-                "title": "Network Profile",
-                "type": "object"
-              },
-              "osProfile": {
-                "additionalProperties": true,
-                "description": "adminPassword, computerName, and customData are set by the provider and are not configurable\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile\n",
-                "required": [
-                ],
-                "title": "OS Profile",
-                "type": "object"
-              },
-              "priority": {
-                "description": "virtual machine priority, i.e. Spot\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes\n",
-                "title": "Priority",
-                "type": "string"
-              },
-              "storageProfile": {
-                "additionalProperties": true,
-                "properties": {
-                  "dataDisks": {
-                    "items": {
-                      "additionalProperties": true,
-                      "description": "See https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/datadisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
-                      "properties": {
-                      },
-                      "required": [
-                      ],
-                      "title": "Data Disk",
-                      "type": "object"
-                    },
-                    "title": "Data Disks",
-                    "type": "array",
-                    "uniqueItems": false
-                  },
-                  "imageReference": {
-                    "additionalProperties": true,
-                    "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                    ],
-                    "type": "object"
-                  },
-                  "osDisk": {
-                    "additionalProperties": true,
-                    "description": "See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
-                    "properties": {
-                      "createOption": {
-                        "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                    ],
-                    "title": "OS Disk",
-                    "type": "object"
-                  }
-                },
-                "required": [
-                  "osDisk"
-                ],
-                "title": "Storage Profile",
-                "type": "object"
-              },
-              "subnetId": {
-                "description": "The ID of the subnet workers should be spawned in",
-                "title": "Subnet ID",
-                "type": "string"
-              },
-              "workerConfig": {
-                "additionalProperties": true,
-                "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
-                "title": "Worker Config",
-                "type": "object"
-              },
-              "workerManager": {
-                "additionalProperties": false,
-                "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nAzure APIs, whereas this section is interpreted directly by Worker Manager.",
                 "properties": {
                   "capacityPerInstance": {
-                    "description": "The number of tasks a single worker of this type can run at any given time.",
+                    "description": "Deprecated - please use `workerManager.capacityPerInstance` instead",
                     "minimum": 1,
-                    "title": "Capacity Per Instance",
+                    "title": "Capacity Per Instance (Deprecated)",
                     "type": "integer"
                   },
-                  "ignoreFailedProvisioningStates": {
-                    "description": "A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that\nshould be ignored and treated as success if the VM is running.  The most common choice is `[\"OSProvisioningTimedOut\"]`, which ignores failure\nto start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.\n",
-                    "items": {
-                      "type": "string"
+                  "tags": {
+                    "additionalProperties": true,
+                    "description": "Arbitrary key-value pairs for Azure resource tags",
+                    "type": "object"
+                  },
+                  "workerConfig": {
+                    "additionalProperties": true,
+                    "description": "This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.\nThe expectation is that the worker will merge this information with configuration from other sources,\nand this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.\nThis property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.\nInstead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).\n",
+                    "title": "Worker Config",
+                    "type": "object"
+                  },
+                  "workerManager": {
+                    "additionalProperties": false,
+                    "description": "Worker Manager's own configuration settings per launch configuration.\nThe other properties of the launch configuration section are passed directly through to\nAzure APIs, whereas this section is interpreted directly by Worker Manager.",
+                    "properties": {
+                      "capacityPerInstance": {
+                        "description": "The number of tasks a single worker of this type can run at any given time.",
+                        "minimum": 1,
+                        "title": "Capacity Per Instance",
+                        "type": "integer"
+                      },
+                      "ignoreFailedProvisioningStates": {
+                        "description": "A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that\nshould be ignored and treated as success if the VM is running.  The most common choice is `[\"OSProvisioningTimedOut\"]`, which ignores failure\nto start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.\n",
+                        "items": {
+                          "type": "string"
+                        },
+                        "title": "Ignore failed provisioningStates",
+                        "type": "array",
+                        "uniqueItems": true
+                      },
+                      "initialWeight": {
+                        "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `1`.\nSpecifying a weight of `0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
+                        "maximum": 1,
+                        "minimum": 0,
+                        "title": "Initial Weight",
+                        "type": "number"
+                      },
+                      "launchConfigId": {
+                        "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
+                        "maxLength": 38,
+                        "minLength": 1,
+                        "pattern": "^([a-zA-Z0-9-_]*)$",
+                        "title": "Launch Configuration ID",
+                        "type": "string"
+                      },
+                      "maxCapacity": {
+                        "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis value is independent from worker pool's `maxCapacity`, which\ncontrols total number of workers for the whole pool.\nEffective max capacity for the launch config would be\n`min(workerPool.maxCapacity, launchConfigMaxCapacity)`.",
+                        "minimum": 0,
+                        "title": "Max Capacity",
+                        "type": "integer"
+                      },
+                      "publicIp": {
+                        "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n\nNote: this is only useful for the single resources deployment. For ARM template\ndeployments you can use template parameters to achieve same results.\n",
+                        "title": "Public IP",
+                        "type": "boolean"
+                      }
                     },
-                    "title": "Ignore failed provisioningStates",
-                    "type": "array",
-                    "uniqueItems": true
-                  },
-                  "initialWeight": {
-                    "description": "The initial weight of the launch configuration at the provisionining time.\nLaunch configurations with higher weight will be more likely to be selected.\nIf not specified, the default weight is `1`.\nSpecifying a weight of `0` will prevent the launch configuration from being selected.\nWhena all launch configurations have same weight, they will be selected in a round-robin fashion.",
-                    "maximum": 1,
-                    "minimum": 0,
-                    "title": "Initial Weight",
-                    "type": "number"
-                  },
-                  "launchConfigId": {
-                    "description": "The ID of the launch configuration. Must be unique forever within the worker pool.\nAny change to the launch configuration (except `workerManager` fields) must use a new ID\nto ensure proper tracking of configuration metrics.\nIf not provided, worker-manager will generate a unique ID.\nMust be between 1 and 38 characters long and contain only alphanumeric\ncharacters, dashes, and underscores.\n",
-                    "maxLength": 38,
-                    "minLength": 1,
-                    "pattern": "^([a-zA-Z0-9-_]*)$",
-                    "title": "Launch Configuration ID",
-                    "type": "string"
-                  },
-                  "maxCapacity": {
-                    "description": "The maximum capacity of workers of this type (launch configuration)\nthat can be running at any given time.\nThis value is independent from worker pool's `maxCapacity`, which\ncontrols total number of workers for the whole pool.\nEffective max capacity for the launch config would be\n`min(workerPool.maxCapacity, launchConfigMaxCapacity)`.",
-                    "minimum": 0,
-                    "title": "Max Capacity",
-                    "type": "integer"
-                  },
-                  "publicIp": {
-                    "description": "If `true`, Worker Manager will request a public IPv4 address for the worker.\nThis is set to `false` by default. It is typically only needed for Windows\nworkers that should allow incoming RDP connections from the public internet.\n",
-                    "title": "Public IP",
-                    "type": "boolean"
+                    "title": "Worker Manager Config",
+                    "type": "object"
                   }
                 },
-                "title": "Worker Manager Config",
+                "required": [
+                  "workerConfig"
+                ],
                 "type": "object"
+              },
+              {
+                "oneOf": [
+                  {
+                    "$ref": "azure-deployment-resources.json#"
+                  },
+                  {
+                    "$ref": "azure-arm-templates.json#"
+                  }
+                ]
               }
-            },
-            "required": [
-              "workerConfig",
-              "location",
-              "subnetId",
-              "hardwareProfile",
-              "storageProfile"
-            ],
-            "type": "object"
+            ]
           },
           "title": "Choices",
           "type": "array",
@@ -2680,6 +2551,406 @@
       "type": "object"
     },
     "filename": "schemas/worker-manager/v1/config-aws.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/azure-deployment-resources.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Schema for Azure resources used in traditional sequential (resource-by-resource) deployment.\nThis includes VM configuration, storage, networking, and OS profile settings.\nNote: workerManager and workerConfig are defined in the parent schema.\n",
+      "properties": {
+        "billingProfile": {
+          "additionalProperties": true,
+          "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile",
+          "properties": {
+            "maxPrice": {
+              "description": "the maximum price to pay for a spot virtual machine in US Dollars",
+              "title": "Max Price",
+              "type": "number"
+            }
+          },
+          "required": [
+          ],
+          "title": "Billing Profile",
+          "type": "object"
+        },
+        "hardwareProfile": {
+          "additionalProperties": true,
+          "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile",
+          "properties": {
+            "vmSize": {
+              "title": "Virtual machine type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "vmSize"
+          ],
+          "title": "Hardware Profile",
+          "type": "object"
+        },
+        "ignoreFailedProvisioningStates": {
+          "description": "Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ignore failed provisioningStates",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "location": {
+          "description": "The Azure location this worker should be spawned in",
+          "title": "Location",
+          "type": "string"
+        },
+        "networkProfile": {
+          "additionalProperties": true,
+          "description": "Container object for network interfaces for the VM\nSee here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile\n",
+          "properties": {
+            "networkInterfaces": {
+              "items": {
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "primary": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                ],
+                "title": "Network Interface Reference",
+                "type": "object"
+              },
+              "title": "Network Interfaces",
+              "type": "array",
+              "uniqueItems": false
+            }
+          },
+          "required": [
+            "networkInterfaces"
+          ],
+          "title": "Network Profile",
+          "type": "object"
+        },
+        "osProfile": {
+          "additionalProperties": true,
+          "description": "adminPassword, computerName, and customData are set by the provider and are not configurable\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile\n",
+          "required": [
+          ],
+          "title": "OS Profile",
+          "type": "object"
+        },
+        "priority": {
+          "description": "virtual machine priority, i.e. Spot\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes\n",
+          "title": "Priority",
+          "type": "string"
+        },
+        "storageProfile": {
+          "additionalProperties": true,
+          "properties": {
+            "dataDisks": {
+              "items": {
+                "additionalProperties": true,
+                "description": "See https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/datadisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
+                "properties": {
+                },
+                "required": [
+                ],
+                "title": "Data Disk",
+                "type": "object"
+              },
+              "title": "Data Disks",
+              "type": "array",
+              "uniqueItems": false
+            },
+            "imageReference": {
+              "additionalProperties": true,
+              "description": "https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+              ],
+              "type": "object"
+            },
+            "osDisk": {
+              "additionalProperties": true,
+              "description": "See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk.\nNote that naming disks is not supported; any provided name will be overwritten with a\ndynamically generated name.\n",
+              "properties": {
+                "createOption": {
+                  "description": "FromImage creates the disk from the specified image\nhttps://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes\n",
+                  "type": "string"
+                }
+              },
+              "required": [
+              ],
+              "title": "OS Disk",
+              "type": "object"
+            }
+          },
+          "required": [
+            "osDisk"
+          ],
+          "title": "Storage Profile",
+          "type": "object"
+        },
+        "subnetId": {
+          "description": "The ID of the subnet workers should be spawned in",
+          "title": "Subnet ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "location",
+        "subnetId",
+        "hardwareProfile",
+        "storageProfile"
+      ],
+      "title": "Azure Sequential Deployment Resources",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/azure-deployment-resources.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/worker-manager/v1/azure-arm-templates.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "ARM Template deployment configuration for Azure VMs.\nThese properties are passed directly to the Azure Deployments API.\nNote: workerManager and workerConfig are defined in the parent schema.\n\n[Template Syntax](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax)\n\nARM Deployments allows full provisioning of many related resources at once, offloading the provisioning process to Azure Resource Manager.\n",
+      "properties": {
+        "armDeployment": {
+          "additionalProperties": false,
+          "description": "Azure Resource Manager deployment configuration.\nThese properties are passed directly to the Azure Deployments API.\n\nSECURITY RECOMMENDATION: Use templateLink with id (template specs) for production deployments.\nAvoid templateLink with uri unless using trusted, controlled sources.\n\nYou must specify exactly ONE of: template (inline) or templateLink (external/template spec).\n",
+          "oneOf": [
+            {
+              "required": [
+                "template"
+              ]
+            },
+            {
+              "required": [
+                "templateLink"
+              ]
+            }
+          ],
+          "properties": {
+            "debugSetting": {
+              "additionalProperties": false,
+              "description": "Debug setting for deployment",
+              "properties": {
+                "detailLevel": {
+                  "description": "Specifies the type of information to log for debugging.\n",
+                  "enum": [
+                    "requestContent",
+                    "responseContent",
+                    "requestContent,responseContent"
+                  ],
+                  "type": "string"
+                }
+              },
+              "title": "Debug Settings",
+              "type": "object"
+            },
+            "expressionEvaluationOptions": {
+              "additionalProperties": false,
+              "description": "Options to control template expression evaluation",
+              "properties": {
+                "scope": {
+                  "description": "The scope for template expression evaluation.\n- Inner: Expressions are evaluated within the scope of nested templates\n- Outer: Expressions are evaluated in the parent template scope\n",
+                  "enum": [
+                    "Inner",
+                    "Outer"
+                  ],
+                  "type": "string"
+                }
+              },
+              "title": "Expression Evaluation Options",
+              "type": "object"
+            },
+            "mode": {
+              "description": "The deployment mode.\n- Incremental: Deploy resources without deleting existing resources not in the template\n- Complete: (USE WITH CAUTION) Deploy resources and delete existing resources not in the template\n",
+              "enum": [
+                "Incremental",
+                "Complete"
+              ],
+              "type": "string"
+            },
+            "onErrorDeployment": {
+              "additionalProperties": false,
+              "description": "The deployment on error behavior. Rollback on failure.\n",
+              "properties": {
+                "deploymentName": {
+                  "description": "The deployment name to rollback to (required when type is SpecificDeployment)\n",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The type of on error deployment.\n- LastSuccessful: Rollback to last successful deployment\n- SpecificDeployment: Rollback to a specific deployment\n",
+                  "enum": [
+                    "LastSuccessful",
+                    "SpecificDeployment"
+                  ],
+                  "type": "string"
+                }
+              },
+              "title": "Error Handling",
+              "type": "object"
+            },
+            "parameters": {
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "value": {
+                        "description": "The parameter value"
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "reference": {
+                        "additionalProperties": false,
+                        "description": "KeyVault reference for secure parameter values",
+                        "properties": {
+                          "keyVault": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "id": {
+                                "description": "KeyVault resource ID",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "secretName": {
+                            "description": "Name of the secret in KeyVault",
+                            "type": "string"
+                          },
+                          "secretVersion": {
+                            "description": "Version of the secret (optional)",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "keyVault",
+                          "secretName"
+                        ],
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "reference"
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "type": "object"
+              },
+              "description": "Template parameter values. Each parameter should be an object with a 'value' property\nor a 'reference' property for KeyVault references.\n\n`location` parameter is required to determine workerGroup.\n\nNote: The following parameters are automatically generated by worker-manager:\n- customData, computerName, adminPassword, adminUsername, vmName\n\nYour ARM template MUST define these parameters in its parameters section,\neven though you don't provide values for them in the worker pool configuration.\nWorker-manager will automatically supply values for these when deploying.\n\nExample:\n\n    \"osProfile\": {\n        \"customData\": \"[parameters('customData')]\",\n        \"computerName\": \"[parameters('computerName')]\",\n        \"adminPassword\": \"[parameters('adminPassword')]\",\n        \"adminUsername\": \"[parameters('adminUsername')]\",\n        \"windowsConfiguration\": {\n          \"timeZone\": \"UTC\",\n          \"enableAutomaticUpdates\": true\n        }\n      }\n",
+              "required": [
+                "location",
+                "customData",
+                "vmName",
+                "computerName",
+                "adminPassword",
+                "adminUsername"
+              ],
+              "title": "Template Parameters",
+              "type": "object"
+            },
+            "parametersLink": {
+              "additionalProperties": false,
+              "description": "SECURITY NOTE: External parameters may contain sensitive data.\nURI reference to an external parameters file.\n",
+              "properties": {
+                "contentVersion": {
+                  "description": "Parameters file content version",
+                  "type": "string"
+                },
+                "uri": {
+                  "description": "The URI of the parameters file",
+                  "type": "string"
+                }
+              },
+              "title": "External Parameters Link",
+              "type": "object"
+            },
+            "template": {
+              "additionalProperties": true,
+              "description": "The inline ARM template (self-contained).\nCannot be used with templateLink.\n",
+              "title": "Inline Template",
+              "type": "object"
+            },
+            "templateLink": {
+              "description": "Reference to an external template or template spec.\nCannot be used with template.\n\nFor TEMPLATE SPECS (RECOMMENDED for production):\n- Use the 'id' property with full template spec resource ID\n- Template specs are versioned, secure, and support RBAC\n\nFor EXTERNAL TEMPLATES (NOT RECOMMENDED - use only for trusted sources):\n- Use the 'uri' property with template URL\n- For security, prefer Azure Storage with SAS tokens and access controls\n",
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "description": "Full resource ID of the Template Spec version.\nFormat: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Resources/templateSpecs/{specName}/versions/{version}\n",
+                      "pattern": "^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\\.Resources/templateSpecs/[^/]+/versions/[^/]+$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "contentVersion": {
+                      "description": "Template content version",
+                      "type": "string"
+                    },
+                    "queryString": {
+                      "description": "Query string for the URI (e.g., SAS token for blob storage)",
+                      "type": "string"
+                    },
+                    "uri": {
+                      "description": "Template URI. For security, prefer:\n- Azure Storage with SAS tokens and access controls\n- Private repositories with authentication\n- Internal artifact repositories\n",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uri"
+                  ],
+                  "type": "object"
+                }
+              ],
+              "title": "Template Link (External Template or Template Spec)",
+              "type": "object"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "title": "ARM Deployment Configuration",
+          "type": "object"
+        },
+        "armDeploymentResourceGroup": {
+          "description": "Override the resource group for the ARM deployment.\nBy default, resource group would be taken from Azure provider configuration provided at deployment time.\n\nIf resource group doesn't exist, it would be created in the region specified in the armDeployment template.\nIf multiple launch configs define same `armDeploymentResourceGroup` it would be created at most once.\n",
+          "title": "Resource Group Override",
+          "type": "string"
+        }
+      },
+      "required": [
+        "armDeployment"
+      ],
+      "title": "Azure Provider ARM Deployment Configuration",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/azure-arm-templates.json"
   },
   {
     "content": {
@@ -16277,6 +16548,19 @@
           "name": "awsTimer",
           "title": "AWS Request Report",
           "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "When ARM template is being deployed with custom resource group name,\nAzure provider would create or update the resource group.\nThis is to make sure that deployment is run in the existing resource group.",
+          "fields": {
+            "location": "Location",
+            "resourceGroupName": "Resource Group Name",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "notice",
+          "name": "azureResourceGroupEnsured",
+          "title": "Azure Resource Group Create or Update Information",
+          "type": "azure-resource-group-ensure",
           "version": 1
         },
         {

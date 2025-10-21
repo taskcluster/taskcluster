@@ -742,6 +742,13 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "launch-configurations",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Launch configurations",
+    "title": "Workers"
+  },
+  {
     "element": "h2",
     "id": "provider-configuration",
     "path": "/manual/deploying/workers",
@@ -2307,6 +2314,13 @@
     "id": "customdata",
     "path": "/reference/core/worker-manager/azure",
     "subtitle": "CustomData",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "provisioning-modes",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Provisioning Modes",
     "title": "Azure Provider Type"
   },
   {
