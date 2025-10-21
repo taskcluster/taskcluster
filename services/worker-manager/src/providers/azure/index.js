@@ -580,8 +580,8 @@ export class AzureProvider extends Provider {
       const provisioningState = deployment.properties?.provisioningState;
       monitor.debug({ message: 'deployment provisioning state', provisioningState });
 
-      // Expected terminal states are Succeded if all good, and Failed/Cancelled if something goes wrong
-      // Deleteing/Deleted states can be ignored, handleOperation should clean it up
+      // Expected terminal states are Succeeded if all good, and Failed/Cancelled if something goes wrong
+      // Deleting/Deleted states can be ignored, handleOperation should clean it up
       const failedProvisioiningStates = [
         ArmDeploymentProvisioningState.Failed,
         ArmDeploymentProvisioningState.Canceled,
@@ -626,7 +626,7 @@ export class AzureProvider extends Provider {
         throw err;
       }
 
-      // Deploymet is likely still in progress - check status or operation might be expired or failed
+      // Deployment is likely still in progress - check status or operation might be expired or failed
       if (worker.providerData.deployment.operation) {
         let op = await this.handleOperation({
           op: worker.providerData.deployment.operation,

@@ -567,7 +567,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.ok(worker.providerData.provisioningComplete,
         'worker should be marked as provisioning complete');
       assert.ok(worker.providerData.deployment.operation,
-        'deployment operation should started at this point');
+        'deployment operation should have started at this point');
     });
 
     test('failed ARM deployment resources are cleaned up', async function() {

@@ -125,11 +125,6 @@ properties:
 
         required:
           - location
-          - customData
-          - vmName
-          - computerName
-          - adminPassword
-          - adminUsername
         additionalProperties:
           type: object
           oneOf:
