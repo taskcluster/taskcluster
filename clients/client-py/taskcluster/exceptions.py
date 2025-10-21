@@ -14,12 +14,18 @@ class TaskclusterRestFailure(TaskclusterFailure):
         self.status_code = status_code
         self.body = body
 
+    def __reduce__(self):
+        return (TaskclusterRestFailure, (str(self), self.superExc, self.status_code, self.body))
+
 
 class TaskclusterConnectionError(TaskclusterFailure):
     """ Error connecting to resource """
     def __init__(self, msg, superExc):
-        TaskclusterFailure.__init__(self, msg, superExc)
+        TaskclusterFailure.__init__(self, msg)
         self.superExc = superExc
+
+    def __reduce__(self):
+        return (TaskclusterConnectionError, (str(self), self.superExc))
 
 
 class TaskclusterAuthFailure(TaskclusterFailure):
@@ -29,6 +35,9 @@ class TaskclusterAuthFailure(TaskclusterFailure):
         self.superExc = superExc
         self.status_code = status_code
         self.body = body
+
+    def __reduce__(self):
+        return (TaskclusterAuthFailure, (str(self), self.superExc, self.status_code, self.body))
 
 
 class TaskclusterTopicExchangeFailure(TaskclusterFailure):
@@ -41,6 +50,9 @@ class TaskclusterArtifactError(TaskclusterFailure):
     def __init__(self, message, reason):
         TaskclusterFailure.__init__(self, message)
         self.reason = reason
+
+    def __reduce__(self):
+        return (TaskclusterArtifactError, (str(self), self.reason))
 
 
 class ObjectHashVerificationError(TaskclusterFailure):
