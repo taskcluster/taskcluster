@@ -1,8 +1,9 @@
 $schema: "/schemas/common/metaschema.json#"
 title: Azure Provider Config
 description: |
-  'The config section of a workertype is using a provider with implementation azure must match this.
-  Much of these fields are documented [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)'
+  'The config section of a workertype using the Azure provider must match this schema.
+  Azure provider supports two deployment modes: traditional resource-by-resource deployment and ARM template deployment.
+  See azure-deployment-resources.json# for traditional VM deployment or azure-arm-templates.json# for ARM template deployment.'
 type: object
 properties:
   minCapacity: { $const: min-capacity }
@@ -13,183 +14,81 @@ properties:
     type: array
     title: Choices
     description: |
-      An array of possible variations of workers for this pool.
-      Each choice must include at least the required properties but can also include anything in
-      the request body of [the virtual machine creation](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate)
-      api method. worker-manager sets the values of the `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`
-      properties directly, and they cannot be overriden. It also fills in some basic labels, will generate a default description, and sets the `taskcluster`
-      metadata key directly. You are free to set other metadata items though. A subset of these fields we require you to set such as `machineType`.
+      An array of possible variations of workers for this pool. Each launch configuration must use one of two deployment modes:
+
+      **Traditional Resource Deployment (azure-deployment-resources.json#):**
+      Properties are passed to the [virtual machine creation API](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate).
+      worker-manager automatically overrides: `osProfile.adminPassword`, `osProfile.computerName`, `osProfile.customData`, `networkProfile.networkInterfaces`.
+      You must provide required fields like `location`, `subnetId`, `hardwareProfile`, and `storageProfile`.
+
+      **ARM Template Deployment (azure-arm-templates.json#):**
+      Properties are passed to the [Azure Deployments API](https://docs.microsoft.com/en-us/rest/api/resources/deployments/createorupdate).
+      worker-manager automatically generates and passes these parameters:
+        `location`, `adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`.
+      Your ARM template must accept and use these parameters. You must specify `location` parameter to determine the worker group.
+      Deployments are created in the default resource group from providerConfig, unless overridden with `armDeploymentResourceGroup`.
+      If a custom resource group is specified and doesn't exist, it will be created automatically.
     uniqueItems: true
     items:
-      type: object
-      properties:
-        capacityPerInstance: { $const: capacity-per-instance-deprecated }
-        workerManager:
-          title: Worker Manager Config
-          type: object
-          description: |-
-            Worker Manager's own configuration settings per launch configuration.
-            The other properties of the launch configuration section are passed directly through to
-            Azure APIs, whereas this section is interpreted directly by Worker Manager.
-          properties:
-            launchConfigId: { $const: launch-config-id }
-            capacityPerInstance: { $const: lc-capacity-per-instance }
-            initialWeight: { $const: lc-initial-weight }
-            maxCapacity: { $const: lc-max-capacity }
-            publicIp:
-              title: Public IP
-              type: boolean
-              description: |
-                If `true`, Worker Manager will request a public IPv4 address for the worker.
-                This is set to `false` by default. It is typically only needed for Windows
-                workers that should allow incoming RDP connections from the public internet.
-            ignoreFailedProvisioningStates:
-              title: "Ignore failed provisioningStates"
-              type: array
-              uniqueItems: true
-              items:
-                type: string
-              description: |
-                A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
-                should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
-                to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
-          additionalProperties: false
-        workerConfig:
-          title: Worker Config
-          type: object
-          additionalProperties: true
-          description: |
-            This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
-            The expectation is that the worker will merge this information with configuration from other sources,
-            and this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.
-            This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
-            Instead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).
-        ignoreFailedProvisioningStates:
-          title: "Ignore failed provisioningStates"
-          type: array
-          uniqueItems: true
-          items:
-            type: string
-          description: Deprecated - please use `workerManager.ignoreFailedProvisioningStates` instead
-        location:
-          title: Location
-          type: string
-          description: The Azure location this worker should be spawned in
-        subnetId:
-          title: Subnet ID
-          type: string
-          description: The ID of the subnet workers should be spawned in
-        priority:
-          title: Priority
-          type: string
-          description: |
-            virtual machine priority, i.e. Spot
-            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachineprioritytypes
-        billingProfile:
-          title: Billing Profile
-          type: object
-          description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile
-          additionalProperties: true
-          required: []
-          properties:
-            maxPrice:
-              title: Max Price
-              type: number
-              description: the maximum price to pay for a spot virtual machine in US Dollars
-        hardwareProfile:
-          title: Hardware Profile
-          type: object
-          description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#hardwareprofile
-          additionalProperties: true
+      allOf:
+        - type: object
           required:
-            - vmSize
-          properties:
-            vmSize:
-              title: Virtual machine type
-              type: string
-        osProfile:
-          title: OS Profile
-          type: object
-          description: |
-            adminPassword, computerName, and customData are set by the provider and are not configurable
-            https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osprofile
+            - workerConfig
           additionalProperties: true
-          required: []
-        storageProfile:
-          title: Storage Profile
-          type: object
-          additionalProperties: true
-          required:
-            - osDisk
           properties:
-            osDisk:
-              title: OS Disk
+            capacityPerInstance: { $const: capacity-per-instance-deprecated }
+            workerManager:
+              title: Worker Manager Config
               type: object
-              description: |
-                See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#osdisk.
-                Note that naming disks is not supported; any provided name will be overwritten with a
-                dynamically generated name.
-              additionalProperties: true
-              required: []
+              description: |-
+                Worker Manager's own configuration settings per launch configuration.
+                The other properties of the launch configuration section are passed directly through to
+                Azure APIs, whereas this section is interpreted directly by Worker Manager.
               properties:
-                createOption:
-                  type: string
+                launchConfigId: { $const: launch-config-id }
+                capacityPerInstance: { $const: lc-capacity-per-instance }
+                initialWeight: { $const: lc-initial-weight }
+                maxCapacity: { $const: lc-max-capacity }
+                publicIp:
+                  title: Public IP
+                  type: boolean
                   description: |
-                    FromImage creates the disk from the specified image
-                    https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#diskcreateoptiontypes
-            dataDisks:
-              title: Data Disks
-              type: array
-              uniqueItems: false
-              items:
-                title: Data Disk
-                type: object
-                description: |
-                  See https://docs.microsoft.com/en-us/javascript/api/@azure/arm-compute/datadisk.
-                  Note that naming disks is not supported; any provided name will be overwritten with a
-                  dynamically generated name.
-                additionalProperties: true
-                required: []
-                properties: {}
-            imageReference:
-              description: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#imagereference
+                    If `true`, Worker Manager will request a public IPv4 address for the worker.
+                    This is set to `false` by default. It is typically only needed for Windows
+                    workers that should allow incoming RDP connections from the public internet.
+
+                    Note: this is only useful for the single resources deployment. For ARM template
+                    deployments you can use template parameters to achieve same results.
+                ignoreFailedProvisioningStates:
+                  title: "Ignore failed provisioningStates"
+                  type: array
+                  uniqueItems: true
+                  items:
+                    type: string
+                  description: |
+                    A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
+                    should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
+                    to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
+              additionalProperties: false
+            workerConfig:
+              title: Worker Config
               type: object
               additionalProperties: true
-              required: []
-              properties:
-                id:
-                  type: string
-        networkProfile:
-          title: Network Profile
-          type: object
-          description: |
-            Container object for network interfaces for the VM
-            See here: https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#networkprofile
-          additionalProperties: true
-          required:
-            - networkInterfaces
-          properties:
-            networkInterfaces:
-              title: Network Interfaces
-              type: array
-              uniqueItems: false
-              items:
-                title: Network Interface Reference
-                type: object
-                additionalProperties: true
-                required: []
-                properties:
-                  id:
-                    type: string
-                  primary:
-                    type: boolean
-      required:
-        - workerConfig
-        - location
-        - subnetId
-        - hardwareProfile
-        - storageProfile
-      additionalProperties: true
+              description: |
+                This value is supplied unchanged as the `workerConfig` property of the `taskcluster` instance metadata attribute.
+                The expectation is that the worker will merge this information with configuration from other sources,
+                and this is precisely what [worker-runner](https://docs.taskcluster.net/docs/reference/workers/worker-runner) does.
+                This property must not be used for secret configuration, as it is visible both in the worker pool configuration and in the worker instance's metadata.
+                Instead, put secret configuration in the [secrets service](https://docs.taskcluster.net/docs/reference/workers/worker-runner).
+            tags:
+              type: object
+              description: Arbitrary key-value pairs for Azure resource tags
+              additionalProperties: true
+        # deployment-specific properties (exactly one required - ARM templates or resource deployment)
+        - oneOf:
+          - $ref: 'azure-deployment-resources.json#'
+          - $ref: 'azure-arm-templates.json#'
+
 additionalProperties: false
 required:
   - minCapacity

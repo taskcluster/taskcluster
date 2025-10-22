@@ -743,19 +743,24 @@ export class Worker {
     return worker;
   }
 
-  // Calls db.update_worker given a modifier.
-  // This function shouldn't have side-effects (or these should be contained),
-  // as the modifier may be called more than once, if the update operation fails.
-  // This method will apply modifier to a clone of the current data and attempt
-  // to save it. But if this fails because the entity have been updated by
-  // another process (the etag is out of date), it'll reload the row
-  // from the workers table, invoke the modifier again, and try to save again.
-  //
-  // Returns the updated Worker instance if successful. Otherwise, it will return
-  // * a 404 if it fails to locate the row to update
-  // * a 409 if the number of retries reaches MAX_MODIFY_ATTEMPTS
-  //
-  // Note: modifier is allowed to return a promise.
+  /**
+   * Calls db.update_worker given a modifier.
+   * This function shouldn't have side-effects (or these should be contained),
+   * as the modifier may be called more than once, if the update operation fails.
+   * This method will apply modifier to a clone of the current data and attempt
+   * to save it. But if this fails because the entity have been updated by
+   * another process (the etag is out of date), it'll reload the row
+   * from the workers table, invoke the modifier again, and try to save again.
+   *
+   * Returns the updated Worker instance if successful. Otherwise, it will return
+   * * a 404 if it fails to locate the row to update
+   * * a 409 if the number of retries reaches MAX_MODIFY_ATTEMPTS
+   *
+   * Note: modifier is allowed to return a promise.
+   *
+   * @param {Database} db
+   * @param {(w: Worker) => void} modifier
+   */
   async update(db, modifier) {
     let attemptsLeft = MAX_MODIFY_ATTEMPTS;
 

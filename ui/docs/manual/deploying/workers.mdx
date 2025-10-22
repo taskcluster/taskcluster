@@ -258,6 +258,46 @@ Now set the following configuration:
 * `resourceGroupName` - the name of the resource group
 * `apiRateLimits` - optional limits on the rate at which worker-manager calls Azure APIs
 
+### Launch configurations
+
+Worker pools that target the Azure provider define one or more `launchConfigs`. Each launch configuration can use one of two provisioning strategies:
+
+- **Sequential resource provisioning**: omit `armDeployment` and supply VM-centric properties (`location`, `subnetId`, `storageProfile`, `networkProfile`, etc.). Worker-manager creates and tears down the VM, NIC, IP, and disks one at a time.
+- **ARM template provisioning**: include an `armDeployment` object (and optionally `armDeploymentResourceGroup`). Worker-manager submits the template to Azure Resource Manager, automatically supplying required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`). When the deployment finishes, worker-manager records the resources it created and deletes the deployment so deprovisioning still works as expected.
+
+Example launch configuration that uses a template spec:
+
+```json
+"launchConfigs": [
+  {
+    "workerManager": {
+      "launchConfigId": "lc-arm-example",
+      "capacityPerInstance": 1
+    },
+    "workerConfig": {
+      "genericWorker": {
+        "config": {
+          "shutdownMachineOnIdle": true
+        }
+      }
+    },
+    "armDeployment": {
+      "mode": "Incremental",
+      "templateLink": {
+        "id": "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Resources/templateSpecs/<spec>/versions/1.0.0"
+      },
+      "parameters": {
+        "location": { "value": "eastus" },
+        "vmSize": { "value": "Standard_D4s_v5" },
+        "subnetId": {
+          "value": "/subscriptions/<sub>/resourceGroups/<network-rg>/providers/Microsoft.Network/virtualNetworks/<vnet>/subnets/default"
+        }
+      }
+    }
+  }
+]
+```
+
 ### Resource Groups
 
 Resources in Azure are created within the context of resource groups. The provider is configured with the `resourceGroupName` in which resources will be created.
