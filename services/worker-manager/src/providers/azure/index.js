@@ -530,7 +530,12 @@ export class AzureProvider extends Provider {
           workerId: worker.workerId,
           workerGroup: workerGroup,
           armDeployment,
-          params: deploymentProperties.parameters, // safe to log adminpassword of the failed deployment?
+          params: {
+            ...deploymentProperties.parameters,
+            adminUsername: '***',
+            adminPassword: '***',
+            customData: '***',
+          },
         },
         launchConfigId: worker.launchConfigId,
       });
@@ -551,18 +556,18 @@ export class AzureProvider extends Provider {
 
     // update worker after successful or failed deployment with resources for later deprovisioning
     const extractDeployedResourcesAndUpdateWorker = async (modifier) => {
-      const depoloyedResources = await this.#extractResourcesFromDeployment(worker, monitor);
+      const deployedResources = await this.#extractResourcesFromDeployment(worker, monitor);
 
       await worker.update(this.db, worker => {
         modifier(worker);
         ['vm', 'nic', 'ip', 'disks'].forEach(resourceType => {
           if (resourceType === 'disks') {
             worker.providerData.disks ??= [];
-            worker.providerData.disks.push(...depoloyedResources.disks);
+            worker.providerData.disks.push(...deployedResources.disks);
           } else {
             worker.providerData[resourceType] = {
               ...(worker.providerData[resourceType] || {}),
-              ...depoloyedResources[resourceType],
+              ...deployedResources[resourceType],
             };
           }
         });
@@ -609,7 +614,8 @@ export class AzureProvider extends Provider {
           worker.providerData.provisioningComplete = true;
         });
 
-        // Clean up deployment to avoid hitting the 800 deployments per resource group limit
+        // Clean up deployment to avoid hitting the 800 deployments limit:
+        // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-management-group-limits
         // This should be safe because vm is already running
         // operation will start and will keep "deployment.operation" location in db until full deprovision of the worker
         await this.deprovisionResource({
