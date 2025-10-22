@@ -381,7 +381,7 @@ tasks.push({
           healthcheck: healthcheck('curl -I http://localhost/'),
         }),
         tc_admin_init: serviceDefinition('tc_admin_init', {
-          image: 'taskcluster/tc-admin:4.0.0',
+          image: 'taskcluster/tc-admin:5.0.4',
           volumes: ['./docker/tc-admin:/app'],
           working_dir: '/app',
           'x-info': 'This script provisions taskcluster configuration. See docker/tc-admin for details',
