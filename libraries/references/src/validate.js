@@ -11,6 +11,16 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'github', schema: 'v1/taskcluster-github-config.json#' },
   { service: 'github', schema: 'v1/taskcluster-github-config.v1.json#' },
 
+  // schemas for webhook endpoint (server-side only, not published to clients)
+  { service: 'github', schema: 'v1/github-webhook-event.json#' },
+  { service: 'github', schema: 'v1/webhook-pull-request-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-push-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-issue-comment-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-release-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-installation-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-check-run-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-ping-payload.json#' },
+
   // schemas for an unpublished, deprecated API methods
   { service: 'index', schema: 'v1/list-namespaces-request.json#' },
   { service: 'queue', schema: 'v1/poll-task-urls-response.json#' },

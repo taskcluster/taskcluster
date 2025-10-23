@@ -1,0 +1,56 @@
+{
+  "headers": {
+    "X-GitHub-Event": "pull_request",
+    "X-GitHub-Delivery": "test-invalid-sha",
+    "content-type": "application/json",
+    "X-Hub-Signature": "sha1=d017154746d9a85138f55bfc99a36aee808adcf9"
+  },
+  "body": {
+    "action": "opened",
+    "number": 1,
+    "pull_request": {
+      "number": 1,
+      "state": "open",
+      "title": "Test PR",
+      "head": {
+        "sha": "invalid-sha-not-40-chars",
+        "ref": "feature-branch",
+        "repo": {
+          "name": "test-repo",
+          "full_name": "owner/test-repo",
+          "clone_url": "https://github.com/owner/test-repo.git",
+          "owner": {
+            "login": "owner"
+          }
+        }
+      },
+      "base": {
+        "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "ref": "main",
+        "repo": {
+          "name": "test-repo",
+          "full_name": "owner/test-repo",
+          "clone_url": "https://github.com/owner/test-repo.git",
+          "owner": {
+            "login": "owner"
+          }
+        }
+      },
+      "user": {
+        "login": "testuser"
+      }
+    },
+    "repository": {
+      "full_name": "owner/test-repo",
+      "owner": {
+        "login": "owner"
+      }
+    },
+    "installation": {
+      "id": 5808
+    },
+    "sender": {
+      "login": "testuser"
+    }
+  }
+}

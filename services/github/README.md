@@ -15,11 +15,11 @@ Listen for WebHook-triggered pulse messages and attempts to schedule Taskcluster
 ### Run Tests
 No special configuration is required for development.
 
-Run `yarn workspace @taskcluster/secrets test` to run the tests. Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
+Run `yarn workspace @taskcluster/github test` to run the tests. Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 To run all of the tests, you'll first need to set up your credentials based on how they are in `user-config-example.yml`. Ask a Taskcluster team member for the AWS keys, etc.
 
-Run `yarn install` and `yarn workspace @taskcluster/secrets test`.
+Run `yarn install` and `yarn workspace @taskcluster/github test`.
 
 To test the components separately, run:
 - server: `<set the environment variables> node services/github/src/main.js server`
