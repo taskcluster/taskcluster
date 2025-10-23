@@ -24,7 +24,7 @@ properties:
       **ARM Template Deployment (azure-arm-templates.json#):**
       Properties are passed to the [Azure Deployments API](https://docs.microsoft.com/en-us/rest/api/resources/deployments/createorupdate).
       worker-manager automatically generates and passes these parameters:
-        `location`, `adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`.
+        `location`, `adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`, `tags`.
       Your ARM template must accept and use these parameters. You must specify `location` parameter to determine the worker group.
       Deployments are created in the default resource group from providerConfig, unless overridden with `armDeploymentResourceGroup`.
       If a custom resource group is specified and doesn't exist, it will be created automatically.
@@ -69,6 +69,13 @@ properties:
                     A list of provisioning state codes (see the [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle)) that
                     should be ignored and treated as success if the VM is running.  The most common choice is `["OSProvisioningTimedOut"]`, which ignores failure
                     to start the Azure VM Agent.  This is appropriate on systems that do not or cannot run the agent.
+                keepDeployment:
+                  title: Keep ARM deployments
+                  type: boolean
+                  description: |
+                    Leave ARM deployment records in place instead of deleting them after success or during teardown.
+                    Useful only for debugging template issues. Azure keeps a limited deployment history per resource group,
+                    so enabling this may eventually block new deployments once the limit is reached.
               additionalProperties: false
             workerConfig:
               title: Worker Config

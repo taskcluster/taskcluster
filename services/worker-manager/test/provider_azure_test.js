@@ -570,6 +570,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'deployment operation should have started at this point');
     });
 
+    test('keeps ARM deployment when keepDeployment is true', async function() {
+      await provisionWorkerPool({
+        workerManager: {
+          capacityPerInstance: 1,
+          keepDeployment: true,
+        },
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      assert.equal(worker.providerData.keepDeployment, true, 'keepDeployment flag should be stored on provider data');
+      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should remain when keepDeployment is true');
+      assert.equal(worker.providerData.deployment.id, `id/${deploymentName}`);
+    });
+
     test('failed ARM deployment resources are cleaned up', async function() {
       await provisionWorkerPool({
         armDeployment: {

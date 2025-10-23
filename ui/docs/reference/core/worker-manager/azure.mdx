@@ -16,9 +16,11 @@ This makes it easier to identify which resources a provider is responsible for.
 An Azure launch configuration can use one of two deployment strategies:
 
 - **Sequential resource provisioning** (legacy): worker-manager provisions the public IP, NIC, disks, and VM individually. Launch configurations must describe the VM shape (`hardwareProfile`, `storageProfile`, `subnetId`, etc.) and the provider manages the lifecycle of each resource.
-- **ARM template provisioning**: set `armDeployment` on the launch configuration (optionally `armDeploymentResourceGroup`). Worker-manager creates an Azure Deployment and injects required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`). Once the deployment succeeds it records the created resources so they can be monitored and deprovisioned later, and it deletes the ARM deployment to avoid hitting Azure’s per-resource-group limit.
+- **ARM template provisioning**: set `armDeployment` on the launch configuration (optionally `armDeploymentResourceGroup`). Worker-manager creates an Azure Deployment and injects required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`, `tags`). Once the deployment succeeds it records the created resources so they can be monitored and deprovisioned later, and it deletes the ARM deployment to avoid hitting Azure’s per-resource-group limit.
 
 Use ARM templates when you want Azure Resource Manager to create multiple dependent resources in one operation (for example, when your template handles public IPs, diagnostics accounts, or managed identities). Use sequential provisioning when the existing launch configs already cover your needs or when you want worker-manager to manage each resource directly.
+
+For short-term debugging you can set `workerManager.keepDeployment: true` on an ARM launch config. This leaves the Azure deployment record in place so you can inspect its parameters and outputs later. Remember to turn it off afterward—Azure keeps only 800 deployment history entries per resource group, so leaving deployments behind can eventually block new launches.
 
 ## Removing Workers
 
