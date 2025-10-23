@@ -431,7 +431,9 @@ export class AzureProvider extends Provider {
     assert(location, 'armDeployment.parameters.location is not set');
     const workerGroup = location; // same as location
 
+    const keepDeployment = cfg.workerManager?.keepDeployment === true;
     const { adminUsername, adminPassword } = generateAdmin();
+    const tags = this.#deploymentTags({ workerPoolId, workerGroup, workerPool, lc });
     const customData = this.#buildCustomData({ workerPoolId, workerGroup });
 
     // Pass armDeployment as-is to Azure API, only override parameters with generated values
@@ -440,11 +442,12 @@ export class AzureProvider extends Provider {
       parameters: {
         ...armDeployment.parameters,
         // Override with generated/required parameters
+        tags: { value: tags },
+        vmName: { value: virtualMachineName },
+        computerName: { value: computerName },
         adminUsername: { value: adminUsername },
         adminPassword: { value: adminPassword },
-        computerName: { value: computerName },
         customData: { value: customData },
-        vmName: { value: virtualMachineName },
       },
     };
 
@@ -461,7 +464,8 @@ export class AzureProvider extends Provider {
       resourceGroupName,
       workerConfig: cfg.workerConfig,
       armDeployment,
-      tags: this.#deploymentTags({ workerPoolId, workerGroup, workerPool, lc }),
+      keepDeployment,
+      tags,
       deployment: {
         name: deploymentName,
         operation: false,
@@ -470,17 +474,17 @@ export class AzureProvider extends Provider {
       vm: {
         name: virtualMachineName,
         computerName,
+        customData,
         id: false,
         vmId: false,
-        customData,
       },
       ip: {
-        name: 'needs-to-be-fetched-from-deployment',
+        name: 'will-be-fetched-from-deployment',
         id: false,
         operation: false,
       },
       nic: {
-        name: 'needs-to-be-fetched-from-deployment',
+        name: 'will-be-fetched-from-deployment',
         id: false,
         operation: false,
       },
@@ -512,7 +516,7 @@ export class AzureProvider extends Provider {
         this.deploymentsClient.deployments.beginCreateOrUpdate(
           resourceGroupName,
           deploymentName,
-          { properties: deploymentProperties, tags: providerData.tags },
+          { properties: deploymentProperties, tags },
         ));
 
       await worker.update(this.db, worker => {
@@ -534,7 +538,6 @@ export class AzureProvider extends Provider {
             ...deploymentProperties.parameters,
             adminUsername: '***',
             adminPassword: '***',
-            customData: '***',
           },
         },
         launchConfigId: worker.launchConfigId,
@@ -603,27 +606,25 @@ export class AzureProvider extends Provider {
       }
 
       if (provisioningState === ArmDeploymentProvisioningState.Succeeded) {
-        const outputs = deployment.properties?.outputs || {};
-        const vmName = outputs.vmName?.value || worker.providerData.vm.name;
-
         await extractDeployedResourcesAndUpdateWorker(worker => {
           worker.providerData.deployment.id = deployment.id;
           worker.providerData.deployment.operation = undefined;
-          worker.providerData.deployment.outputs = outputs;
-          worker.providerData.vm.name = vmName;
+          worker.providerData.deployment.outputs = deployment.properties?.outputs || {};
           worker.providerData.provisioningComplete = true;
         });
 
-        // Clean up deployment to avoid hitting the 800 deployments limit:
-        // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-management-group-limits
-        // This should be safe because vm is already running
-        // operation will start and will keep "deployment.operation" location in db until full deprovision of the worker
-        await this.deprovisionResource({
-          worker,
-          client: this.deploymentsClient.deployments,
-          resourceType: 'deployment',
-          monitor,
-        });
+        if (!worker.providerData.keepDeployment) {
+          // Clean up deployment to avoid hitting the 800 deployments limit:
+          // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-management-group-limits
+          await this.deprovisionResource({
+            worker,
+            client: this.deploymentsClient.deployments,
+            resourceType: 'deployment',
+            monitor,
+          });
+        } else {
+          monitor.debug({ message: 'keeping ARM deployment for debugging' });
+        }
 
         return true;
       }
@@ -1721,14 +1722,18 @@ export class AzureProvider extends Provider {
       // If this was an ARM deployment, delete the deployment if it still exists at this point
       // it might be deleted after successful deployment by us
       if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM && worker.providerData.deployment?.name) {
-        let deploymentDeleted = await this.deprovisionResource({
-          worker,
-          client: this.deploymentsClient.deployments,
-          resourceType: 'deployment',
-          monitor,
-        });
-        if (!deploymentDeleted || worker.providerData.deployment.id) {
-          return;
+        if (!worker.providerData.keepDeployment) {
+          let deploymentDeleted = await this.deprovisionResource({
+            worker,
+            client: this.deploymentsClient.deployments,
+            resourceType: 'deployment',
+            monitor,
+          });
+          if (!deploymentDeleted || worker.providerData.deployment.id) {
+            return;
+          }
+        } else {
+          monitor.debug({ message: 'skipping deployment deletion due to keepDeployment flag' });
         }
       }
 

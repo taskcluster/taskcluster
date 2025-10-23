@@ -79,6 +79,7 @@ interface AzureResourceBasedLaunchConfig extends BaseLaunchConfig {
   workerManager?: WorkerManagerConfig & {
     publicIp?: boolean;
     ignoreFailedProvisioningStates?: string[];
+    keepDeployment?: boolean;
   };
   ignoreFailedProvisioningStates?: string[];
   location: string;
@@ -126,6 +127,7 @@ interface AzureARMTemplateLaunchConfig extends BaseLaunchConfig {
   workerManager?: WorkerManagerConfig & {
     publicIp?: boolean;
     ignoreFailedProvisioningStates?: string[];
+    keepDeployment?: boolean;
   };
   armDeployment: AzureARMDeployment;
   resourceGroupOverride?: string;

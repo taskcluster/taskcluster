@@ -263,7 +263,9 @@ Now set the following configuration:
 Worker pools that target the Azure provider define one or more `launchConfigs`. Each launch configuration can use one of two provisioning strategies:
 
 - **Sequential resource provisioning**: omit `armDeployment` and supply VM-centric properties (`location`, `subnetId`, `storageProfile`, `networkProfile`, etc.). Worker-manager creates and tears down the VM, NIC, IP, and disks one at a time.
-- **ARM template provisioning**: include an `armDeployment` object (and optionally `armDeploymentResourceGroup`). Worker-manager submits the template to Azure Resource Manager, automatically supplying required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`). When the deployment finishes, worker-manager records the resources it created and deletes the deployment so deprovisioning still works as expected.
+- **ARM template provisioning**: include an `armDeployment` object (and optionally `armDeploymentResourceGroup`). Worker-manager submits the template to Azure Resource Manager, automatically supplying required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`, `tags`). When the deployment finishes, worker-manager records the resources it created and deletes the deployment so deprovisioning still works as expected.
+
+For troubleshooting you can set `workerManager.keepDeployment: true` on an ARM launch configuration. That prevents worker-manager from deleting the deployment record so you can inspect its parameters/outputs, but leave it enabled only temporarily—Azure limits history to 800 deployments per resource group.
 
 Example launch configuration that uses a template spec:
 
