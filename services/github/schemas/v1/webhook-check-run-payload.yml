@@ -1,0 +1,134 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Check Run Webhook Payload"
+description: |
+  Validates GitHub check run event webhook payload.
+
+type: object
+properties:
+  action:
+    type: string
+    minLength: 1
+    description: |
+      The action performed on the check run.
+      Known values: created, completed, rerequested, requested_action.
+      GitHub may add new action types; validation accepts any non-empty string.
+  check_run:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      head_sha:
+        type: string
+        pattern: {$const: github-sha-pattern}
+      status:
+        type: string
+        minLength: 1
+        description: |
+          The status of the check run.
+          Known values: queued, in_progress, completed, waiting, requested, pending.
+          Note: GitHub Actions can set waiting, requested, or pending.
+          GitHub may add new values; validation accepts any non-empty string.
+      conclusion:
+        oneOf:
+          - type: "null"
+          - type: string
+            minLength: 1
+            description: |
+              The conclusion of the check run when status is completed.
+              Known values: success, failure, neutral, cancelled, skipped,
+              timed_out, action_required, stale.
+              Note: Only GitHub can set 'stale'.
+              GitHub may add new values; validation accepts any non-empty string.
+      name:
+        type: string
+        minLength: 1
+      check_suite:
+        type: object
+        properties:
+          id:
+            type: integer
+            minimum: 1
+          head_branch:
+            oneOf:
+              - type: "null"
+              - type: string
+                minLength: 1
+          head_sha:
+            type: string
+            pattern: {$const: github-sha-pattern}
+        required: [id, head_sha]
+        additionalProperties: true
+      pull_requests:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              minimum: 1
+            number:
+              type: integer
+              minimum: 1
+            head:
+              type: object
+              properties:
+                sha:
+                  type: string
+                  pattern: {$const: github-sha-pattern}
+              required: [sha]
+              additionalProperties: true
+            base:
+              type: object
+              properties:
+                sha:
+                  type: string
+                  pattern: {$const: github-sha-pattern}
+              required: [sha]
+              additionalProperties: true
+          required: [id, number, head, base]
+          additionalProperties: true
+    required: [id, head_sha, status, name, check_suite, pull_requests]
+    additionalProperties: true
+  repository:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: {$const: github-repo-name-pattern}
+      full_name:
+        type: string
+        pattern: {$const: github-full-name-pattern}
+      owner:
+        type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        anyOf:
+          - required: [name]
+          - required: [login]
+        additionalProperties: true
+    required: [name, full_name, owner]
+    additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, check_run, repository, sender]
+additionalProperties: true

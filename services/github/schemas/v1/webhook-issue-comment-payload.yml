@@ -1,0 +1,100 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Issue Comment Webhook Payload"
+description: |
+  Validates GitHub issue comment event webhook payload.
+
+type: object
+properties:
+  action:
+    type: string
+    minLength: 1
+    description: |
+      The action performed on the issue comment.
+      Known values: created, edited, deleted.
+      GitHub may add new action types; validation accepts any non-empty string.
+  issue:
+    type: object
+    properties:
+      number:
+        type: integer
+        minimum: 1
+      title:
+        type: string
+      user:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+      state:
+        type: string
+        enum: ["open", "closed"]
+      pull_request:
+        oneOf:
+          - type: "null"
+          - type: object
+            additionalProperties: true
+    required: [number, title, user, state]
+    additionalProperties: true
+  comment:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      user:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+      body:
+        type: string
+    required: [id, user, body]
+    additionalProperties: true
+  repository:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: {$const: github-repo-name-pattern}
+      full_name:
+        type: string
+        pattern: {$const: github-full-name-pattern}
+      owner:
+        type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        anyOf:
+          - required: [name]
+          - required: [login]
+        additionalProperties: true
+    required: [name, full_name, owner]
+    additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, issue, comment, repository, sender]
+additionalProperties: true

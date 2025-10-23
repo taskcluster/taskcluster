@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test(params.testName, async function() {
       // Trigger a pull-request message
       let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
-      res.connection.destroy();
+      res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);
 
