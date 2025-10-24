@@ -31,7 +31,7 @@ This should start the following services:
 
 * `postgres` database to store clients, tasks, workers and much more
 * `rabbitmq` message broker that allows services to communicate effectively and also lets anyone listen to [important events](/docs/manual/tasks/messages)
-* `minio` to mimic S3 storage that Taskcluster needs to store [artifacts](/docs/manual/tasks/artifacts)
+* `localstack` to mimic S3 storage that Taskcluster needs to store [artifacts](/docs/manual/tasks/artifacts)
 * `taskcluster` which is an nginx reverse-proxy that serves all Taskcluster services through a single endpoint
 
 It will need some time to intialize database and start the services, after which everything should be accessible at <http://localhost>
