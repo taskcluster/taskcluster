@@ -3,6 +3,28 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7979](https://github.com/taskcluster/taskcluster/issues/7979)
+Azure worker pools can now provision via ARM templates in launch configs,
+reducing provisioning latency and letting Azure cascade resource creation/cleanup automatically.
+
+▶ [patch] [#7979](https://github.com/taskcluster/taskcluster/issues/7979)
+Azure ARM template deployments allow keeping history for debug purposes by using `workerManager.keepDeployment: true`
+
+▶ [patch] [#8023](https://github.com/taskcluster/taskcluster/issues/8023)
+Generic Worker: limits concurrent artifact uploads to 100 at a time.
+
+### USERS
+
+▶ [patch] [#8031](https://github.com/taskcluster/taskcluster/issues/8031)
+GitHub service handles missing users (404 from getByUsername) when processing webhooks.
+
+▶ [patch] [bug 1990567](http://bugzil.la/1990567)
+Python client exceptions are now picklable.
+
 ## v91.0.4
 
 ### DEVELOPERS
