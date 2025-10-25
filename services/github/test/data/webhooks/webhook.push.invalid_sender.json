@@ -1,0 +1,30 @@
+{
+  "headers": {
+    "X-GitHub-Event": "push",
+    "X-GitHub-Delivery": "72d3162e-cc78-11e3-81ab-4c9367dc0960",
+    "X-Hub-Signature-256": "sha256=dummysignature",
+    "X-Hub-Signature": "sha1=dummysignature"
+  },
+  "body": {
+    "ref": "refs/heads/main",
+    "before": "9049f1265b7d61be4a8904a9a27120d2064dab3b",
+    "after": "0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c",
+    "repository": {
+      "full_name": "TaskclusterRobot/hooks-testing",
+      "owner": {
+        "name": "TaskclusterRobot"
+      }
+    },
+    "pusher": {
+      "name": "test-user"
+    },
+    "installation": {
+      "id": 5808
+    },
+    "commits": [],
+    "sender": {
+      "login": "",
+      "id": 1
+    }
+  }
+}
