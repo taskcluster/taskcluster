@@ -3,6 +3,31 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.1.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js latest LTS, v24.10.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8012](https://github.com/taskcluster/taskcluster/issues/8012)
+Generic Worker (windows): creates no `cmd.exe` window that appeared during task execution.
+
+▶ [patch]
+Worker Runner now doesn't allow workers to be bootstrapped with zip files containing the Zip Slip vulnerability.
+
+### USERS
+
+▶ [patch]
+Fixes documentation typos and links
+
+### DEVELOPERS
+
+▶ [patch]
+Replace minio with localstack for local development
+
 ## v91.1.0
 
 ### WORKER-DEPLOYERS
