@@ -1,4 +1,4 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 /**
  * For ease of debugging, all log messages about tasks have a top-level
@@ -221,7 +221,10 @@ MonitorManager.registerMetric('failedTasks', {
   type: 'counter',
   title: 'Counter for failed tasks',
   description: 'Counter for failed tasks',
-  labels: commonLabels,
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task failure',
+  },
   registers: ['default'],
 });
 
@@ -230,7 +233,10 @@ MonitorManager.registerMetric('exceptionTasks', {
   type: 'counter',
   title: 'Counter for task exception',
   description: 'Counter for task exception',
-  labels: commonLabels,
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task exception',
+  },
   registers: ['default'],
 });
 

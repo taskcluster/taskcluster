@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
 import assert from 'assert';
 import helper from './helper.js';
 import { FakeAzure } from './fakes/index.js';
 import { AzureProvider } from '../src/providers/azure/index.js';
 import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import forge from 'node-forge';
 import fs from 'fs';
 import path from 'path';
@@ -86,12 +86,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // with; to figure out which this is, print the certificate in
   // `registerWorker`.  It will be one of the certs on on
   // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = 'F9:38:8E:A2:C9:B7:D6:32:B6:6A:2B:0B:40:6D:F1:D3:7D:39:01:F6';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 03';
+  const intermediateCertFingerprint = 'BE:68:D0:AD:AA:23:45:B4:8E:50:73:20:B6:95:D3:86:08:0E:5B:25';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 04';
   const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt';
+    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem');
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt';
   const azureSignatures = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good.json'), 'utf-8'));
   const allCertificates = loadCertificates();
 
@@ -257,7 +257,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const azureRootCAs = new Map([
         ['df3c24f9bfd666761b268073fe06d1cc8d4f82a4', 'DigiCert Global Root G2'],
         ['a8985d3a65e5e5c4b2d7d66d40c6dd2fb19c5436', 'DigiCert Global Root CA'],
-        ['d4de20d05e66fc53fe1a50882c78db2852cae474', 'Baltimore CyberTrust Root'],
         ['58e8abb0361533fb80f79b1b6d29d3ff8d5f00f0', 'D-TRUST Root Class 3 CA 2 2009'],
         ['73a5e64a3bff8316ff0edccc618a906e4eae4d74', 'Microsoft RSA Root Certificate Authority 2017'],
         ['999a64c37ff47d9fab95f14769891460eec4c3c5', 'Microsoft ECC Root Certificate Authority 2017'],
@@ -320,16 +319,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // check that the VM config is correct since this suite does not
       // go all the way to creating the VM
-      const config = {
-        ...worker.providerData.vm.config,
-        osProfile: {
-          ...worker.providerData.vm.config.osProfile,
-          adminUsername: 'user',
-          adminPassword: 'pass',
-        },
-        tags: worker.providerData.tags,
-      };
-      fake.validate(config, 'azure-vm.yml');
+      // (only for sequential provisioning workers, not ARM templates)
+      if (worker.providerData.vm.config) {
+        const config = {
+          ...worker.providerData.vm.config,
+          osProfile: {
+            ...worker.providerData.vm.config.osProfile,
+            adminUsername: 'user',
+            adminPassword: 'pass',
+          },
+          tags: worker.providerData.tags,
+        };
+        fake.validate(config, 'azure-vm.yml');
+      }
 
       return worker;
     };
@@ -501,6 +503,394 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(vmConfig.networkProfile.testProperty, 4);
       assert(vmConfig.networkProfile.networkInterfaces); // still set..
     });
+
+    test('provision with ARM template config creates deployment worker', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      assert.equal(worker.providerData.deploymentMethod, 'arm-template');
+      assert.ok(worker.providerData.deployment);
+      assert.ok(worker.providerData.deployment.name);
+      assert.ok(worker.providerData.armDeployment);
+      assert.equal(worker.providerData.armDeployment.mode, 'Incremental');
+    });
+
+    test('ARM deployment is cleaned up after successful provisioning', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+
+      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should exist before checkWorker');
+
+      // Scan prepare and check worker to trigger deployment completion check
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+
+      await worker.reload(helper.db);
+
+      // Verify deployment was cleaned up
+      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should be deleted after successful provisioning');
+      assert.ok(worker.providerData.provisioningComplete,
+        'worker should be marked as provisioning complete');
+      assert.ok(worker.providerData.deployment.operation,
+        'deployment operation should have started at this point');
+    });
+
+    test('keeps ARM deployment when keepDeployment is true', async function() {
+      await provisionWorkerPool({
+        workerManager: {
+          capacityPerInstance: 1,
+          keepDeployment: true,
+        },
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      assert.equal(worker.providerData.keepDeployment, true, 'keepDeployment flag should be stored on provider data');
+      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should remain when keepDeployment is true');
+      assert.equal(worker.providerData.deployment.id, `id/${deploymentName}`);
+    });
+
+    test('failed ARM deployment resources are cleaned up', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+      const vmName = worker.providerData.vm.name;
+
+      // simulate partial deployment failure
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
+        resourceGroupName,
+        deploymentName,
+        [
+          {
+            properties: {
+              provisioningState: 'Succeeded',
+              targetResource: {
+                resourceType: 'Microsoft.Network/publicIPAddresses',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
+              },
+            },
+          },
+          {
+            properties: {
+              provisioningState: 'Succeeded',
+              targetResource: {
+                resourceType: 'Microsoft.Network/networkInterfaces',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/networkInterfaces/fake-nic`,
+              },
+            },
+          },
+          {
+            properties: {
+              provisioningState: 'Failed',
+              targetResource: {
+                resourceType: 'Microsoft.Compute/virtualMachines',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
+              },
+            },
+          },
+        ],
+      );
+
+      fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Failed', 'VM provisioning failed');
+
+      // Trigger deployment check - should extract resources and mark for removal
+      await provider.scanPrepare();
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      assert.equal(worker.state, 'stopping', 'worker should be marked as stopping');
+      assert.ok(worker.providerData.ip?.name, 'should have extracted IP');
+      assert.ok(worker.providerData.nic?.name, 'should have extracted NIC');
+
+      // Create fake resources for cleanup testing
+      fake.computeClient.virtualMachines.makeFakeResource(resourceGroupName, vmName);
+      fake.networkClient.publicIPAddresses.makeFakeResource(resourceGroupName, 'fake-ip');
+      fake.networkClient.networkInterfaces.makeFakeResource(resourceGroupName, 'fake-nic');
+
+      // Delete the failed deployment from fake so deprovisionResource can mark it as deleted
+      await fake.deploymentsClient.deployments.beginDelete(resourceGroupName, deploymentName);
+
+      // Call deprovisionResources - should merge resources
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      assert.ok(worker.providerData.ip, 'IP should be in providerData');
+      assert.ok(worker.providerData.nic, 'NIC should be in providerData');
+      assert.equal(worker.providerData.ip.name, 'fake-ip', 'IP name should match');
+      assert.equal(worker.providerData.nic.name, 'fake-nic', 'NIC name should match');
+
+      // Second call - starts deleting VM
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish VM deletion
+      fake.computeClient.virtualMachines.fakeFinishRequest(resourceGroupName, vmName);
+
+      // Third call - VM done, starts deleting NIC
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish NIC deletion
+      fake.networkClient.networkInterfaces.fakeFinishRequest(resourceGroupName, 'fake-nic');
+
+      // Fourth call - NIC done, starts deleting IP
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Finish IP deletion
+      fake.networkClient.publicIPAddresses.fakeFinishRequest(resourceGroupName, 'fake-ip');
+
+      // Fifth call - IP done, no disks, deletes deployment and finalizes
+      await provider.deprovisionResources({ worker, monitor });
+      await worker.reload(helper.db);
+
+      // Worker should now be STOPPED and failedDeploymentResources should be cleaned up
+      assert.equal(worker.state, 'stopped', 'worker should be stopped');
+      assert.ok(!worker.providerData.failedDeploymentResources, 'failedDeploymentResources should be cleaned up');
+
+      // Deployment should be deleted
+      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'failed deployment should be deleted');
+    });
+
+    test('checkWorker continues after completed ARM deployment', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: { value: 'eastus' },
+          },
+        },
+      });
+
+      const [worker] = await helper.getWorkers();
+
+      await worker.update(helper.db, w => {
+        w.providerData.provisioningComplete = true;
+        // mimic a finished deployment record kept for deprovision
+        w.providerData.deployment.id = 'fake-deployment-id';
+      });
+
+      const provisionSpy = sinon.spy(provider, 'provisionResources');
+      const queryInstanceStub = sinon.stub(provider, 'queryInstance').resolves({
+        instanceState: 'ok',
+        instanceStateReason: 'ProvisioningState/succeeded',
+      });
+
+      try {
+        await provider.checkWorker({ worker });
+
+        assert.ok(queryInstanceStub.calledOnce, 'should still query instance after deployment succeeds');
+        assert.ok(provisionSpy.calledOnce, 'should continue into post-provision logic');
+      } finally {
+        queryInstanceStub.restore();
+        provisionSpy.restore();
+      }
+    });
+
+  });
+
+  suite('ARM deployment resource group management', function() {
+    const provisionWorkerPool = async (launchConfig, overrides) => {
+      const workerPool = await makeWorkerPool({
+        config: {
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+          launchConfigs: [{
+            workerManager: {
+              capacityPerInstance: 1,
+            },
+            subnetId: 'some/subnet',
+            location: 'westus',
+            hardwareProfile: { vmSize: 'Basic_A2' },
+            storageProfile: {
+              osDisk: {},
+            },
+            ...launchConfig,
+          }],
+          ...overrides,
+        },
+        owner: 'whatever@example.com',
+        providerData: {},
+        emailOnError: false,
+      });
+      const workerPoolStats = new WorkerPoolStats('wpid');
+      await provider.provision({ workerPool, workerPoolStats });
+    };
+
+    test('creates resource group if it does not exist', async function() {
+      const customRgName = 'test-custom-rg';
+      assert.ok(!fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
+        'custom RG should not exist before provisioning');
+
+      await provisionWorkerPool({
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'eastus',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      assert.equal(worker.providerData.resourceGroupName, customRgName);
+      assert.ok(fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
+        'custom RG should be created');
+
+      const rg = await fake.resourcesClient.resourceGroups.get(customRgName);
+      assert.equal(rg.location, 'eastus', 'RG should be created with correct location');
+    });
+
+    test('does not create resource group if using fallback from provider config', async function() {
+      const checkExistenceSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
+      const createOrUpdateSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      await provisionWorkerPool({
+        // No armDeploymentResourceGroup specified, should use fallback
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'eastus',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      const worker = workers[0];
+
+      assert.equal(worker.providerData.resourceGroupName, 'rgrp', 'should use fallback RG');
+      assert.ok(!checkExistenceSpy.called, 'should not check existence for fallback RG');
+      assert.ok(!createOrUpdateSpy.called, 'should not create fallback RG');
+
+      checkExistenceSpy.restore();
+      createOrUpdateSpy.restore();
+    });
+
+    test('does not check resource group if it already exists', async function() {
+      const customRgName = 'test-existing-rg';
+
+      // Pre-create the resource group
+      fake.resourcesClient.resourceGroups.makeFakeResourceGroup(customRgName, 'northeurope');
+
+      const checkExistenceSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
+      const createOrUpdateSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      await provisionWorkerPool({
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'westus',
+            },
+          },
+        },
+      });
+
+      assert.equal(checkExistenceSpy.callCount, 1, 'should check existence once');
+      assert.equal(createOrUpdateSpy.callCount, 0, 'should not create RG if it already exists');
+
+      const rg = await fake.resourcesClient.resourceGroups.get(customRgName);
+      assert.equal(rg.location, 'northeurope', 'existing RG location should not change');
+
+      checkExistenceSpy.restore();
+      createOrUpdateSpy.restore();
+    });
   });
 
   suite('provisionResources', function() {
@@ -549,7 +939,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assertProvisioningState({ ip: 'inprogress' });
       const ipParams = fake.networkClient.publicIPAddresses.getFakeRequestParameters('rgrp', ipName);
       assert.equal(ipParams.location, 'westus');
-      assert.equal(ipParams.publicIPAllocationMethod, 'Dynamic');
+      assert.equal(ipParams.publicIPAllocationMethod, 'Static');
 
       debug('second call');
       await provider.provisionResources({ worker, monitor });
@@ -1086,16 +1476,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         });
       }
     };
-
-    test('updates deprecated disk providerdata to disks', async function() {
-      await worker.update(helper.db, worker => {
-        delete worker.providerData.disks;
-        worker.providerData.disk = { name: "old_test_disk", id: false };
-      });
-      await provider.checkWorker({ worker });
-      await worker.reload(helper.db);
-      assert.equal(worker.providerData.disks[0].name, "old_test_disk");
-    });
 
     test('calls provisionResources for still-running workers', async function() {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });

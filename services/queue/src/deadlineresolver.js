@@ -3,7 +3,7 @@ const debug = debugFactory('app:deadline-resolver');
 import assert from 'assert';
 import _ from 'lodash';
 import QueueService from './queueservice.js';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
 import { sleep } from './utils.js';
 
@@ -148,6 +148,7 @@ class DeadlineResolver {
       await this.publisher.taskException({
         status: task.status(),
         runId,
+        task: { tags: task.tags || {} },
       }, task.routes);
       this.monitor.log.taskException({ taskId, runId });
 

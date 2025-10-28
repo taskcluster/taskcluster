@@ -3,11 +3,11 @@ import fs from 'fs';
 import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import mainLoad from '../src/main.js';
 import fakeGithubAuth from './github-auth.js';
 
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const load = testing.stickyLoader(mainLoad);
 

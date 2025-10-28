@@ -5,7 +5,7 @@
 import got, { TimeoutError } from 'got';
 
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-client');
+const debug = debugFactory('@taskcluster/client');
 import _ from 'lodash';
 import assert from 'assert';
 import hawk from 'hawk';
@@ -297,12 +297,12 @@ export const createClient = function(reference, name) {
 
     // If fake, we create an array this.fakeCalls[method] = [] for each method
     if (this._options.fake) {
-      debug('Creating taskcluster-client object in "fake" mode');
+      debug('Creating @taskcluster/client object in "fake" mode');
       this.fakeCalls = {};
       reference.entries.filter(e => e.type === 'function').forEach(e => this.fakeCalls[e.name] = []);
       // Throw an error if creating fakes in production
       if (process.env.NODE_ENV === 'production') {
-        new Error('taskcluster-client object created in "fake" mode, when NODE_ENV == "production"');
+        new Error('@taskcluster/client object created in "fake" mode, when NODE_ENV == "production"');
       }
     }
   };

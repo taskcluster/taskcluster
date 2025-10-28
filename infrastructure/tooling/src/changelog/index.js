@@ -14,7 +14,7 @@ import {
   gitCurrentBranch,
 } from '../utils/index.js';
 
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import path from 'path';
 import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';

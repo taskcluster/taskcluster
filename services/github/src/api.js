@@ -1,4 +1,4 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
@@ -413,11 +413,27 @@ builder.declare({
   const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
-  let headUser = msg.details['event.head.user.login'].toString();
-  let userDetails = (await instGithub.users.getByUsername({ username: headUser })).data;
-  msg.details['event.head.user.email'] = this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)
-    ? userDetails.email
-    : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  const headUser = msg.details['event.head.user.login'].toString();
+  const defaultEmail = msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  let resolvedEmail = defaultEmail;
+
+  try {
+    const { data: userDetails } = await instGithub.users.getByUsername({ username: headUser });
+    if (this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)) {
+      resolvedEmail = userDetails.email;
+    }
+  } catch (err) {
+    if (err.status !== 404 && err.code !== 404) {
+      throw err;
+    }
+    debugMonitor.debug({
+      message: `GitHub user ${headUser} not found when resolving email, falling back to noreply`,
+      status: err.status || err.code,
+      fallbackEmail: defaultEmail,
+    });
+  }
+
+  msg.details['event.head.user.email'] = resolvedEmail;
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 

@@ -4,7 +4,7 @@
  * [auth functions](#auth)
    * [`create_client`](#create_client)
    * [`delete_client`](#delete_client)
-   * [`expire_clients`](#expire_clients)
+   * [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
    * [`get_client`](#get_client)
    * [`get_clients`](#get_clients)
    * [`get_combined_audit_history`](#get_combined_audit_history)
@@ -37,6 +37,7 @@
    * [`delete_last_fires`](#delete_last_fires)
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
+   * [`get_hook_groups`](#get_hook_groups)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
@@ -148,7 +149,7 @@
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
-   * [`expire_secrets`](#expire_secrets)
+   * [`expire_secrets_return_names`](#expire_secrets_return_names)
    * [`get_secret`](#get_secret)
    * [`get_secrets`](#get_secrets)
    * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
@@ -213,7 +214,7 @@
 
 * [`create_client`](#create_client)
 * [`delete_client`](#delete_client)
-* [`expire_clients`](#expire_clients)
+* [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
 * [`get_client`](#get_client)
 * [`get_clients`](#get_clients)
 * [`get_combined_audit_history`](#get_combined_audit_history)
@@ -315,29 +316,24 @@ end
 
 </details>
 
-### expire_clients
+### expire_clients_return_client_ids
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 41
+* *Returns*: `table`
+  * `client_id text`
+* *Last defined on version*: 114
 
-Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
+Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids
 
 <details><summary>Function Body</summary>
 
 ```
-declare
-  count integer;
 begin
+  return query
   delete from clients
-  where expires < now() and delete_on_expiration;
-
-  if found then
-    get diagnostics count = row_count;
-    return count;
-  end if;
-  return 0;
+  where expires < now() and delete_on_expiration
+  returning clients.client_id;
 end
 ```
 
@@ -1186,6 +1182,7 @@ end
 * [`delete_last_fires`](#delete_last_fires)
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
+* [`get_hook_groups`](#get_hook_groups)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
@@ -1443,6 +1440,29 @@ begin
   where
     hooks.hook_group_id = hook_group_id_in and
     hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
+
+### get_hook_groups
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 115
+
+Get existing hooks groups
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select distinct hooks.hook_group_id
+  from hooks
+  order by hooks.hook_group_id;
 end
 ```
 
@@ -3752,9 +3772,11 @@ end
   * `  worker_group text`
   * `  worker_id text`
   * `  claimed timestamptz `
-* *Last defined on version*: 94
+* *Last defined on version*: 117
 
 Get all tasks that are currently claimed by workers in a given task queue.
+Returns only the latest claim for each unique task ID to avoid duplicates
+when tasks are being reclaimed.
 
 <details><summary>Function Body</summary>
 
@@ -3789,11 +3811,17 @@ begin
     q.worker_id,
     q.claimed
   from queue_claimed_tasks q
-  left join tasks on tasks.task_id=q.task_id
+  inner join tasks on tasks.task_id = q.task_id
   where q.task_queue_id = task_queue_id_in
-    and tasks.task_id is not null
     and (after_claimed_in is null or q.claimed > after_claimed_in)
     and (after_task_id_in is null or q.task_id != after_task_id_in)
+    and not exists (
+      select 1
+      from queue_claimed_tasks q2
+      where q2.task_id = q.task_id
+        and q2.task_queue_id = q.task_queue_id
+        and q2.claimed > q.claimed
+    )
   order by q.claimed asc
   limit get_page_limit(page_size_in);
 end
@@ -4798,9 +4826,11 @@ end
 * *Arguments*:
   * `task_queue_id_in text`
 * *Returns*: `integer`
-* *Last defined on version*: 104
+* *Last defined on version*: 113
 
 Count the number of claimed tasks for given task queue.
+Because queue_claimed_tasks table might have several records for the same task-run
+when the task is being reclaimed, we count distinct (task_id, run_id)
 
 
 <details><summary>Function Body</summary>
@@ -4808,7 +4838,7 @@ Count the number of claimed tasks for given task queue.
 ```
 begin
   return (
-    select count(*)
+    select count(distinct (task_id, run_id))
     from queue_claimed_tasks
     where task_queue_id = task_queue_id_in
       and taken_until > now()
@@ -5316,7 +5346,7 @@ end
   * `quarantined_count integer`
   * `claimed_count integer`
   * `pending_count integer`
-* *Last defined on version*: 112
+* *Last defined on version*: 113
 
 Retrieve comprehensive statistics for task queues including worker counts,
 quarantined workers, claimed tasks, and pending tasks. This method performs
@@ -5330,6 +5360,8 @@ Returns one row per task_queue_id with the following metrics:
 - pending_count: Number of distinct tasks waiting to be claimed
 
 All counts default to 0 when no data exists for a given metric.
+
+Updated from 112 version to increase distinct performance
 
 
 <details><summary>Function Body</summary>
@@ -5349,7 +5381,7 @@ begin
   claimed_stats AS (
     SELECT
       queue_claimed_tasks.task_queue_id,
-      COUNT(DISTINCT task_id || '_' || run_id)::int AS claimed_count
+      COUNT(DISTINCT (task_id, run_id))::int AS claimed_count
     FROM queue_claimed_tasks
     WHERE taken_until > now()
     GROUP BY queue_claimed_tasks.task_queue_id
@@ -5357,7 +5389,7 @@ begin
   pending_stats AS (
     SELECT
       queue_pending_tasks.task_queue_id,
-      COUNT(DISTINCT task_id || '_' || run_id)::int AS pending_count
+      COUNT(DISTINCT (task_id, run_id))::int AS pending_count
     FROM queue_pending_tasks
     WHERE expires > now()
     GROUP BY queue_pending_tasks.task_queue_id
@@ -6060,7 +6092,7 @@ end
 ## secrets
 
 * [`delete_secret`](#delete_secret)
-* [`expire_secrets`](#expire_secrets)
+* [`expire_secrets_return_names`](#expire_secrets_return_names)
 * [`get_secret`](#get_secret)
 * [`get_secrets`](#get_secrets)
 * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
@@ -6088,27 +6120,24 @@ end
 
 </details>
 
-### expire_secrets
+### expire_secrets_return_names
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 42
+* *Returns*: `table`
+  * `name text`
+* *Last defined on version*: 114
 
-Delete all secrets with an 'expires' in the past.
+Delete all secrets with an 'expires' in the past and return names
 
 <details><summary>Function Body</summary>
 
 ```
-declare
-  count integer;
 begin
-  delete from secrets where secrets.expires < now();
-  if found then
-    get diagnostics count = row_count;
-    return count;
-  end if;
-  return 0;
+  return query
+  delete from secrets
+  where secrets.expires < now()
+  returning secrets.name;
 end
 ```
 
@@ -8470,7 +8499,7 @@ end
   * `updated_launch_configs text[]`
   * `created_launch_configs text[]`
   * `archived_launch_configs text[]`
-* *Last defined on version*: 105
+* *Last defined on version*: 116
 
 Creates or updates launch configs and marks the old ones as archived.
 If a launch config already exist but is archived, it would be unarchived.
@@ -8520,10 +8549,11 @@ begin
           wp_launch_config_id
           USING ERRCODE = 'unique_violation';
       END IF;
-      -- make sure it is not archived
+      -- make sure it is not archived and workerManager specific fields are updated
       UPDATE worker_pool_launch_configs
       SET is_archived = false,
-          last_modified = now()
+          last_modified = now(),
+          configuration = config
       WHERE
         worker_pool_id = worker_pool_id_in
         AND launch_config_id = wp_launch_config_id;

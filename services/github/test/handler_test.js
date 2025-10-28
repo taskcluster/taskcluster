@@ -4,9 +4,9 @@ import helper from './helper.js';
 import assert from 'assert';
 import sinon from 'sinon';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { LEVELS } from '@taskcluster/lib-monitor';
 import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
 import fs from 'fs';
@@ -89,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     taskGroupId, exchange, routingKey,
     taskId, state, reasonResolved,
     runId = 0, started,
-    resolved,
+    resolved, retriesLeft,
   }) {
     // set up to resolve when the handler has finished (even if it finishes with error)
     const handlerComplete = new Promise((resolve, reject) => {
@@ -107,6 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           taskGroupId,
           taskId,
           state,
+          retriesLeft,
           runs: Array.from({ length: runId + 1 }).map(() => ({
             reasonResolved,
             state: 'completed',
@@ -1531,6 +1532,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         state: 'exception',
       });
       await assertChecksUpdate('failed');
+    });
+
+    test('intermittent task with retries left gets neutral check result', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        reasonResolved: 'intermittent-task',
+        state: 'exception',
+        retriesLeft: 2,
+      });
+      await assertChecksUpdate('intermittent-task');
+    });
+
+    test('intermittent task with no retries left gets failure check result', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        reasonResolved: 'intermittent-task',
+        state: 'exception',
+        retriesLeft: 0,
+      });
+      // For intermittent tasks with no retries left, we expect 'failure' conclusion
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let args = github.inst(9988).checks.update.firstCall.args[0];
+      assert.equal(args.owner, 'TaskclusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.check_run_id, '22222');
+      assert.equal(args.conclusion, 'failure');
     });
 
     test('successful task started by decision task gets a success comment', async function () {

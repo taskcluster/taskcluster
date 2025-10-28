@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
-import testing from 'taskcluster-lib-testing';
-import tc from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import helper from '../helper.js';
 import slugid from 'slugid';
@@ -104,7 +104,9 @@ suite(testing.suiteName(), function () {
         value: Buffer.from(JSON.stringify(s.encrypted_secret), 'utf8'),
       }), s.expires);
     }
-    await db.fns.expire_secrets();
+    const res = await db.fns.expire_secrets_return_names();
+    assert.equal(res.length, 6);
+    assert.deepEqual(res, Array.from({ length: 6 }).map((_, i) => ({ name: `secret-${i}` })));
     for await (const s of Object.values(secrets)) {
       const [secret] = await db.fns.get_secret(s.name);
       if (s.expires < new Date()) {

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import QueueService from './queueservice.js';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
 import { sleep } from './utils.js';
 
@@ -149,6 +149,7 @@ class ClaimResolver {
     await this.publisher.taskException({
       status: status,
       runId: runId,
+      task: { tags: task.tags || {} },
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
@@ -166,6 +167,7 @@ class ClaimResolver {
         this.publisher.taskPending({
           status: status,
           runId: runId + 1,
+          task: { tags: task.tags || {} },
         }, task.routes),
       ]);
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });

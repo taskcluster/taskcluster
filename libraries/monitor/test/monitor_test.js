@@ -2,7 +2,7 @@ import path from 'path';
 import { fork } from 'child_process';
 import mockFs from 'mock-fs';
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;

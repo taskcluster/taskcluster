@@ -6,7 +6,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v86/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v91/tools/d2g/genericworker"
 )
 
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {
@@ -39,11 +39,5 @@ func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) 
 }
 
 func (dia *DockerImageArtifact) String() string {
-	return `"${D2G_IMAGE_ID}"`
-}
-
-func (dia *DockerImageArtifact) ImageLoader() ImageLoader {
-	return &FileImageLoader{
-		Image: dia,
-	}
+	return "__D2G_IMAGE_ID__"
 }

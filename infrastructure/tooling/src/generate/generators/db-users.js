@@ -1,5 +1,5 @@
 import path from 'path';
-import { Schema } from 'taskcluster-lib-postgres';
+import { Schema } from '@taskcluster/lib-postgres';
 import { readRepoFile, writeRepoFile } from '../../utils/index.js';
 
 export const tasks = [{

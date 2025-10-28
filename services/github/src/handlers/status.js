@@ -43,7 +43,7 @@ const qLock = new QueueLock({
  * @returns {Promise<void>}
  **/
 export async function statusHandler(message) {
-  const { taskGroupId, state, runs, taskId } = message.payload.status;
+  const { taskGroupId, state, runs, taskId, retriesLeft } = message.payload.status;
   let { runId } = message.payload;
   runId = typeof runId === 'undefined' ? 0 : runId;
   const { reasonResolved } = runs[runId] || {};
@@ -54,7 +54,12 @@ export async function statusHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`, { exchange: message.exchange });
 
-  const conclusion = CONCLUSIONS[reasonResolved || state];
+  // check if it was the last try
+  let conclusion = CONCLUSIONS[reasonResolved || state];
+  if (reasonResolved === 'intermittent-task' && retriesLeft === 0) {
+    conclusion = 'failure';
+    debug(`Intermittent task ${taskId} has no retries left, marking as failure instead of neutral`);
+  }
   const checkRunStatus = conclusion ? CHECK_RUN_STATES.COMPLETED : TASK_STATE_TO_CHECK_RUN_STATE[state];
 
   let [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);

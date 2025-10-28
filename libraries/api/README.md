@@ -8,7 +8,7 @@ checking, and generation of client libraries.
 ## Quick example
 
 ```js
-import { APIBuilder } from 'taskcluster-lib-api';
+import { APIBuilder } from '@taskcluster/lib-api';
 
 // First declare API Builder
 let builder = new APIBuilder({
@@ -59,7 +59,7 @@ let api = builder.build({
   // ...
 });
 
-// pass it to taskcluster-lib-app
+// pass it to @taskcluster/lib-app
 App({
   apis: [api],
   // ...
@@ -71,7 +71,7 @@ App({
 To declare an API, create a new `APIBuilder` object:
 
 ```js
-import { APIBuilder } from 'taskcluster-lib-api';
+import { APIBuilder } from '@taskcluster/lib-api';
 let builder = new APIBuilder({
   // ..options..
 });
@@ -87,7 +87,7 @@ The available options are:
  * `params` - patterns for URL parameters that apply to all methods (see below)
  * `context` - a list of context entries that must be passed to `builder.build`.  Each
    will be available as properties of `this` within the implementation of each API
-   method. An instance of taskcluster-lib-monitor is _always_ available in the context.
+   method. An instance of @taskcluster/lib-monitor is _always_ available in the context.
  * `errorCodes` - a mapping from error names to HTTP statuses, e.g., `{MyError: 400}`
 
 ## Declaring methods
@@ -223,7 +223,7 @@ specified in the `params` section of the request will be substituted in and the 
 satisfaction will be checked against the client's scopes. If any of the parameters specified in
 your scopes are _not_ in the `params`, this satisfaction check will be deferred and the
 endpoint implementation _must_ check for authorization manually as described below. If
-this check does not occur, taskcluster-lib-api will throw an error for the result of the
+this check does not occur, @taskcluster/lib-api will throw an error for the result of the
 endpoint.
 
 ### Schemas
@@ -240,7 +240,7 @@ artifacts.  The response might be a JSON document, but the client should still
 treat it as an opaque stream of bytes instead of interpreting it.
 
 The schema declarations are expected to be in
-`schemas/<api.version>/<schemafile>`, as loaded by taskcluster-lib-validate.
+`schemas/<api.version>/<schemafile>`, as loaded by @taskcluster/lib-validate.
 For example:
 
 ```js
@@ -329,7 +329,7 @@ allowed time.
 The `async req.authorize(params, options)` throws an error with the code
 'InsufficientScopes' if the client does not satisfy the scope
 expression in `options.scopes`. You can catch this if you wish
-or let it bubble up and taskcluster-lib-api will return a detailed error message
+or let it bubble up and @taskcluster/lib-api will return a detailed error message
 to the client.
 
 The InsufficientScopes error object has 3 extra fields to help inspect the results.
@@ -430,7 +430,7 @@ not repeat it!
 
 The `APIBuilder` instance will have an async `build` method that takes additional options and
 returns an API instance which can be passed to
-[taskcluster-lib-app](../app).  The
+[@taskcluster/lib-app](../app).  The
 options to `builder.build` are:
 
  * `rootUrl` - the root URL for this instance of Taskcluster; this is used both to call the
@@ -443,9 +443,9 @@ options to `builder.build` are:
    other API clients to the API methods. All handlers get access to the monitor instance
    provided below added to the context as well. Read the Per Request Context section below
    for more.
- * `monitor` (required) - an instance of [taskcluster-lib-monitor](../monitor)
+ * `monitor` (required) - an instance of [@taskcluster/lib-monitor](../monitor)
  * `schemaset` (required) - a schemaset; this is from
-   [taskcluster-lib-validate](../validate).
+   [@taskcluster/lib-validate](../validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for
    the Auth service, as the default signature validator consults the Auth service.
 
@@ -462,12 +462,12 @@ reference data structure, and an `express(app)` method that configures the API
 on the given express app.
 
 For most Taskcluster services, the startup process uses
-[taskcluster-lib-loader](../loader),
+[@taskcluster/lib-loader](../loader),
 and the relevant loader components are defined like this:
 
 ```js
 import builder from './api.js';
-import { App } from 'taskcluster-lib-app';
+import { App } from '@taskcluster/lib-app';
 
 let load = loader({
   // ...
@@ -500,7 +500,7 @@ The `paginateResults` function supports paginating results in API methods.
 Use it like this:
 
 ```
-import { paginateResults } from 'taskcluster-lib-api';
+import { paginateResults } from '@taskcluster/lib-api';
 
 ...
 
@@ -555,7 +555,7 @@ automatically to all log messages made from within a handler and passing along `
 made with a Taskcluster client. For Taskcluster library authors, you can make an instance of your library
 support this by having a `taskclusterPerRequestInstance` function on your object that takes `requestId`
 and `traceId` as named arguments and returns an instance of itself that will live for the lifespan of the
-request and be used within. Both `taskcluster-lib-monitor` and `taskcluster-client` support this and
+request and be used within. Both `@taskcluster/lib-monitor` and `@taskcluster/client` support this and
 are good examples of how this can be used.
 
 # Development

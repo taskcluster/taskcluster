@@ -1,6 +1,6 @@
 import path from 'path';
 import { URL } from 'url';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -71,7 +71,7 @@ const testCases = [
 ];
 
 suite(testing.suiteName(), function() {
-  // Run test cases using schemas testing utility from taskcluster-lib-testing
+  // Run test cases using schemas testing utility from @taskcluster/lib-testing
   testing.schemas({
     schemasetOptions: {
       serviceName: 'auth',

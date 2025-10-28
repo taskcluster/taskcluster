@@ -1,4 +1,4 @@
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 import { strict as assert } from 'assert';
 

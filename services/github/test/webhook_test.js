@@ -1,8 +1,8 @@
 import fs from 'fs';
 import helper from './helper.js';
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 const TC_DEV_INSTALLATION_ID = 28513985;
 
@@ -75,6 +75,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // skipped events
   statusTest('Issue Comment created', 'webhook.issue_comment.created.json', 200, TC_DEV_INSTALLATION_ID);
   statusTest('Issue Comment deleted', 'webhook.issue_comment.deleted.json', 200, TC_DEV_INSTALLATION_ID);
+
+  test('Pull Request Opened without a known sender user still succeeds', async function() {
+    const installation = github.inst(5808);
+    // drop user to cause 404 error
+    installation._github_users = installation._github_users.filter(({ username }) => username !== 'owlishDeveloper');
+
+    monitor.manager.reset();
+
+    const filename = './test/data/webhooks/webhook.pull_request.open.json';
+    const response = await helper.jsonHttpRequest(filename);
+    assert.equal(response.statusCode, 204);
+    response.connection.destroy();
+
+    const webhookMessage = monitor.manager.messages.find(({ Type }) => Type === 'webhook-received');
+    assert(webhookMessage, 'expected webhook-received monitor message');
+  });
 
   // Also should have data in the db after this one
   statusTest('Installation', 'webhook.installation.json', 200, 11725878, async () => {

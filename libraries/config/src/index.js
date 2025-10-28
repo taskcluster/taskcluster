@@ -3,7 +3,7 @@ import path from 'path';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-config');
+const debug = debugFactory('@taskcluster/lib-config');
 import assert from 'assert';
 import buildSchema from './schema.js';
 

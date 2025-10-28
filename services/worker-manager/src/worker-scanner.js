@@ -1,6 +1,6 @@
-import Iterate from 'taskcluster-lib-iterate';
-import taskcluster from 'taskcluster-client';
-import { paginatedIterator } from 'taskcluster-lib-postgres';
+import Iterate from '@taskcluster/lib-iterate';
+import taskcluster from '@taskcluster/client';
+import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { Worker } from './data.js';
 
 /**

@@ -1,4 +1,4 @@
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const ImageManager = require('../src/docker/image_manager');
 const sleep = require('../src/util/sleep');

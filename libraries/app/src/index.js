@@ -8,7 +8,7 @@ import sslify from 'express-sslify';
 import hsts from 'hsts';
 import csp from 'content-security-policy';
 import { v4 } from 'uuid';
-import { loadVersion } from 'taskcluster-lib-api';
+import { loadVersion } from '@taskcluster/lib-api';
 
 /**
  * Attach trace headers to requests. This is exported

@@ -1,6 +1,6 @@
 const got = require('got');
 const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const assert = require('assert');
 
 const helper = require('../../helper');

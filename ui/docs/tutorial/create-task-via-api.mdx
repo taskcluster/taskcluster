@@ -3,8 +3,8 @@ title: Creating a task via API
 layout: default
 ---
 
-import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import TutorialNavigation from '@taskcluster/ui/views/Documentation/components/TutorialNavigation';
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 # Creating a Task via API
 
@@ -41,14 +41,14 @@ time; and a `deadline` at which point the _queue_ will resolve the task as
 `exception` unless the task has been resolved earlier. This ensures that all
 tasks will eventually be resolved.  Timestamps are given in UTC as ISO 8601
 formatted strings, the format which `Date.toJSON()` returns. As evident below,
-`taskcluster-client` has some nice utilities for constructing relative
+`@taskcluster/client` has some nice utilities for constructing relative
 timestamps for this.
 
 Let's get started with a JavaScript script to create a task, starting with just
 the task definition:
 
 ```js
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 
 let payload = {}; // worker specific payload - we'll add it later
 let task = {
@@ -74,11 +74,11 @@ let task = {
 console.log(JSON.stringify(task, null, 2));
 ```
 
-To run this, you will need `taskcluster-client` installed.  Let's install a few
+To run this, you will need `@taskcluster/client` installed.  Let's install a few
 other libraries too, that will be useful later:
 
 ```
-npm install taskcluster-client superagent
+npm install @taskcluster/client superagent
 ```
 
 In the example above you see how to specify the properties required by the
@@ -146,7 +146,7 @@ accessing them doesn't require any credentials.
 ## Creating a Task
 
 All tasks have a `taskId`, a random 22-character identifier we call a _slugid_.
-The `slugid()` method of `taskcluster-client` generates these (all supported
+The `slugid()` method of `@taskcluster/client` generates these (all supported
 client languages have similar functionality).
 
 Being based on UUIDv4, the risk of `taskId` collision is extremely small. In
@@ -156,7 +156,7 @@ fails to make idempotent requests, or you accidentally reused the `taskId`. The
 example below shows how to generate a random slugid for use as `taskId`.
 
 ```js
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 
 // Generate a new taskId
 let taskId = taskcluster.slugid();
@@ -172,7 +172,7 @@ in environment variables in the last step, and finally create a new task using
 the `queue.createTask(taskId, payload)` method.
 
 ```js
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 
 let payload = {
   // Properties required by docker-worker

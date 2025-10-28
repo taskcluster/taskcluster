@@ -3,9 +3,9 @@ import assert from 'assert';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('test:api:createhook');
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 import taskDefinition from './test_definition.js';
 

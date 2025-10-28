@@ -4,7 +4,7 @@ import path from 'path';
 import Docker from 'dockerode';
 import Observable from 'zen-observable';
 import { PassThrough, Transform } from 'stream';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import got from 'got';
 import { execCommand } from './command.js';

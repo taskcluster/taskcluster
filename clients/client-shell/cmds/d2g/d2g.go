@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
-	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v86/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v86/clients/client-shell/config"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v86/tools/d2g/genericworker"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
+	"github.com/taskcluster/taskcluster/v91/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v91/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v91/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v91/tools/d2g"
+	"github.com/taskcluster/taskcluster/v91/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v91/tools/d2g/genericworker"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/spf13/cobra"
@@ -78,17 +78,21 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to convert input to a docker worker payload definition: %v", err)
 	}
 
-	d2gConfig := map[string]any{
-		"allowChainOfTrust":     true,
-		"allowDisableSeccomp":   true,
-		"allowHostSharedMemory": true,
-		"allowInteractive":      true,
-		"allowKVM":              true,
-		"allowLoopbackAudio":    true,
-		"allowLoopbackVideo":    true,
-		"allowPrivileged":       true,
-		"allowPtrace":           true,
-		"allowTaskclusterProxy": true,
+	d2gConfig := d2g.Config{
+		EnableD2G:             true,
+		AllowChainOfTrust:     true,
+		AllowDisableSeccomp:   true,
+		AllowGPUs:             false,
+		AllowHostSharedMemory: true,
+		AllowInteractive:      true,
+		AllowKVM:              true,
+		AllowLoopbackAudio:    true,
+		AllowLoopbackVideo:    true,
+		AllowPrivileged:       true,
+		AllowPtrace:           true,
+		AllowTaskclusterProxy: true,
+		GPUs:                  "all",
+		LogTranslation:        true,
 	}
 
 	if isTaskDef {

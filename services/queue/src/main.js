@@ -1,7 +1,7 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import builder from './api.js';
 import exchanges from './exchanges.js';
 import Bucket from './bucket.js';
@@ -14,14 +14,14 @@ import DependencyResolver from './dependencyresolver.js';
 import MetricsCollector from './metricscollector.js';
 import WorkClaimer from './workclaimer.js';
 import WorkerInfo from './workerinfo.js';
-import loader from 'taskcluster-lib-loader';
-import config from 'taskcluster-lib-config';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import SchemaSet from 'taskcluster-lib-validate';
-import libReferences from 'taskcluster-lib-references';
-import { App } from 'taskcluster-lib-app';
-import tcdb from 'taskcluster-db';
-import pulse from 'taskcluster-lib-pulse';
+import loader from '@taskcluster/lib-loader';
+import config from '@taskcluster/lib-config';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import { App } from '@taskcluster/lib-app';
+import tcdb from '@taskcluster/db';
+import pulse from '@taskcluster/lib-pulse';
 import QuickLRU from 'quick-lru';
 import { artifactUtils } from './utils.js';
 import { fileURLToPath } from 'url';
@@ -418,7 +418,7 @@ let load = loader({
   'queue-metrics': {
     requires: ['cfg', 'db', 'monitor', 'queueService'],
     setup: async ({ cfg, db, monitor, queueService }, ownName) => {
-      /** @type {import('taskcluster-lib-monitor').Monitor} */
+      /** @type {import('@taskcluster/lib-monitor').Monitor} */
       const childMonitor = monitor.childMonitor('queue-metrics');
       const collector = new MetricsCollector({
         ownName,

@@ -3,11 +3,11 @@ const debug = debugFactory('test:dependencies');
 import assert from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import assume from 'assume';
 import helper from './helper.js';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);

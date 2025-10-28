@@ -1,13 +1,13 @@
 import '../../prelude.js';
 import Debug from 'debug';
-import tcdb from 'taskcluster-db';
-import builder from '../src/api.js';
-import loader from 'taskcluster-lib-loader';
-import SchemaSet from 'taskcluster-lib-validate';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import config from 'taskcluster-lib-config';
+import tcdb from '@taskcluster/db';
+import builder, { AUDIT_ENTRY_TYPE } from '../src/api.js';
+import loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import config from '@taskcluster/lib-config';
 import { fileURLToPath } from 'url';
 
 let debug = Debug('secrets:server');
@@ -61,16 +61,21 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'monitor'],
-    setup: async ({ cfg, db, schemaset, monitor }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        cfg,
-        db,
-        monitor: monitor.childMonitor('api-context'),
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: async ({ cfg, db, schemaset, monitor }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          cfg,
+          db,
+          monitor: monitor.childMonitor('api-context'),
+        },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -90,8 +95,25 @@ let load = loader({
     setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring secrets');
-        const [{ expire_secrets: count }] = (await db.fns.expire_secrets());
-        debug('Expired ' + count + ' secrets');
+        const records = (await db.fns.expire_secrets_return_names());
+        debug(`Expired ${records.length} secrets`);
+
+        const clientId = 'static/taskcluster/secrets';
+        for (const { name } of records) {
+          monitor.log.auditEvent({
+            service: 'secrets',
+            entity: 'secret',
+            entityId: name,
+            clientId,
+            action: AUDIT_ENTRY_TYPE.SECRET.EXPIRED,
+          });
+
+          await db.fns.insert_secrets_audit_history(
+            name,
+            clientId,
+            AUDIT_ENTRY_TYPE.SECRET.EXPIRED,
+          );
+        }
       });
     },
   },

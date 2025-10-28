@@ -45,18 +45,18 @@ function install {
     GOOS="${1}" GOARCH="${2}" go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     GOOS="${1}" GOARCH="${2}" go vet ./...
     # note, this just builds tests, it doesn't run them!
-    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/taskcluster/v86/tools/taskcluster-proxy
+    GOOS="${1}" GOARCH="${2}" go test -c github.com/taskcluster/taskcluster/v91/tools/taskcluster-proxy
   else
     go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     go vet ./...
     # note, this just builds tests, it doesn't run them!
-    go test -c github.com/taskcluster/taskcluster/v86/tools/taskcluster-proxy
+    go test -c github.com/taskcluster/taskcluster/v91/tools/taskcluster-proxy
   fi
 }
 
 if ${ALL_PLATFORMS}; then
   # build windows first
-  install windows 386
+  install windows arm64
   install windows amd64
   # darwin
   install darwin     amd64

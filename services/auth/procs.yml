@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/auth/src/main.js server
+  metrics: true
 expireSentry:
   type: heroku-only
   command: node services/auth/src/main.js expire-sentry

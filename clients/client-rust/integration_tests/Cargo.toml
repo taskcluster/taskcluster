@@ -1,7 +1,7 @@
 [package]
 name = "taskcluster-integration-tests"
 publish = false
-version = "86.0.2"
+version = "91.1.0"
 authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -12,14 +12,14 @@ description = "API client for Taskcluster"
 # has no non-dev dependencies
 
 [dev-dependencies]
-taskcluster = { version = "86.0.2", path = "../client" }
+taskcluster = { version = "91.1.0", path = "../client" }
 taskcluster-upload = { path = "../upload" }
 taskcluster-download = { path = "../download" }
 httptest = "0.16"
 tempfile = "3"
 ring = "0.17"
-tokio = { version = "1.45", features = ["macros", "fs"] }
+tokio = { version = "1.47", features = ["macros", "fs"] }
 anyhow = "1.0"
 slugid = "1.0.0"
-serde_json = "1.0.140"
+serde_json = "1.0.145"
 reqwest = { version = "0.12", features = ["json"] }

@@ -165,18 +165,23 @@ def test_success_payload():
 
 
 def test_redirect_response():
-    @httmock.all_requests
     def response_content(url, request):
-        return {
-            'status_code': 303,
-            'headers': {'Location': 'https://nosuch.example.com'},
-            'content': {'url': 'https://nosuch.example.com'},
-        }
+        if 'redirect.com' in url.netloc:
+            return {
+                'status_code': 303,
+                'headers': {'Location': 'https://redirect-target.example.com/final'},
+            }
+        else:
+            return {
+                'status_code': 200,
+                'content': {'final': 'content'},
+            }
 
     with httmock.HTTMock(response_content):
-        d = subject.makeSingleHttpRequest('GET', 'http://www.example.com', None, {})
-        assert d.json() == {'url': 'https://nosuch.example.com'}
-        assert d.status_code == 303
+        d = subject.makeSingleHttpRequest('GET', 'http://www.redirect.com', None, {})
+        # we should get the content since allow_redirects=True
+        assert d.json() == {'final': 'content'}
+        assert d.status_code == 200
 
 
 def test_failure():
@@ -199,7 +204,7 @@ def test_success_put_file():
                 pass
 
         p.return_value = FakeResp()
-        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'setup.py')
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'pyproject.toml')
         subject.putFile(path, 'http://www.example.com', 'text/plain')
         p.assert_called_once_with('put', 'http://www.example.com', mock.ANY, mock.ANY, mock.ANY)
 

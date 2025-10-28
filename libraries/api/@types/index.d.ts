@@ -137,9 +137,9 @@ export type SignatureValidator = (options: SignatureValidatorOptions, extra?: Re
 export interface APIOptions<TContext extends Record<string, any>> {
   // Required properties
   rootUrl: string;
-  monitor: import('taskcluster-lib-monitor').Monitor;
+  monitor: import('@taskcluster/lib-monitor').Monitor;
   builder: APIBuilder<TContext>;
-  context: Record<keyof TContext, any> & { monitor: import('taskcluster-lib-monitor').Monitor };
+  context: Record<keyof TContext, any> & { monitor: import('@taskcluster/lib-monitor').Monitor };
   validator?: any;
   schemaset: any;
 

@@ -3,10 +3,10 @@ import _ from 'lodash';
 import assert from 'assert';
 import helper from './helper.js';
 import { AwsProvider } from '../src/providers/aws.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import fs from 'fs';
 import path from 'path';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
 

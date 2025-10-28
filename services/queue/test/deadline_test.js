@@ -1,12 +1,13 @@
+import _ from 'lodash';
 import debugFactory from 'debug';
 const debug = debugFactory('test:deadline');
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -31,6 +32,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         description: 'Task created during unit tests',
         owner: 'jonsafj@mozilla.com',
         source: 'https://github.com/taskcluster/taskcluster-queue',
+      },
+      tags: {
+        purpose: 'taskcluster-testing',
       },
     };
     return { taskId: slugid.v4(), task };
@@ -60,6 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await testing.poll(async () => {
       helper.assertPulseMessage('task-exception', m => (
         m.payload.status.state === 'exception' &&
+        _.isEqual(m.payload.task.tags, task.tags) &&
         m.payload.status.runs.length === 1 &&
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));

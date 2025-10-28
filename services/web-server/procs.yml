@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/web-server/src/main.js server
+  metrics: true
   paths:
     - '/login/*'
     - '/subscription'

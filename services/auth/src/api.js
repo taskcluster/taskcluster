@@ -1,6 +1,6 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import scopeUtils from 'taskcluster-lib-scopes';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import slugid from 'slugid';
 import _ from 'lodash';
 import createSignatureValidator from './signaturevalidator.js';
@@ -21,6 +21,7 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
     ENABLED: 'client enabled',
     DISABLED: 'client disabled',
     ACCESS_TOKEN_RESET: 'access token reset',
+    EXPIRED: 'expired',
   },
   ROLE: {
     CREATED: 'created',

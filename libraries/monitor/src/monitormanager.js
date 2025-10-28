@@ -26,7 +26,7 @@ const LEVELS_REVERSE_COLOR = [
   chalk.magenta('DEBUG'),
 ];
 
-const mmDebug = Debug('taskcluster-lib-monitor.MonitorManager');
+const mmDebug = Debug('@taskcluster/lib-monitor.MonitorManager');
 
 /** @typedef {import('./plugins/prometheus.js').MetricDefinition} MetricDefinition */
 

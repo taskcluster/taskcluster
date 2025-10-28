@@ -75,58 +75,48 @@ tasks:
   py39:
     description: python3.9 client tests
     worker:
-      docker-image: python:3.9
+      docker-image: ghcr.io/astral-sh/uv:python3.9-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py39 /sandbox/bin/tox
+        uv run pytest
   py310:
     description: python3.10 client tests
     worker:
-      docker-image: python:3.10
+      docker-image: ghcr.io/astral-sh/uv:python3.10-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py310 /sandbox/bin/tox
+        uv run pytest
   py311:
     description: python3.11 client tests
     worker:
-      docker-image: python:3.11
+      docker-image: ghcr.io/astral-sh/uv:python3.11-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py311 /sandbox/bin/tox
+        uv run pytest
   py312:
     description: python3.12 client tests
     worker:
-      docker-image: python:3.12
+      docker-image: ghcr.io/astral-sh/uv:python3.12-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py312 /sandbox/bin/tox
+        uv run pytest
   py313:
     description: python3.13 client tests
     worker:
-      docker-image: python:3.13
+      docker-image: ghcr.io/astral-sh/uv:python3.13-trixie
     run:
       command: >-
         eval $(python test/client-library-secrets.py) &&
         cd clients/client-py &&
-        python3 -mvenv /sandbox &&
-        /sandbox/bin/pip install tox &&
-        TOXENV=py313 /sandbox/bin/tox
+        uv run pytest
   rust:
     description: rust client tests
     worker:

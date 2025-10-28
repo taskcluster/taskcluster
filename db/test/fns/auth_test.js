@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import * as uuid from 'uuid';
 
 suite(testing.suiteName(), function() {
@@ -355,7 +355,8 @@ suite(testing.suiteName(), function() {
         create(db, 'new-keep', { expires: taskcluster.fromNow('1 hour'), delete_on_expiration: false }),
       ]);
 
-      await db.fns.expire_clients();
+      const res = await db.fns.expire_clients_return_client_ids();
+      assert.deepEqual(res, [{ client_id: 'old' }]);
 
       const clients = await db.fns.get_clients(null, null, null);
       assert.deepEqual(clients.map(c => c.client_id), ['new', 'new-keep', 'old-keep']);

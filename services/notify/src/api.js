@@ -1,4 +1,4 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 
 const builder = new APIBuilder({
   title: 'Notification Service',

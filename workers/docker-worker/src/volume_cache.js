@@ -1,7 +1,7 @@
 let path = require('path');
 let fs = require('fs');
 const { makeDir, removeDir } = require('./util/fs');
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 let uuid = require('uuid');
 let _ = require('lodash');
 

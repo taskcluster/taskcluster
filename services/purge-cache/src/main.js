@@ -1,14 +1,14 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('purge-cache');
-import config from 'taskcluster-lib-config';
-import loader from 'taskcluster-lib-loader';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import SchemaSet from 'taskcluster-lib-validate';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import taskcluster from 'taskcluster-client';
-import tcdb from 'taskcluster-db';
+import config from '@taskcluster/lib-config';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import SchemaSet from '@taskcluster/lib-validate';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import taskcluster from '@taskcluster/client';
+import tcdb from '@taskcluster/db';
 import builder from './api.js';
 import { fileURLToPath } from 'url';
 
@@ -79,12 +79,17 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'cachePurgeCache', 'db'],
-    setup: ({ cfg, monitor, schemaset, cachePurgeCache, db }) => builder.build({
-      context: { cfg, cachePurgeCache, db },
-      rootUrl: cfg.taskcluster.rootUrl,
-      schemaset,
-      monitor: monitor.childMonitor('api'),
-    }),
+    setup: ({ cfg, monitor, schemaset, cachePurgeCache, db }) => {
+      const api = builder.build({
+        context: { cfg, cachePurgeCache, db },
+        rootUrl: cfg.taskcluster.rootUrl,
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

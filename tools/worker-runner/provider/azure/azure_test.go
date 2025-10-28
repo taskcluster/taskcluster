@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v86/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v86/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v91/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v91/tools/workerproto/testing"
 )
 
 func TestConfigureRun(t *testing.T) {
@@ -140,12 +140,15 @@ func TestCheckTerminationTime(t *testing.T) {
 		mds.ScheduledEventsError = nil
 
 		evt := struct {
-			EventId      string
-			EventType    string
-			ResourceType string
-			Resources    []string
-			EventStatus  string
-			NotBefore    string
+			EventId           string
+			EventType         string
+			ResourceType      string
+			Resources         []string
+			EventStatus       string
+			NotBefore         string
+			Description       string
+			EventSource       string
+			DurationInSeconds int
 		}{
 			EventType: "Preempt",
 		}

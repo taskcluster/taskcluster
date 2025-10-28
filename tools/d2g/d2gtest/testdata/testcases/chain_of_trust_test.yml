@@ -33,16 +33,21 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1'
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - my-little/pony:4.1
+        - foo
+        - bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -52,10 +57,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -91,16 +92,21 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${D2G_IMAGE_ID}"
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - foo
+        - bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -116,10 +122,6 @@ testSuite:
           artifact: foo/bar
           namespace: myimage
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -155,16 +157,21 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID "${D2G_IMAGE_ID}"
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - foo
+        - bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -179,10 +186,6 @@ testSuite:
           artifact: public/my-image.tar.gz
           taskId: P0fUGkj5Tte1Cicm9jDHww
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -215,16 +218,21 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -e ABC -e GHI -e RUN_ID -e TASKCLUSTER_INSTANCE_TYPE -e TASKCLUSTER_ROOT_URL
-          -e TASKCLUSTER_WORKER_LOCATION -e TASK_GROUP_ID -e TASK_ID 'my-little/pony:4.1'
-          foo bar
-      env:
-        ABC: def
-        GHI: jkl
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - my-little/pony:4.1
+        - foo
+        - bar
       features:
         backingLog: true
         chainOfTrust: true
@@ -234,10 +242,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

@@ -1,17 +1,17 @@
-import url from 'url';
 import assert from 'assert';
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-testing:FakeAuth');
+const debug = debugFactory('@taskcluster/lib-testing:FakeAuth');
 import nock from 'nock';
 import hawk from 'hawk';
 import libUrls from 'taskcluster-lib-urls';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 let anonymousScopes = [];
 
 export const start = function(clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
-  const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
+  const authPath = URL.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk'))?.pathname;
+  assert(authPath, 'invalid rootUrl');
   return nock(rootUrl, { encodedQueryParams: true, allowUnmocked: true })
     .persist()
     .filteringRequestBody(/.*/, '*')
@@ -29,7 +29,7 @@ export const start = function(clients, { rootUrl } = {}) {
       } else if (/^\/.*[\?&]bewit\=/.test(body.resource)) {
         // The following is a hacky reproduction of the bewit logic in
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
-        let bewitString = url.parse(body.resource, true).query.bewit;
+        let bewitString = URL.parse(body.resource, rootUrl)?.searchParams?.get('bewit');
         if (bewitString) {
           let bewit = Buffer.from(bewitString, 'base64').toString('utf-8');
           let bewitParts = bewit.split('\\');

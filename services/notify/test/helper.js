@@ -20,8 +20,8 @@ import {
   SetQueueAttributesCommand,
 } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import builder from '../src/api.js';
 import mainLoad from '../src/main.js';
 import RateLimit from '../src/ratelimit.js';

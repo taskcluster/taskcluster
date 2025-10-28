@@ -3,7 +3,7 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import child_process from 'child_process';
 import Observable from 'zen-observable';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import { rimraf } from 'rimraf';
 

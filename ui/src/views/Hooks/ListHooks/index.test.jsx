@@ -19,6 +19,7 @@ it('should render ListHooks page', async () => {
       <MemoryRouter keyLength={0}>
         <ApolloProvider client={createClient()}>
           <ListHooks
+            match={{ params: { hookGroupId: 'hg1' } }}
             location={{
               search: {
                 slice: jest.fn().mockReturnValue('search=test'),

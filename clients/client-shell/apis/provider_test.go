@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v86/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v86/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v91/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v91/clients/client-shell/config"
 )
 
 // TestCommandGeneration checks that we generate a valid command from a definition

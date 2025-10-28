@@ -6,7 +6,7 @@ const { join, sep } = require('path');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 
 suite(suiteName(), function () {
   async function getTemporaryStream(filename, data) {

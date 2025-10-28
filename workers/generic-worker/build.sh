@@ -9,9 +9,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.24 or higher.
+# Support go 1.25 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=24
+MIN_GO_MINOR_VERSION=25
 
 unset CGO_ENABLED
 unset GOOS
@@ -93,7 +93,7 @@ GIT_REVISION="$(git rev-parse HEAD)"
 # ui/docs/reference/workers/generic-worker/support-tiers.mdx
 if ${ALL_PLATFORMS}; then
   install multiuser windows amd64
-  install multiuser windows 386
+  install multiuser windows arm64
 
   install multiuser darwin  amd64
   install multiuser darwin  arm64
@@ -140,7 +140,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v86/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v91/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
   go tool golint $(go list ./...) | sed "s*${PWD}/**"
   go tool ineffassign .
   go tool goimports -w .

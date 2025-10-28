@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 import _ from 'lodash';
 import assert from 'assert';
 import { PUBLISHERS } from './constants.js';

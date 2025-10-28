@@ -2,7 +2,7 @@
 title: Download task artifacts via API
 ---
 
-import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+import TutorialNavigation from '@taskcluster/ui/views/Documentation/components/TutorialNavigation';
 
 Once the task is resolved, we can list artifacts from
 runs of the task. A convenience method `queue.listLatestArtifacts` will list
@@ -29,7 +29,7 @@ print it.  It should be noted that artifacts prefixed `public/` are public and
 downloading them doesn't require any credentials.
 
 ```js
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 let request     = require('superagent');
 
 let task; // same as before..

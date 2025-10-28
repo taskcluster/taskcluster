@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 import { splitWorkerPoolId } from './util.js';
 
 const exchanges = new Exchanges({

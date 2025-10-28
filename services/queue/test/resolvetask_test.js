@@ -3,11 +3,11 @@ import debugFactory from 'debug';
 const debug = debugFactory('test:completed');
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -43,6 +43,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
   });
+
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
 
   test('reportCompleted is idempotent', async () => {
     const taskId = slugid.v4();
@@ -117,6 +126,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Severity: LEVELS.notice,
     });
 
+    await checkMetricExists('queue_failed_tasks', 'reasonResolved', 'failed');
+
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
     helper.assertPulseMessage('task-failed', m => (
@@ -164,6 +175,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'malformed-payload');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
@@ -216,6 +229,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
     helper.clearPulseMessages();
 
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'resource-unavailable');
+
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
@@ -266,6 +281,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       m.payload.status.runs[0].state === 'exception' &&
       m.payload.status.runs[0].reasonResolved === 'internal-error'));
     helper.clearPulseMessages();
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'internal-error');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {

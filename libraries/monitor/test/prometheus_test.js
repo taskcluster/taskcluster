@@ -3,7 +3,7 @@ import _ from 'lodash';
 import request from 'superagent';
 import nock from 'nock';
 import MonitorManager from '../src/monitormanager.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 // Register metrics once to be used across all tests
 MonitorManager.registerMetric('testingServiceTestCounter', {

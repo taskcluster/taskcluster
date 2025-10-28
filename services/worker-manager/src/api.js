@@ -1,8 +1,8 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import slug from 'slugid';
 import assert from 'assert';
 import { ApiError, Provider } from './providers/provider.js';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
@@ -18,10 +18,10 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
  * @type {APIBuilder<{
  *  cfg: object;
  *  providers: import('./providers/index.js').Providers;
- *  db: import('taskcluster-lib-postgres').Database;
- *  monitor: import('taskcluster-lib-monitor').Monitor;
- *  notify: object; // TODO import('taskcluster-client').Notify;
- *  publisher: import('taskcluster-lib-pulse').PulsePublisher; // TODO add generic type
+ *  db: import('@taskcluster/lib-postgres').Database;
+ *  monitor: import('@taskcluster/lib-monitor').Monitor;
+ *  notify: object; // TODO import('@taskcluster/client').Notify;
+ *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
  * }>}
  */
 let builder = new APIBuilder({
@@ -692,7 +692,7 @@ builder.declare({
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
     this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
-    this.db.fns.get_worker_pool_error_launch_configs(workerPoolId || null, null),
+    workerPoolId ? this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, null) : [],
   ]);
 
   for (const row of daily) {

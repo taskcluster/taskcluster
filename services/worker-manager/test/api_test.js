@@ -1,9 +1,9 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import slug from 'slugid';
 import assert from 'assert';
 import helper from './helper.js';
 import { WorkerPool, Worker } from '../src/data.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import fs from 'fs';
 import path from 'path';
 
@@ -351,6 +351,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
         .map(({ data }) => data.launchConfigId),
       ['lc1', 'lc3']);
+  });
+
+  test('update worker pool - launchConfigs are always updated with full config', async function () {
+    const wpId = 'up/date';
+    const input = {
+      providerId: 'aws',
+      description: 'upd',
+      config: {
+        launchConfigs: [
+          genAwsLaunchConfig({ maxCapacity: 5 }, 'us-west-1'),
+          genAwsLaunchConfig({ capacityPerInstance: 3 }, 'us-west-2'),
+        ],
+        minCapacity: 1,
+        maxCapacity: 1,
+      },
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    const created = await helper.workerManager.createWorkerPool(wpId, input);
+
+    const modifiedInput = { ...input };
+    modifiedInput.config.launchConfigs[0].workerManager.maxCapacity = 9;
+    modifiedInput.config.launchConfigs[1].workerManager.capacityPerInstance = 8;
+
+    const updated = await helper.workerManager.updateWorkerPool(wpId, modifiedInput);
+
+    assert.notDeepEqual(updated.config.launchConfigs, created.config.launchConfigs);
+
+    assert.equal(created.config.launchConfigs[0].workerManager.maxCapacity, 5);
+    assert.equal(updated.config.launchConfigs[0].workerManager.maxCapacity, 9);
+
+    assert.equal(created.config.launchConfigs[1].workerManager.capacityPerInstance, 3);
+    assert.equal(updated.config.launchConfigs[1].workerManager.capacityPerInstance, 8);
   });
 
   test('launchConfigIds should be unique across worker pool - create worker pool', async function () {

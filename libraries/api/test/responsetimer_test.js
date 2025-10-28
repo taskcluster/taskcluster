@@ -3,7 +3,7 @@ import assert from 'assert';
 import { APIBuilder } from '../src/index.js';
 import helper, { monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   setup(async function() {

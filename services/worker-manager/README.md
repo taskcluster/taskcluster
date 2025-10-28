@@ -6,7 +6,7 @@ The worker manager service manages workers, including interacting with cloud ser
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-worker-manager test` to run the tests.
+Run `yarn workspace @taskcluster/worker-manager test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 To run *all* tests, you will need appropriate Taskcluster credentials.
@@ -127,9 +127,13 @@ subgraph provision loop
     poolIterateStart[Iterate worker pools] --> takeWorkerPool
     takeWorkerPool[Get next worker pool] --> estimator
     estimator[Estimate number of workers to spawn] --> hasToSpawn{To spawn > 0 ?}
-    hasToSpawn -- Yes, Azure --> requestAzure[Request azure: create DB record]
-    requestAzure --> checkWorker[(Create worker with config <br>state: Requested)]
-    checkWorker --> requestWorker([Start provisioning<br>See Azure checkWorker below])
+    hasToSpawn -- Yes, Azure --> azureProvisionFlow{{Deployment method?}}
+    azureProvisionFlow -- Sequential resources --> requestAzureSequential[Request Azure: sequential<br>create DB record]
+    azureProvisionFlow -- ARM template --> requestAzureArm[Request Azure: ARM deployment<br>create DB record + trigger template]
+    requestAzureSequential --> checkWorkerSequential[(Create worker<br>state: Requested)]
+    requestAzureArm --> checkWorkerArm[(Create worker<br>state: Requested<br>deployment pending)]
+    checkWorkerSequential --> requestWorker([Start provisioning<br>See Azure checkWorker below])
+    checkWorkerArm --> requestWorker
     hasToSpawn -- Yes, Google --> requestGoogle([Create instance: compute.instances.insert])
     requestGoogle --> createWorker1[(new workers)]
     hasToSpawn -- Yes, AWS --> requestAWS([Create instance: ec2.runInstances])
@@ -197,7 +201,11 @@ graph TD;
   subgraph azureCheckWorker [Azure checkWorker]
     azureCheckStates --> isStopping{state == Stopping ?}
     isStopping -- Yes --> deprovisionResources[Deprovision resources]
-    isStopping -- No --> queryInstance([Cloud API: get instance info])
+    isStopping -- No --> isARMTemplate{deploymentMethod<br>== arm-template ?}
+    isARMTemplate -- Yes --> checkArmDeployment[checkARMDeployment()]
+    checkArmDeployment -- returns false --> azureCheckEnd
+    checkArmDeployment -- returns true --> queryInstance([Cloud API: get instance info])
+    isARMTemplate -- No --> queryInstance
 
     queryInstance -- VM exists --> checkTerminateAfter{terminateAfter < now ?}
     checkTerminateAfter -- Yes --> removeWorker[(Remove worker)]
@@ -210,7 +218,10 @@ graph TD;
     isRequestedAndNotProvisioned -- No ----> removeWorker
 
     subgraph Deprovisioning
-      deprovisionResources --> deprovisionVm([Deprovision VM])
+      deprovisionResources --> deleteDeployment{deploymentMethod<br>== arm-template ?}
+      deleteDeployment -- Yes --> deprovisionArmDeployment([Delete ARM deployment])
+      deleteDeployment -- No --> skipDeployment[skip]
+      (deprovisionArmDeployment & skipDeployment) --> deprovisionVm([Deprovision VM])
       deprovisionVm --> deprovisionNic([Deprovision NIC])
       deprovisionNic --> deprovisionIp([Deprovision IP])
       deprovisionIp --> deprovisionDisks([Deprovision all disks])

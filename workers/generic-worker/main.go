@@ -29,20 +29,20 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
-	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v86/internal"
-	"github.com/taskcluster/taskcluster/v86/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v86/internal/scopes"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v86/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
+	"github.com/taskcluster/taskcluster/v91/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v91/internal"
+	"github.com/taskcluster/taskcluster/v91/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v91/internal/scopes"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v91/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -66,8 +66,9 @@ var (
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
 
-	version  = internal.Version
-	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
+	version          = internal.Version
+	revision         = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
+	workerStatusPath = filepath.Join(os.TempDir(), "worker-status.json")
 )
 
 func initialiseFeatures() (err error) {
@@ -124,6 +125,16 @@ func main() {
 		fmt.Println(JSONSchema())
 	case arguments["--short-version"]:
 		fmt.Println(version)
+	case arguments["status"]:
+		statusBytes, err := os.ReadFile(workerStatusPath)
+		if err != nil && !os.IsNotExist(err) {
+			exitOnError(CANT_GET_WORKER_STATUS, err, "Error reading worker status file")
+		}
+		if statusBytes == nil {
+			statusBytes, err = json.MarshalIndent(&WorkerStatus{CurrentTaskIDs: []string{}}, "", "  ")
+			exitOnError(INTERNAL_ERROR, err, "Error marshalling worker status")
+		}
+		fmt.Println(string(statusBytes))
 
 	case arguments["run"]:
 		withWorkerRunner := arguments["--with-worker-runner"].(bool)
@@ -132,12 +143,19 @@ func main() {
 			// include worker-runner protocol traffic, but for the moment it simply
 			// provides a way to channel generic-worker logging to worker-runner
 			if protocolPipe, ok := arguments["--worker-runner-protocol-pipe"].(string); ok && protocolPipe != "" {
-				f, err := os.OpenFile(protocolPipe, os.O_RDWR, 0)
-				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to %s: %s", protocolPipe, err)
+				// Connect to input pipe (client->server) for writing
+				inputPipeName := protocolPipe + "-input"
+				fw, err := os.OpenFile(inputPipeName, os.O_WRONLY, 0)
+				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to input pipe %s: %s", inputPipeName, err)
 
-				os.Stdin = f
-				os.Stdout = f
-				os.Stderr = f
+				// Connect to output pipe (server->client) for reading
+				outputPipeName := protocolPipe + "-output"
+				fr, err := os.OpenFile(outputPipeName, os.O_RDONLY, 0)
+				exitOnError(CANT_CONNECT_PROTOCOL_PIPE, err, "Cannot connect to output pipe %s: %s", outputPipeName, err)
+
+				os.Stdin = fr  // Read from output pipe (server->client)
+				os.Stdout = fw // Write to input pipe (client->server)
+				os.Stderr = fw // Write to input pipe (client->server)
 			}
 		}
 
@@ -892,6 +910,12 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	err = &ExecutionErrors{}
 
+	workerStatus := &WorkerStatus{
+		CurrentTaskIDs: []string{task.TaskID},
+	}
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
+	defer os.Remove(workerStatusPath)
+
 	defer func() {
 		if r := recover(); r != nil {
 			err.add(executionError(internalError, errored, fmt.Errorf("%#v", r)))
@@ -1028,6 +1052,10 @@ type TaskContext struct {
 	User    *gwruntime.OSUser
 }
 
+type WorkerStatus struct {
+	CurrentTaskIDs []string `json:"currentTaskIds"`
+}
+
 // deleteTaskDirs deletes all task directories (directories whose name starts
 // with `task_`) inside directory parentDir, except those whose names are in
 // skipNames
@@ -1073,6 +1101,8 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
 	combinedErr := fmt.Errorf("%s, args: %v, root cause: %v, exit code: %d", logMessage, args, err, exitCode)
-	errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
+	if WorkerRunnerProtocol != nil {
+		errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
+	}
 	os.Exit(int(exitCode))
 }

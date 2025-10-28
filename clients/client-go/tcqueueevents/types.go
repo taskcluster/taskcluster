@@ -3,7 +3,7 @@
 package tcqueueevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
 )
 
 type (
@@ -452,6 +452,12 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
 		TakenUntil tcclient.Time `json:"takenUntil"`
+
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//

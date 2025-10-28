@@ -13,7 +13,7 @@ This library is initialized early in the Node process's lifetime, while modules 
 At this time, the static method `MonitorManager.register` can be called to register new log message types:
 
 ```js
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({
   name: 'somethingHappened',
@@ -63,7 +63,7 @@ This is typically done in a loader component:
 
 That monitor can then be used to log, measure, count, or even create child monitors.
 
-Typically the log references are passed to an instance of `taskcluster-lib-references`.
+Typically the log references are passed to an instance of `@taskcluster/lib-references`.
 
 ### register
 
@@ -401,7 +401,7 @@ measured and recoded just like successful functions or promises.
 ### Timing Handlers
 
 A common pattern in Taskcluster projects is to have handler functions in a worker that take a message as an argument and perform some action. These
-can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
+can be timed (in milliseconds) by wrapping them with `@taskcluster/lib-monitor`:
 
 ```js
 const handler = function(message) {

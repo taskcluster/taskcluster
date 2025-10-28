@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { TaskQueue } from '../../worker-manager/src/queue-data.js';
 import { splitTaskQueueId } from './utils.js';
 
@@ -15,9 +15,9 @@ class WorkerMetricsCollector {
    * Create WorkerMetricsCollector instance.
    *
    * @param {Object} options - Configuration options for the collector
-   * @param {import('taskcluster-lib-postgres').Database} options.db - Database instance
+   * @param {import('@taskcluster/lib-postgres').Database} options.db - Database instance
    * @param {import('./queueservice.js').QueueService} options.queueService - Queue Service
-   * @param {import('taskcluster-lib-monitor').Monitor} options.monitor - Base monitor instance
+   * @param {import('@taskcluster/lib-monitor').Monitor} options.monitor - Base monitor instance
    * @param {number} options.pollingDelay - Number of milliseconds to sleep between polling
    * @param {string} options.ownName - Name to identify the service with
    */

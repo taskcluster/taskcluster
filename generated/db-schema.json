@@ -7709,6 +7709,107 @@
       },
       "migrationScript": "begin\n  CREATE INDEX queue_workers_task_queue_idx ON queue_workers (task_queue_id, expires);\nend",
       "version": 112
+    },
+    {
+      "description": "get correct number of claimed tasks for a task queue",
+      "methods": {
+        "queue_claimed_tasks_count": {
+          "args": "task_queue_id_in text",
+          "body": "begin\n  return (\n    select count(distinct (task_id, run_id))\n    from queue_claimed_tasks\n    where task_queue_id = task_queue_id_in\n      and taken_until > now()\n  );\nend",
+          "deprecated": false,
+          "description": "Count the number of claimed tasks for given task queue.\nBecause queue_claimed_tasks table might have several records for the same task-run\nwhen the task is being reclaimed, we count distinct (task_id, run_id)\n",
+          "mode": "read",
+          "returns": "integer",
+          "serviceName": "queue"
+        },
+        "queue_worker_stats": {
+          "args": "",
+          "body": "begin\n  RETURN QUERY\n  WITH worker_stats AS (\n    SELECT\n      queue_workers.task_queue_id,\n      COUNT(*)::int AS worker_count,\n      SUM(CASE WHEN quarantine_until > now() THEN 1 ELSE 0 END)::int AS quarantined_count\n    FROM queue_workers\n    WHERE expires > now()\n    GROUP BY queue_workers.task_queue_id\n  ),\n  claimed_stats AS (\n    SELECT\n      queue_claimed_tasks.task_queue_id,\n      COUNT(DISTINCT (task_id, run_id))::int AS claimed_count\n    FROM queue_claimed_tasks\n    WHERE taken_until > now()\n    GROUP BY queue_claimed_tasks.task_queue_id\n  ),\n  pending_stats AS (\n    SELECT\n      queue_pending_tasks.task_queue_id,\n      COUNT(DISTINCT (task_id, run_id))::int AS pending_count\n    FROM queue_pending_tasks\n    WHERE expires > now()\n    GROUP BY queue_pending_tasks.task_queue_id\n  )\n  SELECT\n    COALESCE(ws.task_queue_id, cs.task_queue_id, ps.task_queue_id) AS task_queue_id,\n    COALESCE(ws.worker_count, 0) AS worker_count,\n    COALESCE(ws.quarantined_count, 0) AS quarantined_count,\n    COALESCE(cs.claimed_count, 0) AS claimed_count,\n    COALESCE(ps.pending_count, 0) AS pending_count\n  FROM worker_stats ws\n  FULL OUTER JOIN claimed_stats cs ON ws.task_queue_id = cs.task_queue_id\n  FULL OUTER JOIN pending_stats ps ON cs.task_queue_id = ps.task_queue_id;\nend",
+          "deprecated": false,
+          "description": "Retrieve comprehensive statistics for task queues including worker counts,\nquarantined workers, claimed tasks, and pending tasks. This method performs\na full outer join across queue_workers, queue_claimed_tasks, and\nqueue_pending_tasks tables to provide a unified view of queue metrics.\n\nReturns one row per task_queue_id with the following metrics:\n- worker_count: Total number of active workers (not expired)\n- quarantined_count: Number of workers currently under quarantine\n- claimed_count: Number of distinct tasks currently claimed by workers\n- pending_count: Number of distinct tasks waiting to be claimed\n\nAll counts default to 0 when no data exists for a given metric.\n\nUpdated from 112 version to increase distinct performance\n",
+          "mode": "read",
+          "returns": "table(task_queue_id text, worker_count integer, quarantined_count integer, claimed_count integer, pending_count integer)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 113
+    },
+    {
+      "description": "Expired secrets and clients leaving audit trails",
+      "methods": {
+        "expire_clients": {
+          "deprecated": true
+        },
+        "expire_clients_return_client_ids": {
+          "args": "",
+          "body": "begin\n  return query\n  delete from clients\n  where expires < now() and delete_on_expiration\n  returning clients.client_id;\nend",
+          "deprecated": false,
+          "description": "Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids",
+          "mode": "write",
+          "returns": "table(client_id text)",
+          "serviceName": "auth"
+        },
+        "expire_secrets": {
+          "deprecated": true
+        },
+        "expire_secrets_return_names": {
+          "args": "",
+          "body": "begin\n  return query\n  delete from secrets\n  where secrets.expires < now()\n  returning secrets.name;\nend",
+          "deprecated": false,
+          "description": "Delete all secrets with an 'expires' in the past and return names",
+          "mode": "write",
+          "returns": "table(name text)",
+          "serviceName": "secrets"
+        }
+      },
+      "version": 114
+    },
+    {
+      "description": "optimize w-m errors queries",
+      "downgradeScript": "begin\n  DROP INDEX idx_worker_pool_errors_pool_id_extra_code;\n  DROP INDEX idx_workers_pool_id_state_capacity;\nend",
+      "methods": {
+        "get_hook_groups": {
+          "args": "",
+          "body": "begin\n  return query\n  select distinct hooks.hook_group_id\n  from hooks\n  order by hooks.hook_group_id;\nend",
+          "deprecated": false,
+          "description": "Get existing hooks groups",
+          "mode": "read",
+          "returns": "table(hook_group_id text)",
+          "serviceName": "hooks"
+        }
+      },
+      "migrationScript": "begin\n  CREATE INDEX idx_worker_pool_errors_pool_id_extra_code ON worker_pool_errors (worker_pool_id, ((extra->>'code')));\n  CREATE INDEX idx_workers_pool_id_state_capacity ON workers (worker_pool_id, state, capacity);\nend",
+      "version": 115
+    },
+    {
+      "description": "Updating workerManager part of Launch Config should work",
+      "methods": {
+        "upsert_worker_pool_launch_configs": {
+          "args": "worker_pool_id_in text, config_in jsonb",
+          "body": "declare\n  config_without_lc jsonb;\n  updated_lcs text[];\n  created_lcs text[];\n  archived_lcs text[];\n  processed_lcs text[];\n  wp_launch_config_id text;\n  config jsonb;\n  tmp text[];\n  existing_config jsonb;\nbegin\n  -- update launch configurations\n  created_lcs := '{}';\n  updated_lcs := '{}';\n  archived_lcs := '{}';\n\n  FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP\n    wp_launch_config_id := get_or_create_launch_config_id(worker_pool_id_in, config);\n    processed_lcs := array_append(processed_lcs, wp_launch_config_id);\n\n    -- Check if config exists and get its content\n    SELECT configuration INTO existing_config\n    FROM worker_pool_launch_configs\n    WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id;\n\n    -- check for  uniqueness\n    IF existing_config IS NOT NULL THEN\n      -- Config exists, check if content matches\n      IF (\n        jsonb_typeof(existing_config) = 'object'\n        AND jsonb_typeof(config) = 'object'\n        AND (existing_config - 'workerManager') != (config - 'workerManager')\n      ) THEN\n        RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',\n          wp_launch_config_id\n          USING ERRCODE = 'unique_violation';\n      END IF;\n      -- make sure it is not archived and workerManager specific fields are updated\n      UPDATE worker_pool_launch_configs\n      SET is_archived = false,\n          last_modified = now(),\n          configuration = config\n      WHERE\n        worker_pool_id = worker_pool_id_in\n        AND launch_config_id = wp_launch_config_id;\n\n      updated_lcs := array_append(updated_lcs, wp_launch_config_id);\n    ELSE\n      created_lcs := array_append(created_lcs, wp_launch_config_id);\n      PERFORM create_worker_pool_launch_config(\n        wp_launch_config_id,\n        worker_pool_id_in,\n        false,\n        config,\n        now(),\n        now()\n      );\n    END IF;\n  END LOOP;\n\n  -- mark all launch configs that are not in the updated list as archived\n  WITH updated_rows AS (\n    UPDATE worker_pool_launch_configs\n    SET is_archived = true\n    WHERE\n      worker_pool_launch_configs.worker_pool_id = worker_pool_id_in\n      AND (\n        -- if the array is empty, ALL(array[]) will return null and not TRUE\n        array_length(processed_lcs, 1) IS NULL\n        OR worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)\n      )\n      AND worker_pool_launch_configs.is_archived = false\n    RETURNING launch_config_id\n  )\n  SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;\n  archived_lcs := array_cat(archived_lcs, tmp);\n\n  return query\n  select updated_lcs, created_lcs, archived_lcs;\nend",
+          "deprecated": false,
+          "description": "Creates or updates launch configs and marks the old ones as archived.\nIf a launch config already exist but is archived, it would be unarchived.\nAll launch configs that are not in the updated list will be archived.\n\nThis will return list of launch config ids that were updated, created, archived.\n\nRaises UNIQUE_VIOLATION if the pool already exists with given launchConfigId and content differs.",
+          "mode": "write",
+          "returns": "table(updated_launch_configs text[], created_launch_configs text[], archived_launch_configs text[])",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 116
+    },
+    {
+      "description": "Return unique tasks from get_claimed_tasks_by_task_queue_id",
+      "methods": {
+        "get_claimed_tasks_by_task_queue_id": {
+          "args": "task_queue_id_in text, page_size_in integer, after_claimed_in timestamptz, after_task_id_in text",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until,\n    -- for pagination and results\n    q.run_id,\n    q.worker_group,\n    q.worker_id,\n    q.claimed\n  from queue_claimed_tasks q\n  inner join tasks on tasks.task_id = q.task_id\n  where q.task_queue_id = task_queue_id_in\n    and (after_claimed_in is null or q.claimed > after_claimed_in)\n    and (after_task_id_in is null or q.task_id != after_task_id_in)\n    and not exists (\n      select 1\n      from queue_claimed_tasks q2\n      where q2.task_id = q.task_id\n        and q2.task_queue_id = q.task_queue_id\n        and q2.claimed > q.claimed\n    )\n  order by q.claimed asc\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get all tasks that are currently claimed by workers in a given task queue.\nReturns only the latest claim for each unique task ID to avoid duplicates\nwhen tasks are being reclaimed.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  run_id integer,\n  worker_group text,\n  worker_id text,\n  claimed timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 117
     }
   ]
 }

@@ -742,6 +742,13 @@
     "title": "Workers"
   },
   {
+    "element": "h3",
+    "id": "launch-configurations",
+    "path": "/manual/deploying/workers",
+    "subtitle": "Launch configurations",
+    "title": "Workers"
+  },
+  {
     "element": "h2",
     "id": "provider-configuration",
     "path": "/manual/deploying/workers",
@@ -1982,6 +1989,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/hooks/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "index-service",
     "path": "/reference/core/index",
     "subtitle": null,
@@ -2031,10 +2045,24 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/index/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "notify-service",
     "path": "/reference/core/notify",
     "subtitle": null,
     "title": "Notify Service"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/notify/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2094,10 +2122,24 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/purge-cache/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "secrets-service",
     "path": "/reference/core/secrets",
     "subtitle": null,
     "title": "Secrets Service"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/secrets/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2168,6 +2210,13 @@
     "path": "/reference/core/web-server/github-login-strategy",
     "subtitle": "User Scopes",
     "title": "GitHub Login Strategy"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/core/web-server/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -2265,6 +2314,13 @@
     "id": "customdata",
     "path": "/reference/core/worker-manager/azure",
     "subtitle": "CustomData",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "provisioning-modes",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Provisioning Modes",
     "title": "Azure Provider Type"
   },
   {
@@ -2626,6 +2682,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/integrations/github/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "taskcluster-yml-version-0",
     "path": "/reference/integrations/github/taskcluster-yml-v0",
     "subtitle": null,
@@ -2948,6 +3011,13 @@
   },
   {
     "element": "h1",
+    "id": "metrics",
+    "path": "/reference/platform/auth/metrics",
+    "subtitle": null,
+    "title": "Metrics"
+  },
+  {
+    "element": "h1",
     "id": "roles-and-role-expansion",
     "path": "/reference/platform/auth/roles",
     "subtitle": null,
@@ -3078,6 +3148,13 @@
     "path": "/reference/platform/object/download-methods",
     "subtitle": "Introduction",
     "title": "Download Methods"
+  },
+  {
+    "element": "h1",
+    "id": "metrics",
+    "path": "/reference/platform/object/metrics",
+    "subtitle": null,
+    "title": "Metrics"
   },
   {
     "element": "h1",
@@ -3560,13 +3637,6 @@
     "id": "feature-allowptrace",
     "path": "/reference/workers/docker-worker/features",
     "subtitle": "Feature: `allowPtrace`",
-    "title": "Features"
-  },
-  {
-    "element": "h2",
-    "id": "feature-dockersave",
-    "path": "/reference/workers/docker-worker/features",
-    "subtitle": "Feature: `dockerSave`",
     "title": "Features"
   },
   {

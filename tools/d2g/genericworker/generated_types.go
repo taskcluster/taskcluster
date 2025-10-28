@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
 )
 
 type (
@@ -215,16 +215,6 @@ type (
 		//
 		// Default:    false
 		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
-
-		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		//
-		// Default:    false
-		Dind bool `json:"dind" default:"false"`
-
-		// Uploads docker images as artifacts
-		//
-		// Default:    false
-		DockerSave bool `json:"dockerSave" default:"false"`
 
 		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
 		//
@@ -1448,18 +1438,6 @@ func JSONSchema() string {
               "default": false,
               "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
               "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
-              "type": "boolean"
-            },
-            "dind": {
-              "default": false,
-              "description": "Runs docker-in-docker and binds ` + "`" + `/var/run/docker.sock` + "`" + ` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
-              "title": "Docker in Docker",
-              "type": "boolean"
-            },
-            "dockerSave": {
-              "default": false,
-              "description": "Uploads docker images as artifacts",
-              "title": "Docker save",
               "type": "boolean"
             },
             "interactive": {

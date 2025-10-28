@@ -1,8 +1,8 @@
 import { schema } from './schema.js';
-import { Database } from 'taskcluster-lib-postgres';
+import { Database } from '@taskcluster/lib-postgres';
 
-/** @typedef {import('taskcluster-lib-postgres').UpgradeOptions} UpgradeOptions */
-/** @typedef {import('taskcluster-lib-postgres').DowngradeOptions} DowngradeOptions */
+/** @typedef {import('@taskcluster/lib-postgres').UpgradeOptions} UpgradeOptions */
+/** @typedef {import('@taskcluster/lib-postgres').DowngradeOptions} DowngradeOptions */
 /** @typedef {{ useDbDirectory?: boolean }} SchemaLoadOptions */
 
 /** @param {Omit<UpgradeOptions, 'schema'> & SchemaLoadOptions} options */

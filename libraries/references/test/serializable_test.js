@@ -3,7 +3,7 @@ import References from '../src/index.js';
 import { makeSerializable } from '../src/serializable.js';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();

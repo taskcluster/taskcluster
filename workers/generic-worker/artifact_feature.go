@@ -10,9 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v86/internal/scopes"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v91/internal/scopes"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/process"
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -83,31 +84,36 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 	if !atf.startSuccessful {
 		return
 	}
+
 	task := atf.task
 	atf.FindArtifacts()
 	taskArtifacts := atf.artifacts
-	var wg sync.WaitGroup
+
+	// Use errgroup to limit concurrent uploads to 100
+	// to hopefully avoid issues like the following:
+	// https://github.com/taskcluster/taskcluster/issues/8023
+	group := &errgroup.Group{}
+	group.SetLimit(100)
+
 	uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
 	failChan := make(chan *CommandExecutionError, len(taskArtifacts))
-	for _, taskArtifact := range taskArtifacts {
-		wg.Add(1)
-		go func(artifact artifacts.TaskArtifact) {
-			defer wg.Done()
 
+	for _, taskArtifact := range taskArtifacts {
+		group.Go(func() error {
 			// Any attempt to upload a feature artifact should be skipped
 			// but not cause a failure, since e.g. a directory artifact
 			// could include one, non-maliciously, such as a top level
 			// public/ directory artifact that includes
 			// public/logs/live_backing.log inadvertently.
-			if feature := task.featureArtifacts[artifact.Base().Name]; feature != "" {
-				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", artifact.Base().Name, feature)
-				return
+			if feature := task.featureArtifacts[taskArtifact.Base().Name]; feature != "" {
+				task.Warnf("Not uploading artifact %v found in task.payload.artifacts section, since this will be uploaded later by %v", taskArtifact.Base().Name, feature)
+				return nil
 			}
-			e := task.uploadArtifact(artifact)
+			e := task.uploadArtifact(taskArtifact)
 			if e != nil {
 				// we don't care about optional artifacts failing to upload
-				if artifact.Base().Optional {
-					return
+				if taskArtifact.Base().Optional {
+					return nil
 				}
 				uploadErrChan <- e
 			}
@@ -115,20 +121,22 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 			// artifact, but doesn't cover case that an artifact could not be
 			// found, and so an error artifact was uploaded. So we do that
 			// here:
-			switch a := artifact.(type) {
+			switch a := taskArtifact.(type) {
 			case *artifacts.ErrorArtifact:
 				// we don't care about optional artifacts failing to upload
 				if a.Optional {
-					return
+					return nil
 				}
 				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
 				failChan <- fail
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
-		}(taskArtifact)
+			return nil
+		})
 	}
 
-	wg.Wait()
+	// errors are handled via channels so we can collect all of them
+	_ = group.Wait()
 	close(uploadErrChan)
 	close(failChan)
 

@@ -1,11 +1,12 @@
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({
   SECRET: {
     CREATED: 'created',
     UPDATED: 'updated',
     DELETED: 'deleted',
+    EXPIRED: 'expired',
   },
 });
 const secretToJson = (db, item) => ({

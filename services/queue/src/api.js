@@ -1,9 +1,9 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import taskcluster from 'taskcluster-client';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import taskcluster from '@taskcluster/client';
 import taskCreds from './task-creds.js';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
 import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils.js';
 import { loadArtifactsRoutes } from './artifacts.js';
@@ -67,9 +67,9 @@ const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0
  *
  * @type {APIBuilder<{
  *  cfg: object;
- *  db: import('taskcluster-db').Database;
- *  monitor: import('taskcluster-lib-monitor').Monitor;
- *  publisher: import('taskcluster-lib-pulse').PulsePublisher; // TODO add generic type
+ *  db: import('@taskcluster/lib-postgres').Database;
+ *  monitor: import('@taskcluster/lib-monitor').Monitor;
+ *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
  *  taskGroupExpiresExtension: object; // todo
  *  signPublicArtifactUrls: object; // todo
  *  publicBucket: import('./bucket.js');
@@ -437,6 +437,7 @@ const cancelSingleTask = async (task, ctx) => {
     await ctx.publisher.taskException(_.defaults({
       status,
       runId,
+      task: { tags: task.tags || {} },
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
     ctx.monitor.log.taskException({ taskId: task.taskId, runId });
   }
@@ -1157,6 +1158,7 @@ builder.declare({
       this.publisher.taskPending({
         status: status,
         runId: runId,
+        task: { tags: task.tags || {} },
       }, task.routes),
     ]);
     this.monitor.log.taskPending({ taskId, runId });
@@ -1671,7 +1673,10 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
-    this.monitor.metric.failedTasks(1, metricLabels);
+    this.monitor.metric.failedTasks(1, {
+      ...metricLabels,
+      reasonResolved: status.runs[runId].reasonResolved,
+    });
     this.monitor.log.taskFailed({ taskId, runId });
   }
 
@@ -1833,7 +1838,10 @@ builder.declare({
   this.monitor.log.taskException({ taskId, runId });
 
   const metricLabels = splitTaskQueueId(task.taskQueueId);
-  this.monitor.metric.exceptionTasks(1, metricLabels);
+  this.monitor.metric.exceptionTasks(1, {
+    ...metricLabels,
+    reasonResolved: run.reasonResolved,
+  });
 
   // If a newRun was created and it is a retry with state pending then we
   // better publish messages about it. If we're not retrying the task, the task

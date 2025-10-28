@@ -4,7 +4,7 @@ title: Task Notifications
 order: 80
 ---
 
-import SiteSpecific from 'taskcluster-ui/components/SiteSpecific';
+import SiteSpecific from '@taskcluster/ui/components/SiteSpecific';
 
 There are two ways to have Taskcluster send notifications on your behalf.
 
@@ -26,7 +26,7 @@ through the
 if you're working from within a task.
 
 ```js
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 async function notify() {
     # specify a baseUrl via the taskcluster proxy
     var notify = new taskcluster.Notify({baseUrl: 'http://taskcluster/notify/v1'});

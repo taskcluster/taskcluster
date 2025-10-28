@@ -17,7 +17,13 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-notify-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-notify
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-notify-web
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-notify
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
@@ -48,6 +54,9 @@ spec:
                 name: taskcluster-notify
           ports:
             - containerPort: 80
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /api/notify/v1/ping

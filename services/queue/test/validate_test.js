@@ -1,4 +1,4 @@
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import path from 'path';
 
 const __dirname = new URL('.', import.meta.url).pathname;

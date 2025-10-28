@@ -6,7 +6,7 @@ import {
   DescribeInstanceStatusCommand,
   TerminateInstancesCommand,
 } from '@aws-sdk/client-ec2';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -337,6 +337,9 @@ export class AwsProvider extends Provider {
 
           case 'terminated':
           case 'stopped':
+            await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
+              InstanceIds: [worker.workerId.toString()],
+            })));
             await this.onWorkerStopped({ worker });
             state = Worker.states.STOPPED;
             break;
@@ -388,7 +391,7 @@ export class AwsProvider extends Provider {
     try {
       const region = worker.providerData.region;
       result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
-        InstanceIds: [worker.workerId],
+        InstanceIds: [worker.workerId.toString()],
       })));
     } catch (e) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);

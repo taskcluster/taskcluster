@@ -1,4 +1,4 @@
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 
 const ArtifactImage = require('./artifact_image');
 

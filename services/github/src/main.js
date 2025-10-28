@@ -5,16 +5,16 @@ import Handlers from './handlers/index.js';
 import Intree from './intree.js';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import taskcluster from 'taskcluster-client';
-import config from 'taskcluster-lib-config';
-import SchemaSet from 'taskcluster-lib-validate';
-import loader from 'taskcluster-lib-loader';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import libReferences from 'taskcluster-lib-references';
-import { App } from 'taskcluster-lib-app';
-import tcdb from 'taskcluster-db';
+import taskcluster from '@taskcluster/client';
+import config from '@taskcluster/lib-config';
+import SchemaSet from '@taskcluster/lib-validate';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import libReferences from '@taskcluster/lib-references';
+import { App } from '@taskcluster/lib-app';
+import tcdb from '@taskcluster/db';
 import githubAuth from './github-auth.js';
-import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -122,22 +122,27 @@ const load = loader({
   api: {
     requires: [
       'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        publisher,
-        cfg,
-        github,
-        db,
-        ajv,
-        monitor: monitor.childMonitor('api-context'),
-        queueClient,
-        intree,
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          publisher,
+          cfg,
+          github,
+          db,
+          ajv,
+          monitor: monitor.childMonitor('api-context'),
+          queueClient,
+          intree,
+          schemaset,
+        },
+        monitor: monitor.childMonitor('api'),
         schemaset,
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

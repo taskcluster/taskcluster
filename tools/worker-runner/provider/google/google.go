@@ -6,13 +6,13 @@ import (
 	"log"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v86/clients/client-go"
-	"github.com/taskcluster/taskcluster/v86/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v86/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v86/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
+	"github.com/taskcluster/taskcluster/v91/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v91/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/instance/preempted"
@@ -115,6 +115,7 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 	if err == nil && value == "TRUE" {
 		log.Println("GCP Metadata Service says termination is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
 				Properties: map[string]any{

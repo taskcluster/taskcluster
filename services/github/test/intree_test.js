@@ -5,7 +5,7 @@ import _ from 'lodash';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));

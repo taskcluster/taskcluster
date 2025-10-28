@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/taskcluster/taskcluster/v86/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/host"
 )
 
 // A resource is something that can be deleted. Rating provides an indication
@@ -70,9 +71,13 @@ func runGarbageCollection(r Resources) error {
 	}
 	if currentFreeSpace < requiredFreeSpace {
 		if config.D2GEnabled() {
-			err := host.Run("/usr/bin/env", "bash", "-c", "docker image prune --all --force")
+			err := host.Run("docker", "image", "prune", "--all", "--force")
 			if err != nil {
 				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)
+			}
+			err = os.Remove("d2g-image-cache.json")
+			if err != nil {
+				return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 			}
 			currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
 			if err != nil {

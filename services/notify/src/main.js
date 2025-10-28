@@ -1,14 +1,14 @@
 import '../../prelude.js';
 import { SESClient } from '@aws-sdk/client-ses';
-import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import { App } from 'taskcluster-lib-app';
-import loader from 'taskcluster-lib-loader';
-import config from 'taskcluster-lib-config';
-import SchemaSet from 'taskcluster-lib-validate';
-import libReferences from 'taskcluster-lib-references';
-import taskcluster from 'taskcluster-client';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
+import { App } from '@taskcluster/lib-app';
+import loader from '@taskcluster/lib-loader';
+import config from '@taskcluster/lib-config';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import taskcluster from '@taskcluster/client';
 import _ from 'lodash';
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 import builder from './api.js';
 import Notifier from './notifier.js';
 import RateLimit from './ratelimit.js';
@@ -19,7 +19,7 @@ import matrix from 'matrix-js-sdk';
 import MatrixBot from './matrix.js';
 import slack from '@slack/web-api';
 import SlackBot from './slack.js';
-import tcdb from 'taskcluster-db';
+import tcdb from '@taskcluster/db';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -217,12 +217,17 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'denier', 'db'],
-    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { notifier, denier, db },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { notifier, denier, db },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

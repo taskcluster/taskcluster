@@ -12,7 +12,7 @@ This directory defines the Taskcluster database:
 
 ## Database Schema
 
-The database schema is handled by [taskcluster-lib-postgres](../libraries/postgres).
+The database schema is handled by [@taskcluster/lib-postgres](../libraries/postgres).
 Each database version is defined in `db/versions/####.yml`, numbered sequentially, as decribed in that library's documentation.
 
 ### Changing the Database
@@ -56,7 +56,7 @@ In general, this means avoiding any operations that would perform a scan of a ta
 
 A common example of a "slow" migration is rewriting columns into a new format, such as combining `provisioner_id`/`worker_type` into `worker_pool_id`.
 In this case, the rewriting must be done "online", and two database versions are required (one to add the new column, and one to remove the old).
-See the taskcluster-lib-postgres documentation for details of how this works.
+See the @taskcluster/lib-postgres documentation for details of how this works.
 The following is an example of how this might be implemented for a hypothetical table with a primary key named `id`.
 See the existing migration scripts (such as versions 59-60) for more examples.
 
@@ -230,10 +230,10 @@ There are exceptions to this rule, but reviewers should carefully scrutinize any
 
 ## JS Interface
 
-The `taskcluster-db` package exports an async `setup` function which is intended to be used in services' `main.js`:
+The `@taskcluster/db` package exports an async `setup` function which is intended to be used in services' `main.js`:
 
 ```javascript
-import tcdb from 'taskcluster-db';
+import tcdb from '@taskcluster/db';
 // ...
   db: {
     requires: ['cfg'],
@@ -245,7 +245,7 @@ import tcdb from 'taskcluster-db';
   }
 ```
 
-The result is a taskcluster-lib-postgres Database instance all set up and ready to use.
+The result is a @taskcluster/lib-postgres Database instance all set up and ready to use.
 This uses the generated schema by default.
 
 Similarly, the `upgrade` method will upgrade a database to the current version and set up table permissions for per-service postgres users.
@@ -253,7 +253,7 @@ To upgrade to a specific version, pass `toVersion: <number>`.
 This functionality is typically used in tests, as in production deployments the deployers will run `yarn db:upgrade`.
 
 ```javascript
-import tcdb from 'taskcluster-db';
+import tcdb from '@taskcluster/db';
 
 setup('upgrade db', async function() {
   await tcdb.upgrade({

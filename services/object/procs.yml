@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/object/src/main.js server
+  metrics: true
 expire:
   type: cron
   schedule: '0 1 * * *'

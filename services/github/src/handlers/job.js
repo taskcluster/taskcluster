@@ -1,7 +1,7 @@
 import assert from 'assert';
 import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { makeDebug, isCollaborator } from './utils.js';
 import { POLICIES, ALLOW_COMMENT_POLICIES } from './policies.js';
 import { GITHUB_TASKS_FOR } from '../constants.js';

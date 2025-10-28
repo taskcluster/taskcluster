@@ -1,6 +1,6 @@
 const Debug = require('debug');
 const get = require('./get');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const helper = require('../../helper');
 
 let debug = Debug('test:helper:getArtifact');

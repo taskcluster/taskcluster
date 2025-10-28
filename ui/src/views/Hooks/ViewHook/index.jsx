@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
+import { Typography } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HookForm from '../../../components/HookForm';
@@ -12,6 +13,8 @@ import updateHookQuery from './updateHook.graphql';
 import triggerHookQuery from './triggerHook.graphql';
 import exchangesList from '../../../utils/exchangesList';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
 
 @withApollo
 @graphql(hookQuery, {
@@ -168,7 +171,7 @@ export default class ViewHook extends Component {
   };
 
   render() {
-    const { isNewHook, data } = this.props;
+    const { isNewHook, data, match } = this.props;
     const {
       error: err,
       dialogError,
@@ -185,6 +188,17 @@ export default class ViewHook extends Component {
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
+        <Breadcrumbs>
+          <Link to="/hooks">
+            <Typography variant="body2">Hooks</Typography>
+          </Link>
+          <Link to={`/hooks/${match.params?.hookGroupId}`}>
+            <Typography variant="body2">{match.params?.hookGroupId}</Typography>
+          </Link>
+          <Typography variant="body2" color="textSecondary">
+            {match.params?.hookId}
+          </Typography>
+        </Breadcrumbs>
         <ErrorPanel fixed error={error} />
         {isNewHook ? (
           <Fragment>
