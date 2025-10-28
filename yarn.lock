@@ -1744,6 +1744,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/arm-resources@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@azure/arm-resources@npm:7.0.0"
+  dependencies:
+    "@azure/abort-controller": "npm:^2.1.2"
+    "@azure/core-auth": "npm:^1.9.0"
+    "@azure/core-client": "npm:^1.9.2"
+    "@azure/core-lro": "npm:^2.5.4"
+    "@azure/core-paging": "npm:^1.6.2"
+    "@azure/core-rest-pipeline": "npm:^1.19.0"
+    tslib: "npm:^2.8.1"
+  checksum: 10c0/e6d226dec44f6f82fbfdb0fcfb774b8e64b49cb4263c103f31e2f74484f585be5f178eef43a27009a1d1dfc42126f81d7c161e9303d77f6f271fef073ec91fa0
+  languageName: node
+  linkType: hard
+
+"@azure/arm-resourcesdeployments@npm:1.0.0-beta.1":
+  version: 1.0.0-beta.1
+  resolution: "@azure/arm-resourcesdeployments@npm:1.0.0-beta.1"
+  dependencies:
+    "@azure/abort-controller": "npm:^2.1.2"
+    "@azure/core-auth": "npm:^1.9.0"
+    "@azure/core-client": "npm:^1.9.2"
+    "@azure/core-lro": "npm:^2.5.4"
+    "@azure/core-paging": "npm:^1.6.2"
+    "@azure/core-rest-pipeline": "npm:^1.19.0"
+    tslib: "npm:^2.8.1"
+  checksum: 10c0/001975cd78cdeaf8a205ec4d06e99efc23253a2c3b6181af63d8e8d4a02e5944e08b026ecc2ccff9529f18c32bbf12fbc2a5e72b6daeb3982464b517551bad28
+  languageName: node
+  linkType: hard
+
 "@azure/core-auth@npm:^1.1.4, @azure/core-auth@npm:^1.4.0, @azure/core-auth@npm:^1.8.0, @azure/core-auth@npm:^1.9.0":
   version: 1.9.0
   resolution: "@azure/core-auth@npm:1.9.0"
@@ -13275,6 +13305,8 @@ __metadata:
     "@aws-sdk/s3-request-presigner": "npm:^3.864.0"
     "@azure/arm-compute": "npm:^22.4.0"
     "@azure/arm-network": "npm:^34.0.0"
+    "@azure/arm-resources": "npm:^7.0.0"
+    "@azure/arm-resourcesdeployments": "npm:1.0.0-beta.1"
     "@azure/identity": "npm:^4.11.1"
     "@azure/ms-rest-azure-js": "npm:^2.0.1"
     "@azure/ms-rest-js": "npm:^2.6.6"

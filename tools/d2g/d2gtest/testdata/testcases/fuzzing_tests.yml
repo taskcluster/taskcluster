@@ -48,13 +48,25 @@ testSuite:
         path: artifact0
         type: directory
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - 'docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged
-          --security-opt=seccomp=unconfined --add-host=localhost.localdomain:127.0.0.1
-          -v /dev/shm:/dev/shm --device=/dev/snd --add-host=taskcluster:host-gateway
-          --env-file env.list "${D2G_IMAGE_ID}" '
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --privileged
+        - --security-opt=seccomp=unconfined
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - /dev/shm:/dev/shm
+        - --device=/dev/snd
+        - --add-host=taskcluster:host-gateway
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
       features:
         backingLog: true
         liveLog: true
@@ -70,10 +82,6 @@ testSuite:
           artifact: public/bugmon.tar.zst
           namespace: project.fuzzing.orion.bugmon.master
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

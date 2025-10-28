@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v89/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v91/clients/client-go"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -299,7 +299,7 @@ func TestInvalidPayload(t *testing.T) {
     {
       "content": {
         "sha356": "9ded97d830bef3734ea6de70df0159656d6a63e01484175b34d72b8db326bda0",
-        "url": "https://storage.googleapis.com/golang/go1.10.8.windows-386.zip"
+        "url": "https://go.dev/dl/go1.10.8.windows-386.zip"
       },
       "directory": "go1.10.8",
       "format": "zip"

@@ -40,7 +40,7 @@ tasks:
       docker-image: {in-tree: ci}
     run:
       command: >-
-        python3 -m venv venv &&
-        . venv/bin/activate &&
-        pip install flake8 &&
+        uv venv &&
+        source .venv/bin/activate &&
+        uv pip install flake8 &&
         sh test/py-lint.sh

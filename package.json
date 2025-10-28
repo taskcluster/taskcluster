@@ -1,13 +1,13 @@
 {
   "name": "taskcluster",
-  "version": "89.0.0",
+  "version": "91.1.0",
   "private": true,
   "engine-strict": true,
   "type": "module",
   "engines": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
-  "packageManager": "yarn@4.9.4",
+  "packageManager": "yarn@4.10.3",
   "workspaces": [
     "libraries/*",
     "services/*",
@@ -24,6 +24,8 @@
     "@aws-sdk/s3-request-presigner": "^3.864.0",
     "@azure/arm-compute": "^22.4.0",
     "@azure/arm-network": "^34.0.0",
+    "@azure/arm-resources": "^7.0.0",
+    "@azure/arm-resourcesdeployments": "1.0.0-beta.1",
     "@azure/identity": "^4.11.1",
     "@azure/ms-rest-azure-js": "^2.0.1",
     "@azure/ms-rest-js": "^2.6.6",

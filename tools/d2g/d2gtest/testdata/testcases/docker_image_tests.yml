@@ -23,11 +23,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -36,10 +45,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -67,11 +72,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -80,10 +94,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -112,11 +122,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -131,10 +150,6 @@ testSuite:
           artifact: test/path
           namespace: test.namespace
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -163,11 +178,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -183,10 +207,6 @@ testSuite:
           namespace: test.namespace
         file: dockerimage
         format: lz4
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -215,11 +235,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -234,10 +263,6 @@ testSuite:
           artifact: test/path.zst
           namespace: test.namespace
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -266,11 +291,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -284,10 +318,6 @@ testSuite:
           artifact: public/test/path
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -316,11 +346,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -335,10 +374,6 @@ testSuite:
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
         format: lz4
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -367,11 +402,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list "${D2G_IMAGE_ID}" 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -385,10 +429,6 @@ testSuite:
           artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -419,12 +459,22 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -v "$(pwd)/cache0:/builds/worker/checkouts" --env-file env.list "${D2G_IMAGE_ID}"
-          'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - __TASK_DIR__/cache0:/builds/worker/checkouts
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -440,10 +490,6 @@ testSuite:
           artifact: public/test/path.zst
           taskId: 2JGiKFtpRnGbVczc6-OJ1Q
         file: dockerimage
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/taskcluster/taskcluster/v89/internal/scopes"
+	"github.com/taskcluster/taskcluster/v91/internal/scopes"
 )
 
 type (

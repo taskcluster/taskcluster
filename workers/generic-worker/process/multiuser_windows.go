@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v89/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v89/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v89/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v91/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -87,7 +87,7 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
+	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NO_WINDOW)
 	if !isWindows8OrGreater {
 		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
 	}

@@ -3,6 +3,179 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7979](https://github.com/taskcluster/taskcluster/issues/7979)
+Azure worker pools can now provision via ARM templates in launch configs,
+reducing provisioning latency and letting Azure cascade resource creation/cleanup automatically.
+
+▶ [patch] [#7979](https://github.com/taskcluster/taskcluster/issues/7979)
+Azure ARM template deployments allow keeping history for debug purposes by using `workerManager.keepDeployment: true`
+
+▶ [patch] [#8023](https://github.com/taskcluster/taskcluster/issues/8023)
+Generic Worker: limits concurrent artifact uploads to 100 at a time.
+
+### USERS
+
+▶ [patch] [#8031](https://github.com/taskcluster/taskcluster/issues/8031)
+GitHub service handles missing users (404 from getByUsername) when processing webhooks.
+
+▶ [patch] [bug 1990567](http://bugzil.la/1990567)
+Python client exceptions are now picklable.
+
+## v91.0.4
+
+### DEVELOPERS
+
+▶ [patch]
+Client (python): fixes release of client. v91.0.3 did not work in fixing.
+
+## v91.0.3
+
+### DEVELOPERS
+
+▶ [patch]
+Client (python): fixes release of client.
+
+## v91.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8025](https://github.com/taskcluster/taskcluster/issues/8025)
+Generic Worker (macOS): updates the socket-based communication between the LaunchAgent and LaunchDaemon to handle any size of payload.
+
+### DEVELOPERS
+
+▶ [patch] [#8020](https://github.com/taskcluster/taskcluster/issues/8020)
+Client (python): declares what python versions are supported. Moves to modern standards with `pyproject.toml` and `uv` usage.
+
+## v91.0.1
+
+### GENERAL
+
+▶ [patch]
+Switches CI tasks to use `uv` tool and to the latest stable Debian release (`trixie`).
+
+▶ [patch]
+Upgrades to taskgraph v16.2.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Improves Azure resource deprovisioning by skipping checks on already deleted resources.
+Previously implemented logic was flawed in a way that same resources would be queried over and over.
+Which led to an increased number of cloud api calls and was likely causing some minor delays per each worker being deprovisioned
+
+## v91.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.25.3
+
+### DEVELOPERS
+
+▶ [MAJOR] [#8010](https://github.com/taskcluster/taskcluster/issues/8010)
+Python client follows redirects in artifact download for both async and sync code.
+This was partially fixed in the past in #4057
+
+## v90.0.5
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v22.20.0, go1.25.2 [SECURITY], yarn 4.10.3, and golangci-lint 4.5.0.
+
+### USERS
+
+▶ [patch] [#8004](https://github.com/taskcluster/taskcluster/issues/8004)
+D2G: always pulls named docker images to fetch latest tag.
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump taskcluster from 88.0.5 to 90.0.4 in /taskcluster (ef55684a67)
+* build(deps): bump taskcluster-taskgraph in /taskcluster (e77e96731f)
+* build(deps): bump the client-rust-deps group (ef66adc8d6)
+* build(deps): bump pyyaml in /taskcluster in the python-deps group (e107bc2cd5)
+* build(deps): bump the go-deps group with 9 updates (a42d2e1b63)
+* build(deps-dev): bump the client-web-node-deps group (a800bf4397)
+* build(deps): bump the client-node-deps group (d828bb8ffd)
+* build(deps): bump actions/checkout from 4 to 5 (0a6c085f71)
+* build(deps): bump actions/setup-go from 5 to 6 (5b7aa019ff)
+
+</details>
+
+## v90.0.4
+
+### USERS
+
+▶ [patch] [bug 1990389](http://bugzil.la/1990389)
+D2G: add stderr logging if any docker commands fail within the task feature.
+
+▶ [patch] [#7974](https://github.com/taskcluster/taskcluster/issues/7974)
+D2G: fixes `docker: invalid env file (env.list): bufio.Scanner: token too long` error when providing the `docker run` command an `--env-file` that contains a line longer than 64KiB. D2G now passes the variable directly to the run command with `-e <envVarName>=<envVarValue>` to work around this constraint.
+
+▶ [patch]
+D2G: removes exit codes 125, 128 from `payload.onExitStatus.retry` array, as docker pulls now happen outside of the payload being run (inside the D2G task feature startup).
+
+## v90.0.3
+
+### USERS
+
+▶ [patch] [#7969](https://github.com/taskcluster/taskcluster/issues/7969)
+D2G: fixes issue with loading the docker image artifact if the image already exists with a separate ID, causing the following output to be improperly parsed by D2G: `The image <imageName> already exists, renaming the old one with ID <sha> to empty string`.
+
+## v90.0.2
+
+### USERS
+
+▶ [patch] [#7967](https://github.com/taskcluster/taskcluster/issues/7967)
+D2G: accounts for image artifacts that may contain multiple tags for the same image, previously causing a worker error: `runtime error: index out of range [1] with length 1`.
+
+## v90.0.1
+
+### GENERAL
+
+▶ [patch]
+D2G: creates a `Config` struct type for D2G-specific config used in the repo.
+
+### USERS
+
+▶ [patch]
+D2G: remove call out to bash shell that ran the `docker run` command. Directly call `docker` as the resulting Generic Worker payload command.
+
+## v90.0.0
+
+### DEPLOYERS
+
+▶ [patch] [#7942](https://github.com/taskcluster/taskcluster/issues/7942)
+New metrics are being exposed to prometheus for scraping:
+- `http_requests_total` http requests per service/method/name
+- `http_request_duration_seconds` http request duration histogram
+- `auth_success_total` successful authentication attempt per clientId and scheme
+- `auth_failure_total` failed authentication attempts and reasons
+
+Existing queue metrics `queue_failed_tasks`, `queue_exception_tasks` now includes `reasonResolved` label
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7947](https://github.com/taskcluster/taskcluster/issues/7947)
+Generic Worker (Windows): Windows/386 platform is now unsupported and no longer built/released. Windows arm64 support has been added as a Tier-2 platform (guaranteeing to build).
+
+### USERS
+
+▶ [patch]
+D2G: remove call out to bash during garbage collection of docker images
+
+### OTHER
+
+▶ Additional change not described here: [#7942](https://github.com/taskcluster/taskcluster/issues/7942).
+
 ## v89.0.0
 
 ### USERS

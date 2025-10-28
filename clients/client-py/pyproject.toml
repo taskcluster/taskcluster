@@ -1,0 +1,96 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskcluster"
+version = "91.1.0"
+description = "Python client for Taskcluster"
+readme = "README.md"
+license = {text = "MPL-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Mozilla Taskcluster and Release Engineering", email = "release+python@mozilla.com"},
+]
+keywords = ["taskcluster", "api", "client"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "requests>=2.4.3",
+    "mohawk>=0.3.4",
+    "python-dateutil>=2.8.2",
+    "slugid>=2",
+    "taskcluster-urls>=12.1.0",
+    "aiohttp>=3.7.4",
+    "async_timeout>=2.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-asyncio",
+    "httmock",
+    "mock",
+    "flake8",
+    "psutil",
+    "hypothesis",
+    "coverage",
+    "aiofiles",
+    "httptest",
+    "tox",
+    "ruff",
+    "grip",
+]
+
+[project.urls]
+Homepage = "https://github.com/taskcluster/taskcluster"
+Repository = "https://github.com/taskcluster/taskcluster"
+Documentation = "https://docs.taskcluster.net"
+Changelog = "https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md"
+Issues = "https://github.com/taskcluster/taskcluster/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskcluster"]
+
+[tool.pytest.ini_options]
+addopts = "--tb=native"
+testpaths = ["test"]
+
+[tool.coverage.run]
+source = ["taskcluster"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["taskcluster"]

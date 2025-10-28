@@ -28,13 +28,23 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --cap-add=SYS_PTRACE
-          --security-opt=seccomp=unconfined --add-host=localhost.localdomain:127.0.0.1
-          --add-host=taskcluster:host-gateway --env-file env.list ubuntu 'echo "Hello
-          world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --cap-add=SYS_PTRACE
+        - --security-opt=seccomp=unconfined
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --add-host=taskcluster:host-gateway
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -44,10 +54,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -79,11 +85,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -92,10 +107,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -123,12 +134,21 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --privileged
-          --add-host=localhost.localdomain:127.0.0.1 --env-file env.list ubuntu 'echo
-          "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --privileged
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -137,10 +157,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -169,11 +185,20 @@ testSuite:
       maxRunTime: 3600
     genericWorkerTaskPayload:
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -182,10 +207,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

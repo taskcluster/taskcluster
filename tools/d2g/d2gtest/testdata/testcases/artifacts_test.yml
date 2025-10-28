@@ -42,11 +42,20 @@ testSuite:
         path: artifact1.txt
         type: file
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          --env-file env.list ubuntu 'echo "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -55,10 +64,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge
@@ -94,12 +99,22 @@ testSuite:
         path: volume0
         type: directory
       command:
-      - - /usr/bin/env
-        - bash
-        - -cx
-        - docker run -t --name taskcontainer --memory-swap -1 --pids-limit -1 --add-host=localhost.localdomain:127.0.0.1
-          -v "$(pwd)/volume0:/home/worker/artifacts" --env-file env.list ubuntu 'echo
-          "Hello world"'
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - __TASK_DIR__/volume0:/home/worker/artifacts
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
       features:
         backingLog: true
         liveLog: true
@@ -108,10 +123,6 @@ testSuite:
         backing: public/logs/live_backing.log
         live: public/logs/live.log
       maxRunTime: 3600
-      onExitStatus:
-        retry:
-        - 125
-        - 128
       osGroups:
       - docker
       taskclusterProxyInterface: docker-bridge

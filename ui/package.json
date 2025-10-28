@@ -1,12 +1,12 @@
 {
   "name": "@taskcluster/ui",
-  "version": "89.0.0",
+  "version": "91.1.0",
   "private": true,
   "license": "MPL-2.0",
   "engines": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
-  "packageManager": "yarn@4.9.4",
+  "packageManager": "yarn@4.10.3",
   "scripts": {
     "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production",
     "start": "NODE_OPTIONS=--openssl-legacy-provider cross-env GENERATE_ENV_JS=1 webpack-dev-server --mode development",
