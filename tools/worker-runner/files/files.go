@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func ExtractAll(files []File) error {
@@ -109,9 +110,23 @@ func unzip(b []byte, dest string) error {
 			}
 		}()
 
-		// note that the ZIP file here is trusted so `..` in this path does not
-		// constitute a vulnerability (just an odd way to get things done)
 		path := filepath.Join(dest, f.Name)
+
+		// Prevent Zip Slip: ensure the resulting path is within dest
+		// Note: that even though the ZIP file here is trusted, it is still
+		// better to explicitly disallow files outside of the base path since
+		// there is no reason for a deployer not to just adapt the base path.
+		absDest, err := filepath.Abs(dest)
+		if err != nil {
+			return err
+		}
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		if !strings.HasPrefix(absPath, absDest+string(os.PathSeparator)) && absPath != absDest {
+			return fmt.Errorf("illegal file path in zip: %s", f.Name)
+		}
 
 		dir := filepath.Dir(path)
 		err = os.MkdirAll(dir, 0755)
