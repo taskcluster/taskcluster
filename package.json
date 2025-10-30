@@ -5,7 +5,7 @@
   "engine-strict": true,
   "type": "module",
   "engines": {
-    "node": "24.10.0"
+    "node": "24.11.0"
   },
   "packageManager": "yarn@4.10.3",
   "workspaces": [
