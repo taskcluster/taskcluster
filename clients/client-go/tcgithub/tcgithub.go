@@ -131,16 +131,6 @@ func (github *Github) Version() error {
 	return err
 }
 
-// Capture a GitHub event and publish it via pulse, if it's a push,
-// release, check run or pull request.
-//
-// See #githubWebHookConsumer
-func (github *Github) GithubWebHookConsumer() error {
-	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
-	return err
-}
-
 // A paginated list of builds that have been run in
 // Taskcluster. Can be filtered on various git-specific
 // fields.

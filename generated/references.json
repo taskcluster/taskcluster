@@ -8026,6 +8026,1269 @@
   },
   {
     "content": {
+      "$id": "/schemas/github/v1/webhook-release-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub release event webhook payload.\n",
+      "properties": {
+        "action": {
+          "description": "The action performed on the release.\nKnown values: published, unpublished, created, edited, deleted, prereleased, released.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
+          "type": "string"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "release": {
+          "additionalProperties": true,
+          "properties": {
+            "author": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            },
+            "draft": {
+              "type": "boolean"
+            },
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "name": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "prerelease": {
+              "type": "boolean"
+            },
+            "tag_name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "target_commitish": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "tag_name",
+            "target_commitish",
+            "draft",
+            "prerelease",
+            "author"
+          ],
+          "type": "object"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "name": {
+              "pattern": "^[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "anyOf": [
+                {
+                  "required": [
+                    "name"
+                  ]
+                },
+                {
+                  "required": [
+                    "login"
+                  ]
+                }
+              ],
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "full_name",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "action",
+        "release",
+        "repository",
+        "sender"
+      ],
+      "title": "GitHub Release Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-release-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-push-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub push event webhook payload.\n",
+      "properties": {
+        "after": {
+          "pattern": "^[a-f0-9]{40}$",
+          "type": "string"
+        },
+        "before": {
+          "pattern": "^[a-f0-9]{40}$",
+          "type": "string"
+        },
+        "commits": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "pattern": "^[a-f0-9]{40}$",
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "message"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "head_commit": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "message"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "pusher": {
+          "additionalProperties": true,
+          "properties": {
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "ref": {
+          "pattern": "^refs/(heads|tags)/.*$",
+          "type": "string"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "clone_url": {
+              "format": "uri",
+              "type": "string"
+            },
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "name": {
+              "pattern": "^[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "anyOf": [
+                {
+                  "required": [
+                    "name"
+                  ]
+                },
+                {
+                  "required": [
+                    "login"
+                  ]
+                }
+              ],
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "full_name",
+            "clone_url",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "ref",
+        "before",
+        "after",
+        "repository",
+        "pusher",
+        "commits",
+        "sender"
+      ],
+      "title": "GitHub Push Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-push-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-pull-request-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub pull request event webhook payload.\nStrictly validates fields that caused issues in PR #7958.\n",
+      "properties": {
+        "action": {
+          "description": "The action performed on the pull request.\nCommon values: opened, closed, reopened, synchronize, edited, assigned,\nunassigned, labeled, unlabeled, review_requested, review_request_removed,\nready_for_review, converted_to_draft, locked, unlocked, auto_merge_enabled,\nauto_merge_disabled, enqueued, dequeued, milestoned, demilestoned, etc.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
+          "type": "string"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "number": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "pull_request": {
+          "additionalProperties": true,
+          "properties": {
+            "base": {
+              "additionalProperties": true,
+              "properties": {
+                "ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "repo": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "clone_url": {
+                      "format": "uri",
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "name": {
+                      "pattern": "^[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "owner": {
+                      "additionalProperties": true,
+                      "anyOf": [
+                        {
+                          "required": [
+                            "name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "login"
+                          ]
+                        }
+                      ],
+                      "properties": {
+                        "login": {
+                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "type": "string"
+                        },
+                        "name": {
+                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "full_name",
+                    "clone_url",
+                    "owner"
+                  ],
+                  "type": "object"
+                },
+                "sha": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sha",
+                "ref",
+                "repo"
+              ],
+              "type": "object"
+            },
+            "head": {
+              "additionalProperties": true,
+              "properties": {
+                "ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "repo": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "clone_url": {
+                      "format": "uri",
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "name": {
+                      "pattern": "^[A-Za-z0-9._-]+$",
+                      "type": "string"
+                    },
+                    "owner": {
+                      "additionalProperties": true,
+                      "anyOf": [
+                        {
+                          "required": [
+                            "name"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "login"
+                          ]
+                        }
+                      ],
+                      "properties": {
+                        "login": {
+                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "type": "string"
+                        },
+                        "name": {
+                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "full_name",
+                    "clone_url",
+                    "owner"
+                  ],
+                  "type": "object"
+                },
+                "sha": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sha",
+                "ref",
+                "repo"
+              ],
+              "type": "object"
+            },
+            "number": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "state": {
+              "enum": [
+                "open",
+                "closed"
+              ],
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "user": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "number",
+            "state",
+            "head",
+            "base",
+            "user"
+          ],
+          "type": "object"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "anyOf": [
+                {
+                  "required": [
+                    "name"
+                  ]
+                },
+                {
+                  "required": [
+                    "login"
+                  ]
+                }
+              ],
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "full_name",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "action",
+        "number",
+        "pull_request",
+        "repository",
+        "sender"
+      ],
+      "title": "GitHub Pull Request Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-pull-request-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-ping-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub ping event webhook payload.\nThis event is sent when a webhook is first created.\n",
+      "properties": {
+        "hook": {
+          "additionalProperties": true,
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "config": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "events": {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "name": {
+              "enum": [
+                "web"
+              ],
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "Repository",
+                "Organization"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "name",
+            "active",
+            "events",
+            "config"
+          ],
+          "type": "object"
+        },
+        "hook_id": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "organization": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "repository": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "additionalProperties": true,
+              "properties": {
+                "full_name": {
+                  "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "owner": {
+                  "additionalProperties": true,
+                  "anyOf": [
+                    {
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "login"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "login": {
+                      "pattern": "^([a-zA-Z0-9-_%]*)$",
+                      "type": "string"
+                    },
+                    "name": {
+                      "pattern": "^([a-zA-Z0-9-_%]*)$",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "required": [
+                "name",
+                "full_name",
+                "owner"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        },
+        "zen": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "zen",
+        "hook_id",
+        "hook",
+        "sender"
+      ],
+      "title": "GitHub Ping Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-ping-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-issue-comment-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub issue comment event webhook payload.\n",
+      "properties": {
+        "action": {
+          "description": "The action performed on the issue comment.\nKnown values: created, edited, deleted.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
+          "type": "string"
+        },
+        "comment": {
+          "additionalProperties": true,
+          "properties": {
+            "body": {
+              "type": "string"
+            },
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "user": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "id",
+            "user",
+            "body"
+          ],
+          "type": "object"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "issue": {
+          "additionalProperties": true,
+          "properties": {
+            "number": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pull_request": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "state": {
+              "enum": [
+                "open",
+                "closed"
+              ],
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "user": {
+              "additionalProperties": true,
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "number",
+            "title",
+            "user",
+            "state"
+          ],
+          "type": "object"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "name": {
+              "pattern": "^[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "anyOf": [
+                {
+                  "required": [
+                    "name"
+                  ]
+                },
+                {
+                  "required": [
+                    "login"
+                  ]
+                }
+              ],
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "full_name",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "action",
+        "issue",
+        "comment",
+        "repository",
+        "sender"
+      ],
+      "title": "GitHub Issue Comment Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-issue-comment-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-installation-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub installation event webhook payload.\n",
+      "properties": {
+        "action": {
+          "description": "The action performed on the installation.\nKnown values: created, deleted, suspend, unsuspend, new_permissions_accepted.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
+          "type": "string"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "account": {
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "type": {
+                  "enum": [
+                    "User",
+                    "Organization"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "login",
+                "id",
+                "type"
+              ],
+              "type": "object"
+            },
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "repository_selection": {
+              "enum": [
+                "all",
+                "selected"
+              ],
+              "type": "string"
+            },
+            "target_id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "target_type": {
+              "enum": [
+                "User",
+                "Organization"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "account",
+            "repository_selection",
+            "target_id",
+            "target_type"
+          ],
+          "type": "object"
+        },
+        "repositories": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "full_name": {
+                "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+                "type": "string"
+              },
+              "id": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "name": {
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "full_name"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "action",
+        "installation",
+        "sender"
+      ],
+      "title": "GitHub Installation Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-installation-payload.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/webhook-check-run-payload.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": true,
+      "description": "Validates GitHub check run event webhook payload.\n",
+      "properties": {
+        "action": {
+          "description": "The action performed on the check run.\nKnown values: created, completed, rerequested, requested_action.\nGitHub may add new action types; validation accepts any non-empty string.\n",
+          "minLength": 1,
+          "type": "string"
+        },
+        "check_run": {
+          "additionalProperties": true,
+          "properties": {
+            "check_suite": {
+              "additionalProperties": true,
+              "properties": {
+                "head_branch": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  ]
+                },
+                "head_sha": {
+                  "pattern": "^[a-f0-9]{40}$",
+                  "type": "string"
+                },
+                "id": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "head_sha"
+              ],
+              "type": "object"
+            },
+            "conclusion": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "description": "The conclusion of the check run when status is completed.\nKnown values: success, failure, neutral, cancelled, skipped,\ntimed_out, action_required, stale.\nNote: Only GitHub can set 'stale'.\nGitHub may add new values; validation accepts any non-empty string.\n",
+                  "minLength": 1,
+                  "type": "string"
+                }
+              ]
+            },
+            "head_sha": {
+              "pattern": "^[a-f0-9]{40}$",
+              "type": "string"
+            },
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "pull_requests": {
+              "items": {
+                "additionalProperties": true,
+                "properties": {
+                  "base": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "sha": {
+                        "pattern": "^[a-f0-9]{40}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sha"
+                    ],
+                    "type": "object"
+                  },
+                  "head": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "sha": {
+                        "pattern": "^[a-f0-9]{40}$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sha"
+                    ],
+                    "type": "object"
+                  },
+                  "id": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "number": {
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "number",
+                  "head",
+                  "base"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "status": {
+              "description": "The status of the check run.\nKnown values: queued, in_progress, completed, waiting, requested, pending.\nNote: GitHub Actions can set waiting, requested, or pending.\nGitHub may add new values; validation accepts any non-empty string.\n",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "head_sha",
+            "status",
+            "name",
+            "check_suite",
+            "pull_requests"
+          ],
+          "type": "object"
+        },
+        "installation": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "repository": {
+          "additionalProperties": true,
+          "properties": {
+            "full_name": {
+              "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "name": {
+              "pattern": "^[A-Za-z0-9._-]+$",
+              "type": "string"
+            },
+            "owner": {
+              "additionalProperties": true,
+              "anyOf": [
+                {
+                  "required": [
+                    "name"
+                  ]
+                },
+                {
+                  "required": [
+                    "login"
+                  ]
+                }
+              ],
+              "properties": {
+                "login": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                },
+                "name": {
+                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "full_name",
+            "owner"
+          ],
+          "type": "object"
+        },
+        "sender": {
+          "additionalProperties": true,
+          "properties": {
+            "login": {
+              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "login"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "action",
+        "check_run",
+        "repository",
+        "sender"
+      ],
+      "title": "GitHub Check Run Webhook Payload",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/webhook-check-run-payload.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/github/v1/taskcluster-github-config.v1.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -8464,6 +9727,38 @@
       "type": "object"
     },
     "filename": "schemas/github/v1/render-taskcluster-yml-input.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/github/v1/github-webhook-event.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "description": "Validates GitHub webhook event payloads to prevent errors from missing or\nmalformed fields. Uses OneOf pattern to strictly validate each event type\nwith its own schema, preventing TypeErrors identified in PR #7958.\n\nValidation Philosophy:\n- STRICT on structure: Required fields, types, and patterns are validated\n- LENIENT on enum values: Action/status/conclusion accept any string where\n  GitHub may add new values in the future\n- This prevents rejecting valid webhooks when GitHub adds new action types\n",
+      "oneOf": [
+        {
+          "$ref": "webhook-pull-request-payload.json#"
+        },
+        {
+          "$ref": "webhook-push-payload.json#"
+        },
+        {
+          "$ref": "webhook-issue-comment-payload.json#"
+        },
+        {
+          "$ref": "webhook-release-payload.json#"
+        },
+        {
+          "$ref": "webhook-installation-payload.json#"
+        },
+        {
+          "$ref": "webhook-check-run-payload.json#"
+        },
+        {
+          "$ref": "webhook-ping-payload.json#"
+        }
+      ],
+      "title": "GitHub Webhook Event"
+    },
+    "filename": "schemas/github/v1/github-webhook-event.json"
   },
   {
     "content": {
@@ -24043,20 +25338,6 @@
           "route": "/__version__",
           "stability": "stable",
           "title": "Taskcluster Version",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Github Service",
-          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
-          "method": "post",
-          "name": "githubWebHookConsumer",
-          "query": [
-          ],
-          "route": "/github",
-          "stability": "stable",
-          "title": "Consume GitHub WebHook",
           "type": "function"
         },
         {

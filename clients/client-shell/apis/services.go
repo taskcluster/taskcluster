@@ -512,17 +512,6 @@ var services = map[string]definitions.Service{
 				Input:       "",
 			},
 			definitions.Entry{
-				Name:        "githubWebHookConsumer",
-				Title:       "Consume GitHub WebHook",
-				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
-				Stability:   "stable",
-				Method:      "post",
-				Route:       "/github",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
-			},
-			definitions.Entry{
 				Name:        "builds",
 				Title:       "List of Builds",
 				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",

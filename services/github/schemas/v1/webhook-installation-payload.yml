@@ -1,0 +1,71 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Installation Webhook Payload"
+description: |
+  Validates GitHub installation event webhook payload.
+
+type: object
+properties:
+  action:
+    type: string
+    minLength: 1
+    description: |
+      The action performed on the installation.
+      Known values: created, deleted, suspend, unsuspend, new_permissions_accepted.
+      GitHub may add new action types; validation accepts any non-empty string.
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      account:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          id:
+            type: integer
+            minimum: 1
+          type:
+            type: string
+            enum: ["User", "Organization"]
+        required: [login, id, type]
+        additionalProperties: true
+      repository_selection:
+        type: string
+        enum: ["all", "selected"]
+      target_id:
+        type: integer
+        minimum: 1
+      target_type:
+        type: string
+        enum: ["User", "Organization"]
+    required: [id, account, repository_selection, target_id, target_type]
+    additionalProperties: true
+  repositories:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          pattern: {$const: github-repo-name-pattern}
+        full_name:
+          type: string
+          pattern: {$const: github-full-name-pattern}
+      required: [id, name, full_name]
+      additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, installation, sender]
+additionalProperties: true

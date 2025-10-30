@@ -218,11 +218,13 @@ export default builder;
 builder.declare({
   method: 'post',
   route: '/github',
+  input: 'github-webhook-event.yml',
   name: 'githubWebHookConsumer',
   scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
+  noPublish: true, // Webhook endpoint is server-side only, not called by clients
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release, check run or pull request.',

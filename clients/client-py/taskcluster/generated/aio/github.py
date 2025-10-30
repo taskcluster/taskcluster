@@ -64,18 +64,6 @@ class Github(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
 
-    async def githubWebHookConsumer(self, *args, **kwargs):
-        """
-        Consume GitHub WebHook
-
-        Capture a GitHub event and publish it via pulse, if it's a push,
-        release, check run or pull request.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["githubWebHookConsumer"], *args, **kwargs)
-
     async def builds(self, *args, **kwargs):
         """
         List of Builds
@@ -233,13 +221,6 @@ class Github(AsyncBaseClient):
             'name': 'createStatus',
             'route': '/repository/<owner>/<repo>/statuses/<sha>',
             'stability': 'experimental',
-        },
-        "githubWebHookConsumer": {
-            'args': [],
-            'method': 'post',
-            'name': 'githubWebHookConsumer',
-            'route': '/github',
-            'stability': 'stable',
         },
         "heartbeat": {
             'args': [],

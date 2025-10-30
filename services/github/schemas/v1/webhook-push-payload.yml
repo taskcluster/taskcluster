@@ -1,0 +1,93 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Push Webhook Payload"
+description: |
+  Validates GitHub push event webhook payload.
+
+type: object
+properties:
+  ref:
+    type: string
+    pattern: "^refs/(heads|tags)/.*$"
+  before:
+    type: string
+    pattern: {$const: github-sha-pattern}
+  after:
+    type: string
+    pattern: {$const: github-sha-pattern}
+  repository:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: {$const: github-repo-name-pattern}
+      full_name:
+        type: string
+        pattern: {$const: github-full-name-pattern}
+      clone_url:
+        type: string
+        format: uri
+      owner:
+        type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        anyOf:
+          - required: [name]
+          - required: [login]
+        additionalProperties: true
+    required: [name, full_name, clone_url, owner]
+    additionalProperties: true
+  pusher:
+    type: object
+    properties:
+      name:
+        type: string
+        minLength: 1
+    required: [name]
+    additionalProperties: true
+  head_commit:
+    oneOf:
+      - type: "null"
+      - type: object
+        properties:
+          id:
+            type: string
+            pattern: {$const: github-sha-pattern}
+          message:
+            type: string
+        required: [id, message]
+        additionalProperties: true
+  commits:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: {$const: github-sha-pattern}
+        message:
+          type: string
+      required: [id, message]
+      additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [ref, before, after, repository, pusher, commits, sender]
+additionalProperties: true
