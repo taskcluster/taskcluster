@@ -277,6 +277,7 @@ worker_manager:
       replicas: 1
       cpu: 200m
       memory: 200Mi
+      metrics: true
     expire_workers:
       cpu: 200m
       memory: 200Mi
