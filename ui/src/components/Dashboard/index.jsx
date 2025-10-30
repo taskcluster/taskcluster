@@ -35,7 +35,6 @@ import Logo from '../../images/brandLogo.png';
 import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 import SkipNavigation from '../SkipNavigation';
-
 import { version } from '../../../../version.json';
 
 @withRouter

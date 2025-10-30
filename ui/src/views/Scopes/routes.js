@@ -1,17 +1,9 @@
 import lazy from '../../utils/lazy';
 
-const ListScopes = lazy(() =>
-  import('./ListScopes')
-);
-const ViewScope = lazy(() =>
-  import('./ViewScope')
-);
-const ScopesetExpander = lazy(() =>
-  import('./ScopesetExpander')
-);
-const ScopesetComparison = lazy(() =>
-  import('./ScopesetComparison')
-);
+const ListScopes = lazy(() => import('./ListScopes'));
+const ViewScope = lazy(() => import('./ViewScope'));
+const ScopesetExpander = lazy(() => import('./ScopesetExpander'));
+const ScopesetComparison = lazy(() => import('./ScopesetComparison'));
 const description =
   'Manage secrets: values that can only be retrieved with the appropriate scopes.';
 

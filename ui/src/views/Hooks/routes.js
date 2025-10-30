@@ -1,12 +1,8 @@
 import lazy from '../../utils/lazy';
 import ListHookGroups from './ListHookGroups';
 
-const ListHooks = lazy(() =>
-  import('./ListHooks')
-);
-const ViewHook = lazy(() =>
-  import('./ViewHook')
-);
+const ListHooks = lazy(() => import('./ListHooks'));
+const ViewHook = lazy(() => import('./ViewHook'));
 
 export default path => [
   {
