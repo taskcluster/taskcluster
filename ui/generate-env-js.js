@@ -27,6 +27,7 @@ const generateEnvJs = filename => {
       env[name] = defaultValue;
     }
   }
+
   const envJs = `window.env = ${JSON.stringify(env, null, 2)}`;
 
   const dir = dirname(filename);
@@ -34,12 +35,11 @@ const generateEnvJs = filename => {
     fs.mkdirSync(dir);
   }
 
-  if (!fs.existsSync(filename)){
-    fs.writeFileSync(filename, envJs, 'utf8');
-  }
+  fs.writeFileSync(filename, envJs, 'utf8');
+  console.log('file written', filename, fs.readFileSync(filename, 'utf-8'));
 };
 
-module.exports = generateEnvJs
+module.exports = generateEnvJs;
 
 if (require.main === module) {
   generateEnvJs(process.argv[2]);

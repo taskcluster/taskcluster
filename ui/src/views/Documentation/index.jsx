@@ -114,7 +114,7 @@ export default class Documentation extends Component {
   async readDocFile(path) {
     try {
       return await import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}.mdx`
+        `../../../docs/${path}.mdx`
       );
     } catch (err) {
       if (err.code !== 'MODULE_NOT_FOUND') {
@@ -122,7 +122,7 @@ export default class Documentation extends Component {
       }
 
       return import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}/README.mdx`
+        `../../../docs/${path}/README.mdx`
       );
     }
   }

@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import secretRoutes from '../views/Secrets/routes';
 import scopeRoutes from '../views/Scopes/routes';
@@ -13,67 +12,67 @@ import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
 
 const SwitchEntryPoint = lazy(() =>
-  import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
+  import('../views/SwitchEntryPoint')
 );
 const Tasks = lazy(() =>
-  import(/* webpackChunkName: 'Tasks' */ '../views/Tasks')
+  import('../views/Tasks')
 );
 const Provisioners = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners')
+  import('../views/Provisioners')
 );
 const Clients = lazy(() =>
-  import(/* webpackChunkName: 'Clients' */ '../views/Clients')
+  import('../views/Clients')
 );
 const Roles = lazy(() =>
-  import(/* webpackChunkName: 'Roles' */ '../views/Roles')
+  import('../views/Roles')
 );
 const Scopes = lazy(() =>
-  import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
+  import('../views/Scopes')
 );
 const Hooks = lazy(() =>
-  import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
+  import('../views/Hooks')
 );
 const WorkerManager = lazy(() =>
-  import(/* webpackChunkName: 'Worker Manager' */ '../views/WorkerManager')
+  import('../views/WorkerManager')
 );
 const Secrets = lazy(() =>
-  import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
+  import('../views/Secrets')
 );
 const CachePurges = lazy(() =>
-  import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges')
+  import('../views/CachePurges')
 );
 const PulseMessages = lazy(() =>
-  import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages')
+  import('../views/PulseMessages')
 );
 const Quickstart = lazy(() =>
-  import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
+  import('../views/Quickstart')
 );
 const TcYamlDebug = lazy(() =>
-  import(/* webpackChunkName: 'TcYamlDebug' */ '../views/TcYamlDebug')
+  import('../views/TcYamlDebug')
 );
 const Profile = lazy(() =>
-  import(/* webpackChunkName: 'Profile' */ '../views/Profile')
+  import('../views/Profile')
 );
 const Shell = lazy(() =>
-  import(/* webpackChunkName: 'Shell' */ '../views/Shell')
+  import('../views/Shell')
 );
 const HomeOrDashboard = lazy(() =>
-  import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
+  import('../views/HomeOrDashboard')
 );
 const Denylist = lazy(() =>
-  import(/* webpackChunkName: 'Denylist' */ '../views/Denylist')
+  import('../views/Denylist')
 );
 const ThirdPartyLogin = lazy(() =>
-  import(/* webpackChunkName: 'ThirdPartyLogin' */ '../views/ThirdPartyLogin')
+  import('../views/ThirdPartyLogin')
 );
 const NotFound = lazy(() =>
-  import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
+  import('../views/NotFound')
 );
 
 export default [
   {
     component: SwitchEntryPoint,
-    path: join(DOCS_PATH_PREFIX, ':path*'),
+    path: `${DOCS_PATH_PREFIX}/:path*`,
   },
   {
     component: Tasks,

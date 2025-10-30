@@ -1,14 +1,14 @@
 import lazy from '../../../utils/lazy';
 
 const ListNamespaces = lazy(() =>
-  import(/* webpackChunkName: 'TaskIndex.ListNamespaces' */ './ListNamespaces')
+  import('./ListNamespaces')
 );
 const IndexedTask = lazy(() =>
-  import(/* webpackChunkName: 'TaskIndex.IndexedTask' */ './IndexedTask')
+  import('./IndexedTask')
 );
 const IndexedTaskTaskGroupRedirect = lazy(() =>
   import(
-    /* webpackChunkName: 'TaskIndex.IndexedTaskTaskGroupRedirect' */ './IndexedTask/taskGroupRedirect'
+    './IndexedTask/taskGroupRedirect'
   )
 );
 const taskIndexDescription =

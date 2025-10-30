@@ -2,25 +2,25 @@ import lazy from '../../utils/lazy';
 
 const ViewProvisioners = lazy(() =>
   import(
-    /* webpackChunkName: 'Provisioners.ViewProvisioners' */ './ViewProvisioners'
+    './ViewProvisioners'
   )
 );
 const ViewWorkerTypes = lazy(() =>
   import(
-    /* webpackChunkName: 'Provisioners.ViewWorkerTypes' */ './ViewWorkerTypes'
+    './ViewWorkerTypes'
   )
 );
 const ViewWorker = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.ViewWorker' */ './ViewWorker')
+  import('./ViewWorker')
 );
 const ViewWorkers = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.ViewWorkers' */ './ViewWorkers')
+  import('./ViewWorkers')
 );
 const PendingTasks = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.PendingTasks' */ './PendingTasks')
+  import('./PendingTasks')
 );
 const ClaimedTasks = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners.ClaimedTasks' */ './ClaimedTasks')
+  import('./ClaimedTasks')
 );
 
 export default path => [
