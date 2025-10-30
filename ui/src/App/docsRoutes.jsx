@@ -1,21 +1,20 @@
-import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import lazy from '../utils/lazy';
 
 const Documentation = lazy(() =>
-  import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
+  import('../views/Documentation')
 );
 const Profile = lazy(() =>
-  import(/* webpackChunkName: 'Profile' */ '../views/Profile')
+  import('../views/Profile')
 );
 const SwitchEntryPoint = lazy(() =>
-  import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
+  import('../views/SwitchEntryPoint')
 );
 
 export default [
   {
     component: Documentation,
-    path: join(DOCS_PATH_PREFIX, ':path*'),
+    path: `${DOCS_PATH_PREFIX}/:path*`,
   },
 
   {
