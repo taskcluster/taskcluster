@@ -59,7 +59,14 @@ export const dropOnlineFns = async ({ client, kind, versionNum, showProgress }) 
 export const runMigration = async ({ client, version, showProgress, usernamePrefix }) => {
   await inTransaction(client, async () => {
     if (version.version === 1) {
-      await client.query('create table if not exists tcversion as select 0 as version');
+      await client.query(`
+        create table if not exists tcversion (
+          version integer primary key
+        )`);
+      const { rows } = await client.query('select count(*)::int as count from tcversion');
+      if (rows[0].count === 0) {
+        await client.query('insert into tcversion (version) values (0)');
+      }
     }
 
     await lockVersionTable({ client, expectedVersion: version.version - 1 });
