@@ -18,3 +18,4 @@ scrape_configs:
           - worker-manager-web:9100
           - worker-manager-background-provisioner:9100
           - worker-manager-background-workerscanner:9100
+          - worker-manager-background-workerscanner-azure:9100
