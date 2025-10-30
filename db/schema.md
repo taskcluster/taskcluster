@@ -533,8 +533,10 @@ ALTER TABLE tasks
 
 ```sql
 CREATE TABLE tcversion (
-    version integer
+    version integer NOT NULL
 );
+ALTER TABLE tcversion
+    ADD CONSTRAINT tcversion_pkey PRIMARY KEY (version);
 ```
 
 ## worker_pool_errors

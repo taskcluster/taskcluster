@@ -7810,6 +7810,14 @@
         }
       },
       "version": 117
+    },
+    {
+      "description": "Add primary key to tcversion table",
+      "downgradeScript": "begin\n  alter table tcversion drop constraint if exists tcversion_pkey;\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  if not exists (select 1 from tcversion) then\n    insert into tcversion (version) values (0);\n  end if;\n\n  if not exists (\n    select 1\n    from pg_constraint c\n    join pg_class t on t.oid = c.conrelid\n    join pg_namespace n on n.oid = t.relnamespace\n    where c.contype = 'p'\n      and t.relname = 'tcversion'\n      and n.nspname = current_schema()\n  ) then\n    alter table tcversion add primary key (version);\n  end if;\nend",
+      "version": 118
     }
   ]
 }

@@ -1,0 +1,25 @@
+version: 118
+description: Add primary key to tcversion table
+migrationScript: |-
+  begin
+    if not exists (select 1 from tcversion) then
+      insert into tcversion (version) values (0);
+    end if;
+
+    if not exists (
+      select 1
+      from pg_constraint c
+      join pg_class t on t.oid = c.conrelid
+      join pg_namespace n on n.oid = t.relnamespace
+      where c.contype = 'p'
+        and t.relname = 'tcversion'
+        and n.nspname = current_schema()
+    ) then
+      alter table tcversion add primary key (version);
+    end if;
+  end
+downgradeScript: |-
+  begin
+    alter table tcversion drop constraint if exists tcversion_pkey;
+  end
+methods: {}
