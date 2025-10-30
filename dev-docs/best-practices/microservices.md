@@ -26,7 +26,6 @@ Dependencies go in this `package.json`, while dev dependencies go in the root `p
 
 Source code should be in `src/`.
 No transpilation should be used: write JS that can be interpreted directly by the Node version in use in the repository.
-(The web-server service is an exception, since it uses webpack to load `.graphql` files)
 
 ## Implementation
 

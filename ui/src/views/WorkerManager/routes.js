@@ -2,30 +2,30 @@ import lazy from '../../utils/lazy';
 
 const WorkerManagerViewWorkerPools = lazy(() =>
   import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkerPools' */ './WMViewWorkerPools'
+    './WMViewWorkerPools'
   )
 );
 const WorkerManagerViewWorkers = lazy(() =>
   import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkers' */ './WMViewWorkers'
+    './WMViewWorkers'
   )
 );
 const WorkerManagerViewErrors = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WMViewErrors' */ './WMViewErrors')
+  import('./WMViewErrors')
 );
 const WorkerManagerViewErrorCenter = lazy(() =>
   import(
-    /* webpackChunkName: 'WorkerManager.WMViewErrorCenter' */ './WMViewErrorCenter'
+    './WMViewErrorCenter'
   )
 );
 const WMWorkerPoolEditor = lazy(() =>
   import(
-    /* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'
+    './WMEditWorkerPool'
   )
 );
 const WMWorkerPoolLaunchConfigs = lazy(() =>
   import(
-    /* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'
+    './WMLaunchConfigs'
   )
 );
 

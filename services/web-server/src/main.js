@@ -310,7 +310,7 @@ const load = loader(
     },
   },
   {
-    // default to 'devServer' since webpack does not pass any command-line args
+    // default to 'devServer' since vite does not pass any command-line args
     // when running in development mode
     profile: process.env.NODE_ENV || 'development',
     process: process.argv[2] || 'devServer',

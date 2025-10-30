@@ -2,10 +2,10 @@ import lazy from '../../utils/lazy';
 import ListHookGroups from './ListHookGroups';
 
 const ListHooks = lazy(() =>
-  import(/* webpackChunkName: 'Hooks.ListHooks' */ './ListHooks')
+  import('./ListHooks')
 );
 const ViewHook = lazy(() =>
-  import(/* webpackChunkName: 'Hooks.ViewHook' */ './ViewHook')
+  import('./ViewHook')
 );
 
 export default path => [
