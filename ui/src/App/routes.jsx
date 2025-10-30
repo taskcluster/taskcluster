@@ -11,63 +11,25 @@ import denylistRoutes from '../views/Denylist/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
 
-const SwitchEntryPoint = lazy(() =>
-  import('../views/SwitchEntryPoint')
-);
-const Tasks = lazy(() =>
-  import('../views/Tasks')
-);
-const Provisioners = lazy(() =>
-  import('../views/Provisioners')
-);
-const Clients = lazy(() =>
-  import('../views/Clients')
-);
-const Roles = lazy(() =>
-  import('../views/Roles')
-);
-const Scopes = lazy(() =>
-  import('../views/Scopes')
-);
-const Hooks = lazy(() =>
-  import('../views/Hooks')
-);
-const WorkerManager = lazy(() =>
-  import('../views/WorkerManager')
-);
-const Secrets = lazy(() =>
-  import('../views/Secrets')
-);
-const CachePurges = lazy(() =>
-  import('../views/CachePurges')
-);
-const PulseMessages = lazy(() =>
-  import('../views/PulseMessages')
-);
-const Quickstart = lazy(() =>
-  import('../views/Quickstart')
-);
-const TcYamlDebug = lazy(() =>
-  import('../views/TcYamlDebug')
-);
-const Profile = lazy(() =>
-  import('../views/Profile')
-);
-const Shell = lazy(() =>
-  import('../views/Shell')
-);
-const HomeOrDashboard = lazy(() =>
-  import('../views/HomeOrDashboard')
-);
-const Denylist = lazy(() =>
-  import('../views/Denylist')
-);
-const ThirdPartyLogin = lazy(() =>
-  import('../views/ThirdPartyLogin')
-);
-const NotFound = lazy(() =>
-  import('../views/NotFound')
-);
+const SwitchEntryPoint = lazy(() => import('../views/SwitchEntryPoint'));
+const Tasks = lazy(() => import('../views/Tasks'));
+const Provisioners = lazy(() => import('../views/Provisioners'));
+const Clients = lazy(() => import('../views/Clients'));
+const Roles = lazy(() => import('../views/Roles'));
+const Scopes = lazy(() => import('../views/Scopes'));
+const Hooks = lazy(() => import('../views/Hooks'));
+const WorkerManager = lazy(() => import('../views/WorkerManager'));
+const Secrets = lazy(() => import('../views/Secrets'));
+const CachePurges = lazy(() => import('../views/CachePurges'));
+const PulseMessages = lazy(() => import('../views/PulseMessages'));
+const Quickstart = lazy(() => import('../views/Quickstart'));
+const TcYamlDebug = lazy(() => import('../views/TcYamlDebug'));
+const Profile = lazy(() => import('../views/Profile'));
+const Shell = lazy(() => import('../views/Shell'));
+const HomeOrDashboard = lazy(() => import('../views/HomeOrDashboard'));
+const Denylist = lazy(() => import('../views/Denylist'));
+const ThirdPartyLogin = lazy(() => import('../views/ThirdPartyLogin'));
+const NotFound = lazy(() => import('../views/NotFound'));
 
 export default [
   {

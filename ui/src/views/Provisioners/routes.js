@@ -1,27 +1,11 @@
 import lazy from '../../utils/lazy';
 
-const ViewProvisioners = lazy(() =>
-  import(
-    './ViewProvisioners'
-  )
-);
-const ViewWorkerTypes = lazy(() =>
-  import(
-    './ViewWorkerTypes'
-  )
-);
-const ViewWorker = lazy(() =>
-  import('./ViewWorker')
-);
-const ViewWorkers = lazy(() =>
-  import('./ViewWorkers')
-);
-const PendingTasks = lazy(() =>
-  import('./PendingTasks')
-);
-const ClaimedTasks = lazy(() =>
-  import('./ClaimedTasks')
-);
+const ViewProvisioners = lazy(() => import('./ViewProvisioners'));
+const ViewWorkerTypes = lazy(() => import('./ViewWorkerTypes'));
+const ViewWorker = lazy(() => import('./ViewWorker'));
+const ViewWorkers = lazy(() => import('./ViewWorkers'));
+const PendingTasks = lazy(() => import('./PendingTasks'));
+const ClaimedTasks = lazy(() => import('./ClaimedTasks'));
 
 export default path => [
   {

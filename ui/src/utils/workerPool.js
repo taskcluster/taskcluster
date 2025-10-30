@@ -23,9 +23,11 @@ export const joinWorkerPoolId = (provisionerId, workerType) => {
   if (typeof provisionerId !== 'string') {
     throw new Error('provisionerId omitted');
   }
+
   if (typeof workerType !== 'string') {
     throw new Error('workerType omitted');
   }
+
   if (provisionerId.indexOf('/') !== -1) {
     throw new Error('provisionerId cannot contain `/`');
   }

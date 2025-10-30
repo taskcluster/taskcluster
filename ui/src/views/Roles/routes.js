@@ -1,11 +1,7 @@
 import lazy from '../../utils/lazy';
 
-const ViewRoles = lazy(() =>
-  import('./ViewRoles')
-);
-const ViewRole = lazy(() =>
-  import('./ViewRole')
-);
+const ViewRoles = lazy(() => import('./ViewRoles'));
+const ViewRole = lazy(() => import('./ViewRole'));
 
 export default path => [
   {

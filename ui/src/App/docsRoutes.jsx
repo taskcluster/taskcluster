@@ -1,15 +1,9 @@
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import lazy from '../utils/lazy';
 
-const Documentation = lazy(() =>
-  import('../views/Documentation')
-);
-const Profile = lazy(() =>
-  import('../views/Profile')
-);
-const SwitchEntryPoint = lazy(() =>
-  import('../views/SwitchEntryPoint')
-);
+const Documentation = lazy(() => import('../views/Documentation'));
+const Profile = lazy(() => import('../views/Profile'));
+const SwitchEntryPoint = lazy(() => import('../views/SwitchEntryPoint'));
 
 export default [
   {
