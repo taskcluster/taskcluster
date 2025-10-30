@@ -128,6 +128,7 @@ export default ({ mode }) => {
       ],
     },
     build: {
+      outDir: 'build',
       chunkSizeWarningLimit: 3500,
       rollupOptions: {
         input: {
