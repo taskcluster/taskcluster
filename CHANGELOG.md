@@ -3,6 +3,36 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v91.1.2
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v24.11.0
+
+### DEPLOYERS
+
+▶ [patch]
+Worker-scanner azure now exposes metrics to prometheus too.
+
+### DEVELOPERS
+
+▶ [patch] [#8042](https://github.com/taskcluster/taskcluster/issues/8042)
+DB adds primary key to the tcversion table
+
+▶ [patch] [#7376](https://github.com/taskcluster/taskcluster/issues/7376)
+Check-in the initial code for generating Firefox Profiler profiles for task logs and
+task groups.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump @messageformat/runtime from 3.0.1 to 3.0.2 (6b40347a05)
+
+</details>
+
 ## v91.1.1
 
 ### GENERAL
