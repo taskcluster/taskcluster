@@ -50,6 +50,18 @@ const serverProxyConfig = {
  * @var options.command string "build"|"serve"
  * @var options.ssrBuild boolean
  */
+// Plugin to generate env.js before build starts
+function generateEnvJsPlugin() {
+  return {
+    name: 'generate-env-js',
+    buildStart() {
+      if (process.env.GENERATE_ENV_JS) {
+        generateEnvJs(path.join(STATIC_DIR, 'env.js'));
+      }
+    },
+  };
+}
+
 export default ({ mode }) => {
   if (mode === 'development') {
     generateEnvJs(path.join(STATIC_DIR, 'env.js'));
@@ -57,6 +69,7 @@ export default ({ mode }) => {
 
   return defineConfig({
     plugins: [
+      generateEnvJsPlugin(),
       reactVirtualized(),
       historyFallback(),
       gql(),
