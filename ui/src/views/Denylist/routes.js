@@ -1,15 +1,7 @@
 import lazy from '../../utils/lazy';
 
-const ViewDenylistAddress = lazy(() =>
-  import(
-    './ViewDenylistAddress'
-  )
-);
-const ViewDenylistAddresses = lazy(() =>
-  import(
-    './ViewDenylistAddresses'
-  )
-);
+const ViewDenylistAddress = lazy(() => import('./ViewDenylistAddress'));
+const ViewDenylistAddresses = lazy(() => import('./ViewDenylistAddresses'));
 
 export default path => [
   {

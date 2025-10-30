@@ -1,33 +1,11 @@
 import lazy from '../../utils/lazy';
 
-const WorkerManagerViewWorkerPools = lazy(() =>
-  import(
-    './WMViewWorkerPools'
-  )
-);
-const WorkerManagerViewWorkers = lazy(() =>
-  import(
-    './WMViewWorkers'
-  )
-);
-const WorkerManagerViewErrors = lazy(() =>
-  import('./WMViewErrors')
-);
-const WorkerManagerViewErrorCenter = lazy(() =>
-  import(
-    './WMViewErrorCenter'
-  )
-);
-const WMWorkerPoolEditor = lazy(() =>
-  import(
-    './WMEditWorkerPool'
-  )
-);
-const WMWorkerPoolLaunchConfigs = lazy(() =>
-  import(
-    './WMLaunchConfigs'
-  )
-);
+const WorkerManagerViewWorkerPools = lazy(() => import('./WMViewWorkerPools'));
+const WorkerManagerViewWorkers = lazy(() => import('./WMViewWorkers'));
+const WorkerManagerViewErrors = lazy(() => import('./WMViewErrors'));
+const WorkerManagerViewErrorCenter = lazy(() => import('./WMViewErrorCenter'));
+const WMWorkerPoolEditor = lazy(() => import('./WMEditWorkerPool'));
+const WMWorkerPoolLaunchConfigs = lazy(() => import('./WMLaunchConfigs'));
 
 export default path => [
   {
