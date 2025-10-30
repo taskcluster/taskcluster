@@ -54,7 +54,7 @@ export default class PageMeta extends Component {
             {hasPreviousPage && (
               <PageNavigation
                 to={removeReadmeFromPath(
-                  `${DOCS_PATH_PREFIX}/${pageInfo.prev.path}`,
+                  `${DOCS_PATH_PREFIX}/${pageInfo.prev.path}`
                 )}
                 variant="prev"
                 aria-label="Previous Page">
@@ -64,7 +64,7 @@ export default class PageMeta extends Component {
             {hasNextPage && (
               <PageNavigation
                 to={removeReadmeFromPath(
-                  `${DOCS_PATH_PREFIX}/${pageInfo.next.path}`,
+                  `${DOCS_PATH_PREFIX}/${pageInfo.next.path}`
                 )}
                 variant="next"
                 aria-label="Next Page">

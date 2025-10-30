@@ -1,43 +1,17 @@
 import indexedTaskRoutes from './TaskIndex/routes';
 import lazy from '../../utils/lazy';
 
-const NoTask = lazy(() =>
-  import('./NoTask')
-);
-const NoTaskGroup = lazy(() =>
-  import('./NoTaskGroup')
-);
-const ViewTask = lazy(() =>
-  import('./ViewTask')
-);
-const TaskArtifactRedirect = lazy(() =>
-  import(
-    './TaskArtifactRedirect'
-  )
-);
-const TaskLog = lazy(() =>
-  import('./TaskLog')
-);
-const CreateTask = lazy(() =>
-  import('./CreateTask')
-);
-const TaskGroup = lazy(() =>
-  import('./TaskGroup')
-);
-const TaskDefinition = lazy(() =>
-  import('./TaskDefinition')
-);
-const TaskIndex = lazy(() =>
-  import('./TaskIndex')
-);
-const TaskRedirect = lazy(() =>
-  import('./TaskRedirect')
-);
-const InteractiveConnect = lazy(() =>
-  import(
-    './InteractiveConnect'
-  )
-);
+const NoTask = lazy(() => import('./NoTask'));
+const NoTaskGroup = lazy(() => import('./NoTaskGroup'));
+const ViewTask = lazy(() => import('./ViewTask'));
+const TaskArtifactRedirect = lazy(() => import('./TaskArtifactRedirect'));
+const TaskLog = lazy(() => import('./TaskLog'));
+const CreateTask = lazy(() => import('./CreateTask'));
+const TaskGroup = lazy(() => import('./TaskGroup'));
+const TaskDefinition = lazy(() => import('./TaskDefinition'));
+const TaskIndex = lazy(() => import('./TaskIndex'));
+const TaskRedirect = lazy(() => import('./TaskRedirect'));
+const InteractiveConnect = lazy(() => import('./InteractiveConnect'));
 const TaskProfiler = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskProfiler' */ './TaskProfiler')
 );
