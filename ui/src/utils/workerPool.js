@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 /**
  * We consider a "workerPoolId" to be a string
  * of the shape "<provisionerId>/<workerType>".
@@ -11,25 +9,29 @@ const assert = require('assert');
  *
  * These two functions serve to split and join workerPoolIds.
  */
-const splitWorkerPoolId = workerPoolId => {
+export const splitWorkerPoolId = workerPoolId => {
   const split = workerPoolId.split('/');
 
-  assert.strictEqual(split.length, 2, `invalid workerPoolId ${workerPoolId}`);
+  if (split.length !== 2) {
+    throw new Error(`invalid workerPoolId ${workerPoolId}`);
+  }
 
   return { provisionerId: split[0], workerType: split[1] };
 };
 
-exports.splitWorkerPoolId = splitWorkerPoolId;
-
-const joinWorkerPoolId = (provisionerId, workerType) => {
-  assert(typeof provisionerId === 'string', 'provisionerId omitted');
-  assert(typeof workerType === 'string', 'workerType omitted');
-  assert(provisionerId.indexOf('/') === -1, 'provisionerId cannot contain `/`');
+export const joinWorkerPoolId = (provisionerId, workerType) => {
+  if (typeof provisionerId !== 'string') {
+    throw new Error('provisionerId omitted');
+  }
+  if (typeof workerType !== 'string') {
+    throw new Error('workerType omitted');
+  }
+  if (provisionerId.indexOf('/') !== -1) {
+    throw new Error('provisionerId cannot contain `/`');
+  }
 
   return `${provisionerId}/${workerType}`;
 };
 
-exports.joinWorkerPoolId = joinWorkerPoolId;
-
-exports.isWorkerPoolIdSecondHalfValid = workerType =>
+export const isWorkerPoolIdSecondHalfValid = workerType =>
   /^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/.test(workerType);
