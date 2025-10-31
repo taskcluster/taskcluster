@@ -8,18 +8,18 @@ version = "91.1.2"
 description = "Python client for Taskcluster"
 readme = "README.md"
 license = {text = "MPL-2.0"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "Mozilla Taskcluster and Release Engineering", email = "release+python@mozilla.com"},
 ]
 keywords = ["taskcluster", "api", "client"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -49,7 +49,6 @@ dev = [
     "coverage",
     "aiofiles",
     "httptest",
-    "tox",
     "ruff",
     "grip",
 ]

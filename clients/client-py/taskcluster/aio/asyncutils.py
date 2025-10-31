@@ -1,14 +1,14 @@
-from __future__ import absolute_import, division, print_function
-import aiohttp
-import aiohttp.hdrs
 import asyncio
-import async_timeout
 import functools
 import logging
 import os
 
-import taskcluster.utils as utils
+import aiohttp
+import aiohttp.hdrs
+import async_timeout
+
 import taskcluster.exceptions as exceptions
+import taskcluster.utils as utils
 
 log = logging.getLogger(__name__)
 
@@ -18,8 +18,10 @@ def createSession(*args, **kwargs):
 
 
 # Useful information: https://www.blog.pythonlibrary.org/2016/07/26/python-3-an-intro-to-asyncio/
-async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRIES, session=None):
-    """ Make an HTTP request and retry it until success, return request """
+async def makeHttpRequest(
+    method, url, payload, headers, retries=utils.MAX_RETRIES, session=None
+):
+    """Make an HTTP request and retry it until success, return request"""
     retry = -1
     response = None
     implicit = False
@@ -38,37 +40,41 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
             # if this isn't the first retry then we sleep
             if retry > 0:
                 snooze = float(retry * retry) / 10.0
-                log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+                log.info("Sleeping %0.2f seconds for exponential backoff", snooze)
                 await asyncio.sleep(snooze)
 
             # Seek payload to start, if it is a file
-            if hasattr(payload, 'seek'):
+            if hasattr(payload, "seek"):
                 payload.seek(0)
 
-            log.debug('Making attempt %d', retry)
+            log.debug("Making attempt %d", retry)
             try:
                 with async_timeout.timeout(60):
-                    response = await makeSingleHttpRequest(method, url, payload, headers, session)
+                    response = await makeSingleHttpRequest(
+                        method, url, payload, headers, session
+                    )
             except aiohttp.ClientError as rerr:
                 if retry < retries:
-                    log.warning('Retrying because of: %s' % rerr)
+                    log.warning(f"Retrying because of: {rerr}")
                     continue
                 # raise a connection exception
                 raise rerr
             except ValueError as rerr:
-                log.warning('ValueError from aiohttp: redirect to non-http or https')
+                log.warning("ValueError from aiohttp: redirect to non-http or https")
                 raise rerr
             except RuntimeError as rerr:
-                log.warning('RuntimeError from aiohttp: session closed')
+                log.warning("RuntimeError from aiohttp: session closed")
                 raise rerr
             # Handle non 2xx status code and retry if possible
             status = response.status
             if 500 <= status and status < 600 and retry < retries:
                 if retry < retries:
-                    log.warning('Retrying because of: %d status' % status)
+                    log.warning(f"Retrying because of: {status} status")
                     continue
                 else:
-                    raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
+                    raise exceptions.TaskclusterRestFailure(
+                        "Unknown Server Error", superExc=None
+                    )
             return response
     finally:
         cleanup()
@@ -78,9 +84,9 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
 
 async def makeSingleHttpRequest(method, url, payload, headers, session=None):
     method = method.upper()
-    log.debug('Making a %s request to %s', method, url)
-    log.debug('HTTP Headers: %s' % str(headers))
-    log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
+    log.debug("Making a %s request to %s", method, url)
+    log.debug(f"HTTP Headers: {str(headers)}")
+    log.debug(f"HTTP Payload: {str(payload)[:100]} (limit 100 char)")
     implicit = False
     if session is None:
         implicit = True
@@ -93,14 +99,19 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
         # we must avoid aiohttp's helpful "requoting" functionality, as it breaks Hawk signatures
         url = aiohttp.client.URL(url, encoded=True)
         async with session.request(
-            method, url, data=payload, headers=headers,
-            skip_auto_headers=skip_auto_headers, compress=False
+            method,
+            url,
+            data=payload,
+            headers=headers,
+            skip_auto_headers=skip_auto_headers,
+            compress=False,
         ) as resp:
             response_text = await resp.text()
-            log.debug('Received HTTP Status:    %s' % resp.status)
-            log.debug('Received HTTP Headers: %s' % str(resp.headers))
-            log.debug('Received HTTP Payload: %s (limit 1024 char)' %
-                      str(response_text)[:1024])
+            log.debug(f"Received HTTP Status:    {resp.status}")
+            log.debug(f"Received HTTP Headers: {str(resp.headers)}")
+            log.debug(
+                f"Received HTTP Payload: {str(response_text)[:1024]} (limit 1024 char)"
+            )
             return resp
     finally:
         if implicit:
@@ -108,12 +119,18 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
 
 
 async def putFile(filename, url, contentType, session=None):
-    with open(filename, 'rb') as f:
+    with open(filename, "rb") as f:
         contentLength = os.fstat(f.fileno()).st_size
-        return await makeHttpRequest('put', url, f, headers={
-            'Content-Length': str(contentLength),
-            'Content-Type': contentType,
-        }, session=session)
+        return await makeHttpRequest(
+            "put",
+            url,
+            f,
+            headers={
+                "Content-Length": str(contentLength),
+                "Content-Type": contentType,
+            },
+            session=session,
+        )
 
 
 def runAsync(coro):
@@ -140,7 +157,7 @@ def ensureCoro(func):
     async def coro(*args, **kwargs):
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
-            None,
-            functools.partial(func, *args, **kwargs)
+            None, functools.partial(func, *args, **kwargs)
         )
+
     return coro
