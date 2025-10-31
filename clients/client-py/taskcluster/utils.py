@@ -1,18 +1,17 @@
 # -*- coding: UTF-8 -*-
-from __future__ import absolute_import, division, print_function
-import re
-import json
-import datetime
-from datetime import timezone
 import base64
+import datetime
+import json
 import logging
 import os
+import random
+import re
+import time
+from datetime import timezone
+
 import requests
 import requests.exceptions
 import slugid
-import time
-import random
-
 import taskcluster_urls as liburls
 
 from . import exceptions
@@ -28,19 +27,23 @@ log = logging.getLogger(__name__)
 
 # Regular expression matching: X days Y hours Z minutes
 # todo: support hr, wk, yr
-r = re.compile(''.join([
-   r'^(\s*(?P<years>\d+)\s*y(ears?)?)?',
-   r'(\s*(?P<months>\d+)\s*mo(nths?)?)?',
-   r'(\s*(?P<weeks>\d+)\s*w(eeks?)?)?',
-   r'(\s*(?P<days>\d+)\s*d(ays?)?)?',
-   r'(\s*(?P<hours>\d+)\s*h(ours?)?)?',
-   r'(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*',
-   r'(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$',
-]))
+r = re.compile(
+    "".join(
+        [
+            r"^(\s*(?P<years>\d+)\s*y(ears?)?)?",
+            r"(\s*(?P<months>\d+)\s*mo(nths?)?)?",
+            r"(\s*(?P<weeks>\d+)\s*w(eeks?)?)?",
+            r"(\s*(?P<days>\d+)\s*d(ays?)?)?",
+            r"(\s*(?P<hours>\d+)\s*h(ours?)?)?",
+            r"(\s*(?P<minutes>\d+)\s*m(in(utes?)?)?)?\s*",
+            r"(\s*(?P<seconds>\d+)\s*s(ec(onds?)?)?)?\s*$",
+        ]
+    )
+)
 
 
 def calculateSleepTime(attempt):
-    """ From the go client
+    """From the go client
     https://github.com/taskcluster/go-got/blob/031f55c/backoff.go#L24-L29
     """
     if attempt <= 0:
@@ -54,7 +57,7 @@ def calculateSleepTime(attempt):
     return min(delay, MAX_DELAY)
 
 
-def toStr(obj, encoding='utf-8'):
+def toStr(obj, encoding="utf-8"):
     if isinstance(obj, bytes):
         obj = obj.decode(encoding)
     else:
@@ -72,16 +75,16 @@ def fromNow(offset, dateObj=None):
     # We want to handle past dates as well as future
     future = True
     offset = offset.lstrip()
-    if offset.startswith('-'):
+    if offset.startswith("-"):
         future = False
         offset = offset[1:].lstrip()
-    if offset.startswith('+'):
+    if offset.startswith("+"):
         offset = offset[1:].lstrip()
 
     # Parse offset
     m = r.match(offset)
     if m is None:
-        raise ValueError("offset string: '%s' does not parse" % offset)
+        raise ValueError(f"offset string: '{offset}' does not parse")
 
     # In order to calculate years and months we need to calculate how many days
     # to offset the offset by, since timedelta only goes as high as weeks
@@ -89,20 +92,20 @@ def fromNow(offset, dateObj=None):
     hours = 0
     minutes = 0
     seconds = 0
-    if m.group('years'):
-        years = int(m.group('years'))
+    if m.group("years"):
+        years = int(m.group("years"))
         days += 365 * years
-    if m.group('months'):
-        months = int(m.group('months'))
+    if m.group("months"):
+        months = int(m.group("months"))
         days += 30 * months
-    days += int(m.group('days') or 0)
-    hours += int(m.group('hours') or 0)
-    minutes += int(m.group('minutes') or 0)
-    seconds += int(m.group('seconds') or 0)
+    days += int(m.group("days") or 0)
+    hours += int(m.group("hours") or 0)
+    minutes += int(m.group("minutes") or 0)
+    seconds += int(m.group("seconds") or 0)
 
     # Offset datetime from utc
     delta = datetime.timedelta(
-        weeks=int(m.group('weeks') or 0),
+        weeks=int(m.group("weeks") or 0),
         days=days,
         hours=hours,
         minutes=minutes,
@@ -123,9 +126,10 @@ def fromNowJSON(offset):
 
 
 def dumpJson(obj, **kwargs):
-    """ Match JS's JSON.stringify.  When using the default separators,
+    """Match JS's JSON.stringify.  When using the default separators,
     base64 encoding JSON results in \n sequences in the output.  Hawk
     barfs in your face if you have that in the text"""
+
     def handleDateAndBinaryForJs(x):
         if isinstance(x, bytes):
             x = x.decode()
@@ -133,8 +137,11 @@ def dumpJson(obj, **kwargs):
             return stringDate(x)
         else:
             return x
-    d = json.dumps(obj, separators=(',', ':'), default=handleDateAndBinaryForJs, **kwargs)
-    assert '\n' not in d
+
+    d = json.dumps(
+        obj, separators=(",", ":"), default=handleDateAndBinaryForJs, **kwargs
+    )
+    assert "\n" not in d
     return d
 
 
@@ -145,40 +152,40 @@ def stringDate(date):
     # If there is no timezone and no Z added, we'll add one at the end.
     # This is just to be fully compliant with:
     # https://tools.ietf.org/html/rfc3339#section-5.6
-    if string.endswith('+00:00'):
-        return string[:-6] + 'Z'
-    if date.utcoffset() is None and string[-1] != 'Z':
-        return string + 'Z'
+    if string.endswith("+00:00"):
+        return string[:-6] + "Z"
+    if date.utcoffset() is None and string[-1] != "Z":
+        return string + "Z"
     return string
 
 
 def makeB64UrlSafe(b64str):
-    """ Make a base64 string URL Safe """
+    """Make a base64 string URL Safe"""
     if isinstance(b64str, str):
         b64str = b64str.encode()
     # see RFC 4648, sec. 5
-    return b64str.replace(b'+', b'-').replace(b'/', b'_')
+    return b64str.replace(b"+", b"-").replace(b"/", b"_")
 
 
 def makeB64UrlUnsafe(b64str):
-    """ Make a base64 string URL Unsafe """
+    """Make a base64 string URL Unsafe"""
     if isinstance(b64str, str):
         b64str = b64str.encode()
     # see RFC 4648, sec. 5
-    return b64str.replace(b'-', b'+').replace(b'_', b'/')
+    return b64str.replace(b"-", b"+").replace(b"_", b"/")
 
 
 def encodeStringForB64Header(s):
-    """ HTTP Headers can't have new lines in them, let's """
+    """HTTP Headers can't have new lines in them, let's"""
     if isinstance(s, str):
         s = s.encode()
     b64str = base64.encodebytes(s)
-    return b64str.strip().replace(b'\n', b'')
+    return b64str.strip().replace(b"\n", b"")
 
 
 def slugId():
-    """ Generate a taskcluster slugid.  This is a V4 UUID encoded into
-    URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed """
+    """Generate a taskcluster slugid.  This is a V4 UUID encoded into
+    URL-Safe Base64 (RFC 4648, sec 5) with '=' padding removed"""
     return slugid.nice()
 
 
@@ -199,19 +206,19 @@ def stableSlugId():
 
 def scopeMatch(assumedScopes, requiredScopeSets):
     """
-        Take a list of a assumed scopes, and a list of required scope sets on
-        disjunctive normal form, and check if any of the required scope sets are
-        satisfied.
+    Take a list of a assumed scopes, and a list of required scope sets on
+    disjunctive normal form, and check if any of the required scope sets are
+    satisfied.
 
-        Example:
+    Example:
 
-            requiredScopeSets = [
-                ["scopeA", "scopeB"],
-                ["scopeC"]
-            ]
+        requiredScopeSets = [
+            ["scopeA", "scopeB"],
+            ["scopeC"]
+        ]
 
-        In this case assumed_scopes must contain, either:
-        "scopeA" AND "scopeB", OR just "scopeC".
+    In this case assumed_scopes must contain, either:
+    "scopeA" AND "scopeB", OR just "scopeC".
     """
     for scopeSet in requiredScopeSets:
         for requiredScope in scopeSet:
@@ -233,16 +240,17 @@ def scopeMatch(assumedScopes, requiredScopeSets):
 
 
 def scope_match(assumed_scopes, required_scope_sets):
-    """ This is a deprecated form of def scopeMatch(assumedScopes, requiredScopeSets).
+    """This is a deprecated form of def scopeMatch(assumedScopes, requiredScopeSets).
     That form should be used.
     """
     import warnings
-    warnings.warn('NOTE: scope_match is deprecated.  Use scopeMatch')
+
+    warnings.warn("NOTE: scope_match is deprecated.  Use scopeMatch")
     return scopeMatch(assumed_scopes, required_scope_sets)
 
 
 def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=None):
-    """ Make an HTTP request and retry it until success, return request """
+    """Make an HTTP request and retry it until success, return request"""
     retry = -1
     response = None
     while retry < retries:
@@ -250,19 +258,19 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
         # if this isn't the first retry then we sleep
         if retry > 0:
             snooze = float(retry * retry) / 10.0
-            log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+            log.info("Sleeping %0.2f seconds for exponential backoff", snooze)
             time.sleep(snooze)
 
         # Seek payload to start, if it is a file
-        if hasattr(payload, 'seek'):
+        if hasattr(payload, "seek"):
             payload.seek(0)
 
-        log.debug('Making attempt %d', retry)
+        log.debug("Making attempt %d", retry)
         try:
             response = makeSingleHttpRequest(method, url, payload, headers, session)
         except requests.exceptions.RequestException as rerr:
             if retry < retries:
-                log.warning('Retrying because of: %s' % rerr)
+                log.warning(f"Retrying because of: {rerr}")
                 continue
             # raise a connection exception
             raise rerr
@@ -274,10 +282,12 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
         status = response.status_code
         if 500 <= status and status < 600 and retry < retries:
             if retry < retries:
-                log.warning('Retrying because of: %d status' % status)
+                log.warning(f"Retrying because of: {status} status")
                 continue
             else:
-                raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
+                raise exceptions.TaskclusterRestFailure(
+                    "Unknown Server Error", superExc=None
+                )
         return response
 
     # This code-path should be unreachable
@@ -286,24 +296,31 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
 
 def makeSingleHttpRequest(method, url, payload, headers, session=None):
     method = method.upper()
-    log.debug('Making a %s request to %s', method, url)
-    log.debug('HTTP Headers: %s' % str(headers))
-    log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
+    log.debug("Making a %s request to %s", method, url)
+    log.debug(f"HTTP Headers: {str(headers)}")
+    log.debug(f"HTTP Payload: {str(payload)[:100]} (limit 100 char)")
     obj = session if session else requests
-    response = obj.request(method.upper(), url, data=payload, headers=headers, allow_redirects=True)
-    log.debug('Received HTTP Status:    %s' % response.status_code)
-    log.debug('Received HTTP Headers: %s' % str(response.headers))
+    response = obj.request(
+        method.upper(), url, data=payload, headers=headers, allow_redirects=True
+    )
+    log.debug(f"Received HTTP Status:    {response.status_code}")
+    log.debug(f"Received HTTP Headers: {str(response.headers)}")
 
     return response
 
 
 def putFile(filename, url, contentType):
-    with open(filename, 'rb') as f:
+    with open(filename, "rb") as f:
         contentLength = os.fstat(f.fileno()).st_size
-        return makeHttpRequest('put', url, f, headers={
-            'Content-Length': str(contentLength),
-            'Content-Type': contentType,
-        })
+        return makeHttpRequest(
+            "put",
+            url,
+            f,
+            headers={
+                "Content-Length": str(contentLength),
+                "Content-Type": contentType,
+            },
+        )
 
 
 def encryptEnvVar(taskId, startTime, endTime, name, value, keyFile):
@@ -315,10 +332,10 @@ def decryptMessage(message, privateKey):
 
 
 def isExpired(certificate):
-    """ Check if certificate is expired """
+    """Check if certificate is expired"""
     if isinstance(certificate, str):
         certificate = json.loads(certificate)
-    expiry = certificate.get('expiry', 0)
+    expiry = certificate.get("expiry", 0)
     return expiry < int(time.time() * 1000) + 20 * 60
 
 
@@ -327,25 +344,25 @@ def optionsFromEnvironment(defaults=None):
     environment variables and return them in a format suitable for passing to a
     client constructor."""
     options = defaults or {}
-    credentials = options.get('credentials', {})
+    credentials = options.get("credentials", {})
 
-    rootUrl = os.environ.get('TASKCLUSTER_ROOT_URL')
+    rootUrl = os.environ.get("TASKCLUSTER_ROOT_URL")
     if rootUrl:
-        options['rootUrl'] = liburls.normalize_root_url(rootUrl)
+        options["rootUrl"] = liburls.normalize_root_url(rootUrl)
 
-    clientId = os.environ.get('TASKCLUSTER_CLIENT_ID')
+    clientId = os.environ.get("TASKCLUSTER_CLIENT_ID")
     if clientId:
-        credentials['clientId'] = clientId
+        credentials["clientId"] = clientId
 
-    accessToken = os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
+    accessToken = os.environ.get("TASKCLUSTER_ACCESS_TOKEN")
     if accessToken:
-        credentials['accessToken'] = accessToken
+        credentials["accessToken"] = accessToken
 
-    certificate = os.environ.get('TASKCLUSTER_CERTIFICATE')
+    certificate = os.environ.get("TASKCLUSTER_CERTIFICATE")
     if certificate:
-        credentials['certificate'] = certificate
+        credentials["certificate"] = certificate
 
     if credentials:
-        options['credentials'] = credentials
+        options["credentials"] = credentials
 
     return options
