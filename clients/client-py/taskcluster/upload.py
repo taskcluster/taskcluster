@@ -12,11 +12,11 @@ once.
 This module provides several pre-defined readers and reader factories for
 common cases.
 """
+
 import functools
 
 from .aio import upload as aio_upload
 from .aio.asyncutils import ensureCoro, runAsync
-
 
 DATA_INLINE_MAX_SIZE = 8192
 
@@ -52,6 +52,7 @@ def upload(*, readerFactory, **kwargs):
 
 def _wrapSyncReaderFactory(readerFactory):
     """Modify the reader returned by readerFactory to have an async read."""
+
     @functools.wraps(readerFactory)
     async def wrappedFactory():
         reader = readerFactory()
