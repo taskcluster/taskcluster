@@ -1,12 +1,19 @@
 import pytest
 
-from taskcluster.aio.reader_writer import BufferReader, BufferWriter, FileReader, FileWriter, streamingCopy
+from taskcluster.aio.reader_writer import (
+    BufferReader,
+    BufferWriter,
+    FileReader,
+    FileWriter,
+    streamingCopy,
+)
 
 pytestmark = pytest.mark.asyncio
 
 
 class CrashReader:
     "A reader that crashes at the end of data"
+
     def __init__(self, data):
         self.data = data
 
@@ -14,14 +21,15 @@ class CrashReader:
         size = max_size if max_size > 0 else 1024
         data, self.data = self.data[:size], self.data[size:]
         if not data:
-            raise RuntimeError('uhoh, reader crashed')
+            raise RuntimeError("uhoh, reader crashed")
         return data
 
 
 class CrashWriter:
     "A writer that crashes on its first write"
+
     async def write(self, data):
-        raise RuntimeError('uhoh, reader crashed')
+        raise RuntimeError("uhoh, reader crashed")
 
 
 async def test_streaming_copy_buffers(randbytes):

@@ -1,3 +1,6 @@
+meta:
+  - &uv_version 0.9.7
+
 loader: taskgraph.loader.transform:loader
 
 transforms:
@@ -7,5 +10,11 @@ transforms:
 
 tasks:
   browser-test: {}
-  ci: {}
+  ci:
+    args:
+      UV_VERSION: *uv_version
   rabbit-test: {}
+  python:
+    args:
+      PYTHON_VERSIONS: "3.14 3.13 3.12 3.11 3.10"
+      UV_VERSION: *uv_version
