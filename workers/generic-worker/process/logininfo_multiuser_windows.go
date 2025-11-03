@@ -61,7 +61,7 @@ func loadProfile(user syscall.Token, username string) (syscall.Handle, error) {
 	}
 	err = win32.LoadUserProfile(user, &pinfo)
 	if err != nil {
-		return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%q, %+v): %v", user, &pinfo, err)
+		return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%#x, %+v): %v", user, &pinfo, err)
 	}
 	return pinfo.Profile, nil
 }
