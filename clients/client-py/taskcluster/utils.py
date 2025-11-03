@@ -301,7 +301,7 @@ def makeSingleHttpRequest(method, url, payload, headers, session=None):
     log.debug(f"HTTP Payload: {str(payload)[:100]} (limit 100 char)")
     obj = session if session else requests
     response = obj.request(
-        method.upper(), url, data=payload, headers=headers, allow_redirects=True
+        method.upper(), url, data=payload, headers=headers, allow_redirects=False
     )
     log.debug(f"Received HTTP Status:    {response.status_code}")
     log.debug(f"Received HTTP Headers: {str(response.headers)}")
