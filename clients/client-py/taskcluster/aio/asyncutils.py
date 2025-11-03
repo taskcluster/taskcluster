@@ -105,6 +105,7 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
             headers=headers,
             skip_auto_headers=skip_auto_headers,
             compress=False,
+            allow_redirects=False,
         ) as resp:
             response_text = await resp.text()
             log.debug(f"Received HTTP Status:    {resp.status}")
