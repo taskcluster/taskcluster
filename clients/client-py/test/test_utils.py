@@ -140,23 +140,18 @@ def test_success_payload():
 
 
 def test_redirect_response():
+    @httmock.all_requests
     def response_content(url, request):
-        if "redirect.com" in url.netloc:
-            return {
-                "status_code": 303,
-                "headers": {"Location": "https://redirect-target.example.com/final"},
-            }
-        else:
-            return {
-                "status_code": 200,
-                "content": {"final": "content"},
-            }
+        return {
+            "status_code": 303,
+            "headers": {"Location": "https://nosuch.example.com"},
+            "content": {"url": "https://nosuch.example.com"},
+        }
 
     with httmock.HTTMock(response_content):
-        d = subject.makeSingleHttpRequest("GET", "http://www.redirect.com", None, {})
-        # we should get the content since allow_redirects=True
-        assert d.json() == {"final": "content"}
-        assert d.status_code == 200
+        d = subject.makeSingleHttpRequest("GET", "http://www.example.com", None, {})
+        assert d.json() == {"url": "https://nosuch.example.com"}
+        assert d.status_code == 303
 
 
 def test_failure():
