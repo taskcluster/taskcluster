@@ -13,109 +13,78 @@ tasks:
 
       # Github events have this stuff in different places...
       baseRepoUrl:
-        $if: 'tasks_for in ["github-push", "github-release"]'
-        then: "${event.repository.html_url}"
-        else:
-          $if: 'tasks_for[:19] == "github-pull-request"'
-          then: "${event.pull_request.base.repo.html_url}"
-
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.repo.html_url}'
+          $default: '${event.repository.html_url}'
       repoUrl:
-        $if: 'tasks_for in ["github-push", "github-release"]'
-        then: "${event.repository.html_url}"
-        else:
-          $if: 'tasks_for[:19] == "github-pull-request"'
-          then: "${event.pull_request.head.repo.html_url}"
-
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.repo.html_url}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${repository.url}'
+          $default: '${event.repository.html_url}'
       project:
-        $if: 'tasks_for in ["github-push", "github-release"]'
-        then: "${event.repository.name}"
-        else:
-          $if: 'tasks_for[:19] == "github-pull-request"'
-          then: "${event.pull_request.head.repo.name}"
-
+        $switch:
+          'tasks_for in ["github-push", "github-release"]': '${event.repository.name}'
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.repo.name}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${repository.project}'
       head_branch:
-        $if: 'tasks_for[:19] == "github-pull-request"'
-        then: ${event.pull_request.head.ref}
-        else:
-          $if: 'tasks_for == "github-push"'
-          then: ${event.ref}
-          else:
-            $if: 'tasks_for == "github-release"'
-            then: "${event.release.target_commitish}"
-
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
+          'tasks_for == "github-push"': ${event.ref}
+          'tasks_for == "github-release"': '${event.release.target_commitish}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
       base_ref:
-        $if: 'tasks_for[:19] == "github-pull-request"'
-        then: ${event.pull_request.base.ref}
-        else:
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.base.ref}
           # event.base_ref is barely documented[1]. Testing showed it's only
           # defined when creating a new branch. It's null when pushing to an
           # existing branch
           #
           # [1] https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
-          $if: 'tasks_for == "github-push" && event.base_ref'
-          then:
-            $if: 'event.base_ref[:11] == "refs/heads/"'
-            then: { $eval: "event.base_ref[11:]" }
-            else: ${event.base_ref}
-          else:
-            $if: 'tasks_for == "github-push"'
-            then:
-              $if: 'event.ref[:11] == "refs/heads/"'
-              then: { $eval: "event.ref[11:]" }
-              else: ${event.ref}
-            else:
-              $if: 'tasks_for in ["cron", "action"]'
-              then:
-                $if: '${push.branch}[:11] == "refs/heads/"'
-                then: { $eval: "push.branch[11:]" }
-                else: "${push.branch}"
-
-      base_sha:
-        $switch:
-          'tasks_for == "github-push"': '${event.before}'
-          'tasks_for == "github-release"': '${event.release.target_commitish}'
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
-          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
-
+          'tasks_for == "github-push" && event.base_ref': ${event.base_ref}
+          'tasks_for == "github-push" && !(event.base_ref)': ${event.ref}
+          'tasks_for == "github-release"': ''
+          'tasks_for in ["cron", "action"]': '${push.branch}'
+          'tasks_for == "pr-action"': '${push.base_branch}'
       head_ref:
-        $if: 'tasks_for[:19] == "github-pull-request"'
-        then: ${event.pull_request.head.ref}
-        else:
-          $if: 'tasks_for == "github-push"'
-          then: ${event.ref}
-          else:
-            $if: 'tasks_for in ["cron", "action"]'
-            then: "${push.branch}"
-
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
+          'tasks_for == "github-push"': ${event.ref}
+          'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
+          'tasks_for == "github-release"': ${event.release.tag_name}
+      base_sha:
+        $let:
+          computed_base_sha:
+            $switch:
+              'tasks_for == "github-push"': '${event.before}'
+              'tasks_for == "github-release"': '${event.release.target_commitish}'
+              'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
+              'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
+        in:
+          $if: 'computed_base_sha == "0000000000000000000000000000000000000000"'
+          then: "main"
+          else: '${computed_base_sha}'
       head_sha:
-        $if: 'tasks_for == "github-push"'
-        then: "${event.after}"
-        else:
-          $if: 'tasks_for[:19] == "github-pull-request"'
-          then: "${event.pull_request.head.sha}"
-          else:
-            $if: 'tasks_for == "github-release"'
-            then: "${event.release.tag_name}"
-
+        $switch:
+          'tasks_for == "github-push"': '${event.after}'
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.sha}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
+          'tasks_for == "github-release"': '${event.release.tag_name}'
       head_tag:
         $if: 'tasks_for == "github-release"'
         then: "${event.release.tag_name}"
         else: ""
-
       ownTaskId: { $eval: as_slugid("decision_task") }
-
       pullRequestAction:
-        $if: 'tasks_for[:19] == "github-pull-request"'
-        then: ${event.action}
-        else: "UNDEFINED"
-
+        $switch:
+          'tasks_for[:19] == "github-pull-request"': ${event.action}
+          $default: 'UNDEFINED'
       isPullRequest:
         $eval: 'tasks_for[:19] == "github-pull-request"'
 
     in:
       $if: >
         (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
-        || (tasks_for == "github-push" && project == "taskcluster" && (event["ref"] == "refs/heads/master" || event["ref"] == "refs/heads/main"))
+        || (tasks_for == "github-push" && project == "taskcluster" && event["ref"] == "refs/heads/main")
         || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
         || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
       then:
@@ -183,7 +152,7 @@ tasks:
 
           # Note: This task is built server side without the context or tooling that
           # exist in tree so we must hard code the hash
-          image: mozillareleases/taskgraph:decision-v17.2.0@sha256:f2092e0d7c37326b0c6887c6221badb6538f3b24b7a1ea1db9c63fe377688341
+          image: mozillareleases/taskgraph:decision-v17.2.1@sha256:98f8d03df60817e04bc5606372fe40940452162eb2bc7ea181c7b320c58880ae
 
           maxRunTime: 600
 
@@ -200,7 +169,6 @@ tasks:
               --pushlog-id='0'
               --pushdate='0'
               --project='${project}'
-              --message=""
               --owner='${ownerEmail}'
               --level='${level}'
               --repository-type=git
