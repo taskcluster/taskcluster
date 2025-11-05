@@ -3,6 +3,17 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v92.0.1
+
+### GENERAL
+
+▶ [patch] [#8061](https://github.com/taskcluster/taskcluster/issues/8061)
+Updates the python client's `uv.lock` file to properly bump the `taskcluster` version on `yarn release`.
+
+### OTHER
+
+▶ Additional change not described here: [#8061](https://github.com/taskcluster/taskcluster/issues/8061).
+
 ## v92.0.0
 
 ### GENERAL
