@@ -292,6 +292,7 @@ export class DeploymentManager extends ResourceManager {
     super(fake, resourceType);
     this._deployments = new Map();
     this._deploymentOperations = new Map();
+    this._conflictOnDelete = new Set();
 
     this.deployments = {
       get: async (rg, name) => this.get(rg, name),
@@ -300,6 +301,8 @@ export class DeploymentManager extends ResourceManager {
       deploymentExists: (rg, name) => this.deploymentExists(rg, name),
       setFakeDeploymentState: (rg, name, state, error) => this.setFakeDeploymentState(rg, name, state, error),
       setFakeDeploymentOutputs: (rg, name, outputs) => this.setFakeDeploymentOutputs(rg, name, outputs),
+      setFakeShouldConflictOnDelete: (rg, name, shouldConflict) =>
+        this.setFakeShouldConflictOnDelete(rg, name, shouldConflict),
     };
 
     this.deploymentOperations = {
@@ -344,6 +347,16 @@ export class DeploymentManager extends ResourceManager {
 
   async beginDelete(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
+
+    // Check if we should simulate a conflict
+    if (this._conflictOnDelete.has(key)) {
+      this._conflictOnDelete.delete(key); // Clear flag after first attempt
+      throw makeError(
+        `Unable to edit or replace deployment '${name}': previous deployment is still active`,
+        409,
+      );
+    }
+
     this._deployments.delete(key);
 
     const req = new ResourceRequest('delete', this.resourceType, resourceGroupName, name, {});
@@ -375,6 +388,18 @@ export class DeploymentManager extends ResourceManager {
     const deployment = this._deployments.get(key);
     if (deployment) {
       deployment.properties.outputs = outputs;
+    }
+  }
+
+  /**
+   * Set whether deletion should fail with a 409 conflict for testing
+   */
+  setFakeShouldConflictOnDelete(resourceGroupName, name, shouldConflict) {
+    const key = `${resourceGroupName}/${name}`;
+    if (shouldConflict) {
+      this._conflictOnDelete.add(key);
+    } else {
+      this._conflictOnDelete.delete(key);
     }
   }
 

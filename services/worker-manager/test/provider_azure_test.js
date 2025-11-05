@@ -606,6 +606,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(worker.providerData.deployment.id, `id/${deploymentName}`);
     });
 
+    test('handles 409 conflict when deleting active ARM deployment', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      const workers = await helper.getWorkers();
+      assert.equal(workers.length, 1);
+      let worker = workers[0];
+
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+
+      fake.deploymentsClient.deployments.setFakeShouldConflictOnDelete(
+        resourceGroupName, deploymentName, true);
+
+      await provider.scanPrepare();
+      provider.errors[workerPoolId] = [];
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      // Deployment should still exist (delete failed with 409)
+      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should still exist after 409 conflict');
+
+      // No error should be reported
+      assert.equal(provider.errors[workerPoolId].length, 0,
+        'no errors should be reported for 409 conflict');
+
+      // Second checkWorker call - should succeed in deleting
+      await provider.checkWorker({ worker });
+      await worker.reload(helper.db);
+
+      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should be deleted on retry');
+    });
+
     test('failed ARM deployment resources are cleaned up', async function() {
       await provisionWorkerPool({
         armDeployment: {
