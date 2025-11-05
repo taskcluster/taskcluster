@@ -150,7 +150,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
-      const pyClientDir = path.join(REPO_ROOT, 'clients', 'client-py');
+      const pyClientDir = path.join('clients', 'client-py');
       const pyClientPyprojectToml = path.join(pyClientDir, 'pyproject.toml');
       utils.status({ message: `Update ${pyClientPyprojectToml}` });
       await modifyRepoFile(pyClientPyprojectToml, contents =>
@@ -161,7 +161,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
       utils.status({ message: `Update ${pyClientUvLock}` });
       await execCommand({
         command: ['uv', 'lock', '-P', 'taskcluster'],
-        dir: pyClientDir,
+        dir: path.join(REPO_ROOT, pyClientDir),
         utils,
       });
       changed.push(pyClientUvLock);
