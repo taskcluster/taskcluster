@@ -22,6 +22,7 @@ import {
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
+  execCommand,
 } from '../utils/index.js';
 
 import { schema as readSchema } from '@taskcluster/db';
@@ -149,11 +150,21 @@ export default ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
-      const pyclient = 'clients/client-py/pyproject.toml';
-      utils.status({ message: `Update ${pyclient}` });
-      await modifyRepoFile(pyclient, contents =>
+      const pyClientDir = path.join(REPO_ROOT, 'clients', 'client-py');
+      const pyClientPyprojectToml = path.join(pyClientDir, 'pyproject.toml');
+      utils.status({ message: `Update ${pyClientPyprojectToml}` });
+      await modifyRepoFile(pyClientPyprojectToml, contents =>
         contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
-      changed.push(pyclient);
+      changed.push(pyClientPyprojectToml);
+
+      const pyClientUvLock = path.join(pyClientDir, 'uv.lock');
+      utils.status({ message: `Update ${pyClientUvLock}` });
+      await execCommand({
+        command: ['uv', 'lock', '-P', 'taskcluster'],
+        dir: pyClientDir,
+        utils,
+      });
+      changed.push(pyClientUvLock);
 
       for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
