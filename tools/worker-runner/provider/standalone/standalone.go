@@ -6,10 +6,10 @@ import (
 	"maps"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v91/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v92/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v92/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v92/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v92/tools/workerproto"
 )
 
 type standaloneProviderConfig struct {

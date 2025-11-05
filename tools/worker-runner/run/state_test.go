@@ -8,7 +8,7 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	taskcluster "github.com/taskcluster/taskcluster/v91/clients/client-go"
+	taskcluster "github.com/taskcluster/taskcluster/v92/clients/client-go"
 )
 
 func makeState() State {

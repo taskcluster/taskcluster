@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/client-test",
-  "version": "91.1.2",
+  "version": "92.0.0",
   "description": "Node client test",
   "license": "MPL-2.0",
   "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client-test",

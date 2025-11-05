@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v91/internal/scopes"
+	"github.com/taskcluster/taskcluster/v92/internal/scopes"
 )
 
 type (

@@ -11,8 +11,8 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v91/tools/worker-runner/logging"
-	loggingCommon "github.com/taskcluster/taskcluster/v91/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v92/tools/worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v92/tools/worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {

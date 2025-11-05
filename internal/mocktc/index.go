@@ -3,7 +3,7 @@ package mocktc
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v91/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcindex"
 )
 
 type Index struct {

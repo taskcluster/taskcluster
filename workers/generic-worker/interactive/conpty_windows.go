@@ -10,7 +10,7 @@ import (
 	"unicode/utf16"
 	"unsafe"
 
-	"github.com/taskcluster/taskcluster/v91/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 )
 

@@ -1,7 +1,7 @@
 package expose
 
 // Expose local HTTP servers and ports via
-// [websocktunnel](https://github.com/taskcluster/taskcluster/v91/tools/websocktunnel).
+// [websocktunnel](https://github.com/taskcluster/taskcluster/v92/tools/websocktunnel).
 //
 // The strategy here is to create a distinct websocktunnel client for each
 // exposure.  The tunnel clientId is based on this worker's workerGroup,
@@ -14,8 +14,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v91/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v91/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v92/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v92/tools/websocktunnel/client"
 )
 
 type wstExposer struct {

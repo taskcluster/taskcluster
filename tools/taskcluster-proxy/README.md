@@ -23,7 +23,7 @@ Alternatively you can build and install from source. For this it is recommended
 you install the latest version of go (golang) first.
 
 ```sh
-go get github.com/taskcluster/taskcluster/v91/tools/taskcluster-proxy
+go get github.com/taskcluster/taskcluster/v92/tools/taskcluster-proxy
 ```
 
 ## Building

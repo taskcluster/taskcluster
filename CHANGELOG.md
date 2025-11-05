@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v92.0.0
+
+### GENERAL
+
+▶ [MAJOR]
+Client (python): Removes python 3.9 support. Adds support/testing for python 3.14.
+
+### DEPLOYERS
+
+▶ [patch] [#8059](https://github.com/taskcluster/taskcluster/issues/8059)
+Azure provider improves handling of ARM template deployments removal to avoid some conflicts that may happen when resources are being removed too fast.
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic Worker (Windows): properly logs out `win32.LoadUserProfile()` errors with the user's `syscall.Token` in hex format instead of a quoted string.
+
+### DEVELOPERS
+
+▶ [MAJOR] [#8010](https://github.com/taskcluster/taskcluster/issues/8010)
+Client (python): doesn't follow redirects for both the sync and async python clients.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump github/codeql-action from 3 to 4 (4d1d9d9924)
+* build(deps): bump the client-rust-deps group (b6bd0d0659)
+* build(deps): bump the go-deps group with 6 updates (74396e3bb7)
+* build(deps-dev): bump the client-web-node-deps group (9a15c50b37)
+* build(deps): bump the client-node-deps group (f067e558ac)
+
+</details>
+
 ## v91.1.2
 
 ### GENERAL

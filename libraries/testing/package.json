@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-testing",
   "private": true,
-  "version": "91.1.2",
+  "version": "92.0.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "@taskcluster/lib-testing",
   "license": "MPL-2.0",

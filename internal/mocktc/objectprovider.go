@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v91/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v91/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v92/internal/mocktc/tc"
 )
 
 type ObjectProvider struct {

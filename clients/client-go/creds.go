@@ -15,7 +15,7 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v91/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v92/tools/jsonschema2go/text"
 )
 
 // Credentials represents the set of credentials required to access protected

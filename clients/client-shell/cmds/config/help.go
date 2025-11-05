@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v91/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v92/clients/client-shell/config"
 )
 
 func init() {
