@@ -1362,6 +1362,13 @@ export class AzureProvider extends Provider {
     });
 
     if (worker.state === states.STOPPING) {
+      if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM) {
+        const deploymentSettled = await this.#checkARMDeployment({ worker, monitor });
+        if (!deploymentSettled) {
+          monitor.debug({ message: 'delaying teardown while ARM deployment is still settling' });
+          return;
+        }
+      }
       await this.deprovisionResources({ worker, monitor });
       return;
     }
@@ -1614,10 +1621,20 @@ export class AzureProvider extends Provider {
     if (typeData.id || shouldDelete) {
       // we need to delete the resource
       debug('deleting resource');
-      let deleteRequest = await this._enqueue('query', () => client.beginDelete(
-        worker.providerData.resourceGroupName,
-        typeData.name,
-      ));
+      let deleteRequest;
+      try {
+        deleteRequest = await this._enqueue('query', () => client.beginDelete(
+          worker.providerData.resourceGroupName,
+          typeData.name,
+        ));
+      } catch (err) {
+        if (err.statusCode === 409 &&
+            /previous deployment.*still active/i.test(err.message ?? '')) {
+          debug('deployment still active; will retry deletion later');
+          return false;
+        }
+        throw err;
+      }
       // record operation (NOTE: this information is never used, as deletion is tracked
       // by name)
       await worker.update(this.db, worker => {
