@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v92.0.2
+
+
+
+### OTHER
+
+▶ Additional change not described here: [#8065](https://github.com/taskcluster/taskcluster/issues/8065).
+
 ## v92.0.1
 
 ### GENERAL
