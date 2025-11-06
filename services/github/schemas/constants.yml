@@ -16,6 +16,13 @@ identifier-max-length:  38
 github-installation-minimum: 0
 github-installation-maximum: 10000000000
 
+# GitHub SHA pattern (40 character hexadecimal)
+github-sha-pattern: "^[a-f0-9]{40}$"
+
+# GitHub repository name patterns
+github-repo-name-pattern: "^[A-Za-z0-9._-]+$"
+github-full-name-pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+
 # Slugid pattern, for when-ever that is useful
 # Currently allow all v4 slugs, although we only generate nice slugs
 # See https://www.npmjs.com/package/slugid for more info

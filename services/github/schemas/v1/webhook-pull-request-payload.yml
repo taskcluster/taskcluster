@@ -1,0 +1,157 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Pull Request Webhook Payload"
+description: |
+  Validates GitHub pull request event webhook payload.
+  Strictly validates fields that caused issues in PR #7958.
+
+type: object
+properties:
+  action:
+    type: string
+    minLength: 1
+    description: |
+      The action performed on the pull request.
+      Common values: opened, closed, reopened, synchronize, edited, assigned,
+      unassigned, labeled, unlabeled, review_requested, review_request_removed,
+      ready_for_review, converted_to_draft, locked, unlocked, auto_merge_enabled,
+      auto_merge_disabled, enqueued, dequeued, milestoned, demilestoned, etc.
+      GitHub may add new action types; validation accepts any non-empty string.
+  number:
+    type: integer
+    minimum: 1
+  pull_request:
+    type: object
+    properties:
+      number:
+        type: integer
+        minimum: 1
+      state:
+        type: string
+        enum: ["open", "closed"]
+      title:
+        type: string
+      head:
+        type: object
+        properties:
+          sha:
+            type: string
+            pattern: {$const: github-sha-pattern}
+          ref:
+            type: string
+            minLength: 1
+          repo:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: {$const: github-repo-name-pattern}
+              full_name:
+                type: string
+                pattern: {$const: github-full-name-pattern}
+              clone_url:
+                type: string
+                format: uri
+              owner:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    pattern: {$const: github-identifier-pattern}
+                  login:
+                    type: string
+                    pattern: {$const: github-identifier-pattern}
+                anyOf:
+                  - required: [name]
+                  - required: [login]
+                additionalProperties: true
+            required: [name, full_name, clone_url, owner]
+            additionalProperties: true
+        required: [sha, ref, repo]
+        additionalProperties: true
+      base:
+        type: object
+        properties:
+          sha:
+            type: string
+            pattern: {$const: github-sha-pattern}
+          ref:
+            type: string
+            minLength: 1
+          repo:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: {$const: github-repo-name-pattern}
+              full_name:
+                type: string
+                pattern: {$const: github-full-name-pattern}
+              clone_url:
+                type: string
+                format: uri
+              owner:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    pattern: {$const: github-identifier-pattern}
+                  login:
+                    type: string
+                    pattern: {$const: github-identifier-pattern}
+                anyOf:
+                  - required: [name]
+                  - required: [login]
+                additionalProperties: true
+            required: [name, full_name, clone_url, owner]
+            additionalProperties: true
+        required: [sha, ref, repo]
+        additionalProperties: true
+      user:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+    required: [number, state, head, base, user]
+    additionalProperties: true
+  repository:
+    type: object
+    properties:
+      full_name:
+        type: string
+        pattern: {$const: github-full-name-pattern}
+      owner:
+        type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        anyOf:
+          - required: [name]
+          - required: [login]
+        additionalProperties: true
+    required: [full_name, owner]
+    additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, number, pull_request, repository, sender]
+additionalProperties: true

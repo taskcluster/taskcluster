@@ -834,20 +834,6 @@ export default {
           "args": [
           ],
           "category": "Github Service",
-          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
-          "method": "post",
-          "name": "githubWebHookConsumer",
-          "query": [
-          ],
-          "route": "/github",
-          "stability": "stable",
-          "title": "Consume GitHub WebHook",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Github Service",
           "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
           "method": "get",
           "name": "builds",

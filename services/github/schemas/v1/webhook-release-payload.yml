@@ -1,0 +1,86 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Release Webhook Payload"
+description: |
+  Validates GitHub release event webhook payload.
+
+type: object
+properties:
+  action:
+    type: string
+    minLength: 1
+    description: |
+      The action performed on the release.
+      Known values: published, unpublished, created, edited, deleted, prereleased, released.
+      GitHub may add new action types; validation accepts any non-empty string.
+  release:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      tag_name:
+        type: string
+        minLength: 1
+      target_commitish:
+        type: string
+        minLength: 1
+      name:
+        oneOf:
+          - type: "null"
+          - type: string
+      draft:
+        type: boolean
+      prerelease:
+        type: boolean
+      author:
+        type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+    required: [id, tag_name, target_commitish, draft, prerelease, author]
+    additionalProperties: true
+  repository:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: {$const: github-repo-name-pattern}
+      full_name:
+        type: string
+        pattern: {$const: github-full-name-pattern}
+      owner:
+        type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        anyOf:
+          - required: [name]
+          - required: [login]
+        additionalProperties: true
+    required: [name, full_name, owner]
+    additionalProperties: true
+  installation:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+    required: [id]
+    additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [action, release, repository, sender]
+additionalProperties: true

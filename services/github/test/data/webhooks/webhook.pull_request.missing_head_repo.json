@@ -1,0 +1,49 @@
+{
+  "headers": {
+    "X-GitHub-Event": "pull_request",
+    "X-GitHub-Delivery": "test-missing-head-repo",
+    "content-type": "application/json",
+    "X-Hub-Signature": "sha1=fdf74ee2ba8bdab6fbf129b657fa51a9f85a9496"
+  },
+  "body": {
+    "action": "opened",
+    "number": 1,
+    "pull_request": {
+      "number": 1,
+      "state": "open",
+      "title": "Test PR",
+      "head": {
+        "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ref": "feature-branch",
+        "repo": null
+      },
+      "base": {
+        "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "ref": "main",
+        "repo": {
+          "name": "test-repo",
+          "full_name": "owner/test-repo",
+          "clone_url": "https://github.com/owner/test-repo.git",
+          "owner": {
+            "login": "owner"
+          }
+        }
+      },
+      "user": {
+        "login": "testuser"
+      }
+    },
+    "repository": {
+      "full_name": "owner/test-repo",
+      "owner": {
+        "login": "owner"
+      }
+    },
+    "installation": {
+      "id": 5808
+    },
+    "sender": {
+      "login": "testuser"
+    }
+  }
+}

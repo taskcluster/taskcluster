@@ -1,0 +1,84 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Ping Webhook Payload"
+description: |
+  Validates GitHub ping event webhook payload.
+  This event is sent when a webhook is first created.
+
+type: object
+properties:
+  zen:
+    type: string
+    minLength: 1
+  hook_id:
+    type: integer
+    minimum: 1
+  hook:
+    type: object
+    properties:
+      type:
+        type: string
+        enum: ["Repository", "Organization"]
+      id:
+        type: integer
+        minimum: 1
+      name:
+        type: string
+        enum: ["web"]
+      active:
+        type: boolean
+      events:
+        type: array
+        items:
+          type: string
+          minLength: 1
+      config:
+        type: object
+        additionalProperties: true
+    required: [type, id, name, active, events, config]
+    additionalProperties: true
+  repository:
+    oneOf:
+      - type: "null"
+      - type: object
+        properties:
+          name:
+            type: string
+            pattern: {$const: github-repo-name-pattern}
+          full_name:
+            type: string
+            pattern: {$const: github-full-name-pattern}
+          owner:
+            type: object
+            properties:
+              name:
+                type: string
+                pattern: {$const: github-identifier-pattern}
+              login:
+                type: string
+                pattern: {$const: github-identifier-pattern}
+            anyOf:
+              - required: [name]
+              - required: [login]
+            additionalProperties: true
+        required: [name, full_name, owner]
+        additionalProperties: true
+  organization:
+    oneOf:
+      - type: "null"
+      - type: object
+        properties:
+          login:
+            type: string
+            pattern: {$const: github-identifier-pattern}
+        required: [login]
+        additionalProperties: true
+  sender:
+    type: object
+    properties:
+      login:
+        type: string
+        pattern: {$const: github-identifier-pattern}
+    required: [login]
+    additionalProperties: true
+required: [zen, hook_id, hook, sender]
+additionalProperties: true
