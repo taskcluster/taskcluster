@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v92/internal/scopes"
+	"github.com/taskcluster/taskcluster/v93/internal/scopes"
 )
 
 type (

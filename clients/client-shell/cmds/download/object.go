@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster/v92/clients/client-go"
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v92/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v93/clients/client-shell/config"
 )
 
 func downloadObject(credentials *tcclient.Credentials, name string, filename string, out io.Writer) error {

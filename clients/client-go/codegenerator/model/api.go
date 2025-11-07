@@ -9,7 +9,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v92/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v93/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v92/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client

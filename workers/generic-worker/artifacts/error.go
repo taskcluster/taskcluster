@@ -3,9 +3,9 @@ package artifacts
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v92/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v93/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v93/workers/generic-worker/gwconfig"
 )
 
 type ErrorArtifact struct {

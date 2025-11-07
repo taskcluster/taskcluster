@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v93/workers/generic-worker/gwconfig"
 )
 
 func TestMissingIPConfig(t *testing.T) {

@@ -1,7 +1,7 @@
 # Taskcluster Client for Go
 
 
-[![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go)
+[![GoDoc](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go?status.svg)](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go)
 [![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
 
 **A Taskcluster client library for Go.**
@@ -19,55 +19,55 @@ This library provides the following packages to interface with Taskcluster:
 ### HTTP APIs
 
 <!--HTTP-API-start-->
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauth
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauth
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcgithub
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcgithub
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tchooks
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tchooks
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcindex
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcindex
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcnotify
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcnotify
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcobject
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcobject
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcpurgecache
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcpurgecache
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcsecrets
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcsecrets
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcworkermanager
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcworkermanager
  <!--HTTP-API-end-->
 
 ### AMQP APIs
 
 <!--AMQP-API-start-->
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauthevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauthevents
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcgithubevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcgithubevents
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tchooksevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tchooksevents
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcnotifyevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcnotifyevents
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueueevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueueevents
 
-* https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcworkermanagerevents
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcworkermanagerevents
  <!--AMQP-API-end-->
 
 ### Setup
 
 Before invoking API methods, create a client object corresponding to the service you wish to communicate with.
-See the [client subdirectories](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go#pkg-subdirectories) for the list of available packages, each beginning with `tc`.
+See the [client subdirectories](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go#pkg-subdirectories) for the list of available packages, each beginning with `tc`.
 
 The most common case is to use `NewFromEnv`, reading environment variables for credentials:
 
 ```go
 import (
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
 
-	tcclient "github.com/taskcluster/taskcluster/v92/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
 )
 queue := tcqueue.NewFromEnv()
 ```
@@ -97,7 +97,7 @@ For example, the `CreateTask` method is called like this:
 
 ```go
 import (
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
     "github.com/taskcluster/slugid-go"
 )
 task := tcqueue.TaskDefinitionRequest{..};
@@ -105,7 +105,7 @@ taskId: = slugid.Nice()
 status := queue.CreateTask(taskId, &task)
 ```
 
-Complete Godoc documentation of the available methods and types is [here](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
+Complete Godoc documentation of the available methods and types is [here](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go); see the "Directories" section to find the interfaces defined for specific services.
 
 ### Specifying exponential backoff settings for HTTP request retries
 
@@ -120,7 +120,7 @@ something like this:
 import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
 )
 queue := tcqueue.NewFromEnv()
 settings := &backoff.ExponentialBackOff{
@@ -142,7 +142,7 @@ queue.HTTPBackoffClient = &httpbackoff.Client{
 
 API methods which take credentials and have method GET can be invoked with a signed URL.
 To generate such a URL, use the method with suffix `_SignedURL`, and pass as its final argument the duration for which the URL should be valid.
-For example, to generate a URL for [Queue.GetArtifact](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue#Queue.GetArtifact_SignedURL):
+For example, to generate a URL for [Queue.GetArtifact](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue#Queue.GetArtifact_SignedURL):
 
 ```go
 url := queue.GetArtifact_SignedURL(taskId, runId, "my/secret/artifact.txt", 5 * time.Minutes)
@@ -156,9 +156,9 @@ party. See [the manual](https://docs.taskcluster.net/docs/manual/design/env-vars
 more information.
 
 Create named credentials with
-[`Credentials.CreateNamedTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go#Credentials.CreateNamedTemporaryCredentials),
+[`Credentials.CreateNamedTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go#Credentials.CreateNamedTemporaryCredentials),
 or unnamed credentials with
-[`Credentials.CreateTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go#Credentials.CreateTemporaryCredentials).
+[`Credentials.CreateTemporaryCredentials`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go#Credentials.CreateTemporaryCredentials).
 Named credentials are preferred if you are not sure which type to use.
 
 #### Example
@@ -173,8 +173,8 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v92/clients/client-go"
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
 )
 
 const (
@@ -229,7 +229,7 @@ func main() {
 ### Handling Timestamps
 
 Taskcluster uses RFC3339 timestamps, specifically with millisecond precision and a `Z` timestamp.
-To support serializing and deserializing this format exactly, use the [`tcclient.Time`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go#Time) type instead of with the built-in `time.Time` type.
+To support serializing and deserializing this format exactly, use the [`tcclient.Time`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go#Time) type instead of with the built-in `time.Time` type.
 
 All timestamp arithmetic should be performed with the built-in `time` package.
 
@@ -307,7 +307,7 @@ queue := tcqueue.New()
 data, contentType, contentLength, err := queue.DownloadArtifactToBuf(taskId, runId, name)
 ```
 
-See the [Go documentation](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue) for more detail.
+See the [Go documentation](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue) for more detail.
 
 ## Compatibility
 
@@ -322,9 +322,9 @@ Any incompatibilities are noted in the [Changelog](https://github.com/taskcluste
 
 To get you started quickly, some example programs are included that use both the HTTP APIs and the AMQP APIs:
 
-* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
-* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](https://pkg.go.dev/github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
+* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauth#example-package--Scopes) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauth) package to query the expiry and expanded scopes of a given clientId.
+* This [HTTP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauth#example-package--UpdateClient) demonstrates the use of the [tcauth](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcauth) package to update an existing clientId with a new description and expiry.
+* The [AMQP example program](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueueevents#example-package--TaskclusterSniffer) demonstrates the use of the [tcqueueevents](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueueevents) package to listen in on Taskcluster tasks being defined and executed.
 
 ### Creating a Task
 
@@ -338,8 +338,8 @@ import (
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v92/clients/client-go"
-	"github.com/taskcluster/taskcluster/v92/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
+	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
 )
 
 // *********************************************************

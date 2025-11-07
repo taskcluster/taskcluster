@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v92/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v93/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v93/workers/generic-worker/runtime"
 )
 
 // gwVersion returns a command that will run the

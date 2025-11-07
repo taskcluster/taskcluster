@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v92/internal/scopes"
-	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v92/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v93/internal/scopes"
+	"github.com/taskcluster/taskcluster/v93/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v93/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
 

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	gwruntime "github.com/taskcluster/taskcluster/v92/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v93/workers/generic-worker/runtime"
 	"golang.org/x/net/context"
 )
 

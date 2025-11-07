@@ -4,16 +4,16 @@ package main
 // alphabetical order.
 
 import (
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/apis"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/completions"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/config"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/d2g"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/download"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/from-now"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/group"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/signin"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/slugid"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/task"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/validate-json"
-	_ "github.com/taskcluster/taskcluster/v92/clients/client-shell/cmds/version"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/apis"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/completions"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/config"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/d2g"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/download"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/from-now"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/group"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/signin"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/slugid"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/task"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/validate-json"
+	_ "github.com/taskcluster/taskcluster/v93/clients/client-shell/cmds/version"
 )

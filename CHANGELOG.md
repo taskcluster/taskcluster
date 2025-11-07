@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#7965](https://github.com/taskcluster/taskcluster/issues/7965)
+GitHub service now validates webhook payloads against a schema to prevent TypeErrors from missing or malformed fields. This ensures that webhook handlers receive properly structured data, the webhook now returns a 400 status and does not create an unprocessable event.
+
+The `githubWebHookConsumer` endpoint has been removed from client libraries as it was not intended for client use (only for GitHub webhook integrations).
+
+▶ [minor] [#8068](https://github.com/taskcluster/taskcluster/issues/8068)
+Client (python): adds python 3.9 support back due to Taskgraph still needing to support it.
+
+▶ [patch]
+Upgrades to go1.25.4
+
 ## v92.0.2
 
 
