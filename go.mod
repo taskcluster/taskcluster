@@ -1,7 +1,7 @@
 module github.com/taskcluster/taskcluster/v92
 
 // DO NOT MODIFY THIS LINE - automatically updated by infrastructure/tooling/src/generate/generators/go-version.js
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
