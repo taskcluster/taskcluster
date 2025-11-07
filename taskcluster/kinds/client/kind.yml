@@ -78,7 +78,7 @@ tasks:
     matrix:
       set-name: "py{matrix[python]}"
       substitution-fields: [description, worker]
-      python: ["314", "313", "312", "311", "310"]
+      python: ["314", "313", "312", "311", "310", "39"]
     worker:
       docker-image: {in-tree: python}
       env:
