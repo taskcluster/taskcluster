@@ -1,5 +1,5 @@
 audience: worker-deployers
-level: patch
+level: minor
 ---
 
 Worker-manager adds extra Prometheus metrics for worker registration timing:
