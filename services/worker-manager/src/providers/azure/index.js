@@ -1658,8 +1658,8 @@ export class AzureProvider extends Provider {
    * removeWorker marks a worker for deletion and begins removal.
    */
   async removeWorker({ worker, reason }) {
+    // trigger event before changing worker.state
     await this.onWorkerRemoved({ worker, reason });
-
     // transition from either REQUESTED or RUNNING to STOPPING, and let the
     // worker scanner take it from there.
     await worker.update(this.db, w => {
@@ -1756,13 +1756,14 @@ export class AzureProvider extends Provider {
 
       // change to stopped
       monitor.debug(`setting state to STOPPED`);
+      // triggering event before updating worker state to know current state
+      await this.onWorkerStopped({ worker });
       await worker.update(this.db, worker => {
         const now = new Date();
         worker.lastModified = now;
         worker.lastChecked = now;
         worker.state = Worker.states.STOPPED;
       });
-      await this.onWorkerStopped({ worker });
     } catch (err) {
       // if this is called directly and not via checkWorker may not exist
       this.errors = this.errors || {};
