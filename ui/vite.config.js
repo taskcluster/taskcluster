@@ -2,7 +2,9 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
-import Markdown from 'vite-plugin-react-markdown';
+import mdx from '@mdx-js/rollup';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
@@ -62,6 +64,25 @@ function generateEnvJsPlugin() {
   };
 }
 
+// Plugin to handle .all-contributorsrc file as JSON
+function allContributorsPlugin() {
+  return {
+    name: 'all-contributors',
+    load(id) {
+      if (id.endsWith('.all-contributorsrc')) {
+        // Read the file and parse as JSON
+        const content = fs.readFileSync(id, 'utf-8');
+        const json = JSON.parse(content);
+        // Return as ES module export
+        return {
+          code: `export default ${JSON.stringify(json)};`,
+          map: null,
+        };
+      }
+    },
+  };
+}
+
 export default ({ mode }) => {
   if (mode === 'development') {
     generateEnvJs(path.join(STATIC_DIR, 'env.js'));
@@ -70,17 +91,17 @@ export default ({ mode }) => {
   return defineConfig({
     plugins: [
       generateEnvJsPlugin(),
+      allContributorsPlugin(),
       reactVirtualized(),
       historyFallback(),
       gql(),
       viteTsconfigPaths(),
-      Markdown({
-        wrapperClasses: 'markdown-body',
-        markdownItOptions: {
-          html: true,
-          linkify: true,
-          typographer: true,
-        },
+      mdx({
+        include: ['docs/**/*.{md,mdx}'],
+        remarkPlugins: [
+          remarkFrontmatter,
+          [remarkMdxFrontmatter, { name: 'frontmatter' }],
+        ],
       }),
       react({
         include: [/\.(jsx?|tsx?)$/],
@@ -97,7 +118,6 @@ export default ({ mode }) => {
       include: /src\/.*\.(jsx?|tsx?)$/,
       exclude: [],
     },
-    assetsInclude: ['**/*.mdx', '**/*.md'],
     server: {
       port,
       proxy: serverProxyConfig,
@@ -113,7 +133,20 @@ export default ({ mode }) => {
           find: 'taskcluster-ui',
           replacement: path.join(__dirname, 'src'),
         },
+        {
+          find: '@taskcluster/ui',
+          replacement: path.join(__dirname, 'src'),
+        },
+        {
+          find: 'react/jsx-runtime',
+          replacement: path.join(__dirname, 'node_modules/react/jsx-runtime.js'),
+        },
+        {
+          find: 'react/jsx-dev-runtime',
+          replacement: path.join(__dirname, 'node_modules/react/jsx-dev-runtime.js'),
+        },
         // Node.js built-in module polyfills
+        { find: 'path', replacement: 'path-browserify' },
         { find: 'crypto', replacement: 'crypto-browserify' },
         { find: 'stream', replacement: 'stream-browserify' },
         { find: 'http', replacement: 'stream-http' },
@@ -126,6 +159,7 @@ export default ({ mode }) => {
         { find: 'querystring', replacement: 'querystring-es3' },
         { find: 'process', replacement: 'process/browser' },
       ],
+      dedupe: ['react', 'react-dom'],
     },
     build: {
       outDir: 'build',
@@ -142,7 +176,6 @@ export default ({ mode }) => {
           'tls',
           'fs',
           'os',
-          'path',
         ],
         onwarn(warning, warn) {
           // Suppress eval warning from vm-browserify - it's a necessary polyfill
@@ -216,6 +249,7 @@ export default ({ mode }) => {
       },
     },
     optimizeDeps: {
+      include: ['path-browserify'],
       exclude: ['build/*', 'dist/*'],
       entries: ['index.html', 'docs/index.html'],
       esbuildOptions: {
