@@ -319,4 +319,100 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.manager.reset();
     });
   });
+
+  suite('worker metrics', function() {
+    let provider;
+
+    suiteSetup(async function() {
+      provider = await createProvider();
+    });
+
+    const createWorker = async (overrides = {}) => {
+      const worker = Worker.fromApi({
+        workerPoolId: 'ww/tt',
+        workerGroup: 'wg',
+        workerId: 'wi',
+        providerId: 'testing1',
+        created: new Date(Date.now() - 60000),
+        expires: taskcluster.fromNow('1 hour'),
+        state: Worker.states.REQUESTED,
+        capacity: 1,
+        launchConfigId: 'lc-1',
+        providerData: {},
+        ...overrides,
+      });
+      await worker.create(helper.db);
+      return worker;
+    };
+
+    test('records registration duration on workerRunning', async function() {
+      const worker = await createWorker();
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationDuration;
+      monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
+
+      await provider._onWorkerEvent({ worker, event: 'workerRunning', extraPublish: { providerId: 'testing1' } });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerRegistrationDuration = originalMetric;
+    });
+
+    test('records lifetime on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi2',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('records registration failure when worker never registered', async function() {
+      const worker = await createWorker({ workerId: 'wi3' });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
+
+      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
+    });
+
+    test('does not double-record lifetime', async function() {
+      const worker = await createWorker({
+        workerId: 'wi4',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+            stoppedAt: new Date().toJSON(),
+            previousState: Worker.states.RUNNING,
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      assert.equal(metricRecorded, false);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+  });
 });

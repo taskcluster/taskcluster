@@ -17737,6 +17737,33 @@
         },
         {
           "buckets": [
+            60,
+            300,
+            900,
+            1800,
+            3600,
+            7200,
+            14400,
+            28800,
+            86400,
+            172800,
+            604800,
+            1209600
+          ],
+          "description": "Time for a worker to go from running to either being removed or fully\nstopped",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_lifetime_seconds",
+          "registers": [
+            "workers"
+          ],
+          "title": "Worker lifetime",
+          "type": "histogram"
+        },
+        {
+          "buckets": [
             0.01,
             0.05,
             0.1,
@@ -17782,6 +17809,45 @@
           ],
           "title": "Worker pool workers checked during scan",
           "type": "gauge"
+        },
+        {
+          "description": "Counts workers that were requested but never registered before being\nremoved or stopped.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_registration_failures_total",
+          "registers": [
+            "workers"
+          ],
+          "title": "Workers that never registered",
+          "type": "counter"
+        },
+        {
+          "buckets": [
+            15,
+            30,
+            45,
+            60,
+            90,
+            120,
+            180,
+            300,
+            600,
+            1200,
+            1800
+          ],
+          "description": "Time for a worker to go from being requested to successfully registering\nwith worker-manager",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_registration_seconds",
+          "registers": [
+            "workers"
+          ],
+          "title": "Worker registration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "worker-manager"

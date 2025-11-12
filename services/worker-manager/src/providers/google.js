@@ -166,13 +166,14 @@ export class GoogleProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
+    // trigger event before saving worker state
+    await this.onWorkerRemoved({ worker, reason });
     await worker.update(this.db, w => {
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
         w.lastModified = new Date();
         w.state = Worker.states.STOPPING;
       }
     });
-    await this.onWorkerRemoved({ worker, reason });
     try {
       // This returns an operation that we could track but the chances
       // that this fails due to user input being wrong are low so
@@ -434,6 +435,10 @@ export class GoogleProvider extends Provider {
     }
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
+    if (state === states.STOPPED) {
+      // trigger before changing worker.state
+      await this.onWorkerStopped({ worker });
+    }
     await worker.update(this.db, worker => {
       if (state !== undefined) {
         worker.state = state;
@@ -441,9 +446,6 @@ export class GoogleProvider extends Provider {
       }
       worker.lastChecked = now;
     });
-    if (state === states.STOPPED) {
-      await this.onWorkerStopped({ worker });
-    }
   }
 
   /**

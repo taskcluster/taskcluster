@@ -497,6 +497,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         capacity: 1,
         expires: taskcluster.fromNow('2 weeks'),
         state: Worker.states.RUNNING,
+        launchConfigId: 'lc1',
         ...overrides,
         providerData: { project, zone: 'us-east1-a', ...(overrides.providerData || {}) },
       });

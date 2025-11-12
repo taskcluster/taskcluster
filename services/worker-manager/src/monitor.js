@@ -369,6 +369,53 @@ MonitorManager.registerMetric('provisionDuration', {
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
 });
 
+MonitorManager.registerMetric('workerRegistrationDuration', {
+  name: 'worker_manager_worker_registration_seconds',
+  type: 'histogram',
+  title: 'Worker registration duration',
+  description: `
+    Time for a worker to go from being requested to successfully registering
+    with worker-manager
+  `,
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['workers'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerLifetime', {
+  name: 'worker_manager_worker_lifetime_seconds',
+  type: 'histogram',
+  title: 'Worker lifetime',
+  description: `
+    Time for a worker to go from running to either being removed or fully
+    stopped
+  `,
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['workers'],
+  buckets: [60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800, 1209600],
+});
+
+MonitorManager.registerMetric('workerRegistrationFailure', {
+  name: 'worker_manager_worker_registration_failures_total',
+  type: 'counter',
+  title: 'Workers that never registered',
+  description: `
+    Counts workers that were requested but never registered before being
+    removed or stopped.
+  `,
+  labels: {
+    ...commonLabels,
+    providerId: 'ID of the provider',
+  },
+  registers: ['workers'],
+});
+
 MonitorManager.registerMetric('scanSeen', {
   name: 'worker_manager_worker_pool_scan_seen_workers',
   type: 'gauge',
