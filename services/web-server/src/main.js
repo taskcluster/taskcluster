@@ -5,7 +5,8 @@ import assert from 'assert';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import depthLimit from 'graphql-depth-limit';
+import depthLimit from './validation/guardedDepthLimit.js';
+import { NoFragmentCyclesRule } from 'graphql/validation/rules/NoFragmentCyclesRule.js';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import queryLimit from 'graphql-query-count-limit';
 import loader from '@taskcluster/lib-loader';
@@ -157,6 +158,7 @@ const load = loader(
             maxTokens: 100000,
           },
           validationRules: [
+            NoFragmentCyclesRule,
             queryLimit(1000),
             depthLimit(10),
             createComplexityLimitRule(4500),
