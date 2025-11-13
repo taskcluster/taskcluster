@@ -150,19 +150,24 @@ let load = loader({
       providers,
       publisher,
       notify,
-    }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        cfg,
-        db,
-        monitor: monitor.childMonitor('api-context'),
-        providers,
-        publisher,
-        notify,
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          cfg,
+          db,
+          monitor: monitor.childMonitor('api-context'),
+          providers,
+          publisher,
+          notify,
+        },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
