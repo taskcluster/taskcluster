@@ -558,8 +558,8 @@ export class AzureProvider extends Provider {
     }
 
     // update worker after successful or failed deployment with resources for later deprovisioning
-    const extractDeployedResourcesAndUpdateWorker = async (modifier) => {
-      const deployedResources = await this.#extractResourcesFromDeployment(worker, monitor);
+    const extractDeployedResourcesAndUpdateWorker = async (modifier, operations) => {
+      const deployedResources = await this.#extractResourcesFromDeployment(worker, monitor, operations);
 
       await worker.update(this.db, worker => {
         modifier(worker);
@@ -597,8 +597,18 @@ export class AzureProvider extends Provider {
       if (failedProvisioiningStates.includes(provisioningState)) {
         const errorMessage = deployment.properties?.error?.message || 'Deployment failed';
 
+        const operations = await this.#fetchDeploymentOperations({ worker, monitor });
+
         await extractDeployedResourcesAndUpdateWorker(worker => {
           worker.providerData.deployment.operation = undefined;
+        }, operations);
+
+        await this.#reportARMDeploymentErrors({
+          worker,
+          monitor,
+          deployment,
+          defaultMessage: errorMessage,
+          operations,
         });
 
         await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
@@ -655,16 +665,110 @@ export class AzureProvider extends Provider {
   }
 
   /**
+   * @param {{
+   *   worker: Worker,
+   *   monitor: any,
+   *   deployment: object,
+   *   defaultMessage: string,
+   *   operations?: any[]
+   *  }} options
+   */
+  async #reportARMDeploymentErrors({ worker, monitor, deployment, defaultMessage, operations }) {
+    const deploymentOperations = operations ?? await this.#fetchDeploymentOperations({ worker, monitor });
+    const failureStates = new Set([
+      ArmDeploymentProvisioningState.Failed.toLowerCase(),
+      ArmDeploymentProvisioningState.Canceled.toLowerCase(),
+    ]);
+    const failingOperations = [];
+
+    for (const op of deploymentOperations) {
+      const { properties } = op || {};
+      if (!properties) {
+        continue;
+      }
+      const status = properties.statusMessage ?? {};
+      const operationError = status.error;
+      const normalizedState = (properties.provisioningState || status.status || '').toString().toLowerCase();
+
+      if (!operationError && !failureStates.has(normalizedState)) {
+        continue;
+      }
+
+      const description = operationError?.message
+        || (typeof properties.statusMessage === 'string' && properties.statusMessage)
+        || 'Deployment operation failed';
+
+      failingOperations.push({
+        description,
+        provisioningOperation: properties.provisioningOperation,
+        provisioningState: properties.provisioningState,
+        statusCode: properties.statusCode,
+        statusMessage: status,
+        targetResource: properties.targetResource,
+        trackingId: properties.trackingId,
+        timestamp: properties.timestamp,
+      });
+    }
+
+    if (failingOperations.length === 0 && !defaultMessage) {
+      return;
+    }
+
+    const description = defaultMessage ||
+      failingOperations[0]?.description ||
+      'Deployment operation failed';
+
+    const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+
+    await this.reportError({
+      workerPool,
+      kind: 'arm-deployment-error',
+      title: 'ARM Deployment Error',
+      description,
+      extra: {
+        workerId: worker.workerId,
+        workerGroup: worker.workerGroup,
+        deploymentName: worker.providerData.deployment.name,
+        deploymentId: deployment.id,
+        operations: failingOperations,
+      },
+      launchConfigId: worker.launchConfigId,
+    });
+  }
+
+  async #fetchDeploymentOperations({ worker, monitor }) {
+    const operations = [];
+
+    try {
+      monitor.debug('querying deployment operations for arm template deployment');
+      const deploymentOperations = await this._enqueue('list', () =>
+        this.deploymentsClient.deploymentOperations.list(
+          worker.providerData.resourceGroupName,
+          worker.providerData.deployment.name,
+        ));
+      for await (const operation of deploymentOperations) {
+        monitor.debug('deployment operation', operation);
+        operations.push(operation);
+      }
+      monitor.debug({ message: 'found deployment operations', count: operations.length });
+    } catch (error) {
+      monitor.error({ message: 'failed to query deployment operations', error });
+    }
+
+    return operations;
+  }
+
+  /**
    * Extract resources created by an ARM deployment for cleanup purposes
    * Queries deployment operations and parses resource IDs into format compatible with sequential deprovisioning
    * https://learn.microsoft.com/en-us/javascript/api/%40azure/arm-resourcesdeployments/deploymentoperations?view=azure-node-preview#@azure-arm-resourcesdeployments-deploymentoperations-list
    *
    * Resources that were not extracted would have id: false which would signal deprovisionResource() to skip it
-   *
    * @param {Worker} worker
    * @param {import('@taskcluster/lib-monitor').Monitor} monitor
+   * @param {Array<any>} [operations] Optional pre-fetched deployment operations
    */
-  async #extractResourcesFromDeployment(worker, monitor) {
+  async #extractResourcesFromDeployment(worker, monitor, operations = null) {
     const resources = {
       vm: { name: 'nonexistent', id: false, operation: undefined },
       nic: { name: 'nonexistent', id: false, operation: undefined },
@@ -672,27 +776,13 @@ export class AzureProvider extends Provider {
       disks: [],
     };
 
-    const operations = [];
-
-    try {
-      monitor.debug('querying deployment operations for arm template deployment');
-      const deploymentOperations = await this._enqueue('list', () => this.deploymentsClient.deploymentOperations.list(
-        worker.providerData.resourceGroupName,
-        worker.providerData.deployment.name,
-      ));
-      for await (const operation of deploymentOperations) {
-        monitor.debug('deployment operation', operation);
-        const { properties } = operation;
-        if (properties?.targetResource?.id) {
-          operations.push(operation);
-        }
-      }
-    } catch (error) {
-      monitor.error({ message: 'failed to query deployment operations', error });
+    const deploymentOperations = operations ?? await this.#fetchDeploymentOperations({ worker, monitor });
+    const resourceOperations = deploymentOperations.filter(op => op?.properties?.targetResource?.id);
+    if (resourceOperations.length === 0) {
       return resources;
     }
 
-    monitor.debug({ message: 'found deployment operations', count: operations.length });
+    monitor.debug({ message: 'found deployment operations', count: resourceOperations.length });
 
     const resourceTypeMap = {
       'Microsoft.Compute/virtualMachines': 'vm',
@@ -702,7 +792,7 @@ export class AzureProvider extends Provider {
     };
 
     // Parse each operation to extract created resources
-    for (const op of operations) {
+    for (const op of resourceOperations) {
       const targetResource = op.properties?.targetResource;
       const resourceType = targetResource?.resourceType;
       const resourceId = targetResource.id;

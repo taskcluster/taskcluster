@@ -1707,6 +1707,79 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker });
       assert(!provider.removeWorker.called);
     });
+
+    test('reports worker-pool error when ARM deployment fails', async function() {
+      const reportErrorStub = sandbox.stub(provider, 'reportError').resolves();
+      const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
+      if (!existingWorkerPool) {
+        await makeWorkerPool();
+      }
+
+      const deploymentName = 'deploy-failure';
+      await worker.update(helper.db, worker => {
+        worker.providerData = {
+          ...worker.providerData,
+          deploymentMethod: 'arm-template',
+          deployment: {
+            name: deploymentName,
+            operation: 'op/deployment',
+            id: false,
+          },
+          provisioningComplete: false,
+        };
+      });
+
+      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+        parameters: {
+          vmName: { value: worker.providerData.vm.name },
+        },
+      });
+      fake.deploymentsClient.deployments.setFakeDeploymentState(
+        'rgrp',
+        deploymentName,
+        'Failed',
+        'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+      );
+
+      const operation = {
+        id: '/fake-operation/1',
+        properties: {
+          provisioningState: 'Failed',
+          provisioningOperation: 'Create',
+          statusCode: 'Conflict',
+          statusMessage: {
+            status: 'Failed',
+            error: {
+              code: 'NotSupported',
+              message: 'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+            },
+            trackingId: 'tracking-id',
+          },
+          targetResource: {
+            id: `/subscriptions/fake-sub/resourceGroups/rgrp/providers/Microsoft.Compute/virtualMachines/${worker.providerData.vm.name}`,
+            resourceType: 'Microsoft.Compute/virtualMachines',
+            resourceName: worker.providerData.vm.name,
+          },
+          timestamp: '2025-11-12T18:25:38.128Z',
+          trackingId: 'tracking-id',
+        },
+      };
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [operation]);
+
+      await setState({ state: 'requested' });
+
+      await provider.checkWorker({ worker });
+
+      sandbox.assert.calledOnce(reportErrorStub);
+      const reportedError = reportErrorStub.firstCall.args[0];
+      assert.equal(reportedError.kind, 'arm-deployment-error');
+      assert.equal(reportedError.title, 'ARM Deployment Error');
+      assert(reportedError.description.includes('Ephemeral OS disk is not supported'));
+      assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
+      assert.equal(reportedError.extra.operations.length, 1);
+      assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'NotSupported');
+      assert.equal(reportedError.extra.operations[0].targetResource.resourceType, 'Microsoft.Compute/virtualMachines');
+    });
   });
 
   suite('registerWorker', function() {
