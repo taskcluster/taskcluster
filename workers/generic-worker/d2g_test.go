@@ -58,18 +58,6 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
 	case "multiuser:linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-		logtext := LogText(t)
-		t.Log(logtext)
-		// tests the default artifact expiry is not present in the
-		// translated task definition
-		if strings.Contains(logtext, "0001-01-01T00:00:00.000Z") {
-			t.Fatal("Was expecting log file to not contain '0001-01-01T00:00:00.000Z'")
-		}
-		// tests the set artifact expiry is present in the
-		// translated task definition
-		if testTimeStr := testTime.String(); !strings.Contains(logtext, testTimeStr) {
-			t.Fatalf("Was expecting log file to contain '%s'", testTimeStr)
-		}
 	case "insecure:linux":
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 		logtext := LogText(t)
