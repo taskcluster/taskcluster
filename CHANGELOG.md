@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.1
+
+### DEPLOYERS
+
+▶ [patch]
+Worker-manager web services exposes metrics now.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8079](https://github.com/taskcluster/taskcluster/issues/8079)
+Generic Worker: logs artifact upload status to worker logs instead of the task log, unless there was an error uploading.
+
 ## v93.1.0
 
 ### WORKER-DEPLOYERS

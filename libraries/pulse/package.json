@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-pulse",
   "private": true,
-  "version": "93.1.0",
+  "version": "93.1.1",
   "description": "Library for interacting with Pulse and Taskcluster-Pulse",
   "exports": "./src/index.js",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",

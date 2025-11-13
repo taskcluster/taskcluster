@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "taskcluster"
-version = "93.1.0"
+version = "93.1.1"
 description = "Python client for Taskcluster"
 readme = "README.md"
 license = {text = "MPL-2.0"}
