@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	tcclient "github.com/taskcluster/taskcluster/v93/clients/client-go"
@@ -33,7 +34,7 @@ func (a *ObjectArtifact) ResponseObject() any {
 
 func (a *ObjectArtifact) ProcessResponse(resp any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
 	response := resp.(*tcqueue.ObjectArtifactResponse)
-	logger.Infof("Uploading artifact %v from file %v with content type %q and expiry %v", a.Name, a.Path, a.ContentType, a.Expires)
+	log.Printf("Uploading artifact %v from file %v with content type %q and expiry %v", a.Name, a.Path, a.ContentType, a.Expires)
 	creds := tcclient.Credentials{
 		ClientID:    response.Credentials.ClientID,
 		AccessToken: response.Credentials.AccessToken,

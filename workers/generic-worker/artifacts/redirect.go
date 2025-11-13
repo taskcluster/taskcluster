@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/taskcluster/taskcluster/v93/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v93/internal/mocktc/tc"
@@ -16,14 +17,14 @@ type RedirectArtifact struct {
 }
 
 func (redirectArtifact *RedirectArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
-	log := fmt.Sprintf("Uploading redirect artifact %v to ", redirectArtifact.Name)
+	output := fmt.Sprintf("Uploading redirect artifact %v to ", redirectArtifact.Name)
 	if redirectArtifact.HideURL {
-		log += "(URL hidden) "
+		output += "(URL hidden) "
 	} else {
-		log += fmt.Sprintf("URL %v ", redirectArtifact.URL)
+		output += fmt.Sprintf("URL %v ", redirectArtifact.URL)
 	}
-	log += fmt.Sprintf("with mime type %q and expiry %v", redirectArtifact.ContentType, redirectArtifact.Expires)
-	logger.Infof(log)
+	output += fmt.Sprintf("with mime type %q and expiry %v", redirectArtifact.ContentType, redirectArtifact.Expires)
+	log.Print(output)
 	// nothing to do
 	return nil
 }
