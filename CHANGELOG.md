@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor]
+Worker-manager adds extra Prometheus metrics for worker registration timing:
+`worker_manager_worker_registration_seconds` - time from being requested to registered (running)
+`worker_manager_worker_lifetime_seconds` - total lifetime of a worker (until stopped or removed)
+`worker_manager_worker_registration_failures_total` - count of workers that were removed before register
+
+▶ [patch] [#8077](https://github.com/taskcluster/taskcluster/issues/8077)
+Azure provider reports ARM template deployments errors on the worker pool level.
+When deployment fails and one or more resources were not created, errors were hidden in operations list,
+which made it difficult to debug.
+
+### USERS
+
+▶ [patch] [#8075](https://github.com/taskcluster/taskcluster/issues/8075)
+Web-server improves graphql validation
+
 ## v93.0.0
 
 ### GENERAL

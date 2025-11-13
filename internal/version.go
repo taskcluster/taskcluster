@@ -7,5 +7,5 @@ const (
 	// If modifying/formatting this line, please ensure that the regular
 	// expression in /infrastructure/tooling/src/release/tasks.js continues to
 	// work.
-	Version = "93.0.0"
+	Version = "93.1.0"
 )
