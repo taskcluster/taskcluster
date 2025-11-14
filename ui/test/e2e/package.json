@@ -1,6 +1,6 @@
 {
   "name": "e2e",
-  "version": "93.1.1",
+  "version": "93.1.2",
   "description": "E2E tests for the UI",
   "scripts": {
     "test": "cypress run",

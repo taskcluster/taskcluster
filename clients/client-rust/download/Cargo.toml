@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster-download"
-version = "93.1.1"
+version = "93.1.2"
 authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -8,7 +8,7 @@ description = "Taskcluster Download Support"
 repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
-taskcluster = { version = "93.1.1", path = "../client" }
+taskcluster = { version = "93.1.2", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.12", features = ["json", "stream", "gzip", "brotli"] }

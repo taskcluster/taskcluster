@@ -1,7 +1,7 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "93.1.1",
+  "version": "93.1.2",
   "engine-strict": true,
   "engines": {
     "node": "24.11.0"

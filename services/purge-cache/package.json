@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/purge-cache",
-  "version": "93.1.1",
+  "version": "93.1.2",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

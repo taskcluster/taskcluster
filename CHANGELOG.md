@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.2
+
+### DEPLOYERS
+
+▶ [patch] [#8086](https://github.com/taskcluster/taskcluster/issues/8086)
+Worker-manager Azure ARM deployment fix for stuck worker in removal/stopping loop, better descriptions in reported errors.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8083](https://github.com/taskcluster/taskcluster/issues/8083)
+Generic Worker (windows): fixes intermittent issue calling `LoadUserProfile` win32 API when the device isn't ready.
+
+### USERS
+
+▶ [patch] [#8082](https://github.com/taskcluster/taskcluster/issues/8082)
+Relax GitHub webhook identifier regex to accept [bot] senders.
+
 ## v93.1.1
 
 ### DEPLOYERS
