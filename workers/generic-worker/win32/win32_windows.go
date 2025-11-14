@@ -51,6 +51,7 @@ var (
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
 	procGetUserObjectInformationW    = user32.NewProc("GetUserObjectInformationW")
 	procDeleteProfileW               = userenv.NewProc("DeleteProfileW")
+	procCreateProfile                = userenv.NewProc("CreateProfile")
 	procGetDiskFreeSpaceExW          = kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	FOLDERID_LocalAppData   = syscall.GUID{Data1: 0xF1B32785, Data2: 0x6FBA, Data3: 0x4FCF, Data4: [8]byte{0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91}}
@@ -829,6 +830,38 @@ func DeleteProfile(
 	)
 	if r1 == 0 {
 		err = os.NewSyscallError("DeleteProfileW", e1)
+	}
+	return
+}
+
+// https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createprofile
+// USERENVAPI HRESULT CreateProfile(
+//
+//	[in]  LPCWSTR pszUserSid,
+//	[in]  LPCWSTR pszUserName,
+//	[out] LPWSTR  pszProfilePath,
+//	[in]  DWORD   cchProfilePath
+//
+// );
+func CreateProfile(
+	lpSidString *uint16,
+	lpUserName *uint16,
+	lpProfilePath *uint16,
+	cchProfilePath uint32,
+) (err error) {
+	r1, _, e1 := procCreateProfile.Call(
+		uintptr(unsafe.Pointer(lpSidString)),
+		uintptr(unsafe.Pointer(lpUserName)),
+		uintptr(unsafe.Pointer(lpProfilePath)),
+		uintptr(cchProfilePath),
+	)
+	// HRESULT: S_OK = 0, failure < 0
+	// HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS) = 0x800700B7
+	if int32(r1) < 0 {
+		// Ignore if profile already exists
+		if uint32(r1) != 0x800700B7 {
+			err = os.NewSyscallError("CreateProfile", e1)
+		}
 	}
 	return
 }

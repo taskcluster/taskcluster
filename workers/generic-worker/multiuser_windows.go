@@ -528,9 +528,15 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+	// Create user profile before loading it to prevent temporary profile creation
+	// Preventing issues like https://github.com/taskcluster/taskcluster/issues/8083
+	err := nextTaskUser.CreateUserProfile()
+	if err != nil {
+		panic(err)
+	}
+
 	// set APPDATA
 	var loginInfo *process.LoginInfo
-	var err error
 	loginInfo, err = process.NewLoginInfo(nextTaskUser.Name, nextTaskUser.Password)
 	if err != nil {
 		panic(err)

@@ -54,6 +54,42 @@ func (user *OSUser) MakeAdmin() error {
 	return err
 }
 
+// CreateUserProfile creates a Windows user profile using the CreateProfile API.
+// This should be called before attempting to load the user profile with LoadUserProfile
+// to prevent Windows from creating a temporary profile.
+// See: https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createprofile
+func (osUser *OSUser) CreateUserProfile() error {
+	// Lookup user to get SID
+	u, err := user.Lookup(osUser.Name)
+	if err != nil {
+		return fmt.Errorf("failed to lookup user %s: %w", osUser.Name, err)
+	}
+
+	log.Printf("Creating profile for user %s (SID: %s)", osUser.Name, u.Uid)
+
+	sidPtr, err := syscall.UTF16PtrFromString(u.Uid)
+	if err != nil {
+		return fmt.Errorf("failed to convert SID to UTF16: %w", err)
+	}
+
+	namePtr, err := syscall.UTF16PtrFromString(osUser.Name)
+	if err != nil {
+		return fmt.Errorf("failed to convert username to UTF16: %w", err)
+	}
+
+	// Allocate buffer for profile path (MAX_PATH = 260)
+	profilePath := make([]uint16, 260)
+
+	err = win32.CreateProfile(sidPtr, namePtr, &profilePath[0], uint32(len(profilePath)))
+	if err != nil {
+		return fmt.Errorf("CreateProfile failed for user %s: %w", osUser.Name, err)
+	}
+
+	createdPath := syscall.UTF16ToString(profilePath)
+	log.Printf("Created user profile at: %s", createdPath)
+	return nil
+}
+
 func DeleteUser(username string) (err error) {
 	var u *user.User
 	u, err = user.Lookup(username)
