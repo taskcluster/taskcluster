@@ -52,10 +52,10 @@ properties:
             properties:
               name:
                 type: string
-                pattern: {$const: github-identifier-pattern}
+                pattern: {$const: github-webhook-identifier-pattern}
               login:
                 type: string
-                pattern: {$const: github-identifier-pattern}
+                pattern: {$const: github-webhook-identifier-pattern}
             anyOf:
               - required: [name]
               - required: [login]
@@ -69,7 +69,7 @@ properties:
         properties:
           login:
             type: string
-            pattern: {$const: github-identifier-pattern}
+            pattern: {$const: github-webhook-identifier-pattern}
         required: [login]
         additionalProperties: true
   sender:
@@ -77,7 +77,7 @@ properties:
     properties:
       login:
         type: string
-        pattern: {$const: github-identifier-pattern}
+        pattern: {$const: github-webhook-identifier-pattern}
     required: [login]
     additionalProperties: true
 required: [zen, hook_id, hook, sender]

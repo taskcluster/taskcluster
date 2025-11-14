@@ -56,10 +56,10 @@ properties:
                 properties:
                   name:
                     type: string
-                    pattern: {$const: github-identifier-pattern}
+                    pattern: {$const: github-webhook-identifier-pattern}
                   login:
                     type: string
-                    pattern: {$const: github-identifier-pattern}
+                    pattern: {$const: github-webhook-identifier-pattern}
                 anyOf:
                   - required: [name]
                   - required: [login]
@@ -94,10 +94,10 @@ properties:
                 properties:
                   name:
                     type: string
-                    pattern: {$const: github-identifier-pattern}
+                    pattern: {$const: github-webhook-identifier-pattern}
                   login:
                     type: string
-                    pattern: {$const: github-identifier-pattern}
+                    pattern: {$const: github-webhook-identifier-pattern}
                 anyOf:
                   - required: [name]
                   - required: [login]
@@ -111,7 +111,7 @@ properties:
         properties:
           login:
             type: string
-            pattern: {$const: github-identifier-pattern}
+            pattern: {$const: github-webhook-identifier-pattern}
         required: [login]
         additionalProperties: true
     required: [number, state, head, base, user]
@@ -127,10 +127,10 @@ properties:
         properties:
           name:
             type: string
-            pattern: {$const: github-identifier-pattern}
+            pattern: {$const: github-webhook-identifier-pattern}
           login:
             type: string
-            pattern: {$const: github-identifier-pattern}
+            pattern: {$const: github-webhook-identifier-pattern}
         anyOf:
           - required: [name]
           - required: [login]
@@ -150,7 +150,7 @@ properties:
     properties:
       login:
         type: string
-        pattern: {$const: github-identifier-pattern}
+        pattern: {$const: github-webhook-identifier-pattern}
     required: [login]
     additionalProperties: true
 required: [action, number, pull_request, repository, sender]
