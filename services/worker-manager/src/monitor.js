@@ -381,7 +381,7 @@ MonitorManager.registerMetric('workerRegistrationDuration', {
     ...commonLabels,
     providerId: 'ID of the provider',
   },
-  registers: ['workers'],
+  registers: ['default', 'provision', 'scan'],
   buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
 });
 
@@ -397,7 +397,7 @@ MonitorManager.registerMetric('workerLifetime', {
     ...commonLabels,
     providerId: 'ID of the provider',
   },
-  registers: ['workers'],
+  registers: ['default', 'provision', 'scan'],
   buckets: [60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800, 1209600],
 });
 
@@ -413,7 +413,7 @@ MonitorManager.registerMetric('workerRegistrationFailure', {
     ...commonLabels,
     providerId: 'ID of the provider',
   },
-  registers: ['workers'],
+  registers: ['default', 'provision', 'scan'],
 });
 
 MonitorManager.registerMetric('scanSeen', {

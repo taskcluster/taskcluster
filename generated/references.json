@@ -17757,7 +17757,9 @@
           },
           "name": "worker_manager_worker_lifetime_seconds",
           "registers": [
-            "workers"
+            "default",
+            "provision",
+            "scan"
           ],
           "title": "Worker lifetime",
           "type": "histogram"
@@ -17818,7 +17820,9 @@
           },
           "name": "worker_manager_worker_registration_failures_total",
           "registers": [
-            "workers"
+            "default",
+            "provision",
+            "scan"
           ],
           "title": "Workers that never registered",
           "type": "counter"
@@ -17844,7 +17848,9 @@
           },
           "name": "worker_manager_worker_registration_seconds",
           "registers": [
-            "workers"
+            "default",
+            "provision",
+            "scan"
           ],
           "title": "Worker registration duration",
           "type": "histogram"
