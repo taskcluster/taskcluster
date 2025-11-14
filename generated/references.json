@@ -8056,7 +8056,7 @@
               "additionalProperties": true,
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8131,11 +8131,11 @@
               ],
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "name": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8153,7 +8153,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -8294,11 +8294,11 @@
               ],
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "name": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8317,7 +8317,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -8411,11 +8411,11 @@
                       ],
                       "properties": {
                         "login": {
-                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                           "type": "string"
                         },
                         "name": {
-                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                           "type": "string"
                         }
                       },
@@ -8480,11 +8480,11 @@
                       ],
                       "properties": {
                         "login": {
-                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                           "type": "string"
                         },
                         "name": {
-                          "pattern": "^([a-zA-Z0-9-_%]*)$",
+                          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                           "type": "string"
                         }
                       },
@@ -8529,7 +8529,7 @@
               "additionalProperties": true,
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8571,11 +8571,11 @@
               ],
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "name": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8592,7 +8592,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -8679,7 +8679,7 @@
               "additionalProperties": true,
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8722,11 +8722,11 @@
                   ],
                   "properties": {
                     "login": {
-                      "pattern": "^([a-zA-Z0-9-_%]*)$",
+                      "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                       "type": "string"
                     },
                     "name": {
-                      "pattern": "^([a-zA-Z0-9-_%]*)$",
+                      "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                       "type": "string"
                     }
                   },
@@ -8746,7 +8746,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -8797,7 +8797,7 @@
               "additionalProperties": true,
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8859,7 +8859,7 @@
               "additionalProperties": true,
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8904,11 +8904,11 @@
               ],
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "name": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -8926,7 +8926,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -8971,7 +8971,7 @@
                   "type": "integer"
                 },
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "type": {
@@ -9051,7 +9051,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },
@@ -9244,11 +9244,11 @@
               ],
               "properties": {
                 "login": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 },
                 "name": {
-                  "pattern": "^([a-zA-Z0-9-_%]*)$",
+                  "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
                   "type": "string"
                 }
               },
@@ -9266,7 +9266,7 @@
           "additionalProperties": true,
           "properties": {
             "login": {
-              "pattern": "^([a-zA-Z0-9-_%]*)$",
+              "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
               "type": "string"
             }
           },

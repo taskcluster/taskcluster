@@ -64,6 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   statusTest('Pull Request Closed', 'webhook.pull_request.close.sha256.json', 204, TC_DEV_INSTALLATION_ID);
   statusTest('Push SHA1', 'webhook.push.json', 204);
   statusTest('Push SHA256', 'webhook.push.sha256.json', 204, TC_DEV_INSTALLATION_ID);
+  statusTest('Push from merge queue bot', 'webhook.push.merge_queue_bot.json', 204, 5116332);
   statusTest('Push wrong signature', 'webhook.push.bad_signature.json', 403, TC_DEV_INSTALLATION_ID);
   statusTest('Push skip ci', 'webhook.push.skip-ci.json', 200);
   statusTest('Push from enterprise GitHub', 'webhook.push.enterprise.json', 204);

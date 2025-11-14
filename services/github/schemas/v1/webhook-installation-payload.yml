@@ -23,7 +23,7 @@ properties:
         properties:
           login:
             type: string
-            pattern: {$const: github-identifier-pattern}
+            pattern: {$const: github-webhook-identifier-pattern}
           id:
             type: integer
             minimum: 1
@@ -64,7 +64,7 @@ properties:
     properties:
       login:
         type: string
-        pattern: {$const: github-identifier-pattern}
+        pattern: {$const: github-webhook-identifier-pattern}
     required: [login]
     additionalProperties: true
 required: [action, installation, sender]

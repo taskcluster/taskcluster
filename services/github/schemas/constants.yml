@@ -9,6 +9,9 @@ github-identifier-min-length:  1
 github-identifier-max-length:  100
 github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
 
+# Webhook commiters can include GitHub's "[bot]" suffix, so allow literal brackets
+github-webhook-identifier-pattern: "^([a-zA-Z0-9-_%\\[\\]]*)$"
+
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
 identifier-max-length:  38
