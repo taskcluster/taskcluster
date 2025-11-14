@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/notify",
-  "version": "93.1.2",
+  "version": "93.1.3",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",

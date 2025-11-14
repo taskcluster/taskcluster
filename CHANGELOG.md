@@ -3,6 +3,23 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.3
+
+### DEPLOYERS
+
+▶ [patch]
+Worker registration metrics exposed from all relevant pods.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump js-yaml from 4.1.0 to 4.1.1 in /ui (38a6032881)
+* build(deps): bump js-yaml from 4.1.0 to 4.1.1 (b5eed40995)
+
+</details>
+
 ## v93.1.2
 
 ### DEPLOYERS
