@@ -772,6 +772,82 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'failed deployment should be deleted');
     });
 
+    test('failed ARM deployment stops re-removing workers once stopping', async function() {
+      await provisionWorkerPool({
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: {
+            location: {
+              value: 'east',
+            },
+          },
+        },
+      });
+
+      let [worker] = await helper.getWorkers();
+      const deploymentName = worker.providerData.deployment.name;
+      const resourceGroupName = worker.providerData.resourceGroupName;
+      const vmName = worker.providerData.vm.name;
+
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
+        resourceGroupName,
+        deploymentName,
+        [
+          {
+            properties: {
+              provisioningState: 'Succeeded',
+              targetResource: {
+                resourceType: 'Microsoft.Network/publicIPAddresses',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
+              },
+            },
+          },
+          {
+            properties: {
+              provisioningState: 'Failed',
+              targetResource: {
+                resourceType: 'Microsoft.Compute/virtualMachines',
+                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
+              },
+            },
+          },
+        ],
+      );
+
+      fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Failed', 'VM provisioning failed');
+
+      await provider.scanPrepare();
+
+      const sandbox = sinon.createSandbox({});
+      const removeSpy = sandbox.spy(provider, 'removeWorker');
+      const removedEventSpy = sandbox.spy(provider, 'onWorkerRemoved');
+      const deprovisionStub = sandbox.stub(provider, 'deprovisionResources').resolves();
+      const queryInstanceStub = sandbox.stub(provider, 'queryInstance');
+
+      try {
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+
+        assert.equal(worker.state, 'stopping', 'worker should transition to stopping');
+        assert.equal(removeSpy.callCount, 1, 'removeWorker called once after failure');
+        assert.equal(removedEventSpy.callCount, 1, 'worker-removed event emitted once');
+        assert.equal(worker.providerData.provisioningComplete, true, 'worker should be marked provisioned after failure');
+
+        await provider.checkWorker({ worker });
+        await worker.reload(helper.db);
+
+        assert.equal(removeSpy.callCount, 1, 'removeWorker not re-invoked for stopping worker');
+        assert.equal(removedEventSpy.callCount, 1, 'worker-removed event not re-emitted');
+        assert(deprovisionStub.calledOnce, 'deprovisioning should proceed once deployment is settled');
+        assert.equal(queryInstanceStub.callCount, 0, 'instance query skipped when worker already stopping');
+      } finally {
+        sandbox.restore();
+      }
+    });
+
     test('checkWorker continues after completed ARM deployment', async function() {
       await provisionWorkerPool({
         armDeployment: {
