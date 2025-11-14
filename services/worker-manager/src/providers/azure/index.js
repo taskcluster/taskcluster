@@ -601,6 +601,7 @@ export class AzureProvider extends Provider {
 
         await extractDeployedResourcesAndUpdateWorker(worker => {
           worker.providerData.deployment.operation = undefined;
+          worker.providerData.provisioningComplete = true;
         }, operations);
 
         await this.#reportARMDeploymentErrors({
@@ -611,8 +612,10 @@ export class AzureProvider extends Provider {
           operations,
         });
 
-        await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
-        return false;
+        if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state)) {
+          await this.removeWorker({ worker, reason: `deployment ${provisioningState}: ${errorMessage}` });
+        }
+        return true;
       }
 
       if (provisioningState === ArmDeploymentProvisioningState.Succeeded) {
@@ -654,9 +657,12 @@ export class AzureProvider extends Provider {
         if (!op) {
           await worker.update(this.db, worker => {
             worker.providerData.deployment.operation = undefined;
+            worker.providerData.provisioningComplete = true;
           });
-          // TODO: should it be removed right away?
-          await this.removeWorker({ worker, reason: 'deployment operation expired' });
+          if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state)) {
+            await this.removeWorker({ worker, reason: 'deployment operation expired' });
+          }
+          return true;
         }
       }
     }
@@ -714,9 +720,15 @@ export class AzureProvider extends Provider {
       return;
     }
 
-    const description = defaultMessage ||
-      failingOperations[0]?.description ||
-      'Deployment operation failed';
+    let description = 'Deployment operation failed';
+    const operationDescriptions = failingOperations
+      .map(op => op.description)
+      .filter(desc => typeof desc === 'string' && desc.trim().length > 0);
+    if (operationDescriptions.length > 0) {
+      description = operationDescriptions.join('; ');
+    } else if (defaultMessage) {
+      description = defaultMessage;
+    }
 
     const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
 
@@ -1443,6 +1455,7 @@ export class AzureProvider extends Provider {
       } });
 
     const states = Worker.states;
+    const initialState = worker.state;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
@@ -1467,6 +1480,10 @@ export class AzureProvider extends Provider {
     if (isARMTemplate) {
       // Handle ARM deployment creation and checking (before querying instance)
       const deploymentComplete = await this.#checkARMDeployment({ worker, monitor });
+      if (initialState !== states.STOPPING && worker.state === states.STOPPING) {
+        monitor.debug({ message: 'worker transitioned to STOPPING during ARM deployment handling; skipping further checks' });
+        return;
+      }
       if (!deploymentComplete) {
         return;
       }
@@ -1748,8 +1765,10 @@ export class AzureProvider extends Provider {
    * removeWorker marks a worker for deletion and begins removal.
    */
   async removeWorker({ worker, reason }) {
-    // trigger event before changing worker.state
-    await this.onWorkerRemoved({ worker, reason });
+    const shouldEmit = [Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state);
+    if (shouldEmit) {
+      await this.onWorkerRemoved({ worker, reason });
+    }
     // transition from either REQUESTED or RUNNING to STOPPING, and let the
     // worker scanner take it from there.
     await worker.update(this.db, w => {
@@ -1759,7 +1778,7 @@ export class AzureProvider extends Provider {
         w.state = Worker.states.STOPPING;
       }
       // additionally store removal reason
-      w.providerData.reasonRemoved = reason;
+      w.providerData.reasonRemoved ??= reason;
     });
   }
 
