@@ -950,7 +950,7 @@ func TestD2GChainOfTrustNamedDockerImage(t *testing.T) {
 
 	expected := DockerWorkerPartialChainOfTrustCert{
 		Environment: PartialEnvironment{
-			ImageHash:         "sha256:d1c5c701d837b59386563dc702932d200adc41f8bd99a1de451e6fcf378dbfa5",
+			ImageHash:         "sha256:9db1327bff0f7565c2e658371ec726bc2475fa30fce7366f6b1579894fd621d6",
 			ImageArtifactHash: "",
 			Region:            "test-worker-group",
 		},
@@ -975,7 +975,7 @@ func TestD2GChainOfTrustDockerImageName(t *testing.T) {
 
 	expected := DockerWorkerPartialChainOfTrustCert{
 		Environment: PartialEnvironment{
-			ImageHash:         "sha256:d1c5c701d837b59386563dc702932d200adc41f8bd99a1de451e6fcf378dbfa5",
+			ImageHash:         "sha256:9db1327bff0f7565c2e658371ec726bc2475fa30fce7366f6b1579894fd621d6",
 			ImageArtifactHash: "",
 			Region:            "test-worker-group",
 		},
@@ -1006,8 +1006,8 @@ func TestD2GChainOfTrustDockerImageArtifact(t *testing.T) {
 
 	expected := DockerWorkerPartialChainOfTrustCert{
 		Environment: PartialEnvironment{
-			ImageHash:         "sha256:d1c5c701d837b59386563dc702932d200adc41f8bd99a1de451e6fcf378dbfa5",
-			ImageArtifactHash: "sha256:050ba86afcb29779a0df1963df6d1e85eb9feff2c4c2a31b6c559686168be076",
+			ImageHash:         "sha256:ac3db45b6b91d9e03e28015d293fee6a8142ea19d3b70c9903a4ca1dc072b7b0",
+			ImageArtifactHash: "sha256:ed47090e5110b8ffb2d0aa3ed27be29cc9e1149aad4fd7769884224ee56506dc",
 			Region:            "test-worker-group",
 		},
 		Task: PartialTask{
