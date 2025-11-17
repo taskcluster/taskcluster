@@ -3,6 +3,7 @@ package runtime
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/user"
 	"strings"
 	"syscall"
@@ -87,7 +88,30 @@ func (osUser *OSUser) CreateUserProfile() error {
 
 	createdPath := syscall.UTF16ToString(profilePath)
 	log.Printf("Created user profile at: %s", createdPath)
-	return nil
+
+	// Verify the profile directory is accessible before returning
+	// CreateProfile may return before the file system has fully initialized the directory
+	// This prevents ERROR_NOT_READY errors when LoadUserProfile is called immediately after
+	const maxRetries = 10
+	const initialDelay = 50 * time.Millisecond
+	const maxDelay = 2 * time.Second
+	const backoffMultiplier = 1.5
+
+	delay := initialDelay
+	for i := range maxRetries {
+		_, err := os.Stat(createdPath)
+		if err == nil {
+			return nil
+		}
+
+		if i < maxRetries-1 {
+			log.Printf("Profile directory not yet accessible (attempt %d/%d), retrying in %v: %v", i+1, maxRetries, delay, err)
+			time.Sleep(delay)
+			delay = min(time.Duration(float64(delay)*backoffMultiplier), maxDelay)
+		}
+	}
+
+	return fmt.Errorf("profile directory not accessible after %d attempts: %s", maxRetries, createdPath)
 }
 
 func DeleteUser(username string) (err error) {
