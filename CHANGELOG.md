@@ -3,6 +3,26 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.4
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Worker-manager improves handling of workers created for ARM deployment that failed validation step
+
+▶ [patch] [#8083](https://github.com/taskcluster/taskcluster/issues/8083)
+Generic Worker (windows): adds retry logic around `CreateUserProfile` method to ensure the task user's profile path is created successfully before continuing on to `LoadUserProfile`.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump js-yaml from 4.1.0 to 4.1.1 in /clients/client (afd0340c8d)
+* build(deps): bump js-yaml from 4.1.0 to 4.1.1 in /clients/client-web (3bcf9fe500)
+
+</details>
+
 ## v93.1.3
 
 ### DEPLOYERS
