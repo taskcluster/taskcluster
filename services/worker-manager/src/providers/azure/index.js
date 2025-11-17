@@ -664,6 +664,13 @@ export class AzureProvider extends Provider {
           }
           return true;
         }
+      } else {
+        // No operation to track - deployment never existed or validation failed early
+        // Mark as complete so STOPPING workers can proceed with cleanup
+        await worker.update(this.db, worker => {
+          worker.providerData.provisioningComplete = true;
+        });
+        return true;
       }
     }
 
@@ -1464,18 +1471,6 @@ export class AzureProvider extends Provider {
       worker.lastChecked = new Date();
     });
 
-    if (worker.state === states.STOPPING) {
-      if (worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM) {
-        const deploymentSettled = await this.#checkARMDeployment({ worker, monitor });
-        if (!deploymentSettled) {
-          monitor.debug({ message: 'delaying teardown while ARM deployment is still settling' });
-          return;
-        }
-      }
-      await this.deprovisionResources({ worker, monitor });
-      return;
-    }
-
     const isARMTemplate = worker.providerData.deploymentMethod === DEPLOYMENT_METHOD_ARM;
     if (isARMTemplate) {
       // Handle ARM deployment creation and checking (before querying instance)
@@ -1487,6 +1482,11 @@ export class AzureProvider extends Provider {
       if (!deploymentComplete) {
         return;
       }
+    }
+
+    if (worker.state === states.STOPPING) {
+      await this.deprovisionResources({ worker, monitor });
+      return;
     }
 
     const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
