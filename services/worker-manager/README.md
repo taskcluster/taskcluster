@@ -87,6 +87,10 @@ openssl x509 -noout -subject -in intermediate.pem
 openssl x509 -noout -fingerprint -in intermediate.pem
 # Verify the issuer for the intermediate certificate
 openssl x509 -noout -issuer -in intermediate.pem
+
+# Check expiry dates
+openssl x509 -noout -enddate -in signer.pem
+openssl x509 -noout -enddate -in intermediate.pem
 ```
 
 Last three lines would contain the values that should match `intermediateCertFingerprint`, `intermediateCertSubject`, `intermediateCertIssuer`, `intermediateCertPath` variables in `test/provider_azure_test.js`.
