@@ -18,6 +18,12 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 }
 
 func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
+	// Skip ownership changes for d2g tasks since the ownership of files is decided
+	// by the container itself (there's no mapping)
+	if taskMount.task.D2GInfo != nil {
+		return nil
+	}
+
 	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
 	newOwnerUsername := taskContext.User.Name
