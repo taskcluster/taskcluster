@@ -1600,13 +1600,35 @@
             },
             "name": "static-clients",
             "next": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "path": "manual/deploying/static-clients",
             "prev": {
               "path": "manual/deploying",
               "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "Worker Manager Configuration"
+            },
+            "name": "worker-manager-config",
+            "next": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
+            },
+            "path": "manual/deploying/worker-manager-config",
+            "prev": {
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
@@ -1627,8 +1649,8 @@
             },
             "path": "manual/deploying/workers",
             "prev": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
