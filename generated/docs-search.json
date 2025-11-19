@@ -687,122 +687,129 @@
   },
   {
     "element": "h1",
-    "id": "workers",
-    "path": "/manual/deploying/workers",
+    "id": "worker-manager-configuration",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": null,
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "api-rate-limit-overrides",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "API Rate Limit Overrides",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "aws",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "AWS",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "azure",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Azure",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h2",
     "id": "cautions",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Cautions",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "expected-resources",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Expected resources:",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "gcp-project",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "GCP Project",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "google",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Google",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "launch-configurations",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Launch configurations",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h2",
     "id": "provider-configuration",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Provider Configuration",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "rate-limiting--retries",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Rate Limiting / Retries",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "recommended",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Recommended:",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "resource-dependencies",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Resource Dependencies",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "resource-groups",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Resource Groups",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h4",
     "id": "service-accounts",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Service Accounts",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "spot-instances",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Spot Instances",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h3",
     "id": "static",
-    "path": "/manual/deploying/workers",
+    "path": "/manual/deploying/worker-manager-config",
     "subtitle": "Static",
-    "title": "Workers"
+    "title": "Worker Manager Configuration"
+  },
+  {
+    "element": "h1",
+    "id": "worker-manager-configuration",
+    "path": "/manual/deploying/workers",
+    "subtitle": null,
+    "title": "Worker Manager Configuration"
   },
   {
     "element": "h1",
