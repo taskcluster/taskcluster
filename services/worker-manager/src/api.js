@@ -1012,7 +1012,7 @@ builder.declare({
 
   return res.reply({
     terminate: false,
-    reason: 'unclear'
+    reason: 'unclear',
   });
 });
 
