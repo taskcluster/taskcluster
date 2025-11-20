@@ -525,12 +525,19 @@ export class AzureProvider extends Provider {
     } catch (err) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
 
+      this.monitor.debug({
+        message: 'Error creating ARM deployment',
+        deploymentName,
+        error: err,
+      });
+
       await this.reportError({
         workerPool,
         kind: 'creation-error',
         title: 'Failed to create ARM deployment',
         description: err.message,
         extra: {
+          innerError: err?.innererror ?? '',
           workerId: worker.workerId,
           workerGroup: workerGroup,
           armDeployment,
