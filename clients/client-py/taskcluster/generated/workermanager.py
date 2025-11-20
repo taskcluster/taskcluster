@@ -292,6 +292,19 @@ class WorkerManager(BaseClient):
 
         return self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
 
+    def shouldWorkerTerminate(self, *args, **kwargs):
+        """
+        Should worker terminate
+
+        Decides if worker should terminate or keep working.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(
+            self.funcinfo["shouldWorkerTerminate"], *args, **kwargs
+        )
+
     def listWorkersForWorkerPool(self, *args, **kwargs):
         """
         Workers in a Worker Pool
@@ -548,6 +561,14 @@ class WorkerManager(BaseClient):
             "name": "reregisterWorker",
             "output": "v1/reregister-worker-response.json#",
             "route": "/worker/reregister",
+            "stability": "experimental",
+        },
+        "shouldWorkerTerminate": {
+            "args": ["workerPoolId", "workerGroup", "workerId"],
+            "method": "get",
+            "name": "shouldWorkerTerminate",
+            "output": "v1/should-worker-terminate-response.json#",
+            "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
             "stability": "experimental",
         },
         "updateWorker": {

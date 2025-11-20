@@ -30,6 +30,7 @@ export default class WorkerManager extends Client {
     this.createWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","input":true,"method":"put","name":"createWorker","output":true,"query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.updateWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","input":true,"method":"post","name":"updateWorker","output":true,"query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.removeWorker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"delete","name":"removeWorker","query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.shouldWorkerTerminate.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"shouldWorkerTerminate","output":true,"query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate","scopes":"worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkersForWorkerPool.entry = {"args":["workerPoolId"],"category":"Workers","method":"get","name":"listWorkersForWorkerPool","output":true,"query":["continuationToken","limit","launchConfigId","state"],"route":"/workers/<workerPoolId>","scopes":"worker-manager:list-workers:<workerPoolId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.registerWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"registerWorker","output":true,"query":[],"route":"/worker/register","stability":"stable","type":"function"}; // eslint-disable-line
     this.reregisterWorker.entry = {"args":[],"category":"Worker Interface","input":true,"method":"post","name":"reregisterWorker","output":true,"query":[],"route":"/worker/reregister","scopes":"worker-manager:reregister-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -234,6 +235,14 @@ export default class WorkerManager extends Client {
     this.validate(this.removeWorker.entry, args);
 
     return this.request(this.removeWorker.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Decides if worker should terminate or keep working.
+  /* eslint-enable max-len */
+  shouldWorkerTerminate(...args) {
+    this.validate(this.shouldWorkerTerminate.entry, args);
+
+    return this.request(this.shouldWorkerTerminate.entry, args);
   }
   /* eslint-disable max-len */
   // Get the list of all the existing workers in a given worker pool.

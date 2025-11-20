@@ -1325,6 +1325,31 @@
   },
   {
     "content": {
+      "$id": "/schemas/worker-manager/v1/should-worker-terminate-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Decision returned to a worker asking whether to keep running or be terminated",
+      "properties": {
+        "reason": {
+          "description": "Reason why worker should be terminated",
+          "minLength": 1,
+          "type": "string"
+        },
+        "terminate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "terminate",
+        "reason"
+      ],
+      "title": "Should worker terminate response",
+      "type": "object"
+    },
+    "filename": "schemas/worker-manager/v1/should-worker-terminate-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/worker-manager/v1/reregister-worker-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -19504,6 +19529,25 @@
           "scopes": "worker-manager:remove-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Remove a Worker",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Decides if worker should terminate or keep working.",
+          "method": "get",
+          "name": "shouldWorkerTerminate",
+          "output": "v1/should-worker-terminate-response.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
+          "scopes": "worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Should worker terminate",
           "type": "function"
         },
         {

@@ -661,6 +661,37 @@ impl WorkerManager {
         (path, query)
     }
 
+    /// Should worker terminate
+    ///
+    /// Decides if worker should terminate or keep working.
+    pub async fn shouldWorkerTerminate(&self, workerPoolId: &str, workerGroup: &str, workerId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::shouldWorkerTerminate_details(workerPoolId, workerGroup, workerId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the shouldWorkerTerminate endpoint
+    pub fn shouldWorkerTerminate_url(&self, workerPoolId: &str, workerGroup: &str, workerId: &str) -> Result<String, Error> {
+        let (path, query) = Self::shouldWorkerTerminate_details(workerPoolId, workerGroup, workerId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the shouldWorkerTerminate endpoint
+    pub fn shouldWorkerTerminate_signed_url(&self, workerPoolId: &str, workerGroup: &str, workerId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::shouldWorkerTerminate_details(workerPoolId, workerGroup, workerId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for shouldWorkerTerminate
+    fn shouldWorkerTerminate_details<'a>(workerPoolId: &'a str, workerGroup: &'a str, workerId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("workers/{}/{}/{}/should-terminate", urlencode(workerPoolId), urlencode(workerGroup), urlencode(workerId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Workers in a Worker Pool
     ///
     /// Get the list of all the existing workers in a given worker pool.

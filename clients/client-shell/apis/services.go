@@ -2471,6 +2471,21 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "shouldWorkerTerminate",
+				Title:       "Should worker terminate",
+				Description: "Decides if worker should terminate or keep working.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
+				Args: []string{
+					"workerPoolId",
+					"workerGroup",
+					"workerId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkersForWorkerPool",
 				Title:       "Workers in a Worker Pool",
 				Description: "Get the list of all the existing workers in a given worker pool.",
