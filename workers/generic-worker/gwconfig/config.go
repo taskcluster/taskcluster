@@ -34,7 +34,6 @@ type (
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
-		DeploymentID                   string         `json:"deploymentId"`
 		DisableOOMProtection           bool           `json:"disableOOMProtection"`
 		DisableReboots                 bool           `json:"disableReboots"`
 		DownloadsDir                   string         `json:"downloadsDir"`
@@ -174,19 +173,6 @@ func (c *Config) UpdateCredentials(creds *tcclient.Credentials) {
 
 type File struct {
 	Path string
-}
-
-func (cf *File) NewestDeploymentID() (string, error) {
-	configData, err := os.ReadFile(cf.Path)
-	if err != nil {
-		return "", err
-	}
-	var tempConfig Config
-	err = json.Unmarshal(configData, &tempConfig)
-	if err != nil {
-		return "", err
-	}
-	return tempConfig.DeploymentID, nil
 }
 
 func (cf *File) UpdateConfig(c *Config) error {
