@@ -99,7 +99,8 @@
       "secrets:get:worker-pool:*",
       "secrets:get:worker-type:*",
       "worker-manager:remove-worker:*",
-      "worker-manager:reregister-worker:*"
+      "worker-manager:reregister-worker:*",
+      "worker-manager:should-worker-terminate:*"
     ]
   },
   {
