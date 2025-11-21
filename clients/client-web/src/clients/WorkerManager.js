@@ -237,7 +237,12 @@ export default class WorkerManager extends Client {
     return this.request(this.removeWorker.entry, args);
   }
   /* eslint-disable max-len */
-  // Decides if worker should terminate or keep working.
+  // Informs if worker should terminate or keep working.
+  // Worker might no longer be needed based on the set of factors:
+  //  - current capacity of the worker pool
+  //  - amount of pending and claimed tasks
+  //  - launch configuration changes
+  // Decision is made during provision or scanning loop based on above mentioned conditions.
   /* eslint-enable max-len */
   shouldWorkerTerminate(...args) {
     this.validate(this.shouldWorkerTerminate.entry, args);

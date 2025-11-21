@@ -296,7 +296,13 @@ class WorkerManager(BaseClient):
         """
         Should worker terminate
 
-        Decides if worker should terminate or keep working.
+        Informs if worker should terminate or keep working.
+        Worker might no longer be needed based on the set of factors:
+         - current capacity of the worker pool
+         - amount of pending and claimed tasks
+         - launch configuration changes
+
+        Decision is made during provision or scanning loop based on above mentioned conditions.
 
         This method is ``experimental``
         """
