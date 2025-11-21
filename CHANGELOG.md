@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v93.1.5
+
+### GENERAL
+
+▶ [patch] [#8102](https://github.com/taskcluster/taskcluster/issues/8102)
+Don't try to chown caches when using d2g as this is a long no-op anyway
+
+### USERS
+
+▶ [patch]
+Make livelogs faster when passing through websocktunnel by increasing the buffer size on the proxy
+
 ## v93.1.4
 
 ### WORKER-DEPLOYERS
