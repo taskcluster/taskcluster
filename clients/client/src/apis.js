@@ -4506,7 +4506,7 @@ export default {
             "workerId"
           ],
           "category": "Workers",
-          "description": "Decides if worker should terminate or keep working.",
+          "description": "Informs if worker should terminate or keep working.\nWorker might no longer be needed based on the set of factors:\n - current capacity of the worker pool\n - amount of pending and claimed tasks\n - launch configuration changes\n\nDecision is made during provision or scanning loop based on above mentioned conditions.",
           "method": "get",
           "name": "shouldWorkerTerminate",
           "output": "v1/should-worker-terminate-response.json#",

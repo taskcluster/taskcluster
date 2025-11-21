@@ -2473,7 +2473,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "shouldWorkerTerminate",
 				Title:       "Should worker terminate",
-				Description: "Decides if worker should terminate or keep working.",
+				Description: "Informs if worker should terminate or keep working.\nWorker might no longer be needed based on the set of factors:\n - current capacity of the worker pool\n - amount of pending and claimed tasks\n - launch configuration changes\n\nDecision is made during provision or scanning loop based on above mentioned conditions.",
 				Stability:   "experimental",
 				Method:      "get",
 				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
