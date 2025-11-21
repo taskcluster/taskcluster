@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
+const READ_BUFFER_SIZE = 64 * 1024 // 64KB for better throughput
 
 type Event struct {
 	Number int

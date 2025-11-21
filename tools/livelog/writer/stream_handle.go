@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const EVENT_BUFFER_SIZE = 200
+const EVENT_BUFFER_SIZE = 1000
 
 type StreamHandle struct {
 	Start int64
