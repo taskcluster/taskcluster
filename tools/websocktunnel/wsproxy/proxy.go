@@ -224,7 +224,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	// generate config
 	conf := wsmux.Config{
-		StreamBufferSize: 4 * 1024,
+		StreamBufferSize: 4 * 1024 * 1024,
 		CloseCallback: func() {
 			p.removeTunnel(id)
 			if p.onSessionRemove != nil {
