@@ -141,7 +141,7 @@ func (purgeCache *PurgeCache) Version() error {
 // See #purgeCache
 func (purgeCache *PurgeCache) PurgeCache(workerPoolId string, payload *PurgeCacheRequest) error {
 	cd := tcclient.Client(*purgeCache)
-	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(workerPoolId), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.PathEscape(workerPoolId), nil, nil)
 	return err
 }
 
@@ -206,7 +206,7 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPu
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(workerPoolId), new(OpenPurgeRequestList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.PathEscape(workerPoolId), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
 }
 
@@ -223,7 +223,7 @@ func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(workerPoolId), v, duration)
+	return (&cd).SignedURL("/purge-cache/"+url.PathEscape(workerPoolId), v, duration)
 }
 
 // Respond with a service heartbeat.

@@ -159,7 +159,7 @@ func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, 
 // See #listHooks
 func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.PathEscape(hookGroupId), new(HookList), nil)
 	return responseObject.(*HookList), err
 }
 
@@ -172,7 +172,7 @@ func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 // See ListHooks for more details.
 func (hooks *Hooks) ListHooks_SignedURL(hookGroupId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId), nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.PathEscape(hookGroupId), nil, duration)
 }
 
 // This endpoint will return the hook definition for the given `hookGroupId`
@@ -185,7 +185,7 @@ func (hooks *Hooks) ListHooks_SignedURL(hookGroupId string, duration time.Durati
 // See #hook
 func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), err
 }
 
@@ -198,7 +198,7 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 // See Hook for more details.
 func (hooks *Hooks) Hook_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -215,7 +215,7 @@ func (hooks *Hooks) Hook_SignedURL(hookGroupId, hookId string, duration time.Dur
 // See #getHookStatus
 func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/status", new(HookStatusResponse), nil)
 	return responseObject.(*HookStatusResponse), err
 }
 
@@ -228,7 +228,7 @@ func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusRespon
 // See GetHookStatus for more details.
 func (hooks *Hooks) GetHookStatus_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/status", nil, duration)
 }
 
 // This endpoint will create a new hook.
@@ -246,7 +246,7 @@ func (hooks *Hooks) GetHookStatus_SignedURL(hookGroupId, hookId string, duration
 // See #createHook
 func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), err
 }
 
@@ -262,7 +262,7 @@ func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreation
 // See #updateHook
 func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), err
 }
 
@@ -275,7 +275,7 @@ func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreation
 // See #removeHook
 func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 	cd := tcclient.Client(*hooks)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId), nil, nil)
 	return err
 }
 
@@ -292,7 +292,7 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // See #triggerHook
 func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TriggerHookResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger", new(TriggerHookResponse), nil)
 	return responseObject.(*TriggerHookResponse), err
 }
 
@@ -306,7 +306,7 @@ func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHook
 // See #getTriggerToken
 func (hooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
 	return responseObject.(*TriggerTokenResponse), err
 }
 
@@ -319,7 +319,7 @@ func (hooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenRe
 // See GetTriggerToken for more details.
 func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", nil, duration)
+	return (&cd).SignedURL("/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/token", nil, duration)
 }
 
 // Reset the token for triggering a given hook. This invalidates token that
@@ -332,7 +332,7 @@ func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, durati
 // See #resetTriggerToken
 func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
 	return responseObject.(*TriggerTokenResponse), err
 }
 
@@ -345,7 +345,7 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // See #triggerHookWithToken
 func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TriggerHookResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger/"+url.PathEscape(token), new(TriggerHookResponse), nil)
 	return responseObject.(*TriggerHookResponse), err
 }
 
@@ -368,7 +368,7 @@ func (hooks *Hooks) ListLastFires(hookGroupId, hookId, continuationToken, limit 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/last-fires", new(LastFiresList), v)
 	return responseObject.(*LastFiresList), err
 }
 
@@ -388,7 +388,7 @@ func (hooks *Hooks) ListLastFires_SignedURL(hookGroupId, hookId, continuationTok
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", v, duration)
+	return (&cd).SignedURL("/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/last-fires", v, duration)
 }
 
 // Respond with a service heartbeat.

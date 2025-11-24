@@ -191,7 +191,7 @@ func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string,
 // See #client
 func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.PathEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -204,7 +204,7 @@ func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 // See Client for more details.
 func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId), nil, duration)
+	return (&cd).SignedURL("/clients/"+url.PathEscape(clientId), nil, duration)
 }
 
 // Create a new client and get the `accessToken` for this client.
@@ -229,7 +229,7 @@ func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*ur
 // See #createClient
 func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.PathEscape(clientId), new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
 }
 
@@ -249,7 +249,7 @@ func (auth *Auth) GetEntityHistory(entityType, entityId, continuationToken, limi
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/audit/"+url.QueryEscape(entityType)+"/"+url.QueryEscape(entityId), new(GetEntityHistoryResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/audit/"+url.PathEscape(entityType)+"/"+url.PathEscape(entityId), new(GetEntityHistoryResponse), v)
 	return responseObject.(*GetEntityHistoryResponse), err
 }
 
@@ -269,7 +269,7 @@ func (auth *Auth) GetEntityHistory_SignedURL(entityType, entityId, continuationT
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/audit/"+url.QueryEscape(entityType)+"/"+url.QueryEscape(entityId), v, duration)
+	return (&cd).SignedURL("/audit/"+url.PathEscape(entityType)+"/"+url.PathEscape(entityId), v, duration)
 }
 
 // Get audit history of a client based on clientId.
@@ -288,7 +288,7 @@ func (auth *Auth) ListAuditHistory(clientId, continuationToken, limit string) (*
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId)+"/audit", new(GetEntityHistoryResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.PathEscape(clientId)+"/audit", new(GetEntityHistoryResponse), v)
 	return responseObject.(*GetEntityHistoryResponse), err
 }
 
@@ -308,7 +308,7 @@ func (auth *Auth) ListAuditHistory_SignedURL(clientId, continuationToken, limit 
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId)+"/audit", v, duration)
+	return (&cd).SignedURL("/clients/"+url.PathEscape(clientId)+"/audit", v, duration)
 }
 
 // Reset a clients `accessToken`, this will revoke the existing
@@ -325,7 +325,7 @@ func (auth *Auth) ListAuditHistory_SignedURL(clientId, continuationToken, limit 
 // See #resetAccessToken
 func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/reset", new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
 }
 
@@ -344,7 +344,7 @@ func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, erro
 // See #updateClient
 func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.PathEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -361,7 +361,7 @@ func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*
 // See #enableClient
 func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/enable", new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/enable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -377,7 +377,7 @@ func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 // See #disableClient
 func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/disable", new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/disable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -391,7 +391,7 @@ func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 // See #deleteClient
 func (auth *Auth) DeleteClient(clientId string) error {
 	cd := tcclient.Client(*auth)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.PathEscape(clientId), nil, nil)
 	return err
 }
 
@@ -522,7 +522,7 @@ func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duratio
 // See #role
 func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
@@ -535,7 +535,7 @@ func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 // See Role for more details.
 func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/roles/"+url.QueryEscape(roleId), nil, duration)
+	return (&cd).SignedURL("/roles/"+url.PathEscape(roleId), nil, duration)
 }
 
 // Create a new role.
@@ -557,7 +557,7 @@ func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.UR
 // See #createRole
 func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
@@ -578,7 +578,7 @@ func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // See #updateRole
 func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
@@ -592,7 +592,7 @@ func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // See #deleteRole
 func (auth *Auth) DeleteRole(roleId string) error {
 	cd := tcclient.Client(*auth)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.PathEscape(roleId), nil, nil)
 	return err
 }
 
@@ -688,7 +688,7 @@ func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3
 		v.Add("format", format)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.PathEscape(level)+"/"+url.PathEscape(bucket)+"/"+url.PathEscape(prefix), new(AWSS3CredentialsResponse), v)
 	return responseObject.(*AWSS3CredentialsResponse), err
 }
 
@@ -708,7 +708,7 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 		v.Add("format", format)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), v, duration)
+	return (&cd).SignedURL("/aws/s3/"+url.PathEscape(level)+"/"+url.PathEscape(bucket)+"/"+url.PathEscape(prefix), v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -753,7 +753,7 @@ func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTabl
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/tables", new(AzureListTableResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/tables", new(AzureListTableResponse), v)
 	return responseObject.(*AzureListTableResponse), err
 }
 
@@ -770,7 +770,7 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/tables", v, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/tables", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -792,7 +792,7 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 // See #azureTableSAS
 func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureTableSharedAccessSignature), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), new(AzureTableSharedAccessSignature), nil)
 	return responseObject.(*AzureTableSharedAccessSignature), err
 }
 
@@ -808,7 +808,7 @@ func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableShared
 // See AzureTableSAS for more details.
 func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -826,7 +826,7 @@ func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureList
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers", new(AzureListContainersResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers", new(AzureListContainersResponse), v)
 	return responseObject.(*AzureListContainersResponse), err
 }
 
@@ -843,7 +843,7 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers", v, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -865,7 +865,7 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 // See #azureContainerSAS
 func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(AzureBlobSharedAccessSignature), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), new(AzureBlobSharedAccessSignature), nil)
 	return responseObject.(*AzureBlobSharedAccessSignature), err
 }
 
@@ -881,7 +881,7 @@ func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlo
 // See AzureContainerSAS for more details.
 func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), nil, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), nil, duration)
 }
 
 // Get temporary DSN (access credentials) for a sentry project.
@@ -899,7 +899,7 @@ func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, 
 // See #sentryDSN
 func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.QueryEscape(project)+"/dsn", new(SentryDSNResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.PathEscape(project)+"/dsn", new(SentryDSNResponse), nil)
 	return responseObject.(*SentryDSNResponse), err
 }
 
@@ -912,7 +912,7 @@ func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 // See SentryDSN for more details.
 func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
+	return (&cd).SignedURL("/sentry/"+url.PathEscape(project)+"/dsn", nil, duration)
 }
 
 // Get a temporary token suitable for use connecting to a
@@ -933,7 +933,7 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 // See #websocktunnelToken
 func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*WebsocktunnelTokenResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), new(WebsocktunnelTokenResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel/"+url.PathEscape(wstAudience)+"/"+url.PathEscape(wstClient), new(WebsocktunnelTokenResponse), nil)
 	return responseObject.(*WebsocktunnelTokenResponse), err
 }
 
@@ -946,7 +946,7 @@ func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*Websocktun
 // See WebsocktunnelToken for more details.
 func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), nil, duration)
+	return (&cd).SignedURL("/websocktunnel/"+url.PathEscape(wstAudience)+"/"+url.PathEscape(wstClient), nil, duration)
 }
 
 // Get temporary GCP credentials for the given serviceAccount in the given project.
@@ -966,7 +966,7 @@ func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, du
 // See #gcpCredentials
 func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredentialsResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), new(GCPCredentialsResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), new(GCPCredentialsResponse), nil)
 	return responseObject.(*GCPCredentialsResponse), err
 }
 
@@ -979,7 +979,7 @@ func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredenti
 // See GcpCredentials for more details.
 func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), nil, duration)
+	return (&cd).SignedURL("/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

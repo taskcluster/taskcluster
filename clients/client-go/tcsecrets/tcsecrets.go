@@ -140,7 +140,7 @@ func (secrets *Secrets) Version() error {
 // See #set
 func (secrets *Secrets) Set(name string, payload *Secret) error {
 	cd := tcclient.Client(*secrets)
-	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -153,7 +153,7 @@ func (secrets *Secrets) Set(name string, payload *Secret) error {
 // See #remove
 func (secrets *Secrets) Remove(name string) error {
 	cd := tcclient.Client(*secrets)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -169,7 +169,7 @@ func (secrets *Secrets) Remove(name string) error {
 // See #get
 func (secrets *Secrets) Get(name string) (*Secret, error) {
 	cd := tcclient.Client(*secrets)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.PathEscape(name), new(Secret), nil)
 	return responseObject.(*Secret), err
 }
 
@@ -182,7 +182,7 @@ func (secrets *Secrets) Get(name string) (*Secret, error) {
 // See Get for more details.
 func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*secrets)
-	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/secret/"+url.PathEscape(name), nil, duration)
 }
 
 // List the names of all secrets.

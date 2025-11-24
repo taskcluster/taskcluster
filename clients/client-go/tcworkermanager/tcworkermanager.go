@@ -178,7 +178,7 @@ func (workerManager *WorkerManager) ListProviders_SignedURL(continuationToken, l
 // See #createWorkerPool
 func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/worker-pool/"+url.PathEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
@@ -201,7 +201,7 @@ func (workerManager *WorkerManager) CreateWorkerPool(workerPoolId string, payloa
 // See #updateWorkerPool
 func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payload *WorkerPoolDefinition1) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool/"+url.PathEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
@@ -217,7 +217,7 @@ func (workerManager *WorkerManager) UpdateWorkerPool(workerPoolId string, payloa
 // See #deleteWorkerPool
 func (workerManager *WorkerManager) DeleteWorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "DELETE", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(nil, "DELETE", "/worker-pool/"+url.PathEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
@@ -244,7 +244,7 @@ func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs(workerPoolId, co
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.QueryEscape(workerPoolId)+"/launch-configs", new(WorkerPoolLaunchConfigList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.PathEscape(workerPoolId)+"/launch-configs", new(WorkerPoolLaunchConfigList), v)
 	return responseObject.(*WorkerPoolLaunchConfigList), err
 }
 
@@ -267,7 +267,7 @@ func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs_SignedURL(worker
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId)+"/launch-configs", v, duration)
+	return (&cd).SignedURL("/worker-pool/"+url.PathEscape(workerPoolId)+"/launch-configs", v, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -282,7 +282,7 @@ func (workerManager *WorkerManager) ListWorkerPoolLaunchConfigs_SignedURL(worker
 // See #workerPoolStats
 func (workerManager *WorkerManager) WorkerPoolStats(workerPoolId string) (*WorkerPoolStatistics, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.QueryEscape(workerPoolId)+"/stats", new(WorkerPoolStatistics), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.PathEscape(workerPoolId)+"/stats", new(WorkerPoolStatistics), nil)
 	return responseObject.(*WorkerPoolStatistics), err
 }
 
@@ -295,7 +295,7 @@ func (workerManager *WorkerManager) WorkerPoolStats(workerPoolId string) (*Worke
 // See WorkerPoolStats for more details.
 func (workerManager *WorkerManager) WorkerPoolStats_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId)+"/stats", nil, duration)
+	return (&cd).SignedURL("/worker-pool/"+url.PathEscape(workerPoolId)+"/stats", nil, duration)
 }
 
 // Fetch an existing worker pool defition.
@@ -307,7 +307,7 @@ func (workerManager *WorkerManager) WorkerPoolStats_SignedURL(workerPoolId strin
 // See #workerPool
 func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPoolFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.QueryEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool/"+url.PathEscape(workerPoolId), new(WorkerPoolFullDefinition), nil)
 	return responseObject.(*WorkerPoolFullDefinition), err
 }
 
@@ -320,7 +320,7 @@ func (workerManager *WorkerManager) WorkerPool(workerPoolId string) (*WorkerPool
 // See WorkerPool for more details.
 func (workerManager *WorkerManager) WorkerPool_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/worker-pool/"+url.QueryEscape(workerPoolId), nil, duration)
+	return (&cd).SignedURL("/worker-pool/"+url.PathEscape(workerPoolId), nil, duration)
 }
 
 // Get the list of all the existing worker pools.
@@ -422,7 +422,7 @@ func (workerManager *WorkerManager) ListWorkerPoolsStats_SignedURL(continuationT
 // See #reportWorkerError
 func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, payload *WorkerErrorReport) (*WorkerPoolError, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolError), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-pool-errors/"+url.PathEscape(workerPoolId), new(WorkerPoolError), nil)
 	return responseObject.(*WorkerPoolError), err
 }
 
@@ -487,7 +487,7 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors(workerPoolId, continuat
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool-errors/"+url.QueryEscape(workerPoolId), new(WorkerPoolErrorList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-pool-errors/"+url.PathEscape(workerPoolId), new(WorkerPoolErrorList), v)
 	return responseObject.(*WorkerPoolErrorList), err
 }
 
@@ -513,7 +513,7 @@ func (workerManager *WorkerManager) ListWorkerPoolErrors_SignedURL(workerPoolId,
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/worker-pool-errors/"+url.QueryEscape(workerPoolId), v, duration)
+	return (&cd).SignedURL("/worker-pool-errors/"+url.PathEscape(workerPoolId), v, duration)
 }
 
 // Get the list of all the existing workers in a given group in a given worker pool.
@@ -532,7 +532,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup(workerPoolId, work
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup), new(WorkerListInAGivenWorkerPool), v)
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
@@ -552,7 +552,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPo
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup), v, duration)
+	return (&cd).SignedURL("/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup), v, duration)
 }
 
 // Get a single worker.
@@ -564,7 +564,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerGroup_SignedURL(workerPo
 // See #worker
 func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId string) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 
@@ -577,7 +577,7 @@ func (workerManager *WorkerManager) Worker(workerPoolId, workerGroup, workerId s
 // See Worker for more details.
 func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
+	return (&cd).SignedURL("/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), nil, duration)
 }
 
 // Create a new worker.  This is only useful for worker pools where the provider
@@ -594,7 +594,7 @@ func (workerManager *WorkerManager) Worker_SignedURL(workerPoolId, workerGroup, 
 // See #createWorker
 func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 
@@ -613,7 +613,7 @@ func (workerManager *WorkerManager) CreateWorker(workerPoolId, workerGroup, work
 // See #updateWorker
 func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, workerId string, payload *WorkerCreationUpdateRequest) (*WorkerFullDefinition, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerFullDefinition), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerFullDefinition), nil)
 	return responseObject.(*WorkerFullDefinition), err
 }
 
@@ -630,7 +630,7 @@ func (workerManager *WorkerManager) UpdateWorker(workerPoolId, workerGroup, work
 // See #removeWorker
 func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, workerId string) error {
 	cd := tcclient.Client(*workerManager)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.QueryEscape(workerPoolId)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), nil, nil)
 	return err
 }
 
@@ -656,7 +656,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool(workerPoolId, conti
 		v.Add("state", state)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.QueryEscape(workerPoolId), new(WorkerListInAGivenWorkerPool), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.PathEscape(workerPoolId), new(WorkerListInAGivenWorkerPool), v)
 	return responseObject.(*WorkerListInAGivenWorkerPool), err
 }
 
@@ -682,7 +682,7 @@ func (workerManager *WorkerManager) ListWorkersForWorkerPool_SignedURL(workerPoo
 		v.Add("state", state)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/workers/"+url.QueryEscape(workerPoolId), v, duration)
+	return (&cd).SignedURL("/workers/"+url.PathEscape(workerPoolId), v, duration)
 }
 
 // Register a running worker.  Workers call this method on worker start-up.
@@ -755,7 +755,7 @@ func (workerManager *WorkerManager) ListWorkers(provisionerId, workerType, conti
 		v.Add("workerState", workerState)
 	}
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", new(ListWorkersResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers", new(ListWorkersResponse), v)
 	return responseObject.(*ListWorkersResponse), err
 }
 
@@ -784,7 +784,7 @@ func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerT
 		v.Add("workerState", workerState)
 	}
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers", v, duration)
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers", v, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -798,7 +798,7 @@ func (workerManager *WorkerManager) ListWorkers_SignedURL(provisionerId, workerT
 // See #getWorker
 func (workerManager *WorkerManager) GetWorker(provisionerId, workerType, workerGroup, workerId string) (*WorkerResponse, error) {
 	cd := tcclient.Client(*workerManager)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
 }
 
@@ -811,7 +811,7 @@ func (workerManager *WorkerManager) GetWorker(provisionerId, workerType, workerG
 // See GetWorker for more details.
 func (workerManager *WorkerManager) GetWorker_SignedURL(provisionerId, workerType, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*workerManager)
-	return (&cd).SignedURL("/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/workers/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), nil, duration)
+	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType)+"/workers/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId), nil, duration)
 }
 
 // Respond with a service heartbeat.
