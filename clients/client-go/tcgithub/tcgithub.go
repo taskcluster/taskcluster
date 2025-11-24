@@ -212,7 +212,7 @@ func (github *Github) CancelBuilds(owner, repo, pullRequest, sha string) (*Build
 		v.Add("sha", sha)
 	}
 	cd := tcclient.Client(*github)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/builds/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/cancel", new(BuildsResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/builds/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/cancel", new(BuildsResponse), v)
 	return responseObject.(*BuildsResponse), err
 }
 
@@ -228,7 +228,7 @@ func (github *Github) CancelBuilds(owner, repo, pullRequest, sha string) (*Build
 // See #badge
 func (github *Github) Badge(owner, repo, branch string) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/badge.svg", nil, nil)
 	return err
 }
 
@@ -241,7 +241,7 @@ func (github *Github) Badge(owner, repo, branch string) error {
 // See Badge for more details.
 func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/badge.svg", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -256,7 +256,7 @@ func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.
 // See #repository
 func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error) {
 	cd := tcclient.Client(*github)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(RepositoryResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo), new(RepositoryResponse), nil)
 	return responseObject.(*RepositoryResponse), err
 }
 
@@ -269,7 +269,7 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 // See Repository for more details.
 func (github *Github) Repository_SignedURL(owner, repo string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo), nil, duration)
 }
 
 // For a given branch of a repository, this will always point
@@ -285,7 +285,7 @@ func (github *Github) Repository_SignedURL(owner, repo string, duration time.Dur
 // See #latest
 func (github *Github) Latest(owner, repo, branch string) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/latest", nil, nil)
 	return err
 }
 
@@ -298,7 +298,7 @@ func (github *Github) Latest(owner, repo, branch string) error {
 // See Latest for more details.
 func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/latest", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -315,7 +315,7 @@ func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time
 // See #createStatus
 func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatusRequest) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/statuses/"+url.QueryEscape(sha), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/statuses/"+url.PathEscape(sha), nil, nil)
 	return err
 }
 
@@ -328,7 +328,7 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 // See #createComment
 func (github *Github) CreateComment(owner, repo, number string, payload *CreateCommentRequest) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/issues/"+url.PathEscape(number)+"/comments", nil, nil)
 	return err
 }
 

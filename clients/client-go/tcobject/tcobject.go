@@ -154,7 +154,7 @@ func (object *Object) Version() error {
 // See #createUpload
 func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*CreateUploadResponse, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), new(CreateUploadResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.PathEscape(name), new(CreateUploadResponse), nil)
 	return responseObject.(*CreateUploadResponse), err
 }
 
@@ -177,7 +177,7 @@ func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*
 // See #finishUpload
 func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -195,7 +195,7 @@ func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) er
 // See #startDownload
 func (object *Object) StartDownload(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.PathEscape(name), new(DownloadObjectResponse), nil)
 	return responseObject.(*DownloadObjectResponse), err
 }
 
@@ -209,7 +209,7 @@ func (object *Object) StartDownload(name string, payload *DownloadObjectRequest)
 // See #object
 func (object *Object) Object(name string) (*ObjectMetadata, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.QueryEscape(name), new(ObjectMetadata), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.PathEscape(name), new(ObjectMetadata), nil)
 	return responseObject.(*ObjectMetadata), err
 }
 
@@ -222,7 +222,7 @@ func (object *Object) Object(name string) (*ObjectMetadata, error) {
 // See Object for more details.
 func (object *Object) Object_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*object)
-	return (&cd).SignedURL("/metadata/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/metadata/"+url.PathEscape(name), nil, duration)
 }
 
 // Get the data in an object directly.  This method does not return a JSON body, but
@@ -246,7 +246,7 @@ func (object *Object) Object_SignedURL(name string, duration time.Duration) (*ur
 // See #download
 func (object *Object) Download(name string) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(nil, "GET", "/download/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/download/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -259,7 +259,7 @@ func (object *Object) Download(name string) error {
 // See Download for more details.
 func (object *Object) Download_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*object)
-	return (&cd).SignedURL("/download/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/download/"+url.PathEscape(name), nil, duration)
 }
 
 // Respond with a service heartbeat.

@@ -347,10 +347,10 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.OutputURL != "" {
-		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
+		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), err\n"
 	} else {
-		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", nil, " + queryExpr + ")\n"
+		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn err\n"
 	}
 	content += "}\n"
@@ -385,7 +385,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.Name() + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
-	content += "\treturn (&cd).SignedURL(\"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", " + queryExpr + ", duration)\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", " + queryExpr + ", duration)\n"
 	content += "}\n"
 	content += "\n"
 	// can remove any code that added an empty string to another string
