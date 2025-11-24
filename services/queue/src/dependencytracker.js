@@ -184,7 +184,7 @@ class DependencyTracker {
           // dependency as satisfied if the 'require' relation is
           // 'all-resolved'.
           if (dep.requires !== 'all-resolved') {
-            return;
+            continue;
           }
         }
 

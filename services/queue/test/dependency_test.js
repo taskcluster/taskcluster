@@ -550,6 +550,57 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.stopPollingService();
   });
 
+  // https://github.com/taskcluster/taskcluster/issues/7829
+  test('taskA <- taskB (all-completed) + taskC (all-resolved)', async () => {
+    let taskIdA = slugid.v4();
+    // Ensure taskIdB < taskIdC lexicographically so B is processed first.
+    // The bug only happened if the all-completed task was processed first
+    let taskIdB = 'A' + slugid.v4().slice(1);
+    let taskIdC = 'B' + slugid.v4().slice(1);
+
+    let taskA = taskDef();
+    let taskB = _.defaults({
+      dependencies: [taskIdA],
+      requires: 'all-completed',
+    }, taskDef());
+    let taskC = _.defaults({
+      dependencies: [taskIdA],
+      requires: 'all-resolved',
+    }, taskDef());
+
+    await helper.startPollingService('dependency-resolver');
+
+    debug('### Create taskA, taskB, and taskC');
+    let r1 = await helper.queue.createTask(taskIdA, taskA);
+    let r2 = await helper.queue.createTask(taskIdB, taskB);
+    let r3 = await helper.queue.createTask(taskIdC, taskC);
+    assume(r1.status.state).equals('pending');
+    assume(r2.status.state).equals('unscheduled');
+    assume(r3.status.state).equals('unscheduled');
+    helper.clearPulseMessages();
+
+    debug('### Claim and fail taskA');
+    await helper.queue.claimTask(taskIdA, 0, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
+    });
+    await helper.queue.reportFailed(taskIdA, 0);
+    helper.assertPulseMessage('task-failed', m => m.payload.status.taskId === taskIdA);
+    helper.clearPulseMessages();
+
+    debug('### Wait for taskC (all-resolved) to be pending');
+    await testing.poll(
+      async () => helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdC),
+      200, 250);
+
+    debug('### Verify taskB (all-completed) stays unscheduled');
+    let statusB = helper.checkDates(await helper.queue.status(taskIdB));
+    assume(statusB.status.state).equals('unscheduled');
+
+    helper.clearPulseMessages();
+    await helper.stopPollingService();
+  });
+
   test('expiration of relationships', async () => {
     const taskIdA = slugid.v4();
     const taskA = _.defaults({
