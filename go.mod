@@ -44,7 +44,6 @@ require (
 	github.com/tent/hawk-go v0.0.0-20161026210932-d341ea318957
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.45.0
-	golang.org/x/net v0.47.0
 	golang.org/x/sync v0.18.0
 	golang.org/x/sys v0.38.0
 	golang.org/x/tools v0.38.0
@@ -358,6 +357,7 @@ require (
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
 	golang.org/x/mod v0.29.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
 	golang.org/x/term v0.37.0 // indirect
