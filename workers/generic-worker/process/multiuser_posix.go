@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"syscall"
 
+	"context"
+
 	gwruntime "github.com/taskcluster/taskcluster/v93/workers/generic-worker/runtime"
-	"golang.org/x/net/context"
 )
 
 type PlatformData struct {
