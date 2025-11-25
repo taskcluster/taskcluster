@@ -171,7 +171,7 @@ func execute(
 	// Parameterize the route
 	route := entry.Route
 	for k, v := range args {
-		val := strings.ReplaceAll(url.QueryEscape(v), "+", "%20")
+		val := url.PathEscape(v)
 		route = strings.Replace(route, "<"+k+">", val, 1)
 	}
 
