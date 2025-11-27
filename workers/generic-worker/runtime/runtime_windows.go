@@ -92,9 +92,9 @@ func (osUser *OSUser) CreateUserProfile() error {
 	// Verify the profile directory is accessible before returning
 	// CreateProfile may return before the file system has fully initialized the directory
 	// This prevents ERROR_NOT_READY errors when LoadUserProfile is called immediately after
-	const maxRetries = 10
+	const maxRetries = 25
 	const initialDelay = 50 * time.Millisecond
-	const maxDelay = 2 * time.Second
+	const maxDelay = 5 * time.Second
 	const backoffMultiplier = 1.5
 
 	delay := initialDelay
