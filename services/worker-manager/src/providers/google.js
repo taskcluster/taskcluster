@@ -84,6 +84,22 @@ export class GoogleProvider extends Provider {
     this.oauth2 = new gcpCompute.auth.OAuth2();
   }
 
+  #extractGoogleApiErrors(err) {
+    if (err.response?.data?.error?.errors && Array.isArray(err.response.data.error.errors)) {
+      return err.response.data.error.errors;
+    }
+    if (err.errors && Array.isArray(err.errors)) {
+      return err.errors;
+    }
+    if (err.response?.data?.error?.message) {
+      return [{
+        message: err.response.data.error.message,
+        code: err.response.data.error.code,
+      }];
+    }
+    return null;
+  }
+
   async setup() {
     const workerServiceAccount = (await this.iam.projects.serviceAccounts.get({
       name: `projects/${this.project}/serviceAccounts/${this.workerServiceAccountId}`,
@@ -317,10 +333,11 @@ export class GoogleProvider extends Provider {
         }));
         op = res.data;
       } catch (err) {
-        if (!err.errors) {
+        const errors = this.#extractGoogleApiErrors(err);
+        if (!errors) {
           throw err;
         }
-        for (const error of err.errors) {
+        for (const error of errors) {
           await this.reportError({
             workerPool,
             kind: 'creation-error',
@@ -328,6 +345,7 @@ export class GoogleProvider extends Provider {
             description: error.message,
             extra: {
               config: cfg,
+              errorCode: error.code,
             },
             launchConfigId: launchConfig.launchConfigId,
           });
