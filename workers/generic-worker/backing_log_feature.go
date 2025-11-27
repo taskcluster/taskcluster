@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v93/internal/scopes"
+	"github.com/taskcluster/taskcluster/v94/internal/scopes"
 )
 
 type (

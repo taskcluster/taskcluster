@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster/v93/internal"
-	"github.com/taskcluster/taskcluster/v93/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v93/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v93/tools/worker-runner/runner"
-	"github.com/taskcluster/taskcluster/v93/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v94/internal"
+	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/runner"
+	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/worker"
 )
 
 const genDocsUsage = `Generate documentation snippets for inclusion in Taskcluster docs.

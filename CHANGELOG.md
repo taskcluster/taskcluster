@@ -3,6 +3,39 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Azure provider logs additional error details for failed ARM deployments.
+
+### USERS
+
+▶ [MAJOR] [#7765](https://github.com/taskcluster/taskcluster/issues/7765)
+Spaces in artifact names are now correctly preserved instead of being replaced with `+`
+
+▶ [patch] [#7829](https://github.com/taskcluster/taskcluster/issues/7829)
+Fix a bug that prevented all-resolved tasks from getting scheduled if they
+depended on a task that was also part of an all-completed dependency and that
+all-completed task was processed before the all-resolved one
+
+▶ [patch]
+Increase the buffer size of websocktunnel on the worker side to make livelogs a lot faster
+
+▶ [patch] [#8121](https://github.com/taskcluster/taskcluster/issues/8121)
+The taskcluster CLI now encodes URL path parameters as path parametes rather than as query string parameters.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump golang.org/x/crypto from 0.43.0 to 0.45.0 (2e133883c1)
+* build(deps): bump glob from 10.4.5 to 10.5.0 in /clients/client (3192cf9895)
+
+</details>
+
 ## v93.1.5
 
 ### GENERAL

@@ -62,10 +62,10 @@ Its `tid` claim must match the client ID exactly.
 #### Multiplexed Websockets
 
 The protocol used within the websocket connection between a client and the websocktunnel service is beyond the scope of this document.
-It is implemented by the [`tools/websocktunnel/wsmux`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/tools/websocktunnel/wsmux) package.
-The [`tools/websocktunnel/client`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/tools/websocktunnel/client) package uses this to implement the client side of the connection.
+It is implemented by the [`tools/websocktunnel/wsmux`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v94/tools/websocktunnel/wsmux) package.
+The [`tools/websocktunnel/client`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v94/tools/websocktunnel/client) package uses this to implement the client side of the connection.
 
-The latter package exposes a [`Client`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/tools/websocktunnel/client#Client) struct which implements `net.Listener`.
+The latter package exposes a [`Client`](https://pkg.go.dev/github.com/taskcluster/taskcluster/v94/tools/websocktunnel/client#Client) struct which implements `net.Listener`.
 The expectation is that client processes will build a `http.Server` (or equivalent) on top of this `net.Listener`.
 All connections to the server with a URL identifying the client will appear as new connections on this listener (that is, by returning a `net.Conn` from `Accept`.
 The resulting HTTP request will omit the `/<clientId>` portion of the request path.
@@ -86,7 +86,7 @@ That is entirely up to the client.
 
 ### API Documentation
 
-See Documentation at [pkg.go.dev](https://pkg.go.dev/github.com/taskcluster/taskcluster/v93/tools/websocktunnel).
+See Documentation at [pkg.go.dev](https://pkg.go.dev/github.com/taskcluster/taskcluster/v94/tools/websocktunnel).
 
 ## CLI
 

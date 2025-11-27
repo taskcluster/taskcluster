@@ -12,7 +12,7 @@ import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/orcaman/writerseeker"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v93/clients/client-go/internal"
+	"github.com/taskcluster/taskcluster/v94/clients/client-go/internal"
 )
 
 type HTTPRetryError = internal.HTTPRetryError
