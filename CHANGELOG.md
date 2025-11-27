@@ -3,6 +3,14 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Fixes errors handling for upgraded googleapis packages. Instance creation errors were sent differently,
+which didn't allow to log some provision exceptions.
+
 ## v94.0.0
 
 ### WORKER-DEPLOYERS
