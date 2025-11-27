@@ -252,6 +252,17 @@ type (
 		Secret string `json:"secret"`
 	}
 
+	// Decision returned to a worker asking whether to keep running or be terminated
+	ShouldWorkerTerminateResponse struct {
+
+		// Reason why worker should be terminated
+		//
+		// Min length: 1
+		Reason string `json:"reason"`
+
+		Terminate bool `json:"terminate"`
+	}
+
 	// Link to source of this task, should specify a file, revision and
 	// repository. This should be place someone can go an do a git/hg blame
 	// to who came up with recipe for this task.

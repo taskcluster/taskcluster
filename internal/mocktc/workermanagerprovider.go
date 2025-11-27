@@ -45,3 +45,9 @@ func (wp *WorkerManagerProvider) CreateWorkerPool(w http.ResponseWriter, r *http
 	out, err := wp.workerManager.CreateWorkerPool(vars["workerPoolId"], &payload)
 	JSON(w, out, err)
 }
+
+func (wp *WorkerManagerProvider) ShouldWorkerTerminate(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	out, err := wp.workerManager.ShouldWorkerTerminate(vars["workerPoolId"], vars["workerGroup"], vars["workerId"])
+	JSON(w, out, err)
+}

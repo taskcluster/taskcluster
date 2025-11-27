@@ -360,7 +360,6 @@ func GWTest(t *testing.T) *Test {
 			CheckForNewDeploymentEverySecs: 0,
 			CleanUpTaskDirs:                false,
 			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DeploymentID:                   "",
 			DisableReboots:                 true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
