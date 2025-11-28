@@ -356,3 +356,73 @@ func (tc *TaskDefinitionTestCase) Validate(t *testing.T) {
 	validateAgainstSchema(t, dwRaw, dockerworker.JSONSchema())
 	validateAgainstSchema(t, gwRaw, genericworker.JSONSchema())
 }
+func TestAppendQueueScopes(t *testing.T) {
+	t.Run("adds scope to empty list", func(t *testing.T) {
+		gwScopes := []string{}
+		taskQueueID := "proj-test/worker-type"
+		capability := "kvm"
+		result := d2g.AppendQueueScopes(gwScopes, taskQueueID, capability)
+		expected := "generic-worker:os-group:proj-test/worker-type/kvm"
+		if len(result) != 1 {
+			t.Errorf("expected 1 scope, got %d", len(result))
+		}
+		if result[0] != expected {
+			t.Errorf("expected %s , receive %s", expected, result[0])
+		}
+	})
+
+	t.Run("adds scope to existing list", func(t *testing.T) {
+		gwScopes := []string{"scope-existence-1", "scope-existence-2"}
+		originalLen := len(gwScopes)
+		taskQueueID := "proj-test/worker-type"
+		capabilty := "docker"
+		result := d2g.AppendQueueScopes(gwScopes, taskQueueID, capabilty)
+		if len(result) != 3 {
+			t.Errorf("expected 3 scopes got %d", len(result))
+		}
+		expected := "generic-worker:os-group:proj-test/worker-type/docker"
+		if result[2] != expected {
+			t.Errorf("expected last scope %s, got  %s", expected, result[2])
+		}
+		if len(gwScopes) != originalLen {
+			t.Errorf("original slice length was modified")
+		}
+	})
+	t.Run("corretly formats different caapabilities", func(t *testing.T) {
+		tests := []struct {
+			name        string
+			taskQueueID string
+			capability  string
+			expected    string
+		}{
+			{
+				name:        "kvm capability",
+				taskQueueID: "proj/worker",
+				capability:  "kvm",
+				expected:    "generic-worker:os-group:proj/worker/kvm",
+			}, {
+
+				name:        "libvirt capability",
+				taskQueueID: "proj/worker",
+				capability:  "libvirt",
+				expected:    "generic-worker:os-group:proj/worker/libvirt",
+			},
+			{
+
+				name:        "docker capability",
+				taskQueueID: "test-proj/test-worker",
+				capability:  "docker",
+				expected:    "generic-worker:os-group:test-proj/test-worker/docker",
+			},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				result := d2g.AppendQueueScopes([]string{}, tt.taskQueueID, tt.capability)
+				if result[0] != tt.expected {
+					t.Errorf("expected %s, received %s", tt.expected, result[0])
+				}
+
+			})
+		}
+	})
+}

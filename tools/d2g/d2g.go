@@ -180,6 +180,9 @@ func ConvertScopes(
 			gwScopes = append(gwScopes, "generic-worker:loopback-audio:"+s[len("docker-worker:capability:device:loopbackAudio:"):])
 		case strings.HasPrefix(s, "docker-worker:"):
 			gwScopes = append(gwScopes, "generic-worker:"+s[len("docker-worker:"):])
+		case s == "docker-worker:capability:device:kvm":
+			gwScopes = AppendQueueScopes(gwScopes, taskQueueID, "kvm")
+			gwScopes = AppendQueueScopes(gwScopes, taskQueueID, "libvirt")
 		}
 	}
 
@@ -675,4 +678,10 @@ func envMappings(dwPayload *dockerworker.DockerWorkerPayload, config Config) (st
 		envListStrBuilder.WriteString(envVar + "\n")
 	}
 	return envListStrBuilder.String(), nonEnvListArgs
+}
+
+func AppendQueueScopes(gwScopes []string, taskQueueID, capability string) []string {
+	return append(gwScopes,
+		fmt.Sprintf("generic-worker:os-group:%s/%s", taskQueueID, capability),
+	)
 }
