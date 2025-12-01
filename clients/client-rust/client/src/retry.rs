@@ -2,8 +2,7 @@
 ///
 /// This is intended for use by this crate and special-purpose crates like `taskcluster-download`,
 /// not for general use.
-use backoff::backoff::Backoff as BackoffTrait;
-use backoff::ExponentialBackoff;
+use backon::{BackoffBuilder, ExponentialBuilder};
 use std::time::Duration;
 
 /// Configuration for a client's automatic retrying.  The field names here match those
@@ -12,7 +11,7 @@ use std::time::Duration;
 pub struct Retry {
     /// Number of retries (not counting the first try) for transient errors. Zero
     /// to disable retries entirely. (default 5)
-    pub retries: u32,
+    pub retries: usize,
 
     /// Maximum interval between retries (default 30s)
     pub max_delay: Duration,
@@ -38,50 +37,52 @@ impl Default for Retry {
 }
 
 /// Backoff tracker for a single, possibly-retried operation.  This is a thin wrapper around
-/// [backoff::ExponentialBackoff].
+/// [backon::ExponentialBackoff].
 #[derive(Debug)]
-pub struct Backoff<'a> {
-    retry: &'a Retry,
-    tries: u32,
-    backoff: ExponentialBackoff,
+pub struct Backoff {
+    backoff: backon::ExponentialBackoff,
 }
 
-impl<'a> Backoff<'a> {
+impl Backoff {
     pub fn new(retry: &Retry) -> Backoff {
-        let mut backoff = ExponentialBackoff {
-            max_elapsed_time: None, // we count retries instead
-            max_interval: retry.max_delay,
-            initial_interval: retry.delay_factor,
-            multiplier: 2.0, // hard-coded value in JS client
-            #[cfg(not(test))]
-            randomization_factor: retry.randomization_factor,
-            #[cfg(test)]
-            randomization_factor: 0.0,
-            ..Default::default()
+        let builder = ExponentialBuilder::new()
+            .with_min_delay(retry.delay_factor)
+            .with_max_delay(retry.max_delay)
+            .with_factor(2.0) // hard-coded value in JS client
+            .with_max_times(retry.retries);
+
+        #[cfg(not(test))]
+        let builder = if retry.randomization_factor > 0.0 {
+            builder.with_jitter()
+        } else {
+            builder
         };
-        backoff.reset();
+
         Backoff {
-            retry,
-            tries: 0,
-            backoff,
+            backoff: builder.build(),
         }
     }
 
     /// Return the next backoff interval or, if the operation should not be retried,
     /// None.
     pub fn next_backoff(&mut self) -> Option<Duration> {
-        self.tries += 1;
-        if self.tries > self.retry.retries {
-            None
-        } else {
-            self.backoff.next_backoff()
-        }
+        self.backoff.next()
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    /// Check that two durations are approximately equal (within 1ms tolerance)
+    /// to account for floating point variations in backon's calculations.
+    fn approx_eq(a: Option<Duration>, b: Option<Duration>) -> bool {
+        match (a, b) {
+            (Some(a), Some(b)) => a.abs_diff(b) < Duration::from_millis(1),
+            (None, None) => true,
+            _ => false,
+        }
+    }
 
     #[tokio::test]
     async fn backoff_three_retries() {
@@ -91,11 +92,20 @@ mod test {
         };
         let mut backoff = Backoff::new(&retry);
         // ..try, fail
-        assert_eq!(backoff.next_backoff(), Some(Duration::from_millis(100)));
+        assert!(approx_eq(
+            backoff.next_backoff(),
+            Some(Duration::from_millis(100))
+        ));
         // ..retry 1, fail
-        assert_eq!(backoff.next_backoff(), Some(Duration::from_millis(200)));
+        assert!(approx_eq(
+            backoff.next_backoff(),
+            Some(Duration::from_millis(200))
+        ));
         // ..retry 2, fail
-        assert_eq!(backoff.next_backoff(), Some(Duration::from_millis(400)));
+        assert!(approx_eq(
+            backoff.next_backoff(),
+            Some(Duration::from_millis(400))
+        ));
         // ..retry 3, fail
         assert_eq!(backoff.next_backoff(), None); // out of retries
     }

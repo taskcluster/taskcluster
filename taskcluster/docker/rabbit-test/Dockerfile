@@ -1,4 +1,4 @@
-FROM node:24.11.0-trixie
+FROM node:24.11.1-trixie
 
 VOLUME /builds/worker/checkouts
 
