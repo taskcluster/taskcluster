@@ -4,6 +4,7 @@ install-state.gz
 user-build-config.yml
 *.log
 .idea
+.vscode
 user-config.*
 dev-config.*
 /artifacts/
