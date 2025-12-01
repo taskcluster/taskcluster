@@ -23,13 +23,17 @@ Azure provider logs additional error details for failed ARM deployments.
 ▶ [MAJOR] [#7765](https://github.com/taskcluster/taskcluster/issues/7765)
 Spaces in artifact names are now correctly preserved instead of being replaced with `+`
 
+▶ [MAJOR]
+Increase the buffer size of websocktunnel on the worker side to make livelogs a lot faster.
+
+This is a breaking change, since the pre-v94 Websock Tunnel service will no longer work with newer (v94+) clients (workers). However, older clients (pre-v94 workers) will continue to work with the new Websock Tunnel service.
+
+IMPORTANT: Therefore, it is imperative, that the Websock Tunnel service should be updated to v94+ before any clients (workers) are updated to v94+.
+
 ▶ [patch] [#7829](https://github.com/taskcluster/taskcluster/issues/7829)
 Fix a bug that prevented all-resolved tasks from getting scheduled if they
 depended on a task that was also part of an all-completed dependency and that
 all-completed task was processed before the all-resolved one
-
-▶ [patch]
-Increase the buffer size of websocktunnel on the worker side to make livelogs a lot faster
 
 ▶ [patch] [#8121](https://github.com/taskcluster/taskcluster/issues/8121)
 The taskcluster CLI now encodes URL path parameters as path parametes rather than as query string parameters.
