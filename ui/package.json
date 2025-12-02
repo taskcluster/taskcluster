@@ -26,7 +26,7 @@
     "@material-ui/pickers": "3.3.11",
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
-    "@sentry/browser": "^6.0.0",
+    "@sentry/browser": "^10.27.0",
     "@taskcluster/client-web": "^88.0.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^2.1.1",
