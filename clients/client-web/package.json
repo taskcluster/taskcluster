@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
-    "chai": "^4.3.10",
+    "chai": "^6.2.1",
     "chai-as-promised": "^8.0.2",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.5.0",
