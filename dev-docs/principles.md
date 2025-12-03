@@ -46,7 +46,7 @@ These are all under an umbrella we call Getting Things Built&#8482;. None of our
 - Self-Service
 - Changes are made in an open fashion, considering all (real and potential) users of the platform
   - In particular, we strive to implement _general_ solutions even when a single user has a very _specific_ requirement.
-    More precisely, despite Firefox CI being the dominant user of Taskcluster, implemnetations of features are never Firefox-specific.
+    More precisely, despite Firefox CI being the dominant user of Taskcluster, implementations of features are never Firefox-specific.
 
 ## In Practice..
 
