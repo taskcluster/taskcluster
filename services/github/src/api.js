@@ -378,7 +378,7 @@ builder.declare({
       case EVENT_TYPES.CHECK_RUN:
         // We only want to check if re-run was requested
         if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
-          return resolve(res, 400, 'Only rerequested for check runs is supported');
+          return resolve(res, 200, 'Only rerequested for check runs is supported');
         }
 
         if (body?.sender?.type?.toLowerCase() === 'bot') {
@@ -403,7 +403,7 @@ builder.declare({
         break;
 
       default:
-        return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+        return resolve(res, 200, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
     e.webhookPayload = body;
