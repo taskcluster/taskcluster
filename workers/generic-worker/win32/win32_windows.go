@@ -67,8 +67,9 @@ const (
 
 	KF_FLAG_CREATE uint32 = 0x00008000
 
+	// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
 	CREATE_BREAKAWAY_FROM_JOB = 0x01000000
-	CREATE_NO_WINDOW          = 0x08000000
+	CREATE_NEW_CONSOLE        = 0x00000010
 	CREATE_NEW_PROCESS_GROUP  = 0x00000200
 
 	VER_MAJORVERSION     = 0x0000002

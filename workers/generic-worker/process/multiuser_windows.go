@@ -87,7 +87,7 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NO_WINDOW)
+	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
 	if !isWindows8OrGreater {
 		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
 	}
