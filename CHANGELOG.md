@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.1.1
+
+
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump jws from 3.2.2 to 3.2.3 (da9d202243)
+
+</details>
+
 ## v94.1.0
 
 ### GENERAL
