@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.1.0
+
+### GENERAL
+
+▶ [patch]
+Client (python): upgrades many dependencies to latest minor/patch releases using `uv lock --upgrade`.
+
+▶ [patch]
+Upgrades to Node.js v24.11.1 and rust v1.91.1. Additionally upgrades yarn to 4.12.0.
+
+Replaces `backoff` crate with `backon` due to https://rustsec.org/advisories/RUSTSEC-2025-0012
+
+▶ [patch]
+Upgrades to go1.25.5 [SECURITY].
+
+See more [here](https://go.dev/doc/devel/release#go1.25.5).
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8115](https://github.com/taskcluster/taskcluster/issues/8115)
+Generic Worker (windows): reverts #8030 to use `CREATE_NEW_CONSOLE` over `CREATE_NO_WINDOW` so that child processes can call `AllocConsole()` to create new consoles.
+
+### DEVELOPERS
+
+▶ [minor] [#8093](https://github.com/taskcluster/taskcluster/issues/8093)
+Github webhook endpoint returns 200 instead of 400 for unsupported events. 200 means we received and processed webhook,
+even if we don't actually support such event at the moment. 400 is only for validation issues.
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps): bump the go-deps group with 2 updates (a50efca685)
+* build(deps): bump the client-node-deps group (c70a6f6bc1)
+* build(deps-dev): bump eslint (c39ca3d277)
+* build(deps): bump tokio-util (e1a85b8485)
+* build(deps): bump actions/checkout from 5 to 6 (4d2553a4dd)
+* build(deps): bump express from 4.21.2 to 4.22.0 (d638d580a4)
+* build(deps): bump express from 4.21.0 to 4.22.0 in /ui (7de97b46b7)
+* build(deps): bump node-forge from 1.3.1 to 1.3.2 (63ffe5deaa)
+
+</details>
+
 ## v94.0.1
 
 ### WORKER-DEPLOYERS
