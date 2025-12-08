@@ -277,7 +277,7 @@ tasks.push({
       },
       services: {
         rabbitmq: serviceDefinition('rabbitmq', {
-          image: 'rabbitmq:3.12.1-management',
+          image: 'rabbitmq:4.2.1-management',
           healthcheck: healthcheck('rabbitmq-diagnostics ping'),
           ports: [
             '5672:5672',

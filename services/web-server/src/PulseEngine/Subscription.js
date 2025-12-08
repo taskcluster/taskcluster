@@ -70,6 +70,7 @@ export default class Subscription {
           durable: true,
           autoDelete: false,
           expires: 30000, // 30 seconds, long enough for a reconnect
+          arguments: { 'x-queue-type': 'quorum' },
         });
 
         // perform the queue binding in a new channel, so that the existing channel
