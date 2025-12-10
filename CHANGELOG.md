@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#8156](https://github.com/taskcluster/taskcluster/issues/8156)
+Pulse library declares non-ephemeral core Taskcluster queues as quorum queues to prepare for upgrading to RabbitMQ v4+.
+
 ## v94.1.1
 
 
