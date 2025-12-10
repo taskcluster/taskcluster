@@ -6,7 +6,7 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    image: rabbitmq:3.12.1-management
+    image: rabbitmq:4.2.1-management
     networks:
       - local
     healthcheck:
