@@ -15,10 +15,16 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Grid from '@material-ui/core/Grid';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Box from '@material-ui/core/Box';
 import DataTable from '../../../components/DataTable';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import SchemaTable from '../../../components/SchemaTable';
+import CodeExample from '../../../components/CodeExample';
+import generateExamples from '../../../utils/api-examples';
 
 const primaryTypographyProps = { variant: 'body1' };
 
@@ -93,6 +99,8 @@ export default class Entry extends Component {
     exchangePrefix: string,
     /** The service name to which the entry belongs, or null for a schema. */
     serviceName: string,
+    /** Required when `type` is `function`. API version like 'v1' */
+    apiVersion: string,
   };
 
   static defaultProps = {
@@ -107,6 +115,9 @@ export default class Entry extends Component {
       this.props.entry.type === window.location.hash.slice(1) ||
       encodeURIComponent(path(['schema', '$id'], this.props.entry)) ===
         window.location.hash.slice(1),
+    selectedLanguage: 'curl',
+    // Cache for generated examples to avoid regenerating
+    exampleCache: {},
   };
 
   getSignatureFromEntry(entry) {
@@ -374,9 +385,56 @@ export default class Entry extends Component {
     }
   }
 
+  getExampleForLanguage = languageKey => {
+    const { serviceName, apiVersion, entry } = this.props;
+    const { exampleCache } = this.state;
+
+    // Check cache first
+    if (exampleCache[languageKey]) {
+      return exampleCache[languageKey];
+    }
+
+    // Generate example for this language only (lazy loading)
+    const example = generateExamples(
+      serviceName,
+      apiVersion,
+      entry,
+      languageKey
+    );
+
+    // Cache it for future use
+    this.setState(prevState => ({
+      exampleCache: {
+        ...prevState.exampleCache,
+        [languageKey]: example,
+      },
+    }));
+
+    return example;
+  };
+
   renderFunctionExpansionDetails = () => {
     const { serviceName, classes, entry } = this.props;
+    const { selectedLanguage } = this.state;
     const signature = this.getSignatureFromEntry(entry);
+    const exampleLanguages = [
+      { key: 'curl', label: 'curl' },
+      { key: 'go', label: 'Go' },
+      { key: 'python', label: 'Python' },
+      { key: 'pythonAsync', label: 'Python (async)' },
+      { key: 'node', label: 'Node.js' },
+      { key: 'web', label: 'Web' },
+      { key: 'rust', label: 'Rust' },
+      { key: 'shell', label: 'Shell' },
+    ];
+    // Get the currently selected language
+    const currentLanguage = exampleLanguages.find(
+      lang => lang.key === selectedLanguage
+    );
+    // Only generate example for currently visible language (lazy loading)
+    const currentExample = currentLanguage
+      ? this.getExampleForLanguage(currentLanguage.key)
+      : null;
 
     return (
       <List className={classes.list}>
@@ -435,6 +493,43 @@ export default class Entry extends Component {
               primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary="n/a"
+            />
+          </ListItem>
+        )}
+        {entry.type === 'function' && (
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              disableTypography
+              primary={<Typography variant="body1">Examples</Typography>}
+              secondary={
+                <Box sx={{ width: '100%' }}>
+                  <FormControl size="small" sx={{ minWidth: 150, mb: 1 }}>
+                    <Select
+                      value={selectedLanguage}
+                      onChange={e =>
+                        this.setState({ selectedLanguage: e.target.value })
+                      }
+                      variant="outlined"
+                      sx={{ fontSize: '0.875rem' }}>
+                      {exampleLanguages.map(({ key, label }) => (
+                        <MenuItem key={key} value={key}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Box sx={{ mt: 1 }}>
+                    {currentExample && (
+                      <CodeExample
+                        key={currentLanguage.key}
+                        code={currentExample}
+                        language={currentLanguage.key}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              }
             />
           </ListItem>
         )}
