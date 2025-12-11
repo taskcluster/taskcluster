@@ -36,7 +36,7 @@ Fixes pulse consumer issue where services would assert the queue exists as a quo
 
 ### DEPLOYERS
 
-▶ [minor] [#8074](https://github.com/taskcluster/taskcluster/issues/8074)
+▶ [minor] [#8156](https://github.com/taskcluster/taskcluster/issues/8156)
 Pulse library declares non-ephemeral core Taskcluster queues as quorum queues to prepare for upgrading to RabbitMQ v4+.
 
 ## v94.1.1

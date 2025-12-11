@@ -149,35 +149,16 @@ export class PulseConsumer {
       // for ephemeral queues, generate a new queueName on every connection,
       // as autodelete is not an immediate operation
       this.ephemeral ? slugid.nice() : this.queueName);
-
-    try {
-      await channel.assertQueue(queueName, {
-        exclusive: this.ephemeral,
-        durable: true,
-        autoDelete: this.ephemeral,
-        ...this.queueOptions,
-        arguments: {
-          ...(!this.ephemeral && { 'x-queue-type': 'quorum' }),
-          ...this.queueOptions.arguments,
-        },
-      });
-    } catch (err) {
-      // If the queue already exists as a classic queue, fall back to classic
-      if (err instanceof Error &&
-          'code' in err && err.code === 406 &&
-          err.message.includes('PRECONDITION_FAILED') &&
-          err.message.includes('x-queue-type')) {
-        this.debug(`Queue ${queueName} exists as classic queue, using classic type`);
-        await channel.assertQueue(queueName, {
-          exclusive: this.ephemeral,
-          durable: true,
-          autoDelete: this.ephemeral,
-          ...this.queueOptions,
-        });
-      } else {
-        throw err;
-      }
-    }
+    await channel.assertQueue(queueName, {
+      exclusive: this.ephemeral,
+      durable: true,
+      autoDelete: this.ephemeral,
+      ...this.queueOptions,
+      arguments: {
+        ...(!this.ephemeral && { 'x-queue-type': 'quorum' }),
+        ...this.queueOptions.arguments,
+      },
+    });
 
     for (let { exchange, routingKeyPattern } of this.bindings) {
       await channel.bindQueue(queueName, exchange, routingKeyPattern);
