@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v94/clients/client-go"
-	"github.com/taskcluster/taskcluster/v94/internal/scopes"
-	"github.com/taskcluster/taskcluster/v94/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v94/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
+	"github.com/taskcluster/taskcluster/v95/internal/scopes"
+	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/fileutil"
 )
 
 var (

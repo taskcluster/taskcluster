@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	tcclient "github.com/taskcluster/taskcluster/v94/clients/client-go"
-	"github.com/taskcluster/taskcluster/v94/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v94/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v94/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
+	"github.com/taskcluster/taskcluster/v95/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v95/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v95/internal/testrooturl"
 )
 
 // This function tests a simple unauthenticated request for the list of configured

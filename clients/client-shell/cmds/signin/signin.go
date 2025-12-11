@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v94/clients/client-go"
-	"github.com/taskcluster/taskcluster/v94/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v94/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v94/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
+	"github.com/taskcluster/taskcluster/v95/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v95/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v95/clients/client-shell/config"
 )
 
 var log = root.Logger

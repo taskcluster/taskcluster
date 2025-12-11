@@ -10,8 +10,8 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v94/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/run"
 )
 
 func TestStartWorkerJSFile(t *testing.T) {

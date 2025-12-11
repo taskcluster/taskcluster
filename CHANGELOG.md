@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.0.0
+
+### DEPLOYERS
+
+▶ [MAJOR] [#8074](https://github.com/taskcluster/taskcluster/issues/8074)
+Pulse consumer expects core Taskcluster classic RabbitMQ queues to be deleted before being auto-recreated as quorum queues.
+
 ## v94.3.0
 
 ### GENERAL
