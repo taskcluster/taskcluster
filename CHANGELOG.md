@@ -36,8 +36,10 @@ Fixes pulse consumer issue where services would assert the queue exists as a quo
 
 ### DEPLOYERS
 
-▶ [minor] [#8156](https://github.com/taskcluster/taskcluster/issues/8156)
+▶ [minor] [#8074](https://github.com/taskcluster/taskcluster/issues/8074)
 Pulse library declares non-ephemeral core Taskcluster queues as quorum queues to prepare for upgrading to RabbitMQ v4+.
+
+edit: This should've been a breaking change due to the fact that old, classic queues cannot be converted to quorum type in place. You must delete the old classic queue and let the pulse consumer recreate it as a quorum queue. Please upgrade to at least v95.0.0.
 
 ## v94.1.1
 
