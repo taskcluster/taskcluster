@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster-upload"
-version = "94.2.0"
+version = "94.3.0"
 authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -8,7 +8,7 @@ description = "Taskcluster Upload Support"
 repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
-taskcluster = { version = "94.2.0", path = "../client" }
+taskcluster = { version = "94.3.0", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.12", features = ["json", "stream"] }

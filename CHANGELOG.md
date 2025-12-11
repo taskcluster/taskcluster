@@ -3,6 +3,35 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v94.3.0
+
+### GENERAL
+
+▶ [minor] [#8049](https://github.com/taskcluster/taskcluster/issues/8049)
+#### API Documentation Now Includes Code Examples
+
+The API reference documentation now includes code examples for every endpoint in multiple languages:
+- **curl** - Raw HTTP requests
+- **Go** - Go client library
+- **Python** - Synchronous and asynchronous client libraries
+- **Node.js** - Node.js client library
+- **Web** - Browser/web client library
+- **Rust** - Rust client library
+- **Shell** - Taskcluster CLI (taskcluster-cli)
+
+Each example demonstrates how to:
+- Set up the client with authentication (both explicit credentials and environment variables)
+- Call the API endpoint with proper parameters
+- Handle errors appropriately
+- Process the response
+
+Examples are generated dynamically in the browser from API metadata, keeping the documentation lean while providing comprehensive, up-to-date code samples. Examples include syntax highlighting and can be copied to clipboard directly from the documentation.
+
+### DEPLOYERS
+
+▶ [patch] [#8074](https://github.com/taskcluster/taskcluster/issues/8074)
+Fixes pulse consumer issue where services would assert the queue exists as a quorum queue and woudln't fall back to classic type as a backwards compatibility followup solution to #8156.
+
 ## v94.2.0
 
 ### DEPLOYERS
