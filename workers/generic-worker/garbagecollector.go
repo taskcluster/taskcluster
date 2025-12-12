@@ -50,6 +50,13 @@ func (r Resources) Swap(i, j int) {
 // independent of mounts feature, but let's go with it here as currently that
 // is the only feature that uses it.
 func runGarbageCollection(r Resources) error {
+	if config.D2GEnabled() { // always prune volumes, regardless of space needs
+		err := host.Run("docker", "volume", "prune", "--all", "--force")
+		if err != nil {
+			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
+		}
+	}
+
 	currentFreeSpace, err := freeDiskSpaceBytes(taskContext.TaskDir)
 	if err != nil {
 		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
@@ -69,25 +76,26 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 		}
 	}
-	if currentFreeSpace < requiredFreeSpace {
-		if config.D2GEnabled() {
-			err := host.Run("docker", "image", "prune", "--all", "--force")
-			if err != nil {
-				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)
-			}
-			err = os.Remove("d2g-image-cache.json")
-			if err != nil {
-				return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
-			}
-			currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
-			if err != nil {
-				return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
-			}
+
+	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
+		err := host.Run("docker", "system", "prune", "--all", "--force")
+		if err != nil {
+			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
+		}
+		err = os.Remove("d2g-image-cache.json")
+		if err != nil {
+			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
+		}
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 		}
 	}
+
 	if currentFreeSpace < requiredFreeSpace {
 		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
+
 	return nil
 }
 
