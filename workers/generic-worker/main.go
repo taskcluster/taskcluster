@@ -73,6 +73,7 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&AbortFeature{},
 		&BackingLogFeature{},
 		&PayloadValidatorFeature{},
 		&CommandGeneratorFeature{},
@@ -88,7 +89,6 @@ func initialiseFeatures() (err error) {
 	features = append(
 		features,
 		&MaxRunTimeFeature{},
-		&AbortFeature{},
 		&TaskTimerFeature{},
 		&CommandExecutorFeature{},
 	)
