@@ -263,17 +263,17 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	}
 
-	amqpApiLinks := ""
-	httpApiLinks := ""
+	var amqpApiLinks strings.Builder
+	var httpApiLinks strings.Builder
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v95/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v95/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v95/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v95/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		}
 	}
-	GenerateGodocLinkInReadme(amqpApiLinks, httpApiLinks)
+	GenerateGodocLinkInReadme(amqpApiLinks.String(), httpApiLinks.String())
 }
