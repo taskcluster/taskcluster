@@ -482,11 +482,11 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 }
 
 func (p Properties) String() string {
-	result := ""
+	var result strings.Builder
 	for _, i := range p.SortedPropertyNames {
-		result += "Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  ")
+		result.WriteString("Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  "))
 	}
-	return result
+	return result.String()
 }
 
 func (p *Properties) prepare(job *Job) error {
@@ -596,11 +596,11 @@ func (aP AdditionalProperties) String() string {
 }
 
 func (items Items) String() string {
-	result := ""
+	var result strings.Builder
 	for i, j := range items.Items {
-		result += fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  ")
+		result.WriteString(fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  "))
 	}
-	return result
+	return result.String()
 }
 
 func (items *Items) prepare(job *Job) error {
@@ -949,7 +949,8 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 func generateGoTypes(disableNested bool, enableDefaults bool, schemaSet *SchemaSet) (string, StringSet, StringSet) {
 	extraPackages := make(StringSet)
 	rawMessageTypes := make(StringSet)
-	content := "type (" // intentionally no \n here since each type starts with one already
+	var content strings.Builder
+	content.WriteString("type (") // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	typeDefinitions := make(map[string]string)
 	typeNames := make([]string, 0, len(schemaSet.used))
@@ -962,9 +963,9 @@ func generateGoTypes(disableNested bool, enableDefaults bool, schemaSet *SchemaS
 	}
 	sort.Strings(typeNames)
 	for _, t := range typeNames {
-		content += typeDefinitions[t] + "\n"
+		content.WriteString(typeDefinitions[t] + "\n")
 	}
-	return content + ")\n\n", extraPackages, rawMessageTypes
+	return content.String() + ")\n\n", extraPackages, rawMessageTypes
 }
 
 func (job *Job) Execute() (*Result, error) {
@@ -1056,9 +1057,9 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 		i++
 	}
 	sort.Strings(sortedRawMessageTypes)
-	content := ""
+	var content strings.Builder
 	for _, goType := range sortedRawMessageTypes {
-		content += `
+		content.WriteString(`
 
 	// MarshalJSON calls json.RawMessage method of the same name. Required since
 	// ` + goType + ` is of type json.RawMessage...
@@ -1074,9 +1075,9 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 		}
 		*m = append((*m)[0:0], data...)
 		return nil
-	}`
+	}`)
 	}
-	return content
+	return content.String()
 }
 
 func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPackages StringSet, rawMessageTypes StringSet) (typ string) {

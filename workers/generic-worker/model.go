@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -60,19 +61,21 @@ func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
 	response += fmt.Sprintf("Run Id:                  %v\n", task.RunID)
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
+	var loopResponse strings.Builder
 	for i, run := range task.TaskClaimResponse.Status.Runs {
-		response += fmt.Sprintf("Run %v:\n", i)
-		response += fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated))
-		response += fmt.Sprintf("  Reason Resolved:       %v\n", string(run.ReasonResolved))
-		response += fmt.Sprintf("  Resolved:              %v\n", run.Resolved)
-		response += fmt.Sprintf("  Run Id:                %v\n", run.RunID)
-		response += fmt.Sprintf("  Scheduled:             %v\n", run.Scheduled)
-		response += fmt.Sprintf("  Started:               %v\n", run.Started)
-		response += fmt.Sprintf("  State:                 %v\n", string(run.State))
-		response += fmt.Sprintf("  Taken Until:           %v\n", run.TakenUntil)
-		response += fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup)
-		response += fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID)
+		loopResponse.WriteString(fmt.Sprintf("Run %v:\n", i))
+		loopResponse.WriteString(fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated)))
+		loopResponse.WriteString(fmt.Sprintf("  Reason Resolved:       %v\n", string(run.ReasonResolved)))
+		loopResponse.WriteString(fmt.Sprintf("  Resolved:              %v\n", run.Resolved))
+		loopResponse.WriteString(fmt.Sprintf("  Run Id:                %v\n", run.RunID))
+		loopResponse.WriteString(fmt.Sprintf("  Scheduled:             %v\n", run.Scheduled))
+		loopResponse.WriteString(fmt.Sprintf("  Started:               %v\n", run.Started))
+		loopResponse.WriteString(fmt.Sprintf("  State:                 %v\n", string(run.State)))
+		loopResponse.WriteString(fmt.Sprintf("  Taken Until:           %v\n", run.TakenUntil))
+		loopResponse.WriteString(fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup))
+		loopResponse.WriteString(fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID))
 	}
+	response += loopResponse.String()
 	response += "==========================================\n"
 	response += fmt.Sprintf("Status Deadline:         %v\n", task.TaskClaimResponse.Status.Deadline)
 	response += fmt.Sprintf("Status Provisioner Id:   %v\n", task.TaskClaimResponse.Status.ProvisionerID)

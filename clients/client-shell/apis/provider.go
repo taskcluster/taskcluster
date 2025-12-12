@@ -62,13 +62,14 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 
 	// one subcommand for every function of the service
 	for _, entry := range service.Entries {
-		usage := entry.Name
+		var usage strings.Builder
+		usage.WriteString(entry.Name)
 		for _, arg := range entry.Args {
-			usage += " <" + arg + ">"
+			usage.WriteString(" <" + arg + ">")
 		}
 
 		subCmd := &cobra.Command{
-			Use:   usage,
+			Use:   usage.String(),
 			Short: entry.Title,
 			Long:  buildHelp(&entry),
 			RunE:  buildExecutor(service, entry),

@@ -33,16 +33,17 @@ func (api *API) Name() string {
 }
 
 func (api *API) String() string {
-	result := fmt.Sprintf(
+	var result strings.Builder
+	result.WriteString(fmt.Sprintf(
 		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n",
 		api.Schema, api.Title, api.Description,
-	)
+	))
 	for i, entry := range api.Entries {
-		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
+		result.WriteString(fmt.Sprintf("Entry %-6v=\n%v", i, entry.String()))
 	}
-	return result
+	return result.String()
 }
 
 func (api *API) postPopulate(apiDef *APIDefinition) {
@@ -174,13 +175,15 @@ type ` + api.Name() + ` tcclient.Client
 			maxLength = len(j[0])
 		}
 	}
+	var loopContent strings.Builder
 	for _, j := range commentedSection {
 		if len(j[1]) > 0 {
-			content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+			loopContent.WriteString(j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n")
 		} else {
-			content += j[0] + "\n"
+			loopContent.WriteString(j[0] + "\n")
 		}
 	}
+	content += loopContent.String()
 
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
@@ -223,9 +226,11 @@ func NewFromEnv() *` + api.Name() + ` {
 }
 
 `
+	var entriesContent strings.Builder
 	for _, entry := range api.Entries {
-		content += entry.generateAPICode(apiName)
+		entriesContent.WriteString(entry.generateAPICode(apiName))
 	}
+	content += entriesContent.String()
 	return content
 }
 
@@ -434,14 +439,14 @@ func (allOf *Conjunction) String() string {
 	case 1:
 		return allOf.AllOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range allOf.AllOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "* " + x[2:]
+			desc.WriteString("\n" + "* " + x[2:])
 		}
 	}
-	return "All of:" + desc
+	return "All of:" + desc.String()
 }
 
 func (anyOf *Disjunction) String() string {
@@ -451,14 +456,14 @@ func (anyOf *Disjunction) String() string {
 	if len(anyOf.AnyOf) == 1 {
 		return anyOf.AnyOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range anyOf.AnyOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "- " + x[2:]
+			desc.WriteString("\n" + "- " + x[2:])
 		}
 	}
-	return "Any of:" + desc
+	return "Any of:" + desc.String()
 }
 
 func (forEachIn *ForAll) String() string {
