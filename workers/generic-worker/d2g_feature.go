@@ -247,7 +247,6 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		"docker",
 		"rm",
 		"--force",
-		"--volumes",
 		dtf.task.D2GInfo.ContainerName,
 	}, taskContext.TaskDir, []string{}, dtf.task.pd)
 	if e != nil {
