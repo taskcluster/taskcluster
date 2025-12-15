@@ -3,6 +3,21 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8153](https://github.com/taskcluster/taskcluster/issues/8153)
+Generic Worker (d2g): anonymous volumes from the task container are no longer removed at the end of a task run in order to resolve the task sooner. The garbage collector was updated to take care of these instead.
+
+▶ [patch]
+Generic Worker: moves the `AbortFeature` to be the first to initialize and start up for each task. This change allows the worker to be ready for spot terminations as early as possible, so that it doesn't get preempted while it's setting up other task features, not knowing the cloud provider wants the worker to shutdown.
+
+This will help tasks resolve properly as worker shutdown in the case where a spot termination request comes in as soon as the worker starts up. Beforehand, when this situation would happen, the task would commonly resolve as claim expired because the worker didn't have enough time to react to the preemption notice.
+
+▶ [patch]
+Worker-runner will now properly unregister a worker when it exits because of an idle timeout
+
 ## v95.0.0
 
 ### DEPLOYERS

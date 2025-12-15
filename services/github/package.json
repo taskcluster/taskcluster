@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/github",
-  "version": "95.0.0",
+  "version": "95.0.1",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
