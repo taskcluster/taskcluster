@@ -183,6 +183,18 @@ func main() {
 		//   the current user. In this case we won't change file permissions.
 		secure(configFile.Path)
 
+		shutdownWorker := func(reason string) {
+			// If running with worker-runner, send shutdown message so it can
+			// unregister the worker before shutting down. Otherwise, shut down directly.
+			if WorkerRunnerProtocol.Capable("shutdown") {
+				WorkerRunnerProtocol.Send(workerproto.Message{
+					Type: "shutdown",
+				})
+			} else {
+				host.ImmediateShutdown(reason)
+			}
+		}
+
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
@@ -194,24 +206,16 @@ func main() {
 		case IDLE_TIMEOUT:
 			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnIdle {
-				// If running with worker-runner, send shutdown message so it can
-				// unregister the worker before shutting down. Otherwise, shut down directly.
-				if WorkerRunnerProtocol.Capable("shutdown") {
-					WorkerRunnerProtocol.Send(workerproto.Message{
-						Type: "shutdown",
-					})
-				} else {
-					host.ImmediateShutdown("generic-worker idle timeout")
-				}
+				shutdownWorker("generic-worker idle timeout")
 			}
 		case INTERNAL_ERROR:
 			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnInternalError {
-				host.ImmediateShutdown("generic-worker internal error")
+				shutdownWorker("generic-worker internal error")
 			}
 		case NONCURRENT_DEPLOYMENT_ID:
 			logEvent("instanceShutdown", nil, time.Now())
-			host.ImmediateShutdown("generic-worker deploymentId is not latest")
+			shutdownWorker("generic-worker deploymentId is not latest")
 		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:
