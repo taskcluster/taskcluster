@@ -98,6 +98,7 @@ func startProtocol() {
 
 	WorkerRunnerProtocol.AddCapability("error-report")
 	WorkerRunnerProtocol.AddCapability("log")
+	WorkerRunnerProtocol.AddCapability("shutdown")
 
 	WorkerRunnerProtocol.Start(true)
 }
