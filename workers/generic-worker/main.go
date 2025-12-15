@@ -34,6 +34,7 @@ import (
 	"github.com/taskcluster/taskcluster/v95/internal"
 	"github.com/taskcluster/taskcluster/v95/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v95/internal/scopes"
+	"github.com/taskcluster/taskcluster/v95/tools/workerproto"
 	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/errorreport"
 	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/expose"
@@ -193,7 +194,15 @@ func main() {
 		case IDLE_TIMEOUT:
 			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnIdle {
-				host.ImmediateShutdown("generic-worker idle timeout")
+				// If running with worker-runner, send shutdown message so it can
+				// unregister the worker before shutting down. Otherwise, shut down directly.
+				if WorkerRunnerProtocol.Capable("shutdown") {
+					WorkerRunnerProtocol.Send(workerproto.Message{
+						Type: "shutdown",
+					})
+				} else {
+					host.ImmediateShutdown("generic-worker idle timeout")
+				}
 			}
 		case INTERNAL_ERROR:
 			logEvent("instanceShutdown", nil, time.Now())
