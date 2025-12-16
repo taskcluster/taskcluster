@@ -89,11 +89,11 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 	atf.FindArtifacts()
 	taskArtifacts := atf.artifacts
 
-	// Use errgroup to limit concurrent uploads to 100
+	// Use errgroup to limit concurrent uploads to 10
 	// to hopefully avoid issues like the following:
 	// https://github.com/taskcluster/taskcluster/issues/8023
 	group := &errgroup.Group{}
-	group.SetLimit(100)
+	group.SetLimit(10)
 
 	uploadErrChan := make(chan *CommandExecutionError, len(taskArtifacts))
 	failChan := make(chan *CommandExecutionError, len(taskArtifacts))
