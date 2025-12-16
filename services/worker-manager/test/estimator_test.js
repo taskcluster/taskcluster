@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
 
-  test('stopping capacity non zero', async function () {
+  test('stopping capacity non zero (deprecated - no longer affects estimation)', async function () {
     const workerInfo = {
       existingCapacity: 10,
       requestedCapacity: 10,
@@ -226,11 +226,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerInfo,
     });
 
-    assert.strictEqual(estimate, 20);
+    assert.strictEqual(estimate, 30);
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
-  test('stopping capacity exceeds max capacity', async function () {
+  test('stopping capacity exceeds max capacity (deprecated - no longer affects estimation)', async function () {
     const workerInfo = {
       existingCapacity: 10,
       requestedCapacity: 10,
@@ -244,11 +244,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workerInfo,
     });
 
-    assert.strictEqual(estimate, 0);
+    assert.strictEqual(estimate, 30);
     assert.strictEqual(monitor.manager.messages.length, 1);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 5));
   });
-  test('stopping + requested capacity exceeds pending', async function () {
+  test('stopping + requested capacity exceeds pending (deprecated - no longer affects estimation)', async function () {
     const workerInfo = {
       existingCapacity: 0,
       requestedCapacity: 10,

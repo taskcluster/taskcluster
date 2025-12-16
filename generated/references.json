@@ -18199,7 +18199,7 @@
           "version": 3
         },
         {
-          "description": "The simple estimator has decided that we need some number of instances.",
+          "description": "The simple estimator has decided that we need some number of instances. Note: stoppingCapacity field is deprecated and no longer used in calculations.",
           "fields": {
             "desiredCapacity": "Amount of capacity that this estimator thinks we should have",
             "existingCapacity": "Amount of currently requested and available capacity",
@@ -18208,14 +18208,14 @@
             "pendingTasks": "The number of tasks the queue reports are pending for this worker pool",
             "requestedCapacity": "Amount of capacity that this estimator thinks we should add",
             "scalingRatio": "The ratio of workers to spawn per pending task for this worker pool.",
-            "stoppingCapacity": "Amount of capacity being stopped",
+            "stoppingCapacity": "Amount of capacity being stopped (deprecated, not used in calculations)",
             "workerPoolId": "The worker pool name"
           },
           "level": "any",
           "name": "simpleEstimate",
           "title": "Simple Estimate Provided",
           "type": "simple-estimate",
-          "version": 4
+          "version": 5
         },
         {
           "description": "A simple timekeeper for measuring arbitrary time spans.",

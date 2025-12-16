@@ -246,7 +246,7 @@ export class WorkerPoolStats {
     return {
       existingCapacity: this.existingCapacity,
       requestedCapacity: this.requestedCapacity,
-      stoppingCapacity: this.stoppingCapacity,
+      stoppingCapacity: this.stoppingCapacity, // Deprecated: no longer used in capacity estimation
     };
   }
 
