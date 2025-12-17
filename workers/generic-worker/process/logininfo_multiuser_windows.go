@@ -59,11 +59,35 @@ func loadProfile(user syscall.Token, username string) (syscall.Handle, error) {
 	if err != nil {
 		return syscall.InvalidHandle, fmt.Errorf("UTF16PtrFromString(%q): %v", username, err)
 	}
-	err = win32.LoadUserProfile(user, &pinfo)
-	if err != nil {
-		return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%#x, %+v): %v", user, &pinfo, err)
+
+	// Retry LoadUserProfile in case the device is not ready yet
+	// This prevents ERROR_NOT_READY errors when the underlying storage isn't fully initialized
+	const maxRetries = 25
+	const initialDelay = 50 * time.Millisecond
+	const maxDelay = 5 * time.Second
+	const backoffMultiplier = 1.5
+
+	delay := initialDelay
+	for i := range maxRetries {
+		err = win32.LoadUserProfile(user, &pinfo)
+		if err == nil {
+			return pinfo.Profile, nil
+		}
+
+		if errno, ok := err.(syscall.Errno); ok && errno == 21 { // ERROR_NOT_READY
+			if i < maxRetries-1 {
+				log.Printf("LoadUserProfile failed with 'device not ready' (attempt %d/%d), retrying in %v: %v", i+1, maxRetries, delay, err)
+				time.Sleep(delay)
+				delay = min(time.Duration(float64(delay)*backoffMultiplier), maxDelay)
+			} else {
+				return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%#x, %+v): %v (after %d retries)", user, &pinfo, err, maxRetries)
+			}
+		} else {
+			return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%#x, %+v): %v", user, &pinfo, err)
+		}
 	}
-	return pinfo.Profile, nil
+
+	return syscall.InvalidHandle, fmt.Errorf("LoadUserProfile(%#x, %+v): unexpected error after retries", user, &pinfo)
 }
 
 // Log user out, unloading profiles if necessary.
