@@ -108,7 +108,15 @@ const ItemRenderer = ({ data, index, style }) => {
         component="div"
         role="cell">
         <span>
-          {run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}
+          {run ? (
+            <TimeDiff
+              key={`${taskGroup.taskId}-${run.from}`}
+              from={run.from}
+              offset={run.to}
+            />
+          ) : (
+            'n/a'
+          )}
         </span>
       </TableCell>
       <TableCell
