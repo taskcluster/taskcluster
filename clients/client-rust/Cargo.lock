@@ -1413,7 +1413,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster"
-version = "95.0.1"
+version = "95.0.2"
 dependencies = [
  "anyhow",
  "backon",
@@ -1433,7 +1433,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-download"
-version = "95.0.1"
+version = "95.0.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1452,7 +1452,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-integration-tests"
-version = "95.0.1"
+version = "95.0.2"
 dependencies = [
  "anyhow",
  "httptest",
@@ -1469,7 +1469,7 @@ dependencies = [
 
 [[package]]
 name = "taskcluster-upload"
-version = "95.0.1"
+version = "95.0.2"
 dependencies = [
  "anyhow",
  "async-trait",

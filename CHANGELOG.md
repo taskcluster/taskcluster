@@ -3,6 +3,19 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.0.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8083](https://github.com/taskcluster/taskcluster/issues/8083)
+Generic Worker (windows): adds retries to the win32 `LoadUserProfile` call to help prevent `The device is not ready` worker errors.
+
+▶ [patch]
+Generic Worker (with worker-runner): properly unregisters a worker when it exits due to internal error or non-current deployment ID. Followup to #8165.
+
+▶ [patch] [#8023](https://github.com/taskcluster/taskcluster/issues/8023)
+Generic Worker: limits concurrent artifact uploads to 10 at a time. Followup to #8032.
+
 ## v95.0.1
 
 ### WORKER-DEPLOYERS
