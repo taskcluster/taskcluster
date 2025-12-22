@@ -98,7 +98,7 @@ options:
   env:
     - USE_GKE_GCLOUD_AUTH_PLUGIN=True
 substitutions:
-  _NODE_VERSION: 24.11.1
+  _NODE_VERSION: 24.12.0
   _VERSION: '{"version":"${BRANCH_NAME}_${SHORT_SHA}","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}'
   _IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}
   _DEPLOY_IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}-deploy
