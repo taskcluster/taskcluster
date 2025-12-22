@@ -1,34 +1,35 @@
-FROM golang:1.25.5-trixie AS golang
-FROM node:24.11.1-trixie
+FROM node:24.11.1-trixie-slim
 
-COPY --from=golang /usr/local/go /usr/local/go
-COPY --from=golang /go /go
+COPY --from=golang:1.25.5-alpine /usr/local/go /usr/local/go
+COPY --from=golang:1.25.5-alpine /go /go
 # %ARG UV_VERSION
 COPY --from=ghcr.io/astral-sh/uv:$UV_VERSION /uv /uvx /bin/
 
 VOLUME /builds/worker/checkouts
 
-# Add worker user
-RUN mkdir -p /builds && \
-    useradd -d /builds/worker -s /bin/bash -m worker && \
-    mkdir /builds/worker/artifacts && \
-    chown -R worker:worker /builds/worker
+ENV GOPATH=/go \
+    TEST_DB_URL=postgresql://postgres@localhost/postgres \
+    SHELL=/bin/bash \
+    HOME=/builds/worker \
+    PATH="/go/bin:/usr/local/go/bin:/builds/worker/.local/bin:$PATH"
 
 # %include .golangci-lint-version
 ADD topsrcdir/.golangci-lint-version .
 
-ENV GOPATH=/go
-ENV TEST_DB_URL=postgresql://postgres@localhost/postgres \
-    SHELL=/bin/bash \
-    HOME=/builds/worker \
-    PATH="$GOPATH/bin:/usr/local/go/bin:/builds/worker/.local/bin:$PATH"
-
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-    sh -s -- -b $(go env GOPATH)/bin v$(cat .golangci-lint-version) && \
+RUN mkdir -p /builds && \
+    useradd -d /builds/worker -s /bin/bash -m worker && \
+    mkdir /builds/worker/artifacts && \
+    chown -R worker:worker /builds/worker && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     ca-certificates \
-    gnupg && \
+    build-essential \
+    curl \
+    git \
+    gnupg \
+    python3 && \
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+    sh -s -- -b $(go env GOPATH)/bin v$(cat .golangci-lint-version) && \
     install -d /usr/share/postgresql-common/pgdg && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     . /etc/os-release && \
