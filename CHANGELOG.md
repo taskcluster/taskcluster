@@ -65,7 +65,7 @@ Examples are generated dynamically in the browser from API metadata, keeping the
 ### DEPLOYERS
 
 ▶ [patch] [#8074](https://github.com/taskcluster/taskcluster/issues/8074)
-Fixes pulse consumer issue where services would assert the queue exists as a quorum queue and woudln't fall back to classic type as a backwards compatibility followup solution to #8156.
+Fixes pulse consumer issue where services would assert the queue exists as a quorum queue and wouldn't fall back to classic type as a backwards compatibility followup solution to #8156.
 
 ## v94.2.0
 
