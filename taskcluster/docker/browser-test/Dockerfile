@@ -1,4 +1,4 @@
-FROM node:24.12.0-trixie
+FROM node:24.12.0-trixie-slim
 
 VOLUME /builds/worker/checkouts
 
@@ -6,10 +6,12 @@ VOLUME /builds/worker/checkouts
 RUN mkdir -p /builds && \
     useradd -d /builds/worker -s /bin/bash -m worker && \
     mkdir /builds/worker/artifacts && \
-    chown -R worker:worker /builds/worker
-
-RUN apt-get update && apt-get install -y \
+    chown -R worker:worker /builds/worker && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
     firefox-esr \
+    git \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
