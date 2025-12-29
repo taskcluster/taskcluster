@@ -9,7 +9,7 @@
 
 [build.environment]
   YARN_FLAGS = "--immutable"
-  NODE_VERSION = "24.11.1"
+  NODE_VERSION = "24.12.0"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
