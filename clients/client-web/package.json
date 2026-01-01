@@ -18,7 +18,7 @@
     "chai-as-promised": "^8.0.2",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.5.0",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "karma": "^6.4.4",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.2.1",
