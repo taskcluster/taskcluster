@@ -414,8 +414,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^14.4.2":
-  version: 14.6.5
-  resolution: "got@npm:14.6.5"
+  version: 14.6.6
+  resolution: "got@npm:14.6.6"
   dependencies:
     "@sindresorhus/is": "npm:^7.0.1"
     byte-counter: "npm:^0.1.0"
@@ -429,7 +429,7 @@ __metadata:
     p-cancelable: "npm:^4.0.1"
     responselike: "npm:^4.0.2"
     type-fest: "npm:^4.26.1"
-  checksum: 10c0/535aa7230713f4827ba9e90a8fd35174338e74798dc7b14540de9b08b448ddcb868f0a4a31665077f9a78200cbc0d01d837f907deca7ed504a7a932c6a6d9bd1
+  checksum: 10c0/dab4dbd35deac5634450cd745187ba68cfb9fd8d9236bec4861b633c7dc54f6383fde04cf504b16148625c307a229ff8cccf35d6622824ab13243c9d0af0fcc1
   languageName: node
   linkType: hard
 
