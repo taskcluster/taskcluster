@@ -11,7 +11,7 @@ repository = "https://github.com/taskcluster/taskcluster"
 anyhow = "1.0"
 reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
+serde_json = "1.0.148"
 base64 = "0.22.0"
 hawk = "5.0.0"
 backon = "1.6"
