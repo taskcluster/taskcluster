@@ -55,22 +55,6 @@ func runGarbageCollection(r Resources) error {
 		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
-	for currentFreeSpace < requiredFreeSpace {
-		// need to free up space
-		if r.Empty() {
-			break
-		}
-
-		err = r.EvictNext()
-		if err != nil {
-			return err
-		}
-
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
-		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
-		}
-	}
 
 	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
 		err := host.Run("docker", "volume", "prune", "--all", "--force")
@@ -93,6 +77,23 @@ func runGarbageCollection(r Resources) error {
 		err = os.Remove("d2g-image-cache.json")
 		if err != nil {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
+		}
+
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		}
+	}
+
+	for currentFreeSpace < requiredFreeSpace {
+		// need to free up space
+		if r.Empty() {
+			break
+		}
+
+		err = r.EvictNext()
+		if err != nil {
+			return err
 		}
 
 		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
