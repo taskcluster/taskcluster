@@ -227,4 +227,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(wrc.selectCapacity(5).length, 1);
     assert.equal(wrc.selectCapacity(25).length, 5);
   });
+
+  test('single LC with negative weight due to errors still provisions when it has capacity', async function() {
+    const wp = await createWorkerPool([
+      genAwsLaunchConfig({ launchConfigId: 'lc1', initialWeight: 1, maxCapacity: 100 }),
+    ]);
+
+    // simulate: 60% capacity used, 50% error rate
+    // This will cause weight to go negative: 1 - 0.6 - 0.5 = -0.1
+    const workerPoolStats = new WorkerPoolStats(wp.workerPoolId);
+    workerPoolStats.capacityByLaunchConfig.set('lc1', 60);
+    workerPoolStats.totalErrors = 100;
+    workerPoolStats.errorsByLaunchConfig.set('lc1', 50);
+
+    const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
+
+    assert.equal(wrc.getAll().length, 1, 'Should have 1 config available');
+    assert.ok(wrc.totalWeight > 0, 'totalWeight should be positive');
+
+    const configs = wrc.selectCapacity(10);
+    assert.equal(configs.length, 10, 'Should provision 10 workers');
+    assert.equal(configs[0].launchConfigId, 'lc1', 'Should select lc1');
+
+    await assertDebugMessage(wp.workerPoolId,
+      { lc1: 0.01 },
+      { lc1: 40 },
+    );
+  });
 });
