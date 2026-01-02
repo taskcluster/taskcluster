@@ -136,7 +136,7 @@ services:
     ports:
       - '80:80'
   tc_admin_init:
-    image: taskcluster/tc-admin:4.0.0
+    image: taskcluster/tc-admin:5.0.4
     networks:
       - local
     volumes:
