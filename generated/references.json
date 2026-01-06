@@ -3781,6 +3781,9 @@
           "title": "Expiration",
           "type": "string"
         },
+        "priority": {
+          "$ref": "task.json#/properties/priority"
+        },
         "projectId": {
           "$ref": "task.json#/properties/projectId"
         },
@@ -4177,6 +4180,61 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/task-priority-changed-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Message emitted whenever `changeTaskPriority` updates\nthe priority of an unresolved task.\n",
+      "properties": {
+        "newPriority": {
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "type": "string"
+        },
+        "oldPriority": {
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "type": "string"
+        },
+        "status": {
+          "$ref": "task-status.json#"
+        },
+        "version": {
+          "description": "Message version",
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "version",
+        "status",
+        "oldPriority",
+        "newPriority"
+      ],
+      "title": "Task Priority Changed Message",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-priority-changed-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/task-pending-message.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -4312,6 +4370,111 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/task-group-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/task-group-priority-changed-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Summary emitted after a task group priority request completes.\n",
+      "properties": {
+        "newPriority": {
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "type": "string"
+        },
+        "schedulerId": {
+          "$ref": "task-group-response.json#/properties/schedulerId"
+        },
+        "taskGroupId": {
+          "$ref": "task-group-response.json#/properties/taskGroupId"
+        },
+        "tasksAffected": {
+          "description": "Total number of tasks where priority was changed",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "version": {
+          "description": "Message version",
+          "enum": [
+            1
+          ],
+          "type": "integer"
+        }
+      },
+      "required": [
+        "version",
+        "taskGroupId",
+        "schedulerId",
+        "newPriority",
+        "tasksAffected"
+      ],
+      "title": "Task Group Priority Changed Message",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-group-priority-changed-message.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/task-group-priority-change-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response returned by the change task group priority call.\n",
+      "properties": {
+        "newPriority": {
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "type": "string"
+        },
+        "schedulerId": {
+          "$ref": "task-group-response.json#/properties/schedulerId"
+        },
+        "taskGroupId": {
+          "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+          "title": "Task-Group Identifier",
+          "type": "string"
+        },
+        "taskIds": {
+          "description": "Task identifiers that were updated. Present even if the list is empty.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "tasksAffected": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "taskGroupId",
+        "schedulerId",
+        "newPriority",
+        "tasksAffected",
+        "taskIds"
+      ],
+      "title": "Task Group Priority Change Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/task-group-priority-change-response.json"
   },
   {
     "content": {
@@ -6036,6 +6199,36 @@
       "type": "object"
     },
     "filename": "schemas/queue/v1/claim-work-request.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/queue/v1/change-task-priority-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Payload for task and task-group reprioritization endpoints.\n",
+      "properties": {
+        "newPriority": {
+          "description": "New priority to apply. Claimed runs keep their current run priority until\nthey are retried.\n",
+          "enum": [
+            "highest",
+            "very-high",
+            "high",
+            "medium",
+            "low",
+            "very-low",
+            "lowest",
+            "normal"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "newPriority"
+      ],
+      "title": "Change Task Priority Request",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/change-task-priority-request.json"
   },
   {
     "content": {
@@ -20637,6 +20830,20 @@
           "version": 1
         },
         {
+          "description": "A task group reprioritization completed.",
+          "fields": {
+            "newPriority": "Priority value applied to each task.",
+            "schedulerId": "Scheduler of the task group.",
+            "taskGroupId": "Task group that was reprioritized.",
+            "tasksAffected": "Total number of tasks updated during the request."
+          },
+          "level": "notice",
+          "name": "taskGroupPriorityChanged",
+          "title": "Task Group Priority Changed",
+          "type": "task-group-priority-changed",
+          "version": 1
+        },
+        {
           "description": "Task group was sealed and will no longer allow creation of tasks.",
           "fields": {
             "expires": "Date and time of task group expiration",
@@ -20660,6 +20867,19 @@
           "name": "taskPending",
           "title": "Task Pending",
           "type": "task-pending",
+          "version": 1
+        },
+        {
+          "description": "A task priority value was updated via APIs.",
+          "fields": {
+            "newPriority": "New priority value.",
+            "oldPriority": "Previous priority value.",
+            "taskId": "The task being reprioritized."
+          },
+          "level": "notice",
+          "name": "taskPriorityChanged",
+          "title": "Task Priority Changed",
+          "type": "task-priority-changed",
           "version": 1
         },
         {
@@ -21276,6 +21496,112 @@
           "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Sealed Messages",
           "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task priority was updated via `changeTaskPriority` API call.",
+          "exchange": "task-priority-changed",
+          "name": "taskPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskId",
+              "required": true,
+              "summary": "`taskId` for the task this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "runId",
+              "required": false,
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "`provisionerId` this task is targeted at."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "`workerType` this task must run on."
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` this task was created by."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` this task was created in."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-priority-changed-message.json#",
+          "title": "Task Priority Changed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task group priority was changed via `changeTaskGroupPriority` API call.",
+          "exchange": "task-group-priority-changed",
+          "name": "taskGroupPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-group-priority-changed-message.json#",
+          "title": "Task Group Priority Changed Messages",
+          "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-queue/v1/",
@@ -21633,6 +21959,47 @@
           },
           "stability": "stable",
           "title": "Cancel Task",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId"
+          ],
+          "category": "Tasks",
+          "description": "This method updates the priority of a single unresolved task.\n\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskPriority",
+          "output": "v1/task-status-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/priority",
+          "scopes": {
+            "AnyOf": [
+              "queue:change-task-priority:<taskId>",
+              "queue:change-task-priority-in-queue:<taskQueueId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Change Task Priority",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Task-Groups",
+          "description": "This method applies a new priority to unresolved tasks within a task group.\n\n* Updates run in bounded batches to avoid long locks.\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskGroupPriorityChanged` summary event at the end.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskGroupPriority",
+          "output": "v1/task-group-priority-change-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/priority",
+          "scopes": "queue:change-task-group-priority:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Change Task Group Priority",
           "type": "function"
         },
         {

@@ -2568,6 +2568,47 @@ export default {
         },
         {
           "args": [
+            "taskId"
+          ],
+          "category": "Tasks",
+          "description": "This method updates the priority of a single unresolved task.\n\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskPriority",
+          "output": "v1/task-status-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/priority",
+          "scopes": {
+            "AnyOf": [
+              "queue:change-task-priority:<taskId>",
+              "queue:change-task-priority-in-queue:<taskQueueId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Change Task Priority",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Task-Groups",
+          "description": "This method applies a new priority to unresolved tasks within a task group.\n\n* Updates run in bounded batches to avoid long locks.\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskGroupPriorityChanged` summary event at the end.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskGroupPriority",
+          "output": "v1/task-group-priority-change-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/priority",
+          "scopes": "queue:change-task-group-priority:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Change Task Group Priority",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskQueueId"
           ],
           "category": "Worker Interface",
@@ -3830,6 +3871,112 @@ export default {
           ],
           "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Sealed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task priority was updated via `changeTaskPriority` API call.",
+          "exchange": "task-priority-changed",
+          "name": "taskPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskId",
+              "required": true,
+              "summary": "`taskId` for the task this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "runId",
+              "required": false,
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "`provisionerId` this task is targeted at."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "`workerType` this task must run on."
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` this task was created by."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` this task was created in."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-priority-changed-message.json#",
+          "title": "Task Priority Changed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task group priority was changed via `changeTaskGroupPriority` API call.",
+          "exchange": "task-group-priority-changed",
+          "name": "taskGroupPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-group-priority-changed-message.json#",
+          "title": "Task Group Priority Changed Messages",
           "type": "topic-exchange"
         }
       ],

@@ -368,6 +368,39 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["cancelTask"], *args, **kwargs)
 
+    async def changeTaskPriority(self, *args, **kwargs):
+        """
+        Change Task Priority
+
+        This method updates the priority of a single unresolved task.
+
+        * Claimed or running tasks keep their current run priority until they are retried.
+        * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(
+            self.funcinfo["changeTaskPriority"], *args, **kwargs
+        )
+
+    async def changeTaskGroupPriority(self, *args, **kwargs):
+        """
+        Change Task Group Priority
+
+        This method applies a new priority to unresolved tasks within a task group.
+
+        * Updates run in bounded batches to avoid long locks.
+        * Claimed or running tasks keep their current run priority until they are retried.
+        * Emits `taskGroupPriorityChanged` summary event at the end.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(
+            self.funcinfo["changeTaskGroupPriority"], *args, **kwargs
+        )
+
     async def claimWork(self, *args, **kwargs):
         """
         Claim Work
@@ -1049,6 +1082,24 @@ class Queue(AsyncBaseClient):
             "name": "cancelTaskGroup",
             "output": "v1/cancel-task-group-response.json#",
             "route": "/task-group/<taskGroupId>/cancel",
+            "stability": "experimental",
+        },
+        "changeTaskGroupPriority": {
+            "args": ["taskGroupId"],
+            "input": "v1/change-task-priority-request.json#",
+            "method": "post",
+            "name": "changeTaskGroupPriority",
+            "output": "v1/task-group-priority-change-response.json#",
+            "route": "/task-group/<taskGroupId>/priority",
+            "stability": "experimental",
+        },
+        "changeTaskPriority": {
+            "args": ["taskId"],
+            "input": "v1/change-task-priority-request.json#",
+            "method": "post",
+            "name": "changeTaskPriority",
+            "output": "v1/task-status-response.json#",
+            "route": "/task/<taskId>/priority",
             "stability": "experimental",
         },
         "claimTask": {

@@ -758,6 +758,128 @@ class QueueEvents(BaseClient):
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
+    def taskPriorityChanged(self, *args, **kwargs):
+        """
+        Task Priority Changed Messages
+
+        A message published when task priority was updated via `changeTaskPriority` API call.
+
+        This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * taskId: `taskId` for the task this message concerns (required)
+
+         * runId: `runId` of latest run for the task, `_` if no run is exists for the task.
+
+         * workerGroup: `workerGroup` of latest run for the task, `_` if no run is exists for the task.
+
+         * workerId: `workerId` of latest run for the task, `_` if no run is exists for the task.
+
+         * provisionerId: `provisionerId` this task is targeted at. (required)
+
+         * workerType: `workerType` this task must run on. (required)
+
+         * schedulerId: `schedulerId` this task was created by. (required)
+
+         * taskGroupId: `taskGroupId` this task was created in. (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            "exchange": "task-priority-changed",
+            "name": "taskPriorityChanged",
+            "routingKey": [
+                {
+                    "constant": "primary",
+                    "multipleWords": False,
+                    "name": "routingKeyKind",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "taskId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "runId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "workerGroup",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "workerId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "provisionerId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "workerType",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "schedulerId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "taskGroupId",
+                },
+                {
+                    "multipleWords": True,
+                    "name": "reserved",
+                },
+            ],
+            "schema": "v1/task-priority-changed-message.json#",
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
+
+    def taskGroupPriorityChanged(self, *args, **kwargs):
+        """
+        Task Group Priority Changed Messages
+
+        A message published when task group priority was changed via `changeTaskGroupPriority` API call.
+
+        This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
+
+         * taskGroupId: `taskGroupId` for the task-group this message concerns (required)
+
+         * schedulerId: `schedulerId` for the task-group this message concerns (required)
+
+         * reserved: Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.
+        """
+
+        ref = {
+            "exchange": "task-group-priority-changed",
+            "name": "taskGroupPriorityChanged",
+            "routingKey": [
+                {
+                    "constant": "primary",
+                    "multipleWords": False,
+                    "name": "routingKeyKind",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "taskGroupId",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "schedulerId",
+                },
+                {
+                    "multipleWords": True,
+                    "name": "reserved",
+                },
+            ],
+            "schema": "v1/task-group-priority-changed-message.json#",
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
+
     funcinfo = {}
 
 

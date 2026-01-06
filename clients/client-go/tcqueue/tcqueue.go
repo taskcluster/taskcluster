@@ -586,6 +586,45 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// This method updates the priority of a single unresolved task.
+//
+// * Claimed or running tasks keep their current run priority until they are retried.
+// * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+//
+// Required scopes:
+//
+//	Any of:
+//	- queue:change-task-priority:<taskId>
+//	- queue:change-task-priority-in-queue:<taskQueueId>
+//
+// See #changeTaskPriority
+func (queue *Queue) ChangeTaskPriority(taskId string, payload *ChangeTaskPriorityRequest) (*TaskStatusResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task/"+url.PathEscape(taskId)+"/priority", new(TaskStatusResponse), nil)
+	return responseObject.(*TaskStatusResponse), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This method applies a new priority to unresolved tasks within a task group.
+//
+// * Updates run in bounded batches to avoid long locks.
+// * Claimed or running tasks keep their current run priority until they are retried.
+// * Emits `taskGroupPriorityChanged` summary event at the end.
+//
+// Required scopes:
+//
+//	queue:change-task-group-priority:<schedulerId>/<taskGroupId>
+//
+// See #changeTaskGroupPriority
+func (queue *Queue) ChangeTaskGroupPriority(taskGroupId string, payload *ChangeTaskPriorityRequest) (*TaskGroupPriorityChangeResponse, error) {
+	cd := tcclient.Client(*queue)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/task-group/"+url.PathEscape(taskGroupId)+"/priority", new(TaskGroupPriorityChangeResponse), nil)
+	return responseObject.(*TaskGroupPriorityChangeResponse), err
+}
+
 // Claim pending task(s) for the given task queue.
 //
 // If any work is available (even if fewer than the requested number of

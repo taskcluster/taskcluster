@@ -7818,6 +7818,30 @@
       },
       "migrationScript": "begin\n  if not exists (select 1 from tcversion) then\n    insert into tcversion (version) values (0);\n  end if;\n\n  if not exists (\n    select 1\n    from pg_constraint c\n    join pg_class t on t.oid = c.conrelid\n    join pg_namespace n on n.oid = t.relnamespace\n    where c.contype = 'p'\n      and t.relname = 'tcversion'\n      and n.nspname = current_schema()\n  ) then\n    alter table tcversion add primary key (version);\n  end if;\nend",
       "version": 118
+    },
+    {
+      "description": "Changing tasks and task groups priority",
+      "methods": {
+        "queue_change_task_group_priority": {
+          "args": "task_group_id_in text, new_priority_in task_priority, batch_size_in integer",
+          "body": "declare\n  pending_priority integer;\n  _limit integer;\n  task_upd record;\n  _row tasks%ROWTYPE;\nbegin\n  pending_priority := case new_priority_in\n    when 'highest' then 7\n    when 'very-high' then 6\n    when 'high' then 5\n    when 'medium' then 4\n    when 'low' then 3\n    when 'very-low' then 2\n    when 'lowest' then 1\n  end;\n\n  _limit := coalesce(batch_size_in, 100);\n  if _limit < 1 then _limit := 100; end if;\n\n  FOR task_upd IN\n    select tasks.task_id, tasks.priority\n    from tasks\n    where tasks.task_group_id = task_group_id_in\n      and not tasks.ever_resolved\n      and tasks.deadline > now()\n      and tasks.priority <> new_priority_in\n    order by tasks.task_id\n    limit _limit\n    for update\n  LOOP\n\n    update tasks\n    set priority = new_priority_in\n    where tasks.task_id = task_upd.task_id\n    returning * into _row;\n\n    update queue_pending_tasks\n    set priority = pending_priority\n    where queue_pending_tasks.task_id = task_upd.task_id;\n\n    return query select\n      _row.task_id,\n      _row.task_queue_id,\n      _row.scheduler_id,\n      _row.project_id,\n      _row.task_group_id,\n      _row.dependencies,\n      _row.requires,\n      _row.routes,\n      _row.priority,\n      _row.retries,\n      _row.retries_left,\n      _row.created,\n      _row.deadline,\n      _row.expires,\n      _row.scopes,\n      _row.payload,\n      _row.metadata,\n      _row.tags,\n      _row.extra,\n      _row.runs,\n      _row.taken_until,\n      task_upd.priority;\n  END LOOP;\n\n  return;\nend",
+          "deprecated": false,
+          "description": "Update the priority of unresolved tasks within a task group.\nMatching pending queue entries are updated in tandem. Returns each updated\ntask row alongside its previous priority.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left integer,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  old_priority task_priority\n)",
+          "serviceName": "queue"
+        },
+        "queue_change_task_priority": {
+          "args": "task_id_in text, new_priority_in task_priority",
+          "body": "declare\n  pending_priority integer;\n  old_priority_val task_priority;\n  _row tasks%ROWTYPE;\nbegin\n  pending_priority := case new_priority_in\n    when 'highest' then 7\n    when 'very-high' then 6\n    when 'high' then 5\n    when 'medium' then 4\n    when 'low' then 3\n    when 'very-low' then 2\n    when 'lowest' then 1\n  end;\n\n  -- lock row and capture old priority\n  select tasks.priority into old_priority_val\n  from tasks\n  where tasks.task_id = task_id_in\n    and not tasks.ever_resolved\n    and tasks.deadline > now()\n    and tasks.priority <> new_priority_in\n  for update;\n\n  if not found then\n    return;\n  end if;\n\n  update tasks\n  set priority = new_priority_in\n  where tasks.task_id = task_id_in\n  returning * into _row;\n\n  update queue_pending_tasks\n  set priority = pending_priority\n  where queue_pending_tasks.task_id = task_id_in;\n\n  return query select\n      _row.task_id,\n      _row.task_queue_id,\n      _row.scheduler_id,\n      _row.project_id,\n      _row.task_group_id,\n      _row.dependencies,\n      _row.requires,\n      _row.routes,\n      _row.priority,\n      _row.retries,\n      _row.retries_left,\n      _row.created,\n      _row.deadline,\n      _row.expires,\n      _row.scopes,\n      _row.payload,\n      _row.metadata,\n      _row.tags,\n      _row.extra,\n      _row.runs,\n      _row.taken_until,\n      old_priority_val;\nend",
+          "deprecated": false,
+          "description": "Update the priority of a single unresolved task and keep matching pending queue\n  entries in sync. Returns the updated task row along with the previous priority.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left integer,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  old_priority task_priority\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 119
     }
   ]
 }

@@ -175,6 +175,37 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskPriorityChanged',
+  title: 'Task Priority Changed',
+  type: 'task-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task priority value was updated via APIs.`,
+  fields: {
+    taskId: 'The task being reprioritized.',
+    oldPriority: 'Previous priority value.',
+    newPriority: 'New priority value.',
+  },
+});
+
+MonitorManager.register({
+  name: 'taskGroupPriorityChanged',
+  title: 'Task Group Priority Changed',
+  type: 'task-group-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task group reprioritization completed.`,
+  fields: {
+    taskGroupId: 'Task group that was reprioritized.',
+    schedulerId: 'Scheduler of the task group.',
+    tasksAffected: 'Total number of tasks updated during the request.',
+    newPriority: 'Priority value applied to each task.',
+  },
+});
+
+MonitorManager.register({
   name: 'hintPoller',
   title: 'Hint Poller Report',
   type: 'hint-poller',

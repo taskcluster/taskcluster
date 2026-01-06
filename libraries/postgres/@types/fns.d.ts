@@ -3038,6 +3038,28 @@ type QueueQueueArtifactsEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
+type QueueQueueChangeTaskGroupPriorityFn = {
+ (
+   task_group_id_in: string,
+   new_priority_in: TaskPriority,
+   batch_size_in: number
+ ): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, old_priority: TaskPriority}>>;
+ (params: {
+  task_group_id_in: string;
+  new_priority_in: TaskPriority;
+  batch_size_in: number;
+ }): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, old_priority: TaskPriority}>>;
+};
+type QueueQueueChangeTaskPriorityFn = {
+ (
+   task_id_in: string,
+   new_priority_in: TaskPriority
+ ): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, old_priority: TaskPriority}>>;
+ (params: {
+  task_id_in: string;
+  new_priority_in: TaskPriority;
+ }): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, old_priority: TaskPriority}>>;
+};
 type QueueQueueClaimedTaskDeleteFn = {
  (
    task_id_in: string,
@@ -6227,6 +6249,8 @@ export interface DbFunctions {
   mark_task_ever_resolved: QueueMarkTaskEverResolvedFn;
   quarantine_queue_worker_with_last_date_active_and_details: QueueQuarantineQueueWorkerWithLastDateActiveAndDetailsFn;
   queue_artifact_present: QueueQueueArtifactPresentFn;
+  queue_change_task_group_priority: QueueQueueChangeTaskGroupPriorityFn;
+  queue_change_task_priority: QueueQueueChangeTaskPriorityFn;
   queue_claimed_task_delete: QueueQueueClaimedTaskDeleteFn;
   queue_claimed_task_get: QueueQueueClaimedTaskGetFn;
   queue_claimed_task_put: QueueQueueClaimedTaskPutFn;

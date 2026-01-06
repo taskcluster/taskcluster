@@ -2344,4 +2344,98 @@ suite(testing.suiteName(), function() {
       await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
     });
   });
+
+  suite('priority change helpers', function() {
+    setup('reset tables', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate queue_pending_tasks');
+        await client.query('truncate tasks');
+        await client.query('truncate task_groups');
+        await client.query('truncate task_dependencies');
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority updates pending rows', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-a', fromNow('10 minutes'));
+
+      const result = await db.fns.queue_change_task_priority(id, 'very-high');
+      assert.equal(result.length, 1);
+      assert.equal(result[0].priority, 'very-high');
+      assert.equal(result[0].old_priority, 'high');
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 6);
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority skips resolved or expired tasks', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-b', fromNow('10 minutes'));
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = true where task_id = $1', [id]);
+      });
+
+      const resolvedAttempt = await db.fns.queue_change_task_priority(id, 'low');
+      assert.equal(resolvedAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = false, deadline = now() - interval \'5 minutes\' where task_id = $1', [id]);
+      });
+
+      const expiredAttempt = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(expiredAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 5);
+      });
+    });
+
+    helper.dbTest('queue_change_task_group_priority batches updates', async function(db) {
+      const groupId = slugid.v4();
+      const taskIds = [];
+      for (let i = 0; i < 150; i++) {
+        const id = slugid.v4();
+        taskIds.push(id);
+        await create(db, { taskId: id, taskGroupId: groupId });
+        await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, `hint-${i}`, fromNow('30 minutes'));
+      }
+
+      const result = await db.fns.queue_change_task_group_priority(groupId, 'very-low', 150);
+      assert.equal(result.length, 150);
+      result.forEach(row => {
+        assert.equal(row.priority, 'very-low');
+        assert.equal(row.old_priority, 'high');
+      });
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query(
+          'select task_id, priority from queue_pending_tasks where task_id = any($1::text[])',
+          [taskIds],
+        );
+        assert.equal(rows.length, 150);
+        rows.forEach(row => assert.equal(row.priority, 2));
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority records previous value on subsequent updates', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+
+      const first = await db.fns.queue_change_task_priority(id, 'highest');
+      assert.equal(first.length, 1);
+      assert.equal(first[0].old_priority, 'high');
+
+      const second = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(second.length, 1);
+      assert.equal(second[0].old_priority, 'highest');
+    });
+  });
 });

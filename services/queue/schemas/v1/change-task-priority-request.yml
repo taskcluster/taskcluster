@@ -1,0 +1,15 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Change Task Priority Request"
+description: |
+  Payload for task and task-group reprioritization endpoints.
+type: object
+properties:
+  newPriority:
+    type: string
+    description: |
+      New priority to apply. Claimed runs keep their current run priority until
+      they are retried.
+    enum: {$const: task-priorities}
+additionalProperties: false
+required:
+  - newPriority
