@@ -3,6 +3,50 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.0.3
+
+### GENERAL
+
+▶ [patch]
+Notify Service: upgrades to use `@aws-sdk/client-sesv2` with the latest version of `nodemailer` to resolve some security vulnerabilities.
+
+▶ [patch]
+Upgrades CI Decision task to use Taskgraph v18.0.3.
+
+▶ [patch]
+Upgrades to Node.js v24.12.0.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8176](https://github.com/taskcluster/taskcluster/issues/8176)
+Worker-manager ensures workers are spawned for single launch config worker pools when adjusted weight might drop below zero with remaining capacity.
+
+▶ [patch]
+Changed the garbage collector to clean caches after docker resources when d2g is enabled
+
+### USERS
+
+▶ [patch]
+Switch back web-server queues to classic, as those are only used for short-lived task group updates in the UI
+and don't require same durability and Raft consensus algorithm.
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump nodemailer from 6.10.1 to 7.0.11 (c44db5baed)
+* build(deps): bump reqwest from 0.12.24 to 0.13.1 in /clients/client-rust (4be90d4161)
+* build(deps-dev): bump the client-python-deps group (4b063d40f4)
+* build(deps): bump the client-rust-deps group (f5764e2108)
+* build(deps): bump the go-deps group with 6 updates (1277638a11)
+* build(deps-dev): bump eslint (bc30026329)
+* build(deps): bump got in /clients/client in the client-node-deps group (25de41b848)
+* build(deps): bump qs from 6.13.0 to 6.14.1 in /ui (09b7c0b90b)
+* build(deps): bump qs from 6.14.0 to 6.14.1 (7eb36837ca)
+
+</details>
+
 ## v95.0.2
 
 ### WORKER-DEPLOYERS

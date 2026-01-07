@@ -1,4 +1,4 @@
-dockerImage: taskcluster/taskcluster:v95.0.2
+dockerImage: taskcluster/taskcluster:v95.0.3
 trustProxy: true
 forceSSL: false
 nodeEnv: production
