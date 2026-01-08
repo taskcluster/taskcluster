@@ -37,7 +37,7 @@ They will also have Fields for `status`, `duration`, and a serialized `error` if
 The processes that have `continuous` for their deadline and schedule run every few minutes and should complete fairly quickly. The rest
 have their schedules and maximum allowed duration defined here. All times are relative to the timezone of the k8s cluster.
 
-<!-- BEGIN MONITORING TABLE -->
+{/* BEGIN MONITORING TABLE */}
 | Service        | Name                         | Logger                     | Deadline (seconds) | Schedule                    |
 | -------------- | ---------------------------- | -------------------------- | ------------------ | --------------------------- |
 | auth           | purgeExpiredClients          | taskcluster.auth           | 86400              | At 12:00 AM                 |
@@ -68,7 +68,7 @@ have their schedules and maximum allowed duration defined here. All times are re
 | worker-manager | expire-worker-pools          | taskcluster.worker-manager | 86400              | At 12:01 AM                 |
 | worker-manager | expire-launch-configs        | taskcluster.worker-manager | 86400              | At 01:00 AM                 |
 | worker-manager | expire-errors                | taskcluster.worker-manager | 86400              | At 12:10 AM                 |
-<!-- END MONITORING TABLE -->
+{/* END MONITORING TABLE */}
 
 ## Prometheus Metrics
 
@@ -97,6 +97,7 @@ If your Kubernetes cluster does not support the `monitoring.googleapis.com/v1/Po
 
 Below is the list of services and jobs that expose metrics:
 
+<<<<<<< Updated upstream
 <!-- BEGIN METRICS TABLE -->
 | Service        | Name                | Type       | Reference                                                |
 | -------------- | ------------------- | ---------- | -------------------------------------------------------- |
@@ -116,3 +117,23 @@ Below is the list of services and jobs that expose metrics:
 | worker-manager | workerscanner       | background | [reference](/docs/reference/core/worker-manager/metrics) |
 | worker-manager | workerscanner-azure | background | [reference](/docs/reference/core/worker-manager/metrics) |
 <!-- END METRICS TABLE -->
+=======
+{/* BEGIN METRICS TABLE */}
+| Service        | Name          | Type       | Reference                                                |
+| -------------- | ------------- | ---------- | -------------------------------------------------------- |
+| auth           | web           | web        | [reference](/docs/reference/platform/auth/metrics)       |
+| github         | web           | web        | [reference](/docs/reference/integrations/github/metrics) |
+| hooks          | web           | web        | [reference](/docs/reference/core/hooks/metrics)          |
+| index          | web           | web        | [reference](/docs/reference/core/index/metrics)          |
+| notify         | web           | web        | [reference](/docs/reference/core/notify/metrics)         |
+| object         | web           | web        | [reference](/docs/reference/platform/object/metrics)     |
+| purge-cache    | web           | web        | [reference](/docs/reference/core/purge-cache/metrics)    |
+| queue          | web           | web        | [reference](/docs/reference/platform/queue/metrics)      |
+| queue          | workerMetrics | background | [reference](/docs/reference/platform/queue/metrics)      |
+| secrets        | web           | web        | [reference](/docs/reference/core/secrets/metrics)        |
+| web-server     | web           | web        | [reference](/docs/reference/core/web-server/metrics)     |
+| worker-manager | web           | web        | [reference](/docs/reference/core/worker-manager/metrics) |
+| worker-manager | provisioner   | background | [reference](/docs/reference/core/worker-manager/metrics) |
+| worker-manager | workerscanner | background | [reference](/docs/reference/core/worker-manager/metrics) |
+{/* END METRICS TABLE */}
+>>>>>>> Stashed changes
