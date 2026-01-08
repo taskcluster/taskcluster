@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Task Group Priority Change Response"
+description: |
+  Response returned by the change task group priority call.
+type: object
+properties:
+  taskGroupId:
+    title: "Task-Group Identifier"
+    type: string
+    pattern: {$const: slugid-pattern}
+  schedulerId: {$ref: "task-group-response.json#/properties/schedulerId"}
+  newPriority:
+    type: string
+    enum: {$const: task-priorities}
+  tasksAffected:
+    type: integer
+    minimum: 0
+  taskIds:
+    type: array
+    description: |
+      Task identifiers that were updated. Present even if the list is empty.
+    uniqueItems: true
+    items:
+      type: string
+      pattern: {$const: slugid-pattern}
+additionalProperties: false
+required:
+  - taskGroupId
+  - schedulerId
+  - newPriority
+  - tasksAffected
+  - taskIds

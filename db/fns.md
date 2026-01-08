@@ -114,6 +114,8 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+   * [`queue_change_task_priority`](#queue_change_task_priority)
    * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
    * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -2869,6 +2871,8 @@ end
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+* [`queue_change_task_priority`](#queue_change_task_priority)
 * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
 * [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -4676,6 +4680,218 @@ begin
     queue_artifacts.details,
     queue_artifacts.present,
     queue_artifacts.expires;
+end
+```
+
+</details>
+
+### queue_change_task_group_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `new_priority_in task_priority`
+  * `batch_size_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of unresolved tasks within a task group.
+Matching pending queue entries are updated in tandem. Returns each updated
+task row alongside its previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  _limit integer;
+  task_upd record;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  _limit := coalesce(batch_size_in, 100);
+  if _limit < 1 then _limit := 100; end if;
+
+  FOR task_upd IN
+    select tasks.task_id, tasks.priority
+    from tasks
+    where tasks.task_group_id = task_group_id_in
+      and not tasks.ever_resolved
+      and tasks.deadline > now()
+      and tasks.priority <> new_priority_in
+    order by tasks.task_id
+    limit _limit
+    for update
+  LOOP
+
+    update tasks
+    set priority = new_priority_in
+    where tasks.task_id = task_upd.task_id
+    returning * into _row;
+
+    update queue_pending_tasks
+    set priority = pending_priority
+    where queue_pending_tasks.task_id = task_upd.task_id;
+
+    return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      task_upd.priority;
+  END LOOP;
+
+  return;
+end
+```
+
+</details>
+
+### queue_change_task_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `new_priority_in task_priority`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of a single unresolved task and keep matching pending queue
+  entries in sync. Returns the updated task row along with the previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  old_priority_val task_priority;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  -- lock row and capture old priority
+  select tasks.priority into old_priority_val
+  from tasks
+  where tasks.task_id = task_id_in
+    and not tasks.ever_resolved
+    and tasks.deadline > now()
+    and tasks.priority <> new_priority_in
+  for update;
+
+  if not found then
+    return;
+  end if;
+
+  update tasks
+  set priority = new_priority_in
+  where tasks.task_id = task_id_in
+  returning * into _row;
+
+  update queue_pending_tasks
+  set priority = pending_priority
+  where queue_pending_tasks.task_id = task_id_in;
+
+  return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      old_priority_val;
 end
 ```
 

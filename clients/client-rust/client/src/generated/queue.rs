@@ -620,6 +620,51 @@ impl Queue {
         (path, query)
     }
 
+    /// Change Task Priority
+    ///
+    /// This method updates the priority of a single unresolved task.
+    ///
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+    pub async fn changeTaskPriority(&self, taskId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskPriority_details(taskId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskPriority
+    fn changeTaskPriority_details<'a>(taskId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/priority", urlencode(taskId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Change Task Group Priority
+    ///
+    /// This method applies a new priority to unresolved tasks within a task group.
+    ///
+    /// * Updates run in bounded batches to avoid long locks.
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskGroupPriorityChanged` summary event at the end.
+    pub async fn changeTaskGroupPriority(&self, taskGroupId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskGroupPriority_details(taskGroupId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskGroupPriority
+    fn changeTaskGroupPriority_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/priority", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Claim Work
     ///
     /// Claim pending task(s) for the given task queue.

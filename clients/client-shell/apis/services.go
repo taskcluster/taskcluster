@@ -1575,6 +1575,32 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "changeTaskPriority",
+				Title:       "Change Task Priority",
+				Description: "This method updates the priority of a single unresolved task.\n\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task/<taskId>/priority",
+				Args: []string{
+					"taskId",
+				},
+				Query: []string{},
+				Input: "v1/change-task-priority-request.json#",
+			},
+			definitions.Entry{
+				Name:        "changeTaskGroupPriority",
+				Title:       "Change Task Group Priority",
+				Description: "This method applies a new priority to unresolved tasks within a task group.\n\n* Updates run in bounded batches to avoid long locks.\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskGroupPriorityChanged` summary event at the end.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-group/<taskGroupId>/priority",
+				Args: []string{
+					"taskGroupId",
+				},
+				Query: []string{},
+				Input: "v1/change-task-priority-request.json#",
+			},
+			definitions.Entry{
 				Name:        "claimWork",
 				Title:       "Claim Work",
 				Description: "Claim pending task(s) for the given task queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",

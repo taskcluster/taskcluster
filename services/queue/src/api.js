@@ -1244,6 +1244,147 @@ builder.declare({
   return res.reply({ status });
 });
 
+builder.declare({
+  method: 'post',
+  route: '/task/:taskId/priority',
+  name: 'changeTaskPriority',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  scopes: {
+    AnyOf: [
+      'queue:change-task-priority:<taskId>',
+      'queue:change-task-priority-in-queue:<taskQueueId>',
+    ],
+  },
+  input: 'change-task-priority-request.yml',
+  output: 'task-status-response.yml',
+  title: 'Change Task Priority',
+  description: [
+    'This method updates the priority of a single unresolved task.',
+    '',
+    '* Claimed or running tasks keep their current run priority until they are retried.',
+    '* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.',
+  ].join('\n'),
+}, async function (req, res) {
+  const { taskId } = req.params;
+  const { newPriority } = req.body;
+  let task = await Task.get(this.db, taskId);
+
+  if (!task) {
+    return res.reportError('ResourceNotFound',
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
+        taskId,
+      });
+  }
+
+  await req.authorize({
+    taskId,
+    taskQueueId: task.taskQueueId,
+  });
+
+  if (task.deadline.getTime() <= Date.now()) {
+    return res.reportError(
+      'RequestConflict',
+      'Task `{{taskId}}` can\'t be reprioritized past its deadline of {{deadline}}.', {
+        taskId,
+        deadline: task.deadline.toJSON(),
+      },
+    );
+  }
+
+  const updateResult = await task.updatePriority(this.db, newPriority);
+  if (!updateResult) {
+    return res.reportError(
+      'RequestConflict',
+      'Task `{{taskId}}` is already resolved and cannot be reprioritized.', {
+        taskId,
+      },
+    );
+  }
+
+  this.LRUcache.delete(taskId);
+
+  const status = task.status();
+  await this.publisher.taskPriorityChanged({
+    status,
+    oldPriority: updateResult.oldPriority,
+    newPriority,
+  }, task.routes || []);
+  this.monitor.log.taskPriorityChanged({
+    taskId,
+    oldPriority: updateResult.oldPriority,
+    newPriority,
+  });
+
+  return res.reply({ status });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/task-group/:taskGroupId/priority',
+  name: 'changeTaskGroupPriority',
+  stability: APIBuilder.stability.experimental,
+  category: 'Task-Groups',
+  scopes: 'queue:change-task-group-priority:<schedulerId>/<taskGroupId>',
+  input: 'change-task-priority-request.yml',
+  output: 'task-group-priority-change-response.yml',
+  title: 'Change Task Group Priority',
+  description: [
+    'This method applies a new priority to unresolved tasks within a task group.',
+    '',
+    '* Updates run in bounded batches to avoid long locks.',
+    '* Claimed or running tasks keep their current run priority until they are retried.',
+    '* Emits `taskGroupPriorityChanged` summary event at the end.',
+  ].join('\n'),
+}, async function (req, res) {
+  const { taskGroupId } = req.params;
+  const { newPriority } = req.body;
+
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+  if (!taskGroup) {
+    return res.reportError('ResourceNotFound',
+      'Task group `{{taskGroupId}}` not found.', { taskGroupId });
+  }
+
+  await req.authorize({
+    schedulerId: taskGroup.schedulerId,
+    taskGroupId,
+  });
+
+  if (!PRIORITY_LEVELS.includes(newPriority)) {
+    return res.reportError('InputError', 'Unknown priority `{{priority}}`.', { priority: newPriority });
+  }
+
+  let tasksAffected = 0;
+  const taskIds = [];
+  while (true) {
+    const rows = await this.db.fns.queue_change_task_group_priority(taskGroupId, newPriority, 200);
+    if (!rows.length) {
+      break;
+    }
+
+    rows.forEach(row => {
+      const task = Task.fromDb(row);
+      this.LRUcache.delete(task.taskId);
+      taskIds.push(task.taskId);
+    });
+
+    tasksAffected += rows.length;
+  }
+
+  const event = {
+    taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+    newPriority,
+    tasksAffected,
+  };
+  this.monitor.log.taskGroupPriorityChanged({ ...event });
+  await this.publisher.taskGroupPriorityChanged({ ...event }, []);
+
+  const response = { ...event, taskIds };
+  return res.reply(response);
+});
+
 // Hack to get promises that resolve after 20s without creating a setTimeout
 // for each, instead we create a new promise every 2s and reuse that.
 let _lastTime = 0;

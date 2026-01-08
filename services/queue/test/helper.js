@@ -444,6 +444,7 @@ export const resetTables = (mock, skipping) => {
       'tasks',
       'task_groups',
       'task_dependencies',
+      'queue_pending_tasks',
       'queue_workers',
       'task_queues',
     ] });

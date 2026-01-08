@@ -26,6 +26,8 @@ export default class Queue extends Client {
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.changeTaskPriority.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"post","name":"changeTaskPriority","output":true,"query":[],"route":"/task/<taskId>/priority","scopes":{"AnyOf":["queue:change-task-priority:<taskId>","queue:change-task-priority-in-queue:<taskQueueId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.changeTaskGroupPriority.entry = {"args":["taskGroupId"],"category":"Task-Groups","input":true,"method":"post","name":"changeTaskGroupPriority","output":true,"query":[],"route":"/task-group/<taskGroupId>/priority","scopes":"queue:change-task-group-priority:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -285,6 +287,27 @@ export default class Queue extends Client {
     this.validate(this.cancelTask.entry, args);
 
     return this.request(this.cancelTask.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method updates the priority of a single unresolved task.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+  /* eslint-enable max-len */
+  changeTaskPriority(...args) {
+    this.validate(this.changeTaskPriority.entry, args);
+
+    return this.request(this.changeTaskPriority.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method applies a new priority to unresolved tasks within a task group.
+  // * Updates run in bounded batches to avoid long locks.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskGroupPriorityChanged` summary event at the end.
+  /* eslint-enable max-len */
+  changeTaskGroupPriority(...args) {
+    this.validate(this.changeTaskGroupPriority.entry, args);
+
+    return this.request(this.changeTaskGroupPriority.entry, args);
   }
   /* eslint-disable max-len */
   // Claim pending task(s) for the given task queue.

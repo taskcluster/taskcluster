@@ -128,15 +128,8 @@ properties:
       `lowest`.
     type:           string
     default: 'lowest'
-    enum:
-      - highest
-      - very-high
-      - high
-      - medium
-      - low
-      - very-low
-      - lowest
-      - normal
+    enum:    {$const: task-priorities}
+
   retries:
     title:          "Retries"
     description: |

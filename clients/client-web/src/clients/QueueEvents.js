@@ -126,4 +126,20 @@ export default class QueueEvents extends Client {
 
     return this.normalizePattern(entry, pattern);
   }
+  /* eslint-disable max-len */
+  // A message published when task priority was updated via `changeTaskPriority` API call.
+  /* eslint-enable max-len */
+  taskPriorityChanged(pattern) {
+    const entry = {"exchange":"task-priority-changed","name":"taskPriorityChanged","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-priority-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // A message published when task group priority was changed via `changeTaskGroupPriority` API call.
+  /* eslint-enable max-len */
+  taskGroupPriorityChanged(pattern) {
+    const entry = {"exchange":"task-group-priority-changed","name":"taskGroupPriorityChanged","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-priority-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
 }
