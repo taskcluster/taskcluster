@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
@@ -15,7 +16,7 @@ const styles = theme => ({
     '&, & pre[class*="language-"]': {
       margin: `${theme.spacing(3)}px 0`,
       padding: '12px 18px',
-      backgroundColor: THEME.PRIMARY_DARK,
+      backgroundColor: `${THEME.PRIMARY_DARK} !important`,
       borderRadius: 3,
       overflow: 'auto',
     },
@@ -25,15 +26,14 @@ const styles = theme => ({
       backgroundColor: 'unset',
       color: THEME.PRIMARY_TEXT_DARK,
     },
-    '& .token.operator': {
-      color: 'none',
-      background: 'none',
+    '& .token.operator, & .token.punctuation': {
+      background: 'transparent !important',
     },
   },
 });
 
-function Pre({ classes, ...props }) {
-  return <pre className={classes.pre} {...props} />;
+function Pre({ classes, className, ...props }) {
+  return <pre className={classNames(classes.pre, className)} {...props} />;
 }
 
 export default withStyles(styles)(Pre);
