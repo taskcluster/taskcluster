@@ -3,6 +3,18 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.1.0
+
+### USERS
+
+▶ [minor]
+Queue service allows changing the priority of unresolved tasks.
+Two new endpoints are being introduced:
+- queue.changeTaskPriority
+- queue.changeTaskGroupPriority
+
+This is the implementation of the [RFC190](https://github.com/taskcluster/taskcluster-rfcs/pull/190)
+
 ## v95.0.3
 
 ### GENERAL
