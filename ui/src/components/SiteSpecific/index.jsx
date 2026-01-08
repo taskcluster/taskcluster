@@ -1,9 +1,26 @@
 import React from 'react';
-import { arrayOf, string } from 'prop-types';
+import { arrayOf, string, node } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Markdown from '../Markdown';
 import { siteSpecificVariables } from '../../utils/siteSpecific';
+
+// Helper function to extract text content from React children
+const getTextFromChildren = children => {
+  if (typeof children === 'string') {
+    return children;
+  }
+
+  if (Array.isArray(children)) {
+    return children.map(getTextFromChildren).join('');
+  }
+
+  if (React.isValidElement(children) && children.props.children) {
+    return getTextFromChildren(children.props.children);
+  }
+
+  return '';
+};
 
 const styles = withStyles(theme => ({
   root: {
@@ -56,8 +73,10 @@ const SiteSpecific = ({ classes, showIfNotSet, children }) => {
     }
   }
 
+  const textContent = getTextFromChildren(children);
+
   try {
-    rendered = children.replace(/%([a-zA-Z0-9_]+)%/g, (_, ident) => {
+    rendered = textContent.replace(/%([a-zA-Z0-9_]+)%/g, (_, ident) => {
       let result;
 
       if (SITE_SPECIFIC_VARS.has(ident)) {
@@ -92,7 +111,7 @@ const SiteSpecific = ({ classes, showIfNotSet, children }) => {
 };
 
 SiteSpecific.propTypes = {
-  children: string.isRequired,
+  children: node.isRequired,
   showIfNotSet: arrayOf(string),
 };
 

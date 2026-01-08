@@ -5,6 +5,8 @@ import fs from 'fs';
 import mdx from '@mdx-js/rollup';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
+import remarkGfm from 'remark-gfm';
+import rehypePrism from 'rehype-prism-plus';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
@@ -98,10 +100,13 @@ export default ({ mode }) => {
       viteTsconfigPaths(),
       mdx({
         include: ['docs/**/*.{md,mdx}'],
+        providerImportSource: '@mdx-js/react',
         remarkPlugins: [
           remarkFrontmatter,
           [remarkMdxFrontmatter, { name: 'frontmatter' }],
+          remarkGfm,
         ],
+        rehypePlugins: [rehypePrism],
       }),
       react({
         include: [/\.(jsx?|tsx?)$/],
