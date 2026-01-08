@@ -97,8 +97,7 @@ If your Kubernetes cluster does not support the `monitoring.googleapis.com/v1/Po
 
 Below is the list of services and jobs that expose metrics:
 
-<<<<<<< Updated upstream
-<!-- BEGIN METRICS TABLE -->
+{/* BEGIN METRICS TABLE */}
 | Service        | Name                | Type       | Reference                                                |
 | -------------- | ------------------- | ---------- | -------------------------------------------------------- |
 | auth           | web                 | web        | [reference](/docs/reference/platform/auth/metrics)       |
@@ -116,24 +115,4 @@ Below is the list of services and jobs that expose metrics:
 | worker-manager | provisioner         | background | [reference](/docs/reference/core/worker-manager/metrics) |
 | worker-manager | workerscanner       | background | [reference](/docs/reference/core/worker-manager/metrics) |
 | worker-manager | workerscanner-azure | background | [reference](/docs/reference/core/worker-manager/metrics) |
-<!-- END METRICS TABLE -->
-=======
-{/* BEGIN METRICS TABLE */}
-| Service        | Name          | Type       | Reference                                                |
-| -------------- | ------------- | ---------- | -------------------------------------------------------- |
-| auth           | web           | web        | [reference](/docs/reference/platform/auth/metrics)       |
-| github         | web           | web        | [reference](/docs/reference/integrations/github/metrics) |
-| hooks          | web           | web        | [reference](/docs/reference/core/hooks/metrics)          |
-| index          | web           | web        | [reference](/docs/reference/core/index/metrics)          |
-| notify         | web           | web        | [reference](/docs/reference/core/notify/metrics)         |
-| object         | web           | web        | [reference](/docs/reference/platform/object/metrics)     |
-| purge-cache    | web           | web        | [reference](/docs/reference/core/purge-cache/metrics)    |
-| queue          | web           | web        | [reference](/docs/reference/platform/queue/metrics)      |
-| queue          | workerMetrics | background | [reference](/docs/reference/platform/queue/metrics)      |
-| secrets        | web           | web        | [reference](/docs/reference/core/secrets/metrics)        |
-| web-server     | web           | web        | [reference](/docs/reference/core/web-server/metrics)     |
-| worker-manager | web           | web        | [reference](/docs/reference/core/worker-manager/metrics) |
-| worker-manager | provisioner   | background | [reference](/docs/reference/core/worker-manager/metrics) |
-| worker-manager | workerscanner | background | [reference](/docs/reference/core/worker-manager/metrics) |
 {/* END METRICS TABLE */}
->>>>>>> Stashed changes

@@ -9,7 +9,7 @@ const styles = theme => ({
 });
 
 function Paragraph({ classes, ...props }) {
-  return <Typography className={classes.text} {...props} />;
+  return <Typography variant="body1" className={classes.text} {...props} />;
 }
 
 export default withStyles(styles)(Paragraph);

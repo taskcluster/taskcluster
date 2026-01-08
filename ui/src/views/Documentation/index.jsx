@@ -113,25 +113,26 @@ export default class Documentation extends Component {
 
   async readDocFile(path) {
     // Use import.meta.glob to statically import all MDX files
-    // Vite requires this for dynamic imports to work in both dev and build modes
+    // Vite requires this for dynamic imports to work
+    // in both dev and build modes
     const modules = import.meta.glob('../../../docs/**/*.mdx');
-
     // Try direct file path first (e.g., docs/changelog.mdx)
     let modulePath = `../../../docs/${path}.mdx`;
 
     if (modules[modulePath]) {
-      return await modules[modulePath]();
+      return modules[modulePath]();
     }
 
     // Try README path (e.g., docs/tutorial/README.mdx)
     modulePath = `../../../docs/${path}/README.mdx`;
 
     if (modules[modulePath]) {
-      return await modules[modulePath]();
+      return modules[modulePath]();
     }
 
     // If neither exists, throw MODULE_NOT_FOUND error
     const error = new Error(`Cannot find module '${path}'`);
+
     error.code = 'MODULE_NOT_FOUND';
     throw error;
   }

@@ -102,6 +102,8 @@
     "react-virtualized": "^9.22.5",
     "react-window": "^1.8.10",
     "redbox-react": "^1.6.0",
+    "rehype-prism-plus": "^2.0.1",
+    "remark-gfm": "^4.0.1",
     "resolve-pathname": "^3.0.0",
     "snake-case": "^3.0.3",
     "stream-browserify": "^3.0.0",
