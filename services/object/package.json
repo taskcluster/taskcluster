@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/object",
-  "version": "95.1.0",
+  "version": "95.1.1",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",

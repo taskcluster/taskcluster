@@ -3,6 +3,15 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.1.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2006698](http://bugzil.la/2006698)
+Fixes worker-manager killing zombie workers when queue data is missing.
+For long running tasks that took longer than queueInactivityTimeout to finish was a high risk of getting claim-expired
+because w-m incorrectly assumed worker is not doing anything (missing queue information)
+
 ## v95.1.0
 
 ### USERS
