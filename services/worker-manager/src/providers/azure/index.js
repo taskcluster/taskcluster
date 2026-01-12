@@ -778,7 +778,7 @@ export class AzureProvider extends Provider {
       }
       monitor.debug({ message: 'found deployment operations', count: operations.length });
     } catch (error) {
-      monitor.error({ message: 'failed to query deployment operations', error });
+      monitor.reportError(error, { message: 'failed to query deployment operations' });
     }
 
     return operations;
