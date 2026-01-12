@@ -824,11 +824,19 @@ export class Worker {
   }
 
   updateInstanceFields(worker) {
+    const queueFields = ['firstClaim', 'lastDateActive', 'quarantineUntil', 'recentTasks'];
+
     Object.keys(worker).forEach(prop => {
-      this[prop] = worker[prop];
+      // Skip undefined queue fields (preserve existing values)
+      if (worker[prop] !== undefined || !queueFields.includes(prop)) {
+        this[prop] = worker[prop];
+      }
     });
 
-    this._properties = worker;
+    this._properties = {
+      ...worker,
+      ..._.pickBy(_.pick(this, queueFields), (v, k) => worker[k] === undefined),
+    };
   }
 
   // Load the properties from the table once more, and update the instance fields.

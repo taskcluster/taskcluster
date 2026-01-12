@@ -135,4 +135,54 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       stoppingCapacity: 1,
     });
   });
+
+  suite('Worker.updateInstanceFields', function() {
+    test('preserves queue fields when undefined', function() {
+      const worker = Worker.fromApi({
+        workerPoolId: 'test/pool',
+        workerGroup: 'test-group',
+        workerId: 'test-worker',
+      });
+
+      // Set queue fields (as loaded from scanner)
+      worker.firstClaim = new Date('2025-01-01');
+      worker.lastDateActive = new Date('2025-01-02');
+      worker.quarantineUntil = new Date('2025-01-03');
+      worker.recentTasks = [{ taskId: 'task1' }];
+
+      // Simulate update result (no queue fields)
+      const updatedWorker = {
+        workerPoolId: 'test/pool',
+        workerGroup: 'test-group',
+        workerId: 'test-worker',
+        providerData: { updated: true }, // Modified field
+        // firstClaim, lastDateActive, etc. are undefined
+      };
+
+      worker.updateInstanceFields(updatedWorker);
+
+      // Verify queue fields preserved
+      assert.deepEqual(worker.firstClaim, new Date('2025-01-01'));
+      assert.deepEqual(worker.lastDateActive, new Date('2025-01-02'));
+      assert.deepEqual(worker.quarantineUntil, new Date('2025-01-03'));
+      assert.deepEqual(worker.recentTasks, [{ taskId: 'task1' }]);
+
+      // Verify workers field updated
+      assert.deepEqual(worker.providerData, { updated: true });
+    });
+
+    test('allows explicit null for queue fields', function() {
+      const worker = Worker.fromApi({});
+      worker.firstClaim = new Date('2025-01-01');
+
+      const updatedWorker = {
+        firstClaim: null, // Explicitly set to null
+      };
+
+      worker.updateInstanceFields(updatedWorker);
+
+      // Null is preserved (not treated as undefined)
+      assert.strictEqual(worker.firstClaim, null);
+    });
+  });
 });

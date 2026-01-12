@@ -117,6 +117,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /queueInactivityTimeout=7200s/);
@@ -125,6 +127,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker never claimed work/);
@@ -134,6 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
       worker.firstClaim = taskcluster.fromNow('-4 hours');
+      worker.lastDateActive = null;
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker never reclaimed work/);
@@ -161,9 +166,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       worker.created = taskcluster.fromNow('-5 minutes');
       worker.firstClaim = taskcluster.fromNow('-4 minutes');
-      worker.lastdDateActive = taskcluster.fromNow('-3 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-3 minutes');
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, false);
+    });
+    test('fields not fetched from database (defensive check)', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      // Intentionally leave firstClaim and lastDateActive as undefined
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, false);
+      assert.match(res.reason, /queue fields not fetched/);
     });
   });
 
