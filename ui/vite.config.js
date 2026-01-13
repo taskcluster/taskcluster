@@ -10,7 +10,7 @@ import rehypePrism from 'rehype-prism-plus';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
-import gql from 'vite-plugin-simple-gql';
+import graphql from '@rollup/plugin-graphql';
 import generateEnvJs from './generate-env-js.js';
 
 const DEFAULT_PORT = 5080;
@@ -26,6 +26,17 @@ const serverProxyConfig = {
   '/graphql': {
     target: proxyTarget,
     changeOrigin: true,
+    configure: (proxy, _options) => {
+      proxy.on('error', (err, _req, _res) => {
+        console.log('[graphql proxy error]', err);
+      });
+      proxy.on('proxyReq', (proxyReq, req, _res) => {
+        console.log('[graphql proxy req]', req.method, req.url, '-> ', proxyTarget + req.url);
+      });
+      proxy.on('proxyRes', (proxyRes, req, _res) => {
+        console.log('[graphql proxy res]', proxyRes.statusCode, req.url);
+      });
+    },
   },
   '/schemas': {
     target: proxyTarget,
@@ -96,7 +107,7 @@ export default ({ mode }) => {
       allContributorsPlugin(),
       reactVirtualized(),
       historyFallback(),
-      gql(),
+      graphql(),
       viteTsconfigPaths(),
       mdx({
         include: ['docs/**/*.{md,mdx}'],
@@ -113,7 +124,6 @@ export default ({ mode }) => {
         babel: {
           plugins: [
             ['@babel/plugin-proposal-decorators', { legacy: true }],
-            ['@babel/plugin-proposal-class-properties', { loose: false }],
           ],
         },
       }),

@@ -1,4 +1,4 @@
-import urls from './urls';
+import urls from './urls.js';
 
 const exchanges = [];
 const fetchExchanges = async (service, version) => {
