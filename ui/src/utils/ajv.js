@@ -1,12 +1,12 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import metaSchema from 'ajv/lib/refs/json-schema-draft-06.json';
-import urls from './urls';
+import urls from './urls.js';
 
+// AJV v8 includes meta-schemas (draft-06, draft-07) by default
+// so we don't need to manually import and add them
 const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
 
 addFormats(ajv);
-ajv.addMetaSchema(metaSchema);
 
 const schemaCache = {};
 const fetchSchema = async (service, schema) => {

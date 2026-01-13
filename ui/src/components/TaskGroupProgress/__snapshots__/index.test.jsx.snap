@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render TaskGroupProgress 1`] = `
 <DocumentFragment>
@@ -6,7 +6,7 @@ exports[`should render TaskGroupProgress 1`] = `
     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2"
   >
     <button
-      class="MuiButtonBase-root TaskGroupProgress-completedButton-5 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-completedButton-5 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="COMPLETED"
       tabindex="0"
       type="button"
@@ -14,7 +14,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -27,12 +27,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           COMPLETED
         </span>
@@ -42,7 +42,7 @@ exports[`should render TaskGroupProgress 1`] = `
       />
     </button>
     <button
-      class="MuiButtonBase-root TaskGroupProgress-runningButton-10 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-runningButton-10 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="RUNNING"
       tabindex="0"
       type="button"
@@ -50,7 +50,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -63,12 +63,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           RUNNING
         </span>
@@ -78,7 +78,7 @@ exports[`should render TaskGroupProgress 1`] = `
       />
     </button>
     <button
-      class="MuiButtonBase-root TaskGroupProgress-failedButton-6 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-failedButton-6 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="FAILED"
       tabindex="0"
       type="button"
@@ -86,7 +86,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -99,12 +99,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           FAILED
         </span>
@@ -114,7 +114,7 @@ exports[`should render TaskGroupProgress 1`] = `
       />
     </button>
     <button
-      class="MuiButtonBase-root TaskGroupProgress-pendingButton-8 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-pendingButton-8 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="PENDING"
       tabindex="0"
       type="button"
@@ -122,7 +122,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -135,12 +135,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           PENDING
         </span>
@@ -150,7 +150,7 @@ exports[`should render TaskGroupProgress 1`] = `
       />
     </button>
     <button
-      class="MuiButtonBase-root TaskGroupProgress-exceptionButton-9 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-exceptionButton-9 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="EXCEPTION"
       tabindex="0"
       type="button"
@@ -158,7 +158,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -171,12 +171,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           EXCEPTION
         </span>
@@ -186,7 +186,7 @@ exports[`should render TaskGroupProgress 1`] = `
       />
     </button>
     <button
-      class="MuiButtonBase-root TaskGroupProgress-unscheduledButton-7 TaskGroupProgress-statusButton-1 TaskGroupProgress-noTasksButton-11"
+      class="MuiButtonBase-root TaskGroupProgress2-unscheduledButton-7 TaskGroupProgress2-statusButton-1 TaskGroupProgress2-noTasksButton-11"
       name="UNSCHEDULED"
       tabindex="0"
       type="button"
@@ -194,7 +194,7 @@ exports[`should render TaskGroupProgress 1`] = `
     >
       <div>
         <svg
-          class="mdi-icon TaskGroupProgress-statusIcon-4"
+          class="mdi-icon TaskGroupProgress2-statusIcon-4"
           fill="white"
           height="32"
           viewBox="0 0 24 24"
@@ -207,12 +207,12 @@ exports[`should render TaskGroupProgress 1`] = `
       </div>
       <div>
         <h4
-          class="MuiTypography-root TaskGroupProgress-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
+          class="MuiTypography-root TaskGroupProgress2-statusButtonTypography-2 MuiTypography-h4 MuiTypography-alignRight"
         >
           ...
         </h4>
         <span
-          class="MuiTypography-root TaskGroupProgress-statusTitle-3 TaskGroupProgress-statusButtonTypography-2 MuiTypography-caption"
+          class="MuiTypography-root TaskGroupProgress2-statusTitle-3 TaskGroupProgress2-statusButtonTypography-2 MuiTypography-caption"
         >
           UNSCHEDULED
         </span>
