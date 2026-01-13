@@ -130,6 +130,7 @@
     "@types/babel__core": "^7",
     "@types/jsdom": "^27",
     "@types/path-browserify": "^1",
+    "@vitest/coverage-v8": "^4.0.17",
     "@vitest/ui": "^4.0.17",
     "apollo-client-mock": "^0.0.9",
     "chai": "^4.3.10",
