@@ -3,7 +3,9 @@ import { withRouter } from 'react-router-dom';
 import { string } from 'prop-types';
 import SchemaViewer from 'material-ui-json-schema-viewer';
 // Import as raw strings to avoid ESM JSON import assertion issues
+// eslint-disable-next-line import/no-unresolved
 import jsonSchemaDraft06Raw from 'ajv/lib/refs/json-schema-draft-06.json?raw';
+// eslint-disable-next-line import/no-unresolved
 import jsonSchemaDraft07Raw from 'ajv/lib/refs/json-schema-draft-07.json?raw';
 import Spinner from '../Spinner';
 import ErrorPanel from '../ErrorPanel';
@@ -12,7 +14,6 @@ import references from '../../../../generated/references.json';
 // Parse the raw JSON strings
 const jsonSchemaDraft06 = JSON.parse(jsonSchemaDraft06Raw);
 const jsonSchemaDraft07 = JSON.parse(jsonSchemaDraft07Raw);
-
 // Local copies of the json-schemas schemas, since TC schemas $refer to these
 const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
   (schemas, schema) => ({ ...schemas, [schema.$id]: schema }),

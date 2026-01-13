@@ -1,5 +1,5 @@
-import { getClient } from './client';
 import { Queue } from '@taskcluster/client-web';
+import { getClient } from './client';
 
 const fetchMultiple = async (fn, prop, taskIds, user) => {
   const queue = getClient({ Class: Queue, user });
