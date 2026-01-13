@@ -75,7 +75,7 @@ func runGarbageCollection(r Resources) error {
 		}
 
 		err = os.Remove("d2g-image-cache.json")
-		if err != nil {
+		if err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 		}
 
