@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-api",
   "private": true,
-  "version": "95.1.1",
+  "version": "95.1.2",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "@taskcluster/lib-api",
   "license": "MPL-2.0",

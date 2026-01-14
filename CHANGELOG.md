@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.1.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Fix a worker panic when the garbage collector runs twice with no task in between if d2g is enabled
+
+### DEVELOPERS
+
+▶ [patch] [bug 2010096](http://bugzil.la/2010096)
+The `taskcluster signin` command shell-escapes the credentials it receives before outputting them.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump github.com/sigstore/cosign/v2 from 2.4.1 to 2.6.2 (963109aa38)
+
+</details>
+
 ## v95.1.1
 
 ### WORKER-DEPLOYERS
