@@ -12,12 +12,18 @@ module.exports = config => {
       },
     ],
     preprocessors: {
-      '**/*.js': ['esbuild'],
+      '**/*.js': ['webpack'],
     },
-    esbuild: {
-      target: 'es2015',
-      format: 'iife',
-      sourcemap: 'inline',
+    webpackMiddleware: {
+      stats: {
+        all: false,
+        errors: true,
+        timings: true,
+        warnings: true,
+      },
+    },
+    webpack: {
+      mode: 'development',
     },
     reporters: ['mocha'],
     browsers: [process.env.CI ? 'FirefoxHeadless' : 'Firefox'],
