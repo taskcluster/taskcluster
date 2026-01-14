@@ -53,11 +53,12 @@ tasks:
         cd clients/client-go &&
         go test -v -race ./...
   shell:
-    description: cli tests
+    description: cli build & tests
     worker:
       docker-image: {in-tree: ci}
     run:
       command: >-
+        go tool goreleaser release --clean --snapshot &&
         eval $(python3 test/client-library-secrets.py) &&
         cd clients/client-shell &&
         go test -v -race ./...
