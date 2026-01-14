@@ -166,7 +166,7 @@ and reports back results to the queue.
           createObjectArtifacts             If true, use artifact type 'object' for artifacts
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
-                                            's3' type is deprecated.
+                                            's3' type is deprecated.` + disableNativePayloads() + `
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.

@@ -80,7 +80,7 @@ func (wm *WorkerManager) CreateWorkerPool(workerPoolId string, payload *tcworker
 
 func (wm *WorkerManager) ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error) {
 	return &tcworkermanager.ShouldWorkerTerminateResponse{
-		Reason: "no reason",
+		Reason:    "no reason",
 		Terminate: false,
 	}, nil
 }
