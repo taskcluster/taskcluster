@@ -97,7 +97,7 @@ function allContributorsPlugin() {
 }
 
 export default ({ mode }) => {
-  if (mode === 'development') {
+  if (['development', 'test'].includes(mode)) {
     generateEnvJs(path.join(STATIC_DIR, 'env.js'));
   }
 
@@ -330,6 +330,7 @@ function historyFallback() {
 
 // hack area - fix react-virtualized issue with vite
 const WRONG_CODE = 'import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";';
+
 export function reactVirtualized() {
   return {
     name: "my:react-virtualized",
