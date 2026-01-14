@@ -12,7 +12,7 @@ const (
 	REBOOT_REQUIRED             ExitCode = 67
 	IDLE_TIMEOUT                ExitCode = 68
 	INTERNAL_ERROR              ExitCode = 69
-	NONCURRENT_DEPLOYMENT_ID    ExitCode = 70
+	WORKER_MANAGER_SHUTDOWN     ExitCode = 70
 	WORKER_STOPPED              ExitCode = 71
 	WORKER_SHUTDOWN             ExitCode = 72
 	INVALID_CONFIG              ExitCode = 73

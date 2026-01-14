@@ -214,7 +214,7 @@ func main() {
 			if config.ShutdownMachineOnInternalError {
 				shutdownWorker("generic-worker internal error")
 			}
-		case NONCURRENT_DEPLOYMENT_ID:
+		case WORKER_MANAGER_SHUTDOWN:
 			logEvent("instanceShutdown", nil, time.Now())
 			shutdownWorker("worker manager requested termination")
 		}
@@ -468,7 +468,7 @@ func RunWorker() (exitCode ExitCode) {
 		if time.Now().Round(0).Sub(lastCheckedDeploymentID) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastCheckedDeploymentID = time.Now()
 			if checkWhetherToTerminate() {
-				return NONCURRENT_DEPLOYMENT_ID
+				return WORKER_MANAGER_SHUTDOWN
 			}
 		}
 
@@ -529,7 +529,7 @@ func RunWorker() (exitCode ExitCode) {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
 
 				if checkWhetherToTerminate() {
-					return NONCURRENT_DEPLOYMENT_ID
+					return WORKER_MANAGER_SHUTDOWN
 				}
 				return TASKS_COMPLETE
 			}
