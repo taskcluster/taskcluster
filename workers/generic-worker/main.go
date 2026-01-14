@@ -258,7 +258,6 @@ func loadConfig(configFile *gwconfig.File) error {
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
-			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
 			DisableOOMProtection:           false,
 			DisableReboots:                 false,
@@ -453,7 +452,6 @@ func RunWorker() (exitCode ExitCode) {
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
-	lastCheckedDeploymentID := time.Time{}
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
@@ -461,15 +459,8 @@ func RunWorker() (exitCode ExitCode) {
 		return REBOOT_REQUIRED
 	}
 	for {
-
-		// See https://bugzil.la/1298010 - routinely check if this worker type is
-		// outdated, and shut down if a new deployment is required.
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if time.Now().Round(0).Sub(lastCheckedDeploymentID) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
-			lastCheckedDeploymentID = time.Now()
-			if checkWhetherToTerminate() {
-				return WORKER_MANAGER_SHUTDOWN
-			}
+		if checkWhetherToTerminate() {
+			return WORKER_MANAGER_SHUTDOWN
 		}
 
 		// Ensure there is enough disk space *before* claiming a task

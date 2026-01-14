@@ -134,11 +134,6 @@ and reports back results to the queue.
                                             [default: "caches"]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
-          checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
-                                            to the provisioner, to check if there has been a
-                                            new deployment of the current worker type. If a
-                                            new deployment is discovered, worker will shut
-                                            down. See deploymentId property. [default: 1800]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,

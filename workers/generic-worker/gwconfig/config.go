@@ -30,7 +30,6 @@ type (
 		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
-		CheckForNewDeploymentEverySecs uint           `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
