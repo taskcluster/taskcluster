@@ -7,7 +7,7 @@
  */
 exports.withRootUrl = function() {
   before(function() {
-    // the rootUrl is passed in via karma.conf.js
+    // the rootUrl is passed in via `.neutrinorc.js`
     exports.rootUrl = __karma__.config.args[0];
     if (!exports.rootUrl) {
       console.log('TASKCLUSTER_ROOT_URL not set');
