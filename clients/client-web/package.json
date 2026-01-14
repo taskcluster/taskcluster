@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/client-web",
-  "version": "95.1.2",
+  "version": "95.1.3",
   "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
