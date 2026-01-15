@@ -842,6 +842,22 @@ services:
       - cron
       - web-server
       - web-server-cron
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/cleanup-session-storage
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
   web-server-cron-cleanup-expire-auth-codes:
     image: ${IMAGE}
     networks:

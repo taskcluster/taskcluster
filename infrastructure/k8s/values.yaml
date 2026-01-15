@@ -242,6 +242,9 @@ web_server:
     scanner:
       cpu: 800m
       memory: 500Mi
+    cleanup_session_storage:
+      cpu: 50m
+      memory: 100Mi
     cleanup_expire_auth_codes:
       cpu: 800m
       memory: 500Mi

@@ -253,6 +253,8 @@ web_server:
       cpu: 10m
     scanner:
       cpu: 10m
+    cleanup_session_storage:
+      cpu: 10m
     cleanup_expire_auth_codes:
       cpu: 10m
     cleanup_expire_access_tokens:

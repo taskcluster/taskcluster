@@ -2372,6 +2372,22 @@
               ],
               "type": "object"
             },
+            "cleanup_session_storage": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
+            },
             "scanner": {
               "additionalProperties": false,
               "properties": {
@@ -2415,6 +2431,7 @@
           "required": [
             "web",
             "scanner",
+            "cleanup_session_storage",
             "cleanup_expire_auth_codes",
             "cleanup_expire_access_tokens"
           ],

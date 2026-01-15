@@ -207,6 +207,13 @@ services:
       - cron
       - web-server
       - web-server-cron
+  web-server-cron-cleanup-session-storage:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
   web-server-cron-cleanup-expire-auth-codes:
     environment:
       NODE_ENV: production
