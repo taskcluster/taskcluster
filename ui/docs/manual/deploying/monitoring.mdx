@@ -59,6 +59,7 @@ have their schedules and maximum allowed duration defined here. All times are re
 | queue          | workerMetrics                | taskcluster.queue          | continuous         | continuous                  |
 | secrets        | expire                       | taskcluster.secrets        | 600                | Every hour                  |
 | web-server     | scanner                      | taskcluster.web-server     | 86400              | At 12:01 AM                 |
+| web-server     | cleanup-session-storage      | taskcluster.web-server     | 86400              | At 12:05 AM                 |
 | web-server     | cleanup-expire-auth-codes    | taskcluster.web-server     | 86400              | At 12:00 AM                 |
 | web-server     | cleanup-expire-access-tokens | taskcluster.web-server     | 86400              | At 12:00 AM                 |
 | worker-manager | provisioner                  | taskcluster.worker-manager | continuous         | continuous                  |

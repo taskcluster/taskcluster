@@ -587,6 +587,23 @@ services:
       - web-server-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js scanner"
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/web-server:/app/services/web-server
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js cleanup-session-storage"
   web-server-cron-cleanup-expire-auth-codes:
     image: ${IMAGE_DEV}
     environment:

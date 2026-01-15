@@ -12,6 +12,11 @@ scanner:
   schedule: '1 0 * * *'
   deadline: 86400
   command: node services/web-server/src/main.js scanner
+cleanup-session-storage:
+  type: cron
+  schedule: '5 0 * * *'
+  deadline: 86400
+  command: node services/web-server/src/main.js cleanup-session-storage
 cleanup-expire-auth-codes:
   type: cron
   schedule: '0 0 * * *'

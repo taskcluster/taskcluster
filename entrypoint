@@ -49,6 +49,7 @@ secrets/expire) exec node services/secrets/src/main.js expire;;
 secrets/write-docs) exec node services/secrets/src/main.js writeDocs;;
 web-server/web) exec node services/web-server/src/main.js server;;
 web-server/scanner) exec node services/web-server/src/main.js scanner;;
+web-server/cleanup-session-storage) exec node services/web-server/src/main.js cleanup-session-storage;;
 web-server/cleanup-expire-auth-codes) exec node services/web-server/src/main.js cleanup-expire-auth-codes;;
 web-server/cleanup-expire-access-tokens) exec node services/web-server/src/main.js cleanup-expire-access-tokens;;
 web-server/write-docs) exec node services/web-server/src/main.js writeDocs;;
