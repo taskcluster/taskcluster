@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v95.1.4
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v24.13.0 [SECURITY].
+
+Can read more about this release [here](https://nodejs.org/en/blog/vulnerability/december-2025-security-releases).
+
+### USERS
+
+▶ [patch]
+Fixes TypeError in web-server when no oauth2 clients are configured.
+
 ## v95.1.3
 
 ### GENERAL
