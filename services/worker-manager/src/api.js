@@ -992,6 +992,38 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId/should-terminate',
+  name: 'shouldWorkerTerminate',
+  title: 'Should worker terminate',
+  category: 'Workers',
+  output: 'should-worker-terminate-response.yml',
+  stability: APIBuilder.stability.experimental,
+  scopes: 'worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Informs if worker should terminate or keep working.',
+    'Worker might no longer be needed based on the set of factors:',
+    ' - current capacity of the worker pool',
+    ' - amount of pending and claimed tasks',
+    ' - launch configuration changes',
+    '',
+    'Decision is made during provision or scanning loop based on above mentioned conditions.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId, workerGroup, workerId } = req.params;
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+
+  if (!worker) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  return res.reply({
+    terminate: false,
+    reason: 'unclear',
+  });
+});
+
+builder.declare({
+  method: 'get',
   route: '/workers/:workerPoolId(*)',
   query: {
     ...paginateResults.query,

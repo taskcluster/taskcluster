@@ -634,6 +634,39 @@ func (workerManager *WorkerManager) RemoveWorker(workerPoolId, workerGroup, work
 	return err
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Informs if worker should terminate or keep working.
+// Worker might no longer be needed based on the set of factors:
+//   - current capacity of the worker pool
+//   - amount of pending and claimed tasks
+//   - launch configuration changes
+//
+// Decision is made during provision or scanning loop based on above mentioned conditions.
+//
+// Required scopes:
+//
+//	worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See #shouldWorkerTerminate
+func (workerManager *WorkerManager) ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*ShouldWorkerTerminateResponse, error) {
+	cd := tcclient.Client(*workerManager)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId)+"/should-terminate", new(ShouldWorkerTerminateResponse), nil)
+	return responseObject.(*ShouldWorkerTerminateResponse), err
+}
+
+// Returns a signed URL for ShouldWorkerTerminate, valid for the specified duration.
+//
+// Required scopes:
+//
+//	worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>
+//
+// See ShouldWorkerTerminate for more details.
+func (workerManager *WorkerManager) ShouldWorkerTerminate_SignedURL(workerPoolId, workerGroup, workerId string, duration time.Duration) (*url.URL, error) {
+	cd := tcclient.Client(*workerManager)
+	return (&cd).SignedURL("/workers/"+url.PathEscape(workerPoolId)+"/"+url.PathEscape(workerGroup)+"/"+url.PathEscape(workerId)+"/should-terminate", nil, duration)
+}
+
 // Get the list of all the existing workers in a given worker pool.
 //
 // Required scopes:

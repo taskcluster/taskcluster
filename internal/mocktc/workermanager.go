@@ -77,3 +77,10 @@ func (wm *WorkerManager) CreateWorkerPool(workerPoolId string, payload *tcworker
 	wm.workerPools[workerPoolId] = wpfd
 	return wpfd, nil
 }
+
+func (wm *WorkerManager) ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error) {
+	return &tcworkermanager.ShouldWorkerTerminateResponse{
+		Reason:    "no reason",
+		Terminate: false,
+	}, nil
+}

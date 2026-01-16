@@ -48,6 +48,7 @@ import (
 )
 
 var (
+	withWorkerRunner = false
 	// a horrible simple hack for testing reclaims
 	reclaimEvery5Seconds = false
 	// Current working directory of process
@@ -138,7 +139,7 @@ func main() {
 		fmt.Println(string(statusBytes))
 
 	case arguments["run"]:
-		withWorkerRunner := arguments["--with-worker-runner"].(bool)
+		withWorkerRunner = arguments["--with-worker-runner"].(bool)
 		if withWorkerRunner {
 			// redirect stdio to the protocol pipe, if given; eventually this will
 			// include worker-runner protocol traffic, but for the moment it simply
@@ -213,9 +214,9 @@ func main() {
 			if config.ShutdownMachineOnInternalError {
 				shutdownWorker("generic-worker internal error")
 			}
-		case NONCURRENT_DEPLOYMENT_ID:
+		case WORKER_MANAGER_SHUTDOWN:
 			logEvent("instanceShutdown", nil, time.Now())
-			shutdownWorker("generic-worker deploymentId is not latest")
+			shutdownWorker("worker manager requested termination")
 		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:
@@ -257,7 +258,6 @@ func loadConfig(configFile *gwconfig.File) error {
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
-			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
 			DisableOOMProtection:           false,
 			DisableReboots:                 false,
@@ -301,9 +301,6 @@ func loadConfig(configFile *gwconfig.File) error {
 	}
 
 	// Add useful worker config to worker metadata
-	config.WorkerTypeMetadata["config"] = map[string]any{
-		"deploymentId": config.DeploymentID,
-	}
 	gwMetadata := map[string]any{
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
@@ -321,7 +318,6 @@ func loadConfig(configFile *gwconfig.File) error {
 		"GOARCH":          runtime.GOARCH,
 		"GOOS":            runtime.GOOS,
 		"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
-		"deploymentId":    config.DeploymentID,
 		"engine":          engine,
 		"gwRevision":      revision,
 		"gwVersion":       version,
@@ -456,7 +452,6 @@ func RunWorker() (exitCode ExitCode) {
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
-	lastCheckedDeploymentID := time.Time{}
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
@@ -464,15 +459,8 @@ func RunWorker() (exitCode ExitCode) {
 		return REBOOT_REQUIRED
 	}
 	for {
-
-		// See https://bugzil.la/1298010 - routinely check if this worker type is
-		// outdated, and shut down if a new deployment is required.
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if time.Now().Round(0).Sub(lastCheckedDeploymentID) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
-			lastCheckedDeploymentID = time.Now()
-			if deploymentIDUpdated() {
-				return NONCURRENT_DEPLOYMENT_ID
-			}
+		if checkWhetherToTerminate() {
+			return WORKER_MANAGER_SHUTDOWN
 		}
 
 		// Ensure there is enough disk space *before* claiming a task
@@ -530,8 +518,9 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if deploymentIDUpdated() {
-					return NONCURRENT_DEPLOYMENT_ID
+
+				if checkWhetherToTerminate() {
+					return WORKER_MANAGER_SHUTDOWN
 				}
 				return TASKS_COMPLETE
 			}
@@ -581,17 +570,22 @@ func RunWorker() (exitCode ExitCode) {
 	}
 }
 
-func deploymentIDUpdated() bool {
-	latestDeploymentID, err := configFile.NewestDeploymentID()
-	switch {
-	case err != nil:
-		log.Printf("%v", err)
-	case latestDeploymentID == config.DeploymentID:
-		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, latestDeploymentID)
-	default:
-		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, latestDeploymentID)
-		return true
+func checkWhetherToTerminate() bool {
+	if withWorkerRunner {
+		workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
+		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
+		if err != nil {
+			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+		} else {
+			if swtr.Terminate {
+				log.Print("Terminating, since Worker Manager told me to")
+			} else {
+				log.Print("Not terminating, worker manager loves me")
+			}
+		}
+		return swtr.Terminate
 	}
+	log.Print("Not running with Worker Manager, not checking whether I need to terminate")
 	return false
 }
 

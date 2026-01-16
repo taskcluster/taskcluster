@@ -310,6 +310,25 @@ class WorkerManager(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["removeWorker"], *args, **kwargs)
 
+    async def shouldWorkerTerminate(self, *args, **kwargs):
+        """
+        Should worker terminate
+
+        Informs if worker should terminate or keep working.
+        Worker might no longer be needed based on the set of factors:
+         - current capacity of the worker pool
+         - amount of pending and claimed tasks
+         - launch configuration changes
+
+        Decision is made during provision or scanning loop based on above mentioned conditions.
+
+        This method is ``experimental``
+        """
+
+        return await self._makeApiCall(
+            self.funcinfo["shouldWorkerTerminate"], *args, **kwargs
+        )
+
     async def listWorkersForWorkerPool(self, *args, **kwargs):
         """
         Workers in a Worker Pool
@@ -568,6 +587,14 @@ class WorkerManager(AsyncBaseClient):
             "name": "reregisterWorker",
             "output": "v1/reregister-worker-response.json#",
             "route": "/worker/reregister",
+            "stability": "experimental",
+        },
+        "shouldWorkerTerminate": {
+            "args": ["workerPoolId", "workerGroup", "workerId"],
+            "method": "get",
+            "name": "shouldWorkerTerminate",
+            "output": "v1/should-worker-terminate-response.json#",
+            "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
             "stability": "experimental",
         },
         "updateWorker": {

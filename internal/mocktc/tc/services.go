@@ -29,6 +29,7 @@ type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
 	WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error)
 	CreateWorkerPool(workerPoolId string, payload *tcworkermanager.WorkerPoolDefinition) (*tcworkermanager.WorkerPoolFullDefinition, error)
+	ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error)
 }
 
 type PurgeCache interface {

@@ -4501,6 +4501,25 @@ export default {
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Informs if worker should terminate or keep working.\nWorker might no longer be needed based on the set of factors:\n - current capacity of the worker pool\n - amount of pending and claimed tasks\n - launch configuration changes\n\nDecision is made during provision or scanning loop based on above mentioned conditions.",
+          "method": "get",
+          "name": "shouldWorkerTerminate",
+          "output": "v1/should-worker-terminate-response.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
+          "scopes": "worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Should worker terminate",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Workers",

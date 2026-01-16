@@ -356,12 +356,10 @@ func GWTest(t *testing.T) *Test {
 			AvailabilityZone:              "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:                      cachesDir,
-			CheckForNewDeploymentEverySecs: 0,
-			CleanUpTaskDirs:                false,
-			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DeploymentID:                   "",
-			DisableReboots:                 true,
+			CachesDir:       cachesDir,
+			CleanUpTaskDirs: false,
+			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			DisableReboots:  true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
