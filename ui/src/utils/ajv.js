@@ -2,9 +2,11 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import urls from './urls.js';
 
-// AJV v8 includes meta-schemas (draft-06, draft-07) by default
-// so we don't need to manually import and add them
+import jsonSchemaDraft06Raw from 'ajv/lib/refs/json-schema-draft-06.json?raw';
+const jsonSchemaDraft06 = JSON.parse(jsonSchemaDraft06Raw);
+
 const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+ajv.addMetaSchema(jsonSchemaDraft06);
 
 addFormats(ajv);
 
