@@ -538,9 +538,17 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
-					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-					return IDLE_TIMEOUT
+					// Before exiting due to idle timeout, check with worker-manager
+					// if this worker should stay alive (e.g., to maintain minCapacity).
+					if !withWorkerRunner || checkWhetherToTerminate() {
+						_ = purgeOldTasks()
+						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+						return IDLE_TIMEOUT
+					}
+					// Worker-manager said not to terminate, reset idle timer to avoid
+					// checking too frequently
+					log.Printf("Idle timeout exceeded but worker-manager says to stay alive, resetting idle timer")
+					lastActive = time.Now()
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,
@@ -578,7 +586,7 @@ func checkWhetherToTerminate() bool {
 			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
 		} else {
 			if swtr.Terminate {
-				log.Print("Terminating, since Worker Manager told me to")
+				log.Print("Terminating with reason from worker manager: " + swtr.Reason)
 			} else {
 				log.Print("Not terminating, worker manager loves me")
 			}
