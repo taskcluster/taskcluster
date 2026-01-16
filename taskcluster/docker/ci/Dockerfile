@@ -1,8 +1,8 @@
-FROM golang:1.25.5-trixie AS golang
+FROM golang:1.25.6-trixie AS golang
 FROM node:24.13.0-trixie-slim
 
-COPY --from=golang:1.25.5-alpine /usr/local/go /usr/local/go
-COPY --from=golang:1.25.5-alpine /go /go
+COPY --from=golang /usr/local/go /usr/local/go
+COPY --from=golang /go /go
 # %ARG UV_VERSION
 COPY --from=ghcr.io/astral-sh/uv:$UV_VERSION /uv /uvx /bin/
 
