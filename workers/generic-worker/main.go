@@ -459,10 +459,6 @@ func RunWorker() (exitCode ExitCode) {
 		return REBOOT_REQUIRED
 	}
 	for {
-		if checkWhetherToTerminate() {
-			return WORKER_MANAGER_SHUTDOWN
-		}
-
 		// Ensure there is enough disk space *before* claiming a task
 		err := garbageCollection()
 		if err != nil {
@@ -518,10 +514,6 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-
-				if checkWhetherToTerminate() {
-					return WORKER_MANAGER_SHUTDOWN
-				}
 				return TASKS_COMPLETE
 			}
 			if rebootBetweenTasks() {
@@ -538,17 +530,22 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					// Before exiting due to idle timeout, check with worker-manager
+					// When running with worker-runner, check with worker-manager
 					// if this worker should stay alive (e.g., to maintain minCapacity).
-					if !withWorkerRunner || checkWhetherToTerminate() {
+					if withWorkerRunner {
+						if shouldWorkerTerminate() {
+							return WORKER_MANAGER_SHUTDOWN
+						}
+						// Worker-manager said not to terminate, reset idle timer to avoid
+						// checking too frequently
+						log.Printf("Idle timeout exceeded but worker-manager says to stay alive, resetting idle timer")
+						lastActive = time.Now()
+					} else {
+						// Not running with worker-runner, use original idle timeout behavior
 						_ = purgeOldTasks()
 						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 						return IDLE_TIMEOUT
 					}
-					// Worker-manager said not to terminate, reset idle timer to avoid
-					// checking too frequently
-					log.Printf("Idle timeout exceeded but worker-manager says to stay alive, resetting idle timer")
-					lastActive = time.Now()
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,
@@ -578,23 +575,19 @@ func RunWorker() (exitCode ExitCode) {
 	}
 }
 
-func checkWhetherToTerminate() bool {
-	if withWorkerRunner {
-		workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
-		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
-		if err != nil {
-			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+func shouldWorkerTerminate() bool {
+	workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
+	swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
+	if err != nil {
+		log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+	} else {
+		if swtr.Terminate {
+			log.Print("Terminating with reason from worker manager: " + swtr.Reason)
 		} else {
-			if swtr.Terminate {
-				log.Print("Terminating with reason from worker manager: " + swtr.Reason)
-			} else {
-				log.Print("Not terminating, worker manager loves me")
-			}
+			log.Print("Not terminating, worker manager loves me")
 		}
-		return swtr.Terminate
 	}
-	log.Print("Not running with Worker Manager, not checking whether I need to terminate")
-	return false
+	return swtr.Terminate
 }
 
 // ClaimWork queries the Queue to find a task.
