@@ -373,14 +373,14 @@ export class Provider {
     if (worker.firstClaim === null && isOlderThanTimeout(worker.created)) {
       return {
         isZombie: true,
-        reason: `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`
+        reason: `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`,
       };
     }
 
     if (worker.lastDateActive !== null && isOlderThanTimeout(worker.lastDateActive)) {
       return {
         isZombie: true,
-        reason: `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`
+        reason: `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`,
       };
     }
 
