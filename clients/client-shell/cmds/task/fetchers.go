@@ -212,11 +212,26 @@ func runLog(credentials *tcclient.Credentials, args []string, out io.Writer, fla
 		return fmt.Errorf("could not fetch the logs of task %s because it's in a %s state", taskID, state)
 	}
 
-	path := tcurls.API(config.RootURL(), "queue", "v1", "task/"+taskID+"/artifacts/public/logs/live.log")
+	// Try live.log first, fall back to live_backing.log if not found
+	logFiles := []string{
+		"live.log",
+		"live_backing.log",
+	}
 
-	resp, err := http.Get(path)
-	if err != nil {
-		return fmt.Errorf("error making request to %v: %v", path, err)
+	var resp *http.Response
+	for _, logFile := range logFiles {
+		path := tcurls.API(config.RootURL(), "queue", "v1", "task/"+taskID+"/artifacts/public/logs/"+logFile)
+
+		resp, err = http.Get(path)
+		if err != nil {
+			return fmt.Errorf("error making request to %v: %v", path, err)
+		}
+
+		if resp.StatusCode == http.StatusNotFound {
+			resp.Body.Close()
+			continue
+		}
+		break
 	}
 	defer resp.Body.Close()
 
