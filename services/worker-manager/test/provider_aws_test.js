@@ -708,11 +708,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
       provider.seen = {};
 
-      worker.firstClaim = null;
-      worker.lastDateActive = null;
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-110 minutes');
-      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-100 minutes');
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
@@ -733,11 +731,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
       provider.seen = {};
 
-      worker.firstClaim = null;
-      worker.lastDateActive = null;
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-110 minutes');
-      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-100 minutes');
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
       helper.assertNoPulseMessage('worker-removed');
