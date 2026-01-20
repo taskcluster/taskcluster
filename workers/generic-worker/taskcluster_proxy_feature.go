@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
-	"github.com/taskcluster/taskcluster/v95/internal/scopes"
-	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v95/workers/generic-worker/tcproxy"
+	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	"github.com/taskcluster/taskcluster/v96/internal/scopes"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/tcproxy"
 )
 
 type TaskclusterProxyFeature struct {

@@ -3,6 +3,46 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.25.6 [SECURITY].
+
+Read release notes [here](https://go.dev/doc/devel/release#go1.25.6).
+
+### DEPLOYERS
+
+▶ [patch]
+Include session storage cleanup script in web server.
+
+▶ [patch] [bug 2006698](http://bugzil.la/2006698)
+Worker manager incorrectly identified zombie workers even when they were active.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#7147](https://github.com/taskcluster/taskcluster/issues/7147)
+**Breaking changes:**
+- The Generic Worker configuration properties `deploymentId` and `checkForNewDeploymentEverySecs` are no longer supported and must not be used
+- Generic Worker exit code 70 now indicates "Worker Manager advised termination" instead of "non-current deployment ID"
+
+**New features:**
+- New experimental `shouldWorkerTerminate` API endpoint in Worker Manager allows workers running with worker runner (`--with-worker-runner`) to query whether they should terminate
+- New scope `worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>` required to call this endpoint
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump tar from 7.4.3 to 7.5.3 (24a9c623ed)
+* build(deps): bump aiohttp from 3.13.2 to 3.13.3 in /clients/client-py (17215f9c51)
+* build(deps): bump werkzeug from 3.1.4 to 3.1.5 in /clients/client-py (ec7695a4e4)
+* build(deps): bump urllib3 from 2.5.0 to 2.6.3 in /clients/client-py (f6f20eb917)
+
+</details>
+
 ## v95.1.4
 
 ### GENERAL

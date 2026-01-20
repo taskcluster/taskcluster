@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v95/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v96/clients/client-shell/client"
 )
 
 var (

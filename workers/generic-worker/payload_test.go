@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
 	"github.com/xeipuuv/gojsonschema"
 )
 

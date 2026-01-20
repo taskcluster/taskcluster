@@ -8,8 +8,8 @@ import (
 
 	"maps"
 
-	tcclient "github.com/taskcluster/taskcluster/v95/clients/client-go"
-	"github.com/taskcluster/taskcluster/v95/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcobject"
 )
 
 type (

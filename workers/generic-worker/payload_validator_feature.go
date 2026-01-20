@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/taskcluster/taskcluster/v95/internal/scopes"
+	"github.com/taskcluster/taskcluster/v96/internal/scopes"
 )
 
 type (

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v95/clients/client-shell/codegen"
+	"github.com/taskcluster/taskcluster/v96/clients/client-shell/codegen"
 )
 
 func main() {

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v95/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v95/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v96/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v96/tools/websocktunnel/wsmux"
 )
 
 type clientState int

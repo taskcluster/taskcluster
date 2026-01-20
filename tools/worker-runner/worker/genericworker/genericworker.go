@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v95/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v96/tools/workerproto"
 )
 
 type genericworkerConfig struct {

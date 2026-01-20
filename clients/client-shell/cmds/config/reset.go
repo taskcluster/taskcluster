@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v95/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v96/clients/client-shell/config"
 )
 
 func init() {

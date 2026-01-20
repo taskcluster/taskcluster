@@ -5,13 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/aws"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/azure"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/google"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/standalone"
-	"github.com/taskcluster/taskcluster/v95/tools/worker-runner/provider/static"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/aws"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/azure"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/google"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/standalone"
+	"github.com/taskcluster/taskcluster/v96/tools/worker-runner/provider/static"
 )
 
 type providerInfo struct {
