@@ -133,16 +133,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker never claimed work/);
     });
-    test('no lastDateActive', function() {
-      Date.now = oldnow;
-      const worker = Worker.fromApi({});
-      worker.created = taskcluster.fromNow('-4 hours');
-      worker.firstClaim = taskcluster.fromNow('-4 hours');
-      worker.lastDateActive = null;
-      const res = Provider.isZombie({ worker });
-      assert.equal(res.isZombie, true);
-      assert.match(res.reason, /worker never reclaimed work/);
-    });
     test('not active within queueInactivityTimeout', function() {
       Date.now = oldnow;
       const worker = Worker.fromApi({

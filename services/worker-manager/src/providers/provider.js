@@ -365,30 +365,26 @@ export class Provider {
     const lastActiveAfter = Date.now() - queueInactivityTimeout;
     const isOlderThanTimeout = (date) => date?.getTime() < lastActiveAfter;
 
-    let reason = null;
-    let isZombie = false;
-
     // undefined means fields are missing (not fetched from db), null means legitimately empty
     if (worker.firstClaim === undefined || worker.lastDateActive === undefined) {
       return { reason: 'queue fields not fetched from database', isZombie: false };
     }
 
     if (worker.firstClaim === null && isOlderThanTimeout(worker.created)) {
-      isZombie = true;
-      reason = `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
-    }
-
-    if (worker.firstClaim !== null && isOlderThanTimeout(worker.firstClaim)) {
-      isZombie = true;
-      reason = `worker never reclaimed work, firstClaim=${worker.firstClaim}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
+      return {
+        isZombie: true,
+        reason: `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`
+      };
     }
 
     if (worker.lastDateActive !== null && isOlderThanTimeout(worker.lastDateActive)) {
-      isZombie = true;
-      reason = `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
+      return {
+        isZombie: true,
+        reason: `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`
+      };
     }
 
-    return { reason, isZombie };
+    return { isZombie: false, reason: 'Not enough data' };
   }
 
   /**
