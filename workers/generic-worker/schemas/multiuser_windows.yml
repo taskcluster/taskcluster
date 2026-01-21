@@ -219,7 +219,7 @@ properties:
           as json to file chain-of-trust-additional-data.json in the task
           directory.
 
-          Since: generic-worker v81.0.0
+          Since: generic-worker 81.0.0
       taskclusterProxy:
         type: boolean
         title: Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services
@@ -315,7 +315,20 @@ properties:
           A user can then `docker exec` into the a running container, if there
           is one.
 
-          Since: generic-worker v83.6.0
+          Since: generic-worker 83.6.0
+      hideCmdWindow:
+        type: boolean
+        title: Hide cmd.exe window
+        description: |-
+          If `true`, the command window for each command will be hidden.
+          This is useful for tasks that run GUI applications to prevent
+          the command window from obscuring the application window.
+
+          If your task needs to allocate new consoles (with
+          AllocConsole(), for example) then you should not use this.
+
+          Since: generic-worker 96.1.0
+        default: false
   mounts:
     type: array
     description: |-

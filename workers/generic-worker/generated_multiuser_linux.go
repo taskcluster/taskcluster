@@ -372,7 +372,7 @@ type (
 		// as json to file chain-of-trust-additional-data.json in the task
 		// directory.
 		//
-		// Since: generic-worker v81.0.0
+		// Since: generic-worker 81.0.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
 		// This allows you to interactively run commands from within the worker
@@ -1181,7 +1181,7 @@ func JSONSchema() string {
               "type": "boolean"
             },
             "chainOfTrust": {
-              "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker v81.0.0",
+              "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker 81.0.0",
               "title": "Enable generation of signed Chain of Trust artifacts",
               "type": "boolean"
             },
