@@ -196,6 +196,11 @@ type (
 		// This is useful for tasks that run GUI applications to prevent
 		// the command window from obscuring the application window.
 		//
+		// The process creation flags used when this is set to `true`
+		// are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+		// set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+		// More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+		//
 		// If your task needs to allocate new consoles (with
 		// AllocConsole(), for example) then you should not use this.
 		//
@@ -948,7 +953,7 @@ func JSONSchema() string {
         },
         "hideCmdWindow": {
           "default": false,
-          "description": "If ` + "`" + `true` + "`" + `, the command window for each command will be hidden.\nThis is useful for tasks that run GUI applications to prevent\nthe command window from obscuring the application window.\n\nIf your task needs to allocate new consoles (with\nAllocConsole(), for example) then you should not use this.\n\nSince: generic-worker 96.1.0",
+          "description": "If ` + "`" + `true` + "`" + `, the command window for each command will be hidden.\nThis is useful for tasks that run GUI applications to prevent\nthe command window from obscuring the application window.\n\nThe process creation flags used when this is set to ` + "`" + `true` + "`" + `\nare CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is\nset to ` + "`" + `false` + "`" + `, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.\nMore info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).\n\nIf your task needs to allocate new consoles (with\nAllocConsole(), for example) then you should not use this.\n\nSince: generic-worker 96.1.0",
           "title": "Hide cmd.exe window",
           "type": "boolean"
         },

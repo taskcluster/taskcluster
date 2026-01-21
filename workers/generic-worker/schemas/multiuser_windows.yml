@@ -324,6 +324,11 @@ properties:
           This is useful for tasks that run GUI applications to prevent
           the command window from obscuring the application window.
 
+          The process creation flags used when this is set to `true`
+          are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+          set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+          More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+
           If your task needs to allocate new consoles (with
           AllocConsole(), for example) then you should not use this.
 
