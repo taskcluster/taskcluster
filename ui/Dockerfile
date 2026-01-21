@@ -10,5 +10,7 @@ RUN corepack enable && \
 
 COPY . ./
 
+ENV NODE_ENV=development
+
 ENTRYPOINT [ "yarn" ]
 CMD [ "start:docker" ]

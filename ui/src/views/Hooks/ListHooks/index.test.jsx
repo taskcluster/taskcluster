@@ -22,7 +22,7 @@ it('should render ListHooks page', async () => {
             match={{ params: { hookGroupId: 'hg1' } }}
             location={{
               search: {
-                slice: jest.fn().mockReturnValue('search=test'),
+                slice: vi.fn().mockReturnValue('search=test'),
               },
             }}
           />

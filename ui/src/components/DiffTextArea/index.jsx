@@ -5,10 +5,8 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import { ReactGhLikeDiff } from 'react-gh-like-diff';
-import 'react-gh-like-diff/dist/css/diff2html.min.css';
-import { THEME } from '../../utils/constants';
+import { alpha, withStyles, useTheme } from '@material-ui/core/styles';
+import ReactDiffViewer from 'react-diff-viewer';
 
 const styles = withStyles(theme => {
   const borderColor =
@@ -17,66 +15,6 @@ const styles = withStyles(theme => {
       : alpha(theme.palette.common.white, 0.23);
 
   return {
-    '@global': {
-      '.d2h-wrapper': {
-        '& .d2h-file-wrapper': {
-          border: 'none',
-        },
-      },
-      '.d2h-file-header': {
-        display: 'none',
-      },
-      '.d2h-files-diff': {
-        '& .d2h-file-side-diff': {
-          overflowX: 'auto',
-        },
-      },
-      '.d2h-info': {
-        display: 'none',
-      },
-      '.d2h-diff-table': {
-        '& .d2h-cntx': {
-          background: theme.palette.background.paper,
-        },
-        '& .d2h-code-side-linenumber.d2h-cntx': {
-          background: theme.palette.background.paper,
-          color: theme.palette.text.secondary,
-        },
-        '& .d2h-code-side-linenumber.d2h-del': {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-side-linenumber.d2h-ins': {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-side-linenumber': {
-          border: `solid ${theme.palette.divider}`,
-          borderWidth: `0 1px 0 1px`,
-          cursor: 'text',
-        },
-        '& .d2h-code-side-linenumber.d2h-code-side-emptyplaceholder.d2h-cntx.d2h-emptyplaceholder': {
-          background: theme.palette.grey['500'],
-        },
-        '& .d2h-ins': {
-          borderColor: 'none',
-          backgroundColor: theme.palette.diff.green.line,
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-del': {
-          borderColor: 'none',
-          backgroundColor: theme.palette.diff.red.line,
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-line ins, & .d2h-code-side-line ins': {
-          backgroundColor: theme.palette.diff.green.word,
-        },
-        '& .d2h-code-line del, & .d2h-code-side-line del': {
-          backgroundColor: theme.palette.diff.red.word,
-        },
-        '& .d2h-code-side-emptyplaceholder, & .d2h-emptyplaceholder': {
-          backgroundColor: theme.palette.grey['500'],
-        },
-      },
-    },
     tab: {
       flexGrow: 1,
     },
@@ -107,6 +45,7 @@ function DiffTextArea(props) {
     defaultTabIndex,
     ...rest
   } = props;
+  const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
@@ -165,7 +104,14 @@ function DiffTextArea(props) {
           />
         )}
         {isViewDiff && isNotEqualText && (
-          <ReactGhLikeDiff past={pastValue} current={currentValue} />
+          <ReactDiffViewer
+            oldValue={pastValue}
+            newValue={currentValue}
+            splitView={false}
+            useDarkTheme={theme.palette.type === 'dark'}
+            showDiffOnly={false}
+            disableWordDiff={false}
+          />
         )}
         {isViewDiff && !isNotEqualText && (
           <Typography>Nothing has changed yet</Typography>

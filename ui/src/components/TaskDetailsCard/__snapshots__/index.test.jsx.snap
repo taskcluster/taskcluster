@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render TaskDetailsCard 1`] = `
 <DocumentFragment>
@@ -7,10 +7,10 @@ exports[`should render TaskDetailsCard 1`] = `
   >
     <div>
       <div
-        class="MuiCardContent-root TaskDetailsCard-cardContent-2"
+        class="MuiCardContent-root TaskDetailsCard2-cardContent-2"
       >
         <h5
-          class="MuiTypography-root TaskDetailsCard-headline-1 MuiTypography-h5"
+          class="MuiTypography-root TaskDetailsCard2-headline-1 MuiTypography-h5"
         >
           Task Details
         </h5>
@@ -32,7 +32,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label2-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-17 Mui-disabled Label2-info-24 Label2-disabled-19 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -123,7 +123,7 @@ exports[`should render TaskDetailsCard 1`] = `
           >
             <div
               aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard2-listItemButton-5 MuiListItem-gutters MuiListItem-button"
               role="button"
               tabindex="0"
               title="View Workers"
@@ -160,7 +160,7 @@ exports[`should render TaskDetailsCard 1`] = `
           </a>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard2-listItemButton-5 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
           >
@@ -298,7 +298,7 @@ exports[`should render TaskDetailsCard 1`] = `
                         </div>
                       </div>
                       <pre
-                        class="language-yaml TaskDetailsCard-payload-9"
+                        class="language-yaml TaskDetailsCard2-payload-9"
                       >
                         <code>
                           <span
@@ -429,12 +429,12 @@ exports[`should render TaskDetailsCard 1`] = `
             </div>
           </div>
           <a
-            class="TaskDetailsCard-listItemButton-5"
+            class="TaskDetailsCard2-listItemButton-5"
             href="/tasks/taskId/definition"
           >
             <div
               aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root TaskDetailsCard2-listItemButton-5 MuiListItem-gutters MuiListItem-button"
               role="button"
               tabindex="0"
             >
@@ -454,14 +454,14 @@ exports[`should render TaskDetailsCard 1`] = `
           </a>
           <a
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard-listItemButton-5 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root TaskDetailsCard2-listItemButton-5 MuiListItem-gutters MuiListItem-button"
             href="https://test.taskcluster-dev.net/task/taskId"
             rel="noopener noreferrer"
             tabindex="0"
             target="_blank"
           >
             <div
-              class="MuiListItemText-root TaskDetailsCard-sourceHeadlineText-4 MuiListItemText-multiline"
+              class="MuiListItemText-root TaskDetailsCard2-sourceHeadlineText-4 MuiListItemText-multiline"
               title="https://test.taskcluster-dev.net/task/taskId"
             >
               <span
@@ -470,7 +470,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 Source
               </span>
               <p
-                class="MuiTypography-root MuiListItemText-secondary TaskDetailsCard-sourceHeadline-3 MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
+                class="MuiTypography-root MuiListItemText-secondary TaskDetailsCard2-sourceHeadline-3 MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 https://test.taskcluster-dev.net/task/taskId
               </p>
@@ -595,7 +595,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label2-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-17 Mui-disabled Label2-info-24 Label2-disabled-19 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -685,7 +685,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 Scopes
               </h6>
               <ul
-                class="TaskDetailsCard-unorderedList-7"
+                class="TaskDetailsCard2-unorderedList-7"
               >
                 <li>
                   <span

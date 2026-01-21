@@ -1,11 +1,7 @@
 import lazy from '../../utils/lazy';
 
-const ViewClients = lazy(() =>
-  import(/* webpackChunkName: 'Clients.ViewClients' */ './ViewClients')
-);
-const ViewClient = lazy(() =>
-  import(/* webpackChunkName: 'Clients.ViewClient' */ './ViewClient')
-);
+const ViewClients = lazy(() => import('./ViewClients'));
+const ViewClient = lazy(() => import('./ViewClient'));
 
 export default path => [
   {

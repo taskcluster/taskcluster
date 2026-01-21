@@ -1,19 +1,24 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    // Make the type checking as strict as possible.
-    "strict": true,
-    // TypeScript will check JS files only if they have a @ts-check comment in them.
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["vite/client"],
     "allowJs": true,
     "checkJs": true,
-    // Only type check, don't emit files.
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "noEmit": true,
-    // Allow esnext syntax. Otherwise the default is ES5 only.
-    "target": "esnext",
-    "lib": ["esnext", "dom"],
-    "esModuleInterop": true
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": true
   },
-  "include": ["./ui/src/components/Profiler/**/*.js"],
-  // "files": [],
-  "exclude": []
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

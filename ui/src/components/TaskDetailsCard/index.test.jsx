@@ -38,7 +38,7 @@ it('should render TaskDetailsCard', () => {
           extra: {},
         }}
         dependents={{}}
-        onDependentsPageChange={jest.fn()}
+        onDependentsPageChange={vi.fn()}
         objectContent={{}}
       />
     </MemoryRouter>

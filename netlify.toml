@@ -19,7 +19,7 @@
 # Rule for Single Page Applications (docs)
 [[redirects]]
   from = "/docs/*"
-  to = "/docs.html"
+  to = "/docs/index.html"
   status = 200
 
 # Netlify is only used for docs.taskcluster.net

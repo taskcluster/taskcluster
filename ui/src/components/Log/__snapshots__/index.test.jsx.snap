@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render Log 1`] = `
 <DocumentFragment>
@@ -42,15 +42,15 @@ exports[`should render Log 1`] = `
       aria-readonly="true"
       class="ReactVirtualized__Grid ReactVirtualized__List react-lazylog _3NRgTLvWbyfWD-1xileYWR"
       role="grid"
-      style="box-sizing: border-box; direction: ltr; height: -45px; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
+      style="box-sizing: border-box; direction: ltr; position: relative; width: 0px; -webkit-overflow-scrolling: touch; will-change: transform; overflow-x: hidden; overflow-y: auto;"
       tabindex="0"
     />
   </div>
   <div
-    class="Log-logActions-3"
+    class="Log2-logActions-3"
   >
     <span
-      class="Log-logToolbarButton-8 Log-goToLineButton-9"
+      class="Log2-logToolbarButton-8 Log2-goToLineButton-9"
       title="Go to Line"
     >
       <button
@@ -83,7 +83,7 @@ exports[`should render Log 1`] = `
       title="Follow Log"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text Log-logToolbarButton-8 Log-followButtonFollowing-4 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text Log2-logToolbarButton-8 Log2-followButtonFollowing-4 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
         tabindex="0"
         type="button"
       >
@@ -91,7 +91,7 @@ exports[`should render Log 1`] = `
           class="MuiButton-label"
         >
           <svg
-            class="mdi-icon Log-followLogIconFollowing-5"
+            class="mdi-icon Log2-followLogIconFollowing-5"
             fill="currentColor"
             height="24"
             viewBox="0 0 24 24"
@@ -167,15 +167,15 @@ exports[`should render without following 1`] = `
       aria-readonly="true"
       class="ReactVirtualized__Grid ReactVirtualized__List react-lazylog _3NRgTLvWbyfWD-1xileYWR"
       role="grid"
-      style="box-sizing: border-box; direction: ltr; height: -45px; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
+      style="box-sizing: border-box; direction: ltr; position: relative; width: 0px; -webkit-overflow-scrolling: touch; will-change: transform; overflow-x: hidden; overflow-y: auto;"
       tabindex="0"
     />
   </div>
   <div
-    class="Log-logActions-13"
+    class="Log2-logActions-13"
   >
     <span
-      class="Log-logToolbarButton-18 Log-goToLineButton-19"
+      class="Log2-logToolbarButton-18 Log2-goToLineButton-19"
       title="Go to Line"
     >
       <button
@@ -208,7 +208,7 @@ exports[`should render without following 1`] = `
       title="Follow Log"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-text Log-logToolbarButton-18 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
+        class="MuiButtonBase-root MuiButton-root MuiButton-text Log2-logToolbarButton-18 MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
         tabindex="0"
         type="button"
       >

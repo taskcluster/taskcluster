@@ -308,7 +308,7 @@ To login, use `static/taskcluster/*` client ids and access tokens that can be se
 Running docker compose with `docker-compose.dev.yml` allows local development in containers without necessity of restarting them.
 Changes in source code will be applied immediately.
 
-This is achieved with the help of mounting source code from host to the container, and using `nodemon` for core services and `webpack-dev-server` for `ui`.
+This is achieved with the help of mounting source code from host to the container, and using `nodemon` for core services and `vite` for `ui`.
 
 It might take longer for `ui` service to start, as it needs to compile application. After that reloads would be fast.
 
