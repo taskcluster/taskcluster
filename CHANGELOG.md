@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.1.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#8012](https://github.com/taskcluster/taskcluster/issues/8012)
+Generic Worker (windows): adds `task.payload.features.hideCmdWindow` [default: `false`] to hide the `cmd.exe` window that appears during task execution. This may be useful if the `cmd.exe` window gets in the way of GUI applications while running tasks. Please note: if your task needs to allocate new consoles (with `AllocConsole()`, for example), it will not be able to if you set this to `true`.
+
+### USERS
+
+▶ [patch]
+Client (shell): `taskcluster task log` command falls back to use `live_backing.log` if `live.log` is unavailable.
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps): bump lodash from 4.17.21 to 4.17.23 in /ui/test/e2e (178cc46684)
+* build(deps): bump lodash from 4.17.21 to 4.17.23 in /clients/client (56509e44f9)
+* build(deps): bump lodash from 4.17.21 to 4.17.23 (e86e099d65)
+* build(deps): bump lodash from 4.17.21 to 4.17.23 in /clients/client-web (5f4235c965)
+* build(deps): bump lodash from 4.17.21 to 4.17.23 in /ui (10f36b5bdf)
+* build(deps): bump tar from 7.5.3 to 7.5.6 (63310ea18f)
+* build(deps): bump github.com/theupdateframework/go-tuf/v2 (28c3f1e9a1)
+
+</details>
+
 ## v96.0.0
 
 ### GENERAL
