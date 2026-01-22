@@ -329,6 +329,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         dir: REPO_ROOT,
         command: [
           'go', 'tool', 'goreleaser', 'release',
+          '--id', 'generic-worker-multiuser',
+          '--id', 'start-worker',
+          '--id', 'livelog',
+          '--id', 'taskcluster-proxy',
           '--clean',
           '--skip=announce',
           '--skip=validate',
