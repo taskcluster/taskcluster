@@ -69,6 +69,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
+	task.pd.HideCmdWindow = task.Payload.Features.HideCmdWindow
 	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
 	if err != nil {
 		return err

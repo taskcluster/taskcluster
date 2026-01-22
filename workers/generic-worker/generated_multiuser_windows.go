@@ -189,8 +189,25 @@ type (
 		// as json to file chain-of-trust-additional-data.json in the task
 		// directory.
 		//
-		// Since: generic-worker v81.0.0
+		// Since: generic-worker 81.0.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// If `true`, the command window for each command will be hidden.
+		// This is useful for tasks that run GUI applications to prevent
+		// the command window from obscuring the application window.
+		//
+		// The process creation flags used when this is set to `true`
+		// are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+		// set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+		// More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+		//
+		// If your task needs to allocate new consoles (with
+		// AllocConsole(), for example) then you should not use this.
+		//
+		// Since: generic-worker 96.1.0
+		//
+		// Default:    false
+		HideCmdWindow bool `json:"hideCmdWindow" default:"false"`
 
 		// This allows you to interactively run commands from within the worker
 		// as the task user. This may be useful for debugging purposes.
@@ -202,7 +219,7 @@ type (
 		// A user can then `docker exec` into the a running container, if there
 		// is one.
 		//
-		// Since: generic-worker v83.6.0
+		// Since: generic-worker 83.6.0
 		Interactive bool `json:"interactive,omitempty"`
 
 		// The live log feature streams the combined stderr and stdout to a task artifact
@@ -930,12 +947,18 @@ func JSONSchema() string {
           "type": "boolean"
         },
         "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker v81.0.0",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker 81.0.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
           "type": "boolean"
         },
+        "hideCmdWindow": {
+          "default": false,
+          "description": "If ` + "`" + `true` + "`" + `, the command window for each command will be hidden.\nThis is useful for tasks that run GUI applications to prevent\nthe command window from obscuring the application window.\n\nThe process creation flags used when this is set to ` + "`" + `true` + "`" + `\nare CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is\nset to ` + "`" + `false` + "`" + `, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.\nMore info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).\n\nIf your task needs to allocate new consoles (with\nAllocConsole(), for example) then you should not use this.\n\nSince: generic-worker 96.1.0",
+          "title": "Hide cmd.exe window",
+          "type": "boolean"
+        },
         "interactive": {
-          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a powershell instance is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker v83.6.0",
+          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a powershell instance is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 83.6.0",
           "title": "Interactive shell",
           "type": "boolean"
         },

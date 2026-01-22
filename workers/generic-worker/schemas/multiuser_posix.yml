@@ -226,7 +226,7 @@ oneOf:
             as json to file chain-of-trust-additional-data.json in the task
             directory.
 
-            Since: generic-worker v81.0.0
+            Since: generic-worker 81.0.0
         taskclusterProxy:
           type: boolean
           title: Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services
