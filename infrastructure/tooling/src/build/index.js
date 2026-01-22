@@ -177,6 +177,7 @@ class Publish extends Base {
       expectedVars.push('PYPI_PASSWORD');
       expectedVars.push('DOCKER_USERNAME');
       expectedVars.push('DOCKER_PASSWORD');
+      expectedVars.push('CHOCOLATEY_API_KEY');
     }
 
     expectedVars.forEach(e => {
@@ -193,6 +194,7 @@ class Publish extends Base {
       pypiPassword: process.env.PYPI_PASSWORD,
       dockerUsername: process.env.DOCKER_USERNAME,
       dockerPassword: process.env.DOCKER_PASSWORD,
+      chocolateyApiKey: process.env.CHOCOLATEY_API_KEY,
     };
   }
 
