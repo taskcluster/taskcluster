@@ -13,13 +13,20 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'tool',
         'goreleaser',
         'release',
+        '--id', 'taskcluster',
         '--clean',
+        '--skip=publish',
+        '--skip=announce',
+        '--skip=homebrew',
+        '--skip=chocolatey',
       ];
 
       if (cmdOptions.staging || !cmdOptions.push) {
         // --snapshot will generate an unversioned snapshot release,
         // skipping all validations and without publishing any artifacts
         goreleaserCmd.push('--snapshot');
+      } else {
+        goreleaserCmd.push('--skip=validate');
       }
 
       await execCommand({
@@ -40,14 +47,6 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           'taskcluster-freebsd-arm64.tar.gz',
           'taskcluster-windows-arm64.zip',
           'taskcluster-windows-amd64.zip',
-          'generic-worker-multiuser-windows-amd64.exe',
-          'generic-worker-multiuser-windows-arm64.exe',
-          'start-worker-windows-amd64.exe',
-          'start-worker-windows-arm64.exe',
-          'livelog-windows-amd64.exe',
-          'livelog-windows-arm64.exe',
-          'taskcluster-proxy-windows-amd64.exe',
-          'taskcluster-proxy-windows-arm64.exe',
           artifactsDir,
         ],
         utils,

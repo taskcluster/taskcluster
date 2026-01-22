@@ -310,6 +310,45 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   });
 
   ensureTask(tasks, {
+    title: 'Publish to Homebrew and Chocolatey',
+    requires: [
+      'github-release',
+      'release-version',
+    ],
+    provides: [
+      'publish-package-managers',
+    ],
+    run: async (requirements, utils) => {
+      if (cmdOptions.staging || !cmdOptions.push) {
+        return utils.skip();
+      }
+
+      const version = requirements['release-version'];
+
+      await execCommand({
+        dir: REPO_ROOT,
+        command: [
+          'go', 'tool', 'goreleaser', 'release',
+          '--clean',
+          '--skip=announce',
+          '--skip=validate',
+        ],
+        utils,
+        env: {
+          ...process.env,
+          GH_TOKEN: credentials.ghToken,
+          CHOCOLATEY_API_KEY: credentials.chocolateyApiKey,
+          GORELEASER_CURRENT_TAG: `v${version}`,
+        },
+      });
+
+      return {
+        'publish-package-managers': 'Published to Homebrew and Chocolatey',
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Publish Complete',
     requires: [
       'release-version',
@@ -319,6 +358,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'publish-clients/client-web',
       'publish-clients/client-py',
       'publish-clients/client-rust',
+      'publish-package-managers',
     ],
     provides: [
       'target-publish',

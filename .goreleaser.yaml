@@ -1,13 +1,8 @@
 version: 2
 
-before:
-  hooks:
-    - go install ./workers/generic-worker/gw-codegen
-    - go generate ./workers/generic-worker/...
-
 builds:
-  - id: taskcluster
-    main: ./clients/client-shell
+  - main: ./clients/client-shell
+    id: taskcluster
     binary: taskcluster
     env:
       - CGO_ENABLED=0
@@ -18,8 +13,8 @@ builds:
       - freebsd_arm64
       - linux_amd64
       - linux_arm64
-      - windows_amd64
       - windows_arm64
+      - windows_amd64
 
   - id: generic-worker-multiuser
     main: ./workers/generic-worker
@@ -98,29 +93,37 @@ archives:
     ids:
       - generic-worker-multiuser
     formats:
-      - binary
+      - zip
     name_template: "{{ .Binary }}"
+    files:
+      - none*
 
   - id: start-worker
     ids:
       - start-worker
     formats:
-      - binary
+      - zip
     name_template: "{{ .Binary }}"
+    files:
+      - none*
 
   - id: livelog
     ids:
       - livelog
     formats:
-      - binary
+      - zip
     name_template: "{{ .Binary }}"
+    files:
+      - none*
 
   - id: taskcluster-proxy
     ids:
       - taskcluster-proxy
     formats:
-      - binary
+      - zip
     name_template: "{{ .Binary }}"
+    files:
+      - none*
 
 release:
   # You can disable this pipe in order to not create the release on any SCM.
