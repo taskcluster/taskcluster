@@ -2,6 +2,10 @@ import path from 'path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+  if (cmdOptions.releasePublish) {
+    return;
+  }
+
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
@@ -13,20 +17,13 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'tool',
         'goreleaser',
         'release',
-        '--id', 'taskcluster',
         '--clean',
-        '--skip=publish',
-        '--skip=announce',
-        '--skip=homebrew',
-        '--skip=chocolatey',
       ];
 
       if (cmdOptions.staging || !cmdOptions.push) {
         // --snapshot will generate an unversioned snapshot release,
         // skipping all validations and without publishing any artifacts
         goreleaserCmd.push('--snapshot');
-      } else {
-        goreleaserCmd.push('--skip=validate');
       }
 
       await execCommand({

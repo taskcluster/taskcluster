@@ -131,7 +131,7 @@ release:
   # URL, for instance, homebrew taps.
   #
   # Defaults to false.
-  disable: false
+  disable: true
 
 changelog:
   # Set this to true if you don't want any changelog at all.

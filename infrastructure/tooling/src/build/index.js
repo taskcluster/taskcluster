@@ -239,6 +239,6 @@ export const build = async (options) => {
 };
 
 export const publish = async (options) => {
-  const publish = new Publish(options);
+  const publish = new Publish({ ...options, releasePublish: true });
   await publish.run();
 };
