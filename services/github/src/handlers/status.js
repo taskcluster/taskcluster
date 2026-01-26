@@ -210,6 +210,7 @@ export async function statusHandler(message) {
       output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
       output.addText(`Task Status: **${runs[runId]?.state ?? "n/a"}**`);
       output.addText(`Reason Resolved: **${runs[runId]?.reasonResolved ?? "n/a"}**`);
+      output.addText(`TaskId: **${taskId}**`);
       output.addText(`RunId: **${runId}**`);
     }
 
