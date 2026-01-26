@@ -28,12 +28,16 @@ spec:
       serviceAccountName: taskcluster-web-server
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-web-server-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - web-server/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.web_server.procs.web.cpu }}'
