@@ -28,12 +28,16 @@ spec:
       serviceAccountName: taskcluster-notify
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-notify-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - notify/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.notify.procs.web.cpu }}'

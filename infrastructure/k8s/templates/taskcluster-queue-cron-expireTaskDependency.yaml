@@ -21,12 +21,16 @@ spec:
         spec:
           restartPolicy: OnFailure
           imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+          securityContext:
+            runAsNonRoot: true
           containers:
             - name: taskcluster-queue-expiretaskdependency
               image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
                 - queue/expireTaskDependency
+              securityContext:
+                allowPrivilegeEscalation: false
               resources:
                 requests:
                   cpu: '{{ .Values.queue.procs.expireTaskDependency.cpu }}'
