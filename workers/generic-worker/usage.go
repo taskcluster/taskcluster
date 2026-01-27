@@ -22,7 +22,6 @@ const (
 	CANT_CREATE_FILE            ExitCode = 79
 	CANT_CREATE_DIRECTORY       ExitCode = 80
 	CANT_UNARCHIVE              ExitCode = 81
-	CANT_GET_WORKER_STATUS      ExitCode = 84
 )
 
 func usage(versionName string) string {
@@ -43,7 +42,6 @@ and reports back results to the queue.
     generic-worker create-file              --create-file CREATE-FILE
     generic-worker create-dir               --create-dir CREATE-DIR
     generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
-    generic-worker status
     generic-worker --help
     generic-worker --version
     generic-worker --short-version
@@ -73,8 +71,6 @@ and reports back results to the queue.
     unarchive                               This will unarchive the specified archive file
                                             to the specified destination directory.
                                             Intended for internal use.
-    status                                  This will print whether the worker is currently
-                                            running a task, and if so, what the task ID is.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See

@@ -68,9 +68,8 @@ var (
 	logPath   = filepath.Join("generic-worker", "live_backing.log")
 	debugInfo map[string]string
 
-	version          = internal.Version
-	revision         = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
-	workerStatusPath = filepath.Join(os.TempDir(), "worker-status.json")
+	version  = internal.Version
+	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 
 func initialiseFeatures() (err error) {
@@ -127,16 +126,6 @@ func main() {
 		fmt.Println(JSONSchema())
 	case arguments["--short-version"]:
 		fmt.Println(version)
-	case arguments["status"]:
-		statusBytes, err := os.ReadFile(workerStatusPath)
-		if err != nil && !os.IsNotExist(err) {
-			exitOnError(CANT_GET_WORKER_STATUS, err, "Error reading worker status file")
-		}
-		if statusBytes == nil {
-			statusBytes, err = json.MarshalIndent(&WorkerStatus{CurrentTaskIDs: []string{}}, "", "  ")
-			exitOnError(INTERNAL_ERROR, err, "Error marshalling worker status")
-		}
-		fmt.Println(string(statusBytes))
 
 	case arguments["run"]:
 		withWorkerRunner = arguments["--with-worker-runner"].(bool)
@@ -917,12 +906,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	err = &ExecutionErrors{}
 
-	workerStatus := &WorkerStatus{
-		CurrentTaskIDs: []string{task.TaskID},
-	}
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
-	defer os.Remove(workerStatusPath)
-
 	defer func() {
 		if r := recover(); r != nil {
 			err.add(executionError(internalError, errored, fmt.Errorf("%#v", r)))
@@ -1059,10 +1042,6 @@ type TaskContext struct {
 	User    *gwruntime.OSUser
 }
 
-type WorkerStatus struct {
-	CurrentTaskIDs []string `json:"currentTaskIds"`
-}
-
 // deleteTaskDirs deletes all task directories (directories whose name starts
 // with `task_`) inside directory parentDir, except those whose names are in
 // skipNames
@@ -1108,8 +1087,6 @@ func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
 	log.Printf("Root cause: %v", err)
 	log.Printf("%#v (%T)", err, err)
 	combinedErr := fmt.Errorf("%s, args: %v, root cause: %v, exit code: %d", logMessage, args, err, exitCode)
-	if WorkerRunnerProtocol != nil {
-		errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
-	}
+	errorreport.Send(WorkerRunnerProtocol, combinedErr, debugInfo)
 	os.Exit(int(exitCode))
 }
