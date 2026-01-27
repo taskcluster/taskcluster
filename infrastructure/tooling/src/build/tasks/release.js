@@ -136,11 +136,88 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   /* -- monoimage docker image build occurs here -- */
 
   ensureTask(tasks, {
+    title: 'Build GoReleaser artifacts',
+    requires: [
+      'clean-artifacts-dir',
+      'release-version',
+    ],
+    provides: [
+      'client-shell-artifacts',
+      'windows-worker-archives',
+    ],
+    run: async (requirements, utils) => {
+      const artifactsDir = requirements['clean-artifacts-dir'];
+      const version = requirements['release-version'];
+
+      await execCommand({
+        dir: REPO_ROOT,
+        command: [
+          'go', 'tool', 'goreleaser', 'release',
+          '--clean',
+          '--skip=announce',
+          '--skip=publish',
+          '--skip=validate',
+        ],
+        utils,
+        env: {
+          ...process.env,
+          GORELEASER_CURRENT_TAG: `v${version}`,
+        },
+      });
+
+      const windowsWorkerArchives = [
+        'generic-worker-multiuser-windows-amd64.zip',
+        'generic-worker-multiuser-windows-arm64.zip',
+        'start-worker-windows-amd64.zip',
+        'start-worker-windows-arm64.zip',
+        'livelog-windows-amd64.zip',
+        'livelog-windows-arm64.zip',
+        'taskcluster-proxy-windows-amd64.zip',
+        'taskcluster-proxy-windows-arm64.zip',
+      ];
+
+      await execCommand({
+        dir: path.join(REPO_ROOT, 'dist'),
+        command: [
+          'mv',
+          'taskcluster-darwin-amd64.tar.gz',
+          'taskcluster-darwin-arm64.tar.gz',
+          'taskcluster-linux-amd64.tar.gz',
+          'taskcluster-linux-arm64.tar.gz',
+          'taskcluster-freebsd-amd64.tar.gz',
+          'taskcluster-freebsd-arm64.tar.gz',
+          'taskcluster-windows-arm64.zip',
+          'taskcluster-windows-amd64.zip',
+          ...windowsWorkerArchives,
+          artifactsDir,
+        ],
+        utils,
+      });
+
+      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
+      const clientShellArtifacts = osarch.split(' ')
+        .map(osarch => {
+          const [os, arch] = osarch.split('/');
+          if (os === 'windows') {
+            return `taskcluster-${os}-${arch}.zip`;
+          }
+          return `taskcluster-${os}-${arch}.tar.gz`;
+        });
+
+      return {
+        'client-shell-artifacts': clientShellArtifacts,
+        'windows-worker-archives': windowsWorkerArchives,
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Create GitHub Release',
     requires: [
       'clean-artifacts-dir',
       'release-version',
       'client-shell-artifacts',
+      'windows-worker-archives',
       'generic-worker-artifacts',
       'worker-runner-artifacts',
       'taskcluster-proxy-artifacts',
@@ -173,6 +250,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const { upload_url } = release.data;
 
       const files = requirements['client-shell-artifacts']
+        .concat(requirements['windows-worker-archives'])
         .concat(requirements['generic-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
@@ -310,6 +388,45 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   });
 
   ensureTask(tasks, {
+    title: 'Publish to Homebrew and Chocolatey',
+    requires: [
+      'github-release',
+      'release-version',
+    ],
+    provides: [
+      'publish-package-managers',
+    ],
+    run: async (requirements, utils) => {
+      if (cmdOptions.staging || !cmdOptions.push) {
+        return utils.skip();
+      }
+
+      const version = requirements['release-version'];
+
+      await execCommand({
+        dir: REPO_ROOT,
+        command: [
+          'go', 'tool', 'goreleaser', 'release',
+          '--clean',
+          '--skip=announce',
+          '--skip=validate',
+        ],
+        utils,
+        env: {
+          ...process.env,
+          GH_TOKEN: credentials.ghToken,
+          CHOCOLATEY_API_KEY: credentials.chocolateyApiKey,
+          GORELEASER_CURRENT_TAG: `v${version}`,
+        },
+      });
+
+      return {
+        'publish-package-managers': 'Published to Homebrew and Chocolatey',
+      };
+    },
+  });
+
+  ensureTask(tasks, {
     title: 'Publish Complete',
     requires: [
       'release-version',
@@ -319,6 +436,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'publish-clients/client-web',
       'publish-clients/client-py',
       'publish-clients/client-rust',
+      'publish-package-managers',
     ],
     provides: [
       'target-publish',
