@@ -2291,4 +2291,161 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       }
     });
   });
+
+  suite('shouldWorkerTerminate', function() {
+    test('returns 404 when worker does not exist', async function() {
+      await createWorkerPool({ workerPoolId: 'pp/terminate-test' });
+      await assert.rejects(
+        () => helper.workerManager.shouldWorkerTerminate('pp/terminate-test', 'wg', 'nonexistent'),
+        { statusCode: 404 },
+      );
+    });
+
+    test('returns 404 when worker pool does not exist', async function() {
+      // Create worker in a pool, then test with a different pool id
+      await createWorkerPool({ workerPoolId: 'pp/exists' });
+      await createWorker({
+        workerPoolId: 'pp/exists',
+        workerGroup: 'wg',
+        workerId: 'wi',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+      await assert.rejects(
+        // Worker exists in pp/exists but we're querying pp/nonexistent
+        () => helper.workerManager.shouldWorkerTerminate('pp/nonexistent', 'wg', 'wi'),
+        { statusCode: 404 },
+      );
+    });
+
+    test('returns terminate: true when running capacity is above minCapacity', async function() {
+      const poolId = 'pp/above-min';
+      await createWorkerPool({
+        workerPoolId: poolId,
+        config: { minCapacity: 1 },
+      });
+
+      // Create 2 running workers (capacity = 2, minCapacity = 1)
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi1',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi2',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+
+      const result = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'wi1');
+      assert.equal(result.terminate, true);
+      assert(result.reason.includes('above minCapacity'));
+    });
+
+    test('returns terminate: false when running capacity is at minCapacity', async function() {
+      const poolId = 'pp/at-min';
+      await createWorkerPool({
+        workerPoolId: poolId,
+        config: { minCapacity: 1 },
+      });
+
+      // Create 1 running worker (capacity = 1, minCapacity = 1)
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi1',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+
+      const result = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'wi1');
+      assert.equal(result.terminate, false);
+      assert(result.reason.includes('at or below minCapacity'));
+    });
+
+    test('returns terminate: false when running capacity is below minCapacity', async function() {
+      const poolId = 'pp/below-min';
+      await createWorkerPool({
+        workerPoolId: poolId,
+        config: { minCapacity: 5 },
+      });
+
+      // Create 1 running worker (capacity = 1, minCapacity = 5)
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi1',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+
+      const result = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'wi1');
+      assert.equal(result.terminate, false);
+      assert(result.reason.includes('at or below minCapacity'));
+    });
+
+    test('returns terminate: true when minCapacity is 0 (default) and workers exist', async function() {
+      const poolId = 'pp/no-min';
+      await createWorkerPool({
+        workerPoolId: poolId,
+        config: {}, // no minCapacity set
+      });
+
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi1',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+
+      const result = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'wi1');
+      assert.equal(result.terminate, true);
+      assert(result.reason.includes('above minCapacity of 0'));
+    });
+
+    test('only counts RUNNING workers, not REQUESTED or STOPPING', async function() {
+      const poolId = 'pp/state-test';
+      await createWorkerPool({
+        workerPoolId: poolId,
+        config: { minCapacity: 2 },
+      });
+
+      // Create 1 running worker
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi-running',
+        state: Worker.states.RUNNING,
+        capacity: 1,
+      });
+
+      // Create 1 requested worker (should not count towards running capacity)
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi-requested',
+        state: Worker.states.REQUESTED,
+        capacity: 1,
+      });
+
+      // Create 1 stopping worker (should not count towards running capacity)
+      await createWorker({
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'wi-stopping',
+        state: Worker.states.STOPPING,
+        capacity: 1,
+      });
+
+      // Running capacity = 1, minCapacity = 2, so should not terminate
+      const result = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'wi-running');
+      assert.equal(result.terminate, false);
+      assert(result.reason.includes('1 running capacity'));
+    });
+  });
 });

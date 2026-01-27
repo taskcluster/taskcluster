@@ -1010,15 +1010,33 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, workerGroup, workerId } = req.params;
-  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+
+  const [worker, workerPool] = await Promise.all([
+    Worker.get(this.db, { workerPoolId, workerGroup, workerId }),
+    WorkerPool.get(this.db, workerPoolId),
+  ]);
 
   if (!worker) {
     return res.reportError('ResourceNotFound', 'Worker not found', {});
   }
 
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool not found', {});
+  }
+
+  const minCapacity = workerPool.config.minCapacity ?? 0;
+  const runningCapacity = workerPool.runningCapacity ?? 0;
+
+  if (runningCapacity > minCapacity) {
+    return res.reply({
+      terminate: true,
+      reason: `pool ${workerPoolId} has ${runningCapacity} running capacity, above minCapacity of ${minCapacity}`,
+    });
+  }
+
   return res.reply({
     terminate: false,
-    reason: 'unclear',
+    reason: `pool ${workerPoolId} has ${runningCapacity} running capacity, at or below minCapacity of ${minCapacity}`,
   });
 });
 
