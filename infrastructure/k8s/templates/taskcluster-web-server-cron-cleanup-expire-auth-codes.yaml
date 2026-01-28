@@ -21,12 +21,16 @@ spec:
         spec:
           restartPolicy: OnFailure
           imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+          securityContext:
+            runAsNonRoot: true
           containers:
             - name: taskcluster-web-server-cleanup-expire-auth-codes
               image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
                 - web-server/cleanup-expire-auth-codes
+              securityContext:
+                allowPrivilegeEscalation: false
               resources:
                 requests:
                   cpu: '{{ .Values.web_server.procs.cleanup_expire_auth_codes.cpu }}'

@@ -26,12 +26,16 @@ spec:
       serviceAccountName: taskcluster-worker-manager
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-worker-manager-workerscanner
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - worker-manager/workerscanner
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.worker_manager.procs.workerscanner.cpu }}'

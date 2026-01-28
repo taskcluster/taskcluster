@@ -20,12 +20,16 @@ spec:
       serviceAccountName: taskcluster-built-in-workers
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-built-in-workers-server
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - built-in-workers/server
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.built_in_workers.procs.server.cpu }}'
