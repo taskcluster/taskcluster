@@ -277,7 +277,7 @@ tasks.push({
       },
       services: {
         rabbitmq: serviceDefinition('rabbitmq', {
-          image: 'rabbitmq:4.2.1-management',
+          image: 'rabbitmq:4.2.2-management',
           healthcheck: healthcheck('rabbitmq-diagnostics ping'),
           ports: [
             '5672:5672',
@@ -318,7 +318,7 @@ tasks.push({
           },
         }),
         s3: serviceDefinition('s3', {
-          image: 'localstack/localstack:4.9.2',
+          image: 'localstack/localstack:4.12.0',
           ports: ['3090:4566'],
           volumes: [
             './docker/buckets:/var/lib/localstack',
@@ -331,7 +331,7 @@ tasks.push({
           healthcheck: healthcheck('curl -I http://localhost:4566/_localstack/health'),
         }),
         s3_init_buckets: serviceDefinition('s3_init_buckets', {
-          image: 'amazon/aws-cli:2.31.21',
+          image: 'amazon/aws-cli:2.33.8',
           depends_on: {
             s3: {
               condition: 'service_healthy',
@@ -373,7 +373,7 @@ tasks.push({
           },
         }),
         taskcluster: serviceDefinition('taskcluster', {
-          image: 'nginx:1.21.6',
+          image: 'nginx:1.29.4',
           depends_on: ['ui', 'web-server-web'],
           volumes: [
             './docker/nginx.conf:/etc/nginx/nginx.conf',
@@ -381,7 +381,7 @@ tasks.push({
           healthcheck: healthcheck('curl -I http://localhost/'),
         }),
         tc_admin_init: serviceDefinition('tc_admin_init', {
-          image: 'taskcluster/tc-admin:4.0.0',
+          image: 'taskcluster/tc-admin:5.1.1',
           volumes: ['./docker/tc-admin:/app'],
           working_dir: '/app',
           'x-info': 'This script provisions taskcluster configuration. See docker/tc-admin for details',

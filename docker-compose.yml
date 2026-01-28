@@ -6,7 +6,7 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    image: rabbitmq:4.2.1-management
+    image: rabbitmq:4.2.2-management
     networks:
       - local
     healthcheck:
@@ -56,7 +56,7 @@ services:
       USERNAME_PREFIX: taskcluster
       ADMIN_DB_URL: postgresql://postgres@postgres:5432/taskcluster
   s3:
-    image: localstack/localstack:4.9.2
+    image: localstack/localstack:4.12.0
     networks:
       - local
     ports:
@@ -74,7 +74,7 @@ services:
       retries: 100
       start_period: 3s
   s3_init_buckets:
-    image: amazon/aws-cli:2.31.21
+    image: amazon/aws-cli:2.33.8
     networks:
       - local
     depends_on:
@@ -119,7 +119,7 @@ services:
     ports:
       - '3023:80'
   taskcluster:
-    image: nginx:1.21.6
+    image: nginx:1.29.4
     networks:
       - local
     depends_on:
@@ -136,7 +136,7 @@ services:
     ports:
       - '80:80'
   tc_admin_init:
-    image: taskcluster/tc-admin:4.0.0
+    image: taskcluster/tc-admin:5.1.1
     networks:
       - local
     volumes:
