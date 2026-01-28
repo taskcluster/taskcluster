@@ -63,6 +63,24 @@ func claimTaskHandler(w http.ResponseWriter, _ *http.Request) {
 	_, _ = io.WriteString(w, status)
 }
 
+// returns the test status on request
+func scheduleHandler(w http.ResponseWriter, _ *http.Request) {
+	status := `{
+				  "status": {
+				  	"workerType": "tutorial",
+				    "state": "pending",
+				    "runs": [
+				      {
+				        "runId": 0,
+				        "state": "pending",
+				        "reasonCreated": "scheduled"
+				      }
+				    ]
+				  }
+				}`
+	_, _ = io.WriteString(w, status)
+}
+
 func (suite *FakeServerSuite) TestRunCancelCommand() {
 	// set up to run a command and capture output
 	buf, cmd := setUpCommand()
@@ -106,4 +124,15 @@ func (suite *FakeServerSuite) TestRunCompleteCommand() {
 	assert.NoError(suite.T(), runComplete(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
 	suite.Equal("completed 'completed'\n", buf.String())
+}
+
+func (suite *FakeServerSuite) TestRunScheduleCommand() {
+	// set up to run a command and capture output
+	buf, cmd := setUpCommand()
+
+	// run the command
+	args := []string{fakeTaskID}
+	assert.NoError(suite.T(), runSchedule(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
+
+	suite.Equal("pending\n", buf.String())
 }
