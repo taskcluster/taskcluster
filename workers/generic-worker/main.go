@@ -415,6 +415,11 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("Invalid config: %v", err)
 		return INVALID_CONFIG
 	}
+	err = validateEngineConfig()
+	if err != nil {
+		log.Printf("Invalid engine config: %v", err)
+		return INVALID_CONFIG
+	}
 	engineInit()
 
 	// This *DOESN'T* output secret fields, so is SAFE
@@ -455,11 +460,55 @@ func RunWorker() (exitCode ExitCode) {
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
+
+	// Create TaskManager for concurrent task execution
+	taskManager := NewTaskManager(config.Capacity)
+	log.Printf("Worker capacity: %d", config.Capacity)
+
+	// Channel for task completion notifications
+	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
+
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
 	for {
+		// Process any completed tasks
+		for {
+			select {
+			case result := <-taskCompleteChan:
+				tasksResolved++
+				taskManager.RemoveTask(result.taskID)
+				lastActive = time.Now()
+
+				if result.workerShutdown {
+					log.Printf("Task %s requested worker shutdown, waiting for other tasks...", result.taskID)
+					taskManager.WaitForAll()
+					return WORKER_SHUTDOWN
+				}
+
+				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
+				remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
+				remainingTaskCountText := ""
+				if remainingTasks > 0 {
+					remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
+				}
+				log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
+				if remainingTasks == 0 {
+					log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
+					taskManager.WaitForAll()
+					if checkWhetherToTerminate() {
+						return WORKER_MANAGER_SHUTDOWN
+					}
+					return TASKS_COMPLETE
+				}
+			default:
+				goto doneProcessingCompletions
+			}
+		}
+	doneProcessingCompletions:
+
 		if checkWhetherToTerminate() {
+			taskManager.WaitForAll()
 			return WORKER_MANAGER_SHUTDOWN
 		}
 
@@ -470,68 +519,126 @@ func RunWorker() (exitCode ExitCode) {
 		}
 
 		if graceful.TerminationRequested() {
+			log.Printf("Graceful termination requested, waiting for %d running tasks...", taskManager.TaskCount())
+			taskManager.WaitForAll()
 			return WORKER_SHUTDOWN
 		}
 
-		pdTaskUser := currentPlatformData()
-		err = validateGenericWorkerBinary(pdTaskUser)
-		if err != nil {
-			log.Printf("Invalid generic-worker binary: %v", err)
-			return INTERNAL_ERROR
-		}
-
-		task := ClaimWork()
+		// Calculate available capacity
+		availableCapacity := taskManager.AvailableCapacity()
 
 		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
-		if task != nil {
-			logEvent("taskQueued", task, time.Time(task.Definition.Created))
-			logEvent("taskStart", task, time.Now())
-
-			task.pd = pdTaskUser
-			errors := task.Run()
-
-			logEvent("taskFinish", task, time.Now())
-			if errors.Occurred() {
-				log.Printf("ERROR(s) encountered: %v", errors)
-				task.Error(errors.Error())
-			}
-			if errors.WorkerShutdown() {
-				return WORKER_SHUTDOWN
-			}
-			err := task.ReleaseResources()
-			if err != nil {
-				log.Printf("ERROR: releasing resources\n%v", err)
-			}
-			err = purgeOldTasks()
-			if err != nil {
-				panic(err)
-			}
-			tasksResolved++
-			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
-			remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
-			remainingTaskCountText := ""
-			if remainingTasks > 0 {
-				remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
-			}
-			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
-			if remainingTasks == 0 {
-				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-
-				if checkWhetherToTerminate() {
-					return WORKER_MANAGER_SHUTDOWN
+		if availableCapacity > 0 {
+			// For capacity > 1, need per-task context setup
+			// For capacity == 1, use the existing global taskContext approach
+			if config.Capacity == 1 {
+				pdTaskUser := currentPlatformData()
+				err = validateGenericWorkerBinary(pdTaskUser)
+				if err != nil {
+					log.Printf("Invalid generic-worker binary: %v", err)
+					return INTERNAL_ERROR
 				}
-				return TASKS_COMPLETE
+
+				tasks := ClaimWork(1)
+				if len(tasks) > 0 {
+					task := tasks[0]
+					logEvent("taskQueued", task, time.Time(task.Definition.Created))
+					logEvent("taskStart", task, time.Now())
+
+					task.pd = pdTaskUser
+					taskManager.AddTask(task)
+
+					// Run task in goroutine for consistency, even with capacity=1
+					go func(t *TaskRun) {
+						errors := t.Run()
+
+						logEvent("taskFinish", t, time.Now())
+						if errors.Occurred() {
+							log.Printf("ERROR(s) encountered: %v", errors)
+							t.Error(errors.Error())
+						}
+						err := t.ReleaseResources()
+						if err != nil {
+							log.Printf("ERROR: releasing resources\n%v", err)
+						}
+						err = purgeOldTasks()
+						if err != nil {
+							log.Printf("ERROR: purging old tasks: %v", err)
+						}
+
+						taskCompleteChan <- taskCompletionResult{
+							taskID:         t.TaskID,
+							workerShutdown: errors.WorkerShutdown(),
+						}
+
+						if rebootBetweenTasks() {
+							// Signal that reboot is needed - handled in main loop
+						}
+					}(task)
+
+					lastActive = time.Now()
+					if RotateTaskEnvironment() {
+						taskManager.WaitForAll()
+						return REBOOT_REQUIRED
+					}
+				}
+			} else {
+				// Capacity > 1: concurrent execution with per-task contexts
+				tasks := ClaimWork(availableCapacity)
+				for _, task := range tasks {
+					// Create per-task context
+					taskDirName := fmt.Sprintf("task_%d", time.Now().UnixNano())
+					ctx, err := CreateTaskContext(taskDirName)
+					if err != nil {
+						log.Printf("ERROR creating task context for %s: %v", task.TaskID, err)
+						// Report exception for this task
+						task.Error(fmt.Sprintf("Failed to create task context: %v", err))
+						continue
+					}
+					task.Context = ctx
+
+					// Get platform data for this task's context
+					pd, err := platformDataForContext(ctx)
+					if err != nil {
+						log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
+						task.Error(fmt.Sprintf("Failed to get platform data: %v", err))
+						continue
+					}
+					task.pd = pd
+
+					logEvent("taskQueued", task, time.Time(task.Definition.Created))
+					logEvent("taskStart", task, time.Now())
+
+					taskManager.AddTask(task)
+
+					go func(t *TaskRun) {
+						errors := t.Run()
+
+						logEvent("taskFinish", t, time.Now())
+						if errors.Occurred() {
+							log.Printf("ERROR(s) encountered for task %s: %v", t.TaskID, errors)
+							t.Error(errors.Error())
+						}
+						err := t.ReleaseResources()
+						if err != nil {
+							log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
+						}
+
+						taskCompleteChan <- taskCompletionResult{
+							taskID:         t.TaskID,
+							workerShutdown: errors.WorkerShutdown(),
+						}
+					}(task)
+
+					lastActive = time.Now()
+				}
 			}
-			if rebootBetweenTasks() {
-				return REBOOT_REQUIRED
-			}
-			lastActive = time.Now()
-			if RotateTaskEnvironment() {
-				return REBOOT_REQUIRED
-			}
-		} else {
+		}
+
+		// Check idle timeout only when no tasks are running
+		if taskManager.IsIdle() {
 			// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 			idleTime := time.Now().Round(0).Sub(lastActive)
 			remainingIdleTimeText := ""
@@ -565,9 +672,17 @@ func RunWorker() (exitCode ExitCode) {
 		select {
 		case <-wait5Seconds.C:
 		case <-sigInterrupt:
+			log.Printf("Interrupt received, waiting for %d running tasks...", taskManager.TaskCount())
+			taskManager.WaitForAll()
 			return WORKER_STOPPED
 		}
 	}
+}
+
+// taskCompletionResult holds the result of a completed task
+type taskCompletionResult struct {
+	taskID         string
+	workerShutdown bool
 }
 
 func checkWhetherToTerminate() bool {
@@ -589,15 +704,19 @@ func checkWhetherToTerminate() bool {
 	return false
 }
 
-// ClaimWork queries the Queue to find a task.
-func ClaimWork() *TaskRun {
+// ClaimWork queries the Queue to find tasks. The count parameter specifies
+// how many tasks to request (up to available capacity).
+func ClaimWork(count int) []*TaskRun {
+	if count < 1 {
+		return nil
+	}
 	// only log workerReady the first time queue.claimWork is called
 	if !workerReady {
 		workerReady = true
 		logEvent("workerReady", nil, time.Now())
 	}
 	req := &tcqueue.ClaimWorkRequest{
-		Tasks:       1,
+		Tasks:       int64(count),
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
 	}
@@ -611,20 +730,14 @@ func ClaimWork() *TaskRun {
 		log.Printf("Could not claim work. %v", err)
 		return nil
 	}
-	switch {
 
-	// no tasks - nothing to return
-	case len(resp.Tasks) < 1:
+	if len(resp.Tasks) == 0 {
 		return nil
+	}
 
-	// more than one task - BUG!
-	case len(resp.Tasks) > 1:
-		panic(fmt.Sprintf("SERIOUS BUG: too many tasks returned from queue - only 1 requested, but %v returned", len(resp.Tasks)))
-
-	// exactly one task - process it!
-	default:
-		log.Print("Task found")
-		taskResponse := resp.Tasks[0]
+	tasks := make([]*TaskRun, 0, len(resp.Tasks))
+	for _, taskResponse := range resp.Tasks {
+		log.Printf("Task found: %s", taskResponse.Status.TaskID)
 		taskQueue := serviceFactory.Queue(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
@@ -647,8 +760,9 @@ func ClaimWork() *TaskRun {
 		}
 		defaults.SetDefaults(&task.Payload)
 		task.StatusManager = NewTaskStatusManager(task)
-		return task
+		tasks = append(tasks, task)
 	}
+	return tasks
 }
 
 func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecutionError {

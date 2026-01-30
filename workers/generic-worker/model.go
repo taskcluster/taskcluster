@@ -51,11 +51,32 @@ type (
 		featureArtifacts    map[string]string
 		D2GInfo             *d2g.ConversionInfo               `json:"-"`
 		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
+		// Context holds per-task context including task directory and user.
+		// This replaces the global taskContext for concurrent task execution.
+		Context *TaskContext `json:"-"`
+		// AllocatedPorts holds the ports allocated to this task by PortManager.
+		// Indexed by PortIndex* constants.
+		AllocatedPorts []uint16 `json:"-"`
 	}
 
 	TaskStatus       string
 	TaskUpdateReason string
 )
+
+// GetContext returns the task's context. If the task has a per-task Context set,
+// it returns that; otherwise it falls back to the global taskContext for
+// backwards compatibility with single-task execution.
+func (task *TaskRun) GetContext() *TaskContext {
+	if task.Context != nil {
+		return task.Context
+	}
+	return taskContext
+}
+
+// TaskDir returns the task's working directory.
+func (task *TaskRun) TaskDir() string {
+	return task.GetContext().TaskDir
+}
 
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)

@@ -25,6 +25,12 @@ const (
 	engine = "insecure"
 )
 
+// validateEngineConfig validates engine-specific configuration.
+// For insecure engine, capacity > 1 is always allowed.
+func validateEngineConfig() error {
+	return nil
+}
+
 func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }
@@ -61,9 +67,9 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommand(cmd, task.TaskDir(), env)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommandContext(ctx, cmd, task.TaskDir(), env)
 	}
 
 	return processCmd.Cmd, err
@@ -84,6 +90,19 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	return false
 }
 
+// CreateTaskContext creates a new TaskContext for concurrent task execution.
+// Unlike PlatformTaskEnvironmentSetup, this does not set the global taskContext.
+func CreateTaskContext(taskDirName string) (*TaskContext, error) {
+	ctx := &TaskContext{
+		TaskDir: filepath.Join(config.TasksDir, taskDirName),
+	}
+	err := os.MkdirAll(ctx.TaskDir, 0777)
+	if err != nil {
+		return nil, err
+	}
+	return ctx, nil
+}
+
 // Helper function used to get the current task user's
 // platform data. Useful for initially setting up the
 // TaskRun struct's data.
@@ -93,6 +112,12 @@ func currentPlatformData() *process.PlatformData {
 		panic(err)
 	}
 	return pd
+}
+
+// platformDataForContext returns platform data for a given TaskContext.
+// Used for concurrent task execution.
+func platformDataForContext(ctx *TaskContext) (*process.PlatformData, error) {
+	return process.TaskUserPlatformData(ctx.User, false)
 }
 
 func deleteDir(path string) error {
@@ -113,7 +138,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars())
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], task.TaskDir(), task.EnvVars())
 	if err != nil {
 		return err
 	}
@@ -200,7 +225,7 @@ func (task *TaskRun) EnvVars() []string {
 	maps.Copy(taskEnv, task.Payload.Env)
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
-	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_WORKDIR"] = task.TaskDir()
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 
