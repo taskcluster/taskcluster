@@ -2,7 +2,6 @@ package graceful
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -16,77 +15,76 @@ func TestGracefulTermination(t *testing.T) {
 
 	t.Run("WithCallback", func(t *testing.T) {
 		Reset()
-		var res *bool // pointer is to distinguish nil from false
-		OnTerminationRequest("task1", func(finishTasks bool) { res = &finishTasks })
+		done := make(chan bool, 1)
+		OnTerminationRequest("task1", func(finishTasks bool) { done <- finishTasks })
 		Terminate(false)
-		// Give goroutine time to execute
-		time.Sleep(10 * time.Millisecond)
-		require.NotNil(t, res)
-		require.Equal(t, false, *res)
+		res := <-done
+		require.Equal(t, false, res)
 		require.Equal(t, true, TerminationRequested())
 	})
 
 	t.Run("WithRemovedCallback", func(t *testing.T) {
 		Reset()
-		var cb1 *bool
-		remove1 := OnTerminationRequest("task1", func(finishTasks bool) { cb1 = &finishTasks })
+		done1 := make(chan bool, 1)
+		remove1 := OnTerminationRequest("task1", func(finishTasks bool) { done1 <- finishTasks })
 		remove1()
 
-		var cb2 *bool
-		OnTerminationRequest("task2", func(finishTasks bool) { cb2 = &finishTasks })
+		done2 := make(chan bool, 1)
+		OnTerminationRequest("task2", func(finishTasks bool) { done2 <- finishTasks })
 
 		Terminate(true)
-		// Give goroutine time to execute
-		time.Sleep(10 * time.Millisecond)
+		res := <-done2
 
-		require.Nil(t, cb1)
-		require.NotNil(t, cb2)
-		require.Equal(t, true, *cb2)
+		// cb1 should not have been called since it was removed
+		select {
+		case <-done1:
+			t.Fatal("removed callback should not have been called")
+		default:
+		}
+
+		require.Equal(t, true, res)
 		require.Equal(t, true, TerminationRequested())
 	})
 
 	t.Run("MultipleCallbacks", func(t *testing.T) {
 		Reset()
-		var cb1, cb2, cb3 *bool
-		OnTerminationRequest("task1", func(finishTasks bool) { cb1 = &finishTasks })
-		OnTerminationRequest("task2", func(finishTasks bool) { cb2 = &finishTasks })
-		OnTerminationRequest("task3", func(finishTasks bool) { cb3 = &finishTasks })
+		done1 := make(chan bool, 1)
+		done2 := make(chan bool, 1)
+		done3 := make(chan bool, 1)
+		OnTerminationRequest("task1", func(finishTasks bool) { done1 <- finishTasks })
+		OnTerminationRequest("task2", func(finishTasks bool) { done2 <- finishTasks })
+		OnTerminationRequest("task3", func(finishTasks bool) { done3 <- finishTasks })
 
 		require.Equal(t, 3, CallbackCount())
 
 		Terminate(true)
-		// Give goroutines time to execute
-		time.Sleep(10 * time.Millisecond)
 
-		require.NotNil(t, cb1)
-		require.NotNil(t, cb2)
-		require.NotNil(t, cb3)
-		require.Equal(t, true, *cb1)
-		require.Equal(t, true, *cb2)
-		require.Equal(t, true, *cb3)
+		res1 := <-done1
+		res2 := <-done2
+		res3 := <-done3
+
+		require.Equal(t, true, res1)
+		require.Equal(t, true, res2)
+		require.Equal(t, true, res3)
 	})
 
 	t.Run("CallbackRegisteredAfterTermination", func(t *testing.T) {
 		Reset()
 		Terminate(true)
 
-		var cb *bool
-		OnTerminationRequest("late-task", func(finishTasks bool) { cb = &finishTasks })
-		// Give goroutine time to execute
-		time.Sleep(10 * time.Millisecond)
+		done := make(chan bool, 1)
+		OnTerminationRequest("late-task", func(finishTasks bool) { done <- finishTasks })
+		res := <-done
 
-		require.NotNil(t, cb)
-		require.Equal(t, true, *cb)
+		require.Equal(t, true, res)
 	})
 
 	t.Run("LegacyCallback", func(t *testing.T) {
 		Reset()
-		var res *bool
-		OnTerminationRequestLegacy(func(finishTasks bool) { res = &finishTasks })
+		done := make(chan bool, 1)
+		OnTerminationRequestLegacy(func(finishTasks bool) { done <- finishTasks })
 		Terminate(false)
-		// Give goroutine time to execute
-		time.Sleep(10 * time.Millisecond)
-		require.NotNil(t, res)
-		require.Equal(t, false, *res)
+		res := <-done
+		require.Equal(t, false, res)
 	})
 }
