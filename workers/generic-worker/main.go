@@ -468,7 +468,7 @@ func RunWorker() (exitCode ExitCode) {
 	// Channel for task completion notifications
 	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
 
-	if RotateTaskEnvironment() {
+	if RotateTaskEnvironment(taskManager.RunningTaskDirNames()...) {
 		return REBOOT_REQUIRED
 	}
 	for {
@@ -507,7 +507,7 @@ func RunWorker() (exitCode ExitCode) {
 				}
 				// For capacity=1, prepare the environment for the next task
 				if config.Capacity == 1 {
-					if RotateTaskEnvironment() {
+					if RotateTaskEnvironment(taskManager.RunningTaskDirNames()...) {
 						return REBOOT_REQUIRED
 					}
 				}
@@ -545,7 +545,7 @@ func RunWorker() (exitCode ExitCode) {
 			// For capacity == 1, use the existing global taskContext approach
 			if config.Capacity == 1 {
 				pdTaskUser := currentPlatformData()
-				err = validateGenericWorkerBinary(pdTaskUser)
+				err = validateGenericWorkerBinary(pdTaskUser, taskContext.TaskDir)
 				if err != nil {
 					log.Printf("Invalid generic-worker binary: %v", err)
 					return INTERNAL_ERROR
@@ -573,7 +573,7 @@ func RunWorker() (exitCode ExitCode) {
 						if err != nil {
 							log.Printf("ERROR: releasing resources\n%v", err)
 						}
-						err = purgeOldTasks()
+						err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 						if err != nil {
 							log.Printf("ERROR: purging old tasks: %v", err)
 						}
@@ -591,7 +591,11 @@ func RunWorker() (exitCode ExitCode) {
 				tasks := ClaimWork(availableCapacity)
 				for _, task := range tasks {
 					// Create per-task context
-					taskDirName := fmt.Sprintf("task_%d", time.Now().UnixNano())
+					taskIDPart := task.TaskID
+					if len(taskIDPart) > 15 {
+						taskIDPart = taskIDPart[:15]
+					}
+					taskDirName := fmt.Sprintf("task_%s", taskIDPart)
 					ctx, err := CreateTaskContext(taskDirName)
 					if err != nil {
 						log.Printf("ERROR creating task context for %s: %v", task.TaskID, err)
@@ -610,6 +614,13 @@ func RunWorker() (exitCode ExitCode) {
 					}
 					task.pd = pd
 
+					err = validateGenericWorkerBinary(pd, ctx.TaskDir)
+					if err != nil {
+						log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
+						task.Error(fmt.Sprintf("Invalid generic-worker binary: %v", err))
+						continue
+					}
+
 					logEvent("taskQueued", task, time.Time(task.Definition.Created))
 					logEvent("taskStart", task, time.Now())
 
@@ -626,6 +637,10 @@ func RunWorker() (exitCode ExitCode) {
 						err := t.ReleaseResources()
 						if err != nil {
 							log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
+						}
+						err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
+						if err != nil {
+							log.Printf("ERROR: purging old tasks: %v", err)
 						}
 
 						taskCompleteChan <- taskCompletionResult{
@@ -647,7 +662,7 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
+					_ = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 					return IDLE_TIMEOUT
 				}
@@ -826,8 +841,8 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 // internally during the artifact upload process. The version string
 // is not returned, since it is not needed. A non-nil error is returned
 // if the `generic-worker --version` command cannot be run successfully.
-func validateGenericWorkerBinary(pd *process.PlatformData) error {
-	cmd, err := gwVersion(pd)
+func validateGenericWorkerBinary(pd *process.PlatformData, taskDir string) error {
+	cmd, err := gwVersion(pd, taskDir)
 	if err != nil {
 		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
@@ -1204,11 +1219,12 @@ outer:
 
 // RotateTaskEnvironment creates a new task environment (for the next task),
 // and purges existing used task environments.
-func RotateTaskEnvironment() (reboot bool) {
+// skipDirs are additional directories to preserve during cleanup (e.g., running task directories).
+func RotateTaskEnvironment(skipDirs ...string) (reboot bool) {
 	if PrepareTaskEnvironment() {
 		return true
 	}
-	err := purgeOldTasks()
+	err := purgeOldTasks(skipDirs...)
 	// errors are not fatal
 	if err != nil {
 		log.Printf("WARNING: failed to remove old task directories/users: %v", err)

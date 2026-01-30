@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -94,4 +95,18 @@ func (tm *TaskManager) GetTask(taskID string) *TaskRun {
 	tm.RLock()
 	defer tm.RUnlock()
 	return tm.runningTasks[taskID]
+}
+
+// RunningTaskDirNames returns the base names of all running task directories.
+// This is used to skip these directories during cleanup.
+func (tm *TaskManager) RunningTaskDirNames() []string {
+	tm.RLock()
+	defer tm.RUnlock()
+	names := make([]string, 0, len(tm.runningTasks))
+	for _, task := range tm.runningTasks {
+		if task.Context != nil && task.Context.TaskDir != "" {
+			names = append(names, filepath.Base(task.Context.TaskDir))
+		}
+	}
+	return names
 }

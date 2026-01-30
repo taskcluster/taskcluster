@@ -145,7 +145,12 @@ func (taskMount *TaskMount) Error(message string) {
 
 func MkdirAll(taskMount *TaskMount, dir string) error {
 	taskMount.Infof("Creating directory %v", dir)
-	return MkdirAllTaskUser(dir, taskMount.task.pd)
+	ctx := taskMount.task.GetContext()
+	userName := ""
+	if ctx.User != nil {
+		userName = ctx.User.Name
+	}
+	return MkdirAllTaskUser(dir, ctx.TaskDir, userName, taskMount.task.pd)
 }
 
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -793,7 +798,12 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
-		dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
+		ctx := taskMount.task.GetContext()
+		userName := ""
+		if ctx.User != nil {
+			userName = ctx.User.Name
+		}
+		dst, err := CreateFileAsTaskUser(file, ctx.TaskDir, userName, taskMount.task.pd)
 		if err != nil {
 			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
@@ -823,7 +833,12 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
+	ctx := taskMount.task.GetContext()
+	userName := ""
+	if ctx.User != nil {
+		userName = ctx.User.Name
+	}
+	dst, err := CreateFileAsTaskUser(file, ctx.TaskDir, userName, taskMount.task.pd)
 	if err != nil {
 		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}

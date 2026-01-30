@@ -161,14 +161,22 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func purgeOldTasks() error {
+func purgeOldTasks(extraSkipDirs ...string) error {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
+	// Build list of directories to skip.
+	// For capacity=1, taskContext.TaskDir is the current task's directory.
+	// For capacity>1, extraSkipDirs contains all running task directories.
+	skipDirs := make([]string, 0, len(extraSkipDirs)+1)
 	// Use filepath.Base(taskContext.TaskDir) rather than taskContext.User.Name
 	// since taskContext.User is nil if running tasks as current user.
-	deleteTaskDirs(config.TasksDir, filepath.Base(taskContext.TaskDir))
+	if taskContext != nil && taskContext.TaskDir != "" {
+		skipDirs = append(skipDirs, filepath.Base(taskContext.TaskDir))
+	}
+	skipDirs = append(skipDirs, extraSkipDirs...)
+	deleteTaskDirs(config.TasksDir, skipDirs...)
 	return nil
 }
 
