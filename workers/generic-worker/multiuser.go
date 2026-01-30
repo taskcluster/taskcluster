@@ -242,30 +242,49 @@ func platformDataForContext(ctx *TaskContext) (*process.PlatformData, error) {
 }
 
 // Only return critical errors
-func purgeOldTasks() error {
+func purgeOldTasks(extraSkipDirs ...string) error {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name, nextTaskUser)
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, nextTaskUser)
+	// Build list of directories/users to skip.
+	// Always skip taskContext.User.Name and nextTaskUser (for capacity=1 and non-headless mode).
+	// For capacity>1, extraSkipDirs contains all running task directories.
+	skipDirs := make([]string, 0, len(extraSkipDirs)+2)
+	if taskContext != nil && taskContext.User != nil {
+		skipDirs = append(skipDirs, taskContext.User.Name)
+	}
+	skipDirs = append(skipDirs, nextTaskUser)
+	skipDirs = append(skipDirs, extraSkipDirs...)
+
+	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), skipDirs...)
+	deleteTaskDirs(config.TasksDir, skipDirs...)
 	// regardless of whether we are running as current user or not, we should purge old task users
-	err := deleteExistingOSUsers()
+	err := deleteExistingOSUsers(extraSkipDirs...)
 	if err != nil {
 		log.Printf("Could not delete old task users:\n%v", err)
 	}
 	return nil
 }
 
-func deleteExistingOSUsers() (err error) {
+func deleteExistingOSUsers(extraSkipUsers ...string) (err error) {
 	log.Print("Looking for existing task users to delete...")
 	userAccounts, err := gwruntime.ListUserAccounts()
 	if err != nil {
 		return
 	}
+	// Build set of users to skip (taskContext.User.Name, nextTaskUser, and any running task users)
+	skipSet := make(map[string]bool)
+	if taskContext != nil && taskContext.User != nil {
+		skipSet[taskContext.User.Name] = true
+	}
+	skipSet[nextTaskUser] = true
+	for _, u := range extraSkipUsers {
+		skipSet[u] = true
+	}
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != nextTaskUser {
+		if strings.HasPrefix(username, "task_") && !skipSet[username] {
 			log.Print("Attempting to remove user " + username + "...")
 			err2 := gwruntime.DeleteUser(username)
 			if err2 != nil {
@@ -297,9 +316,9 @@ func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
 	return &user, nil
 }
 
-func MkdirAllTaskUser(dir string, pd *process.PlatformData) error {
+func MkdirAllTaskUser(dir string, taskDir string, userName string, pd *process.PlatformData) error {
 	if info, err := os.Stat(dir); err == nil && info.IsDir() {
-		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), pd)
+		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), taskDir, userName, pd)
 		if err != nil {
 			return err
 		}
@@ -310,25 +329,25 @@ func MkdirAllTaskUser(dir string, pd *process.PlatformData) error {
 		return os.Remove(file.Name())
 	}
 
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskContext.TaskDir, []string{}, pd)
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskDir, []string{}, pd)
 	if err != nil {
-		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, err)
+		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, userName, taskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, taskContext.User.Name, taskContext.TaskDir, result)
+		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, userName, taskDir, result)
 	}
 	return nil
 }
 
-func CreateFileAsTaskUser(file string, pd *process.PlatformData) (*os.File, error) {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskContext.TaskDir, []string{}, pd)
+func CreateFileAsTaskUser(file string, taskDir string, userName string, pd *process.PlatformData) (*os.File, error) {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskDir, []string{}, pd)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, err)
+		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, userName, taskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, taskContext.User.Name, taskContext.TaskDir, result)
+		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, userName, taskDir, result)
 	}
 	return os.OpenFile(file, os.O_RDWR, 0600)
 }
