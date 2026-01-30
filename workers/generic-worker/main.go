@@ -501,6 +501,10 @@ func RunWorker() (exitCode ExitCode) {
 					}
 					return TASKS_COMPLETE
 				}
+				// In non-headless multiuser mode with capacity=1, reboot between tasks
+				if rebootBetweenTasks() {
+					return REBOOT_REQUIRED
+				}
 			default:
 				goto doneProcessingCompletions
 			}
@@ -571,10 +575,6 @@ func RunWorker() (exitCode ExitCode) {
 						taskCompleteChan <- taskCompletionResult{
 							taskID:         t.TaskID,
 							workerShutdown: errors.WorkerShutdown(),
-						}
-
-						if rebootBetweenTasks() {
-							// Signal that reboot is needed - handled in main loop
 						}
 					}(task)
 

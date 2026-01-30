@@ -7,11 +7,11 @@ import (
 
 // Port allocation indices within a task's port block
 const (
-	PortIndexLiveLogGET      = 0
-	PortIndexLiveLogPUT      = 1
-	PortIndexInteractive     = 2
+	PortIndexLiveLogGET       = 0
+	PortIndexLiveLogPUT       = 1
+	PortIndexInteractive      = 2
 	PortIndexTaskclusterProxy = 3
-	PortsPerTask             = 4
+	PortsPerTask              = 4
 )
 
 // PortManager manages dynamic port allocation for concurrent tasks.

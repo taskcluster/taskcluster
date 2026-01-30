@@ -126,7 +126,7 @@ func TestTaskManagerConcurrentAccess(t *testing.T) {
 
 	var wg sync.WaitGroup
 	// Spawn 50 goroutines adding tasks
-	for i := 0; i < 50; i++ {
+	for i := range 50 {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()

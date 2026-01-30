@@ -146,9 +146,9 @@ func TestPortManagerSlotReuse(t *testing.T) {
 	pm := NewPortManager(60000, 53000, 8080, 3)
 
 	// Allocate slots 0, 1, 2
-	pm.AllocatePorts("task1") // slot 0
-	pm.AllocatePorts("task2") // slot 1
-	pm.AllocatePorts("task3") // slot 2
+	_, _ = pm.AllocatePorts("task1") // slot 0
+	_, _ = pm.AllocatePorts("task2") // slot 1
+	_, _ = pm.AllocatePorts("task3") // slot 2
 
 	// Release slot 1
 	pm.ReleasePorts("task2")
