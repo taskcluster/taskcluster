@@ -24,6 +24,15 @@ const (
 	engine = "multiuser"
 )
 
+// validateEngineConfig validates engine-specific configuration.
+// For multiuser engine, capacity > 1 requires headlessTasks to be enabled.
+func validateEngineConfig() error {
+	if config.Capacity > 1 && !config.HeadlessTasks {
+		return fmt.Errorf("capacity > 1 requires headlessTasks to be enabled in multiuser mode (capacity=%d, headlessTasks=%v)", config.Capacity, config.HeadlessTasks)
+	}
+	return nil
+}
+
 var (
 	// don't initialise here, because cwd might not yet be initialised
 	// instead we set up later in PlatformTaskEnvironmentSetup
@@ -184,6 +193,37 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 	return
 }
 
+// CreateTaskContext creates a new TaskContext for concurrent task execution in headless mode.
+// Unlike PlatformTaskEnvironmentSetup, this does not set the global taskContext.
+// This should only be called when HeadlessTasks is true and capacity > 1.
+func CreateTaskContext(taskDirName string) (*TaskContext, error) {
+	if !config.HeadlessTasks {
+		return nil, fmt.Errorf("CreateTaskContext requires headlessTasks to be enabled")
+	}
+	taskUser := &gwruntime.OSUser{
+		Name:     taskDirName,
+		Password: gwruntime.GeneratePassword(),
+	}
+	err := taskUser.CreateNew(false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user %s: %v", taskDirName, err)
+	}
+	ctx := &TaskContext{
+		User:    taskUser,
+		TaskDir: filepath.Join(config.TasksDir, taskUser.Name),
+	}
+	err = os.MkdirAll(ctx.TaskDir, 0777)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task directory %s: %v", ctx.TaskDir, err)
+	}
+	log.Printf("Granting %v control of %v", ctx.User.Name, ctx.TaskDir)
+	err = makeFileOrDirReadWritableForUser(false, ctx.TaskDir, ctx.User)
+	if err != nil {
+		return nil, fmt.Errorf("failed to grant permissions on %s: %v", ctx.TaskDir, err)
+	}
+	return ctx, nil
+}
+
 // Helper function used to get the current task user's
 // platform data. Useful for initially setting up the
 // TaskRun struct's data.
@@ -193,6 +233,12 @@ func currentPlatformData() *process.PlatformData {
 		panic(err)
 	}
 	return pd
+}
+
+// platformDataForContext returns platform data for a given TaskContext.
+// Used for concurrent task execution.
+func platformDataForContext(ctx *TaskContext) (*process.PlatformData, error) {
+	return process.TaskUserPlatformData(ctx.User, config.HeadlessTasks)
 }
 
 // Only return critical errors
