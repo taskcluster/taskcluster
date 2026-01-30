@@ -505,6 +505,12 @@ func RunWorker() (exitCode ExitCode) {
 				if rebootBetweenTasks() {
 					return REBOOT_REQUIRED
 				}
+				// For capacity=1, prepare the environment for the next task
+				if config.Capacity == 1 {
+					if RotateTaskEnvironment() {
+						return REBOOT_REQUIRED
+					}
+				}
 			default:
 				goto doneProcessingCompletions
 			}
@@ -579,10 +585,6 @@ func RunWorker() (exitCode ExitCode) {
 					}(task)
 
 					lastActive = time.Now()
-					if RotateTaskEnvironment() {
-						taskManager.WaitForAll()
-						return REBOOT_REQUIRED
-					}
 				}
 			} else {
 				// Capacity > 1: concurrent execution with per-task contexts
