@@ -1048,11 +1048,15 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	err = &ExecutionErrors{}
 
-	workerStatus := &WorkerStatus{
-		CurrentTaskIDs: []string{task.TaskID},
+	// For capacity = 1 (task.Context is nil), manage worker status file here.
+	// For capacity > 1 (task.Context is set), TaskManager manages the status file.
+	if task.Context == nil {
+		workerStatus := &WorkerStatus{
+			CurrentTaskIDs: []string{task.TaskID},
+		}
+		err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
+		defer os.Remove(workerStatusPath)
 	}
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
-	defer os.Remove(workerStatusPath)
 
 	defer func() {
 		if r := recover(); r != nil {
