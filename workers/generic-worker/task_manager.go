@@ -1,9 +1,12 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
 )
 
 // TaskManager manages concurrent task execution and tracks running tasks.
@@ -36,15 +39,18 @@ func (tm *TaskManager) AvailableCapacity() int {
 }
 
 // AddTask registers a task as running. Must be called before starting the task goroutine.
+// Updates the worker status file with all running task IDs.
 func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.Lock()
 	defer tm.Unlock()
 	tm.runningTasks[task.TaskID] = task
 	tm.wg.Add(1)
 	tm.lastActive = time.Now()
+	tm.updateWorkerStatusLocked()
 }
 
 // RemoveTask unregisters a task. Must be called when the task goroutine completes.
+// Updates the worker status file with remaining running task IDs.
 func (tm *TaskManager) RemoveTask(taskID string) {
 	tm.Lock()
 	defer tm.Unlock()
@@ -52,6 +58,7 @@ func (tm *TaskManager) RemoveTask(taskID string) {
 		delete(tm.runningTasks, taskID)
 		tm.wg.Done()
 		tm.lastActive = time.Now()
+		tm.updateWorkerStatusLocked()
 	}
 }
 
@@ -109,4 +116,25 @@ func (tm *TaskManager) RunningTaskDirNames() []string {
 		}
 	}
 	return names
+}
+
+// updateWorkerStatusLocked writes the current running task IDs to the worker status file.
+// Must be called while holding the lock.
+func (tm *TaskManager) updateWorkerStatusLocked() {
+	ids := make([]string, 0, len(tm.runningTasks))
+	for id := range tm.runningTasks {
+		ids = append(ids, id)
+	}
+
+	status := &WorkerStatus{
+		CurrentTaskIDs: ids,
+	}
+
+	if len(ids) == 0 {
+		// No tasks running, remove the status file
+		os.Remove(workerStatusPath)
+	} else {
+		// Write status file with all running task IDs
+		_ = fileutil.WriteToFileAsJSON(status, workerStatusPath)
+	}
 }
