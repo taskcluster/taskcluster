@@ -12,10 +12,10 @@ taskcluster = { version = "96.1.0", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
 reqwest = { version = "0.13", features = ["json", "stream", "gzip", "brotli"] }
-serde_json = "1.0.148"
+serde_json = "1.0.149"
 serde = "1.0.228"
-tokio = { version = "1.48", features = ["macros", "time", "fs"] }
-tokio-util = { version = "0.7.17", features = ["codec", "io"] }
+tokio = { version = "1.49", features = ["macros", "time", "fs"] }
+tokio-util = { version = "0.7.18", features = ["codec", "io"] }
 futures-util = "0.3"
 sha2 = "0.10.9"
 
