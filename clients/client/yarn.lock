@@ -944,9 +944,9 @@ __metadata:
   linkType: hard
 
 "taskcluster-lib-urls@npm:^13.0.0":
-  version: 13.0.1
-  resolution: "taskcluster-lib-urls@npm:13.0.1"
-  checksum: 10c0/4801205a499f11cd4950506848421a14d1f06f0093df4492254ef7c292772167b37089a9aa37d48753fa914ff71c15b7eaf344fef84ae7e90957aa37ccf8bd45
+  version: 13.0.2
+  resolution: "taskcluster-lib-urls@npm:13.0.2"
+  checksum: 10c0/682c9093e37b924fdb58f6ae1e2b2348ecf849456d8337f8f6b1c6b4576ed0b1bf0b538247c8c2280c2ae4d05197487f40f4b060b66fc5be36678f1df0aae50c
   languageName: node
   linkType: hard
 
