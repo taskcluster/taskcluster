@@ -57,8 +57,9 @@ var (
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// General platform independent user settings, such as home directory, username...
-	// Platform specific data should be managed in plat_<platform>.go files
+	// taskContext is only used for test compatibility. Production code uses per-task contexts
+	// stored in TaskRun.Context. This global is initialized in platform-specific init() functions
+	// and by engineTestSetup() for tests.
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
@@ -410,17 +411,16 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
-	err := config.Validate()
-	if err != nil {
-		log.Printf("Invalid config: %v", err)
-		return INVALID_CONFIG
-	}
-	err = validateEngineConfig()
-	if err != nil {
-		log.Printf("Invalid engine config: %v", err)
-		return INVALID_CONFIG
-	}
+	exitOnError(INVALID_CONFIG, config.Validate(), "Invalid config")
+	exitOnError(INVALID_CONFIG, validateEngineConfig(), "Invalid engine config")
 	engineInit()
+
+	// Ensure tasks directory exists (needed for disk space checks, etc.)
+	err := os.MkdirAll(config.TasksDir, 0755)
+	if err != nil {
+		log.Printf("Failed to create tasks directory %s: %v", config.TasksDir, err)
+		return INTERNAL_ERROR
+	}
 
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)
@@ -471,9 +471,12 @@ func RunWorker() (exitCode ExitCode) {
 	// Channel for task completion notifications
 	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
 
-	if RotateTaskEnvironment(taskManager.RunningTaskDirNames()...) {
-		return REBOOT_REQUIRED
+	// Initial cleanup of old task directories
+	err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
+	if err != nil {
+		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
+
 mainLoop:
 	for {
 		// Process any completed tasks
@@ -510,12 +513,6 @@ mainLoop:
 				if rebootBetweenTasks() {
 					return REBOOT_REQUIRED
 				}
-				// For capacity=1, prepare the environment for the next task
-				if config.Capacity == 1 {
-					if RotateTaskEnvironment(taskManager.RunningTaskDirNames()...) {
-						return REBOOT_REQUIRED
-					}
-				}
 			default:
 				goto doneProcessingCompletions
 			}
@@ -546,137 +543,80 @@ mainLoop:
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
 		if availableCapacity > 0 {
-			// For capacity > 1, need per-task context setup
-			// For capacity == 1, use the existing global taskContext approach
-			if config.Capacity == 1 {
-				pdTaskUser := currentPlatformData()
-				err = validateGenericWorkerBinary(pdTaskUser, taskContext.TaskDir)
+			// Unified task execution: always use per-task context regardless of capacity
+			tasks := ClaimWork(availableCapacity)
+			for _, task := range tasks {
+				// Create per-task context
+				// Include runId to avoid collisions when tasks are rerun (same taskId, new runId)
+				// Format: task_<12 chars of taskId>_<runId> (max 20 chars for Windows username limit)
+				taskIDPart := task.TaskID
+				if len(taskIDPart) > 12 {
+					taskIDPart = taskIDPart[:12]
+				}
+				taskDirName := fmt.Sprintf("task_%s_%d", taskIDPart, task.RunID)
+				ctx := CreateTaskContext(taskDirName)
+				task.Context = ctx
+				// Update global taskContext for test compatibility (tests read logs via LogText)
+				taskContext = ctx
+
+				// Get platform data for this task's context
+				pd, err := platformDataForTaskContext(ctx)
 				if err != nil {
-					log.Printf("Invalid generic-worker binary: %v", err)
+					log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
+					return INTERNAL_ERROR
+				}
+				task.pd = pd
+
+				err = validateGenericWorkerBinary(pd, ctx.TaskDir)
+				if err != nil {
+					log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
 					return INTERNAL_ERROR
 				}
 
-				tasks := ClaimWork(1)
-				if len(tasks) > 0 {
-					task := tasks[0]
-					logEvent("taskQueued", task, time.Time(task.Definition.Created))
-					logEvent("taskStart", task, time.Now())
-
-					task.pd = pdTaskUser
-
-					// Allocate ports for this task
-					allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
-					if err != nil {
-						log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
-						task.Error(fmt.Sprintf("Failed to allocate ports: %v", err))
-						continue
-					}
-					task.AllocatedPorts = allocatedPorts
-
-					taskManager.AddTask(task)
-
-					// Run task in goroutine for consistency, even with capacity=1
-					go func(t *TaskRun) {
-						errors := t.Run()
-
-						logEvent("taskFinish", t, time.Now())
-						if errors.Occurred() {
-							log.Printf("ERROR(s) encountered: %v", errors)
-							t.Error(errors.Error())
-						}
-						err := t.ReleaseResources()
-						if err != nil {
-							log.Printf("ERROR: releasing resources\n%v", err)
-						}
-						err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
-						if err != nil {
-							log.Printf("ERROR: purging old tasks: %v", err)
-						}
-
-						taskCompleteChan <- taskCompletionResult{
-							taskID:         t.TaskID,
-							workerShutdown: errors.WorkerShutdown(),
-						}
-					}(task)
-
-					lastActive = time.Now()
+				// Allocate ports for this task
+				allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
+				if err != nil {
+					log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
+					return INTERNAL_ERROR
 				}
-			} else {
-				// Capacity > 1: concurrent execution with per-task contexts
-				tasks := ClaimWork(availableCapacity)
-				for _, task := range tasks {
-					// Create per-task context
-					// Include runId to avoid collisions when tasks are rerun (same taskId, new runId)
-					// Format: task_<12 chars of taskId>_<runId> (max 20 chars for Windows username limit)
-					taskIDPart := task.TaskID
-					if len(taskIDPart) > 12 {
-						taskIDPart = taskIDPart[:12]
+				task.AllocatedPorts = allocatedPorts
+				log.Printf("Task %s allocated ports: LiveLog=%d/%d, Interactive=%d, TaskclusterProxy=%d",
+					task.TaskID,
+					allocatedPorts[PortIndexLiveLogGET], allocatedPorts[PortIndexLiveLogPUT],
+					allocatedPorts[PortIndexInteractive], allocatedPorts[PortIndexTaskclusterProxy])
+
+				logEvent("taskQueued", task, time.Time(task.Definition.Created))
+				logEvent("taskStart", task, time.Now())
+
+				taskManager.AddTask(task)
+
+				go func(t *TaskRun) {
+					errors := t.Run()
+
+					logEvent("taskFinish", t, time.Now())
+					if errors.Occurred() {
+						log.Printf("ERROR(s) encountered for task %s: %v", t.TaskID, errors)
+						t.Error(errors.Error())
 					}
-					taskDirName := fmt.Sprintf("task_%s_%d", taskIDPart, task.RunID)
-					ctx, err := CreateTaskContext(taskDirName)
+					err := t.ReleaseResources()
 					if err != nil {
-						log.Printf("ERROR creating task context for %s: %v", task.TaskID, err)
-						// Report exception for this task
-						task.Error(fmt.Sprintf("Failed to create task context: %v", err))
-						continue
+						log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
 					}
-					task.Context = ctx
-
-					// Get platform data for this task's context
-					pd, err := platformDataForContext(ctx)
+					err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 					if err != nil {
-						log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
-						task.Error(fmt.Sprintf("Failed to get platform data: %v", err))
-						continue
-					}
-					task.pd = pd
-
-					err = validateGenericWorkerBinary(pd, ctx.TaskDir)
-					if err != nil {
-						log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
-						task.Error(fmt.Sprintf("Invalid generic-worker binary: %v", err))
-						continue
+						log.Printf("ERROR: purging old tasks: %v", err)
 					}
 
-					// Allocate ports for this task
-					allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
-					if err != nil {
-						log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
-						task.Error(fmt.Sprintf("Failed to allocate ports: %v", err))
-						continue
+					taskCompleteChan <- taskCompletionResult{
+						taskID:         t.TaskID,
+						workerShutdown: errors.WorkerShutdown(),
 					}
-					task.AllocatedPorts = allocatedPorts
+				}(task)
 
-					logEvent("taskQueued", task, time.Time(task.Definition.Created))
-					logEvent("taskStart", task, time.Now())
-
-					taskManager.AddTask(task)
-
-					go func(t *TaskRun) {
-						errors := t.Run()
-
-						logEvent("taskFinish", t, time.Now())
-						if errors.Occurred() {
-							log.Printf("ERROR(s) encountered for task %s: %v", t.TaskID, errors)
-							t.Error(errors.Error())
-						}
-						err := t.ReleaseResources()
-						if err != nil {
-							log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
-						}
-						err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
-						if err != nil {
-							log.Printf("ERROR: purging old tasks: %v", err)
-						}
-
-						taskCompleteChan <- taskCompletionResult{
-							taskID:         t.TaskID,
-							workerShutdown: errors.WorkerShutdown(),
-						}
-					}(task)
-
-					lastActive = time.Now()
-				}
+				lastActive = time.Now()
 			}
 		}
 
@@ -1186,21 +1126,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	}
 }
 
-func PrepareTaskEnvironment() (reboot bool) {
-	// I've discovered windows has a limit of 20 chars
-	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
-	if PlatformTaskEnvironmentSetup(taskDirName) {
-		return true
-	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
-	err := os.MkdirAll(logDir, 0700)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Created dir: %v", logDir)
-	return false
-}
-
 func taskDirsIn(parentDir string) ([]string, error) {
 	fi, err := os.ReadDir(parentDir)
 	if err != nil {
@@ -1253,21 +1178,6 @@ outer:
 			log.Printf("WARNING: Could not delete task directory %v: %v", taskDir, err)
 		}
 	}
-}
-
-// RotateTaskEnvironment creates a new task environment (for the next task),
-// and purges existing used task environments.
-// skipDirs are additional directories to preserve during cleanup (e.g., running task directories).
-func RotateTaskEnvironment(skipDirs ...string) (reboot bool) {
-	if PrepareTaskEnvironment() {
-		return true
-	}
-	err := purgeOldTasks(skipDirs...)
-	// errors are not fatal
-	if err != nil {
-		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
-	}
-	return false
 }
 
 func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {

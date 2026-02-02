@@ -9,11 +9,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/taskcluster/taskcluster/v96/internal/scopes"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 )
+
+// d2gCacheMutex protects access to the d2g-image-cache.json file
+// for concurrent task execution (capacity > 1)
+var d2gCacheMutex sync.Mutex
 
 type (
 	D2GFeature struct {
@@ -65,6 +70,8 @@ func (dtf *D2GTaskFeature) RequiredScopes() scopes.Required {
 func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	// load cache on every start in case the garbage
 	// collector has pruned docker images between tasks
+	d2gCacheMutex.Lock()
+	defer d2gCacheMutex.Unlock()
 	dtf.imageCache.loadFromFile("d2g-image-cache.json")
 
 	taskDir := dtf.task.TaskDir()
@@ -259,7 +266,9 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
 	}
 
+	d2gCacheMutex.Lock()
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
+	d2gCacheMutex.Unlock()
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
 }
 

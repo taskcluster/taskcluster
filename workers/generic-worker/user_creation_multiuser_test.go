@@ -21,14 +21,21 @@ func TestRunAfterUserCreation(t *testing.T) {
 		script = "run-after-user.bat"
 	}
 	config.RunAfterUserCreation = filepath.Join(testdataDir, script)
-	PrepareTaskEnvironment()
+
+	// Load the test user credentials directly and call setupTaskContext
+	taskUser, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
+	if err != nil {
+		t.Fatalf("Could not load test user credentials: %v", err)
+	}
+	ctx := setupTaskContext(taskUser)
+
 	defer func() {
 		err := purgeOldTasks()
 		if err != nil {
 			t.Fatalf("Problem deleting old tasks: %v", err)
 		}
 	}()
-	fileContents, err := os.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
+	fileContents, err := os.ReadFile(filepath.Join(ctx.TaskDir, "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)
 	}

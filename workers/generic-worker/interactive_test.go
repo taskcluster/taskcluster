@@ -97,7 +97,6 @@ func TestInteractiveCommand(t *testing.T) {
 		case <-timeout:
 			// Timeout reached
 			t.Fatal("timeout waiting for server to start")
-			return
 		case <-tick:
 			// Try to connect to the server
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
@@ -196,7 +195,6 @@ func TestInteractiveWrongSecret(t *testing.T) {
 			_, _, err := websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
 				t.Fatal("expected error connecting to server")
-				return
 			}
 		}
 	}

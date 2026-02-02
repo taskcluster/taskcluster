@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -130,7 +131,7 @@ func TestTaskManagerConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			task := &TaskRun{TaskID: string(rune('A' + id))}
+			task := &TaskRun{TaskID: fmt.Sprintf("task-%d", id)}
 			tm.AddTask(task)
 			time.Sleep(time.Millisecond)
 			tm.RemoveTask(task.TaskID)

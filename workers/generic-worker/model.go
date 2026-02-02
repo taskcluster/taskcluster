@@ -63,14 +63,13 @@ type (
 	TaskUpdateReason string
 )
 
-// GetContext returns the task's context. If the task has a per-task Context set,
-// it returns that; otherwise it falls back to the global taskContext for
-// backwards compatibility with single-task execution.
+// GetContext returns the task's context.
+// Every task must have a Context set; this method panics if Context is nil.
 func (task *TaskRun) GetContext() *TaskContext {
-	if task.Context != nil {
-		return task.Context
+	if task.Context == nil {
+		panic("task.Context is nil - every task must have a context assigned")
 	}
-	return taskContext
+	return task.Context
 }
 
 // TaskDir returns the task's working directory.

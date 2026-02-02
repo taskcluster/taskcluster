@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"sync"
+
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
 )
 
 // Port allocation indices within a task's port block
@@ -11,7 +13,6 @@ const (
 	PortIndexLiveLogPUT       = 1
 	PortIndexInteractive      = 2
 	PortIndexTaskclusterProxy = 3
-	PortsPerTask              = 4
 )
 
 // PortManager manages dynamic port allocation for concurrent tasks.
@@ -55,7 +56,7 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 	}
 
 	// Calculate ports for this slot
-	offset := uint16(slot * PortsPerTask)
+	offset := uint16(slot * gwconfig.PortsPerTask)
 	ports := []uint16{
 		pm.liveLogBase + offset,     // LiveLog GET
 		pm.liveLogBase + offset + 1, // LiveLog PUT
@@ -121,7 +122,7 @@ func (pm *PortManager) findAvailableSlot() int {
 	for _, ports := range pm.allocated {
 		if len(ports) > 0 {
 			// Calculate which slot this allocation belongs to
-			slot := int(ports[0]-pm.liveLogBase) / PortsPerTask
+			slot := int(ports[0]-pm.liveLogBase) / gwconfig.PortsPerTask
 			usedSlots[slot] = true
 		}
 	}

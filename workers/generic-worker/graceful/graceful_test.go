@@ -68,7 +68,7 @@ func TestGracefulTermination(t *testing.T) {
 		require.Equal(t, true, res3)
 	})
 
-	t.Run("CallbackRegisteredAfterTermination", func(t *testing.T) {
+	t.Run("CallbackRegisteredAfterTerminationFinishTrue", func(t *testing.T) {
 		Reset()
 		Terminate(true)
 
@@ -76,7 +76,20 @@ func TestGracefulTermination(t *testing.T) {
 		OnTerminationRequest("late-task", func(finishTasks bool) { done <- finishTasks })
 		res := <-done
 
+		// Late callback should receive the same finishTasks value passed to Terminate()
 		require.Equal(t, true, res)
+	})
+
+	t.Run("CallbackRegisteredAfterTerminationFinishFalse", func(t *testing.T) {
+		Reset()
+		Terminate(false)
+
+		done := make(chan bool, 1)
+		OnTerminationRequest("late-task", func(finishTasks bool) { done <- finishTasks })
+		res := <-done
+
+		// Late callback should receive the same finishTasks value passed to Terminate()
+		require.Equal(t, false, res)
 	})
 
 	t.Run("LegacyCallback", func(t *testing.T) {
