@@ -39,6 +39,7 @@ type TaskclusterProxyTask struct {
 	task                     *TaskRun
 	taskStatusChangeListener *TaskStatusChangeListener
 	taskclusterProxyAddress  string
+	taskclusterProxyPort     uint16
 }
 
 func (l *TaskclusterProxyTask) ReservedArtifacts() []string {
@@ -57,6 +58,12 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
+	// Get allocated port for this task, fall back to config default
+	proxyPort, ok := l.task.TaskclusterProxyPort()
+	if !ok {
+		proxyPort = config.TaskclusterProxyPort
+	}
+
 	switch l.task.Payload.TaskclusterProxyInterface {
 	case "docker-bridge":
 		out, err := host.Output("docker", "network", "inspect", "bridge", "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}")
@@ -89,7 +96,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 
 	// Set TASKCLUSTER_PROXY_URL in the task environment
 	err := l.task.setVariable("TASKCLUSTER_PROXY_URL",
-		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, config.TaskclusterProxyPort))
+		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, proxyPort))
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
@@ -101,7 +108,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
 		l.taskclusterProxyAddress,
-		config.TaskclusterProxyPort,
+		proxyPort,
 		config.RootURL,
 		&tcclient.Credentials{
 			AccessToken:      l.task.TaskClaimResponse.Credentials.AccessToken,
@@ -111,9 +118,10 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		},
 	)
 	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy: %s", err))
+		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy on port %d: %s", proxyPort, err))
 	}
 	l.taskclusterProxy = taskclusterProxy
+	l.taskclusterProxyPort = proxyPort
 	l.taskStatusChangeListener = &TaskStatusChangeListener{
 		Name: "taskcluster-proxy",
 		Callback: func(ts TaskStatus) {
@@ -127,7 +135,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 				panic(err)
 			}
 			buffer := bytes.NewBuffer(b)
-			putURL := fmt.Sprintf("http://%s:%v/credentials", l.taskclusterProxyAddress, config.TaskclusterProxyPort)
+			putURL := fmt.Sprintf("http://%s:%v/credentials", l.taskclusterProxyAddress, l.taskclusterProxyPort)
 			req, err := http.NewRequest("PUT", putURL, buffer)
 			if err != nil {
 				panic(fmt.Sprintf("Could not create PUT request to taskcluster-proxy /credentials endpoint: %v", err))
