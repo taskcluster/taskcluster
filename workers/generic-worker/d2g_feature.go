@@ -67,9 +67,10 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	// collector has pruned docker images between tasks
 	dtf.imageCache.loadFromFile("d2g-image-cache.json")
 
+	taskDir := dtf.task.TaskDir()
 	var isImageArtifact bool
 	var key string
-	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
+	imageArtifactPath := filepath.Join(taskDir, "dockerimage")
 	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
 		// DockerImageName or NamedDockerImage, no image artifact
 		key = dtf.task.D2GInfo.Image.String()
@@ -100,14 +101,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"--quiet",
 				"--input",
 				"dockerimage",
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 		} else {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"pull",
 				"--quiet",
 				key,
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 		}
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
@@ -150,7 +151,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"--no-trunc",
 				"--quiet",
 				imageName,
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
 				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
 			}
@@ -186,7 +187,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			"inspect",
 			"--format={{index .Id}}",
 			image.ID,
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		}, taskDir, []string{}, dtf.task.pd)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to inspect docker image: %v", err))
 		}
@@ -203,14 +204,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			chainOfTrustAdditionalData = fmt.Sprintf(`{"environment":{"imageHash":"%s"}}`, imageHash)
 		}
 
-		chainOfTrustAdditionalDataPath := filepath.Join(taskContext.TaskDir, "chain-of-trust-additional-data.json")
+		chainOfTrustAdditionalDataPath := filepath.Join(taskDir, "chain-of-trust-additional-data.json")
 		err = os.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
 
-	envFile, err := os.Create(filepath.Join(taskContext.TaskDir, "env.list"))
+	envFile, err := os.Create(filepath.Join(taskDir, "env.list"))
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not create env.list file: %v", err))
 	}
@@ -221,19 +222,20 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
 	}
 
-	dtf.evaluateCommandPlaceholders(image.ID)
+	dtf.evaluateCommandPlaceholders(image.ID, taskDir)
 
 	return nil
 }
 
 func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
+	taskDir := dtf.task.TaskDir()
 	for _, artifact := range dtf.task.D2GInfo.CopyArtifacts {
 		cmd, e := process.NewCommandNoOutputStreams([]string{
 			"docker",
 			"cp",
 			fmt.Sprintf("%s:%s", dtf.task.D2GInfo.ContainerName, artifact.SrcPath),
 			artifact.DestPath,
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		}, taskDir, []string{}, dtf.task.pd)
 		if e != nil {
 			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to copy artifact: %v", e)))
 		}
@@ -248,7 +250,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		"rm",
 		"--force",
 		dtf.task.D2GInfo.ContainerName,
-	}, taskContext.TaskDir, []string{}, dtf.task.pd)
+	}, taskDir, []string{}, dtf.task.pd)
 	if e != nil {
 		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to remove docker container: %v", e)))
 	}
@@ -274,11 +276,11 @@ func (ic *ImageCache) loadFromFile(stateFile string) {
 	}
 }
 
-func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string) {
+func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir string) {
 	videoDevice, _ := dtf.task.getVariable("TASKCLUSTER_VIDEO_DEVICE")
 	placeholders := strings.NewReplacer(
 		"__D2G_IMAGE_ID__", imageID,
-		"__TASK_DIR__", taskContext.TaskDir,
+		"__TASK_DIR__", taskDir,
 		"__TASKCLUSTER_VIDEO_DEVICE__", videoDevice,
 	)
 
