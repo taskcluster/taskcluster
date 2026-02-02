@@ -78,6 +78,31 @@ func (task *TaskRun) TaskDir() string {
 	return task.GetContext().TaskDir
 }
 
+// LiveLogPorts returns the GET and PUT ports for livelog.
+// Returns (getPort, putPort, ok) where ok is false if ports weren't allocated.
+func (task *TaskRun) LiveLogPorts() (getPort, putPort uint16, ok bool) {
+	if len(task.AllocatedPorts) < 2 {
+		return 0, 0, false
+	}
+	return task.AllocatedPorts[PortIndexLiveLogGET], task.AllocatedPorts[PortIndexLiveLogPUT], true
+}
+
+// InteractivePort returns the interactive shell port.
+func (task *TaskRun) InteractivePort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexInteractive {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexInteractive], true
+}
+
+// TaskclusterProxyPort returns the taskcluster-proxy port.
+func (task *TaskRun) TaskclusterProxyPort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexTaskclusterProxy {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexTaskclusterProxy], true
+}
+
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
 	response += fmt.Sprintf("Run Id:                  %v\n", task.RunID)

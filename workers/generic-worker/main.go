@@ -465,6 +465,9 @@ func RunWorker() (exitCode ExitCode) {
 	taskManager := NewTaskManager(config.Capacity)
 	log.Printf("Worker capacity: %d", config.Capacity)
 
+	// Create PortManager for dynamic port allocation
+	portManager := NewPortManager(config.LiveLogPortBase, config.InteractivePort, config.TaskclusterProxyPort, config.Capacity)
+
 	// Channel for task completion notifications
 	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
 
@@ -479,6 +482,7 @@ mainLoop:
 			case result := <-taskCompleteChan:
 				tasksResolved++
 				taskManager.RemoveTask(result.taskID)
+				portManager.ReleasePorts(result.taskID)
 				lastActive = time.Now()
 
 				if result.workerShutdown {
@@ -559,6 +563,16 @@ mainLoop:
 					logEvent("taskStart", task, time.Now())
 
 					task.pd = pdTaskUser
+
+					// Allocate ports for this task
+					allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
+					if err != nil {
+						log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
+						task.Error(fmt.Sprintf("Failed to allocate ports: %v", err))
+						continue
+					}
+					task.AllocatedPorts = allocatedPorts
+
 					taskManager.AddTask(task)
 
 					// Run task in goroutine for consistency, even with capacity=1
@@ -621,6 +635,15 @@ mainLoop:
 						task.Error(fmt.Sprintf("Invalid generic-worker binary: %v", err))
 						continue
 					}
+
+					// Allocate ports for this task
+					allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
+					if err != nil {
+						log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
+						task.Error(fmt.Sprintf("Failed to allocate ports: %v", err))
+						continue
+					}
+					task.AllocatedPorts = allocatedPorts
 
 					logEvent("taskQueued", task, time.Time(task.Definition.Created))
 					logEvent("taskStart", task, time.Now())
