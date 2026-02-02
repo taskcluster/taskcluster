@@ -471,6 +471,7 @@ func RunWorker() (exitCode ExitCode) {
 	if RotateTaskEnvironment(taskManager.RunningTaskDirNames()...) {
 		return REBOOT_REQUIRED
 	}
+mainLoop:
 	for {
 		// Process any completed tasks
 		for {
@@ -686,8 +687,16 @@ func RunWorker() (exitCode ExitCode) {
 		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
+		// However, if a task completes, we should process it immediately.
 		select {
 		case <-wait5Seconds.C:
+		case result := <-taskCompleteChan:
+			// A task completed - put the result back and immediately loop
+			// to process it at the top of the loop. The channel is buffered
+			// with capacity equal to config.Capacity, and we only take one
+			// result out, so there's always room to put it back.
+			taskCompleteChan <- result
+			continue mainLoop
 		case <-sigInterrupt:
 			log.Printf("Interrupt received, waiting for %d running tasks...", taskManager.TaskCount())
 			taskManager.WaitForAll()
