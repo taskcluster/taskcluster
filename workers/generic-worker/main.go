@@ -606,11 +606,13 @@ mainLoop:
 				tasks := ClaimWork(availableCapacity)
 				for _, task := range tasks {
 					// Create per-task context
+					// Include runId to avoid collisions when tasks are rerun (same taskId, new runId)
+					// Format: task_<12 chars of taskId>_<runId> (max 20 chars for Windows username limit)
 					taskIDPart := task.TaskID
-					if len(taskIDPart) > 15 {
-						taskIDPart = taskIDPart[:15]
+					if len(taskIDPart) > 12 {
+						taskIDPart = taskIDPart[:12]
 					}
-					taskDirName := fmt.Sprintf("task_%s", taskIDPart)
+					taskDirName := fmt.Sprintf("task_%s_%d", taskIDPart, task.RunID)
 					ctx, err := CreateTaskContext(taskDirName)
 					if err != nil {
 						log.Printf("ERROR creating task context for %s: %v", task.TaskID, err)
