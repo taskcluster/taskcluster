@@ -3,7 +3,6 @@
 package main
 
 import (
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -51,11 +50,7 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 	setup(t)
 
 	payload := GenericWorkerPayload{
-		Command: goRun(
-			"check-env.go",
-			"TASK_USER_CREDENTIALS",
-			filepath.Join(cwd, "current-task-user.json"),
-		),
+		Command:    goRun("check-task-user-credentials.go"),
 		MaxRunTime: 180,
 		Features: FeatureFlags{
 			RunTaskAsCurrentUser: true,
@@ -71,7 +66,10 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
-func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
+// TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask tests that when the generic-worker binary
+// is not accessible to task users (e.g., in a secured directory), the worker exits
+// with INTERNAL_ERROR and the task is reported as exception/internal-error.
+func TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask(t *testing.T) {
 	setup(t)
 
 	goPath, err := host.Output("go", "env", "GOPATH")
@@ -108,5 +106,30 @@ func TestPrivilegedGenericWorkerBinaryFailsWorker(t *testing.T) {
 		}
 	}()
 
+	// Submit a task - it should fail with internal-error because the binary isn't accessible
+	// and the worker should exit with INTERNAL_ERROR (not TASKS_COMPLETE)
+	payload := GenericWorkerPayload{
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	taskID := scheduleTask(t, td, payload)
+	t.Logf("Scheduled task %s", taskID)
+
+	// Worker should exit with INTERNAL_ERROR because binary validation fails
 	execute(t, INTERNAL_ERROR)
+
+	// Verify the task was reported as exception/internal-error
+	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)
+	status, err := queue.Status(taskID)
+	if err != nil {
+		t.Fatalf("Error retrieving status from queue: %v", err)
+	}
+	if status.Status.Runs[0].State != "exception" || status.Status.Runs[0].ReasonResolved != "internal-error" {
+		t.Fatalf("Expected task to resolve as 'exception/internal-error' but resolved as '%v/%v'",
+			status.Status.Runs[0].State, status.Status.Runs[0].ReasonResolved)
+	}
+	t.Logf("Task %v resolved as exception/internal-error as required.", taskID)
 }

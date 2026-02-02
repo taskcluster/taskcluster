@@ -154,7 +154,66 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	// Validate port configuration for concurrent task execution
+	if err := c.ValidatePortConfiguration(); err != nil {
+		return err
+	}
+
 	// all required config set!
+	return nil
+}
+
+// PortsPerTask is the number of ports allocated per concurrent task slot.
+// Used for port spacing validation.
+const PortsPerTask = 4
+
+// ValidatePortConfiguration checks that port ranges don't overlap when capacity > 1.
+// Each concurrent task slot uses an offset of PortsPerTask (4) ports from the base.
+// This validation ensures the configured base ports are spaced far enough apart
+// to avoid collisions.
+func (c *Config) ValidatePortConfiguration() error {
+	if c.Capacity <= 1 {
+		return nil
+	}
+
+	// Calculate port ranges for the maximum capacity
+	// Each slot uses offset = slot * PortsPerTask from the base
+	maxOffset := uint16((c.Capacity - 1) * PortsPerTask)
+
+	// Define port ranges: [start, end] inclusive
+	type portRange struct {
+		name  string
+		start uint16
+		end   uint16
+	}
+
+	portRanges := []portRange{
+		// LiveLog uses 2 consecutive ports (GET and PUT)
+		{"livelogPortBase", c.LiveLogPortBase, c.LiveLogPortBase + maxOffset + 1},
+		// Interactive uses 1 port per slot
+		{"interactivePort", c.InteractivePort, c.InteractivePort + maxOffset},
+		// TaskclusterProxy uses 1 port per slot
+		{"taskclusterProxyPort", c.TaskclusterProxyPort, c.TaskclusterProxyPort + maxOffset},
+	}
+
+	// Check for overlaps between all pairs of ranges
+	for i := range portRanges {
+		for j := i + 1; j < len(portRanges); j++ {
+			r1, r2 := portRanges[i], portRanges[j]
+			// Ranges overlap if: r1.start <= r2.end && r2.start <= r1.end
+			if r1.start <= r2.end && r2.start <= r1.end {
+				return fmt.Errorf(
+					"port range overlap detected with capacity=%d: %s [%d-%d] overlaps with %s [%d-%d]; "+
+						"ensure base ports are spaced at least %d apart "+
+						"(configured: livelogPortBase=%d, interactivePort=%d, taskclusterProxyPort=%d)",
+					c.Capacity, r1.name, r1.start, r1.end, r2.name, r2.start, r2.end,
+					(c.Capacity*PortsPerTask)+2, // +2 for LiveLog's 2 ports
+					c.LiveLogPortBase, c.InteractivePort, c.TaskclusterProxyPort,
+				)
+			}
+		}
+	}
+
 	return nil
 }
 

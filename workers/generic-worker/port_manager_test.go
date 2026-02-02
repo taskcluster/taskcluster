@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
 )
 
 func TestPortManagerAllocatePorts(t *testing.T) {
@@ -12,7 +13,7 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	// Allocate ports for first task
 	ports1, err := pm.AllocatePorts("task1")
 	require.NoError(t, err)
-	require.Len(t, ports1, PortsPerTask)
+	require.Len(t, ports1, gwconfig.PortsPerTask)
 	require.Equal(t, uint16(60000), ports1[PortIndexLiveLogGET])
 	require.Equal(t, uint16(60001), ports1[PortIndexLiveLogPUT])
 	require.Equal(t, uint16(53000), ports1[PortIndexInteractive])
@@ -21,8 +22,8 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	// Allocate ports for second task
 	ports2, err := pm.AllocatePorts("task2")
 	require.NoError(t, err)
-	require.Len(t, ports2, PortsPerTask)
-	// Ports should be offset by PortsPerTask
+	require.Len(t, ports2, gwconfig.PortsPerTask)
+	// Ports should be offset by gwconfig.PortsPerTask
 	require.Equal(t, uint16(60004), ports2[PortIndexLiveLogGET])
 	require.Equal(t, uint16(60005), ports2[PortIndexLiveLogPUT])
 	require.Equal(t, uint16(53004), ports2[PortIndexInteractive])
@@ -31,7 +32,7 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	// Allocate ports for third task
 	ports3, err := pm.AllocatePorts("task3")
 	require.NoError(t, err)
-	require.Len(t, ports3, PortsPerTask)
+	require.Len(t, ports3, gwconfig.PortsPerTask)
 
 	// Fourth task should fail (capacity exhausted)
 	_, err = pm.AllocatePorts("task4")

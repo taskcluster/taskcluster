@@ -79,51 +79,30 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
-	taskContext = &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, taskDirName),
-	}
-	err := os.MkdirAll(taskContext.TaskDir, 0777)
-	if err != nil {
-		panic(err)
-	}
-	return false
-}
-
-// CreateTaskContext creates a new TaskContext for concurrent task execution.
-// Unlike PlatformTaskEnvironmentSetup, this does not set the global taskContext.
-func CreateTaskContext(taskDirName string) (*TaskContext, error) {
+// CreateTaskContext creates a new TaskContext for task execution.
+// This is the main function used to create task contexts for all tasks.
+// Panics on error (callers should use recover() if needed).
+func CreateTaskContext(taskDirName string) *TaskContext {
 	ctx := &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
 	err := os.MkdirAll(ctx.TaskDir, 0777)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	// Create generic-worker subdirectory for logs, etc.
 	gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
 	err = os.MkdirAll(gwDir, 0777)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create generic-worker directory %s: %v", gwDir, err)
+		panic(fmt.Errorf("failed to create generic-worker directory %s: %v", gwDir, err))
 	}
 	log.Printf("Created dir: %v", gwDir)
-	return ctx, nil
+	return ctx
 }
 
-// Helper function used to get the current task user's
-// platform data. Useful for initially setting up the
-// TaskRun struct's data.
-func currentPlatformData() *process.PlatformData {
-	pd, err := process.TaskUserPlatformData(taskContext.User, false)
-	if err != nil {
-		panic(err)
-	}
-	return pd
-}
-
-// platformDataForContext returns platform data for a given TaskContext.
-// Used for concurrent task execution.
-func platformDataForContext(ctx *TaskContext) (*process.PlatformData, error) {
+// platformDataForTaskContext returns platform data for a given TaskContext.
+// Used for both capacity=1 and capacity>1.
+func platformDataForTaskContext(ctx *TaskContext) (*process.PlatformData, error) {
 	return process.TaskUserPlatformData(ctx.User, false)
 }
 
@@ -168,21 +147,12 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func purgeOldTasks(extraSkipDirs ...string) error {
+func purgeOldTasks(skipDirs ...string) error {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	// Build list of directories to skip.
-	// For capacity=1, taskContext.TaskDir is the current task's directory.
-	// For capacity>1, extraSkipDirs contains all running task directories.
-	skipDirs := make([]string, 0, len(extraSkipDirs)+1)
-	// Use filepath.Base(taskContext.TaskDir) rather than taskContext.User.Name
-	// since taskContext.User is nil if running tasks as current user.
-	if taskContext != nil && taskContext.TaskDir != "" {
-		skipDirs = append(skipDirs, filepath.Base(taskContext.TaskDir))
-	}
-	skipDirs = append(skipDirs, extraSkipDirs...)
+	// skipDirs contains all task directories to preserve (running tasks, etc.)
 	deleteTaskDirs(config.TasksDir, skipDirs...)
 	return nil
 }

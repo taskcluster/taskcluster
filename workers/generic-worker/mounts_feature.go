@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"sort"
+	"sync"
 	"time"
 
 	"slices"
@@ -38,6 +39,9 @@ var (
 	// we track this in order to reduce number of results we get back from
 	// purge cache service
 	lastQueriedPurgeCacheService time.Time
+	// cacheMutex protects access to fileCaches, directoryCaches, and
+	// lastQueriedPurgeCacheService for concurrent task execution (capacity > 1)
+	cacheMutex sync.RWMutex
 )
 
 type (
@@ -187,6 +191,8 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 }
 
 func (feature *MountsFeature) Initialise() error {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
 	return nil
@@ -392,6 +398,10 @@ func (taskMount *TaskMount) initIndexClient() {
 // result of a compilation, which is slow, whereas downloading files is
 // relatively quick in comparison.
 func garbageCollection() error {
+	// Hold lock during entire garbage collection to protect cache map modifications
+	// during Evict() calls from runGarbageCollection()
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	r := fileCaches.SortedResources()
 	r = append(r, directoryCaches.SortedResources()...)
 	return runGarbageCollection(r)
@@ -440,7 +450,9 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 		if purgeCaches {
 			switch cache := mount.(type) {
 			case *WritableDirectoryCache:
+				cacheMutex.Lock()
 				err.add(Failure(directoryCaches[cache.CacheName].Evict(taskMount)))
+				cacheMutex.Unlock()
 				continue
 			}
 		}
@@ -455,8 +467,11 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 			err.add(Failure(e))
 		}
 	}
+	// Persist cache state to disk with mutex protection for concurrent tasks
+	cacheMutex.Lock()
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&fileCaches, "file-caches.json")))
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")))
+	cacheMutex.Unlock()
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("file-caches.json", "directory-caches.json")))
 }
 
@@ -519,11 +534,14 @@ func (f *FileMount) FSContent() (FSContent, error) {
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 	target := filepath.Join(taskMount.task.TaskDir(), w.Directory)
 	// cache already there?
-	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
+	cacheMutex.Lock()
+	_, dirCacheExists := directoryCaches[w.CacheName]
+	if dirCacheExists {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
 		src := directoryCaches[w.CacheName].Location
+		cacheMutex.Unlock()
 		parentDir := filepath.Dir(target)
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
 		err := MkdirAll(taskMount, parentDir)
@@ -552,6 +570,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			OwnerUsername: currentUser.Username,
 			OwnerUID:      currentUser.Uid,
 		}
+		cacheMutex.Unlock()
 		// preloaded content?
 		if w.Content != nil {
 			c, err := FSContentFrom(w.Content)
@@ -574,7 +593,10 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 	// since the mounted folder sits inside the task directory of the task user,
 	// which is owned and controlled by the task user, even if commands execute as
 	// LocalSystem, the file system resources should still be owned by task user.
-	err := exchangeDirectoryOwnership(taskMount, target, directoryCaches[w.CacheName])
+	cacheMutex.RLock()
+	cache := directoryCaches[w.CacheName]
+	cacheMutex.RUnlock()
+	err := exchangeDirectoryOwnership(taskMount, target, cache)
 	if err != nil {
 		panic(err)
 	}
@@ -583,7 +605,9 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 }
 
 func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
+	cacheMutex.RLock()
 	cache := directoryCaches[w.CacheName]
+	cacheMutex.RUnlock()
 	cacheDir := cache.Location
 	taskCacheDir := filepath.Join(taskMount.task.TaskDir(), w.Directory)
 	taskMount.Infof("Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
@@ -610,7 +634,9 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		// this worker since it cannot persist the cache. Hopefully if there is
 		// a more serious issue, it will be detected via another mechanism and
 		// cause an internal-error.
+		cacheMutex.Lock()
 		evictErr := cache.Evict(taskMount)
+		cacheMutex.Unlock()
 		// If we can't remove the cacheDir, then something nasty is going on
 		// since this is in a location that the task shouldn't be writing to...
 		if evictErr != nil {
@@ -673,16 +699,20 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 	}
 	var sha256 string
 	requiredSHA256 := fsContent.RequiredSHA256()
-	if _, inCache := fileCaches[cacheKey]; inCache {
-		file = fileCaches[cacheKey].Location
+	cacheMutex.Lock()
+	cachedEntry, inCache := fileCaches[cacheKey]
+	if inCache {
+		file = cachedEntry.Location
 		// Sanity check - if file is in file map, but not on file system,
 		// something is seriously wrong, so should be a worker exception
 		// (panic), not a task failure
 		_, err = os.Stat(file)
 		if err != nil {
-			panic(fmt.Errorf("file in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
+			cacheMutex.Unlock()
+			panic(fmt.Errorf("file in cache, but not on filesystem: %v", *cachedEntry))
 		}
-		fileCaches[cacheKey].Hits++
+		cachedEntry.Hits++
+		cacheMutex.Unlock()
 
 		// validate SHA256 in case of either tampering or new content at url...
 		sha256, err = fileutil.CalculateSHA256(file)
@@ -698,16 +728,21 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 			return
 		}
 		taskMount.Infof("Found existing download of %v (%v) with SHA256 %v but task definition explicitly requires %v so deleting it", cacheKey, file, sha256, requiredSHA256)
+		cacheMutex.Lock()
 		err = fileCaches[cacheKey].Evict(taskMount)
+		cacheMutex.Unlock()
 		if err != nil {
 			panic(fmt.Errorf("could not delete cache entry %v: %v", fileCaches[cacheKey], err))
 		}
+	} else {
+		cacheMutex.Unlock()
 	}
 	file, sha256, err = fsContent.Download(taskMount)
 	if err != nil {
 		taskMount.Errorf("Could not fetch from %v into file %v due to %v", fsContent, file, err)
 		return
 	}
+	cacheMutex.Lock()
 	fileCaches[cacheKey] = &Cache{
 		Location: file,
 		Hits:     1,
@@ -716,13 +751,16 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 		Key:      cacheKey,
 		SHA256:   sha256,
 	}
+	cacheMutex.Unlock()
 	if requiredSHA256 == "" {
 		taskMount.Warnf("Download %v of %v has SHA256 %v but task payload does not declare a required value, so content authenticity cannot be verified", file, fsContent, sha256)
 		return
 	}
 	if requiredSHA256 != sha256 {
 		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v; not retrying download as there were no connection failures and HTTP response status code was 200", file, fsContent, sha256, requiredSHA256)
+		cacheMutex.Lock()
 		err2 := fileCaches[cacheKey].Evict(taskMount)
+		cacheMutex.Unlock()
 		if err2 != nil {
 			panic(fmt.Errorf("could not delete cache entry %v: %v", fileCaches[cacheKey], err2))
 		}
@@ -1125,7 +1163,10 @@ func (taskMount *TaskMount) purgeCaches() error {
 		}
 	}
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-	if len(writableCaches) == 0 && time.Now().Round(0).Sub(lastQueriedPurgeCacheService) < 6*time.Hour {
+	cacheMutex.RLock()
+	lastQueried := lastQueriedPurgeCacheService
+	cacheMutex.RUnlock()
+	if len(writableCaches) == 0 && time.Now().Round(0).Sub(lastQueried) < 6*time.Hour {
 		return nil
 	}
 	// In case of clock drift, let's query all purge cache requests created
@@ -1137,10 +1178,12 @@ func (taskMount *TaskMount) purgeCaches() error {
 	// request since the worker started, we won't pass in a "since" date at
 	// all.
 	since := ""
+	cacheMutex.Lock()
 	if !lastQueriedPurgeCacheService.IsZero() {
 		since = tcclient.Time(lastQueriedPurgeCacheService.Add(-5 * time.Minute)).String()
 	}
 	lastQueriedPurgeCacheService = time.Now()
+	cacheMutex.Unlock()
 	pc := serviceFactory.PurgeCache(config.Credentials(), config.RootURL)
 	purgeRequests, err := pc.PurgeRequests(fmt.Sprintf("%s/%s", config.ProvisionerID, config.WorkerType), since)
 	if err != nil {
@@ -1149,6 +1192,8 @@ func (taskMount *TaskMount) purgeCaches() error {
 	// Loop through results, and purge caches when we find an entry. Note,
 	// again to account for clock drift, let's remove caches up to 5 minutes
 	// older than the given "before" date.
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 	for _, request := range purgeRequests.Requests {
 		if cache, exists := directoryCaches[request.CacheName]; exists {
 			if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {

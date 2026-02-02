@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
@@ -17,5 +18,17 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	taskContext = &TaskContext{
 		User:    &gwruntime.OSUser{},
 		TaskDir: testdataDir,
+	}
+}
+
+// printEnvVar prints the value of an environment variable
+func printEnvVar(varName string) [][]string {
+	return [][]string{
+		{
+			"/usr/bin/env",
+			"bash",
+			"-c",
+			fmt.Sprintf("echo %s=$%s", varName, varName),
+		},
 	}
 }

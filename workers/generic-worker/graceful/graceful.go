@@ -1,6 +1,9 @@
 package graceful
 
-import "sync"
+import (
+	"strconv"
+	"sync"
+)
 
 type GracefulTerminationFunc func(bool)
 
@@ -10,6 +13,9 @@ var (
 
 	// True if a graceful termination has been requested
 	terminationRequested bool
+
+	// The finishTasks value passed to Terminate(), used for late callback registration
+	terminationFinishTasks bool
 
 	// callbacks for graceful termination, keyed by unique ID (e.g., task ID)
 	callbacks = make(map[string]GracefulTerminationFunc)
@@ -37,8 +43,9 @@ func OnTerminationRequest(id string, f GracefulTerminationFunc) func() {
 	callbacks[id] = f
 
 	// If termination was already requested, call the callback immediately
+	// with the same finishTasks value that was originally passed to Terminate()
 	if terminationRequested {
-		go f(true) // finish tasks by default when registering late
+		go f(terminationFinishTasks)
 	}
 
 	return func() {
@@ -57,7 +64,7 @@ func OnTerminationRequestLegacy(f GracefulTerminationFunc) func() {
 	nextID++
 	m.Unlock()
 
-	return OnTerminationRequest(string(rune(id)), f)
+	return OnTerminationRequest(strconv.Itoa(id), f)
 }
 
 // A graceful termination has been requested. Set a flag so that no further
@@ -69,6 +76,7 @@ func Terminate(finishTasks bool) {
 	defer m.Unlock()
 
 	terminationRequested = true
+	terminationFinishTasks = finishTasks
 
 	// Call all registered callbacks
 	for _, cb := range callbacks {
@@ -82,6 +90,7 @@ func Reset() {
 	defer m.Unlock()
 
 	terminationRequested = false
+	terminationFinishTasks = false
 	callbacks = make(map[string]GracefulTerminationFunc)
 	nextID = 0
 }

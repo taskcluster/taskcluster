@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
 )
@@ -74,8 +73,8 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
 		}
 
-		err = os.Remove("d2g-image-cache.json")
-		if err != nil && !os.IsNotExist(err) {
+		err = removeD2GCacheFile()
+		if err != nil {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 		}
 
