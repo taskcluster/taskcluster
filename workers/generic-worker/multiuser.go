@@ -221,6 +221,13 @@ func CreateTaskContext(taskDirName string) (*TaskContext, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to grant permissions on %s: %v", ctx.TaskDir, err)
 	}
+	// Create generic-worker subdirectory for logs, etc.
+	gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
+	err = os.MkdirAll(gwDir, 0777)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create generic-worker directory %s: %v", gwDir, err)
+	}
+	log.Printf("Created dir: %v", gwDir)
 	return ctx, nil
 }
 
