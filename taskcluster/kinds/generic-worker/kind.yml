@@ -186,7 +186,9 @@ tasks:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
     worker:
       taskcluster-proxy: true
-      run-task-as-current-user: true
+      run-task-as-current-user: false
+      os-groups:
+        - docker
       artifacts:
         - path: gopath{go_version}/bin/generic-worker
           name: public/build/generic-worker-linux-amd64
