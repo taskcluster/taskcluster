@@ -2,9 +2,9 @@
 
 set -e
 
-# relativize the schemas and references to a writable directory
+# relativize the schemas and references
 cd /app
-node infrastructure/references/relativize.js generated/references.json /tmp/references
+node infrastructure/references/relativize.js generated/references.json /references
 
 # start nginx with standalone config
 exec nginx -c /app/infrastructure/references/nginx.conf -g 'daemon off;'
