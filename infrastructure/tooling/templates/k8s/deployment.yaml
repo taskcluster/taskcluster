@@ -27,11 +27,15 @@ spec:
       # new connections would be rejected as server will be closed
       # and under normal conditions pod will stop faster than this timeout
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
         imagePullPolicy: Always
         args: ['${serviceName}/${procName}']
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           requests:
             cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'

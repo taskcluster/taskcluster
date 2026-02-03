@@ -28,12 +28,16 @@ spec:
       serviceAccountName: taskcluster-purge-cache
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-purge-cache-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - purge-cache/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.purge_cache.procs.web.cpu }}'

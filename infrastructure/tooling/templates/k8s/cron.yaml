@@ -23,11 +23,15 @@ spec:
           # that two pods never run in parallel.
           restartPolicy: OnFailure
           imagePullSecrets: IMAGE_PULL_SECRETS_STRING
+          securityContext:
+            runAsNonRoot: true
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'
             imagePullPolicy: Always
             args: ['${serviceName}/${procName}']
+            securityContext:
+              allowPrivilegeEscalation: false
             resources:
               requests:
                 cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'

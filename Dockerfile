@@ -64,7 +64,15 @@ RUN /bin/bash -c "\
 
 FROM node:24.13.0-alpine AS image
 RUN apk --no-cache add --update nginx bash
-COPY --from=build /base/app /app
+COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app
 WORKDIR /app
+
+# Create /references directory for references service with proper ownership
+RUN mkdir -p /references && chown 1000:1000 /references
+
+# use non-root, node user
+# https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#non-root-user
+USER 1000
+
 ENTRYPOINT ["/app/entrypoint"]

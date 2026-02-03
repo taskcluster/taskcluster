@@ -20,12 +20,16 @@ spec:
       serviceAccountName: taskcluster-hooks
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-hooks-listeners
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - hooks/listeners
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.hooks.procs.listeners.cpu }}'
