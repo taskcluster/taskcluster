@@ -259,6 +259,7 @@ MonitorManager.register({
 
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
+  providerId: 'ID of the provider',
 };
 
 MonitorManager.registerMetric('existingCapacity', {
@@ -361,10 +362,7 @@ MonitorManager.registerMetric('provisionDuration', {
   type: 'histogram',
   title: 'Worker pool provision duration',
   description: 'Time it took to provision a single worker pool',
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['provision'],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
 });
@@ -377,10 +375,7 @@ MonitorManager.registerMetric('workerRegistrationDuration', {
     Time for a worker to go from being requested to successfully registering
     with worker-manager
   `,
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['default', 'provision', 'scan'],
   buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
 });
@@ -393,10 +388,7 @@ MonitorManager.registerMetric('workerLifetime', {
     Time for a worker to go from running to either being removed or fully
     stopped
   `,
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['default', 'provision', 'scan'],
   buckets: [60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800, 1209600],
 });
@@ -409,10 +401,7 @@ MonitorManager.registerMetric('workerRegistrationFailure', {
     Counts workers that were requested but never registered before being
     removed or stopped.
   `,
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['default', 'provision', 'scan'],
 });
 
@@ -421,10 +410,7 @@ MonitorManager.registerMetric('scanSeen', {
   type: 'gauge',
   title: 'Worker pool workers checked during scan',
   description: 'Total number of workers checked for given workerPoolId during scanning.',
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['scan'],
 });
 
@@ -433,9 +419,6 @@ MonitorManager.registerMetric('scanErrors', {
   type: 'gauge',
   title: 'Worker pool errors during scan',
   description: 'Total number of errors for worker pool during scanning',
-  labels: {
-    ...commonLabels,
-    providerId: 'ID of the provider',
-  },
+  labels: commonLabels,
   registers: ['scan'],
 });

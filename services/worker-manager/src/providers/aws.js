@@ -88,6 +88,7 @@ export class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
+      providerId: this.providerId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
       scalingRatio: workerPool.config.scalingRatio,

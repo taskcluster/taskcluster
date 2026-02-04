@@ -17883,6 +17883,7 @@
         {
           "description": "This number represents difference in pending tasks and idle capacity.\nAdjustment is needed to make sure workers that are still running and are currently\nnot doing any work, will soon pick up those tasks, so we don't need additional workers for those.\nAssumption is that those idling workers would pick up tasks soon.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_adjusted_pending_tasks",
@@ -17895,6 +17896,7 @@
         {
           "description": "This number represents the number of claimed tasks.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_claimed_tasks",
@@ -17907,6 +17909,7 @@
         {
           "description": "This number represents calculation of the estimator for a given worker pool,\nwith regards to min and max capacity of the worker pool, number of adjusted\npending tasks and scaling ratio. Refer to estimator.js for exact logic.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_desired_capacity",
@@ -17919,6 +17922,7 @@
         {
           "description": "This number represents the running capacity of running and not quarantined workers.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_existing_capacity",
@@ -17931,6 +17935,7 @@
         {
           "description": "This number represents the number of pending tasks.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_pending_tasks",
@@ -17943,6 +17948,7 @@
         {
           "description": "This number represents the running capacity of workers that are requested.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_requested_capacity",
@@ -17955,6 +17961,7 @@
         {
           "description": "This number represents the running capacity of workers that are stopping.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_stopping_capacity",
@@ -17967,6 +17974,7 @@
         {
           "description": "This number represents difference in existing capacity\n(running capacity of running and not quarantined workers), and the number of\nclaimed tasks.",
           "labels": {
+            "providerId": "ID of the provider",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_total_idle_capacity",

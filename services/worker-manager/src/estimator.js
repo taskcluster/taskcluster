@@ -6,6 +6,7 @@ export class Estimator {
 
   async simple({
     workerPoolId,
+    providerId,
     minCapacity,
     maxCapacity,
     scalingRatio = 1.0,
@@ -74,7 +75,7 @@ export class Estimator {
     // how many extra we want if we do want any
     const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
 
-    this.exposeMetrics({ workerPoolId, existingCapacity, stoppingCapacity,
+    this.exposeMetrics({ workerPoolId, providerId, existingCapacity, stoppingCapacity,
       requestedCapacity, desiredCapacity, totalIdleCapacity, adjustedPendingTasks,
       pendingTasks, claimedTasks });
 
@@ -86,8 +87,8 @@ export class Estimator {
   /**
    * @param {Record<string, string|number>} options
    */
-  exposeMetrics({ workerPoolId, ...metrics }) {
+  exposeMetrics({ workerPoolId, providerId, ...metrics }) {
     Object.keys(metrics).forEach(name =>
-      this.monitor.metric[name](metrics[name], { workerPoolId }));
+      this.monitor.metric[name](metrics[name], { workerPoolId, providerId }));
   }
 }

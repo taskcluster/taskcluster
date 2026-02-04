@@ -21,6 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 0,
       minCapacity: 0,
       scalingRatio: 1,
@@ -40,6 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 1,
       minCapacity: 1,
       workerInfo,
@@ -58,6 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 1,
       minCapacity: 1,
       workerInfo,
@@ -77,6 +80,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 100,
       minCapacity: 0,
       scalingRatio: 1,
@@ -97,6 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 50,
       minCapacity: 0,
       scalingRatio: 1,
@@ -117,6 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.queue.setPending('foo/bar', 100);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 100,
       minCapacity: 0,
       scalingRatio: 0.5,
@@ -138,6 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.queue.setClaimed('foo/bar', 25);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 100,
       minCapacity: 0,
       scalingRatio: 0.5,
@@ -157,6 +164,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 1,
       minCapacity: 1,
       workerInfo,
@@ -182,6 +190,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 1,
       minCapacity: 1,
       workerInfo,
@@ -201,6 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 0,
       minCapacity: 0,
       scalingRatio: 1,
@@ -220,6 +230,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 50,
       minCapacity: 0,
       scalingRatio: 1,
@@ -238,6 +249,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 50,
       minCapacity: 0,
       scalingRatio: 1,
@@ -258,6 +270,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.queue.setClaimed('foo/bar', 0);
     const estimate = await estimator.simple({
       workerPoolId: 'foo/bar',
+      providerId: 'test-provider',
       maxCapacity: 50,
       minCapacity: 0,
       scalingRatio: 1,
@@ -293,6 +306,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.queue.setClaimed('foo/bar', claimed);
       const result = await estimator.simple({
         workerPoolId: 'foo/bar',
+        providerId: 'test-provider',
         maxCapacity: 50,
         minCapacity: 0,
         scalingRatio: 1,

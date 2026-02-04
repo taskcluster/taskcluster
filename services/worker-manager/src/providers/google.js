@@ -222,6 +222,7 @@ export class GoogleProvider extends Provider {
 
     let toSpawn = await this.estimator.simple({
       workerPoolId,
+      providerId: this.providerId,
       ...workerPool.config,
       workerInfo,
     });
