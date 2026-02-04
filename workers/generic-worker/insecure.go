@@ -176,6 +176,11 @@ func rebootBetweenTasks() bool {
 	return false
 }
 
+// prepareTaskEnvironment is a no-op for the insecure engine.
+func prepareTaskEnvironment() bool {
+	return false
+}
+
 func platformTargets(arguments map[string]any) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR

@@ -23,12 +23,12 @@ type PortManager struct {
 	liveLogBase     uint16
 	interactiveBase uint16
 	proxyBase       uint16
-	capacity        int
+	capacity        uint
 }
 
 // NewPortManager creates a new PortManager.
 // basePort is used to calculate dynamic ports for each task slot.
-func NewPortManager(liveLogBase, interactiveBase, proxyBase uint16, capacity int) *PortManager {
+func NewPortManager(liveLogBase, interactiveBase, proxyBase uint16, capacity uint) *PortManager {
 	return &PortManager{
 		allocated:       make(map[string][]uint16),
 		liveLogBase:     liveLogBase,
@@ -118,17 +118,17 @@ func (pm *PortManager) TaskclusterProxyPort(taskID string) (uint16, bool) {
 // findAvailableSlot returns the first available slot index, or -1 if none available.
 // Must be called with the lock held.
 func (pm *PortManager) findAvailableSlot() int {
-	usedSlots := make(map[int]bool)
+	usedSlots := make(map[uint]bool)
 	for _, ports := range pm.allocated {
 		if len(ports) > 0 {
 			// Calculate which slot this allocation belongs to
-			slot := int(ports[0]-pm.liveLogBase) / gwconfig.PortsPerTask
+			slot := uint(ports[0]-pm.liveLogBase) / uint(gwconfig.PortsPerTask)
 			usedSlots[slot] = true
 		}
 	}
-	for i := 0; i < pm.capacity; i++ {
+	for i := uint(0); i < pm.capacity; i++ {
 		if !usedSlots[i] {
-			return i
+			return int(i)
 		}
 	}
 	return -1

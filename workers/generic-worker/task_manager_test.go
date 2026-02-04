@@ -11,14 +11,14 @@ import (
 
 func TestTaskManagerCapacity(t *testing.T) {
 	tm := NewTaskManager(3)
-	require.Equal(t, 3, tm.AvailableCapacity())
+	require.Equal(t, uint(3), tm.AvailableCapacity())
 	require.True(t, tm.IsIdle())
 
 	// Add a task
 	task1 := &TaskRun{TaskID: "task1"}
 	tm.AddTask(task1)
-	require.Equal(t, 2, tm.AvailableCapacity())
-	require.Equal(t, 1, tm.TaskCount())
+	require.Equal(t, uint(2), tm.AvailableCapacity())
+	require.Equal(t, uint(1), tm.TaskCount())
 	require.False(t, tm.IsIdle())
 
 	// Add more tasks
@@ -26,18 +26,18 @@ func TestTaskManagerCapacity(t *testing.T) {
 	task3 := &TaskRun{TaskID: "task3"}
 	tm.AddTask(task2)
 	tm.AddTask(task3)
-	require.Equal(t, 0, tm.AvailableCapacity())
-	require.Equal(t, 3, tm.TaskCount())
+	require.Equal(t, uint(0), tm.AvailableCapacity())
+	require.Equal(t, uint(3), tm.TaskCount())
 
 	// Remove a task
 	tm.RemoveTask("task2")
-	require.Equal(t, 1, tm.AvailableCapacity())
-	require.Equal(t, 2, tm.TaskCount())
+	require.Equal(t, uint(1), tm.AvailableCapacity())
+	require.Equal(t, uint(2), tm.TaskCount())
 
 	// Remove remaining tasks
 	tm.RemoveTask("task1")
 	tm.RemoveTask("task3")
-	require.Equal(t, 3, tm.AvailableCapacity())
+	require.Equal(t, uint(3), tm.AvailableCapacity())
 	require.True(t, tm.IsIdle())
 }
 

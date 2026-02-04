@@ -30,7 +30,7 @@ type (
 		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
-		Capacity                       int            `json:"capacity"`
+		Capacity                       uint           `json:"capacity"`
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
@@ -187,13 +187,34 @@ func (c *Config) ValidatePortConfiguration() error {
 		end   uint16
 	}
 
-	portRanges := []portRange{
+	portRanges := []portRange{}
+	if c.EnableLiveLog {
 		// LiveLog uses 2 consecutive ports (GET and PUT)
-		{"livelogPortBase", c.LiveLogPortBase, c.LiveLogPortBase + maxOffset + 1},
+		portRanges = append(portRanges, portRange{
+			name:  "livelogPortBase",
+			start: c.LiveLogPortBase,
+			end:   c.LiveLogPortBase + maxOffset + 1,
+		})
+	}
+	if c.EnableInteractive {
 		// Interactive uses 1 port per slot
-		{"interactivePort", c.InteractivePort, c.InteractivePort + maxOffset},
+		portRanges = append(portRanges, portRange{
+			name:  "interactivePort",
+			start: c.InteractivePort,
+			end:   c.InteractivePort + maxOffset,
+		})
+	}
+	if c.EnableTaskclusterProxy {
 		// TaskclusterProxy uses 1 port per slot
-		{"taskclusterProxyPort", c.TaskclusterProxyPort, c.TaskclusterProxyPort + maxOffset},
+		portRanges = append(portRanges, portRange{
+			name:  "taskclusterProxyPort",
+			start: c.TaskclusterProxyPort,
+			end:   c.TaskclusterProxyPort + maxOffset,
+		})
+	}
+
+	if len(portRanges) < 2 {
+		return nil
 	}
 
 	// Check for overlaps between all pairs of ranges
@@ -202,12 +223,17 @@ func (c *Config) ValidatePortConfiguration() error {
 			r1, r2 := portRanges[i], portRanges[j]
 			// Ranges overlap if: r1.start <= r2.end && r2.start <= r1.end
 			if r1.start <= r2.end && r2.start <= r1.end {
+				len1 := int(r1.end-r1.start) + 1
+				len2 := int(r2.end-r2.start) + 1
+				if len2 > len1 {
+					len1 = len2
+				}
 				return fmt.Errorf(
 					"port range overlap detected with capacity=%d: %s [%d-%d] overlaps with %s [%d-%d]; "+
 						"ensure base ports are spaced at least %d apart "+
 						"(configured: livelogPortBase=%d, interactivePort=%d, taskclusterProxyPort=%d)",
 					c.Capacity, r1.name, r1.start, r1.end, r2.name, r2.start, r2.end,
-					(c.Capacity*PortsPerTask)+2, // +2 for LiveLog's 2 ports
+					len1,
 					c.LiveLogPortBase, c.InteractivePort, c.TaskclusterProxyPort,
 				)
 			}

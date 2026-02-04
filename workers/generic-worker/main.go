@@ -471,6 +471,11 @@ func RunWorker() (exitCode ExitCode) {
 	// Channel for task completion notifications
 	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
 
+	// Prepare task environment (may require reboot for non-headless multiuser)
+	if prepareTaskEnvironment() {
+		return REBOOT_REQUIRED
+	}
+
 	// Initial cleanup of old task directories
 	err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 	if err != nil {
@@ -480,12 +485,12 @@ func RunWorker() (exitCode ExitCode) {
 mainLoop:
 	for {
 		// Process any completed tasks
+		processedCompletion := false
 		for {
 			select {
 			case result := <-taskCompleteChan:
+				processedCompletion = true
 				tasksResolved++
-				taskManager.RemoveTask(result.taskID)
-				portManager.ReleasePorts(result.taskID)
 				lastActive = time.Now()
 
 				if result.workerShutdown {
@@ -518,6 +523,12 @@ mainLoop:
 			}
 		}
 	doneProcessingCompletions:
+		if processedCompletion {
+			err := purgeOldTasks(taskManager.RunningTaskDirNames()...)
+			if err != nil {
+				log.Printf("ERROR: purging old tasks: %v", err)
+			}
+		}
 
 		if checkWhetherToTerminate() {
 			taskManager.WaitForAll()
@@ -538,13 +549,23 @@ mainLoop:
 
 		// Calculate available capacity
 		availableCapacity := taskManager.AvailableCapacity()
+		claimCount := availableCapacity
+		if config.NumberOfTasksToRun > 0 {
+			// Account for tasks already running so we don't exceed NumberOfTasksToRun.
+			remainingToStart := config.NumberOfTasksToRun - tasksResolved - taskManager.TaskCount()
+			if remainingToStart <= 0 {
+				claimCount = 0
+			} else if remainingToStart < claimCount {
+				claimCount = remainingToStart
+			}
+		}
 
 		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
-		if availableCapacity > 0 {
+		if claimCount > 0 {
 			// Unified task execution: always use per-task context regardless of capacity
-			tasks := ClaimWork(availableCapacity)
+			tasks := ClaimWork(claimCount)
 			for _, task := range tasks {
 				// Create per-task context
 				// Include runId to avoid collisions when tasks are rerun (same taskId, new runId)
@@ -594,6 +615,14 @@ mainLoop:
 				taskManager.AddTask(task)
 
 				go func(t *TaskRun) {
+					removed := false
+					defer func() {
+						if !removed {
+							taskManager.RemoveTask(t.TaskID)
+							portManager.ReleasePorts(t.TaskID)
+						}
+					}()
+
 					errors := t.Run()
 
 					logEvent("taskFinish", t, time.Now())
@@ -605,10 +634,10 @@ mainLoop:
 					if err != nil {
 						log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
 					}
-					err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
-					if err != nil {
-						log.Printf("ERROR: purging old tasks: %v", err)
-					}
+
+					taskManager.RemoveTask(t.TaskID)
+					portManager.ReleasePorts(t.TaskID)
+					removed = true
 
 					taskCompleteChan <- taskCompletionResult{
 						taskID:         t.TaskID,
@@ -697,7 +726,7 @@ func checkWhetherToTerminate() bool {
 
 // ClaimWork queries the Queue to find tasks. The count parameter specifies
 // how many tasks to request (up to available capacity).
-func ClaimWork(count int) []*TaskRun {
+func ClaimWork(count uint) []*TaskRun {
 	if count < 1 {
 		return nil
 	}
