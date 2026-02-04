@@ -553,31 +553,6 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	}
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
-	}
-
-	// Do nothing if the current owner is the same as the new owner
-	if cache.OwnerUsername == newOwnerUsername {
-		return nil
-	}
-
-	// Reset to inherited permissions only, recursively
-	out, err := host.Output("icacls", dir, "/reset", "/t", "/c", "/q")
-	if err != nil {
-		return fmt.Errorf("failed to reset permissions on dir %v: %v\n%v", dir, err, out)
-	}
-
-	// Grant full control to new owner, adding to inherited permissions
-	out, err = host.Output("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
-	if err != nil {
-		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v\n%v", newOwnerUsername, dir, err, out)
-	}
-
-	return nil
-}
-
 func convertNilToEmptyString(val any) string {
 	if val == nil {
 		return ""

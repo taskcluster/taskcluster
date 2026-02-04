@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -118,6 +119,62 @@ func CreateFile(file string) (err error) {
 
 func CreateDir(dir string) error {
 	return os.MkdirAll(dir, 0700)
+}
+
+// CopyDir copies a directory tree from src to dst. dst must not exist.
+func CopyDir(src, dst string) error {
+	info, err := os.Lstat(src)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("source is not a directory: %s", src)
+	}
+	if _, err := os.Stat(dst); err == nil {
+		return fmt.Errorf("destination already exists: %s", dst)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := os.MkdirAll(dst, info.Mode().Perm()); err != nil {
+		return err
+	}
+	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		if rel == "." {
+			return nil
+		}
+		target := filepath.Join(dst, rel)
+		entryType := d.Type()
+		if entryType&os.ModeSymlink != 0 {
+			link, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			return os.Symlink(link, target)
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		mode := info.Mode()
+		switch {
+		case mode.IsDir():
+			return os.MkdirAll(target, mode.Perm())
+		case mode.IsRegular():
+			if _, err := Copy(target, path); err != nil {
+				return err
+			}
+			return os.Chmod(target, mode.Perm())
+		default:
+			return fmt.Errorf("unsupported file type: %s", path)
+		}
+	})
 }
 
 func Unarchive(source, destination, format string) error {

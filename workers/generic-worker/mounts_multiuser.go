@@ -17,34 +17,6 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 	return makeReadWritableForTaskUser(taskMount, dir, "directory", true)
 }
 
-func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
-	// Skip ownership changes for d2g tasks since the ownership of files is decided
-	// by the container itself (there's no mapping)
-	if taskMount.task.D2GInfo != nil {
-		return nil
-	}
-
-	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
-	// because files inside task directory should be owned/managed by task user
-	ctx := taskMount.task.GetContext()
-	newOwnerUsername := ctx.User.Name
-	newOwnerUID, err := ctx.User.ID()
-	if err != nil {
-		panic(fmt.Errorf("[mounts] Not able to look up UID for user %v: %w", ctx.User.Name, err))
-	}
-	taskMount.Infof("Updating ownership of files inside directory '%v' from %v to %v", dir, cache.OwnerUsername, newOwnerUsername)
-	err = changeOwnershipInDir(dir, newOwnerUsername, cache)
-	if err != nil {
-		return fmt.Errorf("[mounts] Not able to update ownership of directory %v from %v (UID %v) to %v (UID %v): %w", dir, cache.OwnerUsername, cache.OwnerUID, newOwnerUsername, newOwnerUID, err)
-	}
-	// now set the OwnerUID to the current task user UID, so that the next
-	// time this cache is mounted, the UID find/replace will replace the
-	// current task user with the next task user that uses it
-	cache.OwnerUsername = newOwnerUsername
-	cache.OwnerUID = newOwnerUID
-	return nil
-}
-
 func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, filetype string, recurse bool) error {
 	// It doesn't concern us if payload.features.runTaskAsCurrentUser is set or not
 	// because files inside task directory should be owned/managed by task user
