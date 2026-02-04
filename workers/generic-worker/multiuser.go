@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
@@ -33,6 +34,11 @@ func validateEngineConfig() error {
 }
 
 var (
+	// don't initialise here, because cwd might not yet be initialised
+	// instead we set up later in prepareNonHeadlessTaskEnvironment
+	ctuPath      string
+	ntuPath      string
+	nextTaskUser string
 	runningTests bool = false
 )
 
@@ -57,6 +63,12 @@ func setupTaskContext(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 	// Note we don't create task directory before logging in, since
 	// if the task directory is also the user profile home, this
 	// would mess up the windows logon process.
+	if !config.HeadlessTasks && !runningTests {
+		err := gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
+		if err != nil {
+			panic(fmt.Errorf("timed out waiting for login for user %s: %v", ctx.User.Name, err))
+		}
+	}
 	err := os.MkdirAll(ctx.TaskDir, 0777) // note: 0777 is mostly ignored on windows
 	if err != nil {
 		panic(err)
@@ -115,6 +127,13 @@ func CreateTaskContext(taskDirName string) *TaskContext {
 		return setupTaskContext(taskUser)
 	}
 
+	if !config.HeadlessTasks {
+		if taskContext == nil || taskContext.User == nil {
+			panic("taskContext not initialised for non-headless tasks; ensure prepareTaskEnvironment ran")
+		}
+		return taskContext
+	}
+
 	taskUser := &gwruntime.OSUser{
 		Name:     taskDirName,
 		Password: gwruntime.GeneratePassword(),
@@ -126,6 +145,89 @@ func CreateTaskContext(taskDirName string) *TaskContext {
 	// PreRebootSetup does platform-specific user setup (e.g., Windows profile creation)
 	PreRebootSetup(taskUser)
 	return setupTaskContext(taskUser)
+}
+
+// prepareTaskEnvironment sets up the task environment before claiming work.
+// For non-headless multiuser, this may require a reboot to auto-login.
+func prepareTaskEnvironment() (reboot bool) {
+	if runningTests || config.HeadlessTasks {
+		return false
+	}
+
+	// Windows username limit is 20 characters.
+	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())
+	if len(taskDirName) > 20 {
+		taskDirName = taskDirName[:20]
+	}
+
+	return prepareNonHeadlessTaskEnvironment(taskDirName)
+}
+
+// prepareNonHeadlessTaskEnvironment prepares the current task user and pre-creates
+// the next task user for auto-login. Returns true if a reboot is required.
+func prepareNonHeadlessTaskEnvironment(taskDirName string) (reboot bool) {
+	ctuPath = filepath.Join(cwd, "current-task-user.json")
+	ntuPath = filepath.Join(cwd, "next-task-user.json")
+
+	log.Printf("Current task user file: %q", ctuPath)
+	log.Printf("Next task user file: %q", ntuPath)
+
+	nextTaskUser = ""
+	reboot = true
+
+	// If next-task-user.json exists, we are expected to be logged in as that user.
+	if _, err := os.Stat(ntuPath); err == nil {
+		_, err = fileutil.Copy(ctuPath, ntuPath)
+		if err != nil {
+			panic(err)
+		}
+		err = fileutil.SecureFiles(ctuPath)
+		if err != nil {
+			panic(err)
+		}
+
+		taskUserCredentials, err := StoredUserCredentials(ctuPath)
+		if err != nil {
+			panic(err)
+		}
+
+		taskContext = setupTaskContext(taskUserCredentials)
+		reboot = false
+
+		// If there is precisely one more task to run, no need to create a future task user.
+		if config.NumberOfTasksToRun == 1 {
+			return false
+		}
+	} else if !os.IsNotExist(err) {
+		panic(err)
+	}
+
+	// Create user for subsequent task run already, before we've run current task.
+	nextUser := &gwruntime.OSUser{
+		Name:     taskDirName,
+		Password: gwruntime.GeneratePassword(),
+	}
+	err := nextUser.CreateNew(false)
+	if err != nil {
+		panic(err)
+	}
+	PreRebootSetup(nextUser)
+	// Configure worker to auto-login to this newly generated user account.
+	err = gwruntime.SetAutoLogin(nextUser)
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.WriteToFileAsJSON(nextUser, ntuPath)
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.SecureFiles(ntuPath)
+	if err != nil {
+		panic(err)
+	}
+	nextTaskUser = taskDirName
+
+	return reboot
 }
 
 // platformDataForTaskContext returns platform data for a given TaskContext.
@@ -142,10 +244,25 @@ func purgeOldTasks(skipDirs ...string) error {
 		return nil
 	}
 
-	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), skipDirs...)
-	deleteTaskDirs(config.TasksDir, skipDirs...)
+	skipSet := make(map[string]bool)
+	for _, s := range skipDirs {
+		skipSet[s] = true
+	}
+	if taskContext != nil && taskContext.User != nil && taskContext.User.Name != "" {
+		skipSet[taskContext.User.Name] = true
+	}
+	if nextTaskUser != "" {
+		skipSet[nextTaskUser] = true
+	}
+	skips := make([]string, 0, len(skipSet))
+	for s := range skipSet {
+		skips = append(skips, s)
+	}
+
+	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), skips...)
+	deleteTaskDirs(config.TasksDir, skips...)
 	// regardless of whether we are running as current user or not, we should purge old task users
-	err := deleteExistingOSUsers(skipDirs...)
+	err := deleteExistingOSUsers(skips...)
 	if err != nil {
 		log.Printf("Could not delete old task users:\n%v", err)
 	}

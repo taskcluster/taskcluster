@@ -13,13 +13,13 @@ import (
 type TaskManager struct {
 	sync.RWMutex
 	runningTasks map[string]*TaskRun
-	capacity     int
+	capacity     uint
 	wg           sync.WaitGroup
 	lastActive   time.Time
 }
 
 // NewTaskManager creates a new TaskManager with the given capacity.
-func NewTaskManager(capacity int) *TaskManager {
+func NewTaskManager(capacity uint) *TaskManager {
 	return &TaskManager{
 		runningTasks: make(map[string]*TaskRun),
 		capacity:     capacity,
@@ -28,14 +28,14 @@ func NewTaskManager(capacity int) *TaskManager {
 }
 
 // AvailableCapacity returns the number of additional tasks that can be run.
-func (tm *TaskManager) AvailableCapacity() int {
+func (tm *TaskManager) AvailableCapacity() uint {
 	tm.RLock()
 	defer tm.RUnlock()
-	available := tm.capacity - len(tm.runningTasks)
-	if available < 0 {
+	running := uint(len(tm.runningTasks))
+	if running >= tm.capacity {
 		return 0
 	}
-	return available
+	return tm.capacity - running
 }
 
 // AddTask registers a task as running. Must be called before starting the task goroutine.
@@ -74,10 +74,10 @@ func (tm *TaskManager) RunningTaskIDs() []string {
 }
 
 // TaskCount returns the number of currently running tasks.
-func (tm *TaskManager) TaskCount() int {
+func (tm *TaskManager) TaskCount() uint {
 	tm.RLock()
 	defer tm.RUnlock()
-	return len(tm.runningTasks)
+	return uint(len(tm.runningTasks))
 }
 
 // IsIdle returns true if no tasks are running.

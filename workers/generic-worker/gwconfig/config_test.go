@@ -12,6 +12,9 @@ func TestValidatePortConfiguration(t *testing.T) {
 		return &Config{
 			PublicConfig: PublicConfig{
 				Capacity:                  1,
+				EnableInteractive:         true,
+				EnableLiveLog:             true,
+				EnableTaskclusterProxy:    true,
 				LiveLogPortBase:           60000,
 				InteractivePort:           53000,
 				TaskclusterProxyPort:      8080,
@@ -98,5 +101,17 @@ func TestValidatePortConfiguration(t *testing.T) {
 		err := c.ValidatePortConfiguration()
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "port range overlap detected")
+	})
+
+	t.Run("disabled features are excluded", func(t *testing.T) {
+		c := baseConfig()
+		c.Capacity = 5
+		c.EnableLiveLog = false
+		// Overlaps with LiveLog range, but LiveLog is disabled so should pass.
+		c.LiveLogPortBase = 60000
+		c.InteractivePort = 60010
+		c.TaskclusterProxyPort = 8080
+		err := c.ValidatePortConfiguration()
+		require.NoError(t, err)
 	})
 }
