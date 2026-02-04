@@ -19,11 +19,6 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 	return nil
 }
 
-func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
-	// No user separation
-	return nil
-}
-
 func unarchive(source, destination, format string, pd *process.PlatformData, taskDir string, userName string) error {
 	// taskDir and userName are ignored in insecure mode since there's no user separation
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, "", []string{})

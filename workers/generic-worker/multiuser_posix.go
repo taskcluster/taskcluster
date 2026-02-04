@@ -166,27 +166,6 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
-	}
-
-	// Do nothing if the current owner is the same as the new owner
-	if cache.OwnerUsername == newOwnerUsername {
-		return nil
-	}
-
-	switch runtime.GOOS {
-	case "darwin":
-		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
-	case "linux":
-		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", cache.OwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
-	case "freebsd":
-		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
-	}
-	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
-}
-
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
 	// We'll use chown binary rather that os.Chown here since:
 	// 1) we have user/group names not ids, and can avoid extra code to look up
