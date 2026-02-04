@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 // d2gCacheMutex protects access to the d2g-image-cache.json file
 // for concurrent task execution (capacity > 1)
 var d2gCacheMutex sync.Mutex
+var d2gImageLoadMutex sync.Mutex
 
 type (
 	D2GFeature struct {
@@ -71,8 +73,8 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	// load cache on every start in case the garbage
 	// collector has pruned docker images between tasks
 	d2gCacheMutex.Lock()
-	defer d2gCacheMutex.Unlock()
 	dtf.imageCache.loadFromFile("d2g-image-cache.json")
+	d2gCacheMutex.Unlock()
 
 	taskDir := dtf.task.TaskDir()
 	var isImageArtifact bool
@@ -91,12 +93,8 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	}
 
 	image := dtf.imageCache[key]
-
-	// Always want to re-pull the docker image
-	// if it's not an image artifact, as the
-	// tag could be outdated
-	// (see https://github.com/taskcluster/taskcluster/issues/8004)
-	if image == nil || !isImageArtifact {
+	loadedImage := false
+	loadImage := func() (*Image, *CommandExecutionError) {
 		dtf.task.Info("[d2g] Loading docker image")
 
 		var cmd *process.Command
@@ -118,11 +116,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			}, taskDir, []string{}, dtf.task.pd)
 		}
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+			return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
+			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
 		// Default to use the first line of output for image
@@ -143,7 +141,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			}
 
 			if !imageNameFound {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
 		}
 		imageID := imageName
@@ -160,11 +158,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				imageName,
 			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
 			}
 			out, err = cmd.Output()
 			if err != nil {
-				return executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
+				return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
 			}
 
 			// Only use the first line of output for image ID
@@ -174,11 +172,52 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
 
-		image = &Image{
+		return &Image{
 			ID:   imageID,
 			Name: imageName,
+		}, nil
+	}
+
+	// Always want to re-pull the docker image
+	// if it's not an image artifact, as the
+	// tag could be outdated
+	// (see https://github.com/taskcluster/taskcluster/issues/8004)
+	if isImageArtifact {
+		if image == nil {
+			// Docker image artifacts frequently reuse tags. Serialize loads so that
+			// tag -> ID resolution isn't raced by another load.
+			d2gImageLoadMutex.Lock()
+			defer d2gImageLoadMutex.Unlock()
+
+			// Refresh cache from disk in case another task loaded this image
+			// while we were waiting to acquire the lock.
+			latestCache := ImageCache{}
+			d2gCacheMutex.Lock()
+			latestCache.loadFromFile("d2g-image-cache.json")
+			d2gCacheMutex.Unlock()
+			maps.Copy(dtf.imageCache, latestCache)
+			image = latestCache[key]
+		}
+		if image == nil {
+			var loadErr *CommandExecutionError
+			image, loadErr = loadImage()
+			if loadErr != nil {
+				return loadErr
+			}
+			dtf.imageCache[key] = image
+			loadedImage = true
+		}
+	} else {
+		var loadErr *CommandExecutionError
+		image, loadErr = loadImage()
+		if loadErr != nil {
+			return loadErr
 		}
 		dtf.imageCache[key] = image
+		loadedImage = true
+	}
+
+	if loadedImage {
 		dtf.task.Infof("[d2g] Loaded docker image %q", image.Name)
 	} else {
 		dtf.task.Infof("[d2g] Using cached docker image %q", image.Name)
@@ -267,7 +306,13 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	}
 
 	d2gCacheMutex.Lock()
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
+	mergedCache := ImageCache{}
+	mergedCache.loadFromFile("d2g-image-cache.json")
+	if mergedCache == nil {
+		mergedCache = ImageCache{}
+	}
+	maps.Copy(mergedCache, dtf.imageCache)
+	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&mergedCache, "d2g-image-cache.json")))
 	d2gCacheMutex.Unlock()
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
 }
