@@ -220,6 +220,7 @@ export class AzureProvider extends Provider {
     const workerInfo = workerPoolStats?.forProvision() ?? {};
     let toSpawn = await this.estimator.simple({
       workerPoolId,
+      providerId: this.providerId,
       ...workerPool.config,
       workerInfo,
     });
