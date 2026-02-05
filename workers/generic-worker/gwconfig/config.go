@@ -161,7 +161,7 @@ const PortsPerTask = 4
 // This validation ensures the configured base ports are spaced far enough apart
 // to avoid collisions.
 func (c *Config) ValidatePortConfiguration() error {
-	if c.Capacity <= 1 {
+	if c.Capacity == 1 {
 		return nil
 	}
 

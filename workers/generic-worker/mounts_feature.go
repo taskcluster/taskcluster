@@ -11,7 +11,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -563,6 +562,23 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 	target := filepath.Join(taskMount.task.TaskDir(), w.Directory)
 	cacheMutex.Lock()
 	cache, dirCacheExists := directoryCaches[w.CacheName]
+
+	// Verify the physical directory still exists on disk. With capacity > 1,
+	// when a new cache is first registered by one task, its Location directory
+	// may not yet exist on disk (it is populated when that task's Unmount
+	// promotes its copy into place). A concurrent task mounting the same cache
+	// would find the entry in the map but no directory to copy from. The
+	// directory can also go missing if the worker crashed between RemoveAll
+	// and the JSON persist in Unmount. In either case, treat the cache as new
+	// so the task gets a fresh empty directory instead of failing.
+	if dirCacheExists {
+		if _, statErr := os.Stat(cache.Location); os.IsNotExist(statErr) {
+			taskMount.Warnf("Writable directory cache '%v' references %v which does not exist on disk; recreating", w.CacheName, cache.Location)
+			delete(directoryCaches, w.CacheName)
+			dirCacheExists = false
+		}
+	}
+
 	if dirCacheExists {
 		cache.Hits++
 	} else {
@@ -585,68 +601,62 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			Generation:    0,
 		}
 		directoryCaches[w.CacheName] = cache
-		if err := os.MkdirAll(file, 0700); err != nil {
-			cacheMutex.Unlock()
-			return fmt.Errorf("not able to create directory %v: %v", file, err)
-		}
 	}
+
 	baseGeneration := cache.Generation
 	cacheLocation := cache.Location
 	cacheMutex.Unlock()
 
 	taskMount.cacheStates[w] = cacheMountState{baseGeneration: baseGeneration}
 
-	parentDir := filepath.Dir(target)
-	taskMount.Infof("Copying writable directory cache %v from %v to %v", w.CacheName, cacheLocation, target)
-	rel, err := filepath.Rel(taskMount.task.TaskDir(), target)
-	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
-		return fmt.Errorf("cache mount directory %v is outside task dir %v", target, taskMount.task.TaskDir())
-	}
-	if _, err := os.Stat(target); err == nil {
-		if err := os.RemoveAll(target); err != nil {
-			return fmt.Errorf("not able to remove existing directory %v: %v", target, err)
+	// Populate the target directory:
+	//  - Existing cache, capacity=1:  rename (fast, O(1) on same FS)
+	//  - Existing cache, capacity>1:  copy with per-cache read lock
+	//  - New cache with content:      extract preloaded content
+	//  - New empty cache:             create empty directory
+	if dirCacheExists && config.Capacity == 1 {
+		parentDir := filepath.Dir(target)
+		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, cacheLocation, target)
+		if err := MkdirAll(taskMount, parentDir); err != nil {
+			return fmt.Errorf("not able to create directory %v: %v", parentDir, err)
 		}
-	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("not able to stat directory %v: %v", target, err)
-	}
-	if _, err := os.Stat(parentDir); err != nil {
-		if os.IsNotExist(err) {
-			if err := MkdirAll(taskMount, parentDir); err != nil {
-				return fmt.Errorf("not able to create directory %v: %v", parentDir, err)
-			}
-		} else {
-			return fmt.Errorf("not able to stat directory %v: %v", parentDir, err)
+		if err := RenameCrossDevice(cacheLocation, target); err != nil {
+			return fmt.Errorf("not able to move directory %v to %v: %v", cacheLocation, target, err)
 		}
-	}
-	// Hold the per-cache read lock while copying so that a concurrent
-	// Unmount (promotion) cannot swap out the cache directory mid-copy.
-	rw := getCacheRWLock(w.CacheName)
-	rw.RLock()
-	copyErr := fileutil.CopyDir(cacheLocation, target)
-	rw.RUnlock()
-	if copyErr != nil {
-		return fmt.Errorf("not able to copy directory %v to %v: %v", cacheLocation, target, copyErr)
+	} else if dirCacheExists {
+		parentDir := filepath.Dir(target)
+		taskMount.Infof("Copying writable directory cache %v from %v to %v", w.CacheName, cacheLocation, target)
+		if err := MkdirAll(taskMount, parentDir); err != nil {
+			return fmt.Errorf("not able to create directory %v: %v", parentDir, err)
+		}
+		rw := getCacheRWLock(w.CacheName)
+		rw.RLock()
+		copyErr := fileutil.CopyDir(cacheLocation, target)
+		rw.RUnlock()
+		if copyErr != nil {
+			return fmt.Errorf("not able to copy directory %v to %v: %v", cacheLocation, target, copyErr)
+		}
+	} else if w.Content != nil {
+		c, err := FSContentFrom(w.Content)
+		if err != nil {
+			return fmt.Errorf("not able to retrieve FSContent: %v", err)
+		}
+		if err = extract(c, w.Format, target, taskMount); err != nil {
+			return err
+		}
+	} else {
+		if err := MkdirAll(taskMount, target); err != nil {
+			return fmt.Errorf("not able to create directory %v: %v", target, err)
+		}
 	}
 
 	// Regardless of whether we are running as current user, grant task user access
 	// since the mounted folder sits inside the task directory of the task user,
 	// which is owned and controlled by the task user, even if commands execute as
 	// LocalSystem, the file system resources should still be owned by task user.
-	err = makeDirReadWritableForTaskUser(taskMount, target)
+	err := makeDirReadWritableForTaskUser(taskMount, target)
 	if err != nil {
 		return err
-	}
-
-	// Preload content for first-generation caches only.
-	if w.Content != nil && baseGeneration == 0 {
-		c, err := FSContentFrom(w.Content)
-		if err != nil {
-			return fmt.Errorf("not able to retrieve FSContent: %v", err)
-		}
-		err = extract(c, w.Format, target, taskMount)
-		if err != nil {
-			return err
-		}
 	}
 	taskMount.Infof("Successfully mounted writable directory cache '%v'", target)
 	return nil
@@ -657,10 +667,6 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	state, ok := taskMount.cacheStates[w]
 	if !ok {
 		return Failure(fmt.Errorf("could not persist cache %q due to missing mount state", w.CacheName))
-	}
-
-	if _, err := os.Stat(taskCacheDir); err != nil {
-		return Failure(fmt.Errorf("could not persist cache %q due to %v", w.CacheName, err))
 	}
 
 	rw := getCacheRWLock(w.CacheName)
@@ -683,19 +689,22 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	}
 
 	cacheDir := cache.Location
-	taskMount.Infof("Preserving cache: Copying %q to %q", taskCacheDir, cacheDir)
-	tempDir := cacheDir + "-" + slugid.Nice()
-	err := fileutil.CopyDir(taskCacheDir, tempDir)
-	if err != nil {
-		_ = os.RemoveAll(tempDir)
-		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
-	}
+	taskMount.Infof("Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
+	// Remove the old authoritative cache (may be empty if capacity=1 renamed
+	// it into the task dir, or may contain the original content if capacity>1
+	// copied it). Then rename the task's version into place.
 	if err := os.RemoveAll(cacheDir); err != nil {
-		_ = os.RemoveAll(tempDir)
 		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
 	}
-	if err := os.Rename(tempDir, cacheDir); err != nil {
-		_ = os.RemoveAll(tempDir)
+	if err := RenameCrossDevice(taskCacheDir, cacheDir); err != nil {
+		// Both old and new cache content are now lost. Evict the cache
+		// entry so it gets recreated fresh on the next mount.
+		cacheMutex.Lock()
+		evictErr := cache.Evict(taskMount)
+		cacheMutex.Unlock()
+		if evictErr != nil {
+			panic(evictErr)
+		}
 		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
 	}
 

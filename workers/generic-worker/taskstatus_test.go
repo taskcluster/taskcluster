@@ -39,7 +39,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
 			Extracts: []string{
-				"Preserving cache: Copying",
+				"Preserving cache: Moving",
 			},
 			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",

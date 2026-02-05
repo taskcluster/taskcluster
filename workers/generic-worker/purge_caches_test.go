@@ -46,7 +46,7 @@ func TestPurgeCaches(t *testing.T) {
 	}
 
 	// WritableDirectoryCache should not be unmounted and moved to the cache dir
-	substring = "[mounts] Preserving cache: Copying"
+	substring = "[mounts] Preserving cache: Moving"
 	if strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was not expecting log to contain string %v.", substring)
@@ -81,7 +81,7 @@ func TestPurgeCachesCommandFailure(t *testing.T) {
 
 	logtext := LogText(t)
 	// WritableDirectoryCache should be unmounted and moved to the cache dir
-	substring := "[mounts] Preserving cache: Copying"
+	substring := "[mounts] Preserving cache: Moving"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -116,7 +116,7 @@ func TestPurgeCachesCommandSuccess(t *testing.T) {
 
 	logtext := LogText(t)
 	// WritableDirectoryCache should be unmounted and moved to the cache dir
-	substring := "[mounts] Preserving cache: Copying"
+	substring := "[mounts] Preserving cache: Moving"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -163,7 +163,7 @@ func TestPurgeCachesListCommand(t *testing.T) {
 	}
 
 	// WritableDirectoryCache should not be unmounted and moved to the cache dir
-	substring = "[mounts] Preserving cache: Copying"
+	substring = "[mounts] Preserving cache: Moving"
 	if strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was not expecting log to contain string %v.", substring)
@@ -198,7 +198,7 @@ func TestPurgeCachesEmptyListCommandSuccess(t *testing.T) {
 
 	logtext := LogText(t)
 	// WritableDirectoryCache should be unmounted and moved to the cache dir
-	substring := "[mounts] Preserving cache: Copying"
+	substring := "[mounts] Preserving cache: Moving"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -233,7 +233,7 @@ func TestPurgeCachesEmptyListCommandFailure(t *testing.T) {
 
 	logtext := LogText(t)
 	// WritableDirectoryCache should be unmounted and moved to the cache dir
-	substring := "[mounts] Preserving cache: Copying"
+	substring := "[mounts] Preserving cache: Moving"
 	if !strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was expecting log to contain string %v.", substring)
@@ -332,7 +332,7 @@ func TestPurgeTaskCaches(t *testing.T) {
 	}
 
 	// WritableDirectoryCache should not be unmounted and moved to the cache dir
-	substring = "[mounts] Preserving cache: Copying"
+	substring = "[mounts] Preserving cache: Moving"
 	if strings.Contains(logtext, substring) {
 		t.Log(logtext)
 		t.Fatalf("Was not expecting log to contain string %v.", substring)
