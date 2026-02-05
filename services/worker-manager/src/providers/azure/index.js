@@ -218,11 +218,13 @@ export class AzureProvider extends Provider {
   async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
     const workerInfo = workerPoolStats?.forProvision() ?? {};
+    const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
     let toSpawn = await this.estimator.simple({
       workerPoolId,
       providerId: this.providerId,
       ...workerPool.config,
       workerInfo,
+      workerInfoByWorkerGroup,
     });
 
     if (toSpawn === 0 || workerPool.config?.launchConfigs?.length === 0) {
@@ -1141,6 +1143,7 @@ export class AzureProvider extends Provider {
 
   async scanPrepare() {
     this.seen = {};
+    this.seenByWorkerGroup = {};
     this.errors = {};
   }
 
@@ -1472,6 +1475,7 @@ export class AzureProvider extends Provider {
     const states = Worker.states;
     const initialState = worker.state;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
     // always update when the worker was last checked
@@ -1503,6 +1507,8 @@ export class AzureProvider extends Provider {
       case InstanceStates.OK: {
         // count this worker as having been seen for later logging
         this.seen[worker.workerPoolId] += worker.capacity || 1;
+        this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] =
+          (this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] || 0) + (worker.capacity || 1);
 
         // If the worker has not checked in recently enough, we consider it failed regardless of the Azure lifecycle
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
@@ -1645,11 +1651,13 @@ export class AzureProvider extends Provider {
       }),
     );
 
-    Object.entries(this.seen).forEach(([workerPoolId, seen]) =>
-      this.monitor.metric.scanSeen(seen, {
-        providerId: this.providerId,
-        workerPoolId,
-      }));
+    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) =>
+      Object.entries(seenByGroup).forEach(([workerGroup, seen]) =>
+        this.monitor.metric.scanSeen(seen, {
+          providerId: this.providerId,
+          workerPoolId,
+          workerGroup,
+        })));
   }
 
   /**

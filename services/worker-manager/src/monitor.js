@@ -261,6 +261,10 @@ const commonLabels = {
   workerPoolId: 'The worker pool ID',
   providerId: 'ID of the provider',
 };
+const labelsWithWorkerGroup = {
+  ...commonLabels,
+  workerGroup: 'Worker group (region/zone/location)',
+};
 
 MonitorManager.registerMetric('existingCapacity', {
   name: 'worker_manager_existing_capacity',
@@ -269,7 +273,7 @@ MonitorManager.registerMetric('existingCapacity', {
   description: `
     This number represents the running capacity of running and not quarantined workers.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 
@@ -280,7 +284,7 @@ MonitorManager.registerMetric('stoppingCapacity', {
   description: `
     This number represents the running capacity of workers that are stopping.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 
@@ -291,7 +295,7 @@ MonitorManager.registerMetric('requestedCapacity', {
   description: `
     This number represents the running capacity of workers that are requested.
   `,
-  labels: commonLabels,
+  labels: labelsWithWorkerGroup,
   registers: ['provision'],
 });
 

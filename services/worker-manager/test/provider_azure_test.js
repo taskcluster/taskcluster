@@ -197,6 +197,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.db.fns.delete_worker_pool(workerPoolId);
 
     await provider.setup();
+    provider.scanPrepare();
   });
 
   const makeWorkerPool = async (overrides = {}, launchConfigOverrides = {}) => {

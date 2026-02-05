@@ -17923,6 +17923,7 @@
           "description": "This number represents the running capacity of running and not quarantined workers.",
           "labels": {
             "providerId": "ID of the provider",
+            "workerGroup": "Worker group (region/zone/location)",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_existing_capacity",
@@ -17949,6 +17950,7 @@
           "description": "This number represents the running capacity of workers that are requested.",
           "labels": {
             "providerId": "ID of the provider",
+            "workerGroup": "Worker group (region/zone/location)",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_requested_capacity",
@@ -17962,6 +17964,7 @@
           "description": "This number represents the running capacity of workers that are stopping.",
           "labels": {
             "providerId": "ID of the provider",
+            "workerGroup": "Worker group (region/zone/location)",
             "workerPoolId": "The worker pool ID"
           },
           "name": "worker_manager_stopping_capacity",

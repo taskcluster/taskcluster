@@ -240,6 +240,8 @@ export class WorkerPoolStats {
     this.totalErrors = 0;
     this.capacityByLaunchConfig = new Map();
     this.errorsByLaunchConfig = new Map();
+    /** @type {Map<string, { existingCapacity: number, requestedCapacity: number, stoppingCapacity: number }>} */
+    this.capacityByWorkerGroup = new Map();
   }
 
   forProvision() {
@@ -248,6 +250,14 @@ export class WorkerPoolStats {
       requestedCapacity: this.requestedCapacity,
       stoppingCapacity: this.stoppingCapacity,
     };
+  }
+
+  /**
+   * Returns capacity information broken down by workerGroup (region/zone/location)
+   * @returns {Map<string, { existingCapacity: number, requestedCapacity: number, stoppingCapacity: number }>}
+   */
+  forProvisionByWorkerGroup() {
+    return this.capacityByWorkerGroup;
   }
 
   /** @param {Record<string, any>} row */
@@ -286,25 +296,35 @@ export class WorkerPoolStats {
     const isRequested = worker.state === Worker.states.REQUESTED;
     const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
 
-    if (isStopping) {
-      this.stoppingCapacity += worker.capacity;
-    } else {
-      const requestedCapacity = isRequested ? worker.capacity : 0;
-      const existingCapacity = isQuarantined ? 0 : worker.capacity;
+    const stoppingCapacity = isStopping ? worker.capacity : 0;
+    const requestedCapacity = isRequested ? worker.capacity : 0;
+    const existingCapacity = isStopping || isQuarantined ? 0 : worker.capacity;
+    const quarantineCapacity = isQuarantined ? worker.capacity : 0;
 
-      if (isQuarantined) {
-        this.quarantinedCapacity += existingCapacity;
-      }
-
-      this.existingCapacity += existingCapacity;
-      this.requestedCapacity += requestedCapacity;
-    }
+    this.stoppingCapacity += stoppingCapacity;
+    this.quarantinedCapacity += quarantineCapacity;
+    this.existingCapacity += existingCapacity;
+    this.requestedCapacity += requestedCapacity;
 
     if (worker.launchConfigId) {
       this.capacityByLaunchConfig.set(
         worker.launchConfigId,
         this.capacityByLaunchConfig.get(worker.launchConfigId) + worker.capacity || worker.capacity,
       );
+    }
+
+    if (worker.workerGroup) {
+      const workerGroupStats = this.capacityByWorkerGroup.get(worker.workerGroup) || {
+        existingCapacity: 0,
+        requestedCapacity: 0,
+        stoppingCapacity: 0,
+      };
+
+      workerGroupStats.stoppingCapacity += stoppingCapacity;
+      workerGroupStats.existingCapacity += existingCapacity;
+      workerGroupStats.requestedCapacity += requestedCapacity;
+
+      this.capacityByWorkerGroup.set(worker.workerGroup, workerGroupStats);
     }
   }
 }
