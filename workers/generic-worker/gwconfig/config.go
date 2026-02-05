@@ -30,7 +30,7 @@ type (
 		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
-		Capacity                       uint           `json:"capacity"`
+		Capacity                       uint8          `json:"capacity"`
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
@@ -115,19 +115,8 @@ func (c *Config) String() string {
 	return string(j)
 }
 
-// SetDefaults sets default values for configuration fields that have
-// zero values but should have non-zero defaults.
-func (c *Config) SetDefaults() {
-	if c.Capacity < 1 {
-		c.Capacity = 1
-	}
-}
-
 func (c *Config) Validate() error {
 	// TODO: we should be using json schema here
-
-	// Set defaults first
-	c.SetDefaults()
 
 	fields := []struct {
 		value      any

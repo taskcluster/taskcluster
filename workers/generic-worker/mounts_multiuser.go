@@ -31,14 +31,14 @@ func makeReadWritableForTaskUser(taskMount *TaskMount, fileOrDirectory string, f
 	return nil
 }
 
-func unarchive(source, destination, format string, pd *process.PlatformData, taskDir string, userName string) error {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, taskDir, []string{}, pd)
+func unarchive(source, destination, format string, ctx *TaskContext, pd *process.PlatformData) error {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, ctx.TaskDir, []string{}, pd)
 	if err != nil {
-		return fmt.Errorf("cannot create process to unarchive %v to %v as task user %v from directory %v: %v", source, destination, userName, taskDir, err)
+		return fmt.Errorf("cannot create process to unarchive %v to %v as task user %v from directory %v: %v", source, destination, ctx.User.Name, ctx.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return fmt.Errorf("cannot unarchive %v to %v as task user %v from directory %v: %v", source, destination, userName, taskDir, result)
+		return fmt.Errorf("cannot unarchive %v to %v as task user %v from directory %v: %v", source, destination, ctx.User.Name, ctx.TaskDir, result)
 	}
 	return nil
 }

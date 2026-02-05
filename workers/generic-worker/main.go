@@ -57,9 +57,13 @@ var (
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// taskContext is only used for test compatibility. Production code uses per-task contexts
-	// stored in TaskRun.Context. This global is initialized in platform-specific init() functions
-	// and by engineTestSetup() for tests.
+	// taskContext is a global TaskContext used for:
+	// 1. Tests - many tests access taskContext.TaskDir directly to build file paths
+	// 2. Non-headless multiuser mode (capacity=1) - stores the single shared task context
+	// 3. Capacity>1 - updated to the latest claimed task for test compatibility (tests read logs via LogText)
+	// 4. Directory cleanup - used by purgeOldTasks to skip the current task's directory/user
+	// Production code with capacity>1 uses per-task contexts stored in TaskRun.Context.
+	// This global is initialized in platform-specific init() functions and by engineTestSetup() for tests.
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
@@ -259,6 +263,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
+			Capacity:                       1,
 			CleanUpTaskDirs:                true,
 			DisableOOMProtection:           false,
 			DisableReboots:                 false,
@@ -577,8 +582,18 @@ mainLoop:
 				taskDirName := fmt.Sprintf("task_%s_%d", taskIDPart, task.RunID)
 				ctx := CreateTaskContext(taskDirName)
 				task.Context = ctx
-				// Update global taskContext for test compatibility (tests read logs via LogText)
-				taskContext = ctx
+				if runningTests {
+					// Update global taskContext for test compatibility (tests read logs via LogText)
+					taskContext = ctx
+				}
+
+				// Create generic-worker subdirectory for logs, etc.
+				gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
+				err = os.MkdirAll(gwDir, 0700)
+				if err != nil {
+					panic(err)
+				}
+				log.Printf("Created dir: %v", gwDir)
 
 				// Get platform data for this task's context
 				pd, err := platformDataForTaskContext(ctx)
@@ -615,15 +630,18 @@ mainLoop:
 				taskManager.AddTask(task)
 
 				go func(t *TaskRun) {
-					removed := false
+					var errors *ExecutionErrors
 					defer func() {
-						if !removed {
-							taskManager.RemoveTask(t.TaskID)
-							portManager.ReleasePorts(t.TaskID)
+						taskManager.RemoveTask(t.TaskID)
+						portManager.ReleasePorts(t.TaskID)
+						workerShutdown := errors != nil && errors.WorkerShutdown()
+						taskCompleteChan <- taskCompletionResult{
+							taskID:         t.TaskID,
+							workerShutdown: workerShutdown,
 						}
 					}()
 
-					errors := t.Run()
+					errors = t.Run()
 
 					logEvent("taskFinish", t, time.Now())
 					if errors.Occurred() {
@@ -633,15 +651,6 @@ mainLoop:
 					err := t.ReleaseResources()
 					if err != nil {
 						log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
-					}
-
-					taskManager.RemoveTask(t.TaskID)
-					portManager.ReleasePorts(t.TaskID)
-					removed = true
-
-					taskCompleteChan <- taskCompletionResult{
-						taskID:         t.TaskID,
-						workerShutdown: errors.WorkerShutdown(),
 					}
 				}(task)
 
@@ -685,10 +694,12 @@ mainLoop:
 		select {
 		case <-wait5Seconds.C:
 		case result := <-taskCompleteChan:
-			// A task completed - put the result back and immediately loop
-			// to process it at the top of the loop. The channel is buffered
-			// with capacity equal to config.Capacity, and we only take one
-			// result out, so there's always room to put it back.
+			// A task completed during the wait. Put the result back so
+			// the drain loop at the top of mainLoop processes it along
+			// with any other completions that arrived. This is safe
+			// because the channel buffer is config.Capacity and at most
+			// config.Capacity goroutines can send to it; we just removed
+			// one item, so there is always room to put it back.
 			taskCompleteChan <- result
 			continue mainLoop
 		case <-sigInterrupt:
@@ -1050,16 +1061,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// return value of this method.
 
 	err = &ExecutionErrors{}
-
-	// For capacity = 1 (task.Context is nil), manage worker status file here.
-	// For capacity > 1 (task.Context is set), TaskManager manages the status file.
-	if task.Context == nil {
-		workerStatus := &WorkerStatus{
-			CurrentTaskIDs: []string{task.TaskID},
-		}
-		err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
-		defer os.Remove(workerStatusPath)
-	}
 
 	defer func() {
 		if r := recover(); r != nil {

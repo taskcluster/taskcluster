@@ -35,7 +35,7 @@ func validateEngineConfig() error {
 
 var (
 	// don't initialise here, because cwd might not yet be initialised
-	// instead we set up later in prepareNonHeadlessTaskEnvironment
+	// instead we set up later in prepareTaskEnvironment
 	ctuPath      string
 	ntuPath      string
 	nextTaskUser string
@@ -51,9 +51,9 @@ func rebootBetweenTasks() bool {
 	return !config.HeadlessTasks
 }
 
-// setupTaskContext creates a TaskContext from user credentials and sets up the task directory.
-// This is used after reboot in non-headless mode.
-func setupTaskContext(taskUserCredentials *gwruntime.OSUser) *TaskContext {
+// PostRebootSetup creates a TaskContext from user credentials and sets up the task directory.
+// This is used after reboot in non-headless mode and returns the context.
+func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 	ctx := &TaskContext{
 		User:    taskUserCredentials,
 		TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
@@ -81,13 +81,6 @@ func setupTaskContext(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 	if err != nil {
 		panic(err)
 	}
-	// Create generic-worker subdirectory for logs, etc.
-	gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
-	err = os.MkdirAll(gwDir, 0777)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Created dir: %v", gwDir)
 	if script := config.RunAfterUserCreation; script != "" {
 		// See https://bugzil.la/1559210
 		// Regardless of whether we are running tasks as current user or
@@ -124,7 +117,7 @@ func CreateTaskContext(taskDirName string) *TaskContext {
 		if err != nil {
 			panic(fmt.Errorf("failed to load test user credentials: %v", err))
 		}
-		return setupTaskContext(taskUser)
+		return PostRebootSetup(taskUser)
 	}
 
 	if !config.HeadlessTasks {
@@ -144,7 +137,7 @@ func CreateTaskContext(taskDirName string) *TaskContext {
 	}
 	// PreRebootSetup does platform-specific user setup (e.g., Windows profile creation)
 	PreRebootSetup(taskUser)
-	return setupTaskContext(taskUser)
+	return PostRebootSetup(taskUser)
 }
 
 // prepareTaskEnvironment sets up the task environment before claiming work.
@@ -160,12 +153,6 @@ func prepareTaskEnvironment() (reboot bool) {
 		taskDirName = taskDirName[:20]
 	}
 
-	return prepareNonHeadlessTaskEnvironment(taskDirName)
-}
-
-// prepareNonHeadlessTaskEnvironment prepares the current task user and pre-creates
-// the next task user for auto-login. Returns true if a reboot is required.
-func prepareNonHeadlessTaskEnvironment(taskDirName string) (reboot bool) {
 	ctuPath = filepath.Join(cwd, "current-task-user.json")
 	ntuPath = filepath.Join(cwd, "next-task-user.json")
 
@@ -191,18 +178,28 @@ func prepareNonHeadlessTaskEnvironment(taskDirName string) (reboot bool) {
 			panic(err)
 		}
 
-		taskContext = setupTaskContext(taskUserCredentials)
+		taskContext = PostRebootSetup(taskUserCredentials)
 		reboot = false
 
 		// If there is precisely one more task to run, no need to create a future task user.
 		if config.NumberOfTasksToRun == 1 {
 			return false
 		}
-	} else if !os.IsNotExist(err) {
-		panic(err)
 	}
 
-	// Create user for subsequent task run already, before we've run current task.
+	// Bug 1533694
+	//
+	// Create user for subsequent task run already, before we've run current
+	// task, in case worker restarts unexpectedly during current task, due to
+	// e.g. Blue Screen of Death.
+
+	// Regardless of whether we run tasks as current user or not, we should
+	// make sure there is a task user created - since runTasksAsCurrentUser is
+	// now only something for CI so on Windows a generic-worker test can
+	// execute in the context of a Windows Service running under LocalSystem
+	// account. Username can only be 20 chars, uuids are too long, therefore
+	// use prefix (5 chars) plus seconds since epoch (10 chars).
+
 	nextUser := &gwruntime.OSUser{
 		Name:     taskDirName,
 		Password: gwruntime.GeneratePassword(),
@@ -212,7 +209,7 @@ func prepareNonHeadlessTaskEnvironment(taskDirName string) (reboot bool) {
 		panic(err)
 	}
 	PreRebootSetup(nextUser)
-	// Configure worker to auto-login to this newly generated user account.
+	// configure worker to auto-login to this newly generated user account
 	err = gwruntime.SetAutoLogin(nextUser)
 	if err != nil {
 		panic(err)
@@ -225,9 +222,10 @@ func prepareNonHeadlessTaskEnvironment(taskDirName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
+
 	nextTaskUser = taskDirName
 
-	return reboot
+	return
 }
 
 // platformDataForTaskContext returns platform data for a given TaskContext.
@@ -316,9 +314,9 @@ func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
 	return &user, nil
 }
 
-func MkdirAllTaskUser(dir string, taskDir string, userName string, pd *process.PlatformData) error {
+func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) error {
 	if info, err := os.Stat(dir); err == nil && info.IsDir() {
-		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), taskDir, userName, pd)
+		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), ctx, pd)
 		if err != nil {
 			return err
 		}
@@ -329,25 +327,25 @@ func MkdirAllTaskUser(dir string, taskDir string, userName string, pd *process.P
 		return os.Remove(file.Name())
 	}
 
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, taskDir, []string{}, pd)
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, ctx.TaskDir, []string{}, pd)
 	if err != nil {
-		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, userName, taskDir, err)
+		return fmt.Errorf("cannot create process to create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, userName, taskDir, result)
+		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, result)
 	}
 	return nil
 }
 
-func CreateFileAsTaskUser(file string, taskDir string, userName string, pd *process.PlatformData) (*os.File, error) {
-	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, taskDir, []string{}, pd)
+func CreateFileAsTaskUser(file string, ctx *TaskContext, pd *process.PlatformData) (*os.File, error) {
+	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-file", "--create-file", file}, ctx.TaskDir, []string{}, pd)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, userName, taskDir, err)
+		return nil, fmt.Errorf("cannot create process to create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, err)
 	}
 	result := cmd.Execute()
 	if result.ExitError != nil {
-		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, userName, taskDir, result)
+		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, result)
 	}
 	return os.OpenFile(file, os.O_RDWR, 0600)
 }

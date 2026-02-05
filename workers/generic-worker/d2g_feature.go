@@ -17,10 +17,14 @@ import (
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 )
 
-// d2gCacheMutex protects access to the d2g-image-cache.json file
-// for concurrent task execution (capacity > 1)
-var d2gCacheMutex sync.Mutex
-var d2gImageLoadMutex sync.Mutex
+var (
+	// d2gCacheMutex protects access to the d2g-image-cache.json file
+	// for concurrent task execution (capacity > 1)
+	d2gCacheMutex sync.Mutex
+	// d2gImageLoadMutex protects concurrent docker image loads
+	// for concurrent task execution (capacity > 1)
+	d2gImageLoadMutex sync.Mutex
+)
 
 type (
 	D2GFeature struct {
@@ -187,7 +191,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			// Docker image artifacts frequently reuse tags. Serialize loads so that
 			// tag -> ID resolution isn't raced by another load.
 			d2gImageLoadMutex.Lock()
-			defer d2gImageLoadMutex.Unlock()
 
 			// Refresh cache from disk in case another task loaded this image
 			// while we were waiting to acquire the lock.
@@ -197,15 +200,19 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			d2gCacheMutex.Unlock()
 			maps.Copy(dtf.imageCache, latestCache)
 			image = latestCache[key]
-		}
-		if image == nil {
-			var loadErr *CommandExecutionError
-			image, loadErr = loadImage()
-			if loadErr != nil {
-				return loadErr
+
+			if image == nil {
+				var loadErr *CommandExecutionError
+				image, loadErr = loadImage()
+				if loadErr != nil {
+					d2gImageLoadMutex.Unlock()
+					return loadErr
+				}
+				dtf.imageCache[key] = image
+				loadedImage = true
 			}
-			dtf.imageCache[key] = image
-			loadedImage = true
+
+			d2gImageLoadMutex.Unlock()
 		}
 	} else {
 		var loadErr *CommandExecutionError
@@ -308,13 +315,10 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	d2gCacheMutex.Lock()
 	mergedCache := ImageCache{}
 	mergedCache.loadFromFile("d2g-image-cache.json")
-	if mergedCache == nil {
-		mergedCache = ImageCache{}
-	}
 	maps.Copy(mergedCache, dtf.imageCache)
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&mergedCache, "d2g-image-cache.json")))
-	d2gCacheMutex.Unlock()
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
+	d2gCacheMutex.Unlock()
 }
 
 func (ic *ImageCache) loadFromFile(stateFile string) {

@@ -13,13 +13,13 @@ import (
 type TaskManager struct {
 	sync.RWMutex
 	runningTasks map[string]*TaskRun
-	capacity     uint
+	capacity     uint8
 	wg           sync.WaitGroup
 	lastActive   time.Time
 }
 
 // NewTaskManager creates a new TaskManager with the given capacity.
-func NewTaskManager(capacity uint) *TaskManager {
+func NewTaskManager(capacity uint8) *TaskManager {
 	return &TaskManager{
 		runningTasks: make(map[string]*TaskRun),
 		capacity:     capacity,
@@ -32,10 +32,11 @@ func (tm *TaskManager) AvailableCapacity() uint {
 	tm.RLock()
 	defer tm.RUnlock()
 	running := uint(len(tm.runningTasks))
-	if running >= tm.capacity {
+	capacity := uint(tm.capacity)
+	if running >= capacity {
 		return 0
 	}
-	return tm.capacity - running
+	return capacity - running
 }
 
 // AddTask registers a task as running. Must be called before starting the task goroutine.
@@ -126,15 +127,13 @@ func (tm *TaskManager) updateWorkerStatusLocked() {
 		ids = append(ids, id)
 	}
 
-	status := &WorkerStatus{
-		CurrentTaskIDs: ids,
-	}
-
 	if len(ids) == 0 {
 		// No tasks running, remove the status file
 		os.Remove(workerStatusPath)
 	} else {
-		// Write status file with all running task IDs
+		status := &WorkerStatus{
+			CurrentTaskIDs: ids,
+		}
 		_ = fileutil.WriteToFileAsJSON(status, workerStatusPath)
 	}
 }

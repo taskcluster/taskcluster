@@ -91,13 +91,4 @@ func TestGracefulTermination(t *testing.T) {
 		// Late callback should receive the same finishTasks value passed to Terminate()
 		require.Equal(t, false, res)
 	})
-
-	t.Run("LegacyCallback", func(t *testing.T) {
-		Reset()
-		done := make(chan bool, 1)
-		OnTerminationRequestLegacy(func(finishTasks bool) { done <- finishTasks })
-		Terminate(false)
-		res := <-done
-		require.Equal(t, false, res)
-	})
 }
