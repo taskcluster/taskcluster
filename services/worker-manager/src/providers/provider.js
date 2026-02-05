@@ -289,6 +289,7 @@ export class Provider {
       this.monitor.metric.workerRegistrationDuration(durationSeconds, {
         workerPoolId: worker.workerPoolId,
         providerId: this.providerId,
+        workerGroup: worker.workerGroup,
       });
     }
 
@@ -329,6 +330,7 @@ export class Provider {
         this.monitor.metric.workerLifetime(durationSeconds, {
           workerPoolId: worker.workerPoolId,
           providerId: this.providerId,
+          workerGroup: worker.workerGroup,
         });
       }
     } else if (currentState === Worker.states.REQUESTED) {
@@ -336,6 +338,7 @@ export class Provider {
       this.monitor.metric.workerRegistrationFailure(1, {
         workerPoolId: worker.workerPoolId,
         providerId: this.providerId,
+        workerGroup: worker.workerGroup,
       });
     }
   }

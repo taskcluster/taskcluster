@@ -214,6 +214,7 @@ export class GoogleProvider extends Provider {
   async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
     const workerInfo = workerPoolStats?.forProvision() ?? {};
+    const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -225,6 +226,7 @@ export class GoogleProvider extends Provider {
       providerId: this.providerId,
       ...workerPool.config,
       workerInfo,
+      workerInfoByWorkerGroup,
     });
 
     if (toSpawn === 0 || workerPool.config?.launchConfigs?.length === 0) {
@@ -386,6 +388,7 @@ export class GoogleProvider extends Provider {
    */
   async scanPrepare() {
     this.seen = {};
+    this.seenByWorkerGroup = {};
     this.errors = {};
   }
 
@@ -396,6 +399,7 @@ export class GoogleProvider extends Provider {
   async checkWorker({ worker }) {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
     const monitor = this.workerMonitor({ worker });
@@ -411,6 +415,8 @@ export class GoogleProvider extends Provider {
       monitor.debug(`instance status is ${status}`);
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
+        this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] =
+          (this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] || 0) + (worker.capacity || 1);
 
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           // reload the worker to make sure we have the latest data
@@ -483,14 +489,18 @@ export class GoogleProvider extends Provider {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
-      this.monitor.metric.scanSeen(seen, {
-        providerId: this.providerId,
-        workerPoolId,
-      });
+      const seenByGroup = this.seenByWorkerGroup[workerPoolId] || {};
+      Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) =>
+        this.monitor.metric.scanSeen(groupSeen, {
+          providerId: this.providerId,
+          workerPoolId,
+          workerGroup,
+        }));
 
       if (this.errors[workerPoolId].length) {
         await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
+
       this.monitor.metric.scanErrors(this.errors[workerPoolId].length, {
         providerId: this.providerId,
         workerPoolId,

@@ -10,7 +10,8 @@ export class Estimator {
     minCapacity,
     maxCapacity,
     scalingRatio = 1.0,
-    workerInfo: { existingCapacity, stoppingCapacity = 0, requestedCapacity = 0 },
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+    workerInfoByWorkerGroup = new Map(),
   }) {
     const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
 
@@ -75,9 +76,19 @@ export class Estimator {
     // how many extra we want if we do want any
     const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
 
-    this.exposeMetrics({ workerPoolId, providerId, existingCapacity, stoppingCapacity,
-      requestedCapacity, desiredCapacity, totalIdleCapacity, adjustedPendingTasks,
-      pendingTasks, claimedTasks });
+    this.exposeMetrics({
+      workerPoolId,
+      providerId,
+      existingCapacity,
+      stoppingCapacity,
+      requestedCapacity,
+      desiredCapacity,
+      totalIdleCapacity,
+      adjustedPendingTasks,
+      pendingTasks,
+      claimedTasks,
+      workerInfoByWorkerGroup,
+    });
 
     // subtract the instances that are starting up from that number to spawn
     // if the value is <= 0, than we don't need to spawn any new instance
@@ -85,10 +96,48 @@ export class Estimator {
   }
 
   /**
-   * @param {Record<string, string|number>} options
+   * Expose all metrics for provisioning
+   * @param {{
+   *    workerPoolId: string, providerId: string,
+   *    existingCapacity: number, stoppingCapacity: number, requestedCapacity: number,
+   *    desiredCapacity: number, totalIdleCapacity: number, adjustedPendingTasks: number,
+   *    pendingTasks: number, claimedTasks: number,
+   *    workerInfoByWorkerGroup: Map<string, {
+   *        existingCapacity: number, stoppingCapacity: number, requestedCapacity: number }>,
+   *  }} metrics
    */
-  exposeMetrics({ workerPoolId, providerId, ...metrics }) {
-    Object.keys(metrics).forEach(name =>
-      this.monitor.metric[name](metrics[name], { workerPoolId, providerId }));
+  exposeMetrics({
+    workerPoolId,
+    providerId,
+    existingCapacity,
+    stoppingCapacity,
+    requestedCapacity,
+    desiredCapacity,
+    totalIdleCapacity,
+    adjustedPendingTasks,
+    pendingTasks,
+    claimedTasks,
+    workerInfoByWorkerGroup,
+  }) {
+    const poolLabels = { workerPoolId, providerId };
+
+    this.monitor.metric.desiredCapacity(desiredCapacity, poolLabels);
+    this.monitor.metric.totalIdleCapacity(totalIdleCapacity, poolLabels);
+    this.monitor.metric.adjustedPendingTasks(adjustedPendingTasks, poolLabels);
+    this.monitor.metric.pendingTasks(pendingTasks, poolLabels);
+    this.monitor.metric.claimedTasks(claimedTasks, poolLabels);
+
+    if (workerInfoByWorkerGroup.size > 0) {
+      for (const [workerGroup, info] of workerInfoByWorkerGroup) {
+        const labels = { workerPoolId, providerId, workerGroup };
+        this.monitor.metric.existingCapacity(info.existingCapacity, labels);
+        this.monitor.metric.stoppingCapacity(info.stoppingCapacity, labels);
+        this.monitor.metric.requestedCapacity(info.requestedCapacity, labels);
+      }
+    } else {
+      this.monitor.metric.existingCapacity(existingCapacity, poolLabels);
+      this.monitor.metric.stoppingCapacity(stoppingCapacity, poolLabels);
+      this.monitor.metric.requestedCapacity(requestedCapacity, poolLabels);
+    }
   }
 }
