@@ -553,41 +553,41 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
 		`No existing writable directory cache 'banana-cache' - creating .*`,
-		`Copying writable directory cache banana-cache from .* to .*` + t.Name(),
-	},
-		updatingOwnership...,
-	)
-	pass1 = append(pass1,
-		`Downloading task `+taskID+` artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task `+taskID+` artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Download .* of task `+taskID+` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-		`Creating directory .*`+t.Name(),
+		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Creating directory .*` + t.Name(),
 		`Copying file '.*' to '.*'`,
+	},
+		grantingCacheFile...,
 	)
-	pass1 = append(pass1, grantingCacheFile...)
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
+		grantingDir...,
+	)
+	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
-		`Preserving cache: Copying ".*`+t.Name()+`" to ".*"`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`Copying writable directory cache banana-cache from .* to .*` + t.Name(),
+		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
+		`Creating directory .*`,
 	},
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
-		`Preserving cache: Copying ".*`+t.Name()+`" to ".*"`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
 
 	LogTest(
@@ -852,40 +852,55 @@ func TestCacheMoved(t *testing.T) {
 	// whether permission is granted to task user depends if running under windows or not
 	// and is independent of whether running as current user or not
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
 		`No existing writable directory cache 'banana-cache' - creating .*`,
-		`Copying writable directory cache banana-cache from .* to .*` + t.Name(),
-	},
-		updatingOwnership...,
-	)
-	pass1 = append(pass1,
-		`Downloading task `+taskID+` artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task `+taskID+` artifact public/build/unknown_issuer_app_1.zip to .*`,
-		`Content from task `+taskID+` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-		`Creating directory .*`+t.Name(),
+		`Downloading task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Content from task ` + taskID + ` artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*` + t.Name(),
 		`Copying file '.*' to '.*'`,
+	},
+		grantingCacheFile...,
 	)
-	pass1 = append(pass1, grantingCacheFile...)
 	pass1 = append(pass1,
 		`Extracting zip file .* to '.*`+t.Name()+`'`,
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
+		grantingDir...,
+	)
+	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
+		`Removing cache banana-cache from cache table`,
+		`Deleting cache banana-cache file\(s\) at .*`,
 		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
 	)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
-		`Copying writable directory cache banana-cache from .* to .*` + t.Name(),
+		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`Found existing download for artifact:` + taskID + `:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*` + t.Name(),
+		`Copying file '.*' to '.*'`,
 	},
-		updatingOwnership...,
+		grantingCacheFile...,
+	)
+	pass2 = append(pass2,
+		`Extracting zip file .* to '.*`+t.Name()+`'`,
+		`Removing file '.*'`,
+	)
+	pass2 = append(pass2,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
+		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
+		`Removing cache banana-cache from cache table`,
+		`Deleting cache banana-cache file\(s\) at .*`,
 		`Could not unmount task `+taskID+` artifact public/build/unknown_issuer_app_1.zip due to: 'could not persist cache "banana-cache" due to .*'`,
 	)
 

@@ -14,6 +14,14 @@ func makeFileReadWritableForTaskUser(taskMount *TaskMount, file string) error {
 }
 
 func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
+	// Skip recursive ownership changes for d2g tasks since file ownership
+	// inside the container is determined by the container itself (there's
+	// no UID mapping). Changing ownership to the host task user would break
+	// the container's expectations (e.g., files created as uid=1000 inside
+	// the container would become owned by a different UID).
+	if taskMount.task.D2GInfo != nil {
+		return nil
+	}
 	return makeReadWritableForTaskUser(taskMount, dir, "directory", true)
 }
 
