@@ -3,6 +3,44 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.2.0
+
+### DEPLOYERS
+
+▶ [patch]
+Adds `securityContext.runAsNonRoot: true` and `securityContext.allowPrivilegeEscalation: false` to all k8s Deployments and CronJobs. Containers are all now run as non-root, `node` user (UID/GID 1000).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#8247](https://github.com/taskcluster/taskcluster/issues/8247)
+Worker-manager includes workerGroup label for some metrics (location/zone/region): `existing_capacity`, `stopping_capacity`, `requested_capacity`
+
+▶ [patch] [#8245](https://github.com/taskcluster/taskcluster/issues/8245)
+Adds missing providerId label to all worker-manager exposed metrics.
+
+### USERS
+
+▶ [patch]
+github: add the task id to the task status header
+
+### Automated Package Updates
+
+<details>
+<summary>10 Dependabot updates</summary>
+
+* build(deps): bump bytes from 1.9.0 to 1.11.1 in /clients/client-rust (5f66e6b34f)
+* build(deps): bump the client-python-deps group (337661faf5)
+* build(deps): bump the client-rust-deps group (5709a60d75)
+* build(deps): bump the go-deps group with 5 updates (3122780cd5)
+* build(deps): bump the client-web-node-deps group (4fedf3d983)
+* build(deps): bump taskcluster-lib-urls (a1e90dba3c)
+* build(deps): bump dependabot/fetch-metadata in the gh-actions-deps group (f17db7d7b0)
+* build(deps): bump tar from 7.5.6 to 7.5.7 (a5091121f2)
+* build(deps): bump github.com/sigstore/rekor from 1.4.3 to 1.5.0 (edb1865679)
+* build(deps): bump github.com/theupdateframework/go-tuf/v2 (fd55681b4a)
+
+</details>
+
 ## v96.1.0
 
 ### WORKER-DEPLOYERS

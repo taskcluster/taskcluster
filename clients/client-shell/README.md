@@ -27,15 +27,15 @@ platform, run `chmod +x` and run it!
 
 MacOS users run the following command:
 ```bash
-curl -L https://github.com/taskcluster/taskcluster/releases/download/v96.1.0/taskcluster-darwin-amd64.tar.gz --output taskcluster.tar.gz && tar -xvf taskcluster.tar.gz && rm taskcluster.tar.gz && chmod +x taskcluster
+curl -L https://github.com/taskcluster/taskcluster/releases/download/v96.2.0/taskcluster-darwin-amd64.tar.gz --output taskcluster.tar.gz && tar -xvf taskcluster.tar.gz && rm taskcluster.tar.gz && chmod +x taskcluster
 ```
 This is to ensure the binary is not quarantined by MacOS.
 You will need to `chmod +x` of
 course.
 
- * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v96.1.0/taskcluster-linux-amd64.tar.gz)
- * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v96.1.0/taskcluster-darwin-amd64.tar.gz)
- * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v96.1.0/taskcluster-darwin-arm64.tar.gz)
+ * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v96.2.0/taskcluster-linux-amd64.tar.gz)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v96.2.0/taskcluster-darwin-amd64.tar.gz)
+ * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v96.2.0/taskcluster-darwin-arm64.tar.gz)
 
 ## Usage
 
