@@ -44,9 +44,12 @@ var (
 	// lastQueriedPurgeCacheService for concurrent task execution (capacity > 1)
 	cacheMutex sync.RWMutex
 
-	// cachePromotionLocks provides non-blocking promotion locks per cache name.
-	cachePromotionMu    sync.Mutex
-	cachePromotionLocks = map[string]chan struct{}{}
+	// cacheRWLocks provides per-cache RWMutex locks. Mount takes an RLock
+	// while copying from the authoritative cache dir (concurrent reads OK).
+	// Unmount takes a write Lock while swapping the cache dir contents
+	// (exclusive with reads and other writes).
+	cacheRWMu    sync.Mutex
+	cacheRWLocks = map[string]*sync.RWMutex{}
 )
 
 type (
@@ -68,21 +71,16 @@ func (cm CacheMap) SortedResources() Resources {
 	return r
 }
 
-func tryAcquireCachePromotion(cacheName string) (release func(), ok bool) {
-	cachePromotionMu.Lock()
-	ch := cachePromotionLocks[cacheName]
-	if ch == nil {
-		ch = make(chan struct{}, 1)
-		cachePromotionLocks[cacheName] = ch
+// getCacheRWLock returns the per-cache RWMutex, creating one if needed.
+func getCacheRWLock(cacheName string) *sync.RWMutex {
+	cacheRWMu.Lock()
+	defer cacheRWMu.Unlock()
+	rw := cacheRWLocks[cacheName]
+	if rw == nil {
+		rw = &sync.RWMutex{}
+		cacheRWLocks[cacheName] = rw
 	}
-	cachePromotionMu.Unlock()
-
-	select {
-	case ch <- struct{}{}:
-		return func() { <-ch }, true
-	default:
-		return nil, false
-	}
+	return rw
 }
 
 type Cache struct {
@@ -178,12 +176,7 @@ func (taskMount *TaskMount) Error(message string) {
 
 func MkdirAll(taskMount *TaskMount, dir string) error {
 	taskMount.Infof("Creating directory %v", dir)
-	ctx := taskMount.task.GetContext()
-	userName := ""
-	if ctx.User != nil {
-		userName = ctx.User.Name
-	}
-	return MkdirAllTaskUser(dir, ctx.TaskDir, userName, taskMount.task.pd)
+	return MkdirAllTaskUser(dir, taskMount.task.GetContext(), taskMount.task.pd)
 }
 
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -506,8 +499,8 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	cacheMutex.Lock()
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&fileCaches, "file-caches.json")))
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")))
-	cacheMutex.Unlock()
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("file-caches.json", "directory-caches.json")))
+	cacheMutex.Unlock()
 }
 
 func (taskMount *TaskMount) shouldPurgeCaches() bool {
@@ -625,8 +618,14 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			return fmt.Errorf("not able to stat directory %v: %v", parentDir, err)
 		}
 	}
-	if err := fileutil.CopyDir(cacheLocation, target); err != nil {
-		return fmt.Errorf("not able to copy directory %v to %v: %v", cacheLocation, target, err)
+	// Hold the per-cache read lock while copying so that a concurrent
+	// Unmount (promotion) cannot swap out the cache directory mid-copy.
+	rw := getCacheRWLock(w.CacheName)
+	rw.RLock()
+	copyErr := fileutil.CopyDir(cacheLocation, target)
+	rw.RUnlock()
+	if copyErr != nil {
+		return fmt.Errorf("not able to copy directory %v to %v: %v", cacheLocation, target, copyErr)
 	}
 
 	// Regardless of whether we are running as current user, grant task user access
@@ -664,12 +663,12 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		return Failure(fmt.Errorf("could not persist cache %q due to %v", w.CacheName, err))
 	}
 
-	release, acquired := tryAcquireCachePromotion(w.CacheName)
-	if !acquired {
-		taskMount.Infof("Cache %q busy; skipping promotion", w.CacheName)
+	rw := getCacheRWLock(w.CacheName)
+	if !rw.TryLock() {
+		taskMount.Warnf("Cache %q busy; skipping promotion", w.CacheName)
 		return nil
 	}
-	defer release()
+	defer rw.Unlock()
 
 	cacheMutex.RLock()
 	cache := directoryCaches[w.CacheName]
@@ -679,7 +678,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	}
 
 	if cache.Generation != state.baseGeneration {
-		taskMount.Infof("Cache %q changed (generation %d -> %d); skipping promotion", w.CacheName, state.baseGeneration, cache.Generation)
+		taskMount.Warnf("Cache %q changed (generation %d -> %d); skipping promotion", w.CacheName, state.baseGeneration, cache.Generation)
 		return nil
 	}
 
@@ -857,12 +856,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	taskMount.Infof("Extracting %v file %v to '%v'", format, copyToPath, dir)
 	// Useful for worker logs too (not just task logs)
 	log.Printf("[mounts] Extracting %v file %v to '%v'", format, copyToPath, dir)
-	ctx := taskMount.task.GetContext()
-	userName := ""
-	if ctx.User != nil {
-		userName = ctx.User.Name
-	}
-	return unarchive(copyToPath, dir, format, taskMount.task.pd, ctx.TaskDir, userName)
+	return unarchive(copyToPath, dir, format, taskMount.task.GetContext(), taskMount.task.pd)
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
@@ -897,12 +891,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
-		ctx := taskMount.task.GetContext()
-		userName := ""
-		if ctx.User != nil {
-			userName = ctx.User.Name
-		}
-		dst, err := CreateFileAsTaskUser(file, ctx.TaskDir, userName, taskMount.task.pd)
+		dst, err := CreateFileAsTaskUser(file, taskMount.task.GetContext(), taskMount.task.pd)
 		if err != nil {
 			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
@@ -932,12 +921,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	ctx := taskMount.task.GetContext()
-	userName := ""
-	if ctx.User != nil {
-		userName = ctx.User.Name
-	}
-	dst, err := CreateFileAsTaskUser(file, ctx.TaskDir, userName, taskMount.task.pd)
+	dst, err := CreateFileAsTaskUser(file, taskMount.task.GetContext(), taskMount.task.pd)
 	if err != nil {
 		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}

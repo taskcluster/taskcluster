@@ -1,9 +1,6 @@
 package graceful
 
-import (
-	"strconv"
-	"sync"
-)
+import "sync"
 
 type GracefulTerminationFunc func(bool)
 
@@ -19,9 +16,6 @@ var (
 
 	// callbacks for graceful termination, keyed by unique ID (e.g., task ID)
 	callbacks = make(map[string]GracefulTerminationFunc)
-
-	// nextID is used to generate unique IDs when none is provided
-	nextID int
 )
 
 // Return true if graceful termination has been requested
@@ -55,18 +49,6 @@ func OnTerminationRequest(id string, f GracefulTerminationFunc) func() {
 	}
 }
 
-// OnTerminationRequestLegacy provides backwards compatibility with code that
-// expects only one callback. It generates a unique ID internally.
-// Returns a function which, when called, will remove the callback.
-func OnTerminationRequestLegacy(f GracefulTerminationFunc) func() {
-	m.Lock()
-	id := nextID
-	nextID++
-	m.Unlock()
-
-	return OnTerminationRequest(strconv.Itoa(id), f)
-}
-
 // A graceful termination has been requested. Set a flag so that no further
 // tasks are claimed, and call all registered callbacks.
 // If finishTasks is true, tasks should be allowed to complete.
@@ -92,7 +74,6 @@ func Reset() {
 	terminationRequested = false
 	terminationFinishTasks = false
 	callbacks = make(map[string]GracefulTerminationFunc)
-	nextID = 0
 }
 
 // CallbackCount returns the number of registered callbacks (useful for testing)

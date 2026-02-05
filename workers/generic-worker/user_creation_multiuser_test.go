@@ -22,12 +22,12 @@ func TestRunAfterUserCreation(t *testing.T) {
 	}
 	config.RunAfterUserCreation = filepath.Join(testdataDir, script)
 
-	// Load the test user credentials directly and call setupTaskContext
+	// Load the test user credentials directly and call PostRebootSetup
 	taskUser, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
 	if err != nil {
 		t.Fatalf("Could not load test user credentials: %v", err)
 	}
-	ctx := setupTaskContext(taskUser)
+	ctx := PostRebootSetup(taskUser)
 
 	defer func() {
 		err := purgeOldTasks()

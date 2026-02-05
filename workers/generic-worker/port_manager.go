@@ -20,17 +20,21 @@ const (
 type PortManager struct {
 	sync.Mutex
 	allocated       map[string][]uint16 // taskID -> allocated ports
+	slots           map[string]uint8    // taskID -> slot index
+	usedSlots       map[uint8]bool      // slot index -> in use
 	liveLogBase     uint16
 	interactiveBase uint16
 	proxyBase       uint16
-	capacity        uint
+	capacity        uint8
 }
 
 // NewPortManager creates a new PortManager.
 // basePort is used to calculate dynamic ports for each task slot.
-func NewPortManager(liveLogBase, interactiveBase, proxyBase uint16, capacity uint) *PortManager {
+func NewPortManager(liveLogBase, interactiveBase, proxyBase uint16, capacity uint8) *PortManager {
 	return &PortManager{
 		allocated:       make(map[string][]uint16),
+		slots:           make(map[string]uint8),
+		usedSlots:       make(map[uint8]bool),
 		liveLogBase:     liveLogBase,
 		interactiveBase: interactiveBase,
 		proxyBase:       proxyBase,
@@ -50,13 +54,13 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 	}
 
 	// Find an available slot
-	slot := pm.findAvailableSlot()
-	if slot < 0 {
+	slot, ok := pm.findAvailableSlot()
+	if !ok {
 		return nil, fmt.Errorf("no available port slots (capacity=%d, allocated=%d)", pm.capacity, len(pm.allocated))
 	}
 
 	// Calculate ports for this slot
-	offset := uint16(slot * gwconfig.PortsPerTask)
+	offset := uint16(slot) * uint16(gwconfig.PortsPerTask)
 	ports := []uint16{
 		pm.liveLogBase + offset,     // LiveLog GET
 		pm.liveLogBase + offset + 1, // LiveLog PUT
@@ -65,6 +69,8 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 	}
 
 	pm.allocated[taskID] = ports
+	pm.slots[taskID] = slot
+	pm.usedSlots[slot] = true
 	return ports, nil
 }
 
@@ -72,7 +78,11 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 func (pm *PortManager) ReleasePorts(taskID string) {
 	pm.Lock()
 	defer pm.Unlock()
+	if slot, exists := pm.slots[taskID]; exists {
+		delete(pm.usedSlots, slot)
+	}
 	delete(pm.allocated, taskID)
+	delete(pm.slots, taskID)
 }
 
 // GetPorts returns the ports allocated to a task, or nil if not allocated.
@@ -115,21 +125,13 @@ func (pm *PortManager) TaskclusterProxyPort(taskID string) (uint16, bool) {
 	return ports[PortIndexTaskclusterProxy], true
 }
 
-// findAvailableSlot returns the first available slot index, or -1 if none available.
+// findAvailableSlot returns the first available slot index.
 // Must be called with the lock held.
-func (pm *PortManager) findAvailableSlot() int {
-	usedSlots := make(map[uint]bool)
-	for _, ports := range pm.allocated {
-		if len(ports) > 0 {
-			// Calculate which slot this allocation belongs to
-			slot := uint(ports[0]-pm.liveLogBase) / uint(gwconfig.PortsPerTask)
-			usedSlots[slot] = true
+func (pm *PortManager) findAvailableSlot() (uint8, bool) {
+	for i := uint8(0); i < pm.capacity; i++ {
+		if !pm.usedSlots[i] {
+			return i, true
 		}
 	}
-	for i := uint(0); i < pm.capacity; i++ {
-		if !usedSlots[i] {
-			return int(i)
-		}
-	}
-	return -1
+	return 0, false
 }
