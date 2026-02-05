@@ -3,6 +3,10 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.2.1
+
+
+
 ## v96.2.0
 
 ### DEPLOYERS
