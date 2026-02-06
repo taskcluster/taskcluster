@@ -18,7 +18,10 @@ func (feature *RunTaskAsCurrentUserFeature) Initialise() error {
 }
 
 func (feature *RunTaskAsCurrentUserFeature) IsEnabled() bool {
-	return config.EnableRunTaskAsCurrentUser
+	// Disabled when capacity > 1: running as the worker user would bypass
+	// per-task user isolation, giving the task full access to other tasks'
+	// directories, proxy ports, and credentials.
+	return config.EnableRunTaskAsCurrentUser && config.Capacity == 1
 }
 
 func (feature *RunTaskAsCurrentUserFeature) IsRequested(task *TaskRun) bool {

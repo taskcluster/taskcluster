@@ -136,7 +136,10 @@ and reports back results to the queue.
                                             multiple tasks in parallel, each in its own task
                                             directory with isolated ports for LiveLog,
                                             Interactive, and TaskclusterProxy features. Requires
-                                            headlessTasks enabled. Maximum value is 255.
+                                            headlessTasks enabled. The runAsCurrentUser and
+                                            runAsAdministrator task features are automatically
+                                            disabled when capacity > 1 to preserve task
+                                            isolation. Maximum value is 255.
                                             [default: 1]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
@@ -218,7 +221,9 @@ and reports back results to the queue.
           enableLoopbackVideo               Enables the Loopback Video feature to be used in the
                                             task payload. [default: true]
           enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
-                                            used in the task payload. [default: true]
+                                            used in the task payload. Automatically disabled
+                                            when capacity > 1 to preserve task isolation.
+                                            [default: true]
           headlessTasks                     If true, no dedicated graphical session will be available to tasks.
                                             There will also be no reboots between tasks and multiple workers
                                             can be run on the same host. Useful for tasks that don't require
