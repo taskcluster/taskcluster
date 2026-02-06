@@ -619,10 +619,11 @@ mainLoop:
 					return INTERNAL_ERROR
 				}
 				task.AllocatedPorts = allocatedPorts
-				log.Printf("Task %s allocated ports: LiveLog=%d/%d, Interactive=%d, TaskclusterProxy=%d",
+				log.Printf("Task %s allocated ports: LiveLog=%d/%d, Interactive=%d, TaskclusterProxy=%d, TaskclusterProxyInternal=%d",
 					task.TaskID,
 					allocatedPorts[PortIndexLiveLogGET], allocatedPorts[PortIndexLiveLogPUT],
-					allocatedPorts[PortIndexInteractive], allocatedPorts[PortIndexTaskclusterProxy])
+					allocatedPorts[PortIndexInteractive], allocatedPorts[PortIndexTaskclusterProxy],
+					allocatedPorts[PortIndexTaskclusterProxyInternal])
 
 				logEvent("taskQueued", task, time.Time(task.Definition.Created))
 				logEvent("taskStart", task, time.Now())

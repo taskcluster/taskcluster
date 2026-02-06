@@ -24,6 +24,7 @@ import (
 // Routes represents the context of the running service
 type Routes struct {
 	tcclient.Client
+	Secret   string
 	services tc.Services
 	lock     sync.RWMutex
 }
@@ -43,10 +44,14 @@ var httpClient = &http.Client{
 	},
 }
 
-// NewRoutes creates a new Routes instance.
-func NewRoutes(client tcclient.Client) Routes {
+// NewRoutes creates a new Routes instance. If secret is non-empty, all
+// incoming requests must include the secret as a URL path prefix (e.g.
+// /<secret>/api/queue/v1/...). This prevents cross-task proxy access
+// when multiple tasks share the same loopback interface.
+func NewRoutes(client tcclient.Client, secret string) Routes {
 	return Routes{
 		Client:   client,
+		Secret:   secret,
 		services: tc.NewServices(client.RootURL),
 	}
 }
@@ -85,6 +90,20 @@ func (routes *Routes) setHeaders(res http.ResponseWriter) {
 // *Handler methods.  Note that we cannot use ServeMux for this as it mangles
 // URLs and sends redircts.
 func (routes *Routes) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// If a secret is configured, require Authorization: Bearer <secret> header.
+	// This prevents cross-task proxy access when multiple tasks share the
+	// same loopback interface (capacity > 1). The header is removed before
+	// forwarding so it doesn't leak to upstream services.
+	if routes.Secret != "" {
+		auth := r.Header.Get("Authorization")
+		if auth != "Bearer "+routes.Secret {
+			w.WriteHeader(403)
+			fmt.Fprint(w, "Forbidden: invalid or missing proxy authorization")
+			return
+		}
+		r.Header.Del("Authorization")
+	}
+
 	url := r.URL.String()
 	if strings.HasPrefix(url, "/bewit") {
 		routes.BewitHandler(w, r)

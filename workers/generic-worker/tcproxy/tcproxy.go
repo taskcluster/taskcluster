@@ -22,11 +22,14 @@ type TaskclusterProxy struct {
 	command  *exec.Cmd
 	HTTPPort uint16
 	Pid      int
+	Secret   string
 }
 
 // New starts a tcproxy OS process using the executable specified, and returns
-// a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+// a *TaskclusterProxy. If secret is non-empty, it is passed to the proxy
+// process via the TASKCLUSTER_PROXY_SECRET environment variable, enabling
+// per-task URL path prefix authentication.
+func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials, secret string) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
@@ -41,9 +44,13 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	l := &TaskclusterProxy{
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,
+		Secret:   secret,
 	}
 	l.command.Stdout = os.Stdout
 	l.command.Stderr = os.Stderr
+	if secret != "" {
+		l.command.Env = append(os.Environ(), "TASKCLUSTER_PROXY_SECRET="+secret)
+	}
 	err := l.command.Start()
 	// Note - we're assuming here that if the process fails to launch we'll get
 	// an error. We should test this to be sure.

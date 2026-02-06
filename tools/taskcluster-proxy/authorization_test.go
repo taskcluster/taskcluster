@@ -149,6 +149,7 @@ func TestBewit(t *testing.T) {
 					RootURL:     testrooturl.Get(t),
 					Credentials: creds,
 				},
+				"",
 			)
 			if useAuthorizedScopes {
 				routes.Credentials.AuthorizedScopes = []string{"test:authenticate-get"}
@@ -225,6 +226,7 @@ func TestBewitArbitraryURL(t *testing.T) {
 				RootURL:     testrooturl.Get(t),
 				Credentials: creds,
 			},
+			"",
 		)
 
 		u := "https://tc.example.com/some/path?somekey=someval"
@@ -292,6 +294,7 @@ func TestAPICallGET(t *testing.T) {
 						Certificate: creds.Certificate,
 					},
 				},
+				"",
 			)
 			if len(scopes) > 0 {
 				routes.Credentials.AuthorizedScopes = scopes
@@ -348,6 +351,7 @@ func TestAPICallPOST(t *testing.T) {
 						Certificate: creds.Certificate,
 					},
 				},
+				"",
 			)
 			if len(scopes) > 0 {
 				routes.Credentials.AuthorizedScopes = scopes
@@ -405,6 +409,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 				Authenticate: true,
 				Credentials:  creds,
 			},
+			"",
 		)
 		taskID := slugid.Nice()
 
@@ -442,6 +447,7 @@ func TestOversteppedScopes(t *testing.T) {
 				Authenticate: true,
 				Credentials:  creds,
 			},
+			"",
 		)
 
 		// This scope is not in the scopes of the temp credentials, which would
@@ -487,6 +493,7 @@ func TestBadCredsReturns500(t *testing.T) {
 				Certificate: "ghi", // baaaad certificate
 			},
 		},
+		"",
 	)
 	req, err := http.NewRequest(
 		"GET",
@@ -515,6 +522,7 @@ func TestInvalidEndpoint(t *testing.T) {
 				Authenticate: true,
 				Credentials:  creds,
 			},
+			"",
 		)
 
 		req, err := http.NewRequest(
@@ -556,6 +564,7 @@ func TestGetResponseBody(t *testing.T) {
 					Authenticate: true,
 					Credentials:  creds,
 				},
+				"",
 			)
 
 			req, err := http.NewRequest(

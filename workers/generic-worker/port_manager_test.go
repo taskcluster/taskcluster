@@ -18,16 +18,18 @@ func TestPortManagerAllocatePorts(t *testing.T) {
 	require.Equal(t, uint16(60001), ports1[PortIndexLiveLogPUT])
 	require.Equal(t, uint16(53000), ports1[PortIndexInteractive])
 	require.Equal(t, uint16(8080), ports1[PortIndexTaskclusterProxy])
+	require.Equal(t, uint16(8081), ports1[PortIndexTaskclusterProxyInternal])
 
 	// Allocate ports for second task
 	ports2, err := pm.AllocatePorts("task2")
 	require.NoError(t, err)
 	require.Len(t, ports2, gwconfig.PortsPerTask)
-	// Ports should be offset by gwconfig.PortsPerTask
-	require.Equal(t, uint16(60004), ports2[PortIndexLiveLogGET])
-	require.Equal(t, uint16(60005), ports2[PortIndexLiveLogPUT])
-	require.Equal(t, uint16(53004), ports2[PortIndexInteractive])
-	require.Equal(t, uint16(8084), ports2[PortIndexTaskclusterProxy])
+	// Ports should be offset by gwconfig.PortsPerTask (5)
+	require.Equal(t, uint16(60005), ports2[PortIndexLiveLogGET])
+	require.Equal(t, uint16(60006), ports2[PortIndexLiveLogPUT])
+	require.Equal(t, uint16(53005), ports2[PortIndexInteractive])
+	require.Equal(t, uint16(8085), ports2[PortIndexTaskclusterProxy])
+	require.Equal(t, uint16(8086), ports2[PortIndexTaskclusterProxyInternal])
 
 	// Allocate ports for third task
 	ports3, err := pm.AllocatePorts("task3")
@@ -157,6 +159,6 @@ func TestPortManagerSlotReuse(t *testing.T) {
 	// New task should get slot 1
 	ports, err := pm.AllocatePorts("task4")
 	require.NoError(t, err)
-	// Slot 1 means offset of 4
-	require.Equal(t, uint16(60004), ports[PortIndexLiveLogGET])
+	// Slot 1 means offset of 5 (PortsPerTask)
+	require.Equal(t, uint16(60005), ports[PortIndexLiveLogGET])
 }

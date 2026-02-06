@@ -193,12 +193,20 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 		log.Println("Proxy with scopes: ", authorizedScopes)
 	}
 
+	// Read optional secret for per-task authentication. When set, all
+	// incoming requests must include the secret as a URL path prefix.
+	secret := os.Getenv("TASKCLUSTER_PROXY_SECRET")
+	if secret != "" {
+		log.Print("Per-task proxy secret: configured")
+	}
+
 	routes = NewRoutes(
 		tcclient.Client{
 			RootURL:      rootURL.(string),
 			Authenticate: true,
 			Credentials:  creds,
 		},
+		secret,
 	)
 	return
 }

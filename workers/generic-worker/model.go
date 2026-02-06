@@ -94,12 +94,21 @@ func (task *TaskRun) InteractivePort() (uint16, bool) {
 	return task.AllocatedPorts[PortIndexInteractive], true
 }
 
-// TaskclusterProxyPort returns the taskcluster-proxy port.
+// TaskclusterProxyPort returns the task-facing taskcluster-proxy port.
 func (task *TaskRun) TaskclusterProxyPort() (uint16, bool) {
 	if len(task.AllocatedPorts) <= PortIndexTaskclusterProxy {
 		return 0, false
 	}
 	return task.AllocatedPorts[PortIndexTaskclusterProxy], true
+}
+
+// TaskclusterProxyInternalPort returns the internal taskcluster-proxy port
+// (behind the reverse proxy, requires Bearer auth).
+func (task *TaskRun) TaskclusterProxyInternalPort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexTaskclusterProxyInternal {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexTaskclusterProxyInternal], true
 }
 
 func (task *TaskRun) String() string {

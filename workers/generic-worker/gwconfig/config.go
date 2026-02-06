@@ -153,11 +153,12 @@ func (c *Config) Validate() error {
 }
 
 // PortsPerTask is the number of ports allocated per concurrent task slot.
-// Used for port spacing validation.
-const PortsPerTask = 4
+// Used for port spacing validation. The 5 ports are: LiveLog GET, LiveLog PUT,
+// Interactive, TaskclusterProxy (task-facing), TaskclusterProxy (internal).
+const PortsPerTask = 5
 
 // ValidatePortConfiguration checks that port ranges don't overlap when capacity > 1.
-// Each concurrent task slot uses an offset of PortsPerTask (4) ports from the base.
+// Each concurrent task slot uses an offset of PortsPerTask (5) ports from the base.
 // This validation ensures the configured base ports are spaced far enough apart
 // to avoid collisions.
 func (c *Config) ValidatePortConfiguration() error {

@@ -9,10 +9,11 @@ import (
 
 // Port allocation indices within a task's port block
 const (
-	PortIndexLiveLogGET       = 0
-	PortIndexLiveLogPUT       = 1
-	PortIndexInteractive      = 2
-	PortIndexTaskclusterProxy = 3
+	PortIndexLiveLogGET               = 0
+	PortIndexLiveLogPUT               = 1
+	PortIndexInteractive              = 2
+	PortIndexTaskclusterProxy         = 3
+	PortIndexTaskclusterProxyInternal = 4
 )
 
 // PortManager manages dynamic port allocation for concurrent tasks.
@@ -65,7 +66,8 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 		pm.liveLogBase + offset,     // LiveLog GET
 		pm.liveLogBase + offset + 1, // LiveLog PUT
 		pm.interactiveBase + offset, // Interactive
-		pm.proxyBase + offset,       // TaskclusterProxy
+		pm.proxyBase + offset,       // TaskclusterProxy (task-facing)
+		pm.proxyBase + offset + 1,   // TaskclusterProxy (internal, Bearer auth)
 	}
 
 	pm.allocated[taskID] = ports
@@ -114,7 +116,7 @@ func (pm *PortManager) InteractivePort(taskID string) (uint16, bool) {
 	return ports[PortIndexInteractive], true
 }
 
-// TaskclusterProxyPort returns the TaskclusterProxy port for a task.
+// TaskclusterProxyPort returns the task-facing TaskclusterProxy port for a task.
 func (pm *PortManager) TaskclusterProxyPort(taskID string) (uint16, bool) {
 	pm.Lock()
 	defer pm.Unlock()
@@ -123,6 +125,18 @@ func (pm *PortManager) TaskclusterProxyPort(taskID string) (uint16, bool) {
 		return 0, false
 	}
 	return ports[PortIndexTaskclusterProxy], true
+}
+
+// TaskclusterProxyInternalPort returns the internal TaskclusterProxy port
+// (behind the reverse proxy, requires Bearer auth) for a task.
+func (pm *PortManager) TaskclusterProxyInternalPort(taskID string) (uint16, bool) {
+	pm.Lock()
+	defer pm.Unlock()
+	ports, exists := pm.allocated[taskID]
+	if !exists || len(ports) <= PortIndexTaskclusterProxyInternal {
+		return 0, false
+	}
+	return ports[PortIndexTaskclusterProxyInternal], true
 }
 
 // findAvailableSlot returns the first available slot index.
