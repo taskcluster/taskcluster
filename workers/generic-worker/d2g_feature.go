@@ -336,10 +336,14 @@ func (ic *ImageCache) loadFromFile(stateFile string) {
 
 func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir string) {
 	videoDevice, _ := dtf.task.getVariable("TASKCLUSTER_VIDEO_DEVICE")
+	dockerNetwork, _ := dtf.task.getVariable("TASKCLUSTER_DOCKER_NETWORK")
+	proxyGateway, _ := dtf.task.getVariable("TASKCLUSTER_PROXY_GATEWAY")
 	placeholders := strings.NewReplacer(
 		"__D2G_IMAGE_ID__", imageID,
 		"__TASK_DIR__", taskDir,
 		"__TASKCLUSTER_VIDEO_DEVICE__", videoDevice,
+		"__TASKCLUSTER_DOCKER_NETWORK__", dockerNetwork,
+		"__TASKCLUSTER_PROXY_GATEWAY__", proxyGateway,
 	)
 
 	// Update commands in the payload so that

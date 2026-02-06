@@ -25,8 +25,10 @@ type TaskclusterProxy struct {
 }
 
 // New starts a tcproxy OS process using the executable specified, and returns
-// a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+// a *TaskclusterProxy. If allowedUser is non-empty, it is passed to the proxy
+// process via the --allowed-user flag, enabling per-connection OS user
+// verification.
+func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials, allowedUser string) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
@@ -36,6 +38,9 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
+	}
+	if allowedUser != "" {
+		args = append(args, "--allowed-user", allowedUser)
 	}
 	args = append(args, creds.AuthorizedScopes...)
 	l := &TaskclusterProxy{

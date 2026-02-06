@@ -200,7 +200,7 @@ func TestConcurrentTaskPortAllocation(t *testing.T) {
 	require.Equal(t, "completed", status2.Status.Runs[0].State)
 
 	// Read task logs to verify different proxy ports were used
-	// The port manager allocates ports with offset: slot * 4
+	// The port manager allocates ports with offset: slot * PortsPerTask (4)
 	// So task on slot 0 gets proxyPort, task on slot 1 gets proxyPort + 4
 
 	// Find task directories and read their logs
@@ -218,11 +218,7 @@ func TestConcurrentTaskPortAllocation(t *testing.T) {
 					// Extract port from URL
 					parts := strings.Split(urlPart, ":")
 					if len(parts) >= 3 {
-						portStr := parts[2]
-						// Strip any path after the port (e.g., /secret prefix)
-						if slashIdx := strings.Index(portStr, "/"); slashIdx >= 0 {
-							portStr = portStr[:slashIdx]
-						}
+						portStr := strings.TrimRight(parts[2], "/")
 						port, _ := strconv.Atoi(portStr)
 						if port > 0 {
 							proxyPorts = append(proxyPorts, port)

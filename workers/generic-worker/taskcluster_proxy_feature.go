@@ -40,6 +40,7 @@ type TaskclusterProxyTask struct {
 	taskStatusChangeListener *TaskStatusChangeListener
 	taskclusterProxyAddress  string
 	taskclusterProxyPort     uint16
+	dockerNetwork            string // per-task Docker network name (d2g only)
 }
 
 func (l *TaskclusterProxyTask) ReservedArtifacts() []string {
@@ -58,7 +59,7 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
-	// Get allocated port for this task, fall back to config default
+	// Get allocated port, fall back to config default
 	proxyPort, ok := l.task.TaskclusterProxyPort()
 	if !ok {
 		proxyPort = config.TaskclusterProxyPort
@@ -66,27 +67,41 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 
 	switch l.task.Payload.TaskclusterProxyInterface {
 	case "docker-bridge":
-		out, err := host.Output("docker", "network", "inspect", "bridge", "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}")
+		// Create a per-task Docker network for isolation. Each container
+		// will only be able to reach its own tc-proxy instance.
+		networkName := fmt.Sprintf("gw-task-%s-%d", l.task.TaskID[:12], l.task.RunID)
+		_, err := host.Output("docker", "network", "create", networkName)
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: %s", err))
+			return executionError(internalError, errored, fmt.Errorf("could not create Docker network %s: %s", networkName, err))
+		}
+		l.dockerNetwork = networkName
+
+		// Get the gateway IP of the new network
+		out, err := host.Output("docker", "network", "inspect", networkName, "--format", "{{range .IPAM.Config}}{{if .Gateway}}{{.Gateway}} {{end}}{{end}}")
+		if err != nil {
+			return executionError(internalError, errored, fmt.Errorf("could not determine gateway for Docker network %s: %s", networkName, err))
 		}
 		gateways := strings.Split(strings.TrimSpace(out), " ")
-		if len(gateways) == 0 {
-			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no gateways found"))
-		}
 		for _, v := range gateways {
 			ipAddress := net.ParseIP(v)
-			if ipAddress == nil {
-				continue
-			}
-			if ipAddress.To4() == nil {
+			if ipAddress == nil || ipAddress.To4() == nil {
 				continue
 			}
 			l.taskclusterProxyAddress = v
 			break
 		}
 		if l.taskclusterProxyAddress == "" {
-			return executionError(internalError, errored, fmt.Errorf("could not determine docker bridge IP address: no ipv4 gateway found among %v", gateways))
+			return executionError(internalError, errored, fmt.Errorf("no IPv4 gateway found for Docker network %s among %v", networkName, gateways))
+		}
+
+		// Make the network name and gateway available to d2g for docker run
+		err = l.task.setVariable("TASKCLUSTER_DOCKER_NETWORK", networkName)
+		if err != nil {
+			return MalformedPayloadError(err)
+		}
+		err = l.task.setVariable("TASKCLUSTER_PROXY_GATEWAY", l.taskclusterProxyAddress)
+		if err != nil {
+			return MalformedPayloadError(err)
 		}
 	case "localhost":
 		l.taskclusterProxyAddress = "127.0.0.1"
@@ -94,34 +109,54 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("INTERNAL BUG: Unsupported taskcluster proxy interface enum option should not have made it here: %q", l.task.Payload.TaskclusterProxyInterface))
 	}
 
-	// Set TASKCLUSTER_PROXY_URL in the task environment
-	err := l.task.setVariable("TASKCLUSTER_PROXY_URL",
-		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, proxyPort))
-	if err != nil {
-		return MalformedPayloadError(err)
-	}
-
 	// include all scopes from task.scopes, as well as the scope to create artifacts on
 	// this task (which cannot be represented in task.scopes)
-	scopes := append(l.task.TaskClaimResponse.Task.Scopes,
+	taskScopes := append(l.task.TaskClaimResponse.Task.Scopes,
 		fmt.Sprintf("queue:create-artifact:%s/%d", l.task.TaskID, l.task.RunID))
+
+	creds := &tcclient.Credentials{
+		AccessToken:      l.task.TaskClaimResponse.Credentials.AccessToken,
+		Certificate:      l.task.TaskClaimResponse.Credentials.Certificate,
+		ClientID:         l.task.TaskClaimResponse.Credentials.ClientID,
+		AuthorizedScopes: taskScopes,
+	}
+
+	// For native tasks in multiuser mode, use --allowed-user for UID
+	// verification. For d2g tasks, the per-task Docker network provides
+	// isolation instead. In insecure mode, Context.User is nil (no
+	// separate task users), so no UID verification is possible.
+	allowedUser := ""
+	if l.dockerNetwork == "" && l.task.Context.User != nil {
+		allowedUser = l.task.Context.User.Name
+	}
+
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
 		l.taskclusterProxyAddress,
 		proxyPort,
 		config.RootURL,
-		&tcclient.Credentials{
-			AccessToken:      l.task.TaskClaimResponse.Credentials.AccessToken,
-			Certificate:      l.task.TaskClaimResponse.Credentials.Certificate,
-			ClientID:         l.task.TaskClaimResponse.Credentials.ClientID,
-			AuthorizedScopes: scopes,
-		},
+		creds,
+		allowedUser,
 	)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("could not start taskcluster proxy on port %d: %s", proxyPort, err))
 	}
 	l.taskclusterProxy = taskclusterProxy
 	l.taskclusterProxyPort = proxyPort
+
+	err = l.task.setVariable("TASKCLUSTER_PROXY_URL",
+		fmt.Sprintf("http://%s:%d", l.taskclusterProxyAddress, proxyPort))
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
+
+	l.registerCredentialRefresh()
+	return nil
+}
+
+// registerCredentialRefresh sets up a listener that refreshes proxy credentials
+// when a task is reclaimed.
+func (l *TaskclusterProxyTask) registerCredentialRefresh() {
 	l.taskStatusChangeListener = &TaskStatusChangeListener{
 		Name: "taskcluster-proxy",
 		Callback: func(ts TaskStatus) {
@@ -154,18 +189,19 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		},
 	}
 	l.task.StatusManager.RegisterListener(l.taskStatusChangeListener)
-	return nil
 }
 
 func (l *TaskclusterProxyTask) Stop(err *ExecutionErrors) {
 	l.task.StatusManager.DeregisterListener(l.taskStatusChangeListener)
-	if l.taskclusterProxy == nil {
-		return
+	if l.taskclusterProxy != nil {
+		if errTerminate := l.taskclusterProxy.Terminate(); errTerminate != nil {
+			l.task.Warnf("[taskcluster-proxy] Could not terminate taskcluster proxy process: %s", errTerminate)
+			log.Printf("WARNING: could not terminate taskcluster proxy writer: %s", errTerminate)
+		}
 	}
-	errTerminate := l.taskclusterProxy.Terminate()
-	if errTerminate != nil {
-		// no need to raise an exception, machine will reboot anyway
-		l.task.Warnf("[taskcluster-proxy] Could not terminate taskcluster proxy process: %s", errTerminate)
-		log.Printf("WARNING: could not terminate taskcluster proxy writer: %s", errTerminate)
+	if l.dockerNetwork != "" {
+		if _, rmErr := host.Output("docker", "network", "rm", l.dockerNetwork); rmErr != nil {
+			l.task.Warnf("[taskcluster-proxy] Could not remove Docker network %s: %s", l.dockerNetwork, rmErr)
+		}
 	}
 }

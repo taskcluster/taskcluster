@@ -28,7 +28,7 @@ func TestTcProxy(t *testing.T) {
 		Certificate:      certificate,
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, "127.0.0.1", 34570, rootURL, creds)
+	ll, err := New(executable, "127.0.0.1", 34570, rootURL, creds, "")
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {
