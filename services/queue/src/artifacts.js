@@ -277,7 +277,7 @@ export const loadArtifactsRoutes = (builder) => {
         // `createUpload` call with no proposed methods.
         uploadId = slugid.nice();
         objectName = artifactToObjectName(taskId, runId, name);
-        const objectService = this.objectService.use({ authoriizedScopes: `object:upload:${projectId}:t/${objectName}` });
+        const objectService = this.objectService.use({ authorizedScopes: `object:upload:${projectId}:t/${objectName}` });
 
         await objectService.createUpload(objectName, {
           expires,
