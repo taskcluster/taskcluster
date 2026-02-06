@@ -218,7 +218,11 @@ func TestConcurrentTaskPortAllocation(t *testing.T) {
 					// Extract port from URL
 					parts := strings.Split(urlPart, ":")
 					if len(parts) >= 3 {
-						portStr := strings.TrimRight(parts[2], "/")
+						portStr := parts[2]
+						// Strip any path after the port (e.g., /secret prefix)
+						if slashIdx := strings.Index(portStr, "/"); slashIdx >= 0 {
+							portStr = portStr[:slashIdx]
+						}
 						port, _ := strconv.Atoi(portStr)
 						if port > 0 {
 							proxyPorts = append(proxyPorts, port)
