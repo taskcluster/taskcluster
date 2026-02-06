@@ -63,7 +63,8 @@ export class AzureProvider extends Provider {
     this.providerConfig = providerConfig;
     this.downloadTimeout = 5000; // 5 seconds
 
-    this.seen = {};
+    this.scanPrepare();
+
     /** @type {Record<string, any>} */
     this.errors = {};
     this.cloudApi = null;
