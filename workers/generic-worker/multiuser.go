@@ -69,7 +69,13 @@ func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 			panic(fmt.Errorf("timed out waiting for login for user %s: %v", ctx.User.Name, err))
 		}
 	}
-	err := os.MkdirAll(ctx.TaskDir, 0777) // note: 0777 is mostly ignored on windows
+	// Ensure the parent TasksDir exists and is traversable by all users.
+	// The per-task subdirectory below is then restricted to 0700.
+	err := os.MkdirAll(config.TasksDir, 0755)
+	if err != nil {
+		panic(err)
+	}
+	err = os.MkdirAll(ctx.TaskDir, 0700) // note: 0700 is mostly ignored on windows
 	if err != nil {
 		panic(err)
 	}

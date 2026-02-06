@@ -28,6 +28,10 @@ func (r *RunTaskAsCurrentUserTask) platformSpecificActions() *CommandExecutionEr
 		credsPath := filepath.Join(ctx.TaskDir, "task-user-credentials.json")
 		err := fileutil.WriteToFileAsJSON(ctx.User, credsPath)
 		if err == nil {
+			err = fileutil.SecureFiles(credsPath)
+			if err != nil {
+				panic(err)
+			}
 			r.task.Payload.Env["TASK_USER_CREDENTIALS"] = credsPath
 			_ = r.task.setVariable("TASK_USER_CREDENTIALS", credsPath)
 		}
