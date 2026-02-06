@@ -4,7 +4,10 @@ import path from 'path';
 import fs from 'fs/promises';
 
 export const writeUriStructured = async ({ directory, serializable }) => {
-  await rimraf(directory);
+  // Delete contents of directory rather than the directory itself
+  // This is important when running as non-root user and the directory
+  // is at the filesystem root (e.g., /references)
+  await rimraf(path.join(directory, '*'), { glob: true });
 
   const dirs = new Set();
   for (let { filename, content } of serializable) {
