@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.2.3
+
+### GENERAL
+
+▶ [patch]
+Bumps `uv` to v0.10.0 and taskgraph decision task image to v18.1.0.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8247](https://github.com/taskcluster/taskcluster/issues/8247)
+Fix azure checkWorker() call during provisioning.
+
+### USERS
+
+▶ [patch] [bug 2015057](http://bugzil.la/2015057)
+Fix typo in object service artifact upload.
+
+### OTHER
+
+▶ Additional change not described here: [bug 2015056](http://bugzil.la/2015056).
+
 ## v96.2.2
 
 ### GENERAL
