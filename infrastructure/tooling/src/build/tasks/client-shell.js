@@ -2,6 +2,10 @@ import path from 'path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+  if (cmdOptions.releasePublish) {
+    return;
+  }
+
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
