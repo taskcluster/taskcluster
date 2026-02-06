@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "@apollo/client": "^3.13.9",
-    "@apollo/server": "^4.12.2",
+    "@apollo/server": "^5.4.0",
     "@aws-sdk/client-ec2": "^3.864.0",
     "@aws-sdk/client-s3": "3.645.0",
     "@aws-sdk/client-sesv2": "^3.958.0",
