@@ -3,6 +3,20 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.2.2
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.25.7 [SECURITY].
+
+Release notes [here](https://go.dev/doc/devel/release#go1.25.7).
+
+### DEPLOYERS
+
+▶ [patch] [#8251](https://github.com/taskcluster/taskcluster/issues/8251)
+Fixes deployment issue where `taskcluster-references-web` did not have access to remove the `/references` directory.
+
 ## v96.2.1
 
 

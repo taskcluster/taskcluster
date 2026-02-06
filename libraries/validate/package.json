@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-validate",
   "private": true,
-  "version": "96.2.1",
+  "version": "96.2.2",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Validate schemas for Taskcluster projects",
   "license": "MPL-2.0",
