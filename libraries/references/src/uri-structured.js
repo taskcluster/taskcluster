@@ -9,9 +9,6 @@ export const writeUriStructured = async ({ directory, serializable }) => {
   // is at the filesystem root (e.g., /references)
   await rimraf(path.join(directory, '*'), { glob: true });
 
-  // Ensure the directory exists
-  await mkdirp(directory);
-
   const dirs = new Set();
   for (let { filename, content } of serializable) {
     const pathname = path.join(directory, filename);
