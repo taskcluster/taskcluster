@@ -21,7 +21,7 @@ services:
       - ./ui/docs:/app/ui/docs
       - ./CHANGELOG.md:/app/CHANGELOG.md
     ports:
-      - '3022:80'
+      - '3022:8080'
   generic-worker-standalone:
     image: ${IMAGE_GENERIC_WORKER}
     networks:
