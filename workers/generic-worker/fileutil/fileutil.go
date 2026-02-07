@@ -120,6 +120,24 @@ func CreateDir(dir string) error {
 	return os.MkdirAll(dir, 0700)
 }
 
+func CopyDir(src, dst string) error {
+	info, err := os.Lstat(src)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("source is not a directory: %s", src)
+	}
+
+	if _, err := os.Stat(dst); err == nil {
+		return fmt.Errorf("destination already exists: %s", dst)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	return os.CopyFS(dst, os.DirFS(src))
+}
+
 func Unarchive(source, destination, format string) error {
 	var unarchiver archiver.Unarchiver
 	switch format {

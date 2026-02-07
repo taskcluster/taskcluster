@@ -31,6 +31,7 @@ func TestHttpRedirects(t *testing.T) {
 				AccessToken: "doesn't-matter",
 			},
 		},
+		"",
 	)
 
 	// create a fake request to the proxy
@@ -70,6 +71,7 @@ func TestNonCanonicalUrls(t *testing.T) {
 				AccessToken: "doesn't-matter",
 			},
 		},
+		"",
 	)
 
 	// create a fake request to the proxy
@@ -89,4 +91,122 @@ func TestNonCanonicalUrls(t *testing.T) {
 	respBody, err := io.ReadAll(res.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, "/api/queue/v1/double//slash/encode1%2F/encode2%252F/encode3%25252F", string(respBody))
+}
+
+func newSecretTestRoutes(secret string) Routes {
+	return NewRoutes(
+		tcclient.Client{
+			Authenticate: true,
+			RootURL:      "http://localhost",
+			Credentials: &tcclient.Credentials{
+				ClientID:    "test-client",
+				AccessToken: "test-token",
+			},
+		},
+		secret,
+	)
+}
+
+func TestSecretRequired(t *testing.T) {
+	routes := newSecretTestRoutes("mysecret")
+
+	req := httptest.NewRequest("GET", "/api/queue/v1/ping", new(bytes.Buffer))
+	res := httptest.NewRecorder()
+	routes.ServeHTTP(res, req)
+	assert.Equal(t, 403, res.Code)
+}
+
+func TestSecretWrongValue(t *testing.T) {
+	routes := newSecretTestRoutes("mysecret")
+
+	req := httptest.NewRequest("GET", "/api/queue/v1/ping", new(bytes.Buffer))
+	req.Header.Set("Authorization", "Bearer wrongsecret")
+	res := httptest.NewRecorder()
+	routes.ServeHTTP(res, req)
+	assert.Equal(t, 403, res.Code)
+}
+
+func TestSecretAccepted(t *testing.T) {
+	// set up an upstream server that returns its path
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		fmt.Fprintf(w, "%s", r.URL)
+	}))
+	defer ts.Close()
+
+	routes := NewRoutes(
+		tcclient.Client{
+			Authenticate: true,
+			RootURL:      ts.URL,
+			Credentials: &tcclient.Credentials{
+				ClientID:    "some-client",
+				AccessToken: "doesn't-matter",
+			},
+		},
+		"mysecret",
+	)
+
+	req := httptest.NewRequest("GET", "/queue/v1/ping", new(bytes.Buffer))
+	req.Header.Set("Authorization", "Bearer mysecret")
+	res := httptest.NewRecorder()
+	routes.ServeHTTP(res, req)
+	assert.Equal(t, 200, res.Code)
+	respBody, err := io.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, "/api/queue/v1/ping", string(respBody))
+}
+
+func TestSecretWithAPIPath(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		fmt.Fprintf(w, "%s", r.URL)
+	}))
+	defer ts.Close()
+
+	routes := NewRoutes(
+		tcclient.Client{
+			Authenticate: true,
+			RootURL:      ts.URL,
+			Credentials: &tcclient.Credentials{
+				ClientID:    "some-client",
+				AccessToken: "doesn't-matter",
+			},
+		},
+		"mysecret",
+	)
+
+	req := httptest.NewRequest("GET", "/api/queue/v1/task/abc123", new(bytes.Buffer))
+	req.Header.Set("Authorization", "Bearer mysecret")
+	res := httptest.NewRecorder()
+	routes.ServeHTTP(res, req)
+	assert.Equal(t, 200, res.Code)
+	respBody, err := io.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, "/api/queue/v1/task/abc123", string(respBody))
+}
+
+func TestNoSecretConfigured(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		fmt.Fprintf(w, "%s", r.URL)
+	}))
+	defer ts.Close()
+
+	routes := NewRoutes(
+		tcclient.Client{
+			Authenticate: true,
+			RootURL:      ts.URL,
+			Credentials: &tcclient.Credentials{
+				ClientID:    "some-client",
+				AccessToken: "doesn't-matter",
+			},
+		},
+		"",
+	)
+
+	// Without a secret configured, requests should work normally
+	req := httptest.NewRequest("GET", "/queue/v1/ping", new(bytes.Buffer))
+	res := httptest.NewRecorder()
+	routes.ServeHTTP(res, req)
+	assert.Equal(t, 200, res.Code)
 }
