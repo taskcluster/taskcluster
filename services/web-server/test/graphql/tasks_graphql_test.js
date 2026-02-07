@@ -54,6 +54,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(response.data.createTask.taskId, taskId);
     });
+
+    test('mutation works with large payload', async function() {
+      const client = helper.getHttpClient();
+      const taskId = taskcluster.slugid();
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
+      // Generate ~200KB of data to exceed the old 100KB default body-parser limit
+      const largeData = 'x'.repeat(200 * 1024);
+
+      const response = await client.mutate({
+        mutation: gql`${createTaskQuery}`,
+        variables: {
+          taskId,
+          task: helper.makeTaskDefinition({
+            extra: { largeField: largeData },
+          }),
+        },
+      });
+
+      assert.equal(response.data.createTask.taskId, taskId);
+    });
   });
 
   suite('Task Subscriptions', function() {
