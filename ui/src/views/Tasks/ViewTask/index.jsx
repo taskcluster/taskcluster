@@ -12,6 +12,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import dotProp from 'dot-prop-immutable';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
+import { Queue } from '@taskcluster/client-web';
 import HammerIcon from 'mdi-react/HammerIcon';
 import CreationIcon from 'mdi-react/CreationIcon';
 import PencilIcon from 'mdi-react/PencilIcon';
@@ -52,6 +53,8 @@ import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
+import { getClient } from '../../../utils/client';
+import { AuthContext } from '../../../utils/Auth';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import taskSubscription from './taskSubscription.graphql';
@@ -60,8 +63,6 @@ import rerunTaskQuery from './rerunTask.graphql';
 import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
-import createTaskQuery from '../createTask.graphql';
-import { AuthContext } from '../../../utils/Auth';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -116,6 +117,8 @@ const getCachesFromTask = task =>
   }),
 })
 export default class ViewTask extends Component {
+  static contextType = AuthContext;
+
   static getDerivedStateFromProps(props, state) {
     const taskId = props.match.params.taskId || '';
     const {
@@ -295,6 +298,7 @@ export default class ViewTask extends Component {
         form: formInputs,
         action,
         apolloClient: client,
+        user: this.context.user,
       });
 
       return taskId;
@@ -473,13 +477,9 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: createTaskQuery,
-        variables: {
-          taskId,
-          task,
-        },
-      });
+      const queue = getClient({ Class: Queue, user: this.context.user });
+
+      await queue.createTask(taskId, task);
 
       return taskId;
     } catch (error) {
@@ -789,13 +789,9 @@ export default class ViewTask extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: createTaskQuery,
-        variables: {
-          taskId,
-          task,
-        },
-      });
+      const queue = getClient({ Class: Queue, user: this.context.user });
+
+      await queue.createTask(taskId, task);
 
       return taskId;
     } catch (error) {
