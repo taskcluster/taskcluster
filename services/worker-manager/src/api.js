@@ -1094,7 +1094,7 @@ builder.declare({
     'some proof of its identity, and that proof varies by provider type.',
   ].join('\n'),
 }, async function(req, res) {
-  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof } = req.body;
+  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof, systemBootTime } = req.body;
 
   // carefully check each value provided, since we have not yet validated the
   // worker's "proof"
@@ -1166,6 +1166,30 @@ builder.declare({
   }
   assert(expires, 'registerWorker did not return expires');
   assert(expires > new Date(), 'registerWorker returned expires in the past');
+
+  // Record provision and startup duration sub-metrics when systemBootTime is provided.
+  // These break down the existing workerRegistrationDuration into:
+  //   workerProvisionDuration = systemBootTime - worker.created (VM provisioning)
+  //   workerStartupDuration = now - systemBootTime (worker startup)
+  if (systemBootTime) {
+    const bootTimeMs = new Date(systemBootTime).getTime();
+    const createdMs = worker.created?.getTime?.();
+    const nowMs = Date.now();
+
+    if (Number.isFinite(bootTimeMs) && Number.isFinite(createdMs)) {
+      const labels = { workerPoolId, providerId, workerGroup };
+
+      const provisionSeconds = (bootTimeMs - createdMs) / 1000;
+      if (provisionSeconds >= 0) {
+        this.monitor.metric.workerProvisionDuration(provisionSeconds, labels);
+      }
+
+      const startupSeconds = (nowMs - bootTimeMs) / 1000;
+      if (startupSeconds >= 0) {
+        this.monitor.metric.workerStartupDuration(startupSeconds, labels);
+      }
+    }
+  }
 
   // We use these fields from inside the worker rather than
   // what was passed in because that is the thing we have verified

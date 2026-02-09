@@ -384,6 +384,34 @@ MonitorManager.registerMetric('workerRegistrationDuration', {
   buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
 });
 
+MonitorManager.registerMetric('workerProvisionDuration', {
+  name: 'worker_manager_worker_provision_seconds',
+  type: 'histogram',
+  title: 'Worker provision duration',
+  description: `
+    Time from when a worker was requested to when the system booted,
+    measuring cloud VM provisioning time. Only recorded when the worker
+    provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerStartupDuration', {
+  name: 'worker_manager_worker_startup_seconds',
+  type: 'histogram',
+  title: 'Worker startup duration',
+  description: `
+    Time from when the system booted to when the worker registered with
+    worker-manager, measuring worker startup time. Only recorded when
+    the worker provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [5, 10, 15, 30, 45, 60, 90, 120, 180, 300, 600],
+});
+
 MonitorManager.registerMetric('workerLifetime', {
   name: 'worker_manager_worker_lifetime_seconds',
   type: 'histogram',

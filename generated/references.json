@@ -18071,6 +18071,34 @@
           "type": "gauge"
         },
         {
+          "buckets": [
+            15,
+            30,
+            45,
+            60,
+            90,
+            120,
+            180,
+            300,
+            600,
+            1200,
+            1800
+          ],
+          "description": "Time from when a worker was requested to when the system booted,\nmeasuring cloud VM provisioning time. Only recorded when the worker\nprovides systemBootTime in its registration request.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerGroup": "Worker group (region/zone/location)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_provision_seconds",
+          "registers": [
+            "default",
+            "provision"
+          ],
+          "title": "Worker provision duration",
+          "type": "histogram"
+        },
+        {
           "description": "Counts workers that were requested but never registered before being\nremoved or stopped.",
           "labels": {
             "providerId": "ID of the provider",
@@ -18111,6 +18139,34 @@
             "scan"
           ],
           "title": "Worker registration duration",
+          "type": "histogram"
+        },
+        {
+          "buckets": [
+            5,
+            10,
+            15,
+            30,
+            45,
+            60,
+            90,
+            120,
+            180,
+            300,
+            600
+          ],
+          "description": "Time from when the system booted to when the worker registered with\nworker-manager, measuring worker startup time. Only recorded when\nthe worker provides systemBootTime in its registration request.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "workerGroup": "Worker group (region/zone/location)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_worker_startup_seconds",
+          "registers": [
+            "default",
+            "provision"
+          ],
+          "title": "Worker startup duration",
           "type": "histogram"
         }
       ],
