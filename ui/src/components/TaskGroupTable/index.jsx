@@ -427,7 +427,8 @@ export default class TaskGroupTable extends Component {
               itemSize={48}
               className={classes.windowScrollerOverride}
               overscanCount={50}
-              itemData={{ iconSize, items, showTimings, classes }}>
+              itemData={{ iconSize, items, showTimings, classes }}
+              itemKey={(index, data) => data.items[index]?.node.taskId}>
               {ItemRendererMemo}
             </List>
           </Fragment>
