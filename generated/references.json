@@ -1542,6 +1542,12 @@
         "providerId": {
           "$ref": "worker-full.json#/properties/providerId"
         },
+        "systemBootTime": {
+          "description": "The time that the worker's system booted.\nThis is used to increase granularity of worker\nregistration time metrics.\nSee https://github.com/taskcluster/taskcluster/issues/8232.\n",
+          "format": "date-time",
+          "title": "System Boot Time",
+          "type": "string"
+        },
         "workerGroup": {
           "$ref": "worker-full.json#/properties/workerGroup"
         },

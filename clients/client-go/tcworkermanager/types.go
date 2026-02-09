@@ -133,6 +133,12 @@ type (
 		// Max length: 38
 		ProviderID string `json:"providerId"`
 
+		// The time that the worker's system booted.
+		// This is used to increase granularity of worker
+		// registration time metrics.
+		// See https://github.com/taskcluster/taskcluster/issues/8232.
+		SystemBootTime tcclient.Time `json:"systemBootTime,omitzero"`
+
 		// Worker group to which this worker belongs
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
