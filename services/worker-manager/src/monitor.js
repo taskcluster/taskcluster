@@ -34,13 +34,14 @@ MonitorManager.register({
   name: 'workerRunning',
   title: 'Worker Running',
   type: 'worker-running',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as running',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is running',
+    registrationDuration: 'Time in seconds from worker creation to registration',
   },
 });
 
@@ -48,13 +49,15 @@ MonitorManager.register({
   name: 'workerStopped',
   title: 'Worker Stopped',
   type: 'worker-stopped',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that was stopped',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 
@@ -62,7 +65,7 @@ MonitorManager.register({
   name: 'workerRemoved',
   title: 'Worker Removed',
   type: 'worker-removed',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: `
     A request has been made to stop a worker.  This operation can sometimes
@@ -73,6 +76,8 @@ MonitorManager.register({
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is being removed',
     reason: 'The reason this worker is being removed',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 

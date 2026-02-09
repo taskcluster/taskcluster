@@ -18514,6 +18514,8 @@
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
             "reason": "The reason this worker is being removed",
+            "runningDuration": "Time in seconds since worker registered (null if never registered)",
+            "workerAge": "Total time in seconds since worker was created",
             "workerId": "The worker that is being removed",
             "workerPoolId": "The worker pool ID"
           },
@@ -18521,7 +18523,7 @@
           "name": "workerRemoved",
           "title": "Worker Removed",
           "type": "worker-removed",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A worker has been requested from a cloud api",
@@ -18542,6 +18544,7 @@
           "description": "A worker has been marked as running",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
+            "registrationDuration": "Time in seconds from worker creation to registration",
             "workerId": "The worker that is running",
             "workerPoolId": "The worker pool ID"
           },
@@ -18549,12 +18552,14 @@
           "name": "workerRunning",
           "title": "Worker Running",
           "type": "worker-running",
-          "version": 1
+          "version": 2
         },
         {
           "description": "A worker has been marked as stopped",
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
+            "runningDuration": "Time in seconds since worker registered (null if never registered)",
+            "workerAge": "Total time in seconds since worker was created",
             "workerId": "The worker that was stopped",
             "workerPoolId": "The worker pool ID"
           },
@@ -18562,7 +18567,7 @@
           "name": "workerStopped",
           "title": "Worker Stopped",
           "type": "worker-stopped",
-          "version": 1
+          "version": 2
         }
       ]
     },
