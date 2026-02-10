@@ -56,6 +56,10 @@ func TestRegisterWorker(t *testing.T) {
 	require.Equal(t, "wg", call.WorkerGroup)
 	require.Equal(t, "wid", call.WorkerID)
 	require.Equal(t, json.RawMessage([]byte(`{"because":"I said so"}`)), call.WorkerIdentityProof)
+
+	bootTime := time.Time(call.SystemBootTime)
+	require.False(t, bootTime.IsZero(), "SystemBootTime should not be zero")
+	require.True(t, bootTime.Before(time.Now()), "SystemBootTime should be in the past")
 }
 
 func TestCredsExpirationGraceful(t *testing.T) {

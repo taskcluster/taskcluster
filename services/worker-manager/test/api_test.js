@@ -1821,6 +1821,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${workerId}`), msg);
     });
 
+    test('registers with systemBootTime and records metrics', async function () {
+      const monitor = await helper.load('monitor');
+
+      // Install a fake prometheus recorder on the shared manager to capture
+      // metric observations from any child monitor.
+      const observed = [];
+      const origPrometheus = monitor.manager._prometheus;
+      monitor.manager._prometheus = {
+        observe: (name, value, labels) => observed.push({ name, value, labels }),
+        inc: () => {},
+        set: () => {},
+      };
+
+      try {
+        // worker.created must be before systemBootTime (VM requested, then booted)
+        const workerCreated = new Date(Date.now() - 60000);
+        const bootTime = new Date(Date.now() - 30000);
+
+        await createWorkerPool({});
+        await createWorker({
+          created: workerCreated,
+          providerData: {
+            workerConfig: {
+              "someKey": "someValue",
+            },
+          },
+        });
+        const res = await helper.workerManager.registerWorker({
+          ...defaultRegisterWorker,
+          systemBootTime: bootTime.toISOString(),
+        });
+
+        assert.equal(res.credentials.clientId,
+          `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+        assert.equal(res.workerConfig.someKey, "someValue");
+
+        const provisionMetric = observed.find(m => m.name === 'worker_manager_worker_provision_seconds');
+        const startupMetric = observed.find(m => m.name === 'worker_manager_worker_startup_seconds');
+        assert(provisionMetric, 'workerProvisionDuration metric should be recorded');
+        assert(startupMetric, 'workerStartupDuration metric should be recorded');
+        assert(provisionMetric.value >= 0, 'provision duration should be non-negative');
+        assert(startupMetric.value >= 0, 'startup duration should be non-negative');
+      } finally {
+        monitor.manager._prometheus = origPrometheus;
+      }
+    });
+
     test('sweet success for a previous providerId', async function () {
       await createWorkerPool({
         providerId: 'testing2',
