@@ -15,5 +15,6 @@ from .purgecache import PurgeCache  # noqa: F401
 from .queue import Queue  # noqa: F401
 from .queueevents import QueueEvents  # noqa: F401
 from .secrets import Secrets  # noqa: F401
+from .webserver import WebServer  # noqa: F401
 from .workermanager import WorkerManager  # noqa: F401
 from .workermanagerevents import WorkerManagerEvents  # noqa: F401

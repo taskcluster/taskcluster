@@ -17,6 +17,7 @@ test('Main clients exposed', function () {
   assert.equal(taskcluster.Queue instanceof Function, true);
   assert.equal(taskcluster.QueueEvents instanceof Function, true);
   assert.equal(taskcluster.Secrets instanceof Function, true);
+  assert.equal(taskcluster.WebServer instanceof Function, true);
   assert.equal(taskcluster.WorkerManager instanceof Function, true);
   assert.equal(taskcluster.WorkerManagerEvents instanceof Function, true);
 });

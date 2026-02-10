@@ -37,6 +37,8 @@ This library provides the following packages to interface with Taskcluster:
 
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v96/clients/client-go/tcsecrets
 
+* https://pkg.go.dev/github.com/taskcluster/taskcluster/v96/clients/client-go/tcwebserver
+
 * https://pkg.go.dev/github.com/taskcluster/taskcluster/v96/clients/client-go/tcworkermanager
  <!--HTTP-API-end-->
 

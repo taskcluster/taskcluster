@@ -12,6 +12,8 @@ import queryLimit from 'graphql-query-count-limit';
 import loader from '@taskcluster/lib-loader';
 import config from '@taskcluster/lib-config';
 import libReferences from '@taskcluster/lib-references';
+import SchemaSet from '@taskcluster/lib-validate';
+import builder from './api.js';
 import { createServer } from 'http';
 import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import taskcluster from '@taskcluster/client';
@@ -120,17 +122,35 @@ const load = loader(
         }),
     },
 
-    generateReferences: {
+    schemaset: {
       requires: ['cfg'],
-      setup: async ({ cfg }) => libReferences.fromService({
-        references: [MonitorManager.reference('web-server'), MonitorManager.metricsReference('web-server')],
+      setup: ({ cfg }) => new SchemaSet({
+        serviceName: 'web-server',
+      }),
+    },
+
+    api: {
+      requires: ['cfg', 'clients', 'schemaset', 'monitor'],
+      setup: ({ cfg, clients, schemaset, monitor }) => builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { clients, rootUrl: cfg.taskcluster.rootUrl },
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      }),
+    },
+
+    generateReferences: {
+      requires: ['cfg', 'schemaset'],
+      setup: async ({ cfg, schemaset }) => libReferences.fromService({
+        schemaset,
+        references: [builder.reference(), MonitorManager.reference('web-server'), MonitorManager.metricsReference('web-server')],
       }).then(ref => ref.generateReferences()),
     },
 
     app: {
-      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db'],
-      setup: ({ cfg, strategies, auth, monitor, db }) =>
-        createApp({ cfg, strategies, auth, monitor, db }),
+      requires: ['cfg', 'strategies', 'auth', 'monitor', 'db', 'clients', 'api'],
+      setup: ({ cfg, strategies, auth, monitor, db, clients, api }) =>
+        createApp({ cfg, strategies, auth, monitor, db, clients, rootUrl: cfg.taskcluster.rootUrl, api }),
     },
 
     authFactory: {
