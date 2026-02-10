@@ -14,19 +14,19 @@ const ENV_FILE_PATH = './docker/env/';
 const ports = {
   taskcluster: ['80:80'],
 
-  auth: ['3011:80'],
-  github: ['3012:80'],
-  hooks: ['3013:80'],
-  index: ['3014:80'],
-  notify: ['3015:80'],
-  object: ['3016:80'],
-  'purge-cache': ['3017:80'],
-  queue: ['3018:80'],
-  secrets: ['3019:80'],
-  'worker-manager': ['3020:80'],
+  auth: ['3011:8080'],
+  github: ['3012:8080'],
+  hooks: ['3013:8080'],
+  index: ['3014:8080'],
+  notify: ['3015:8080'],
+  object: ['3016:8080'],
+  'purge-cache': ['3017:8080'],
+  queue: ['3018:8080'],
+  secrets: ['3019:8080'],
+  'worker-manager': ['3020:8080'],
   'web-server': ['3050:3050'],
-  ui: ['3022:80'],
-  references: ['3023:80'],
+  ui: ['3022:8080'],
+  references: ['3023:8080'],
 };
 
 const servicePorts = (service) => (ports[service] || []);
@@ -208,7 +208,7 @@ tasks.push({
 
         switch (cfg.var) {
           case 'PORT':
-            value = 80;
+            value = 8080;
             break;
 
           case 'TASKCLUSTER_CLIENT_ID':
@@ -612,17 +612,17 @@ http {
     server_name _;
 
     location / {
-      set $pass http://ui;
+      set $pass http://ui:${serviceHostPort('ui')};
       proxy_pass $pass;
       ${extraDirectives}
     }
     location /references {
-      set $pass http://references;
+      set $pass http://references:${serviceHostPort('references')};
       proxy_pass $pass;
       ${extraDirectives}
     }
     location /schemas {
-      set $pass http://references;
+      set $pass http://references:${serviceHostPort('references')};
       proxy_pass $pass;
       ${extraDirectives}
     }
@@ -659,7 +659,7 @@ http {
     }
 ${SERVICES.filter(name => !!ports[name]).map(name => `
     location /api/${name} {
-      set $pass http://${name}-web;
+      set $pass http://${name}-web:${serviceHostPort(name)};
       proxy_pass $pass;
       ${extraDirectives}
     }`).join('\n')}

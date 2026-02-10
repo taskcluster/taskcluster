@@ -108,7 +108,7 @@ services:
     volumes:
       - ./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf
     ports:
-      - '3022:80'
+      - '3022:8080'
   references:
     image: ${IMAGE}
     networks:
@@ -117,7 +117,7 @@ services:
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
     ports:
-      - '3023:80'
+      - '3023:8080'
   taskcluster:
     image: nginx:1.29.4
     networks:
@@ -231,13 +231,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/auth/v1/ping
+      test: wget -q --spider http://localhost:8080/api/auth/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3011:80'
+      - '3011:8080'
   auth-cron-purgeExpiredClients:
     image: ${IMAGE}
     networks:
@@ -297,13 +297,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/github/v1/ping
+      test: wget -q --spider http://localhost:8080/api/github/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3012:80'
+      - '3012:8080'
   github-background-worker:
     image: ${IMAGE}
     networks:
@@ -349,13 +349,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/hooks/v1/ping
+      test: wget -q --spider http://localhost:8080/api/hooks/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3013:80'
+      - '3013:8080'
   hooks-background-scheduler:
     image: ${IMAGE}
     networks:
@@ -417,13 +417,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/index/v1/ping
+      test: wget -q --spider http://localhost:8080/api/index/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3014:80'
+      - '3014:8080'
   index-background-handlers:
     image: ${IMAGE}
     networks:
@@ -469,13 +469,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/notify/v1/ping
+      test: wget -q --spider http://localhost:8080/api/notify/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3015:80'
+      - '3015:8080'
   notify-background-handler:
     image: ${IMAGE}
     networks:
@@ -507,13 +507,13 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/object/v1/ping
+      test: wget -q --spider http://localhost:8080/api/object/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3016:80'
+      - '3016:8080'
   object-cron-expire:
     image: ${IMAGE}
     networks:
@@ -545,13 +545,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/purge-cache/v1/ping
+      test: wget -q --spider http://localhost:8080/api/purge-cache/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3017:80'
+      - '3017:8080'
   purge-cache-cron-expireCachePurges:
     image: ${IMAGE}
     networks:
@@ -583,13 +583,13 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/queue/v1/ping
+      test: wget -q --spider http://localhost:8080/api/queue/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3018:80'
+      - '3018:8080'
   queue-background-claimResolver:
     image: ${IMAGE}
     networks:
@@ -783,13 +783,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/secrets/v1/ping
+      test: wget -q --spider http://localhost:8080/api/secrets/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3019:80'
+      - '3019:8080'
   secrets-cron-expire:
     image: ${IMAGE}
     networks:
@@ -903,13 +903,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/worker-manager/v1/ping
+      test: wget -q --spider http://localhost:8080/api/worker-manager/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3020:80'
+      - '3020:8080'
   worker-manager-background-provisioner:
     image: ${IMAGE}
     networks:
