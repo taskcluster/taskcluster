@@ -3,6 +3,38 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.3.0
+
+### GENERAL
+
+▶ [patch] [#8104](https://github.com/taskcluster/taskcluster/issues/8104)
+Fixed task duration not updating in real-time when filtering by status. When using react-window for virtualized task lists, filtering caused different tasks to appear at the same index without triggering a re-render due to React.memo. This is fixed by using react-window's itemKey prop to ensure proper component lifecycle when the task at a given index changes.
+
+▶ [patch] [#8231](https://github.com/taskcluster/taskcluster/issues/8231)
+Worker lifecycle log events (`worker-running`, `worker-stopped`, `worker-removed`) now include duration fields (`registrationDuration`, `workerAge`, `runningDuration`) to aid in investigating worker registration and lifetime issues.
+
+### DEPLOYERS
+
+▶ [patch]
+Fix running the local dev environment and pods from the helm charts in environments not letting non-root users listen on :80
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#8232](https://github.com/taskcluster/taskcluster/issues/8232)
+Worker Runner now includes system boot time when registering a new worker with Worker Manager.
+Worker Manager uses this to report two new metrics: `workerProvisionDuration` (time from worker
+requested to system boot) and `workerStartupDuration` (time from system boot to registration).
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump axios from 1.12.1 to 1.13.5 (c8ce6117d3)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.16.4 to 5.16.5 (d7a8fd3110)
+
+</details>
+
 ## v96.2.3
 
 ### GENERAL

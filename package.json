@@ -1,6 +1,6 @@
 {
   "name": "taskcluster",
-  "version": "96.2.3",
+  "version": "96.3.0",
   "private": true,
   "engine-strict": true,
   "type": "module",
