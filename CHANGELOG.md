@@ -3,6 +3,10 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.3.1
+
+No changes
+
 ## v96.3.0
 
 ### GENERAL
