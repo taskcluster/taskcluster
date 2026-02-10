@@ -192,10 +192,11 @@ export class Provider {
    * @param {import('../data.js').Worker} options.worker
    */
   async onWorkerRunning({ worker }) {
-    return this._onWorkerEvent({
-      worker,
-      event: 'workerRunning',
-    });
+    const created = worker.created?.getTime?.();
+    const extraLog = {
+      registrationDuration: Number.isFinite(created) ? (Date.now() - created) / 1000 : null,
+    };
+    return this._onWorkerEvent({ worker, event: 'workerRunning', extraLog });
   }
 
   /**
@@ -203,10 +204,15 @@ export class Provider {
    * @param {import('../data.js').Worker} options.worker
    */
   async onWorkerStopped({ worker }) {
-    return this._onWorkerEvent({
-      worker,
-      event: 'workerStopped',
-    });
+    const now = Date.now();
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const extraLog = {
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+    };
+    return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog });
   }
 
   /**
@@ -215,11 +221,17 @@ export class Provider {
    * @param {String} options.reason
    */
   async onWorkerRemoved({ worker, reason = 'unknown' }) {
+    const now = Date.now();
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const extraLog = {
+      reason,
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+    };
     return this._onWorkerEvent({
-      worker,
-      event: 'workerRemoved',
-      extraLog: { reason },
-      extraPublish: { reason },
+      worker, event: 'workerRemoved', extraLog, extraPublish: { reason },
     });
   }
 

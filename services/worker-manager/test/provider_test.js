@@ -44,6 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const createProvider = async () =>
     new Provider({
+      providerId: 'testing1',
       notify: await helper.load('notify'),
       db: helper.db,
       monitor,
@@ -356,10 +357,86 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const originalMetric = monitor.metric.workerRegistrationDuration;
       monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
 
-      await provider._onWorkerEvent({ worker, event: 'workerRunning', extraPublish: { providerId: 'testing1' } });
+      monitor.manager.reset();
+      await provider.onWorkerRunning({ worker });
       assert.equal(metricRecorded, true);
 
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-running');
+      assert.ok(msg, 'worker-running log event should be emitted');
+      assert.equal(msg.Fields.registrationDuration, 60);
+
       monitor.metric.workerRegistrationDuration = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-stopped',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 30000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 30);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerRemoved', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-removed',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 20000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerRemoved({ worker, reason: 'test-reason' });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      assert.ok(msg, 'worker-removed log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 20);
+      assert.equal(msg.Fields.reason, 'test-reason');
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('omits runningDuration when worker never registered', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-never-reg',
+        state: Worker.states.REQUESTED,
+      });
+
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, null);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
     });
 
     test('records lifetime on workerStopped', async function() {
@@ -377,7 +454,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const originalMetric = monitor.metric.workerLifetime;
       monitor.metric.workerLifetime = () => { metricRecorded = true; };
 
-      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
 
       monitor.metric.workerLifetime = originalMetric;
@@ -390,7 +467,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const originalMetric = monitor.metric.workerRegistrationFailure;
       monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
 
-      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
 
       monitor.metric.workerRegistrationFailure = originalMetric;
@@ -413,7 +490,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const originalMetric = monitor.metric.workerLifetime;
       monitor.metric.workerLifetime = () => { metricRecorded = true; };
 
-      await provider._onWorkerEvent({ worker, event: 'workerStopped', extraPublish: { providerId: 'testing1' } });
+      await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, false);
 
       monitor.metric.workerLifetime = originalMetric;
