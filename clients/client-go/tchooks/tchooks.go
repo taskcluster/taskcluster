@@ -285,14 +285,21 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
 //
+// Optionally, a `taskId` query parameter can be provided which the hook task
+// will use. It must be unique and follow the slugid format.
+//
 // Required scopes:
 //
 //	hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See #triggerHook
-func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
+func (hooks *Hooks) TriggerHook(hookGroupId, hookId, taskId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
+	v := url.Values{}
+	if taskId != "" {
+		v.Add("taskId", taskId)
+	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger", new(TriggerHookResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger", new(TriggerHookResponse), v)
 	return responseObject.(*TriggerHookResponse), err
 }
 
@@ -342,10 +349,17 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
 //
+// Optionally, a `taskId` query parameter can be provided which the hook task
+// will use. It must be unique and follow the slugid format.
+//
 // See #triggerHookWithToken
-func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
+func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token, taskId string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {
+	v := url.Values{}
+	if taskId != "" {
+		v.Add("taskId", taskId)
+	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger/"+url.PathEscape(token), new(TriggerHookResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.PathEscape(hookGroupId)+"/"+url.PathEscape(hookId)+"/trigger/"+url.PathEscape(token), new(TriggerHookResponse), v)
 	return responseObject.(*TriggerHookResponse), err
 }
 

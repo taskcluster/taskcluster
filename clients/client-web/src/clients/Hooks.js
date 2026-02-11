@@ -20,10 +20,10 @@ export default class Hooks extends Client {
     this.createHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","input":true,"method":"put","name":"createHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":{"AllOf":["hooks:modify-hook:<hookGroupId>/<hookId>","assume:hook-id:<hookGroupId>/<hookId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.updateHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","input":true,"method":"post","name":"updateHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":{"AllOf":["hooks:modify-hook:<hookGroupId>/<hookId>","assume:hook-id:<hookGroupId>/<hookId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.removeHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"delete","name":"removeHook","query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:modify-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.triggerHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","input":true,"method":"post","name":"triggerHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger","scopes":"hooks:trigger-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.triggerHook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","input":true,"method":"post","name":"triggerHook","output":true,"query":["taskId"],"route":"/hooks/<hookGroupId>/<hookId>/trigger","scopes":"hooks:trigger-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"getTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:get-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.resetTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"post","name":"resetTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:reset-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":["taskId"],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":["continuationToken","limit"],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","scopes":"hooks:list-last-fires:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
@@ -123,6 +123,8 @@ export default class Hooks extends Client {
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  // Optionally, a `taskId` query parameter can be provided which the hook task
+  // will use. It must be unique and follow the slugid format.
   /* eslint-enable max-len */
   triggerHook(...args) {
     this.validate(this.triggerHook.entry, args);
@@ -152,6 +154,8 @@ export default class Hooks extends Client {
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  // Optionally, a `taskId` query parameter can be provided which the hook task
+  // will use. It must be unique and follow the slugid format.
   /* eslint-enable max-len */
   triggerHookWithToken(...args) {
     this.validate(this.triggerHookWithToken.entry, args);

@@ -8,6 +8,8 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { hookUtils } from './utils.js';
 
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+
 export const AUDIT_ENTRY_TYPE = Object.freeze({
   HOOK: {
     CREATED: 'created',
@@ -470,6 +472,9 @@ builder.declare({
   scopes: 'hooks:trigger-hook:<hookGroupId>/<hookId>',
   input: 'trigger-hook.yml',
   output: 'trigger-hook-response.yml',
+  query: {
+    taskId: SLUGID_PATTERN,
+  },
   title: 'Trigger a hook',
   stability: 'stable',
   category: 'Hooks',
@@ -479,6 +484,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` query parameter can be provided which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;
@@ -583,6 +591,9 @@ builder.declare({
   input: 'trigger-hook.yml',
   scopes: null,
   output: 'trigger-hook-response.yml',
+  query: {
+    taskId: SLUGID_PATTERN,
+  },
   title: 'Trigger a hook with a token',
   stability: 'stable',
   category: 'Hooks',
@@ -592,6 +603,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` query parameter can be provided which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const payload = req.body;
@@ -636,8 +650,14 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
     });
   }
 
+  // Build options object for taskcreator.fire
+  const options = {};
+  if (req.query.taskId) {
+    options.taskId = req.query.taskId;
+  }
+
   try {
-    resp = await this.taskcreator.fire(hook, context);
+    resp = await this.taskcreator.fire(hook, context, options);
     if (!resp) {
       // hook did not produce a response, so return an empty object
       return res.reply({});
