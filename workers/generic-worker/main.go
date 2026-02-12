@@ -557,11 +557,14 @@ mainLoop:
 		claimCount := availableCapacity
 		if config.NumberOfTasksToRun > 0 {
 			// Account for tasks already running so we don't exceed NumberOfTasksToRun.
-			remainingToStart := config.NumberOfTasksToRun - tasksResolved - taskManager.TaskCount()
-			if remainingToStart <= 0 {
+			alreadyStarted := tasksResolved + taskManager.TaskCount()
+			if alreadyStarted >= config.NumberOfTasksToRun {
 				claimCount = 0
-			} else if remainingToStart < claimCount {
-				claimCount = remainingToStart
+			} else {
+				remainingToStart := config.NumberOfTasksToRun - alreadyStarted
+				if remainingToStart < claimCount {
+					claimCount = remainingToStart
+				}
 			}
 		}
 
