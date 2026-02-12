@@ -814,7 +814,7 @@ func (items *Items) MergeIn(subSchema *JsonSubSchema, skipFields StringSet) {
 	// loop through all struct fields of Jsonsubschema
 	for i := range p.NumField() {
 		// don't copy fields that are blacklisted, or that aren't pointers
-		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Ptr {
+		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Pointer {
 			continue
 		}
 		// loop through all items (e.g. the list of oneOf schemas)
