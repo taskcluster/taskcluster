@@ -21,6 +21,7 @@ import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
+import ChartIcon from 'mdi-react/ChartBarIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
@@ -536,6 +537,16 @@ export default class ViewTask extends Component {
     this.setState({
       formInputs: value,
     });
+
+  handleOpenLogProfiler = () => {
+    const { taskId } = this.props.match.params;
+    const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task/${taskId}/profile`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
+      profileUrl
+    )}`;
+
+    window.open(profilerUrl, '_blank');
+  };
 
   handlePurgeWorkerCacheClick = () => {
     const title = 'Purge Worker Cache';
@@ -1060,6 +1071,12 @@ export default class ViewTask extends Component {
                   onClick={this.handleCreateInteractiveTaskClick}
                 />
               )}
+              <SpeedDialAction
+                tooltipOpen
+                icon={<ChartIcon />}
+                tooltipTitle="Profile Task Log"
+                onClick={this.handleOpenLogProfiler}
+              />
               {taskActions &&
                 taskActions.length &&
                 taskActions.map(action => (

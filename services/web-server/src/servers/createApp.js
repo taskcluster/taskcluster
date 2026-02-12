@@ -15,11 +15,10 @@ import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
 import { traceMiddleware } from '@taskcluster/lib-app';
-import { loadVersion } from '@taskcluster/lib-api';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-export default async ({ cfg, strategies, auth, monitor, db }) => {
+export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, api }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -152,24 +151,10 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.options('/login/oauth/credentials', cors(thirdPartyCorsOptions));
   app.get('/login/oauth/credentials', cors(thirdPartyCorsOptions), oauth2AccessToken(), getCredentials);
 
-  // Dockerflow endpoints
-  // https://github.com/mozilla-services/Dockerflow
-  app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
-    res.json({});
-  });
-  app.get('/api/web-server/v1/__version__', async (_req, res) => {
-    res.json(await loadVersion());
-  });
-  // TODO: add implementation
-  app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
-    res.json({});
-  });
-  app.get('/api/web-server/v1/ping', (_req, res) => {
-    res.status(200).json({
-      alive: true,
-      uptime: process.uptime(),
-    });
-  });
+  // Mount lib-api routes (profiler endpoints, Dockerflow health checks)
+  if (api) {
+    api.express(app);
+  }
 
   // Error handling middleware
   app.use((err, req, res, next) => {

@@ -4122,6 +4122,104 @@ export default {
     },
     "referenceKind": "api"
   },
+  "WebServer": {
+    "reference": {
+      "$schema": "/schemas/common/api-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Profiler",
+          "description": "Generate a Firefox Profiler–compatible profile from a task group.\nThe profile contains scheduling and execution timing for all tasks.",
+          "method": "get",
+          "name": "taskGroupProfile",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/profile",
+          "stability": "experimental",
+          "title": "Task Group Profile",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId"
+          ],
+          "category": "Profiler",
+          "description": "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+          "method": "get",
+          "name": "taskProfile",
+          "query": [
+          ],
+          "route": "/task/<taskId>/profile",
+          "stability": "experimental",
+          "title": "Task Log Profile",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
+        }
+      ],
+      "serviceName": "web-server",
+      "title": "Web Server Service"
+    },
+    "referenceKind": "api"
+  },
   "WorkerManager": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",

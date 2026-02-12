@@ -3393,6 +3393,29 @@
                 ],
                 "data": {
                   "inline": true,
+                  "order": 1,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
+                },
+                "path": "reference/core/web-server/api",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
                   "order": 2,
                   "title": "logs"
                 },
@@ -3403,8 +3426,8 @@
                 },
                 "path": "reference/core/web-server/logs",
                 "prev": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
+                  "path": "reference/core/web-server/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -3484,8 +3507,8 @@
             },
             "name": "web-server",
             "next": {
-              "path": "reference/core/web-server/logs",
-              "title": "logs"
+              "path": "reference/core/web-server/api",
+              "title": "api"
             },
             "path": "reference/core/web-server/README",
             "prev": {
