@@ -8,11 +8,14 @@ var (
 	// Mutex for access to other vars
 	m sync.Mutex
 
-	// True if a graceful termination has been requestd
+	// True if a graceful termination has been requested
 	terminationRequested bool
 
-	// pending callback for graceful termination (there can be only one)
-	callback GracefulTerminationFunc
+	// The finishTasks value passed to Terminate(), used for late callback registration
+	terminationFinishTasks bool
+
+	// callbacks for graceful termination, keyed by unique ID (e.g., task ID)
+	callbacks = make(map[string]GracefulTerminationFunc)
 )
 
 // Return true if graceful termination has been requested
@@ -23,28 +26,33 @@ func TerminationRequested() bool {
 	return terminationRequested
 }
 
-// Set up to call the given function (in a goroutine) when a termination
-// request is received.  Returns a function which, when called, will remove
-// the callback.  Only one callback can be installed at a time.
-func OnTerminationRequest(f GracefulTerminationFunc) func() {
+// OnTerminationRequest sets up to call the given function (in a goroutine) when
+// a termination request is received. The id parameter should be unique (e.g., task ID).
+// Returns a function which, when called, will remove the callback.
+// Multiple callbacks can be registered with different IDs.
+func OnTerminationRequest(id string, f GracefulTerminationFunc) func() {
 	m.Lock()
 	defer m.Unlock()
 
-	if callback != nil {
-		panic("Cannot have two graceful termination callbacks")
+	callbacks[id] = f
+
+	// If termination was already requested, call the callback immediately
+	// with the same finishTasks value that was originally passed to Terminate()
+	if terminationRequested {
+		go f(terminationFinishTasks)
 	}
-	callback = f
 
 	return func() {
 		m.Lock()
 		defer m.Unlock()
-
-		callback = nil
+		delete(callbacks, id)
 	}
 }
 
-// A graceful termination has been requested.  Set a flag so that no further
-// tasks are claimed, and interrupt any running task if `finishTasks` is true
+// A graceful termination has been requested. Set a flag so that no further
+// tasks are claimed, and call all registered callbacks.
+// If finishTasks is true, tasks should be allowed to complete.
+// If finishTasks is false, tasks should be aborted immediately.
 func Terminate(finishTasks bool) {
 	m.Lock()
 	defer m.Unlock()
@@ -53,8 +61,11 @@ func Terminate(finishTasks bool) {
 		return
 	}
 	terminationRequested = true
-	if callback != nil {
-		callback(finishTasks)
+	terminationFinishTasks = finishTasks
+
+	// Call all registered callbacks
+	for _, cb := range callbacks {
+		go cb(finishTasks)
 	}
 }
 
@@ -64,5 +75,13 @@ func Reset() {
 	defer m.Unlock()
 
 	terminationRequested = false
-	callback = nil
+	terminationFinishTasks = false
+	callbacks = make(map[string]GracefulTerminationFunc)
+}
+
+// CallbackCount returns the number of registered callbacks (useful for testing)
+func CallbackCount() int {
+	m.Lock()
+	defer m.Unlock()
+	return len(callbacks)
 }
