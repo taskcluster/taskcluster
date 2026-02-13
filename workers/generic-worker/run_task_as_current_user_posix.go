@@ -3,11 +3,12 @@
 package main
 
 import (
-	"fmt"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
 
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 )
 
@@ -23,10 +24,19 @@ func (r *RunTaskAsCurrentUserTask) platformSpecificActions() *CommandExecutionEr
 		r.task.Payload.Env = make(map[string]string)
 	}
 
-	r.task.Payload.Env["TASK_USER_CREDENTIALS"] = ctuPath
-	err := r.task.setVariable("TASK_USER_CREDENTIALS", ctuPath)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not set TASK_USER_CREDENTIALS environment variable: %v", err))
+	// Write task user credentials to a task-specific file
+	ctx := r.task.GetContext()
+	if ctx != nil && ctx.User != nil {
+		credsPath := filepath.Join(ctx.TaskDir, "task-user-credentials.json")
+		err := fileutil.WriteToFileAsJSON(ctx.User, credsPath)
+		if err == nil {
+			err = fileutil.SecureFiles(credsPath)
+			if err != nil {
+				panic(err)
+			}
+			r.task.Payload.Env["TASK_USER_CREDENTIALS"] = credsPath
+			_ = r.task.setVariable("TASK_USER_CREDENTIALS", credsPath)
+		}
 	}
 
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {

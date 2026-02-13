@@ -23,9 +23,10 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 		osGroups.Task.Infof("Not adding task user to group(s) %v since we are running as current user.", groupNames)
 		return nil
 	}
+	ctx := osGroups.Task.GetContext()
 	notAddedGroupNames := []string{}
 	for _, groupName := range groupNames {
-		err := addUserToGroup(taskContext.User.Name, groupName)
+		err := addUserToGroup(ctx.User.Name, groupName)
 		if err != nil {
 			notAddedGroupNames = append(notAddedGroupNames, groupName)
 			osGroups.Task.Errorf("[osGroups] Could not add task user to OS group %v: %v", groupName, err)
@@ -46,9 +47,10 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 }
 
 func (osGroups *OSGroups) Stop(err *ExecutionErrors) {
+	ctx := osGroups.Task.GetContext()
 	notRemovedGroupNames := []string{}
 	for _, group := range osGroups.AddedGroups {
-		e := removeUserFromGroup(taskContext.User.Name, group.Name)
+		e := removeUserFromGroup(ctx.User.Name, group.Name)
 		if e != nil {
 			notRemovedGroupNames = append(notRemovedGroupNames, group.Name)
 			osGroups.Task.Errorf("[osGroups] Could not remove task user from OS group %v: %v", group, e)
