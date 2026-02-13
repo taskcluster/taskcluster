@@ -43,7 +43,7 @@ func (v *linuxVerifier) Verify(conn net.Conn) error {
 		return fmt.Errorf("failed to look up UID for %s: %w", tcpAddr, err)
 	}
 
-	// Always allow root (UID 0) — the worker process runs as root and
+	// Always allow root (UID 0) - the worker process runs as root and
 	// needs to reach tc-proxy for credential refresh and health checks.
 	if uid == 0 {
 		return nil
