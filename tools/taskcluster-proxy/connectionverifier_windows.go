@@ -49,7 +49,7 @@ func (v *windowsVerifier) Verify(conn net.Conn) error {
 		return fmt.Errorf("failed to get SID for PID %d: %w", pid, err)
 	}
 
-	// Always allow SYSTEM (S-1-5-18) and Administrators (S-1-5-32-544) —
+	// Always allow SYSTEM (S-1-5-18) and Administrators (S-1-5-32-544) -
 	// the worker process runs as SYSTEM/admin and needs to reach tc-proxy
 	// for credential refresh and health checks.
 	systemSID, _ := windows.StringToSid("S-1-5-18")
