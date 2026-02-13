@@ -44,13 +44,6 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		}
 }
 
-func updateOwnership(t *testing.T) []string {
-	t.Helper()
-	return []string{
-		"Updating ownership of files inside directory '.*" + t.Name() + "' from .* to task_[0-9]*",
-	}
-}
-
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	setup(t)
 
