@@ -61,9 +61,17 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 }
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
-	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogPortBase, config.LiveLogPortBase+1)
+	// Get allocated ports for this task
+	getPort, putPort, ok := l.task.LiveLogPorts()
+	if !ok {
+		// Fall back to config defaults if ports not allocated
+		getPort = config.LiveLogPortBase + 1
+		putPort = config.LiveLogPortBase
+	}
+
+	liveLog, err := livelog.New(config.LiveLogExecutable, putPort, getPort)
 	if err != nil {
-		log.Printf("WARNING: could not create livelog: %s", err)
+		log.Printf("WARNING: could not create livelog on ports %d/%d: %s", putPort, getPort, err)
 		// then run without livelog, is only a "best effort" service
 		return nil
 	}
@@ -73,7 +81,7 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 		return updateErr
 	}
 
-	err = l.uploadLiveLogArtifact()
+	err = l.uploadLiveLogArtifact(getPort)
 	if err != nil {
 		log.Printf("WARNING: could not upload livelog artifact: %s", err)
 	}
@@ -156,9 +164,9 @@ func (l *LiveLogTask) reinstateBackingLog() {
 	}
 }
 
-func (l *LiveLogTask) uploadLiveLogArtifact() error {
+func (l *LiveLogTask) uploadLiveLogArtifact(getPort uint16) error {
 	var err error
-	l.exposure, err = exposer.ExposeHTTP(config.LiveLogPortBase + 1)
+	l.exposure, err = exposer.ExposeHTTP(getPort)
 	if err != nil {
 		return err
 	}

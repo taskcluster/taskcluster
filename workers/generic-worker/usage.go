@@ -150,6 +150,16 @@ and reports back results to the queue.
                                             not exist. This may be a relative path to the
                                             current directory, or an absolute path.
                                             [default: "caches"]
+          capacity                          The number of tasks the worker will run concurrently.
+                                            When greater than 1, the worker claims and executes
+                                            multiple tasks in parallel, each in its own task
+                                            directory with isolated ports for LiveLog,
+                                            Interactive, and TaskclusterProxy features. Requires
+                                            headlessTasks enabled. The runTaskAsCurrentUser and
+                                            runAsAdministrator task features are automatically
+                                            disabled when capacity > 1 to preserve task
+                                            isolation. Maximum value is 255.
+                                            [default: 1]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
           cleanUpTaskDirs                   Whether to delete the home directories of the task

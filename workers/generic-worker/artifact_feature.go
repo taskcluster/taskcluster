@@ -176,16 +176,17 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 		if time.Time(base.Expires).IsZero() {
 			base.Expires = task.Definition.Expires
 		}
+		taskDir := task.TaskDir()
 		switch artifact.Type {
 		case "file":
-			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd))
+			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
 		case "directory":
-			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				break
 			}
 			walkFn := func(path string, d os.DirEntry, incomingErr error) error {
-				subPath, err := filepath.Rel(taskContext.TaskDir, path)
+				subPath, err := filepath.Rel(taskDir, path)
 				if err != nil {
 					// this indicates a bug in the code
 					panic(err)
@@ -211,7 +212,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 				// cause the task to fail, and the cause to be preserved in the
 				// error artifact.
 				case incomingErr != nil:
-					fullPath := filepath.Join(taskContext.TaskDir, subPath)
+					fullPath := filepath.Join(taskDir, subPath)
 					payloadArtifacts = append(
 						payloadArtifacts,
 						&artifacts.ErrorArtifact{
@@ -222,17 +223,17 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 						},
 					)
 				case d.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
 				default:
-					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd))
+					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
 				}
 				return nil
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.WalkDir(filepath.Join(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.WalkDir(filepath.Join(taskDir, basePath), walkFn)
 		}
 		artifactsChan <- payloadArtifacts
 	}
@@ -269,8 +270,8 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData) artifacts.TaskArtifact {
-	fullPath := filepath.Join(taskContext.TaskDir, path)
+func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData, taskDir string) artifacts.TaskArtifact {
+	fullPath := filepath.Join(taskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
@@ -312,7 +313,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 		return nil
 	}
 
-	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd)
+	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd, taskDir)
 	if err != nil {
 		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,

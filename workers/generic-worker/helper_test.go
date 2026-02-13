@@ -30,6 +30,7 @@ import (
 	"github.com/taskcluster/taskcluster/v96/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v96/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/graceful"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
 )
 
@@ -357,6 +358,7 @@ func GWTest(t *testing.T) *Test {
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			CachesDir:       cachesDir,
+			Capacity:        1,
 			CleanUpTaskDirs: false,
 			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			DisableReboots:  true,
@@ -517,6 +519,7 @@ func (gwtest *Test) Teardown() {
 	taskContext = nil
 	globalTestName = ""
 	config = nil
+	graceful.Reset()
 	// gwtest.srv nil if no services
 	if gwtest.srv != nil {
 		err = gwtest.srv.Shutdown(context.Background())
