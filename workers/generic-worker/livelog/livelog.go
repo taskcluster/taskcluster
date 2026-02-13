@@ -66,13 +66,15 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 	}
 	l.setRequestURLs()
 
-	os.Setenv("ACCESS_TOKEN", l.secret)
-	os.Setenv("LIVELOG_GET_PORT", strconv.Itoa(int(l.GETPort)))
-	os.Setenv("LIVELOG_PUT_PORT", strconv.Itoa(int(l.PUTPort)))
-	os.Setenv("LIVELOG_TEMP_DIR", tmpDir)
-	// we want to explicitly prohibit the process to use TLS
-	os.Unsetenv("SERVER_KEY_FILE")
-	os.Unsetenv("SERVER_CRT_FILE")
+	// Set environment variables directly on the command to avoid race conditions
+	// when multiple livelog instances start concurrently
+	l.command.Env = []string{
+		"ACCESS_TOKEN=" + l.secret,
+		"LIVELOG_GET_PORT=" + strconv.Itoa(int(l.GETPort)),
+		"LIVELOG_PUT_PORT=" + strconv.Itoa(int(l.PUTPort)),
+		"LIVELOG_TEMP_DIR=" + tmpDir,
+		// Explicitly omit SERVER_KEY_FILE and SERVER_CRT_FILE to prohibit TLS
+	}
 
 	// Context used to cancel the connectInputStream goroutine if the
 	// livelog process exits before the connection is established.
