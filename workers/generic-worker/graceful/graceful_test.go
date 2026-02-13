@@ -7,39 +7,88 @@ import (
 )
 
 func TestGracefulTermination(t *testing.T) {
-	cleanup := func() {
-		terminationRequested = false
-		callback = nil
-	}
-
-	cleanup()
 	t.Run("NoCallbacks", func(t *testing.T) {
+		Reset()
 		Terminate(true)
 		require.Equal(t, true, TerminationRequested())
 	})
 
-	cleanup()
 	t.Run("WithCallback", func(t *testing.T) {
-		var res *bool // pointer is to distinguish nil from false
-		OnTerminationRequest(func(finishTasks bool) { res = &finishTasks })
+		Reset()
+		done := make(chan bool, 1)
+		OnTerminationRequest("task1", func(finishTasks bool) { done <- finishTasks })
 		Terminate(false)
-		require.Equal(t, false, *res)
+		res := <-done
+		require.Equal(t, false, res)
 		require.Equal(t, true, TerminationRequested())
 	})
 
-	cleanup()
 	t.Run("WithRemovedCallback", func(t *testing.T) {
-		var cb1 *bool
-		remove1 := OnTerminationRequest(func(finishTasks bool) { cb1 = &finishTasks })
+		Reset()
+		done1 := make(chan bool, 1)
+		remove1 := OnTerminationRequest("task1", func(finishTasks bool) { done1 <- finishTasks })
 		remove1()
 
-		var cb2 *bool
-		OnTerminationRequest(func(finishTasks bool) { cb2 = &finishTasks })
+		done2 := make(chan bool, 1)
+		OnTerminationRequest("task2", func(finishTasks bool) { done2 <- finishTasks })
+
+		Terminate(true)
+		res := <-done2
+
+		// cb1 should not have been called since it was removed
+		select {
+		case <-done1:
+			t.Fatal("removed callback should not have been called")
+		default:
+		}
+
+		require.Equal(t, true, res)
+		require.Equal(t, true, TerminationRequested())
+	})
+
+	t.Run("MultipleCallbacks", func(t *testing.T) {
+		Reset()
+		done1 := make(chan bool, 1)
+		done2 := make(chan bool, 1)
+		done3 := make(chan bool, 1)
+		OnTerminationRequest("task1", func(finishTasks bool) { done1 <- finishTasks })
+		OnTerminationRequest("task2", func(finishTasks bool) { done2 <- finishTasks })
+		OnTerminationRequest("task3", func(finishTasks bool) { done3 <- finishTasks })
+
+		require.Equal(t, 3, CallbackCount())
 
 		Terminate(true)
 
-		require.Nil(t, cb1)
-		require.Equal(t, true, *cb2)
-		require.Equal(t, true, TerminationRequested())
+		res1 := <-done1
+		res2 := <-done2
+		res3 := <-done3
+
+		require.Equal(t, true, res1)
+		require.Equal(t, true, res2)
+		require.Equal(t, true, res3)
+	})
+
+	t.Run("CallbackRegisteredAfterTerminationFinishTrue", func(t *testing.T) {
+		Reset()
+		Terminate(true)
+
+		done := make(chan bool, 1)
+		OnTerminationRequest("late-task", func(finishTasks bool) { done <- finishTasks })
+		res := <-done
+
+		// Late callback should receive the same finishTasks value passed to Terminate()
+		require.Equal(t, true, res)
+	})
+
+	t.Run("CallbackRegisteredAfterTerminationFinishFalse", func(t *testing.T) {
+		Reset()
+		Terminate(false)
+
+		done := make(chan bool, 1)
+		OnTerminationRequest("late-task", func(finishTasks bool) { done <- finishTasks })
+		res := <-done
+
+		// Late callback should receive the same finishTasks value passed to Terminate()
+		require.Equal(t, false, res)
 	})
 }
