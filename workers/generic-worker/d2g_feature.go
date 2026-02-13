@@ -277,6 +277,20 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	dtf.evaluateCommandPlaceholders(image.ID, taskDir)
 
+	d2gCacheMutex.Lock()
+	mergedCache := ImageCache{}
+	mergedCache.loadFromFile("d2g-image-cache.json")
+	maps.Copy(mergedCache, dtf.imageCache)
+	if writeErr := fileutil.WriteToFileAsJSON(&mergedCache, "d2g-image-cache.json"); writeErr != nil {
+		d2gCacheMutex.Unlock()
+		return executionError(internalError, errored, writeErr)
+	}
+	if secErr := fileutil.SecureFiles("d2g-image-cache.json"); secErr != nil {
+		d2gCacheMutex.Unlock()
+		return executionError(internalError, errored, secErr)
+	}
+	d2gCacheMutex.Unlock()
+
 	return nil
 }
 
@@ -312,13 +326,6 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
 	}
 
-	d2gCacheMutex.Lock()
-	mergedCache := ImageCache{}
-	mergedCache.loadFromFile("d2g-image-cache.json")
-	maps.Copy(mergedCache, dtf.imageCache)
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&mergedCache, "d2g-image-cache.json")))
-	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
-	d2gCacheMutex.Unlock()
 }
 
 func (ic *ImageCache) loadFromFile(stateFile string) {
