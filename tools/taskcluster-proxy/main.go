@@ -41,24 +41,36 @@ task id.
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
     --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
+    --allowed-user <username>       Only allow connections from this OS user [default: ].
 `
 )
 
 func main() {
-	routes, address, err := ParseCommandArgs(os.Args[1:], true)
+	routes, address, allowedUser, err := ParseCommandArgs(os.Args[1:], true)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
 
-	server := &http.Server{
-		Handler: &routes,
-		// Only listen on loopback interface to reduce attack surface. If we later
-		// wish to make this service available over the network, we could add
-		// configuration settings for this, but for now, let's lock it down.
-		Addr: address,
+	verifier, err := newConnectionVerifier(allowedUser)
+	if err != nil {
+		log.Fatalf("Failed to create connection verifier: %v", err)
 	}
 
-	startError := server.ListenAndServe()
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalf("Failed to listen on %s: %v", address, err)
+	}
+
+	wrappedListener := &verifiedListener{
+		Listener: listener,
+		verifier: verifier,
+	}
+
+	server := &http.Server{
+		Handler: &routes,
+	}
+
+	startError := server.Serve(wrappedListener)
 	if startError != nil {
 		log.Fatal(startError)
 	}
@@ -75,7 +87,7 @@ var getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionR
 
 // ParseCommandArgs converts command line arguments into a configured Routes
 // and port.
-func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, err error) {
+func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, allowedUser string, err error) {
 	fullversion := "Taskcluster proxy " + version
 	if revision != "" {
 		fullversion += " (git revision " + revision + ")"
@@ -114,6 +126,11 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 	address = ipAddress + ":" + portStr
 	log.Printf("Listening on: %v", address)
+
+	allowedUser = arguments["--allowed-user"].(string)
+	if allowedUser != "" {
+		log.Printf("Allowed user: %v", allowedUser)
+	}
 
 	rootURL := arguments["--root-url"]
 	if rootURL == nil || rootURL == "" {

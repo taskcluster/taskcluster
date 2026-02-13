@@ -8,7 +8,7 @@ import (
 )
 
 func TestNoTaskNoScopes(t *testing.T) {
-	routes, address, err := ParseCommandArgs(
+	routes, address, _, err := ParseCommandArgs(
 		[]string{
 			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
@@ -28,7 +28,7 @@ func TestNoTaskNoScopes(t *testing.T) {
 }
 
 func TestNondefaultPort(t *testing.T) {
-	_, address, err := ParseCommandArgs(
+	_, address, _, err := ParseCommandArgs(
 		[]string{
 			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
@@ -46,7 +46,7 @@ func TestNondefaultPort(t *testing.T) {
 }
 
 func TestWithTwoScopes(t *testing.T) {
-	routes, address, err := ParseCommandArgs(
+	routes, address, _, err := ParseCommandArgs(
 		[]string{
 			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
@@ -97,7 +97,7 @@ func TestWithTaskWithNoScopes(t *testing.T) {
 	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
 		Scopes: nil,
 	})()
-	routes, _, err := ParseCommandArgs(
+	routes, _, _, err := ParseCommandArgs(
 		[]string{
 			"--task-id", "abc",
 			"--root-url", "https://tc-tests.example.com",
@@ -120,7 +120,7 @@ func TestWithTaskWithScopes(t *testing.T) {
 	defer withFakeTask("abc", &tcqueue.TaskDefinitionResponse{
 		Scopes: []string{exampleScope},
 	})()
-	routes, _, err := ParseCommandArgs(
+	routes, _, _, err := ParseCommandArgs(
 		[]string{
 			"--task-id", "abc",
 			"--root-url", "https://tc-tests.example.com",
@@ -139,7 +139,7 @@ func TestWithTaskWithScopes(t *testing.T) {
 }
 
 func TestWithInterface(t *testing.T) {
-	_, address, err := ParseCommandArgs(
+	_, address, _, err := ParseCommandArgs(
 		[]string{
 			"--root-url", "https://tc-tests.example.com",
 			"--client-id", "abc",
@@ -159,7 +159,7 @@ func TestWithInterface(t *testing.T) {
 }
 
 func TestBadPort(t *testing.T) {
-	_, _, err := ParseCommandArgs(
+	_, _, _, err := ParseCommandArgs(
 		[]string{
 			"--port", "-12345",
 			"--ip-address", "172.17.0.44",
@@ -175,7 +175,7 @@ func TestBadPort(t *testing.T) {
 }
 
 func TestBadIPAddress(t *testing.T) {
-	_, _, err := ParseCommandArgs(
+	_, _, _, err := ParseCommandArgs(
 		[]string{
 			"--port", "12345",
 			"--ip-address", "172.17.0.44.66",

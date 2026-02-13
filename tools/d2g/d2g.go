@@ -407,7 +407,10 @@ func runCommand(
 	args = append(args, createVolumeMountArgs(dwPayload, wdcs, gwArtifacts, config)...)
 
 	if dwPayload.Features.TaskclusterProxy && config.AllowTaskclusterProxy {
-		args = append(args, "--add-host=taskcluster:host-gateway")
+		// Use per-task Docker network for tc-proxy isolation.
+		// The network name and gateway IP are set by generic-worker at runtime.
+		args = append(args, "--network", "__TASKCLUSTER_DOCKER_NETWORK__")
+		args = append(args, "--add-host=taskcluster:__TASKCLUSTER_PROXY_GATEWAY__")
 	}
 
 	if config.AllowGPUs {
