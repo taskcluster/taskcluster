@@ -51,11 +51,56 @@ type (
 		featureArtifacts    map[string]string
 		D2GInfo             *d2g.ConversionInfo               `json:"-"`
 		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
+		// Context holds per-task context including task directory and user.
+		// This replaces the global taskContext for concurrent task execution.
+		Context *TaskContext `json:"-"`
+		// AllocatedPorts holds the ports allocated to this task by PortManager.
+		// Indexed by PortIndex* constants.
+		AllocatedPorts []uint16 `json:"-"`
 	}
 
 	TaskStatus       string
 	TaskUpdateReason string
 )
+
+// GetContext returns the task's context.
+// Every task must have a Context set; this method panics if Context is nil.
+func (task *TaskRun) GetContext() *TaskContext {
+	if task.Context == nil {
+		panic("task.Context is nil - every task must have a context assigned")
+	}
+	return task.Context
+}
+
+// TaskDir returns the task's working directory.
+func (task *TaskRun) TaskDir() string {
+	return task.GetContext().TaskDir
+}
+
+// LiveLogPorts returns the GET and PUT ports for livelog.
+// Returns (getPort, putPort, ok) where ok is false if ports weren't allocated.
+func (task *TaskRun) LiveLogPorts() (getPort, putPort uint16, ok bool) {
+	if len(task.AllocatedPorts) < 2 {
+		return 0, 0, false
+	}
+	return task.AllocatedPorts[PortIndexLiveLogGET], task.AllocatedPorts[PortIndexLiveLogPUT], true
+}
+
+// InteractivePort returns the interactive shell port.
+func (task *TaskRun) InteractivePort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexInteractive {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexInteractive], true
+}
+
+// TaskclusterProxyPort returns the taskcluster-proxy port.
+func (task *TaskRun) TaskclusterProxyPort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexTaskclusterProxy {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexTaskclusterProxy], true
+}
 
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
