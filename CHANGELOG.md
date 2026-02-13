@@ -38,7 +38,8 @@ Fix running the local dev environment and pods from the helm charts in environme
 ### WORKER-DEPLOYERS
 
 ▶ [minor] [#8232](https://github.com/taskcluster/taskcluster/issues/8232)
-Worker Runner now includes system boot time when registering a new worker with Worker Manager.
+Worker Runner now includes system boot time when registering a new worker with Worker Manager. Note: you need to have services running on v96.3.0 or higher before rolling out this change to workers, otherwise, they'll fail to register since the Worker Manager API contract has changed.
+
 Worker Manager uses this to report two new metrics: `workerProvisionDuration` (time from worker
 requested to system boot) and `workerStartupDuration` (time from system boot to registration).
 
