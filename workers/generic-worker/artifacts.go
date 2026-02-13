@@ -168,8 +168,8 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 	}
 }
 
-func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {
-	tempFilePath, err = gwCopyToTempFile(filePath, pd)
+func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData, taskDir string) (tempFilePath string, err error) {
+	tempFilePath, err = gwCopyToTempFile(filePath, pd, taskDir)
 
 	if runtime.GOOS == "windows" {
 		// Windows syscall logs are sent to stdout, even though the code appears

@@ -25,6 +25,14 @@ const (
 	engine = "insecure"
 )
 
+var runningTests bool = false
+
+// validateEngineConfig validates engine-specific configuration.
+// For insecure engine, capacity > 1 is always allowed.
+func validateEngineConfig() error {
+	return nil
+}
+
 func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }
@@ -61,9 +69,9 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommand(cmd, task.TaskDir(), env)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommandContext(ctx, cmd, task.TaskDir(), env)
 	}
 
 	return processCmd.Cmd, err
@@ -73,26 +81,24 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
-	taskContext = &TaskContext{
+// CreateTaskContext creates a new TaskContext for task execution.
+// This is the main function used to create task contexts for all tasks.
+// Panics on error (callers should use recover() if needed).
+func CreateTaskContext(taskDirName string) *TaskContext {
+	ctx := &TaskContext{
 		TaskDir: filepath.Join(config.TasksDir, taskDirName),
 	}
-	err := os.MkdirAll(taskContext.TaskDir, 0777)
+	err := os.MkdirAll(ctx.TaskDir, 0777)
 	if err != nil {
 		panic(err)
 	}
-	return false
+	return ctx
 }
 
-// Helper function used to get the current task user's
-// platform data. Useful for initially setting up the
-// TaskRun struct's data.
-func currentPlatformData() *process.PlatformData {
-	pd, err := process.TaskUserPlatformData(taskContext.User, false)
-	if err != nil {
-		panic(err)
-	}
-	return pd
+// platformDataForTaskContext returns platform data for a given TaskContext.
+// Used for both capacity=1 and capacity>1.
+func platformDataForTaskContext(ctx *TaskContext) (*process.PlatformData, error) {
+	return process.TaskUserPlatformData(ctx.User, false)
 }
 
 func deleteDir(path string) error {
@@ -113,7 +119,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars())
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], task.TaskDir(), task.EnvVars())
 	if err != nil {
 		return err
 	}
@@ -136,14 +142,13 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func purgeOldTasks() error {
+func purgeOldTasks(skipDirs ...string) error {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	// Use filepath.Base(taskContext.TaskDir) rather than taskContext.User.Name
-	// since taskContext.User is nil if running tasks as current user.
-	deleteTaskDirs(config.TasksDir, filepath.Base(taskContext.TaskDir))
+	// skipDirs contains all task directories to preserve (running tasks, etc.)
+	deleteTaskDirs(config.TasksDir, skipDirs...)
 	return nil
 }
 
@@ -163,6 +168,11 @@ func defaultTasksDir() string {
 }
 
 func rebootBetweenTasks() bool {
+	return false
+}
+
+// prepareTaskEnvironment is a no-op for the insecure engine.
+func prepareTaskEnvironment() bool {
 	return false
 }
 
@@ -200,7 +210,7 @@ func (task *TaskRun) EnvVars() []string {
 	maps.Copy(taskEnv, task.Payload.Env)
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
-	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_WORKDIR"] = task.TaskDir()
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 
@@ -224,9 +234,17 @@ func featureInitFailure(err error) ExitCode {
 }
 
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
+	// sentry requires string values...
+	m["capacity"] = strconv.Itoa(int(c.Capacity))
 }
 
 func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
+	// Create empty config entry if it doesn't exist already, so that if it does
+	// exist, entries are merged rather than entire map being replaced.
+	if _, exists := m["config"]; !exists {
+		m["config"] = map[string]any{}
+	}
+	m["config"].(map[string]any)["capacity"] = c.Capacity
 }
 
 func engineInit() {

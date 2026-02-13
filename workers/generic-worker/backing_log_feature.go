@@ -49,7 +49,7 @@ func (bltf *BackingLogTaskFeature) RequiredScopes() scopes.Required {
 }
 
 func (bltf *BackingLogTaskFeature) Start() *CommandExecutionError {
-	absLogFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
+	absLogFile := fileutil.AbsFrom(bltf.task.TaskDir(), logPath)
 	logFileHandle, err := os.Create(absLogFile)
 	if err != nil {
 		return executionError(internalError, errored, err)
@@ -75,10 +75,11 @@ func (bltf *BackingLogTaskFeature) Stop(err *ExecutionErrors) {
 		bltf.task.Error(err.Error())
 	}
 	bltf.task.closeLog(bltf.logHandle)
+	taskDir := bltf.task.TaskDir()
 	if bltf.task.Payload.Features.BackingLog {
-		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, fileutil.AbsFrom(taskContext.TaskDir, logPath)))
+		err.add(bltf.task.uploadLog(bltf.task.Payload.Logs.Backing, fileutil.AbsFrom(taskDir, logPath)))
 	}
 	if config.CleanUpTaskDirs {
-		_ = os.Remove(fileutil.AbsFrom(taskContext.TaskDir, logPath))
+		_ = os.Remove(fileutil.AbsFrom(taskDir, logPath))
 	}
 }
