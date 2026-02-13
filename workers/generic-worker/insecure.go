@@ -234,9 +234,17 @@ func featureInitFailure(err error) ExitCode {
 }
 
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
+	// sentry requires string values...
+	m["capacity"] = strconv.Itoa(int(c.Capacity))
 }
 
 func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
+	// Create empty config entry if it doesn't exist already, so that if it does
+	// exist, entries are merged rather than entire map being replaced.
+	if _, exists := m["config"]; !exists {
+		m["config"] = map[string]any{}
+	}
+	m["config"].(map[string]any)["capacity"] = c.Capacity
 }
 
 func engineInit() {

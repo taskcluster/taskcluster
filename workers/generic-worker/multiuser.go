@@ -370,6 +370,7 @@ func featureInitFailure(err error) (exitCode ExitCode) {
 func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
 	// sentry requires string values...
 	m["headlessTasks"] = strconv.FormatBool(c.HeadlessTasks)
+	m["capacity"] = strconv.Itoa(int(c.Capacity))
 }
 
 func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
@@ -379,6 +380,7 @@ func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 		m["config"] = map[string]any{}
 	}
 	m["config"].(map[string]any)["headlessTasks"] = c.HeadlessTasks
+	m["config"].(map[string]any)["capacity"] = c.Capacity
 }
 
 func engineInit() {
