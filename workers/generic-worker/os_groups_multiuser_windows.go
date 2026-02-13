@@ -7,15 +7,16 @@ import (
 )
 
 func addUserToGroup(user, group string) error {
-	return host.Run("powershell", "-Command", "Add-LocalGroupMember -Group '"+group+"' -Member '"+taskContext.User.Name+"'")
+	return host.Run("powershell", "-Command", "Add-LocalGroupMember -Group '"+group+"' -Member '"+user+"'")
 }
 
 func removeUserFromGroup(user, group string) error {
-	return host.Run("powershell", "-Command", "Remove-LocalGroupMember -Group '"+group+"' -Member '"+taskContext.User.Name+"'")
+	return host.Run("powershell", "-Command", "Remove-LocalGroupMember -Group '"+group+"' -Member '"+user+"'")
 }
 
 func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
-	osGroups.Task.pd.RefreshLoginSession(taskContext.User.Name, taskContext.User.Password, !config.HeadlessTasks)
+	ctx := osGroups.Task.GetContext()
+	osGroups.Task.pd.RefreshLoginSession(ctx.User.Name, ctx.User.Password, !config.HeadlessTasks)
 	for _, command := range osGroups.Task.Commands {
 		command.SysProcAttr.Token = osGroups.Task.pd.LoginInfo.AccessToken()
 	}
