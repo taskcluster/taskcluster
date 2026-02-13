@@ -137,7 +137,7 @@ and reports back results to the queue.
                                             multiple tasks in parallel, each in its own task
                                             directory with isolated ports for LiveLog,
                                             Interactive, and TaskclusterProxy features. Requires
-                                            headlessTasks enabled. The runAsCurrentUser and
+                                            headlessTasks enabled. The runTaskAsCurrentUser and
                                             runAsAdministrator task features are automatically
                                             disabled when capacity > 1 to preserve task
                                             isolation. Maximum value is 255.

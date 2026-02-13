@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
@@ -11,11 +12,23 @@ import (
 
 func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	t.Helper()
+	runningTests = true
 	testConfig.EnableD2G(t)
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskContext = &TaskContext{
 		User:    &gwruntime.OSUser{},
 		TaskDir: testdataDir,
+	}
+}
+
+func printEnvVar(varName string) [][]string {
+	return [][]string{
+		{
+			"/usr/bin/env",
+			"bash",
+			"-c",
+			fmt.Sprintf("echo %s=$%s", varName, varName),
+		},
 	}
 }
