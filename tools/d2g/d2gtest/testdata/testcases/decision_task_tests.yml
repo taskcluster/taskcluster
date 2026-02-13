@@ -89,7 +89,9 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - -v
         - __TASK_DIR__/cache0:/builds/worker/checkouts
-        - --add-host=taskcluster:host-gateway
+        - --network
+        - __TASKCLUSTER_DOCKER_NETWORK__
+        - --add-host=taskcluster:__TASKCLUSTER_PROXY_GATEWAY__
         - --env-file
         - env.list
         - mozillareleases/gecko_decision:4.0.0@sha256:9f69fe08c28e3cb3cc296451f0a2735df6e25d0e3c877ea735ef1b7f0b345b06
