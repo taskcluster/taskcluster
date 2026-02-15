@@ -3,9 +3,33 @@ import taskcluster from '@taskcluster/client';
 import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
+import WebSocket from 'ws';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
-  helper.withFakeAuthFactory(mock, skipping);
+  // Use mutable scopeOverride to allow tests to dynamically change auth scopes
+  let scopeOverride = null;
+
+  suiteSetup('withMutableAuthFactory', function() {
+    if (skipping()) {
+      return;
+    }
+    helper.load.inject('authFactory', ({ credentials }) =>
+      new taskcluster.Auth({
+        rootUrl: helper.rootUrl,
+        fake: {
+          currentScopes: async () => ({
+            scopes: scopeOverride || ['web:read-pulse'],
+          }),
+        },
+      }),
+    );
+  });
+
+  suiteTeardown(function() {
+    helper.load.remove('authFactory');
+  });
+
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
@@ -104,6 +128,43 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       taskSubscription.unsubscribe();
       subscriptionClient.close();
+    });
+
+    test('connection rejected without web:read-pulse scope', async function() {
+      scopeOverride = [];
+      const subscriptionClient = new SubscriptionClient(
+        `ws://localhost:${helper.serverPort}/subscription`,
+        {
+          reconnect: false,
+          connectionParams: () => ({
+            Authorization: `Bearer ${btoa(JSON.stringify({
+              clientId: 'testing',
+              accessToken: 'testing',
+            }))}`,
+          }),
+        },
+        WebSocket,
+      );
+
+      try {
+        await assert.rejects(
+          () => new Promise((resolve, reject) => {
+            subscriptionClient.onConnected(() => resolve());
+            subscriptionClient.onError(err => reject(err));
+          }),
+          err => {
+            assert(
+              err.message?.includes('InsufficientScopes') ||
+              JSON.stringify(err).includes('InsufficientScopes'),
+              `Expected InsufficientScopes error, got: ${err.message}`,
+            );
+            return true;
+          },
+        );
+      } finally {
+        subscriptionClient.close();
+        scopeOverride = null;
+      }
     });
   });
 });
