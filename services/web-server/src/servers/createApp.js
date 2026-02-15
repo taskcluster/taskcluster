@@ -80,7 +80,7 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
   app.use(passport.session());
   app.use(compression());
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({ limit: '10mb' }));
   app.options('/graphql', cors(corsOptions));
   app.post(
     '/graphql',
