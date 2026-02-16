@@ -4,14 +4,12 @@ package main
 
 import (
 	"os"
-
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 )
 
-func MkdirAllTaskUser(dir string, pd *process.PlatformData) error {
+func MkdirAllTaskUser(dir string, task *TaskRun) error {
 	return os.MkdirAll(dir, 0700)
 }
 
-func CreateFileAsTaskUser(file string, pd *process.PlatformData) (*os.File, error) {
+func CreateFileAsTaskUser(file string, task *TaskRun) (*os.File, error) {
 	return os.Create(file)
 }

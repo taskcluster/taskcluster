@@ -5,6 +5,7 @@ user-build-config.yml
 *.log
 .idea
 .vscode
+.claude
 user-config.*
 dev-config.*
 /artifacts/

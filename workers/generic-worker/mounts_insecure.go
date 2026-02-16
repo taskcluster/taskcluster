@@ -24,7 +24,7 @@ func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) 
 	return nil
 }
 
-func unarchive(source, destination, format string, pd *process.PlatformData) error {
+func unarchive(source, destination, format string, task *TaskRun) error {
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, "", []string{})
 	if err != nil {
 		return fmt.Errorf("cannot create process to unarchive %v to %v as task user: %v", source, destination, err)

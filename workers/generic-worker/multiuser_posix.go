@@ -43,7 +43,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), task.pd)
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], task.TaskDir, task.EnvVars(), task.pd)
 	if err != nil {
 		return err
 	}
@@ -85,9 +85,9 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env, task.pd)
+		processCmd, err = process.NewCommand(cmd, task.TaskDir, env, task.pd)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env, task.pd)
+		processCmd, err = process.NewCommandContext(ctx, cmd, task.TaskDir, env, task.pd)
 	}
 
 	return processCmd.Cmd, err
@@ -134,16 +134,16 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnvArray := []string{}
 
 	// Defaults that can be overwritten by task payload env
-	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name)
+	taskEnv["HOME"] = filepath.Join(gwruntime.UserHomeDirectoriesParent(), task.User.Name)
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-	taskEnv["USER"] = taskContext.User.Name
+	taskEnv["USER"] = task.User.Name
 
 	maps.Copy(taskEnv, task.Payload.Env)
 
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
-	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_WORKDIR"] = task.TaskDir
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 	if runtime.GOOS == "linux" && !config.HeadlessTasks {

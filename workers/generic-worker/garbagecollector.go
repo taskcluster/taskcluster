@@ -49,10 +49,10 @@ func (r Resources) Swap(i, j int) {
 // job at a time, we can sequence it between task runs. Also it should be
 // independent of mounts feature, but let's go with it here as currently that
 // is the only feature that uses it.
-func runGarbageCollection(r Resources) error {
-	currentFreeSpace, err := freeDiskSpaceBytes(taskContext.TaskDir)
+func runGarbageCollection(r Resources, taskDir string) error {
+	currentFreeSpace, err := freeDiskSpaceBytes(taskDir)
 	if err != nil {
-		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
 
@@ -62,9 +62,9 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(taskDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskDir, err)
 		}
 	}
 
@@ -79,9 +79,9 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(taskDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskDir, err)
 		}
 	}
 
@@ -96,9 +96,9 @@ func runGarbageCollection(r Resources) error {
 			return err
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(taskDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskDir, err)
 		}
 	}
 

@@ -80,10 +80,10 @@ func (l *RDPTask) createRDPArtifact() {
 	l.info = &RDPInfo{
 		Host:     config.PublicIP,
 		Port:     3389,
-		Username: taskContext.User.Name,
-		Password: taskContext.User.Password,
+		Username: l.task.User.Name,
+		Password: l.task.User.Password,
 	}
-	rdpInfoFile := filepath.Join(taskContext.TaskDir, rdpInfoPath)
+	rdpInfoFile := filepath.Join(l.task.TaskDir, rdpInfoPath)
 	err := fileutil.WriteToFileAsJSON(l.info, rdpInfoFile)
 	// if we can't write this, something seriously wrong, so cause worker to
 	// report an internal-error to sentry and crash!
@@ -100,8 +100,8 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			filepath.Join(taskContext.TaskDir, rdpInfoPath),
-			filepath.Join(taskContext.TaskDir, rdpInfoPath),
+			filepath.Join(l.task.TaskDir, rdpInfoPath),
+			filepath.Join(l.task.TaskDir, rdpInfoPath),
 			"application/json",
 			"gzip",
 		),

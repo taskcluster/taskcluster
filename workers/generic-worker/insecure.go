@@ -61,9 +61,9 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommand(cmd, task.TaskDir, env)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env)
+		processCmd, err = process.NewCommandContext(ctx, cmd, task.TaskDir, env)
 	}
 
 	return processCmd.Cmd, err
@@ -113,7 +113,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars())
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], task.TaskDir, task.EnvVars())
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (task *TaskRun) EnvVars() []string {
 	maps.Copy(taskEnv, task.Payload.Env)
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
-	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_WORKDIR"] = task.TaskDir
 	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 

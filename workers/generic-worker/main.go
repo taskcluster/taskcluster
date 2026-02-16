@@ -57,8 +57,9 @@ var (
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// General platform independent user settings, such as home directory, username...
-	// Platform specific data should be managed in plat_<platform>.go files
+	// Deprecated: taskContext is used only for worker lifecycle operations
+	// (environment setup, garbage collection, purging old tasks).
+	// Per-task code should use TaskRun.TaskDir and TaskRun.User instead.
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
@@ -490,6 +491,8 @@ func RunWorker() (exitCode ExitCode) {
 			logEvent("taskStart", task, time.Now())
 
 			task.pd = pdTaskUser
+			task.TaskDir = taskContext.TaskDir
+			task.User = taskContext.User
 			errors := task.Run()
 
 			logEvent("taskFinish", task, time.Now())
@@ -711,7 +714,7 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 // is not returned, since it is not needed. A non-nil error is returned
 // if the `generic-worker --version` command cannot be run successfully.
 func validateGenericWorkerBinary(pd *process.PlatformData) error {
-	cmd, err := gwVersion(pd)
+	cmd, err := gwVersion(pd, taskContext.TaskDir)
 	if err != nil {
 		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
