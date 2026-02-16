@@ -116,19 +116,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-// we put this in init() instead of startup() as we want tests to be able to change
-// it - note we shouldn't have these nasty global vars, I can only apologise, and
-// say taskcluster-worker will be much nicer
-func init() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	taskContext = &TaskContext{
-		TaskDir: pwd,
-	}
-}
-
 func (task *TaskRun) EnvVars() []string {
 	taskEnv := map[string]string{}
 	taskEnvArray := []string{}

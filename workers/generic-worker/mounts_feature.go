@@ -389,7 +389,7 @@ func (taskMount *TaskMount) initIndexClient() {
 func garbageCollection() error {
 	r := fileCaches.SortedResources()
 	r = append(r, directoryCaches.SortedResources()...)
-	return runGarbageCollection(r, taskContext.TaskDir)
+	return runGarbageCollection(r, pool.Peek().TaskDir)
 }
 
 // called when a task starts

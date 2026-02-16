@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -25,11 +26,10 @@ const (
 )
 
 var (
-	// don't initialise here, because cwd might not yet be initialised
-	// instead we set up later in PlatformTaskEnvironmentSetup
+	// ctuPath is the path to the current-task-user.json file, used by
+	// run-task-as-current-user features to expose credentials to tasks.
+	// Initialized in engineInit().
 	ctuPath      string
-	ntuPath      string
-	nextTaskUser string
 	runningTests bool = false
 )
 
@@ -42,167 +42,16 @@ func rebootBetweenTasks() bool {
 	return !config.HeadlessTasks
 }
 
-func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) {
-	taskContext = &TaskContext{
-		User:    taskUserCredentials,
-		TaskDir: filepath.Join(config.TasksDir, taskUserCredentials.Name),
-	}
-	// At this point, we know we have already booted into the new task user, and the user
-	// is logged in.
-	// Note we don't create task directory before logging in, since
-	// if the task directory is also the user profile home, this
-	// would mess up the windows logon process.
-	err := os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
-	if err != nil {
-		panic(err)
-	}
-	// Make sure task user has full control of task directory. Due to
-	// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
-	// assume previous MkdirAll has granted this permission.
-	log.Printf("Granting %v control of %v", taskContext.User.Name, taskContext.TaskDir)
-	err = makeFileOrDirReadWritableForUser(false, taskContext.TaskDir, taskContext.User)
-	if err != nil {
-		panic(err)
-	}
-	if script := config.RunAfterUserCreation; script != "" {
-		// See https://bugzil.la/1559210
-		// Regardless of whether we are running tasks as current user or
-		// not, task initialisation steps should be run as task user.
-		pdTaskUser, err := process.TaskUserPlatformData(taskContext.User, config.HeadlessTasks)
-		if err != nil {
-			panic(err)
-		}
-		command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, pdTaskUser)
-		if err != nil {
-			panic(err)
-		}
-		command.DirectOutput(os.Stdout)
-		result := command.Execute()
-		log.Printf("%v", result)
-		switch {
-		case result.Failed():
-			panic(result.FailureCause())
-		case result.Crashed():
-			panic(result.CrashCause())
-		}
-	}
-}
-
-func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
-	ctuPath = filepath.Join(cwd, "current-task-user.json")
-	ntuPath = filepath.Join(cwd, "next-task-user.json")
-	if runningTests {
-		taskUser, err := StoredUserCredentials(ntuPath)
-		if err != nil {
-			panic(err)
-		}
-		PostRebootSetup(taskUser)
-		return false
-	}
-	if config.HeadlessTasks {
-		taskUser := &gwruntime.OSUser{
-			Name:     taskDirName,
-			Password: gwruntime.GeneratePassword(),
-		}
-		err := taskUser.CreateNew(false)
-		if err != nil {
-			panic(err)
-		}
-		PreRebootSetup(taskUser)
-		PostRebootSetup(taskUser)
-		return false
-	}
-	nextTaskUser = taskDirName
-	log.Printf("Current task user file: %q", ctuPath)
-	log.Printf("Next task user file: %q", ntuPath)
-	reboot = true
-	_, err := os.Stat(ntuPath)
-	if err == nil {
-		_, err = fileutil.Copy(ctuPath, ntuPath)
-		if err != nil {
-			panic(err)
-		}
-		err = fileutil.SecureFiles(ctuPath)
-		if err != nil {
-			panic(err)
-		}
-		taskUserCredentials, err := StoredUserCredentials(ctuPath)
-		if err != nil {
-			panic(err)
-		}
-		err = gwruntime.WaitForLoginCompletion(5*time.Minute, taskUserCredentials.Name)
-		if err != nil {
-			panic(err)
-		}
-		reboot = false
-
-		PostRebootSetup(taskUserCredentials)
-
-		// If there is precisely one more task to run, no need to create a
-		// future (post-reboot) task user, as we already have a task user
-		// created for the current task.
-		if config.NumberOfTasksToRun == 1 {
-			return
-		}
-	}
-
-	// Bug 1533694
-	//
-	// Create user for subsequent task run already, before we've run current
-	// task, in case worker restarts unexpectedly during current task, due to
-	// e.g. Blue Screen of Death.
-
-	// Regardless of whether we run tasks as current user or not, we should
-	// make sure there is a task user created - since runTasksAsCurrentUser is
-	// now only something for CI so on Windows a generic-worker test can
-	// execute in the context of a Windows Service running under LocalSystem
-	// account. Username can only be 20 chars, uuids are too long, therefore
-	// use prefix (5 chars) plus seconds since epoch (10 chars).
-
-	nextTaskUser := &gwruntime.OSUser{
-		Name:     taskDirName,
-		Password: gwruntime.GeneratePassword(),
-	}
-	err = nextTaskUser.CreateNew(false)
-	if err != nil {
-		panic(err)
-	}
-	PreRebootSetup(nextTaskUser)
-	// configure worker to auto-login to this newly generated user account
-	err = gwruntime.SetAutoLogin(nextTaskUser)
-	if err != nil {
-		panic(err)
-	}
-	err = fileutil.WriteToFileAsJSON(nextTaskUser, ntuPath)
-	if err != nil {
-		panic(err)
-	}
-	err = fileutil.SecureFiles(ntuPath)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-// Helper function used to get the current task user's
-// platform data. Useful for initially setting up the
-// TaskRun struct's data.
-func currentPlatformData() *process.PlatformData {
-	pd, err := process.TaskUserPlatformData(taskContext.User, config.HeadlessTasks)
-	if err != nil {
-		panic(err)
-	}
-	return pd
-}
-
 // Only return critical errors
 func purgeOldTasks() error {
 	if !config.CleanUpTaskDirs {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), taskContext.User.Name, nextTaskUser)
-	deleteTaskDirs(config.TasksDir, taskContext.User.Name, nextTaskUser)
+	activeUserNames := pool.ActiveUserNames()
+	activeDirNames := pool.ActiveTaskDirNames()
+	deleteTaskDirs(gwruntime.UserHomeDirectoriesParent(), activeUserNames...)
+	deleteTaskDirs(config.TasksDir, activeDirNames...)
 	// regardless of whether we are running as current user or not, we should purge old task users
 	err := deleteExistingOSUsers()
 	if err != nil {
@@ -217,9 +66,10 @@ func deleteExistingOSUsers() (err error) {
 	if err != nil {
 		return
 	}
+	activeUsers := pool.ActiveUserNames()
 	allErrors := []string{}
 	for _, username := range userAccounts {
-		if strings.HasPrefix(username, "task_") && username != taskContext.User.Name && username != nextTaskUser {
+		if strings.HasPrefix(username, "task_") && !slices.Contains(activeUsers, username) {
 			log.Print("Attempting to remove user " + username + "...")
 			err2 := gwruntime.DeleteUser(username)
 			if err2 != nil {
@@ -314,4 +164,250 @@ func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
 
 func engineInit() {
 	process.Headless = config.HeadlessTasks
+	ctuPath = filepath.Join(cwd, "current-task-user.json")
+}
+
+// MultiuserTestProvisioner creates task environments during test runs.
+// It reads stored credentials from next-task-user.json.
+type MultiuserTestProvisioner struct{}
+
+func (p *MultiuserTestProvisioner) Provision() (*TaskEnvironment, bool, error) {
+	taskUser, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
+	if err != nil {
+		return nil, false, err
+	}
+	taskDir := filepath.Join(config.TasksDir, taskUser.Name)
+	err = os.MkdirAll(taskDir, 0777)
+	if err != nil {
+		return nil, false, err
+	}
+	log.Printf("Granting %v control of %v", taskUser.Name, taskDir)
+	err = makeFileOrDirReadWritableForUser(false, taskDir, taskUser)
+	if err != nil {
+		return nil, false, err
+	}
+	if script := config.RunAfterUserCreation; script != "" {
+		pdTaskUser, err := process.TaskUserPlatformData(taskUser, config.HeadlessTasks)
+		if err != nil {
+			return nil, false, err
+		}
+		command, err := process.NewCommand([]string{script}, taskDir, nil, pdTaskUser)
+		if err != nil {
+			return nil, false, err
+		}
+		command.DirectOutput(os.Stdout)
+		result := command.Execute()
+		log.Printf("%v", result)
+		switch {
+		case result.Failed():
+			return nil, false, result.FailureCause()
+		case result.Crashed():
+			return nil, false, result.CrashCause()
+		}
+	}
+	logDir := filepath.Join(taskDir, filepath.Dir(logPath))
+	err = os.MkdirAll(logDir, 0700)
+	if err != nil {
+		return nil, false, err
+	}
+	log.Printf("Created dir: %v", logDir)
+	pd, err := process.TaskUserPlatformData(taskUser, config.HeadlessTasks)
+	if err != nil {
+		return nil, false, err
+	}
+	return &TaskEnvironment{
+		TaskDir:      taskDir,
+		User:         taskUser,
+		PlatformData: pd,
+	}, false, nil
+}
+
+// MultiuserHeadlessProvisioner creates task environments for headless
+// multiuser execution. It creates a new OS user for each task but does
+// not require a reboot.
+type MultiuserHeadlessProvisioner struct{}
+
+func (p *MultiuserHeadlessProvisioner) Provision() (*TaskEnvironment, bool, error) {
+	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
+	taskUser := &gwruntime.OSUser{
+		Name:     taskDirName,
+		Password: gwruntime.GeneratePassword(),
+	}
+	err := taskUser.CreateNew(false)
+	if err != nil {
+		return nil, false, err
+	}
+	PreRebootSetup(taskUser)
+	taskDir := filepath.Join(config.TasksDir, taskUser.Name)
+	err = os.MkdirAll(taskDir, 0777)
+	if err != nil {
+		return nil, false, err
+	}
+	log.Printf("Granting %v control of %v", taskUser.Name, taskDir)
+	err = makeFileOrDirReadWritableForUser(false, taskDir, taskUser)
+	if err != nil {
+		return nil, false, err
+	}
+	if script := config.RunAfterUserCreation; script != "" {
+		pdTaskUser, err := process.TaskUserPlatformData(taskUser, config.HeadlessTasks)
+		if err != nil {
+			return nil, false, err
+		}
+		command, err := process.NewCommand([]string{script}, taskDir, nil, pdTaskUser)
+		if err != nil {
+			return nil, false, err
+		}
+		command.DirectOutput(os.Stdout)
+		result := command.Execute()
+		log.Printf("%v", result)
+		switch {
+		case result.Failed():
+			return nil, false, result.FailureCause()
+		case result.Crashed():
+			return nil, false, result.CrashCause()
+		}
+	}
+	logDir := filepath.Join(taskDir, filepath.Dir(logPath))
+	err = os.MkdirAll(logDir, 0700)
+	if err != nil {
+		return nil, false, err
+	}
+	log.Printf("Created dir: %v", logDir)
+	pd, err := process.TaskUserPlatformData(taskUser, config.HeadlessTasks)
+	if err != nil {
+		return nil, false, err
+	}
+	return &TaskEnvironment{
+		TaskDir:      taskDir,
+		User:         taskUser,
+		PlatformData: pd,
+	}, false, nil
+}
+
+// MultiuserNonHeadlessProvisioner creates task environments for
+// non-headless multiuser execution. This involves the reboot state
+// machine: first call creates a user and triggers reboot, second
+// call (after reboot) completes setup with the logged-in user.
+type MultiuserNonHeadlessProvisioner struct{}
+
+func (p *MultiuserNonHeadlessProvisioner) Provision() (*TaskEnvironment, bool, error) {
+	localCtuPath := filepath.Join(cwd, "current-task-user.json")
+	localNtuPath := filepath.Join(cwd, "next-task-user.json")
+
+	_, err := os.Stat(localNtuPath)
+	if err == nil {
+		// Post-reboot path: next-task-user.json exists
+		_, err = fileutil.Copy(localCtuPath, localNtuPath)
+		if err != nil {
+			return nil, false, err
+		}
+		err = fileutil.SecureFiles(localCtuPath)
+		if err != nil {
+			return nil, false, err
+		}
+		taskUserCredentials, err := StoredUserCredentials(localCtuPath)
+		if err != nil {
+			return nil, false, err
+		}
+		err = gwruntime.WaitForLoginCompletion(5*time.Minute, taskUserCredentials.Name)
+		if err != nil {
+			return nil, false, err
+		}
+
+		// PostRebootSetup logic inline
+		taskDir := filepath.Join(config.TasksDir, taskUserCredentials.Name)
+		err = os.MkdirAll(taskDir, 0777)
+		if err != nil {
+			return nil, false, err
+		}
+		log.Printf("Granting %v control of %v", taskUserCredentials.Name, taskDir)
+		err = makeFileOrDirReadWritableForUser(false, taskDir, taskUserCredentials)
+		if err != nil {
+			return nil, false, err
+		}
+		if script := config.RunAfterUserCreation; script != "" {
+			pdTaskUser, err := process.TaskUserPlatformData(taskUserCredentials, config.HeadlessTasks)
+			if err != nil {
+				return nil, false, err
+			}
+			command, err := process.NewCommand([]string{script}, taskDir, nil, pdTaskUser)
+			if err != nil {
+				return nil, false, err
+			}
+			command.DirectOutput(os.Stdout)
+			result := command.Execute()
+			log.Printf("%v", result)
+			switch {
+			case result.Failed():
+				return nil, false, result.FailureCause()
+			case result.Crashed():
+				return nil, false, result.CrashCause()
+			}
+		}
+		logDir := filepath.Join(taskDir, filepath.Dir(logPath))
+		err = os.MkdirAll(logDir, 0700)
+		if err != nil {
+			return nil, false, err
+		}
+		log.Printf("Created dir: %v", logDir)
+		pd, err := process.TaskUserPlatformData(taskUserCredentials, config.HeadlessTasks)
+		if err != nil {
+			return nil, false, err
+		}
+		env := &TaskEnvironment{
+			TaskDir:      taskDir,
+			User:         taskUserCredentials,
+			PlatformData: pd,
+		}
+
+		// If there is precisely one more task to run, no need to create a
+		// future (post-reboot) task user.
+		if config.NumberOfTasksToRun == 1 {
+			return env, false, nil
+		}
+
+		// Pre-provision next user for after reboot (Bug 1533694)
+		p.prepareNextUser(localNtuPath)
+
+		return env, false, nil
+	}
+
+	// Pre-reboot path: no next-task-user.json yet, create user and reboot
+	p.prepareNextUser(localNtuPath)
+	return nil, true, nil
+}
+
+func (p *MultiuserNonHeadlessProvisioner) prepareNextUser(ntuPath string) {
+	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
+	nextUser := &gwruntime.OSUser{
+		Name:     taskDirName,
+		Password: gwruntime.GeneratePassword(),
+	}
+	err := nextUser.CreateNew(false)
+	if err != nil {
+		panic(err)
+	}
+	PreRebootSetup(nextUser)
+	err = gwruntime.SetAutoLogin(nextUser)
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.WriteToFileAsJSON(nextUser, ntuPath)
+	if err != nil {
+		panic(err)
+	}
+	err = fileutil.SecureFiles(ntuPath)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func newProvisioner() TaskEnvironmentProvisioner {
+	if runningTests {
+		return &MultiuserTestProvisioner{}
+	}
+	if config.HeadlessTasks {
+		return &MultiuserHeadlessProvisioner{}
+	}
+	return &MultiuserNonHeadlessProvisioner{}
 }

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"maps"
 
@@ -73,26 +74,36 @@ func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
-	taskContext = &TaskContext{
-		TaskDir: filepath.Join(config.TasksDir, taskDirName),
-	}
-	err := os.MkdirAll(taskContext.TaskDir, 0777)
+// InsecureProvisioner creates task environments for the insecure engine.
+// Tasks run as the current user with no user separation.
+type InsecureProvisioner struct{}
+
+func (p *InsecureProvisioner) Provision() (*TaskEnvironment, bool, error) {
+	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
+	taskDir := filepath.Join(config.TasksDir, taskDirName)
+	err := os.MkdirAll(taskDir, 0777)
 	if err != nil {
-		panic(err)
+		return nil, false, err
 	}
-	return false
+	logDir := filepath.Join(taskDir, filepath.Dir(logPath))
+	err = os.MkdirAll(logDir, 0700)
+	if err != nil {
+		return nil, false, err
+	}
+	log.Printf("Created dir: %v", logDir)
+	pd, err := process.TaskUserPlatformData(nil, false)
+	if err != nil {
+		return nil, false, err
+	}
+	return &TaskEnvironment{
+		TaskDir:      taskDir,
+		User:         nil,
+		PlatformData: pd,
+	}, false, nil
 }
 
-// Helper function used to get the current task user's
-// platform data. Useful for initially setting up the
-// TaskRun struct's data.
-func currentPlatformData() *process.PlatformData {
-	pd, err := process.TaskUserPlatformData(taskContext.User, false)
-	if err != nil {
-		panic(err)
-	}
-	return pd
+func newProvisioner() TaskEnvironmentProvisioner {
+	return &InsecureProvisioner{}
 }
 
 func deleteDir(path string) error {
@@ -141,9 +152,9 @@ func purgeOldTasks() error {
 		log.Printf("WARNING: Not purging previous task directories/users since config setting cleanUpTaskDirs is false")
 		return nil
 	}
-	// Use filepath.Base(taskContext.TaskDir) rather than taskContext.User.Name
-	// since taskContext.User is nil if running tasks as current user.
-	deleteTaskDirs(config.TasksDir, filepath.Base(taskContext.TaskDir))
+	// Use pool.ActiveTaskDirNames() to get the names of all active task dirs
+	// that should be preserved.
+	deleteTaskDirs(config.TasksDir, pool.ActiveTaskDirNames()...)
 	return nil
 }
 
@@ -169,19 +180,6 @@ func rebootBetweenTasks() bool {
 func platformTargets(arguments map[string]any) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
-}
-
-// we put this in init() instead of startup() as we want tests to be able to change
-// it - note we shouldn't have these nasty global vars, I can only apologise, and
-// say taskcluster-worker will be much nicer
-func init() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	taskContext = &TaskContext{
-		TaskDir: pwd,
-	}
 }
 
 func (task *TaskRun) EnvVars() []string {

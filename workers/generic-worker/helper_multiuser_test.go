@@ -9,6 +9,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
@@ -48,8 +49,15 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	if err != nil {
 		t.Fatalf("Could not fetch task user credentials: %v", err)
 	}
-	taskContext = &TaskContext{
-		User:    taskUserCredentials,
-		TaskDir: testdataDir,
+	pd, err := process.TaskUserPlatformData(taskUserCredentials, testConfig.HeadlessTasks)
+	if err != nil {
+		t.Fatalf("Could not get platform data: %v", err)
 	}
+	testEnv := &TaskEnvironment{
+		TaskDir:      testdataDir,
+		User:         taskUserCredentials,
+		PlatformData: pd,
+	}
+	pool = NewTaskEnvironmentPool(&StaticProvisioner{Env: testEnv}, 1)
+	pool.SetForTest([]*TaskEnvironment{testEnv})
 }

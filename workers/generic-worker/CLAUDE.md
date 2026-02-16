@@ -102,14 +102,16 @@ Engine-specific behavior is split across files with build tags:
 
 Functions that exist in both engine variants must have matching signatures.
 
-### Global state
+### Task environment management
 
-- `taskContext` (*TaskContext) - **worker-lifecycle global** holding `TaskDir` and `User`
-  - Set by `PlatformTaskEnvironmentSetup()` before each task
-  - Used only in worker-lifecycle code (environment setup, garbage collection, purging)
-- `TaskRun.TaskDir` / `TaskRun.User` - **per-task fields** copied from `taskContext` after `ClaimWork()`
+- `pool` (*TaskEnvironmentPool) - manages pre-provisioned task environments
+  - `TaskEnvironment` bundles `TaskDir`, `User`, and `PlatformData`
+  - Engine-specific `TaskEnvironmentProvisioner` implementations create environments
+  - `pool.Initialize()` before the main loop, `pool.Acquire()`/`pool.Release()` per task
+  - `pool.Peek()` for pre-claim validation (GC, binary checks)
+  - `pool.ActiveTaskDirNames()`/`pool.ActiveUserNames()` for purging old tasks
+- `TaskRun.TaskDir` / `TaskRun.User` / `TaskRun.pd` - **per-task fields** set from acquired `TaskEnvironment`
   - Used by all task-execution code (features, commands, artifacts, mounts)
-  - Per-task code should always use these fields, never `taskContext` directly
 
 ### Feature system
 

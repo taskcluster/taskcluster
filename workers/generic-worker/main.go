@@ -43,7 +43,6 @@ import (
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -56,11 +55,8 @@ var (
 	// Tasks resolved count file
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
-	workerReady = false
-	// Deprecated: taskContext is used only for worker lifecycle operations
-	// (environment setup, garbage collection, purging old tasks).
-	// Per-task code should use TaskRun.TaskDir and TaskRun.User instead.
-	taskContext    = &TaskContext{}
+	workerReady    = false
+	pool           *TaskEnvironmentPool
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
 	configFile     *gwconfig.File
@@ -456,8 +452,14 @@ func RunWorker() (exitCode ExitCode) {
 	lastReportedNoTasks := time.Now()
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
-	if RotateTaskEnvironment() {
+	provisioner := newProvisioner()
+	pool = NewTaskEnvironmentPool(provisioner, 1)
+	if pool.Initialize() {
 		return REBOOT_REQUIRED
+	}
+	err = purgeOldTasks()
+	if err != nil {
+		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
 	for {
 		if checkWhetherToTerminate() {
@@ -474,8 +476,8 @@ func RunWorker() (exitCode ExitCode) {
 			return WORKER_SHUTDOWN
 		}
 
-		pdTaskUser := currentPlatformData()
-		err = validateGenericWorkerBinary(pdTaskUser)
+		peekEnv := pool.Peek()
+		err = validateGenericWorkerBinary(peekEnv.PlatformData, peekEnv.TaskDir)
 		if err != nil {
 			log.Printf("Invalid generic-worker binary: %v", err)
 			return INTERNAL_ERROR
@@ -490,9 +492,10 @@ func RunWorker() (exitCode ExitCode) {
 			logEvent("taskQueued", task, time.Time(task.Definition.Created))
 			logEvent("taskStart", task, time.Now())
 
-			task.pd = pdTaskUser
-			task.TaskDir = taskContext.TaskDir
-			task.User = taskContext.User
+			env := pool.Acquire()
+			task.pd = env.PlatformData
+			task.TaskDir = env.TaskDir
+			task.User = env.User
 			errors := task.Run()
 
 			logEvent("taskFinish", task, time.Now())
@@ -531,7 +534,7 @@ func RunWorker() (exitCode ExitCode) {
 				return REBOOT_REQUIRED
 			}
 			lastActive = time.Now()
-			if RotateTaskEnvironment() {
+			if pool.Release(env) {
 				return REBOOT_REQUIRED
 			}
 		} else {
@@ -713,8 +716,8 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 // internally during the artifact upload process. The version string
 // is not returned, since it is not needed. A non-nil error is returned
 // if the `generic-worker --version` command cannot be run successfully.
-func validateGenericWorkerBinary(pd *process.PlatformData) error {
-	cmd, err := gwVersion(pd, taskContext.TaskDir)
+func validateGenericWorkerBinary(pd *process.PlatformData, taskDir string) error {
+	cmd, err := gwVersion(pd, taskDir)
 	if err != nil {
 		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
@@ -1020,21 +1023,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	}
 }
 
-func PrepareTaskEnvironment() (reboot bool) {
-	// I've discovered windows has a limit of 20 chars
-	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
-	if PlatformTaskEnvironmentSetup(taskDirName) {
-		return true
-	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
-	err := os.MkdirAll(logDir, 0700)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Created dir: %v", logDir)
-	return false
-}
-
 func taskDirsIn(parentDir string) ([]string, error) {
 	fi, err := os.ReadDir(parentDir)
 	if err != nil {
@@ -1055,11 +1043,6 @@ func taskDirsIn(parentDir string) ([]string, error) {
 
 func (task *TaskRun) ReleaseResources() error {
 	return task.pd.ReleaseResources()
-}
-
-type TaskContext struct {
-	TaskDir string
-	User    *gwruntime.OSUser
 }
 
 type WorkerStatus struct {
@@ -1087,20 +1070,6 @@ outer:
 			log.Printf("WARNING: Could not delete task directory %v: %v", taskDir, err)
 		}
 	}
-}
-
-// RotateTaskEnvironment creates a new task environment (for the next task),
-// and purges existing used task environments.
-func RotateTaskEnvironment() (reboot bool) {
-	if PrepareTaskEnvironment() {
-		return true
-	}
-	err := purgeOldTasks()
-	// errors are not fatal
-	if err != nil {
-		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
-	}
-	return false
 }
 
 func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {
