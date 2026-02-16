@@ -1016,10 +1016,12 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker not found', {});
   }
 
-  return res.reply({
-    terminate: false,
-    reason: 'unclear',
-  });
+  const decision = worker.providerData.shouldTerminate;
+  if (decision) {
+    return res.reply({ terminate: decision.terminate, reason: decision.reason });
+  }
+
+  return res.reply({ terminate: false, reason: 'no decision yet' });
 });
 
 builder.declare({
