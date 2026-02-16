@@ -3,6 +3,7 @@ import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
 import { globalAgent } from 'http';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 import testing from '@taskcluster/lib-testing';
 
@@ -56,6 +57,32 @@ export const withFakeQueue = (mock, skipping) => {
   });
 };
 helper.withFakeQueue = withFakeQueue;
+
+let anonymousScopes = [];
+
+helper.setAnonymousScopes = (scopes) => {
+  anonymousScopes = scopes;
+};
+
+export const withFakeAnonymousScopeCache = (mock, skipping) => {
+  suiteSetup(function() {
+    if (skipping()) {
+      return;
+    }
+
+    load.inject('isPublicArtifact', (artifactName) => {
+      return satisfiesExpression(anonymousScopes, `queue:get-artifact:${artifactName}`);
+    });
+  });
+
+  setup(function() {
+    if (skipping()) {
+      return;
+    }
+    anonymousScopes = [];
+  });
+};
+helper.withFakeAnonymousScopeCache = withFakeAnonymousScopeCache;
 
 /**
  * Set up an API server.  Call this after withDb, so the server

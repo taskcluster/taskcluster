@@ -23,7 +23,7 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-index',
   serviceName: 'index',
   apiVersion: 'v1',
-  context: ['queue', 'db'],
+  context: ['queue', 'db', 'isPublicArtifact'],
   params: {
     namespace: helpers.namespaceFormat,
     indexPath: helpers.namespaceFormat,
