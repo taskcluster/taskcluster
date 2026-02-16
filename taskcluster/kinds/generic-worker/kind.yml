@@ -121,7 +121,6 @@ tasks:
           directory: golangci-lint
           format: tar.gz
       env:
-        ENGINE: multiuser
         GW_TESTS_USE_EXTERNAL_TASKCLUSTER: |-
           Enabled for just one platform (linux/amd64) in https://github.com/taskcluster/taskcluster/issues/6274
           to help ensure that mock implementations remain consistent with real services.
@@ -168,41 +167,13 @@ tasks:
           git status
           # output of wc command can contain spaces on darwin, so no quotes around expression
           test $(git status --porcelain | wc -l) == 0
-          go install -tags "${{ENGINE}}" -v -ldflags "-X main.revision=${{GITHUB_SHA}}" ./...
+          go install -v -ldflags "-X main.revision=${{GITHUB_SHA}}" ./...
           go install ../../tools/taskcluster-proxy
           go install ../../tools/livelog
-          go vet -tags "${{ENGINE}}" ./...
-          if [ "${{ENGINE}}" == "multiuser" ]; then
-            cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
-          else
-            GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
-          fi
-          ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
-  build/test-insecure-ubuntu-24.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (insecure engine) on Ubuntu 24.04
-    worker-type: gw-ubuntu-24-04-gui
-    scopes:
-      - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
-    worker:
-      taskcluster-proxy: true
-      run-task-as-current-user: true
-      artifacts:
-        - path: gopath{go_version}/bin/generic-worker
-          name: public/build/generic-worker-linux-amd64
-          type: file
-      mounts:
-        - content:
-            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
-          directory: '{go_version}'
-          format: tar.gz
-        - content:
-            url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-linux-amd64.tar.gz'
-          directory: golangci-lint
-          format: tar.gz
-      env:
-        ENGINE: insecure
-    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
+          go vet ./...
+          cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
+          GORACE=history_size=7 CGO_ENABLED=1 go test -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
+          ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m
   build/test-multiuser-macos-arm64:
     description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS
     worker-type: gw-ci-macos
@@ -224,8 +195,6 @@ tasks:
             url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-darwin-arm64.tar.gz'
           directory: golangci-lint
           format: tar.gz
-      env:
-        ENGINE: multiuser
     copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
   build/test-multiuser-windows-server-2022-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
@@ -259,7 +228,6 @@ tasks:
             url: http://localhost/secrets/v1/secret/project/taskcluster/testing/generic-worker/ci-creds
           file: ci-creds.json
       env:
-        ENGINE: multiuser
         GW_SKIP_Z_DRIVE_TESTS: 'true'
     run:
       command:
@@ -310,12 +278,12 @@ tasks:
           if %lines% gtr 0 exit /b 64
           :: find.exe may have exited with exit code 1, so need to explicitly exit with 0
           exit /b 0
-        - go install -tags "%ENGINE%" -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
+        - go install -v -ldflags "-X main.revision=%GITHUB_SHA%" ./...
         - go install ..\..\tools\taskcluster-proxy
         - go install ..\..\tools\livelog
-        - go vet -tags "%ENGINE%" ./...
+        - go vet ./...
         - set CGO_ENABLED=%CGO_ENABLED_TESTS%
         - set GORACE=history_size=7
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
-        - ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
+        - go test -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+        - ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --timeout=5m

@@ -1,11 +1,7 @@
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_linux.go      insecure
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_darwin.go     insecure
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_freebsd.go    insecure
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go     multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_freebsd.go   multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go   multiuser
-// //go:generate go run ./gw-codegen file://../docker-worker/schemas/v1/payload.yml dockerworker/payload.go
+//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go
+//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go
+//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_freebsd.go
+//go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go
 
 package main
 
@@ -46,6 +42,8 @@ import (
 	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
+
+const engine = "multiuser"
 
 var (
 	withWorkerRunner = false
