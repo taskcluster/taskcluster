@@ -362,16 +362,29 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
 
-  // Build signed url for artifact
+  let isPublic = false;
+  try {
+    isPublic = await that.isPublicArtifact(artifactName);
+  } catch {
+    isPublic = false;
+  }
+
   let url;
-  url = that.queue.externalBuildSignedUrl(
-    that.queue.getLatestArtifact,
-    task.taskId,
-    artifactName, {
-      expiration: 15 * 60,
-    },
-  );
-  // Redirect to artifact
+  if (isPublic) {
+    url = that.queue.externalBuildUrl(
+      that.queue.getLatestArtifact,
+      task.taskId,
+      artifactName,
+    );
+  } else {
+    url = that.queue.externalBuildSignedUrl(
+      that.queue.getLatestArtifact,
+      task.taskId,
+      artifactName, {
+        expiration: 15 * 60,
+      },
+    );
+  }
   return res.redirect(303, url);
 });
 
