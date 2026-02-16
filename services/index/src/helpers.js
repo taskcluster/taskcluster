@@ -360,4 +360,24 @@ const satisfiesArtifactScope = async (anonymousScopeCache, artifactName) => {
 
 export { satisfiesArtifactScope as _satisfiesArtifactScope };
 
-export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat };
+const ANONYMOUS_SCOPE_CACHE_TTL = 5 * 60 * 1000;
+
+const isPublicArtifact = (auth) => {
+  let cachedScopes = null;
+  let cachedAt = 0;
+
+  const anonymousScopeCache = async () => {
+    const now = Date.now();
+    if (cachedScopes && (now - cachedAt) < ANONYMOUS_SCOPE_CACHE_TTL) {
+      return cachedScopes;
+    }
+    const result = await auth.expandScopes({ scopes: ['assume:anonymous'] });
+    cachedScopes = result.scopes;
+    cachedAt = Date.now();
+    return cachedScopes;
+  };
+
+  return (artifactName) => satisfiesArtifactScope(anonymousScopeCache, artifactName);
+};
+
+export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat, isPublicArtifact };

@@ -31,6 +31,38 @@ suite(testing.suiteName(), function() {
     });
   });
 
+  suite('isPublicArtifact', function() {
+    test('returns true for public artifact', async function() {
+      const auth = {
+        expandScopes: async () => ({ scopes: ['queue:get-artifact:public/*'] }),
+      };
+      const check = helpers.isPublicArtifact(auth);
+      assert.equal(await check('public/foo.zip'), true);
+    });
+
+    test('returns false for private artifact', async function() {
+      const auth = {
+        expandScopes: async () => ({ scopes: ['queue:get-artifact:public/*'] }),
+      };
+      const check = helpers.isPublicArtifact(auth);
+      assert.equal(await check('private/secret.zip'), false);
+    });
+
+    test('caches scope expansion result', async function() {
+      let callCount = 0;
+      const auth = {
+        expandScopes: async () => {
+          callCount++;
+          return { scopes: ['queue:get-artifact:public/*'] };
+        },
+      };
+      const check = helpers.isPublicArtifact(auth);
+      await check('public/a.zip');
+      await check('public/b.zip');
+      assert.equal(callCount, 1);
+    });
+  });
+
   suite('splitNamespace', function() {
     test('of a multi-part namespace', function() {
       const [namespace, name] = helpers.splitNamespace('foo.bar.bing');
