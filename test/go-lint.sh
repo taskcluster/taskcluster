@@ -10,7 +10,5 @@ if [ -n "${unformatted_files}" ]; then
     exit 1;
 fi
 
-for engine in multiuser insecure; do
-  echo "Running golangci-lint for ${engine} engine.."
-  golangci-lint run --build-tags "${engine}" --timeout=5m
-done
+echo "Running golangci-lint.."
+golangci-lint run --timeout=5m

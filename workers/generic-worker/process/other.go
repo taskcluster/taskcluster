@@ -1,4 +1,4 @@
-//go:build !multiuser || !darwin
+//go:build !darwin
 
 package process
 

@@ -461,8 +461,6 @@ can set this env var to a non-empty string to skip this test.
 
 ### `GW_TESTS_RUN_AS_CURRENT_USER`
 
-This environment variable applies only to the __multiuser__ engine.
-
 If `GW_TESTS_RUN_AS_CURRENT_USER` is not set, generic-worker will be tested
 running in its normal operational mode, i.e. running tasks as task users
 (config setting `runTasksAsCurrentUser` will be `false`).

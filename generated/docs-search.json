@@ -3739,9 +3739,9 @@
   },
   {
     "element": "h2",
-    "id": "insecure-engine",
+    "id": "discontinued-insecure-engine",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Insecure engine",
+    "subtitle": "Discontinued: Insecure engine",
     "title": "Engines"
   },
   {
@@ -3816,16 +3816,16 @@
   },
   {
     "element": "h3",
-    "id": "linux---multiuserinsecure-build",
+    "id": "linux",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Linux - multiuser/insecure build",
+    "subtitle": "Linux",
     "title": "Installing Generic-Worker"
   },
   {
     "element": "h3",
-    "id": "macos---multiuserinsecure-build",
+    "id": "macos",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "macOS - multiuser/insecure build",
+    "subtitle": "macOS",
     "title": "Installing Generic-Worker"
   },
   {
