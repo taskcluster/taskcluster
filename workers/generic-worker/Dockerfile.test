@@ -1,0 +1,9 @@
+FROM golang:1.26.0-bookworm
+
+# Install user management tools needed by multiuser engine (useradd, chpasswd, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    passwd \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
