@@ -142,6 +142,19 @@ export class WorkerScanner {
         // 1. Determine who lives and who dies
         const decisions = this.#evaluatePolicies(candidates, archivedConfigIds, desiredCapacity);
 
+        // Emit termination metrics by reason
+        const terminationCounts = new Map();
+        for (const [, decision] of decisions) {
+          if (decision.terminate) {
+            const reason = decision.reason === 'launch config archived' ? 'launch_config_archived' : 'over_capacity';
+            terminationCounts.set(reason, (terminationCounts.get(reason) || 0) + 1);
+          }
+        }
+        const poolLabels = { workerPoolId: poolId, providerId: pool.providerId };
+        for (const [reason, count] of terminationCounts) {
+          this.monitor.metric.workersToTerminate(count, { ...poolLabels, reason });
+        }
+
         // 2. Persist changes
         const now = new Date().toISOString();
         for (const [worker, decision] of decisions) {

@@ -2377,7 +2377,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker();
       const result = await helper.workerManager.shouldWorkerTerminate(workerPoolId, workerGroup, workerId);
       assert.strictEqual(result.terminate, false);
-      assert.strictEqual(result.reason, 'no decision yet');
+      assert.strictEqual(result.reason, 'none');
     });
 
     test('non-existent worker returns 404', async function() {

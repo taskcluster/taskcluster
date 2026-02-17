@@ -500,6 +500,65 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(worker.providerData.shouldTerminate, undefined);
     });
 
+    test('emits workersToTerminate metric with correct values and labels', async function() {
+      const poolId = 'pp/metrics';
+      await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
+      await createLaunchConfig('lc-metric-active', poolId, false);
+      await createLaunchConfig('lc-metric-archived', poolId, true);
+
+      helper.queue.setPending(poolId, 0);
+      helper.queue.setClaimed(poolId, 0);
+
+      const now = new Date();
+      // Two RUNNING workers with active launch config on a pool with maxCapacity=1
+      // → one will be over_capacity
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-cap1',
+        providerId: 'testing1', created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-active',
+      });
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-cap2',
+        providerId: 'testing1', created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-active',
+      });
+      // One worker with archived launch config → launch_config_archived
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-archived',
+        providerId: 'testing1', created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-archived',
+      });
+
+      const metricCalls = [];
+      const originalMetric = monitor.metric.workersToTerminate;
+      monitor.metric.workersToTerminate = (value, labels) => {
+        metricCalls.push({ value, labels });
+      };
+
+      try {
+        await scanner.scan();
+
+        assert.strictEqual(metricCalls.length, 2, `expected 2 metric calls, got ${metricCalls.length}`);
+
+        const overCap = metricCalls.find(c => c.labels.reason === 'over_capacity');
+        assert.ok(overCap, 'should have over_capacity metric');
+        assert.strictEqual(overCap.value, 1);
+        assert.strictEqual(overCap.labels.workerPoolId, poolId);
+        assert.strictEqual(overCap.labels.providerId, 'testing1');
+
+        const archived = metricCalls.find(c => c.labels.reason === 'launch_config_archived');
+        assert.ok(archived, 'should have launch_config_archived metric');
+        assert.strictEqual(archived.value, 1);
+        assert.strictEqual(archived.labels.workerPoolId, poolId);
+        assert.strictEqual(archived.labels.providerId, 'testing1');
+      } finally {
+        monitor.metric.workersToTerminate = originalMetric;
+      }
+    });
+
     test('integration: scanner decision is returned by API endpoint', async function() {
       const poolId = 'pp/integ';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });

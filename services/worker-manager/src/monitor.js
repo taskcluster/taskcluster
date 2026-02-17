@@ -459,3 +459,15 @@ MonitorManager.registerMetric('scanErrors', {
   labels: commonLabels,
   registers: ['scan'],
 });
+
+MonitorManager.registerMetric('workersToTerminate', {
+  name: 'worker_manager_workers_to_terminate',
+  type: 'gauge',
+  title: 'Workers marked for termination',
+  description: 'Number of workers marked for termination per worker pool during scanning, labeled by reason.',
+  labels: {
+    ...commonLabels,
+    reason: 'Reason for termination (over_capacity, launch_config_archived)',
+  },
+  registers: ['scan'],
+});

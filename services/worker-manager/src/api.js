@@ -1021,7 +1021,7 @@ builder.declare({
     return res.reply({ terminate: decision.terminate, reason: decision.reason });
   }
 
-  return res.reply({ terminate: false, reason: 'no decision yet' });
+  return res.reply({ terminate: false, reason: 'none' });
 });
 
 builder.declare({
