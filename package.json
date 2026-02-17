@@ -52,7 +52,7 @@
     "@taskcluster/lib-pulse": "link:libraries/pulse",
     "@taskcluster/lib-references": "link:libraries/references",
     "@taskcluster/lib-validate": "link:libraries/validate",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "ajv-formats": "^2.1.1",
     "amqplib": "^0.10.8",
     "body-parser": "1.20.3",
