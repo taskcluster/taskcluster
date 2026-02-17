@@ -69,6 +69,7 @@ export const tasks = [{
     [
       'generic-worker.Dockerfile',
       'taskcluster/docker/ci/Dockerfile',
+      'workers/generic-worker/Dockerfile.test',
     ].forEach(async file => {
       utils.status({ message: file });
       await modifyRepoFile(file,

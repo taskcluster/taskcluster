@@ -117,7 +117,8 @@ func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 // Panics on error (callers should use recover() if needed).
 func CreateTaskContext(taskDirName string) *TaskContext {
 	// For tests, load from the test user file (the daemon is started with this user)
-	if runningTests {
+	// Exception: In Docker, we exercise the real headless user creation path
+	if runningTests && os.Getenv("GW_IN_DOCKER") != "1" {
 		ntuPath := filepath.Join(cwd, "next-task-user.json")
 		taskUser, err := StoredUserCredentials(ntuPath)
 		if err != nil {
