@@ -91,6 +91,7 @@ export default class App extends Component {
       lazy: true,
       connectionCallback: error => {
         if (error?.message?.includes('InsufficientScopes')) {
+          this.setState({ subscriptionError: error });
           // close without reconnect
           // note: immediate is used to ensure error is propagated
           // to the subscriber before channel is closed
@@ -164,6 +165,7 @@ export default class App extends Component {
         authorize: this.authorize,
         unauthorize: this.unauthorize,
       },
+      subscriptionError: null,
     };
 
     if (window.env.GA_TRACKING_ID) {
@@ -236,7 +238,7 @@ export default class App extends Component {
 
   render() {
     const { routes } = this.props;
-    const { auth, error, theme } = this.state;
+    const { auth, error, theme, subscriptionError } = this.state;
 
     // Note that there are two error boundaries here.  The first will catch
     // errors in the stack of providers, but presents its error panel without
@@ -255,6 +257,7 @@ export default class App extends Component {
                   onError={reportError}>
                   <Main
                     error={error}
+                    subscriptionError={subscriptionError}
                     key={
                       auth.user && auth.user.credentials
                         ? auth.user.credentials.clientId
