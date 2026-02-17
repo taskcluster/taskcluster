@@ -28,7 +28,7 @@
     "@mdx-js/runtime": "^1.0.20",
     "@sentry/browser": "^6.0.0",
     "@taskcluster/client-web": "^88.0.1",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "ajv-formats": "^2.1.1",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-cache-persist": "^0.1.1",
