@@ -369,22 +369,30 @@ builder.declare({
     isPublic = false;
   }
 
-  let url;
   if (isPublic) {
-    url = that.queue.externalBuildUrl(
+    try {
+      const artifact = await that.queue.latestArtifact(task.taskId, artifactName);
+      if (artifact.url) {
+        return res.redirect(303, artifact.url);
+      }
+    } catch {
+      // fall through to queue redirect
+    }
+    const url = that.queue.externalBuildUrl(
       that.queue.getLatestArtifact,
       task.taskId,
       artifactName,
     );
-  } else {
-    url = that.queue.externalBuildSignedUrl(
-      that.queue.getLatestArtifact,
-      task.taskId,
-      artifactName, {
-        expiration: 15 * 60,
-      },
-    );
+    return res.redirect(303, url);
   }
+
+  const url = that.queue.externalBuildSignedUrl(
+    that.queue.getLatestArtifact,
+    task.taskId,
+    artifactName, {
+      expiration: 15 * 60,
+    },
+  );
   return res.redirect(303, url);
 });
 
