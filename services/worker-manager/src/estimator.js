@@ -4,17 +4,15 @@ export class Estimator {
     this.monitor = monitor;
   }
 
-  async simple({
-    workerPoolId,
-    providerId,
+  #calculateCapacity({
+    pendingTasks,
+    claimedTasks,
+    existingCapacity,
+    stoppingCapacity,
     minCapacity,
     maxCapacity,
-    scalingRatio = 1.0,
-    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
-    workerInfoByWorkerGroup = new Map(),
+    scalingRatio,
   }) {
-    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
-
     // if data is stale we might have more claimed tasks than existing capacity
     const totalIdleCapacity = Math.max(0, existingCapacity - claimedTasks);
 
@@ -39,6 +37,41 @@ export class Estimator {
       // only scale as high as maxCapacity
       Math.min(adjustedPendingTasks * scalingRatio + totalNonStopped, maxCapacity),
     );
+
+    return { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity };
+  }
+
+  async desiredCapacity({
+    workerPoolId,
+    minCapacity,
+    maxCapacity,
+    scalingRatio = 1.0,
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+  }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const { desiredCapacity } = this.#calculateCapacity({
+      pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
+      minCapacity, maxCapacity, scalingRatio,
+    });
+    return desiredCapacity;
+  }
+
+  async simple({
+    workerPoolId,
+    providerId,
+    minCapacity,
+    maxCapacity,
+    scalingRatio = 1.0,
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+    workerInfoByWorkerGroup = new Map(),
+  }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity } =
+      this.#calculateCapacity({
+        pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
+        minCapacity, maxCapacity, scalingRatio,
+      });
+
     const estimatorInfo = {
       workerPoolId,
       pendingTasks,

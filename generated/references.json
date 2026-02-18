@@ -18168,6 +18168,20 @@
           ],
           "title": "Worker startup duration",
           "type": "histogram"
+        },
+        {
+          "description": "Number of workers marked for termination per worker pool during scanning, labeled by reason.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "reason": "Reason for termination (over_capacity, launch_config_archived)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_workers_to_terminate",
+          "registers": [
+            "scan"
+          ],
+          "title": "Workers marked for termination",
+          "type": "gauge"
         }
       ],
       "serviceName": "worker-manager"
