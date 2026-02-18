@@ -2,7 +2,7 @@ name: Staticcheck
 on: pull_request
 
 env:
-  STATICCHECK_VERSION: "2025.1.1"
+  STATICCHECK_VERSION: "2026.1"
 
 jobs:
   staticcheck-gw-multiuser:
