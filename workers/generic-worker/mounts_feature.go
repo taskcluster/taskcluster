@@ -887,7 +887,10 @@ func (ac *ArtifactContent) Download(taskMount *TaskMount) (file string, sha256 s
 	taskMount.Infof("Downloading %v to %v", ac, file)
 
 	var runID int64 = -1 // use the latest run
-	_, contentLength, err := taskMount.task.Queue.DownloadArtifactToFile(ac.TaskID, runID, ac.Artifact, file)
+	taskMount.task.queueMux.RLock()
+	queue := taskMount.task.Queue
+	taskMount.task.queueMux.RUnlock()
+	_, contentLength, err := queue.DownloadArtifactToFile(ac.TaskID, runID, ac.Artifact, file)
 	if err != nil {
 		return
 	}
