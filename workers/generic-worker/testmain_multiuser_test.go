@@ -103,14 +103,15 @@ func runInDocker() int {
 	}
 
 	testFlags := translateTestFlags()
-	innerCmd := "go install ../../tools/livelog && " +
-		"go install ../../tools/taskcluster-proxy && " +
-		"go install -tags multiuser ./... && " +
-		"go test -tags multiuser"
-	for _, f := range testFlags {
-		innerCmd += " " + f
+	parts := []string{
+		"go install ../../tools/livelog &&",
+		"go install ../../tools/taskcluster-proxy &&",
+		"go install -tags multiuser ./... &&",
+		"go test -tags multiuser",
 	}
-	innerCmd += " ./..."
+	parts = append(parts, testFlags...)
+	parts = append(parts, "./...")
+	innerCmd := strings.Join(parts, " ")
 
 	fmt.Fprintf(os.Stderr, "Running multiuser tests in Docker...\n")
 
