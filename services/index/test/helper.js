@@ -159,6 +159,7 @@ helper.withServer = withServer;
  */
 const stubbedQueue = () => {
   const tasks = {};
+  const artifacts = {};
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
@@ -171,11 +172,21 @@ const stubbedQueue = () => {
         assert(task, `fake queue has no task ${taskId}`);
         return task;
       },
+      latestArtifact: async (taskId, name) => {
+        const key = `${taskId}/${name}`;
+        const artifact = artifacts[key];
+        assert(artifact, `fake queue has no artifact ${key}`);
+        return artifact;
+      },
     },
   });
 
   queue.addTask = function(taskId, task) {
     tasks[taskId] = task;
+  };
+
+  queue.setArtifact = function(taskId, name, response) {
+    artifacts[`${taskId}/${name}`] = response;
   };
 
   return queue;
