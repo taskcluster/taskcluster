@@ -49,6 +49,9 @@ func Terminate(finishTasks bool) {
 	m.Lock()
 	defer m.Unlock()
 
+	if terminationRequested {
+		return
+	}
 	terminationRequested = true
 	if callback != nil {
 		callback(finishTasks)
