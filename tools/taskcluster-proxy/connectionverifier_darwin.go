@@ -76,7 +76,7 @@ func lookupUIDWithLsof(addr *net.TCPAddr) (uint32, error) {
 	}
 
 	// Parse lsof -F output: lines starting with 'u' contain the UID
-	for _, line := range strings.Split(string(out), "\n") {
+	for line := range strings.SplitSeq(string(out), "\n") {
 		if strings.HasPrefix(line, "u") {
 			uid, err := strconv.ParseUint(line[1:], 10, 32)
 			if err != nil {
