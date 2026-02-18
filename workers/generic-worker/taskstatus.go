@@ -57,8 +57,7 @@ type TaskStatusManager struct {
 
 func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
 	// https://bugzil.la/1619925
-	// This lock ensures that any currently executing callbacks complete before
-	// the listener is deregistered, and that no new callbacks are scheduled
+	// This lock ensures that no new callbacks are scheduled for this listener
 	// once this method has started.
 	tsm.Lock()
 	defer tsm.Unlock()
@@ -283,20 +282,25 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 
 func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
 	tsm.Lock()
-	defer tsm.Unlock()
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
 		if currentStatus == allowedStatus {
 			e := f(tsm.task)
 			if e != nil {
 				tsm.queryQueueForLatestStatus()
+				tsm.Unlock()
 				return &TaskStatusUpdateError{
 					Message:       e.Error(),
 					CurrentStatus: tsm.task.Status,
 				}
 			}
 			tsm.task.Status = ts
+			listeners := make([]*TaskStatusChangeListener, 0, len(tsm.statusChangeListeners))
 			for listener := range tsm.statusChangeListeners {
+				listeners = append(listeners, listener)
+			}
+			tsm.Unlock()
+			for _, listener := range listeners {
 				log.Printf("Notifying listener %v of state change", listener.Name)
 				listener.Callback(ts)
 			}
@@ -305,6 +309,7 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 	}
 	warning := fmt.Sprintf("Not updating status of task %v run %v from %v to %v. This is because you can only update to status %v if the previous status was one of: %v", tsm.task.TaskID, tsm.task.RunID, tsm.task.Status, ts, ts, fromStatuses)
 	log.Print(warning)
+	tsm.Unlock()
 	return &TaskStatusUpdateError{
 		Message:       warning,
 		CurrentStatus: tsm.task.Status,
