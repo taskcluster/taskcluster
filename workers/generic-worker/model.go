@@ -63,17 +63,17 @@ func (task *TaskRun) String() string {
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
 	var loopResponse strings.Builder
 	for i, run := range task.TaskClaimResponse.Status.Runs {
-		loopResponse.WriteString(fmt.Sprintf("Run %v:\n", i))
-		loopResponse.WriteString(fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated)))
-		loopResponse.WriteString(fmt.Sprintf("  Reason Resolved:       %v\n", string(run.ReasonResolved)))
-		loopResponse.WriteString(fmt.Sprintf("  Resolved:              %v\n", run.Resolved))
-		loopResponse.WriteString(fmt.Sprintf("  Run Id:                %v\n", run.RunID))
-		loopResponse.WriteString(fmt.Sprintf("  Scheduled:             %v\n", run.Scheduled))
-		loopResponse.WriteString(fmt.Sprintf("  Started:               %v\n", run.Started))
-		loopResponse.WriteString(fmt.Sprintf("  State:                 %v\n", string(run.State)))
-		loopResponse.WriteString(fmt.Sprintf("  Taken Until:           %v\n", run.TakenUntil))
-		loopResponse.WriteString(fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup))
-		loopResponse.WriteString(fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID))
+		fmt.Fprintf(&loopResponse, "Run %v:\n", i)
+		fmt.Fprintf(&loopResponse, "  Reason Created:        %v\n", string(run.ReasonCreated))
+		fmt.Fprintf(&loopResponse, "  Reason Resolved:       %v\n", string(run.ReasonResolved))
+		fmt.Fprintf(&loopResponse, "  Resolved:              %v\n", run.Resolved)
+		fmt.Fprintf(&loopResponse, "  Run Id:                %v\n", run.RunID)
+		fmt.Fprintf(&loopResponse, "  Scheduled:             %v\n", run.Scheduled)
+		fmt.Fprintf(&loopResponse, "  Started:               %v\n", run.Started)
+		fmt.Fprintf(&loopResponse, "  State:                 %v\n", string(run.State))
+		fmt.Fprintf(&loopResponse, "  Taken Until:           %v\n", run.TakenUntil)
+		fmt.Fprintf(&loopResponse, "  Worker Group:          %v\n", run.WorkerGroup)
+		fmt.Fprintf(&loopResponse, "  Worker Id:             %v\n", run.WorkerID)
 	}
 	response += loopResponse.String()
 	response += "==========================================\n"

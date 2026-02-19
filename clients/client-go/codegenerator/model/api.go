@@ -34,14 +34,14 @@ func (api *API) Name() string {
 
 func (api *API) String() string {
 	var result strings.Builder
-	result.WriteString(fmt.Sprintf(
+	fmt.Fprintf(&result,
 		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n",
 		api.Schema, api.Title, api.Description,
-	))
+	)
 	for i, entry := range api.Entries {
-		result.WriteString(fmt.Sprintf("Entry %-6v=\n%v", i, entry.String()))
+		fmt.Fprintf(&result, "Entry %-6v=\n%v", i, entry.String())
 	}
 	return result.String()
 }
