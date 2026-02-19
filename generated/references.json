@@ -20662,7 +20662,8 @@
           },
           "name": "queue_exception_tasks",
           "registers": [
-            "default"
+            "default",
+            "resolvers"
           ],
           "title": "Counter for task exception",
           "type": "counter"
