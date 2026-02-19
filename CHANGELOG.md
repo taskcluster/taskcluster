@@ -3,6 +3,63 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.5.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.0
+
+Release notes [here](https://go.dev/doc/go1.26).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7147](https://github.com/taskcluster/taskcluster/issues/7147)
+Worker-manager now decides which workers should be kept during the worker-scanner loop, surfaced via the `shouldWorkerTerminate` API.
+Decision is being made based on several policies:
+- if launch config is archived - worker would be marked as "shouldTerminate=true"
+- if workers exceed the desired capacity (more workers than pending tasks) - the oldest workers would be marked as "shouldTerminate=true" (newest workers are kept)
+
+▶ [patch] [#8289](https://github.com/taskcluster/taskcluster/issues/8289)
+Generic Worker: fixes credential expiration during high-volume artifact uploads by narrowing the scope of the queue client lock so that credential refresh is no longer blocked by in-flight HTTP calls.
+
+▶ [patch] [#8291](https://github.com/taskcluster/taskcluster/issues/8291)
+Generic Worker: handles `SIGTERM` during task execution by triggering graceful termination, ensuring preempted tasks are properly resolved as `exception/worker-shutdown` instead of `exception/claim-expired`.
+
+### USERS
+
+▶ [minor] [#8035](https://github.com/taskcluster/taskcluster/issues/8035)
+The index service no longer adds a bewit (time-limited auth token) to redirect URLs for public artifacts. Artifacts are considered public if the anonymous role has the necessary scopes to get them. The index service caches the scopes associated to the anonymous role and refreshes them from the auth service every 5 minutes. Additionally, for public artifacts, the index service now resolves the final artifact URL server-side by calling the queue's `latestArtifact` endpoint, reducing the redirect chain from two hops (Index → Queue → storage) to one (Index → storage).
+
+▶ [patch] [#8070](https://github.com/taskcluster/taskcluster/issues/8070)
+Show a warning banner in the UI when live updates are disabled due to missing `web:read-pulse` scope, instead of silently showing stale data.
+
+### DEVELOPERS
+
+▶ [patch] [#8292](https://github.com/taskcluster/taskcluster/issues/8292)
+Add missing `queue_exception_tasks` metric to the claim-resolver and deadline-resolver.
+
+▶ [patch] [#8261](https://github.com/taskcluster/taskcluster/issues/8261)
+Fix webpack-dev-server crash (ECONNRESET) when proxying WebSocket `/subscription` endpoint during local UI development.
+
+### OTHER
+
+▶ Additional change not described here: [#8271](https://github.com/taskcluster/taskcluster/issues/8271).
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump tar from 7.5.7 to 7.5.9 (abb1e81537)
+* build(deps): bump ajv from 8.17.1 to 8.18.0 in /ui (4803e02066)
+* build(deps): bump ajv from 8.17.1 to 8.18.0 (0b18b4d861)
+* build(deps): bump qs from 6.14.1 to 6.14.2 (6441302bca)
+* build(deps): bump qs from 6.14.1 to 6.14.2 in /ui (d3657cd61a)
+* build(deps): bump markdown-it from 14.1.0 to 14.1.1 in /ui (94225553be)
+
+</details>
+
 ## v96.4.0
 
 ### USERS

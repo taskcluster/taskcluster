@@ -1,7 +1,7 @@
 [package]
 name = "taskcluster-integration-tests"
 publish = false
-version = "96.4.0"
+version = "96.5.0"
 authors = ["Wander Lairson Costa <wander.lairson@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -12,7 +12,7 @@ description = "API client for Taskcluster"
 # has no non-dev dependencies
 
 [dev-dependencies]
-taskcluster = { version = "96.4.0", path = "../client" }
+taskcluster = { version = "96.5.0", path = "../client" }
 taskcluster-upload = { path = "../upload" }
 taskcluster-download = { path = "../download" }
 httptest = "0.16"
