@@ -9,10 +9,12 @@ claimResolver:
   type: background
   subType: 'iterate'
   command: node services/queue/src/main.js claim-resolver
+  metrics: true
 deadlineResolver:
   type: background
   subType: 'iterate'
   command: node services/queue/src/main.js deadline-resolver
+  metrics: true
 dependencyResolver:
   type: background
   subType: 'iterate'

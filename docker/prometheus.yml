@@ -12,6 +12,8 @@ scrape_configs:
           - object-web:9100
           - purge-cache-web:9100
           - queue-web:9100
+          - queue-background-claimResolver:9100
+          - queue-background-deadlineResolver:9100
           - queue-background-workerMetrics:9100
           - secrets-web:9100
           - web-server-web:9100

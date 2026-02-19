@@ -5,7 +5,7 @@ import _ from 'lodash';
 import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
-import { sleep } from './utils.js';
+import { sleep, splitTaskQueueId } from './utils.js';
 
 /**
  * Facade that handles resolution tasks by deadline, using the advisory messages
@@ -151,6 +151,12 @@ class DeadlineResolver {
         task: { tags: task.tags || {} },
       }, task.routes);
       this.monitor.log.taskException({ taskId, runId });
+
+      const metricLabels = splitTaskQueueId(task.taskQueueId);
+      this.monitor.metric.exceptionTasks(1, {
+        ...metricLabels,
+        reasonResolved: run.reasonResolved,
+      });
 
       // Task should no longer be available in the pending queue
       await this.queueService.removePendingMessage(taskId, runId);

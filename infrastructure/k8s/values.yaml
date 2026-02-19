@@ -175,10 +175,12 @@ queue:
       replicas: 1
       cpu: 50m
       memory: 50Mi
+      metrics: true
     deadlineResolver:
       replicas: 1
       cpu: 50m
       memory: 100Mi
+      metrics: true
     dependencyResolver:
       replicas: 1
       cpu: 100m
