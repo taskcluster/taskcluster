@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-iterate",
   "private": true,
-  "version": "96.5.0",
+  "version": "96.5.1",
   "description": "A library to share iteration logic",
   "exports": "./src/index.js",
   "type": "module",

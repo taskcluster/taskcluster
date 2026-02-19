@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.5.1
+
+### DEPLOYERS
+
+▶ [patch] [#8292](https://github.com/taskcluster/taskcluster/issues/8292)
+Claim-resolver and deadline-resolver expose metrics.
+
 ## v96.5.0
 
 ### GENERAL
