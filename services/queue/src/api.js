@@ -440,6 +440,12 @@ const cancelSingleTask = async (task, ctx) => {
       task: { tags: task.tags || {} },
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
     ctx.monitor.log.taskException({ taskId: task.taskId, runId });
+
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    ctx.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
   }
 
   return status;

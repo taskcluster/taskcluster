@@ -2,7 +2,7 @@ import assert from 'assert';
 import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
-import { sleep } from './utils.js';
+import { sleep, splitTaskQueueId } from './utils.js';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -154,6 +154,12 @@ class ClaimResolver {
       workerId: run.workerId,
     }, task.routes);
     this.monitor.log.taskException({ taskId, runId });
+
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    this.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
 
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it

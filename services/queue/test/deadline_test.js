@@ -45,6 +45,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor = await helper.load('monitor');
   });
 
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
+
   test('Resolve unscheduled task deadline', async () => {
     const { taskId, task } = makeTask();
 
@@ -109,6 +118,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].reasonCreated === 'scheduled' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
     }, 20, 1000);
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'deadline-exceeded');
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();
