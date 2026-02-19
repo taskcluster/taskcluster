@@ -22,6 +22,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"slices"
@@ -453,6 +454,15 @@ func RunWorker() (exitCode ExitCode) {
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
 	lastReportedNoTasks := time.Now()
+
+	sigTerm := make(chan os.Signal, 1)
+	signal.Notify(sigTerm, syscall.SIGTERM)
+	go func() {
+		<-sigTerm
+		log.Println("Received SIGTERM, initiating graceful termination")
+		graceful.Terminate(false)
+	}()
+
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
 	if RotateTaskEnvironment() {
