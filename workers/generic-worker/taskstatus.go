@@ -90,8 +90,9 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 			tsm.stopReclaims()
 			ter := tcqueue.TaskExceptionRequest{Reason: string(reason)}
 			task.queueMux.RLock()
-			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
+			queue := task.Queue
 			task.queueMux.RUnlock()
+			tsr, err := queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 			if err != nil {
 				log.Printf("Not able to report exception for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -113,8 +114,9 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 		func(task *TaskRun) error {
 			tsm.stopReclaims()
 			task.queueMux.RLock()
-			tsr, err := task.Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			queue := task.Queue
 			task.queueMux.RUnlock()
+			tsr, err := queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report failed completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -137,8 +139,9 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 			tsm.stopReclaims()
 			log.Printf("Task %v finished successfully!", task.TaskID)
 			task.queueMux.RLock()
-			tsr, err := task.Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			queue := task.Queue
 			task.queueMux.RUnlock()
+			tsr, err := queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report successful completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -159,8 +162,9 @@ func (tsm *TaskStatusManager) reclaim() error {
 		func(task *TaskRun) error {
 			log.Printf("Reclaiming task %v...", task.TaskID)
 			task.queueMux.RLock()
-			tcrsp, err := task.Queue.ReclaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID))
+			queue := task.Queue
 			task.queueMux.RUnlock()
+			tcrsp, err := queue.ReclaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID))
 
 			// check if an error occurred...
 			if err != nil {

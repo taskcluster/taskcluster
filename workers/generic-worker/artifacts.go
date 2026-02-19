@@ -84,13 +84,14 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	}
 	par := tcqueue.PostArtifactRequest(json.RawMessage(payload))
 	task.queueMux.RLock()
-	parsp, err := task.Queue.CreateArtifact(
+	queue := task.Queue
+	task.queueMux.RUnlock()
+	parsp, err := queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),
 		artifact.Base().Name,
 		&par,
 	)
-	task.queueMux.RUnlock()
 	if err != nil {
 		switch t := err.(type) {
 		case *tcclient.APICallException:
@@ -147,7 +148,7 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 		return ResourceUnavailable(e)
 	}
 
-	e = artifact.FinishArtifact(resp, task.Queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
+	e = artifact.FinishArtifact(resp, queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
 	if e != nil {
 		task.Errorf("Error finishing artifact: %v", e)
 		return ResourceUnavailable(e)
