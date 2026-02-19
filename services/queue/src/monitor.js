@@ -268,7 +268,7 @@ MonitorManager.registerMetric('exceptionTasks', {
     ...commonLabels,
     reasonResolved: 'Reason for task exception',
   },
-  registers: ['default'],
+  registers: ['default', 'resolvers'],
 });
 
 MonitorManager.registerMetric('pendingTasks', {

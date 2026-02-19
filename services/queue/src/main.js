@@ -278,6 +278,7 @@ let load = loader({
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },
@@ -300,6 +301,7 @@ let load = loader({
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },
