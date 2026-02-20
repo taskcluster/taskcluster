@@ -304,6 +304,32 @@ suite(testing.suiteName(), function() {
       const res4 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
       assert.equal(res4.length, 2);
     });
+
+    helper.dbTest('listing claimed tasks by worker', async function (db) {
+      // empty result when no tasks claimed
+      const res = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.deepEqual(res, []);
+
+      // add claims for worker w1
+      await db.fns.queue_claimed_task_put('task1', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('task2', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      // add claim for different worker w2
+      await db.fns.queue_claimed_task_put('task3', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w2');
+
+      const res2 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.equal(res2.length, 2);
+      const taskIds = res2.map(r => r.task_id).sort();
+      assert.deepEqual(taskIds, ['task1', 'task2']);
+
+      // different worker should only see its own
+      const res3 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w2');
+      assert.equal(res3.length, 1);
+      assert.equal(res3[0].task_id, 'task3');
+
+      // different task_queue_id returns nothing
+      const res4 = await db.fns.get_claimed_tasks_by_worker('other/queue', 'wg1', 'w1');
+      assert.deepEqual(res4, []);
+    });
   });
 
   suite('tests for resolved tasks', function() {
