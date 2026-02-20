@@ -3,7 +3,6 @@ package runtime
 import (
 	"fmt"
 	"log"
-	"os"
 	"os/user"
 	"strings"
 	"syscall"
@@ -12,6 +11,8 @@ import (
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
+	"golang.org/x/sys/windows/svc"
+	"golang.org/x/sys/windows/svc/mgr"
 )
 
 type OSUser struct {
@@ -55,6 +56,48 @@ func (user *OSUser) MakeAdmin() error {
 	return err
 }
 
+// WaitForProfileService polls the Windows User Profile Service (ProfSvc)
+// until it is running or the timeout expires. On first boot after sysprep,
+// ProfSvc may not be fully initialized when generic-worker starts, causing
+// LoadUserProfile to fail with ERROR_NOT_READY.
+// See: https://github.com/taskcluster/taskcluster/issues/8083
+func WaitForProfileService(timeout time.Duration) error {
+	m, err := mgr.Connect()
+	if err != nil {
+		return fmt.Errorf("failed to connect to service manager: %w", err)
+	}
+	defer func() {
+		if err := m.Disconnect(); err != nil {
+			log.Printf("WARNING: failed to disconnect from service manager: %v", err)
+		}
+	}()
+
+	s, err := m.OpenService("ProfSvc")
+	if err != nil {
+		return fmt.Errorf("failed to open ProfSvc service: %w", err)
+	}
+	defer s.Close()
+
+	deadline := time.Now().Add(timeout)
+	delay := 100 * time.Millisecond
+	for {
+		status, err := s.Query()
+		if err != nil {
+			return fmt.Errorf("failed to query ProfSvc status: %w", err)
+		}
+		if status.State == svc.Running {
+			log.Printf("User Profile Service (ProfSvc) is running")
+			return nil
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("user profile service (ProfSvc) not running after %v (state: %d)", timeout, status.State)
+		}
+		log.Printf("Waiting for User Profile Service (ProfSvc) to start (state: %d), retrying in %v", status.State, delay)
+		time.Sleep(delay)
+		delay = min(delay*2, 2*time.Second)
+	}
+}
+
 // CreateUserProfile creates a Windows user profile using the CreateProfile API.
 // This should be called before attempting to load the user profile with LoadUserProfile
 // to prevent Windows from creating a temporary profile.
@@ -88,30 +131,7 @@ func (osUser *OSUser) CreateUserProfile() error {
 
 	createdPath := syscall.UTF16ToString(profilePath)
 	log.Printf("Created user profile at: %s", createdPath)
-
-	// Verify the profile directory is accessible before returning
-	// CreateProfile may return before the file system has fully initialized the directory
-	// This prevents ERROR_NOT_READY errors when LoadUserProfile is called immediately after
-	const maxRetries = 25
-	const initialDelay = 50 * time.Millisecond
-	const maxDelay = 5 * time.Second
-	const backoffMultiplier = 1.5
-
-	delay := initialDelay
-	for i := range maxRetries {
-		_, err := os.Stat(createdPath)
-		if err == nil {
-			return nil
-		}
-
-		if i < maxRetries-1 {
-			log.Printf("Profile directory not yet accessible (attempt %d/%d), retrying in %v: %v", i+1, maxRetries, delay, err)
-			time.Sleep(delay)
-			delay = min(time.Duration(float64(delay)*backoffMultiplier), maxDelay)
-		}
-	}
-
-	return fmt.Errorf("profile directory not accessible after %d attempts: %s", maxRetries, createdPath)
+	return nil
 }
 
 func DeleteUser(username string) (err error) {

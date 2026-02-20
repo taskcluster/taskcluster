@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/interactive"
@@ -529,9 +530,16 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+	// Wait for the User Profile Service to be running before any profile operations.
+	// On first boot after sysprep, ProfSvc may not be initialized yet.
+	// See: https://github.com/taskcluster/taskcluster/issues/8083
+	err := gwruntime.WaitForProfileService(5 * time.Minute)
+	if err != nil {
+		panic(err)
+	}
+
 	// Create user profile before loading it to prevent temporary profile creation
-	// Preventing issues like https://github.com/taskcluster/taskcluster/issues/8083
-	err := nextTaskUser.CreateUserProfile()
+	err = nextTaskUser.CreateUserProfile()
 	if err != nil {
 		panic(err)
 	}
