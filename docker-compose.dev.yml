@@ -374,6 +374,23 @@ services:
       - queue-background
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js claim-resolver"
+  queue-background-workerRemovedResolver:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/queue:/app/services/queue
+    profiles:
+      - background
+      - queue
+      - queue-background
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js worker-removed-resolver"
   queue-background-deadlineResolver:
     image: ${IMAGE_DEV}
     environment:

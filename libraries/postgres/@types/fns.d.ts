@@ -2513,6 +2513,18 @@ type QueueGetClaimedTasksByTaskQueueIdFn = {
   after_task_id_in?: string | null;
  }): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, worker_group: string, worker_id: string, claimed: Date}>>;
 };
+type QueueGetClaimedTasksByWorkerFn = {
+ (
+   task_queue_id_in: string,
+   worker_group_in: string,
+   worker_id_in: string
+ ): Promise<Array<{task_id: string, run_id: number}>>;
+ (params: {
+  task_queue_id_in: string;
+  worker_group_in: string;
+  worker_id_in: string;
+ }): Promise<Array<{task_id: string, run_id: number}>>;
+};
 type QueueGetDependentTasksFn = {
  (
    required_task_id_in: string,
@@ -6231,6 +6243,7 @@ export interface DbFunctions {
   expire_task_queues: QueueExpireTaskQueuesFn;
   expire_tasks: QueueExpireTasksFn;
   get_claimed_tasks_by_task_queue_id: QueueGetClaimedTasksByTaskQueueIdFn;
+  get_claimed_tasks_by_worker: QueueGetClaimedTasksByWorkerFn;
   get_dependent_tasks: QueueGetDependentTasksFn;
   get_expired_artifacts_for_deletion: QueueGetExpiredArtifactsForDeletionFn;
   get_multiple_tasks: QueueGetMultipleTasksFn;

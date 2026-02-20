@@ -124,6 +124,13 @@ services:
       - background
       - queue
       - queue-background
+  queue-background-workerRemovedResolver:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - background
+      - queue
+      - queue-background
   queue-background-deadlineResolver:
     environment:
       NODE_ENV: production
