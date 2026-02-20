@@ -10,6 +10,10 @@ claimResolver:
   subType: 'iterate'
   command: node services/queue/src/main.js claim-resolver
   metrics: true
+workerRemovedResolver:
+  type: background
+  command: node services/queue/src/main.js worker-removed-resolver
+  metrics: true
 deadlineResolver:
   type: background
   subType: 'iterate'

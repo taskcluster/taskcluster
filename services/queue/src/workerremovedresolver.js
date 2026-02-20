@@ -3,6 +3,17 @@ import { consume } from '@taskcluster/lib-pulse';
 import { Task } from './data.js';
 import { splitTaskQueueId } from './utils.js';
 
+/**
+ * Resolves tasks claimed by a worker when that worker is reported removed
+ * by worker-manager via a `workerRemoved` Pulse event.
+ *
+ * This prevents the ~20-minute wait for claim expiry by immediately resolving
+ * claimed tasks as `exception/worker-shutdown` and scheduling retries.
+ *
+ * The class subscribes to worker-manager's `workerRemoved` exchange on the
+ * durable queue `queue/worker-removed-resolver`. On receiving an event, it
+ * looks up all tasks claimed by the removed worker and resolves them.
+ */
 class WorkerRemovedResolver {
   constructor(options) {
     assert(options, 'options must be given');
