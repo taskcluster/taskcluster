@@ -124,6 +124,26 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskResolvedByWorkerRemoved',
+  title: 'Task Resolved By Worker Removed',
+  type: 'task-resolved-by-worker-removed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task was resolved as exception/worker-shutdown because worker-manager
+    reported the worker was removed. This prevents the ~20 minute wait for
+    claim expiration.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that was resolved.',
+    workerPoolId: 'The worker pool the worker belonged to.',
+    workerGroup: 'The worker group.',
+    workerId: 'The worker id.',
+    reason: 'The reason the worker was removed.',
+  },
+});
+
+MonitorManager.register({
   name: 'taskClaimed',
   title: 'Task Claimed',
   type: 'task-claimed',
