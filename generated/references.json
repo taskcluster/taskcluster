@@ -14653,11 +14653,35 @@
                     "cpu"
                   ],
                   "type": "object"
+                },
+                "workerRemovedResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
                 }
               },
               "required": [
                 "web",
                 "claimResolver",
+                "workerRemovedResolver",
                 "deadlineResolver",
                 "dependencyResolver",
                 "expireArtifacts",
@@ -21152,6 +21176,22 @@
           "name": "taskReclaimed",
           "title": "Task Reclaimed",
           "type": "task-reclaimed",
+          "version": 1
+        },
+        {
+          "description": "A task was resolved as exception/worker-shutdown because worker-manager\nreported the worker was removed. This prevents the ~20 minute wait for\nclaim expiration.",
+          "fields": {
+            "reason": "The reason the worker was removed.",
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId.",
+            "workerGroup": "The worker group.",
+            "workerId": "The worker id.",
+            "workerPoolId": "The worker pool the worker belonged to."
+          },
+          "level": "notice",
+          "name": "taskResolvedByWorkerRemoved",
+          "title": "Task Resolved By Worker Removed",
+          "type": "task-resolved-by-worker-removed",
           "version": 1
         },
         {

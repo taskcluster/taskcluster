@@ -96,6 +96,7 @@
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+   * [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
    * [`get_dependent_tasks`](#get_dependent_tasks)
    * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
    * [`get_multiple_tasks`](#get_multiple_tasks)
@@ -2853,6 +2854,7 @@ end
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+* [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
 * [`get_dependent_tasks`](#get_dependent_tasks)
 * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
 * [`get_multiple_tasks`](#get_multiple_tasks)
@@ -3828,6 +3830,39 @@ begin
     )
   order by q.claimed asc
   limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_claimed_tasks_by_worker
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  run_id integer `
+* *Last defined on version*: 120
+
+Get all task_id and run_id pairs currently claimed by a specific worker,
+identified by task_queue_id, worker_group, and worker_id.
+Uses the existing queue_claimed_task_queue_idx index.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    q.task_id,
+    q.run_id
+  from queue_claimed_tasks q
+  where q.task_queue_id = task_queue_id_in
+    and q.worker_group = worker_group_in
+    and q.worker_id = worker_id_in;
 end
 ```
 

@@ -7842,6 +7842,21 @@
         }
       },
       "version": 119
+    },
+    {
+      "description": "Get claimed tasks by worker identity",
+      "methods": {
+        "get_claimed_tasks_by_worker": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text",
+          "body": "begin\n  return query\n  select\n    q.task_id,\n    q.run_id\n  from queue_claimed_tasks q\n  where q.task_queue_id = task_queue_id_in\n    and q.worker_group = worker_group_in\n    and q.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Get all task_id and run_id pairs currently claimed by a specific worker,\nidentified by task_queue_id, worker_group, and worker_id.\nUses the existing queue_claimed_task_queue_idx index.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 120
     }
   ]
 }
