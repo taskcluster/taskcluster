@@ -4,7 +4,7 @@ import { getEmptyProfile, getEmptyThread, UniqueStringArray } from './profile.js
 import { getLiveLogRowSchema, getLogTaskSchema, getLogCategories } from './schemas.js';
 
 const LOG_PATTERN = /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z+]+)\]\s*(?<message>.*)/;
-const TIMESTAMP_CLEANUP = /^\s*\[[\d\-T:.Z ]+\]\s*/;
+const TIMESTAMP_CLEANUP = /^\s*\[[\d\-T:.Z+ ]+\]\s*/;
 const NEWLINE = 10;
 
 /**
@@ -91,34 +91,34 @@ export class StreamingProfileBuilder {
     const match = line.match(LOG_PATTERN);
     if (match && match.groups) {
       const time = new Date(match.groups.time);
-      const logLevel = match.groups.logLevel || 'LOG';
+      const component = match.groups.component;
       const message = match.groups.message.replace(TIMESTAMP_CLEANUP, '');
 
       if (this.profileStartTime === null) {
         this.profileStartTime = Number(time);
         // Flush any buffered lines that came before the first timestamp
         for (const buffered of this.bufferedLines) {
-          this._pushMarker('LOG', this.profileStartTime, buffered);
+          this._pushMarker('no timestamp', this.profileStartTime, buffered);
         }
         this.bufferedLines = null;
       }
 
       this.lastTime = Number(time);
-      this._pushMarker(logLevel, this.lastTime, message);
+      this._pushMarker(component, this.lastTime, message);
     } else if (this.profileStartTime === null) {
       // Buffer lines until we find a timestamp
       this.bufferedLines.push(line);
     } else {
-      this._pushMarker('LOG', this.lastTime, line);
+      this._pushMarker('no timestamp', this.lastTime, line);
     }
   }
 
-  _pushMarker(logLevel, timeMs, message) {
+  _pushMarker(component, timeMs, message) {
     this.markers.startTime.push(timeMs - this.profileStartTime);
     this.markers.endTime.push(null);
     this.markers.phase.push(0);
-    this.markers.category.push(this.categoryIndexDict.Log || 0);
-    this.markers.name.push(this.stringArray.indexForString(logLevel));
+    this.markers.category.push(this.categoryIndexDict[component] ?? this.categoryIndexDict.Log ?? 0);
+    this.markers.name.push(this.stringArray.indexForString(component));
     this.markers.data.push({
       type: 'LiveLogRow',
       message: this.stringArray.indexForString(message),

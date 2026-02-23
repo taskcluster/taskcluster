@@ -86,7 +86,7 @@ suite('profiler/log-profile', function() {
       assert.equal(profile.threads[0].markers.length, 3);
     });
 
-    test('uses logLevel as marker name', function() {
+    test('uses component as marker name', function() {
       const builder = new StreamingProfileBuilder(mockTask, 'task-123', 'https://tc.example.com');
       builder.addLine('[taskcluster:info 2024-01-01T10:00:00.000Z] Hello');
       builder.addLine('[setup:warn 2024-01-01T10:00:01.000Z] Warning');
@@ -95,8 +95,8 @@ suite('profiler/log-profile', function() {
 
       const name1 = thread.stringArray[thread.markers.name[1]];
       const name2 = thread.stringArray[thread.markers.name[2]];
-      assert.equal(name1, 'info');
-      assert.equal(name2, 'warn');
+      assert.equal(name1, 'taskcluster');
+      assert.equal(name2, 'setup');
     });
 
     test('stores messages as unique-string indices', function() {
@@ -143,7 +143,18 @@ suite('profiler/log-profile', function() {
 
       assert.equal(thread.markers.length, 3);
       const name = thread.stringArray[thread.markers.name[2]];
-      assert.equal(name, 'LOG');
+      assert.equal(name, 'no timestamp');
+    });
+
+    test('maps component to category', function() {
+      const builder = new StreamingProfileBuilder(mockTask, 'task-123', 'https://tc.example.com');
+      builder.addLine('[vcs:info 2024-01-01T10:00:00.000Z] cloning');
+      builder.addLine('[fetches:info 2024-01-01T10:00:01.000Z] downloading');
+      const profile = builder.finalize();
+      const cats = profile.meta.categories;
+      // vcs → orange (index 2), fetches → purple (index 1)
+      assert.equal(cats[profile.threads[0].markers.category[1]].name, 'vcs');
+      assert.equal(cats[profile.threads[0].markers.category[2]].name, 'fetches');
     });
 
     test('throws if no timestamps found', function() {
