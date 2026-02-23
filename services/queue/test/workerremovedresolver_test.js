@@ -80,6 +80,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(status.status.runs[1].state, 'pending');
     assert.equal(status.status.runs[1].reasonCreated, 'retry');
 
+    // verify claimed task record was cleaned up
+    const db = await helper.load('db');
+    const claimed = await db.fns.get_claimed_tasks_by_worker(
+      taskQueueId, 'my-worker-group-extended-extended', 'my-worker-extended-extended');
+    assert.equal(claimed.length, 0);
+
     // verify pulse messages were published
     helper.assertPulseMessage('task-exception', m =>
       m.payload.status.taskId === taskId && m.payload.runId === 0);
@@ -142,6 +148,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(status.status.runs[0].reasonResolved, 'worker-shutdown');
     // no retry run created
     assert.equal(status.status.runs.length, 1);
+
+    // verify claimed task record was cleaned up
+    const db = await helper.load('db');
+    const claimed = await db.fns.get_claimed_tasks_by_worker(
+      taskQueueId, 'my-worker-group-extended-extended', 'my-worker-extended-extended');
+    assert.equal(claimed.length, 0);
 
     helper.assertPulseMessage('task-exception', m =>
       m.payload.status.taskId === taskId && m.payload.runId === 0);

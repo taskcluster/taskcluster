@@ -76,6 +76,11 @@ class WorkerRemovedResolver {
       await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry'),
     );
 
+    // we no longer need existing claimed queue message
+    // because we just resolved the task, so remove it to
+    // prevent it from being processed by the claim resolver
+    await this.db.fns.queue_claimed_task_resolved(taskId, runId);
+
     const run = task.runs[runId];
 
     // If run wasn't resolved to exception/worker-shutdown, it was already
