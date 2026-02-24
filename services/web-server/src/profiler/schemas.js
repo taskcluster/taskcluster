@@ -90,10 +90,7 @@ export function getLiveLogRowSchema() {
     display: ['marker-chart', 'marker-table', 'timeline-overview'],
     data: [
       { key: 'startTime', label: 'Start time', format: 'string' },
-      { key: 'message', label: 'Log Message', format: 'string', searchable: true },
-      { key: 'hour', label: 'Hour', format: 'string' },
-      { key: 'date', label: 'Date', format: 'string' },
-      { key: 'time', label: 'Time', format: 'time' },
+      { key: 'message', label: 'Log Message', format: 'unique-string', searchable: true },
     ],
   };
 }

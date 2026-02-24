@@ -3,119 +3,151 @@ import libUrls from 'taskcluster-lib-urls';
 import { getEmptyProfile, getEmptyThread, UniqueStringArray } from './profile.js';
 import { getLiveLogRowSchema, getLogTaskSchema, getLogCategories } from './schemas.js';
 
-export function readLogFile(lines) {
-  const logPattern = /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z]+)\]\s*(?<message>.*)/;
-  const logRows = [];
-  let time;
-
-  for (const line of lines) {
-    const match = line.match(logPattern);
-    if (match && match.groups) {
-      time = new Date(match.groups.time);
-      break;
-    }
-  }
-
-  if (!time) {
-    throw new Error('Could not find a time in the log rows');
-  }
-
-  for (const line of lines) {
-    if (!line.trim()) {continue;}
-    const match = line.match(logPattern);
-    if (match && match.groups) {
-      time = new Date(match.groups.time);
-      logRows.push({ component: match.groups.component, time, message: match.groups.message });
-    } else {
-      logRows.push({ component: 'no timestamp', time, message: line });
-    }
-  }
-
-  return logRows;
-}
-
-export function fixupLogRows(logRows) {
-  const regex = /^\s*\[[\d\-T:.Z ]+\]\s*/;
-  for (const logRow of logRows) {
-    logRow.message = logRow.message.replace(regex, '');
-  }
-  return logRows;
-}
+const LOG_PATTERN = /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z+]+)\]\s*(?<message>.*)/;
+const TIMESTAMP_CLEANUP = /^\s*\[[\d\-T:.Z+ ]+\]\s*/;
+const NEWLINE = 10;
 
 /**
- * @param {Array} logRows - Parsed log rows from readLogFile
- * @param {object} task - Task definition object
- * @param {string} taskId
- * @param {string} rootUrl - Taskcluster root URL
- * @returns {object} Firefox Profiler profile
+ * Async generator that yields lines from a readable stream.
+ * Buffers partial lines across chunks. Calls onBytes(n) for each chunk
+ * to allow callers to track total bytes read.
+ *
+ * @param {ReadableStream|AsyncIterable} stream
+ * @param {function} [onBytes] - called with byte count of each chunk
  */
-export function buildProfileFromLogRows(logRows, task, taskId, rootUrl) {
-  const profile = getEmptyProfile();
-  profile.meta.markerSchema = [getLiveLogRowSchema(), getLogTaskSchema()];
-  profile.meta.categories = getLogCategories();
+export async function* lineIterator(stream, onBytes) {
+  const decoder = new TextDecoder('utf-8');
+  let leftover = new Uint8Array(0);
 
-  const date = new Date(task.created).toLocaleDateString();
-  profile.meta.product = `${task.metadata.name} ${taskId} - ${date}`;
+  for await (const chunk of stream) {
+    if (onBytes) {onBytes(chunk.byteLength);}
 
-  let profileStartTime = Infinity;
-  let lastLogRowTime = 0;
-  for (const logRow of logRows) {
-    if (logRow.time) {
-      profileStartTime = Math.min(profileStartTime, Number(logRow.time));
-      lastLogRowTime = Math.max(lastLogRowTime, Number(logRow.time));
+    // Combine ONLY the leftover bit from the previous chunk
+    let combined = leftover.length > 0
+      ? Buffer.concat([leftover, chunk])
+      : chunk;
+
+    let start = 0;
+    while (true) {
+      const idx = combined.indexOf(NEWLINE, start);
+      if (idx === -1) {break;}
+
+      yield decoder.decode(combined.subarray(start, idx));
+      start = idx + 1;
+    }
+
+    // Slice the remainder for the next chunk
+    leftover = combined.subarray(start);
+  }
+
+  if (leftover.length > 0) {
+    yield decoder.decode(leftover);
+  }
+}
+
+export class StreamingProfileBuilder {
+  constructor(task, taskId, rootUrl) {
+    this.task = task;
+    this.taskId = taskId;
+    this.rootUrl = rootUrl;
+
+    this.profile = getEmptyProfile();
+    this.profile.meta.markerSchema = [getLiveLogRowSchema(), getLogTaskSchema()];
+    this.profile.meta.categories = getLogCategories();
+
+    const date = new Date(task.created).toLocaleDateString();
+    this.profile.meta.product = `${task.metadata.name} ${taskId} - ${date}`;
+
+    this.thread = getEmptyThread();
+    this.thread.name = 'Live Log';
+    this.thread.isMainThread = true;
+    this.profile.threads.push(this.thread);
+
+    this.stringArray = new UniqueStringArray();
+    this.markers = this.thread.markers;
+
+    this.categoryIndexDict = {};
+    this.profile.meta.categories.forEach((category, index) => {
+      this.categoryIndexDict[category.name] = index;
+    });
+
+    this.profileStartTime = null;
+    this.lastTime = null;
+    this.bufferedLines = [];
+
+    // Reserve slot 0 for task duration marker — patched in finalize()
+    this.markers.startTime.push(0);
+    this.markers.endTime.push(0);
+    this.markers.phase.push(1);
+    this.markers.category.push(this.categoryIndexDict.Task ?? 0);
+    this.markers.name.push(this.stringArray.indexForString(task.metadata.name));
+    this.markers.data.push(null); // placeholder, filled in finalize()
+    this.markers.length += 1;
+  }
+
+  addLine(line) {
+    if (!line.trim()) { return; }
+
+    const match = line.match(LOG_PATTERN);
+    if (match && match.groups) {
+      const time = new Date(match.groups.time);
+      const component = match.groups.component;
+      const message = match.groups.message.replace(TIMESTAMP_CLEANUP, '');
+
+      if (this.profileStartTime === null) {
+        this.profileStartTime = Number(time);
+        // Flush any buffered lines that came before the first timestamp
+        for (const buffered of this.bufferedLines) {
+          this._pushMarker('no timestamp', this.profileStartTime, buffered);
+        }
+        this.bufferedLines = null;
+      }
+
+      this.lastTime = Number(time);
+      this._pushMarker(component, this.lastTime, message);
+    } else if (this.profileStartTime === null) {
+      // Buffer lines until we find a timestamp
+      this.bufferedLines.push(line);
+    } else {
+      this._pushMarker('no timestamp', this.lastTime, line);
     }
   }
-  profile.meta.startTime = profileStartTime;
 
-  const thread = getEmptyThread();
-  thread.name = 'Live Log';
-  profile.threads.push(thread);
-  thread.isMainThread = true;
-  const { markers } = thread;
-
-  const categoryIndexDict = {};
-  profile.meta.categories.forEach((category, index) => {
-    categoryIndexDict[category.name] = index;
-  });
-
-  const stringArray = new UniqueStringArray();
-
-  // Add the task duration marker
-  markers.startTime.push(0);
-  markers.endTime.push(lastLogRowTime - profileStartTime);
-  markers.phase.push(1);
-  markers.category.push(categoryIndexDict.Task ?? 0);
-  markers.name.push(stringArray.indexForString(task.metadata.name));
-  markers.data.push({
-    type: 'Task',
-    name: 'Task',
-    taskName: task.metadata.name,
-    taskId,
-    taskGroupId: task.taskGroupId,
-    taskGroupURL: libUrls.ui(rootUrl, `/tasks/groups/${task.taskGroupId}`),
-    taskURL: libUrls.ui(rootUrl, `/tasks/${taskId}`),
-    taskGroupProfile: libUrls.ui(rootUrl, `/tasks/groups/${task.taskGroupId}/profiler`),
-  });
-  markers.length += 1;
-
-  // Add log row markers
-  for (const logRow of logRows) {
-    const runStart = Number(logRow.time);
-    markers.startTime.push(runStart - profileStartTime);
-    markers.endTime.push(null);
-    markers.phase.push(0);
-    markers.category.push(categoryIndexDict.Log || 0);
-    markers.name.push(stringArray.indexForString(logRow.component));
-    markers.data.push({
+  _pushMarker(component, timeMs, message) {
+    this.markers.startTime.push(timeMs - this.profileStartTime);
+    this.markers.endTime.push(null);
+    this.markers.phase.push(0);
+    this.markers.category.push(this.categoryIndexDict[component] ?? this.categoryIndexDict.Log ?? 0);
+    this.markers.name.push(this.stringArray.indexForString(component));
+    this.markers.data.push({
       type: 'LiveLogRow',
-      name: 'LiveLogRow',
-      message: logRow.message,
-      hour: logRow.time.toISOString().substr(11, 8),
-      date: logRow.time.toISOString().substr(0, 10),
+      message: this.stringArray.indexForString(message),
     });
-    markers.length += 1;
+    this.markers.length += 1;
   }
 
-  thread.stringArray = stringArray.serializeToArray();
-  return profile;
+  finalize() {
+    if (this.profileStartTime === null) {
+      throw new Error('Could not find a time in the log rows');
+    }
+
+    const lastTime = this.lastTime || this.profileStartTime;
+    this.profile.meta.startTime = this.profileStartTime;
+
+    // Patch the task duration marker (slot 0)
+    this.markers.endTime[0] = lastTime - this.profileStartTime;
+    this.markers.data[0] = {
+      type: 'Task',
+      name: 'Task',
+      taskName: this.task.metadata.name,
+      taskId: this.taskId,
+      taskGroupId: this.task.taskGroupId,
+      taskGroupURL: libUrls.ui(this.rootUrl, `/tasks/groups/${this.task.taskGroupId}`),
+      taskURL: libUrls.ui(this.rootUrl, `/tasks/${this.taskId}`),
+      taskGroupProfile: libUrls.ui(this.rootUrl, `/tasks/groups/${this.task.taskGroupId}/profiler`),
+    };
+
+    this.thread.stringArray = this.stringArray.serializeToArray();
+    return this.profile;
+  }
 }
