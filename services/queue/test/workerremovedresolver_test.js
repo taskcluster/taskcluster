@@ -201,6 +201,102 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await resolver.terminate();
   });
 
+  test('workerStopped resolves claimed task (no reason field)', async () => {
+    const taskId = slugid.v4();
+    const task = makeTask(1);
+
+    await helper.queue.createTask(taskId, task);
+    await helper.queue.claimWork(taskQueueId, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
+      tasks: 1,
+    });
+
+    monitor.manager.reset();
+
+    const resolver = await helper.load('worker-removed-resolver');
+    helper.load.remove('worker-removed-resolver');
+
+    // workerStopped messages have no reason field
+    await resolver.handleWorkerRemoved({
+      payload: {
+        workerPoolId: taskQueueId,
+        providerId: 'test-provider',
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+        capacity: 1,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    const status = await helper.queue.status(taskId);
+    assert.equal(status.status.runs[0].state, 'exception');
+    assert.equal(status.status.runs[0].reasonResolved, 'worker-shutdown');
+    assert.equal(status.status.runs.length, 2);
+    assert.equal(status.status.runs[1].state, 'pending');
+
+    // verify reason falls back to 'unknown' in the log
+    const logMsg = monitor.manager.messages.find(
+      ({ Type }) => Type === 'task-resolved-by-worker-removed');
+    assert.equal(logMsg.Fields.reason, 'unknown');
+
+    await resolver.terminate();
+  });
+
+  test('receiving both workerStopped and workerRemoved is idempotent', async () => {
+    const taskId = slugid.v4();
+    const task = makeTask(1);
+
+    await helper.queue.createTask(taskId, task);
+    await helper.queue.claimWork(taskQueueId, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
+      tasks: 1,
+    });
+
+    monitor.manager.reset();
+
+    const resolver = await helper.load('worker-removed-resolver');
+    helper.load.remove('worker-removed-resolver');
+
+    const workerStoppedPayload = {
+      payload: {
+        workerPoolId: taskQueueId,
+        providerId: 'test-provider',
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+        capacity: 1,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    const workerRemovedPayload = {
+      payload: {
+        ...workerStoppedPayload.payload,
+        reason: 'terminateAfter time exceeded',
+      },
+    };
+
+    // first event resolves the task
+    await resolver.handleWorkerRemoved(workerStoppedPayload);
+
+    const status1 = await helper.queue.status(taskId);
+    assert.equal(status1.status.runs[0].state, 'exception');
+    assert.equal(status1.status.runs[0].reasonResolved, 'worker-shutdown');
+    assert.equal(status1.status.runs.length, 2);
+
+    // second event should be a no-op (no errors, no duplicate runs)
+    await resolver.handleWorkerRemoved(workerRemovedPayload);
+
+    const status2 = await helper.queue.status(taskId);
+    assert.equal(status2.status.runs[0].state, 'exception');
+    assert.equal(status2.status.runs[0].reasonResolved, 'worker-shutdown');
+    // still only 2 runs, not 3
+    assert.equal(status2.status.runs.length, 2);
+
+    await resolver.terminate();
+  });
+
   test('workerRemoved with no claimed tasks is a no-op', async () => {
     const resolver = await helper.load('worker-removed-resolver');
     helper.load.remove('worker-removed-resolver');
