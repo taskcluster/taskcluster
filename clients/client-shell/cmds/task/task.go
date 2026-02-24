@@ -45,6 +45,12 @@ var (
 		Short: "Completes a task.",
 		RunE:  executeHelperE(runComplete),
 	}
+
+	runscheduleCmd = &cobra.Command{
+		Use:   "schedule <taskId>",
+		Short: "Schedules a task.",
+		RunE:  executeHelperE(runSchedule),
+	}
 )
 
 var log = root.Logger
@@ -66,6 +72,9 @@ func init() {
 
 	runcompleteCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
 	runcompleteCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
+
+	runscheduleCmd.Flags().BoolP("noop", "n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
+	runscheduleCmd.Flags().BoolP("confirm", "c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 	// Commands that fetch information
 	Command.AddCommand(
 		// status
@@ -109,6 +118,8 @@ func init() {
 		rerunCmd,
 		// cancel
 		runcompleteCmd,
+		// schedule
+		runscheduleCmd,
 	)
 
 	// Add the task subtree to the root.
