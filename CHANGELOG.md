@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.6.1
+
+### DEPLOYERS
+
+▶ [patch] [#7472](https://github.com/taskcluster/taskcluster/issues/7472)
+The queue service's `workerRemovedResolver` now also listens for `workerStopped` events from worker-manager, in addition to `workerRemoved` events. This ensures claimed tasks are resolved as `exception/worker-shutdown` as early as possible when a worker disappears. Both events are handled idempotently, so receiving both for the same worker is safe.
+
 ## v96.6.0
 
 ### DEPLOYERS
