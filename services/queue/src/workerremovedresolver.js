@@ -4,15 +4,17 @@ import { Task } from './data.js';
 import { splitTaskQueueId } from './utils.js';
 
 /**
- * Resolves tasks claimed by a worker when that worker is reported removed
- * by worker-manager via a `workerRemoved` Pulse event.
+ * Resolves tasks claimed by a worker when that worker is reported stopped
+ * or removed by worker-manager via `workerStopped` or `workerRemoved`
+ * Pulse events.
  *
  * This prevents the ~20-minute wait for claim expiry by immediately resolving
  * claimed tasks as `exception/worker-shutdown` and scheduling retries.
  *
- * The class subscribes to worker-manager's `workerRemoved` exchange on the
- * durable queue `queue/worker-removed-resolver`. On receiving an event, it
- * looks up all tasks claimed by the removed worker and resolves them.
+ * Both events are subscribed to because `workerStopped` fires earlier but
+ * `workerRemoved` is the terminal state and may fire without `workerStopped`
+ * in some cases. All operations are idempotent, so receiving both events
+ * for the same worker is safe.
  */
 class WorkerRemovedResolver {
   constructor(options) {
@@ -38,7 +40,10 @@ class WorkerRemovedResolver {
   async start() {
     this.pq = await consume({
       client: this.pulseClient,
-      bindings: [this.workerManagerEvents.workerRemoved()],
+      bindings: [
+        this.workerManagerEvents.workerStopped(),
+        this.workerManagerEvents.workerRemoved(),
+      ],
       queueName: 'queue/worker-removed-resolver',
     },
     this.monitor.timedHandler('worker-removed', this.handleWorkerRemoved.bind(this)),
@@ -93,7 +98,7 @@ class WorkerRemovedResolver {
     }
 
     this.monitor.log.taskResolvedByWorkerRemoved({
-      taskId, runId, workerPoolId, workerGroup, workerId, reason: removalReason,
+      taskId, runId, workerPoolId, workerGroup, workerId, reason: removalReason || 'unknown',
     });
 
     const status = task.status();
