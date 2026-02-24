@@ -3,6 +3,30 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.6.0
+
+### DEPLOYERS
+
+▶ [minor] [#7472](https://github.com/taskcluster/taskcluster/issues/7472)
+The queue service now listens for `workerRemoved` events from worker-manager and immediately resolves any tasks claimed by that worker as `exception/worker-shutdown`, triggering an automatic retry.
+Previously, when a worker disappeared (due to VM preemption, crash, or manual termination), its claimed tasks would wait up to 20 minutes for the claim to expire before being retried.
+This new `workerRemovedResolver` background process runs alongside the existing claim-resolver and requires no configuration changes.
+
+### USERS
+
+▶ [patch] [#8300](https://github.com/taskcluster/taskcluster/issues/8300)
+Task log profiler optimizations for parsing large task logs, more memory and cpu efficient.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump flask from 3.1.2 to 3.1.3 in /clients/client-py (dd48e7e794)
+* build(deps): bump werkzeug from 3.1.5 to 3.1.6 in /clients/client-py (d0511a0c8a)
+
+</details>
+
 ## v96.5.2
 
 ### WORKER-DEPLOYERS
