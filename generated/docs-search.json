@@ -2478,6 +2478,13 @@
     "title": "Worker-Manager - Launch Configurations"
   },
   {
+    "element": "h4",
+    "id": "weight-distribution-playground",
+    "path": "/reference/core/worker-manager/launch-configurations",
+    "subtitle": "Weight Distribution Playground",
+    "title": "Worker-Manager - Launch Configurations"
+  },
+  {
     "element": "h1",
     "id": "static-provider-type",
     "path": "/reference/core/worker-manager/static",
