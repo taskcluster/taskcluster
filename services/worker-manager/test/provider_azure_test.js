@@ -1618,6 +1618,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
+    test('calls removeWorker after repeated instanceView 404s, even if vm get succeeds', async function() {
+      await setState({ state: 'running', powerStates: null });
+      fake.computeClient.virtualMachines.makeFakeResource('rgrp', baseProviderData.vm.name, {
+        provisioningState: 'Succeeded',
+        vmId: 'vmid/repeated-404',
+      });
+
+      await provider.checkWorker({ worker });
+      await provider.checkWorker({ worker });
+      assert(!provider.removeWorker.called);
+      assert.equal(provider.provisionResources.callCount, 2);
+
+      await provider.checkWorker({ worker });
+      assert(provider.removeWorker.calledOnce);
+      assert.equal(provider.provisionResources.callCount, 2);
+    });
+
     test('calls provisionResources for requested workers that are fully started', async function() {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
