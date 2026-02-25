@@ -18270,6 +18270,23 @@
           "version": 1
         },
         {
+          "description": "Azure VM instanceView returned 404 repeatedly for the same worker.\nWorker Manager treats this as missing to avoid getting stuck in a transient loop.",
+          "fields": {
+            "instanceView404Streak": "Consecutive count of instanceView 404 responses",
+            "providerId": "Provider ID",
+            "provisioningState": "Provisioning state returned by virtualMachines.get",
+            "vmName": "Azure VM name",
+            "workerGroup": "Worker Group",
+            "workerId": "Worker ID",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "warning",
+          "name": "azureInstanceViewRepeated404",
+          "title": "Azure InstanceView Repeated 404",
+          "type": "azure-instance-view-repeated-404",
+          "version": 1
+        },
+        {
           "description": "When ARM template is being deployed with custom resource group name,\nAzure provider would create or update the resource group.\nThis is to make sure that deployment is run in the existing resource group.",
           "fields": {
             "location": "Location",
