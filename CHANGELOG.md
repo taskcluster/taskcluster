@@ -3,6 +3,33 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.6.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8314](https://github.com/taskcluster/taskcluster/issues/8314)
+Azure double-checks if vm is gone by calling virtualMachines.get after instanceView returns 404.
+This is to prevent situations when worker is being removed based on one failed instanceView call.
+
+▶ [patch]
+Adds Weight Distribution Playground for Launch Configurations in documentation
+to see how initialWeight value change affect distribution
+
+### USERS
+
+▶ [patch] [#8311](https://github.com/taskcluster/taskcluster/issues/8311)
+Fixes UI issue for LaunchConfigs not showing location when ARM deployment template was used
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump minimatch from 3.1.2 to 3.1.3 (087d04bb4d)
+* build(deps): bump minimatch from 3.1.2 to 3.1.3 in /clients/client-web (b884c49adb)
+
+</details>
+
 ## v96.6.1
 
 ### DEPLOYERS
