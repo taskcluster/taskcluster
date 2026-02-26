@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-monitor",
   "private": true,
-  "version": "96.6.2",
+  "version": "96.7.0",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Make it easy to hook up monitoring and metrics for taskcluster services.",
   "license": "MPL-2.0",

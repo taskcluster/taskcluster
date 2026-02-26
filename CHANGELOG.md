@@ -3,6 +3,30 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.7.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7652](https://github.com/taskcluster/taskcluster/issues/7652)
+Generic Worker & Livelog: fix livelog temporary streaming files not being cleaned up. The livelog process creates a temp directory per stream, but since the generic worker kills it with SIGKILL, the process never has a chance to clean up. Fixed by having the generic worker create a dedicated temp directory for each livelog process (via the new `LIVELOG_TEMP_DIR` env var) and removing it after the process is killed.
+
+▶ [patch] [#8318](https://github.com/taskcluster/taskcluster/issues/8318)
+Generic Worker & Livelog: fix intermittent "address already in use" error on livelog ports. When a livelog process failed to start, an orphaned goroutine would keep polling the port and later send a duplicate PUT request to the next task's livelog process, causing its GET server to fail binding. Fixed by cancelling the goroutine on early process exit, killing orphaned livelog processes on connection failure, and fixing the livelog binary's duplicate PUT request guard which was checked but never set.
+
+### USERS
+
+▶ [minor] [#8101](https://github.com/taskcluster/taskcluster/issues/8101)
+Queue artifact creation (`createArtifact`) now accepts an optional `contentLength` field for S3 and object artifacts. When provided, the artifact size in bytes is stored and returned in `listArtifacts`, `artifactInfo`, and related endpoints.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump github.com/cloudflare/circl from 1.6.1 to 1.6.3 (f3adbcf9a7)
+
+</details>
+
 ## v96.6.2
 
 ### WORKER-DEPLOYERS
