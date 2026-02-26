@@ -238,6 +238,7 @@ func serve(putAddr, getAddr string) {
 			mutex.Unlock() // used instead of defer so we don't block other rejections
 			return
 		}
+		handlingPut = true
 		mutex.Unlock() // So we don't block other rejections...
 
 		stream, streamErr := stream.NewStream(r.Body)
