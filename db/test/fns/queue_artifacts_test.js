@@ -18,7 +18,7 @@ suite(testing.suiteName(), function() {
   helper.dbTest('create_queue_artifact returns the artifact', async function(db) {
     const now = new Date();
     const taskId = slugid.nice();
-    const [artifact] = await db.fns.create_queue_artifact(
+    const [artifact] = await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -27,6 +27,7 @@ suite(testing.suiteName(), function() {
       {},
       false,
       now,
+      null,
     );
     assert.equal(artifact.task_id, taskId);
     assert.equal(artifact.run_id, 0);
@@ -40,7 +41,7 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('create_queue_artifact throws when row exists', async function(db) {
     const taskId = slugid.nice();
-    await db.fns.create_queue_artifact(
+    await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -49,10 +50,11 @@ suite(testing.suiteName(), function() {
       {},
       false,
       new Date(),
+      null,
     );
     await assert.rejects(
       async () => {
-        await db.fns.create_queue_artifact(
+        await db.fns.create_queue_artifact_2(
           taskId,
           0,
           'name',
@@ -61,6 +63,7 @@ suite(testing.suiteName(), function() {
           {},
           false,
           new Date(),
+          null,
         );
       },
       err => err.code === UNIQUE_VIOLATION,
@@ -69,7 +72,7 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('update_queue_artifacts_2 can update expires, storage_type, and details', async function(db) {
     const taskId = slugid.nice();
-    await db.fns.create_queue_artifact(
+    await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -78,6 +81,7 @@ suite(testing.suiteName(), function() {
       {},
       false,
       new Date(),
+      null,
     );
     const [artifact] = await db.fns.update_queue_artifact_2({
       task_id_in: taskId,
@@ -100,7 +104,7 @@ suite(testing.suiteName(), function() {
   helper.dbTest('update_queue_artifact_2 no changes to expires, storage_type, and details', async function(db) {
     const taskId = slugid.nice();
     const now = new Date();
-    await db.fns.create_queue_artifact(
+    await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -109,6 +113,7 @@ suite(testing.suiteName(), function() {
       {},
       false,
       now,
+      null,
     );
     const [artifact] = await db.fns.update_queue_artifact_2({
       task_id_in: taskId,
@@ -131,7 +136,7 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('queue_artifact_present sets present', async function(db) {
     const taskId = slugid.nice();
-    const [artifact] = await db.fns.create_queue_artifact(
+    const [artifact] = await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -140,13 +145,14 @@ suite(testing.suiteName(), function() {
       {},
       false,
       new Date(),
+      null,
     );
     assert.equal(artifact.present, false);
 
     const [artifact2] = await db.fns.queue_artifact_present({ task_id_in: taskId, run_id_in: 0, name_in: 'name' });
     assert.equal(artifact2.present, true);
 
-    const [artifact3] = await db.fns.get_queue_artifact(taskId, 0, 'name');
+    const [artifact3] = await db.fns.get_queue_artifact_2(taskId, 0, 'name');
     assert.equal(artifact3.present, true);
 
     // check idempotency
@@ -162,7 +168,7 @@ suite(testing.suiteName(), function() {
   helper.dbTest('get_queue_artifact gets an artifact', async function(db) {
     const taskId = slugid.nice();
     const now = new Date();
-    await db.fns.create_queue_artifact(
+    await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -171,8 +177,9 @@ suite(testing.suiteName(), function() {
       {},
       false,
       now,
+      null,
     );
-    const [artifact] = await db.fns.get_queue_artifact(taskId, 0, 'name');
+    const [artifact] = await db.fns.get_queue_artifact_2(taskId, 0, 'name');
     assert.equal(artifact.task_id, taskId);
     assert.equal(artifact.run_id, 0);
     assert.equal(artifact.name, 'name');
@@ -185,7 +192,7 @@ suite(testing.suiteName(), function() {
 
   helper.dbTest('get_queue_artifact does not throw when not found', async function(db) {
     const taskId = slugid.nice();
-    const [artifact] = await db.fns.get_queue_artifact(taskId, 0, 'name');
+    const [artifact] = await db.fns.get_queue_artifact_2(taskId, 0, 'name');
     assert(!artifact, 'expected no artifact');
   });
 
@@ -198,7 +205,7 @@ suite(testing.suiteName(), function() {
     const now = new Date();
     const taskId = slugid.nice();
     for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
+      await db.fns.create_queue_artifact_2(
         taskId,
         i,
         `name-${i}`,
@@ -207,6 +214,7 @@ suite(testing.suiteName(), function() {
         {},
         false,
         now,
+        null,
       );
     }
 
@@ -230,7 +238,7 @@ suite(testing.suiteName(), function() {
     const now = new Date();
     const taskId = slugid.nice();
     for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
+      await db.fns.create_queue_artifact_2(
         taskId,
         0,
         `name-${i}`,
@@ -239,6 +247,7 @@ suite(testing.suiteName(), function() {
         {},
         false,
         now,
+        null,
       );
     }
 
@@ -259,7 +268,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('get_queue_artifacts_paginated empty', async function(db) {
-    const rows = await db.fns.get_queue_artifacts_paginated({
+    const rows = await db.fns.get_queue_artifacts_paginated_2({
       task_id_in: null,
       run_id_in: null,
       expires_in: null,
@@ -292,7 +301,7 @@ suite(testing.suiteName(), function() {
         for (let name = 0; name < 5; name++) {
           name = `name/${name}`;
           expected.push([taskId, runId, name]);
-          await db.fns.create_queue_artifact(
+          await db.fns.create_queue_artifact_2(
             taskId,
             runId,
             name,
@@ -301,6 +310,7 @@ suite(testing.suiteName(), function() {
             {},
             false,
             now,
+            null,
           );
         }
       }
@@ -315,7 +325,7 @@ suite(testing.suiteName(), function() {
         for (let task_id_in of perTaskId ? taskIds : [null]) {
           let lastRow = null;
           while (true) {
-            const rows = await db.fns.get_queue_artifacts_paginated({
+            const rows = await db.fns.get_queue_artifacts_paginated_2({
               task_id_in,
               run_id_in: null,
               expires_in: null,
@@ -339,7 +349,7 @@ suite(testing.suiteName(), function() {
     const fetches = [
       // fetch with no pagination
       async () => {
-        return await db.fns.get_queue_artifacts_paginated({
+        return await db.fns.get_queue_artifacts_paginated_2({
           task_id_in: null,
           run_id_in: null,
           expires_in: null,
@@ -382,7 +392,7 @@ suite(testing.suiteName(), function() {
     const now = new Date();
     const taskId = slugid.nice();
     for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
+      await db.fns.create_queue_artifact_2(
         taskId,
         0,
         `name-${i}`,
@@ -391,10 +401,11 @@ suite(testing.suiteName(), function() {
         {},
         false,
         now,
+        null,
       );
     }
 
-    let rows = await db.fns.get_queue_artifacts_paginated({
+    let rows = await db.fns.get_queue_artifacts_paginated_2({
       task_id_in: taskId,
       run_id_in: 0,
       expires_in: null,
@@ -412,7 +423,7 @@ suite(testing.suiteName(), function() {
     assert.equal(rows[0].present, false);
     assert.deepEqual(rows[0].expires, now);
 
-    rows = await db.fns.get_queue_artifacts_paginated({
+    rows = await db.fns.get_queue_artifacts_paginated_2({
       task_id_in: taskId,
       run_id_in: 0,
       expires_in: null,
@@ -432,7 +443,7 @@ suite(testing.suiteName(), function() {
     const today = new Date();
     const taskId = slugid.nice();
     for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
+      await db.fns.create_queue_artifact_2(
         taskId,
         i,
         `name-${i}`,
@@ -441,10 +452,11 @@ suite(testing.suiteName(), function() {
         {},
         false,
         (i & 1) ? tomorrow : yesterday,
+        null,
       );
     }
 
-    let rows = await db.fns.get_queue_artifacts_paginated({
+    let rows = await db.fns.get_queue_artifacts_paginated_2({
       task_id_in: null,
       run_id_in: null,
       expires_in: today,
@@ -462,7 +474,7 @@ suite(testing.suiteName(), function() {
     const today = new Date();
     const taskId = slugid.nice();
     for (let i = 0; i < 10; i++) {
-      await db.fns.create_queue_artifact(
+      await db.fns.create_queue_artifact_2(
         taskId,
         i,
         `name-${i}`,
@@ -471,10 +483,11 @@ suite(testing.suiteName(), function() {
         {},
         false,
         (i & 1) ? tomorrow : yesterday,
+        null,
       );
     }
 
-    let rows = await db.fns.get_expired_artifacts_for_deletion({
+    let rows = await db.fns.get_expired_artifacts_for_deletion_2({
       expires_in: today,
       page_size_in: 1000,
     });
@@ -485,7 +498,7 @@ suite(testing.suiteName(), function() {
       JSON.stringify(rows.map(({ task_id, run_id, name }) => ({ task_id, run_id, name }))),
     );
     // they should have been removed
-    rows = await db.fns.get_expired_artifacts_for_deletion({
+    rows = await db.fns.get_expired_artifacts_for_deletion_2({
       expires_in: today,
       page_size_in: 1000,
     });
@@ -495,7 +508,7 @@ suite(testing.suiteName(), function() {
   helper.dbTest('delete_queue_artifact can delete an artifact', async function(db) {
     const taskId = slugid.nice();
     const now = new Date();
-    await db.fns.create_queue_artifact(
+    await db.fns.create_queue_artifact_2(
       taskId,
       0,
       'name',
@@ -504,9 +517,10 @@ suite(testing.suiteName(), function() {
       {},
       false,
       now,
+      null,
     );
     await db.fns.delete_queue_artifact(taskId, 0, 'name');
-    const [artifact] = await db.fns.get_queue_artifact(taskId, 0, 'name');
+    const [artifact] = await db.fns.get_queue_artifact_2(taskId, 0, 'name');
     assert(!artifact);
   });
 

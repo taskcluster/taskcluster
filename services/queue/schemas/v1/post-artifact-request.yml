@@ -31,6 +31,12 @@ oneOf:
            always using `application/json` for JSON artifacts.
         type:       string
         maxLength:  255
+      contentLength:
+        description: |
+          Optional size of the artifact content, in bytes.
+          This is informational and used for monitoring purposes.
+        type:       integer
+        minimum:    0
     additionalProperties: false
     required:
       - storageType
@@ -58,6 +64,12 @@ oneOf:
           for example, to select appropriate icons to display artifact links.
         type:       string
         maxLength:  255
+      contentLength:
+        description: |
+          Optional size of the artifact content, in bytes.
+          This is informational and used for monitoring purposes.
+        type:       integer
+        minimum:    0
     additionalProperties: false
     required:
       - storageType

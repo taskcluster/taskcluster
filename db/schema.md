@@ -325,7 +325,8 @@ CREATE TABLE queue_artifacts (
     content_type text NOT NULL,
     details jsonb NOT NULL,
     present boolean NOT NULL,
-    expires timestamp with time zone NOT NULL
+    expires timestamp with time zone NOT NULL,
+    content_length bigint
 );
 ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
