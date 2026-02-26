@@ -81,6 +81,8 @@ func TestInteractiveCommand(t *testing.T) {
 	go func() {
 		done <- submitAndAssert(t, td, payload, "completed", "completed")
 	}()
+	// Ensure we wait for the worker goroutine to finish to avoid race with next test's teardown
+	defer func() { <-done }()
 
 	// Wait for server to start
 	timeout := time.After(10 * time.Second)
@@ -141,8 +143,7 @@ func TestInteractiveCommand(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Error closing WebSocket connection: %v", err)
 				}
-
-				<-done
+				// defer handles waiting for done
 				return
 			} else {
 				t.Logf("error connecting to server: %v", err)
@@ -179,24 +180,26 @@ func TestInteractiveWrongSecret(t *testing.T) {
 	timeout := time.After(10 * time.Second)
 	tick := time.Tick(500 * time.Millisecond)
 
-	for {
+	timedOut := false
+	for !timedOut {
 		select {
 		case <-done:
 			return
 		case <-timeout:
 			// Timeout reached, could not connect to server
 			// which should be the case since we are using the wrong secret
-			return
+			timedOut = true
 		case <-tick:
 			// Try to connect to the server
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, "bad-secret")
 			_, _, err := websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
 				t.Fatal("expected error connecting to server")
-				return
 			}
 		}
 	}
+	// Wait for the worker goroutine to finish to avoid race with next test's teardown
+	<-done
 }
 
 func TestInteractiveNoConfigSetMalformedPayload(t *testing.T) {

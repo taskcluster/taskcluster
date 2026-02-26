@@ -12,6 +12,6 @@ import (
 // This is used during the startup of the worker to
 // ensure that the generic-worker binary is readable/executable
 // by the task user.
-func gwVersion(pd *process.PlatformData) (*process.Command, error) {
-	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "--version"}, taskContext.TaskDir, []string{}, pd)
+func gwVersion(pd *process.PlatformData, taskDir string) (*process.Command, error) {
+	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "--version"}, taskDir, []string{}, pd)
 }

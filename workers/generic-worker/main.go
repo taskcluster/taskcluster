@@ -58,8 +58,13 @@ var (
 	trcPath = filepath.Join(cwd, "tasks-resolved-count.txt")
 	// workerReady becomes true when it is able to call queue.claimWork for the first time
 	workerReady = false
-	// General platform independent user settings, such as home directory, username...
-	// Platform specific data should be managed in plat_<platform>.go files
+	// taskContext is a global TaskContext used for:
+	// 1. Tests - many tests access taskContext.TaskDir directly to build file paths
+	// 2. Non-headless multiuser mode (capacity=1) - stores the single shared task context
+	// 3. Capacity>1 - updated to the latest claimed task for test compatibility (tests read logs via LogText)
+	// 4. Directory cleanup - used by purgeOldTasks to skip the current task's directory/user
+	// Production code with capacity>1 uses per-task contexts stored in TaskRun.Context.
+	// This global is initialized in platform-specific init() functions and by engineTestSetup() for tests.
 	taskContext    = &TaskContext{}
 	config         *gwconfig.Config
 	serviceFactory tc.ServiceFactory
@@ -259,6 +264,7 @@ func loadConfig(configFile *gwconfig.File) error {
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
+			Capacity:                       1,
 			CleanUpTaskDirs:                true,
 			DisableOOMProtection:           false,
 			DisableReboots:                 false,
@@ -411,12 +417,16 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
-	err := config.Validate()
-	if err != nil {
-		log.Printf("Invalid config: %v", err)
-		return INVALID_CONFIG
-	}
+	exitOnError(INVALID_CONFIG, config.Validate(), "Invalid config")
+	exitOnError(INVALID_CONFIG, validateEngineConfig(), "Invalid engine config")
 	engineInit()
+
+	// Ensure tasks directory exists (needed for disk space checks, etc.)
+	err := os.MkdirAll(config.TasksDir, 0755)
+	if err != nil {
+		log.Printf("Failed to create tasks directory %s: %v", config.TasksDir, err)
+		return INTERNAL_ERROR
+	}
 
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)
@@ -465,11 +475,78 @@ func RunWorker() (exitCode ExitCode) {
 
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
-	if RotateTaskEnvironment() {
+
+	// Create TaskManager for concurrent task execution
+	taskManager := NewTaskManager(config.Capacity)
+	log.Printf("Worker capacity: %d", config.Capacity)
+
+	// Create PortManager for dynamic port allocation
+	portManager := NewPortManager(config.LiveLogPortBase, config.InteractivePort, config.TaskclusterProxyPort, config.Capacity)
+
+	// Channel for task completion notifications
+	taskCompleteChan := make(chan taskCompletionResult, config.Capacity)
+
+	// Prepare task environment (may require reboot for non-headless multiuser)
+	if prepareTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
+
+	// Initial cleanup of old task directories
+	err = purgeOldTasks(taskManager.RunningTaskDirNames()...)
+	if err != nil {
+		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
+	}
+
+mainLoop:
 	for {
+		// Process any completed tasks
+		processedCompletion := false
+		for {
+			select {
+			case result := <-taskCompleteChan:
+				processedCompletion = true
+				tasksResolved++
+				lastActive = time.Now()
+
+				if result.workerShutdown {
+					log.Printf("Task %s requested worker shutdown, waiting for other tasks...", result.taskID)
+					taskManager.WaitForAll()
+					return WORKER_SHUTDOWN
+				}
+
+				// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
+				remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
+				remainingTaskCountText := ""
+				if remainingTasks > 0 {
+					remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
+				}
+				log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
+				if remainingTasks == 0 {
+					log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
+					taskManager.WaitForAll()
+					if checkWhetherToTerminate() {
+						return WORKER_MANAGER_SHUTDOWN
+					}
+					return TASKS_COMPLETE
+				}
+				// In non-headless multiuser mode with capacity=1, reboot between tasks
+				if rebootBetweenTasks() {
+					return REBOOT_REQUIRED
+				}
+			default:
+				goto doneProcessingCompletions
+			}
+		}
+	doneProcessingCompletions:
+		if processedCompletion {
+			err := purgeOldTasks(taskManager.RunningTaskDirNames()...)
+			if err != nil {
+				log.Printf("ERROR: purging old tasks: %v", err)
+			}
+		}
+
 		if checkWhetherToTerminate() {
+			taskManager.WaitForAll()
 			return WORKER_MANAGER_SHUTDOWN
 		}
 
@@ -480,75 +557,129 @@ func RunWorker() (exitCode ExitCode) {
 		}
 
 		if graceful.TerminationRequested() {
+			log.Printf("Graceful termination requested, waiting for %d running tasks...", taskManager.TaskCount())
+			taskManager.WaitForAll()
 			return WORKER_SHUTDOWN
 		}
 
-		pdTaskUser := currentPlatformData()
-		err = validateGenericWorkerBinary(pdTaskUser)
-		if err != nil {
-			log.Printf("Invalid generic-worker binary: %v", err)
-			return INTERNAL_ERROR
+		// Calculate available capacity
+		availableCapacity := taskManager.AvailableCapacity()
+		claimCount := availableCapacity
+		if config.NumberOfTasksToRun > 0 {
+			// Account for tasks already running so we don't exceed NumberOfTasksToRun.
+			alreadyStarted := tasksResolved + taskManager.TaskCount()
+			if alreadyStarted >= config.NumberOfTasksToRun {
+				claimCount = 0
+			} else {
+				remainingToStart := config.NumberOfTasksToRun - alreadyStarted
+				if remainingToStart < claimCount {
+					claimCount = remainingToStart
+				}
+			}
 		}
-
-		task := ClaimWork()
 
 		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
 		wait5Seconds := time.NewTimer(time.Second * 5)
 
-		if task != nil {
-			logEvent("taskQueued", task, time.Time(task.Definition.Created))
-			logEvent("taskStart", task, time.Now())
-
-			task.pd = pdTaskUser
-			errors := task.Run()
-
-			logEvent("taskFinish", task, time.Now())
-			if errors.Occurred() {
-				log.Printf("ERROR(s) encountered: %v", errors)
-				task.Error(errors.Error())
-			}
-			if errors.WorkerShutdown() {
-				return WORKER_SHUTDOWN
-			}
-			err := task.ReleaseResources()
-			if err != nil {
-				log.Printf("ERROR: releasing resources\n%v", err)
-			}
-			err = purgeOldTasks()
-			if err != nil {
-				panic(err)
-			}
-			tasksResolved++
-			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
-			remainingTasks := int(config.NumberOfTasksToRun - tasksResolved)
-			remainingTaskCountText := ""
-			if remainingTasks > 0 {
-				remainingTaskCountText = fmt.Sprintf(" (will exit after resolving %v more)", remainingTasks)
-			}
-			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
-			if remainingTasks == 0 {
-				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-
-				if checkWhetherToTerminate() {
-					return WORKER_MANAGER_SHUTDOWN
+		if claimCount > 0 {
+			// Unified task execution: always use per-task context regardless of capacity
+			tasks := ClaimWork(claimCount)
+			for _, task := range tasks {
+				// Create per-task context
+				// Include runId to avoid collisions when tasks are rerun (same taskId, new runId)
+				// Format: task_<12 chars of taskId>_<runId> (max 20 chars for Windows username limit)
+				taskIDPart := task.TaskID
+				if len(taskIDPart) > 12 {
+					taskIDPart = taskIDPart[:12]
 				}
-				return TASKS_COMPLETE
+				taskDirName := fmt.Sprintf("task_%s_%d", taskIDPart, task.RunID)
+				ctx := CreateTaskContext(taskDirName)
+				task.Context = ctx
+				if runningTests {
+					// Update global taskContext for test compatibility (tests read logs via LogText)
+					taskContext = ctx
+				}
+
+				// Create generic-worker subdirectory for logs, etc.
+				gwDir := filepath.Join(ctx.TaskDir, "generic-worker")
+				err = os.MkdirAll(gwDir, 0700)
+				if err != nil {
+					panic(err)
+				}
+				log.Printf("Created dir: %v", gwDir)
+
+				// Get platform data for this task's context
+				pd, err := platformDataForTaskContext(ctx)
+				if err != nil {
+					log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
+					return INTERNAL_ERROR
+				}
+				task.pd = pd
+
+				err = validateGenericWorkerBinary(pd, ctx.TaskDir)
+				if err != nil {
+					log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
+					return INTERNAL_ERROR
+				}
+
+				// Allocate ports for this task
+				allocatedPorts, err := portManager.AllocatePorts(task.TaskID)
+				if err != nil {
+					log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
+					_ = task.StatusManager.ReportException(internalError)
+					return INTERNAL_ERROR
+				}
+				task.AllocatedPorts = allocatedPorts
+				log.Printf("Task %s allocated ports: LiveLog=%d/%d, Interactive=%d, TaskclusterProxy=%d",
+					task.TaskID,
+					allocatedPorts[PortIndexLiveLogGET], allocatedPorts[PortIndexLiveLogPUT],
+					allocatedPorts[PortIndexInteractive], allocatedPorts[PortIndexTaskclusterProxy])
+
+				logEvent("taskQueued", task, time.Time(task.Definition.Created))
+				logEvent("taskStart", task, time.Now())
+
+				taskManager.AddTask(task)
+
+				go func(t *TaskRun) {
+					var errors *ExecutionErrors
+					defer func() {
+						taskManager.RemoveTask(t.TaskID)
+						portManager.ReleasePorts(t.TaskID)
+						workerShutdown := errors != nil && errors.WorkerShutdown()
+						taskCompleteChan <- taskCompletionResult{
+							taskID:         t.TaskID,
+							workerShutdown: workerShutdown,
+						}
+					}()
+
+					errors = t.Run()
+
+					logEvent("taskFinish", t, time.Now())
+					if errors.Occurred() {
+						log.Printf("ERROR(s) encountered for task %s: %v", t.TaskID, errors)
+						t.Error(errors.Error())
+					}
+					err := t.ReleaseResources()
+					if err != nil {
+						log.Printf("ERROR: releasing resources for task %s: %v", t.TaskID, err)
+					}
+				}(task)
+
+				lastActive = time.Now()
 			}
-			if rebootBetweenTasks() {
-				return REBOOT_REQUIRED
-			}
-			lastActive = time.Now()
-			if RotateTaskEnvironment() {
-				return REBOOT_REQUIRED
-			}
-		} else {
+		}
+
+		// Check idle timeout only when no tasks are running
+		if taskManager.IsIdle() {
 			// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 			idleTime := time.Now().Round(0).Sub(lastActive)
 			remainingIdleTimeText := ""
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
+					_ = purgeOldTasks(taskManager.RunningTaskDirNames()...)
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 					return IDLE_TIMEOUT
 				}
@@ -572,12 +703,30 @@ func RunWorker() (exitCode ExitCode) {
 		// To avoid hammering queue, make sure there is at least 5 seconds
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
+		// However, if a task completes, we should process it immediately.
 		select {
 		case <-wait5Seconds.C:
+		case result := <-taskCompleteChan:
+			// A task completed during the wait. Put the result back so
+			// the drain loop at the top of mainLoop processes it along
+			// with any other completions that arrived. This is safe
+			// because the channel buffer is config.Capacity and at most
+			// config.Capacity goroutines can send to it; we just removed
+			// one item, so there is always room to put it back.
+			taskCompleteChan <- result
+			continue mainLoop
 		case <-sigInterrupt:
+			log.Printf("Interrupt received, waiting for %d running tasks...", taskManager.TaskCount())
+			taskManager.WaitForAll()
 			return WORKER_STOPPED
 		}
 	}
+}
+
+// taskCompletionResult holds the result of a completed task
+type taskCompletionResult struct {
+	taskID         string
+	workerShutdown bool
 }
 
 func checkWhetherToTerminate() bool {
@@ -599,15 +748,19 @@ func checkWhetherToTerminate() bool {
 	return false
 }
 
-// ClaimWork queries the Queue to find a task.
-func ClaimWork() *TaskRun {
+// ClaimWork queries the Queue to find tasks. The count parameter specifies
+// how many tasks to request (up to available capacity).
+func ClaimWork(count uint) []*TaskRun {
+	if count < 1 {
+		return nil
+	}
 	// only log workerReady the first time queue.claimWork is called
 	if !workerReady {
 		workerReady = true
 		logEvent("workerReady", nil, time.Now())
 	}
 	req := &tcqueue.ClaimWorkRequest{
-		Tasks:       1,
+		Tasks:       int64(count),
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
 	}
@@ -621,20 +774,14 @@ func ClaimWork() *TaskRun {
 		log.Printf("Could not claim work. %v", err)
 		return nil
 	}
-	switch {
 
-	// no tasks - nothing to return
-	case len(resp.Tasks) < 1:
+	if len(resp.Tasks) == 0 {
 		return nil
+	}
 
-	// more than one task - BUG!
-	case len(resp.Tasks) > 1:
-		panic(fmt.Sprintf("SERIOUS BUG: too many tasks returned from queue - only 1 requested, but %v returned", len(resp.Tasks)))
-
-	// exactly one task - process it!
-	default:
-		log.Print("Task found")
-		taskResponse := resp.Tasks[0]
+	tasks := make([]*TaskRun, 0, len(resp.Tasks))
+	for _, taskResponse := range resp.Tasks {
+		log.Printf("Task found: %s", taskResponse.Status.TaskID)
 		taskQueue := serviceFactory.Queue(
 			&tcclient.Credentials{
 				ClientID:    taskResponse.Credentials.ClientID,
@@ -657,8 +804,9 @@ func ClaimWork() *TaskRun {
 		}
 		defaults.SetDefaults(&task.Payload)
 		task.StatusManager = NewTaskStatusManager(task)
-		return task
+		tasks = append(tasks, task)
 	}
+	return tasks
 }
 
 func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecutionError {
@@ -720,8 +868,8 @@ func (task *TaskRun) validateJSON(input []byte, schema string) *CommandExecution
 // internally during the artifact upload process. The version string
 // is not returned, since it is not needed. A non-nil error is returned
 // if the `generic-worker --version` command cannot be run successfully.
-func validateGenericWorkerBinary(pd *process.PlatformData) error {
-	cmd, err := gwVersion(pd)
+func validateGenericWorkerBinary(pd *process.PlatformData, taskDir string) error {
+	cmd, err := gwVersion(pd, taskDir)
 	if err != nil {
 		panic(fmt.Errorf("could not create command to determine generic-worker binary version: %v", err))
 	}
@@ -927,12 +1075,6 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	err = &ExecutionErrors{}
 
-	workerStatus := &WorkerStatus{
-		CurrentTaskIDs: []string{task.TaskID},
-	}
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
-	defer os.Remove(workerStatusPath)
-
 	defer func() {
 		if r := recover(); r != nil {
 			err.add(executionError(internalError, errored, fmt.Errorf("%#v", r)))
@@ -1027,21 +1169,6 @@ func (task *TaskRun) closeLog(logHandle io.WriteCloser) {
 	}
 }
 
-func PrepareTaskEnvironment() (reboot bool) {
-	// I've discovered windows has a limit of 20 chars
-	taskDirName := fmt.Sprintf("task_%v", time.Now().UnixNano())[:20]
-	if PlatformTaskEnvironmentSetup(taskDirName) {
-		return true
-	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
-	err := os.MkdirAll(logDir, 0700)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Created dir: %v", logDir)
-	return false
-}
-
 func taskDirsIn(parentDir string) ([]string, error) {
 	fi, err := os.ReadDir(parentDir)
 	if err != nil {
@@ -1094,20 +1221,6 @@ outer:
 			log.Printf("WARNING: Could not delete task directory %v: %v", taskDir, err)
 		}
 	}
-}
-
-// RotateTaskEnvironment creates a new task environment (for the next task),
-// and purges existing used task environments.
-func RotateTaskEnvironment() (reboot bool) {
-	if PrepareTaskEnvironment() {
-		return true
-	}
-	err := purgeOldTasks()
-	// errors are not fatal
-	if err != nil {
-		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
-	}
-	return false
 }
 
 func exitOnError(exitCode ExitCode, err error, logMessage string, args ...any) {

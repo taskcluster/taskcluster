@@ -29,6 +29,12 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	}
 	defaults.SetDefaults(&payload)
 
+	// Get platform data for the test context
+	pd, err := platformDataForTaskContext(taskContext)
+	if err != nil {
+		t.Fatalf("Failed to get platform data: %v", err)
+	}
+
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
 	// artifacts would get uploaded...
@@ -37,7 +43,8 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
-		pd: currentPlatformData(),
+		pd:      pd,
+		Context: taskContext,
 	}
 	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	atf := ArtifactTaskFeature{
