@@ -30,6 +30,7 @@ Environment:
  ACCESS_TOKEN			an arbitrary url-safe string
  SERVER_CRT_FILE		path to a file containing a certificate, if not provided, the server will run without TLS
  SERVER_KEY_FILE		path to a file containing a key, if not provided, the server will run without TLS
+ LIVELOG_TEMP_DIR		directory for temporary streaming files, defaults to the system temp dir
 
 Options:
 -h --help       Show help
