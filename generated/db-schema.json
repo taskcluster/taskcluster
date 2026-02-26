@@ -229,6 +229,7 @@
       "upload_id": "text"
     },
     "queue_artifacts": {
+      "content_length": "bigint",
       "content_type": "text not null",
       "details": "jsonb not null",
       "expires": "timestamp with time zone not null",
@@ -7857,6 +7858,62 @@
         }
       },
       "version": 120
+    },
+    {
+      "description": "Add content_length to queue artifacts",
+      "downgradeScript": "begin\n  alter table queue_artifacts drop column content_length;\nend",
+      "methods": {
+        "create_queue_artifact": {
+          "deprecated": true
+        },
+        "create_queue_artifact_2": {
+          "args": "task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz, content_length_in bigint",
+          "body": "begin\n  return query insert\n    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)\n    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length;\nend",
+          "deprecated": false,
+          "description": "Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.\nIncludes content_length parameter for tracking artifact file size.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_expired_artifacts_for_deletion": {
+          "deprecated": true
+        },
+        "get_expired_artifacts_for_deletion_2": {
+          "args": "expires_in timestamptz, page_size_in integer",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    queue_artifacts.expires < expires_in\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get expired artifacts for deletion, including content_length for logging deleted sizes.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifact": {
+          "deprecated": true
+        },
+        "get_queue_artifact_2": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  return query select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a single queue artifact by task_id, run_id, and name.\nReturns content_length in the result.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifacts_paginated": {
+          "deprecated": true
+        },
+        "get_queue_artifacts_paginated_2": {
+          "args": "task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    (queue_artifacts.task_id = task_id_in or task_id_in is null) and\n    (queue_artifacts.run_id = run_id_in or run_id_in is null) and\n    (queue_artifacts.expires < expires_in or expires_in is null) and\n    (after_task_id_in is null or\n      (queue_artifacts.task_id >= after_task_id_in and\n        (queue_artifacts.task_id > after_task_id_in or\n          (queue_artifacts.task_id = after_task_id_in and\n            (queue_artifacts.run_id > after_run_id_in or\n              (queue_artifacts.run_id = after_run_id_in and\n                queue_artifacts.name > after_name_in\n              )\n            )\n          )\n        )\n      )\n    )\n  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get queue artifacts with cursor-based pagination.\nReturns content_length in the result.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table queue_artifacts add column content_length bigint;\nend",
+      "version": 121
     }
   ]
 }

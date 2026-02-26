@@ -2136,7 +2136,8 @@ type QueueClaimTaskFn = {
   taken_until_in: Date;
  }): Promise<Array<{retries_left: number, runs: JsonB, taken_until: Date}>>;
 };
-type QueueCreateQueueArtifactFn = {
+/** @deprecated */
+type QueueCreateQueueArtifactDeprecatedFn = {
  (
    task_id_in: string,
    run_id_in: number,
@@ -2157,6 +2158,30 @@ type QueueCreateQueueArtifactFn = {
   present_in: boolean;
   expires_in: Date;
  }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
+};
+type QueueCreateQueueArtifact2Fn = {
+ (
+   task_id_in: string,
+   run_id_in: number,
+   name_in: string,
+   storage_type_in: string,
+   content_type_in: string,
+   details_in: JsonB,
+   present_in: boolean,
+   expires_in: Date,
+   content_length_in: any
+ ): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
+ (params: {
+  task_id_in: string;
+  run_id_in: number;
+  name_in: string;
+  storage_type_in: string;
+  content_type_in: string;
+  details_in: JsonB;
+  present_in: boolean;
+  expires_in: Date;
+  content_length_in: any;
+ }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
 };
 /** @deprecated */
 type QueueCreateQueueProvisionerDeprecatedFn = {
@@ -2541,7 +2566,8 @@ type QueueGetDependentTasksFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{dependent_task_id: string, requires: TaskRequires, satisfied: boolean}>>;
 };
-type QueueGetExpiredArtifactsForDeletionFn = {
+/** @deprecated */
+type QueueGetExpiredArtifactsForDeletionDeprecatedFn = {
  (
    expires_in: Date,
    page_size_in: number | null
@@ -2550,6 +2576,16 @@ type QueueGetExpiredArtifactsForDeletionFn = {
   expires_in: Date;
   page_size_in?: number | null;
  }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
+};
+type QueueGetExpiredArtifactsForDeletion2Fn = {
+ (
+   expires_in: Date,
+   page_size_in: number | null
+ ): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
+ (params: {
+  expires_in: Date;
+  page_size_in?: number | null;
+ }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
 };
 type QueueGetMultipleTasksFn = {
  (
@@ -2577,7 +2613,8 @@ type QueueGetPendingTasksByTaskQueueIdFn = {
   after_task_id_in?: string | null;
  }): Promise<Array<{task_id: string, task_queue_id: string, scheduler_id: string, project_id: string, task_group_id: string, dependencies: JsonB, requires: TaskRequires, routes: JsonB, priority: TaskPriority, retries: number, retries_left: number, created: Date, deadline: Date, expires: Date, scopes: JsonB, payload: JsonB, metadata: JsonB, tags: JsonB, extra: JsonB, runs: JsonB, taken_until: Date, run_id: number, inserted: Date}>>;
 };
-type QueueGetQueueArtifactFn = {
+/** @deprecated */
+type QueueGetQueueArtifactDeprecatedFn = {
  (
    task_id_in: string,
    run_id_in: number,
@@ -2588,6 +2625,18 @@ type QueueGetQueueArtifactFn = {
   run_id_in: number;
   name_in: string;
  }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
+};
+type QueueGetQueueArtifact2Fn = {
+ (
+   task_id_in: string,
+   run_id_in: number,
+   name_in: string
+ ): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
+ (params: {
+  task_id_in: string;
+  run_id_in: number;
+  name_in: string;
+ }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
 };
 /** @deprecated */
 type QueueGetQueueArtifactsDeprecatedFn = {
@@ -2606,7 +2655,8 @@ type QueueGetQueueArtifactsDeprecatedFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
 };
-type QueueGetQueueArtifactsPaginatedFn = {
+/** @deprecated */
+type QueueGetQueueArtifactsPaginatedDeprecatedFn = {
  (
    task_id_in: string | null,
    run_id_in: number | null,
@@ -2625,6 +2675,26 @@ type QueueGetQueueArtifactsPaginatedFn = {
   after_run_id_in: number;
   after_name_in: string;
  }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date}>>;
+};
+type QueueGetQueueArtifactsPaginated2Fn = {
+ (
+   task_id_in: string | null,
+   run_id_in: number | null,
+   expires_in: Date | null,
+   page_size_in: number | null,
+   after_task_id_in: string | null,
+   after_run_id_in: number,
+   after_name_in: string
+ ): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
+ (params: {
+  task_id_in?: string | null;
+  run_id_in?: number | null;
+  expires_in?: Date | null;
+  page_size_in?: number | null;
+  after_task_id_in?: string | null;
+  after_run_id_in: number;
+  after_name_in: string;
+ }): Promise<Array<{task_id: string, run_id: number, name: string, storage_type: string, content_type: string, details: JsonB, present: boolean, expires: Date, content_length: any}>>;
 };
 /** @deprecated */
 type QueueGetQueueProvisionerDeprecatedFn = {
@@ -6230,7 +6300,7 @@ export interface DbFunctions {
   cancel_task_group: QueueCancelTaskGroupFn;
   check_task_claim: QueueCheckTaskClaimFn;
   claim_task: QueueClaimTaskFn;
-  create_queue_artifact: QueueCreateQueueArtifactFn;
+  create_queue_artifact_2: QueueCreateQueueArtifact2Fn;
   create_task_projid: QueueCreateTaskProjidFn;
   delete_queue_artifact: QueueDeleteQueueArtifactFn;
   delete_queue_artifacts: QueueDeleteQueueArtifactsFn;
@@ -6245,11 +6315,11 @@ export interface DbFunctions {
   get_claimed_tasks_by_task_queue_id: QueueGetClaimedTasksByTaskQueueIdFn;
   get_claimed_tasks_by_worker: QueueGetClaimedTasksByWorkerFn;
   get_dependent_tasks: QueueGetDependentTasksFn;
-  get_expired_artifacts_for_deletion: QueueGetExpiredArtifactsForDeletionFn;
+  get_expired_artifacts_for_deletion_2: QueueGetExpiredArtifactsForDeletion2Fn;
   get_multiple_tasks: QueueGetMultipleTasksFn;
   get_pending_tasks_by_task_queue_id: QueueGetPendingTasksByTaskQueueIdFn;
-  get_queue_artifact: QueueGetQueueArtifactFn;
-  get_queue_artifacts_paginated: QueueGetQueueArtifactsPaginatedFn;
+  get_queue_artifact_2: QueueGetQueueArtifact2Fn;
+  get_queue_artifacts_paginated_2: QueueGetQueueArtifactsPaginated2Fn;
   get_task_group_size: QueueGetTaskGroupSizeFn;
   get_task_group2: QueueGetTaskGroup2Fn;
   get_task_projid: QueueGetTaskProjidFn;
@@ -6467,6 +6537,7 @@ export interface DeprecatedDbFunctions {
   azure_queue_put: QueueAzureQueuePutDeprecatedFn;
   azure_queue_put_extra: QueueAzureQueuePutExtraDeprecatedFn;
   azure_queue_update: QueueAzureQueueUpdateDeprecatedFn;
+  create_queue_artifact: QueueCreateQueueArtifactDeprecatedFn;
   create_queue_provisioner: QueueCreateQueueProvisionerDeprecatedFn;
   create_queue_worker: QueueCreateQueueWorkerDeprecatedFn;
   create_queue_worker_tqid: QueueCreateQueueWorkerTqidDeprecatedFn;
@@ -6476,7 +6547,10 @@ export interface DeprecatedDbFunctions {
   create_task_tqid: QueueCreateTaskTqidDeprecatedFn;
   expire_queue_provisioners: QueueExpireQueueProvisionersDeprecatedFn;
   expire_queue_worker_types: QueueExpireQueueWorkerTypesDeprecatedFn;
+  get_expired_artifacts_for_deletion: QueueGetExpiredArtifactsForDeletionDeprecatedFn;
+  get_queue_artifact: QueueGetQueueArtifactDeprecatedFn;
   get_queue_artifacts: QueueGetQueueArtifactsDeprecatedFn;
+  get_queue_artifacts_paginated: QueueGetQueueArtifactsPaginatedDeprecatedFn;
   get_queue_provisioner: QueueGetQueueProvisionerDeprecatedFn;
   get_queue_provisioners: QueueGetQueueProvisionersDeprecatedFn;
   get_queue_worker: QueueGetQueueWorkerDeprecatedFn;

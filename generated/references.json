@@ -5145,6 +5145,11 @@
           "additionalProperties": false,
           "description": "Request for a signed PUT URL that will allow you to upload an artifact\nto an S3 bucket managed by the queue.\n",
           "properties": {
+            "contentLength": {
+              "description": "Optional size of the artifact content, in bytes.\nThis is informational and used for monitoring purposes.\n",
+              "minimum": 0,
+              "type": "integer"
+            },
             "contentType": {
               "description": "Artifact mime-type, when uploading artifact to the signed\n`PUT` URL returned from this request this must given with the\n `ContentType` header. Please, provide correct mime-type,\n this make tooling a lot easier, specifically,\n always using `application/json` for JSON artifacts.\n",
               "maxLength": 255,
@@ -5175,6 +5180,11 @@
           "additionalProperties": false,
           "description": "Request to create an artifact via the object service.\n",
           "properties": {
+            "contentLength": {
+              "description": "Optional size of the artifact content, in bytes.\nThis is informational and used for monitoring purposes.\n",
+              "minimum": 0,
+              "type": "integer"
+            },
             "contentType": {
               "description": "Artifact content type.  This is advisory in nature and can be used,\nfor example, to select appropriate icons to display artifact links.\n",
               "maxLength": 255,
@@ -6315,6 +6325,12 @@
       "additionalProperties": false,
       "description": "Information about an artifact\n",
       "properties": {
+        "contentLength": {
+          "description": "Size of the artifact content in bytes, if reported by the worker.\nThis value is null if the worker did not report the size.\n",
+          "minimum": 0,
+          "title": "Content-Length",
+          "type": "integer"
+        },
         "contentType": {
           "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
           "maxLength": 255,
