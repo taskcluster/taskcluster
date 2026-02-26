@@ -48,13 +48,24 @@ type (
 		// the feature name that caused the upload to be skipped, which may
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
-		featureArtifacts    map[string]string
+		featureArtifacts map[string]string
+		// FileMountHandlers allows features to intercept file mounts
+		// by filename. When a handler is registered for a filename,
+		// the mounts feature calls ensureCached and passes the cache
+		// path and SHA256 to the handler instead of copying the file
+		// to the task directory.
+		FileMountHandlers   map[string]FileMountHandler       `json:"-"`
 		D2GInfo             *d2g.ConversionInfo               `json:"-"`
 		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
 	}
 
 	TaskStatus       string
 	TaskUpdateReason string
+
+	// FileMountHandler is called by the mounts feature instead of copying
+	// a file mount to the task directory. It receives the path to the
+	// cached file and its SHA256 hash.
+	FileMountHandler func(cachedFile, sha256 string) error
 )
 
 func (task *TaskRun) String() string {

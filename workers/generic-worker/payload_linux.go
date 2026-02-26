@@ -64,6 +64,19 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	task.Definition.Payload = json.RawMessage(d2gConvertedPayloadJSON)
 	task.D2GInfo = &conversionInfo
 
+	// Register a file mount handler for docker image artifacts so the
+	// mounts feature stores the cache info on D2GInfo instead of copying
+	// the image to the task directory. The d2g feature will pipe it to
+	// docker load via stdin.
+	if task.FileMountHandlers == nil {
+		task.FileMountHandlers = map[string]FileMountHandler{}
+	}
+	task.FileMountHandlers["dockerimage"] = func(cachedFile, sha256 string) error {
+		task.D2GInfo.ImageArtifactPath = cachedFile
+		task.D2GInfo.ImageArtifactSHA256 = sha256
+		return nil
+	}
+
 	return nil
 }
 
