@@ -46,15 +46,15 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	atf.FindArtifacts()
 	got := atf.artifacts
 
-	// remove the ContentPath field from the got artifacts
-	// if it's of type S3Artifact. We can't compare this
-	// as it's non-deterministic
+	// remove non-deterministic fields from the got artifacts
 	for _, a := range got {
-		s3Artifact, ok := a.(*artifacts.S3Artifact)
-		if !ok {
-			continue
+		switch v := a.(type) {
+		case *artifacts.S3Artifact:
+			v.ContentPath = ""
+			v.ContentLength = 0
+		case *artifacts.ObjectArtifact:
+			v.ContentLength = 0
 		}
-		s3Artifact.ContentPath = ""
 	}
 
 	if !reflect.DeepEqual(got, expected) {
