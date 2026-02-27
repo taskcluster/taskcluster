@@ -7914,6 +7914,21 @@
       },
       "migrationScript": "begin\n  alter table queue_artifacts add column content_length bigint;\nend",
       "version": 121
+    },
+    {
+      "description": "Fix listTaskGroup pagination stability by adding ORDER BY task_id",
+      "methods": {
+        "get_tasks_by_task_group_projid": {
+          "args": "task_group_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    -- treat null project_id as 'none'\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where tasks.task_group_id = task_group_id_in\n  order by tasks.task_id  -- to avoid pagination overlaps\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get all properties of all tasks in the given task group.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 122
     }
   ]
 }
