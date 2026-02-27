@@ -88,15 +88,24 @@ func Marshal(req *http.Request, payload any) {
 	}
 }
 
-func ServiceProviders(t *testing.T, baseURL string) []httputil.ServiceProvider {
+// Mocks holds references to all mock service instances, allowing tests to
+// configure their behavior.
+type Mocks struct {
+	WorkerManager *WorkerManager
+}
+
+func ServiceProviders(t *testing.T, baseURL string) ([]httputil.ServiceProvider, *Mocks) {
 	t.Helper()
+	wm := NewWorkerManager(t)
 	return []httputil.ServiceProvider{
-		NewAuthProvider(NewAuth(t)),
-		NewIndexProvider(NewIndex(t)),
-		NewQueueProvider(NewQueue(t, baseURL)),
-		NewSecretsProvider(NewSecrets()),
-		NewWorkerManagerProvider(NewWorkerManager(t)),
-		mocks3.New(t),
-		NewObjectProvider(NewObject(t, baseURL)),
-	}
+			NewAuthProvider(NewAuth(t)),
+			NewIndexProvider(NewIndex(t)),
+			NewQueueProvider(NewQueue(t, baseURL)),
+			NewSecretsProvider(NewSecrets()),
+			NewWorkerManagerProvider(wm),
+			mocks3.New(t),
+			NewObjectProvider(NewObject(t, baseURL)),
+		}, &Mocks{
+			WorkerManager: wm,
+		}
 }

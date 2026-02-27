@@ -43,6 +43,54 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 }
 
+// TestIdleTimeoutChecksWorkerManager verifies that when running with
+// worker-runner, the worker checks with Worker Manager before shutting down
+// due to idle timeout. On the first idle timeout, WM says don't terminate,
+// so the idle timer resets. On the second idle timeout, WM says terminate,
+// so the worker exits with IDLE_TIMEOUT. This proves the timer was reset.
+func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
+	test := GWTest(t)
+	err := test.Setup()
+	if err != nil {
+		test.Teardown()
+		t.Fatal(err)
+	}
+	t.Cleanup(test.Teardown)
+
+	if test.Mocks == nil {
+		t.Skip("This test requires mock services (cannot run with GW_TESTS_USE_EXTERNAL_TASKCLUSTER)")
+	}
+
+	// The main loop calls checkWhetherToTerminate() at the top of each
+	// iteration (loop-top check) and again when idle timeout fires. With a
+	// 5-second wait between iterations and IdleTimeoutSecs=3, the call
+	// sequence is:
+	//   call 1: loop-top (t≈0s)
+	//   call 2: loop-top (t≈5s)
+	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
+	//   call 4: loop-top (t≈10s)
+	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
+	test.Mocks.WorkerManager.ShouldTerminateAfterNCalls = 5
+
+	withWorkerRunner = true
+	t.Cleanup(func() { withWorkerRunner = false })
+
+	config.IdleTimeoutSecs = 3
+	start := time.Now()
+	exitCode := RunWorker()
+	elapsed := time.Since(start)
+
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v (IDLE_TIMEOUT), but got exit code %v", IDLE_TIMEOUT, exitCode)
+	}
+	// Worker should have been alive for at least 8 seconds, proving the idle
+	// timer was reset at least once (3s timeout + reset + 3s timeout ≈ 10s
+	// with the 5s inter-loop wait).
+	if elapsed.Seconds() < 8 {
+		t.Fatalf("Worker should have been alive for at least 8s (idle timer reset), but was alive for %v", elapsed)
+	}
+}
+
 // TestRevisionNumberStored is useful for ensuring that the test binary
 // includes the git revision number, so that it emulates the release binary.
 // There is a separate test that the release binary includes the revision

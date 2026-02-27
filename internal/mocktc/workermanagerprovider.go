@@ -23,6 +23,7 @@ func (wp *WorkerManagerProvider) RegisterService(r *mux.Router) {
 	s.HandleFunc("/worker/register", wp.RegisterWorker).Methods("POST")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.WorkerPool).Methods("GET")
 	s.HandleFunc("/worker-pool/{workerPoolId}", wp.CreateWorkerPool).Methods("PUT")
+	s.HandleFunc("/workers/{workerPoolId}/{workerGroup}/{workerId}/should-terminate", wp.ShouldWorkerTerminate).Methods("GET")
 }
 
 func (wp *WorkerManagerProvider) RegisterWorker(w http.ResponseWriter, r *http.Request) {
