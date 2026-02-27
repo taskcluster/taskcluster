@@ -548,9 +548,14 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
-					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-					return IDLE_TIMEOUT
+					if !withWorkerRunner || checkWhetherToTerminate() {
+						_ = purgeOldTasks()
+						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+						return IDLE_TIMEOUT
+					}
+					// Worker Manager says don't terminate - reset idle timer
+					log.Printf("Idle timeout reached but Worker Manager says not to terminate. Resetting idle timer.")
+					lastActive = time.Now()
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,
