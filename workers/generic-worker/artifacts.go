@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -40,12 +41,17 @@ func createDataArtifact(
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
+	var contentLength int64
+	if info, err := os.Stat(contentPath); err == nil {
+		contentLength = info.Size()
+	}
 	if config.CreateObjectArtifacts {
 		// note that contentEncoding is currently ignored for object artifacts
 		return &artifacts.ObjectArtifact{
-			BaseArtifact: base,
-			Path:         path,
-			ContentType:  contentType,
+			BaseArtifact:  base,
+			Path:          path,
+			ContentType:   contentType,
+			ContentLength: contentLength,
 		}
 	}
 
@@ -55,6 +61,7 @@ func createDataArtifact(
 		ContentPath:     contentPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
+		ContentLength:   contentLength,
 	}
 }
 
