@@ -18,13 +18,17 @@ type ObjectArtifact struct {
 	Path string
 	// ContentType is used in the Content-Type header.
 	ContentType string
+	// ContentLength is the original file size in bytes.
+	// Sent to the queue for monitoring purposes.
+	ContentLength int64
 }
 
 func (a *ObjectArtifact) RequestObject() any {
 	return &tcqueue.ObjectArtifactRequest{
-		ContentType: a.ContentType,
-		Expires:     a.Expires,
-		StorageType: "object",
+		ContentType:   a.ContentType,
+		ContentLength: a.ContentLength,
+		Expires:       a.Expires,
+		StorageType:   "object",
 	}
 }
 

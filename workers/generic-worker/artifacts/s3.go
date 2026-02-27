@@ -28,6 +28,9 @@ type S3Artifact struct {
 	ContentPath     string
 	ContentEncoding string
 	ContentType     string
+	// ContentLength is the original file size in bytes, before any
+	// encoding (e.g. gzip). Sent to the queue for monitoring purposes.
+	ContentLength int64
 }
 
 // createTempFileForPUTBody gzip-compresses the file at Path and
@@ -151,9 +154,10 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 
 func (s3Artifact *S3Artifact) RequestObject() any {
 	return &tcqueue.S3ArtifactRequest{
-		ContentType: s3Artifact.ContentType,
-		Expires:     s3Artifact.Expires,
-		StorageType: "s3",
+		ContentType:   s3Artifact.ContentType,
+		ContentLength: s3Artifact.ContentLength,
+		Expires:       s3Artifact.Expires,
+		StorageType:   "s3",
 	}
 }
 
