@@ -115,10 +115,10 @@ export class WorkerScanner {
     await this.providers.forAll(p => p.scanCleanup());
 
     // Phase 2: Compute termination decisions
-    await this.#computeTerminationDecisions(poolStats, poolCandidates);
+    await this.#computeTerminationDecisions(poolCandidates);
   }
 
-  async #computeTerminationDecisions(poolStats, poolCandidates) {
+  async #computeTerminationDecisions(poolCandidates) {
     for (const [poolId, candidates] of poolCandidates) {
       try {
         const pool = await WorkerPool.get(this.db, poolId);
@@ -131,12 +131,18 @@ export class WorkerScanner {
           allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id),
         );
 
+        // For termination decisions we pass zeroed worker info so the
+        // estimator returns the raw target capacity based on demand
+        // (pending tasks) and minCapacity, not inflated by existing
+        // workers. The provisioner's formula adds totalNonStopped and
+        // later subtracts it to get toSpawn, but here we compare
+        // directly against running workers.
         const desiredCapacity = await this.estimator.desiredCapacity({
           workerPoolId: poolId,
           minCapacity: pool.config.minCapacity ?? 0,
           maxCapacity: pool.config.maxCapacity ?? 0,
           scalingRatio: pool.config.scalingRatio ?? 1.0,
-          workerInfo: poolStats.get(poolId).forProvision(),
+          workerInfo: { existingCapacity: 0, stoppingCapacity: 0, requestedCapacity: 0 },
         });
 
         // 1. Determine who lives and who dies

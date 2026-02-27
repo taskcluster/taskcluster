@@ -338,7 +338,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(worker.providerData.shouldTerminate.decidedAt);
     });
 
-    test('all workers needed when at capacity — no termination', async function() {
+    test('idle workers with minCapacity=0 and no pending tasks are terminated', async function() {
       const poolId = 'pp/overcap';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-active', poolId, false);
@@ -368,7 +368,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // desiredCapacity with 3 existing, 0 pending = max(0, min(0 + 3, 10)) = 3
+      // desiredCapacity with 0 pending, minCapacity=0 = max(0, min(0, 10)) = 0
+      const wOldest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest' });
+      const wMiddle = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle' });
+      const wNewest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest' });
+      assert.strictEqual(wOldest.providerData.shouldTerminate.terminate, true);
+      assert.strictEqual(wMiddle.providerData.shouldTerminate.terminate, true);
+      assert.strictEqual(wNewest.providerData.shouldTerminate.terminate, true);
+    });
+
+    test('all workers needed when pending tasks require them', async function() {
+      const poolId = 'pp/needed';
+      await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
+      await createLaunchConfig('lc-needed', poolId, false);
+
+      helper.queue.setPending(poolId, 5);
+      helper.queue.setClaimed(poolId, 0);
+
+      const now = new Date();
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest',
+        providerId: 'testing1', created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+      });
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle',
+        providerId: 'testing1', created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+      });
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest',
+        providerId: 'testing1', created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+      });
+
+      await scanner.scan();
+
+      // desiredCapacity with 5 pending, minCapacity=0 = max(0, min(5, 10)) = 5
       const wOldest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest' });
       const wMiddle = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle' });
       const wNewest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest' });
@@ -382,7 +421,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-active2', poolId, false);
 
-      helper.queue.setPending(poolId, 0);
+      helper.queue.setPending(poolId, 5);
       helper.queue.setClaimed(poolId, 0);
 
       const now = new Date();
@@ -401,7 +440,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // desiredCapacity with 2 existing, maxCapacity=1: max(0, min(0 + 2, 1)) = 1
+      // desiredCapacity with 5 pending, maxCapacity=1: max(0, min(5, 1)) = 1
       const wOld = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old' });
       const wNew = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-new' });
       assert.strictEqual(wOld.providerData.shouldTerminate.terminate, true);
@@ -446,7 +485,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-rev', poolId, false);
 
-      helper.queue.setPending(poolId, 0);
+      // Demand returns: pending tasks now exist
+      helper.queue.setPending(poolId, 5);
       helper.queue.setClaimed(poolId, 0);
 
       const now = new Date();
@@ -470,11 +510,51 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // With 2 existing workers and 0 pending, desired = max(0, min(0 + 2, 10)) = 2
+      // With 5 pending tasks, desired = max(0, min(5, 10)) = 5 — both workers now needed
       const w = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old' });
       assert(w.providerData.shouldTerminate, 'shouldTerminate should be set');
       assert.strictEqual(w.providerData.shouldTerminate.terminate, false);
       assert.strictEqual(w.providerData.shouldTerminate.reason, 'needed');
+    });
+
+    test('reducing minCapacity marks workers for termination on next scan', async function() {
+      const poolId = 'pp/minchange';
+      await createPool(poolId, { maxCapacity: 10, minCapacity: 1 });
+      await createLaunchConfig('lc-minchange', poolId, false);
+
+      helper.queue.setPending(poolId, 0);
+      helper.queue.setClaimed(poolId, 0);
+
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1',
+        providerId: 'testing1', created: new Date(),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-minchange',
+      });
+
+      // First scan: minCapacity=1, worker is needed
+      await scanner.scan();
+
+      let w = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1' });
+      assert.strictEqual(w.providerData.shouldTerminate.terminate, false);
+      assert.strictEqual(w.providerData.shouldTerminate.reason, 'needed');
+
+      // Simulate minCapacity being lowered to 0. WorkerPool has no update()
+      // method and update_worker_pool_with_launch_configs archives launch
+      // configs as a side-effect, so we update the config column directly.
+      await helper.withDbClient(async client => {
+        await client.query(
+          `UPDATE worker_pools SET config = config || '{"minCapacity": 0}'::jsonb WHERE worker_pool_id = $1`,
+          [poolId],
+        );
+      });
+
+      // Second scan: minCapacity=0, worker should now be terminated
+      await scanner.scan();
+
+      w = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1' });
+      assert.strictEqual(w.providerData.shouldTerminate.terminate, true);
+      assert.strictEqual(w.providerData.shouldTerminate.reason, 'over capacity');
     });
 
     test('static provider workers do not get shouldTerminate set', async function() {
@@ -506,12 +586,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createLaunchConfig('lc-metric-active', poolId, false);
       await createLaunchConfig('lc-metric-archived', poolId, true);
 
-      helper.queue.setPending(poolId, 0);
+      helper.queue.setPending(poolId, 1);
       helper.queue.setClaimed(poolId, 0);
 
       const now = new Date();
       // Two RUNNING workers with active launch config on a pool with maxCapacity=1
-      // → one will be over_capacity
+      // and 1 pending task → one will be needed, one over_capacity
       await createWorker({
         workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-cap1',
         providerId: 'testing1', created: new Date(now.getTime() - 3000),
@@ -564,7 +644,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-integ', poolId, false);
 
-      helper.queue.setPending(poolId, 0);
+      helper.queue.setPending(poolId, 1);
       helper.queue.setClaimed(poolId, 0);
 
       const now = new Date();
@@ -584,7 +664,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Run the scanner
       await scanner.scan();
 
-      // Verify via API endpoint
+      // Verify via API endpoint — desiredCapacity = max(0, min(1, 1)) = 1
       const resultOld = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'w-old');
       assert.strictEqual(resultOld.terminate, true);
       assert.strictEqual(resultOld.reason, 'over capacity');
