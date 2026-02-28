@@ -16,8 +16,64 @@ builds:
       - windows_arm64
       - windows_amd64
 
+  - id: generic-worker-multiuser
+    main: ./workers/generic-worker
+    binary: generic-worker-multiuser-{{ .Os }}-{{ .Arch }}
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    tags:
+      - multiuser
+    ldflags:
+      - -X main.revision={{ .FullCommit }}
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+  - id: start-worker
+    main: ./tools/worker-runner/cmd/start-worker
+    binary: start-worker-{{ .Os }}-{{ .Arch }}
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+  - id: livelog
+    main: ./tools/livelog
+    binary: livelog-{{ .Os }}-{{ .Arch }}
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+  - id: taskcluster-proxy
+    main: ./tools/taskcluster-proxy
+    binary: taskcluster-proxy-{{ .Os }}-{{ .Arch }}
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -X main.revision={{ .FullCommit }}
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
 archives:
   - id: taskcluster
+    ids:
+      - taskcluster
 
     # Archive name template.
     name_template: "taskcluster-{{ .Os }}-{{ .Arch }}"
@@ -30,6 +86,42 @@ archives:
         formats:
           - zip
 
+    files:
+      - none*
+
+  - id: generic-worker-multiuser
+    ids:
+      - generic-worker-multiuser
+    formats:
+      - zip
+    name_template: "{{ .Binary }}"
+    files:
+      - none*
+
+  - id: start-worker
+    ids:
+      - start-worker
+    formats:
+      - zip
+    name_template: "{{ .Binary }}"
+    files:
+      - none*
+
+  - id: livelog
+    ids:
+      - livelog
+    formats:
+      - zip
+    name_template: "{{ .Binary }}"
+    files:
+      - none*
+
+  - id: taskcluster-proxy
+    ids:
+      - taskcluster-proxy
+    formats:
+      - zip
+    name_template: "{{ .Binary }}"
     files:
       - none*
 
@@ -95,3 +187,109 @@ brews:
     # Default is empty.
     test: |
       system "#{bin}/taskcluster version"
+
+chocolateys:
+  - name: taskcluster
+    ids:
+      - taskcluster
+    owners: Mozilla
+    authors: Mozilla Taskcluster Team
+    project_url: "https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell"
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://avatars.githubusercontent.com/u/13954054"
+    copyright: "Mozilla"
+    license_url: "https://github.com/taskcluster/taskcluster/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/taskcluster/taskcluster"
+    docs_url: "https://docs.taskcluster.net/"
+    bug_tracker_url: "https://github.com/taskcluster/taskcluster/issues"
+    tags: "taskcluster cli mozilla"
+    summary: "Taskcluster command-line client"
+    description: "A Taskcluster client library for the command line"
+    release_notes: "https://github.com/taskcluster/taskcluster/releases/tag/{{ .Tag }}"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+
+  - name: generic-worker
+    ids:
+      - generic-worker-multiuser
+    owners: Mozilla
+    authors: Mozilla Taskcluster Team
+    project_url: "https://github.com/taskcluster/taskcluster/tree/main/workers/generic-worker"
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://avatars.githubusercontent.com/u/13954054"
+    copyright: "Mozilla"
+    license_url: "https://github.com/taskcluster/taskcluster/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/taskcluster/taskcluster"
+    docs_url: "https://docs.taskcluster.net/docs/reference/workers/generic-worker"
+    bug_tracker_url: "https://github.com/taskcluster/taskcluster/issues"
+    tags: "taskcluster generic-worker mozilla worker"
+    summary: "Taskcluster Generic Worker"
+    description: "A worker for Taskcluster that can run on any platform"
+    release_notes: "https://github.com/taskcluster/taskcluster/releases/tag/{{ .Tag }}"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+
+  - name: start-worker
+    ids:
+      - start-worker
+    owners: Mozilla
+    authors: Mozilla Taskcluster Team
+    project_url: "https://github.com/taskcluster/taskcluster/tree/main/tools/worker-runner"
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://avatars.githubusercontent.com/u/13954054"
+    copyright: "Mozilla"
+    license_url: "https://github.com/taskcluster/taskcluster/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/taskcluster/taskcluster"
+    docs_url: "https://docs.taskcluster.net/docs/reference/workers/worker-runner"
+    bug_tracker_url: "https://github.com/taskcluster/taskcluster/issues"
+    tags: "taskcluster worker-runner mozilla worker"
+    summary: "Taskcluster Worker Runner"
+    description: "Start-worker handles worker startup, configuration, and credential management"
+    release_notes: "https://github.com/taskcluster/taskcluster/releases/tag/{{ .Tag }}"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+
+  - name: livelog
+    ids:
+      - livelog
+    owners: Mozilla
+    authors: Mozilla Taskcluster Team
+    project_url: "https://github.com/taskcluster/taskcluster/tree/main/tools/livelog"
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://avatars.githubusercontent.com/u/13954054"
+    copyright: "Mozilla"
+    license_url: "https://github.com/taskcluster/taskcluster/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/taskcluster/taskcluster"
+    docs_url: "https://docs.taskcluster.net/"
+    bug_tracker_url: "https://github.com/taskcluster/taskcluster/issues"
+    tags: "taskcluster livelog mozilla logging"
+    summary: "Taskcluster Livelog"
+    description: "Live log streaming for Taskcluster tasks"
+    release_notes: "https://github.com/taskcluster/taskcluster/releases/tag/{{ .Tag }}"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+
+  - name: taskcluster-proxy
+    ids:
+      - taskcluster-proxy
+    owners: Mozilla
+    authors: Mozilla Taskcluster Team
+    project_url: "https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy"
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://avatars.githubusercontent.com/u/13954054"
+    copyright: "Mozilla"
+    license_url: "https://github.com/taskcluster/taskcluster/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/taskcluster/taskcluster"
+    docs_url: "https://docs.taskcluster.net/"
+    bug_tracker_url: "https://github.com/taskcluster/taskcluster/issues"
+    tags: "taskcluster proxy mozilla"
+    summary: "Taskcluster Proxy"
+    description: "HTTP proxy for Taskcluster API authentication"
+    release_notes: "https://github.com/taskcluster/taskcluster/releases/tag/{{ .Tag }}"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
