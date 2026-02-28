@@ -55,16 +55,9 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -100,8 +93,8 @@ func TestD2GVolumeArtifacts(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 		expectedArtifacts := ExpectedArtifacts{
@@ -129,13 +122,6 @@ func TestD2GVolumeArtifacts(t *testing.T) {
 			},
 		}
 		expectedArtifacts.Validate(t, taskID, 0)
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -176,8 +162,8 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		// will still resolve as `completed/completed` because d2g
 		// will add the `optional` flag to the artifact during translation
 		taskID := submitAndAssert(t, td, payload, "completed", "completed")
@@ -211,13 +197,6 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 			},
 		}
 		expectedArtifacts.Validate(t, taskID, 0)
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -268,16 +247,9 @@ func TestD2GIssue6789(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "docker-worker:cache:d2g-test")
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -321,16 +293,9 @@ func TestD2GWithValidScopes(t *testing.T) {
 		"docker-worker:feature:allowPtrace",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatalf("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -406,16 +371,9 @@ func TestD2GLoopbackVideoDevice(t *testing.T) {
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -451,16 +409,9 @@ func TestD2GLoopbackVideoDeviceWithWorkerPoolScopes(t *testing.T) {
 		"docker-worker:capability:device:loopbackVideo:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -502,16 +453,9 @@ func TestD2GLoopbackVideoDeviceNonRootUserInVideoGroup(t *testing.T) {
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -552,17 +496,10 @@ func TestD2GLoopbackVideoDeviceNonRootUserNotInVideoGroup(t *testing.T) {
 		"docker-worker:capability:device:loopbackVideo",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		// This test is expected to fail because the non-root user is not in the video group
 		_ = submitAndAssert(t, td, payload, "failed", "failed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -601,16 +538,9 @@ func TestD2GLoopbackAudioDevice(t *testing.T) {
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -649,16 +579,9 @@ func TestD2GLoopbackAudioDeviceWithWorkerPoolScopes(t *testing.T) {
 		"docker-worker:capability:device:loopbackAudio:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -702,16 +625,9 @@ func TestD2GLoopbackAudioDeviceNonRootUserInAudioGroup(t *testing.T) {
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -754,17 +670,10 @@ func TestD2GLoopbackAudioDeviceNonRootUserNotInAudioGroup(t *testing.T) {
 		"docker-worker:capability:device:loopbackAudio",
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		// This test is expected to fail because the non-root user is not in the audio group
 		_ = submitAndAssert(t, td, payload, "failed", "failed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -834,16 +743,9 @@ func TestD2GHostSharedMemory(t *testing.T) {
 		"docker-worker:capability:device:hostSharedMemory:" + td.ProvisionerID + "/" + td.WorkerType,
 	}...)
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		_ = submitAndAssert(t, td, payload, "completed", "completed")
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -876,8 +778,8 @@ func TestD2GTaskclusterProxy(t *testing.T) {
 	reclaimEvery5Seconds = true
 	defer func() { reclaimEvery5Seconds = false }()
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		taskID := submitAndAssert(t, td, payload, "completed", "completed")
 
 		expectedArtifacts := ExpectedArtifacts{
@@ -902,13 +804,6 @@ func TestD2GTaskclusterProxy(t *testing.T) {
 		}
 
 		expectedArtifacts.Validate(t, taskID, 0)
-	case "insecure:linux":
-		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
-		logtext := LogText(t)
-		t.Log(logtext)
-		if !strings.Contains(logtext, "task payload contains unsupported osGroups: [docker]") {
-			t.Fatal("Was expecting log file to contain 'task payload contains unsupported osGroups: [docker]'")
-		}
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 	}
@@ -1070,8 +965,8 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 	td.Dependencies = taskDependencies
 
 	var taskID string
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		taskID = submitAndAssert(t, td, payload, "completed", "completed")
 	default:
 		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")

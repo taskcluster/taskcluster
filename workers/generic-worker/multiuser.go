@@ -1,5 +1,3 @@
-//go:build multiuser
-
 package main
 
 import (
@@ -18,10 +16,6 @@ import (
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
-)
-
-const (
-	engine = "multiuser"
 )
 
 var (

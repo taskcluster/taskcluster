@@ -32,7 +32,7 @@ fi
 echo "Go version ok (${GO_VERSION} >= go${GO_MAJOR_VERSION}.${MIN_GO_MINOR_VERSION})"
 TEST=false
 PUBLISH=false
-OUTPUT_ALL_PLATFORMS="Building just for the multiuser platform (build.sh -a argument NOT specified)"
+OUTPUT_ALL_PLATFORMS="Building just for the current platform (build.sh -a argument NOT specified)"
 OUTPUT_TEST="Test flag NOT detected (-t) as argument to build.sh script"
 OUTPUT_DIR=.
 ALL_PLATFORMS=false
@@ -67,22 +67,22 @@ fi
 
 function install {
   if ! $PUBLISH; then
-      GOOS="${2}" GOARCH="${3}" go vet -tags "${1}" ./...
+      GOOS="${1}" GOARCH="${2}" go vet ./...
       # note, this just builds tests, it doesn't run them!
       go list ./... | while read package; do
-        GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c "${package}"
+        GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c "${package}"
       done
   fi
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=${GIT_REVISION}" -tags "${1}" -v .
+  GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}" -ldflags "-X main.revision=${GIT_REVISION}" -v .
   # check that revision number made it into target binary
-  if [ "${2}" == "$(go env GOHOSTOS)" ] && [ "${3}" == "$(go env GOHOSTARCH)" ]; then
-    if ! "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" --version | \
+  if [ "${1}" == "$(go env GOHOSTOS)" ] && [ "${2}" == "$(go env GOHOSTARCH)" ]; then
+    if ! "$OUTPUT_DIR/generic-worker-${1}-${2}" --version | \
     grep -qF "revision: https://github.com/taskcluster/taskcluster/commits/${GIT_REVISION}"; then
       echo "The --version option does not output a proper revision link"
       exit 1
     else
       # ANSI escape sequence for green tick
-      echo -e "\x1b\x5b\x33\x32\x6d\xe2\x9c\x93\x1b\x5b\x30\x6d Revision number included in $OUTPUT_DIR/generic-worker-${1}-${2}-${3} (${GIT_REVISION})"
+      echo -e "\x1b\x5b\x33\x32\x6d\xe2\x9c\x93\x1b\x5b\x30\x6d Revision number included in $OUTPUT_DIR/generic-worker-${1}-${2} (${GIT_REVISION})"
     fi
   fi
 }
@@ -92,39 +92,21 @@ GIT_REVISION="$(git rev-parse HEAD)"
 # NOTE: when changing this, also update
 # ui/docs/reference/workers/generic-worker/support-tiers.mdx
 if ${ALL_PLATFORMS}; then
-  install multiuser windows amd64
-  install multiuser windows arm64
+  install windows amd64
+  install windows arm64
 
-  install multiuser darwin  amd64
-  install multiuser darwin  arm64
-  install insecure  darwin  amd64
-  install insecure  darwin  arm64
+  install darwin  amd64
+  install darwin  arm64
 
-  install multiuser linux   amd64
-  install multiuser linux   arm64
-  install insecure  linux   amd64
-  install insecure  linux   arm64
+  install linux   amd64
+  install linux   arm64
 
-  install multiuser freebsd amd64
-  install multiuser freebsd arm64
-  install insecure  freebsd amd64
-  install insecure  freebsd arm64
+  install freebsd amd64
+  install freebsd arm64
 else
   MY_GOHOSTOS="$(go env GOHOSTOS)"
   MY_GOHOSTARCH="$(go env GOHOSTARCH)"
-  case "${MY_GOHOSTOS}" in
-      linux) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             ;;
-     darwin) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             ;;
-    freebsd) install insecure  "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             ;;
-    windows) install multiuser "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
-             ;;
-  esac
+  install "${MY_GOHOSTOS}" "${MY_GOHOSTARCH}"
 fi
 
 ls -1 "$OUTPUT_DIR"/generic-worker-*
@@ -140,7 +122,7 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
+  CGO_ENABLED=1 GORACE="history_size=7" go test -failfast -ldflags "-X github.com/taskcluster/taskcluster/v96/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
   go tool golint $(go list ./...) | sed "s*${PWD}/**"
   go tool ineffassign .
   go tool goimports -w .

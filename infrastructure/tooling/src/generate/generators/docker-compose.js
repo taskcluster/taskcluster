@@ -87,7 +87,7 @@ const defaultValues = {
   UI_LOGIN_STRATEGY_NAMES: 'local',
   SITE_SPECIFIC: JSON.stringify({
     tutorial_worker_pool_id: 'docker-compose/generic-worker',
-    tutorial_worker_schema: 'generic-insecure-posix',
+    tutorial_worker_schema: 'generic-multiuser-posix',
   }),
 
   // Auth

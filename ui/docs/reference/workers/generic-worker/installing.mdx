@@ -39,7 +39,7 @@ Determine the major Taskcluster version `<MAJOR>` that you would like to build. 
 * Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/livelog`
 * Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/tools/taskcluster-proxy`
 
-Run `go get -tags multiuser github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (windows/darwin) and/or `go get -tags insecure github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker` (linux/darwin). This should also build binaries for your platform.
+Run `go get github.com/taskcluster/taskcluster/v<MAJOR>/workers/generic-worker`. This should also build binaries for your platform.
 
 Run `./build.sh` to check go version, generate code, build binaries, compile (but not run) tests, perform linting, and ensure there are no ineffective assignments in go code.
 
