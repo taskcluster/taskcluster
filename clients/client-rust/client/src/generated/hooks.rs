@@ -326,18 +326,24 @@ impl Hooks {
     /// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
     /// provided as the `payload` property of the JSON-e context used to render the
     /// task template.
-    pub async fn triggerHook(&self, hookGroupId: &str, hookId: &str, payload: &Value) -> Result<Value, Error> {
+    ///
+    /// Optionally, a `taskId` query parameter can be provided which the hook task
+    /// will use. It must be unique and follow the slugid format.
+    pub async fn triggerHook(&self, hookGroupId: &str, hookId: &str, payload: &Value, taskId: Option<&str>) -> Result<Value, Error> {
         let method = "POST";
-        let (path, query) = Self::triggerHook_details(hookGroupId, hookId);
+        let (path, query) = Self::triggerHook_details(hookGroupId, hookId, taskId);
         let body = Some(payload);
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Determine the HTTP request details for triggerHook
-    fn triggerHook_details<'a>(hookGroupId: &'a str, hookId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn triggerHook_details<'a>(hookGroupId: &'a str, hookId: &'a str, taskId: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("hooks/{}/{}/trigger", urlencode(hookGroupId), urlencode(hookId));
-        let query = None;
+        let mut query = None;
+        if let Some(q) = taskId {
+            query.get_or_insert_with(Vec::new).push(("taskId", q));
+        }
 
         (path, query)
     }
@@ -401,18 +407,24 @@ impl Hooks {
     /// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
     /// provided as the `payload` property of the JSON-e context used to render the
     /// task template.
-    pub async fn triggerHookWithToken(&self, hookGroupId: &str, hookId: &str, token: &str, payload: &Value) -> Result<Value, Error> {
+    ///
+    /// Optionally, a `taskId` query parameter can be provided which the hook task
+    /// will use. It must be unique and follow the slugid format.
+    pub async fn triggerHookWithToken(&self, hookGroupId: &str, hookId: &str, token: &str, payload: &Value, taskId: Option<&str>) -> Result<Value, Error> {
         let method = "POST";
-        let (path, query) = Self::triggerHookWithToken_details(hookGroupId, hookId, token);
+        let (path, query) = Self::triggerHookWithToken_details(hookGroupId, hookId, token, taskId);
         let body = Some(payload);
         let resp = self.client.request(method, &path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Determine the HTTP request details for triggerHookWithToken
-    fn triggerHookWithToken_details<'a>(hookGroupId: &'a str, hookId: &'a str, token: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+    fn triggerHookWithToken_details<'a>(hookGroupId: &'a str, hookId: &'a str, token: &'a str, taskId: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("hooks/{}/{}/trigger/{}", urlencode(hookGroupId), urlencode(hookId), urlencode(token));
-        let query = None;
+        let mut query = None;
+        if let Some(q) = taskId {
+            query.get_or_insert_with(Vec::new).push(("taskId", q));
+        }
 
         (path, query)
     }

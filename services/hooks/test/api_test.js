@@ -664,6 +664,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       throw new Error('should have thrown an exception');
     });
 
+    test('should use provided taskId from query parameter', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const providedTaskId = taskcluster.slugid();
+      const res = await helper.hooks.triggerHook('foo', 'bar', { location: 'Belo Horizonte, MG' }, { taskId: providedTaskId });
+      assume(res.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHook', clientId: 'test-client', payload: { location: 'Belo Horizonte, MG' } },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', { location: 'Test' }, { taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
+    });
+
     test('fails if no hook exists', async () => {
       await helper.hooks.triggerHook('foo', 'bar', { bar: { location: 'Belo Horizonte, MG' },
         foo: 'triggerHook' }).then(
@@ -819,6 +839,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         context: { firedBy: 'triggerHookWithToken', payload },
         options: {},
       }]);
+    });
+
+    test('should use provided taskId from query parameter with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      const providedTaskId = taskcluster.slugid();
+      const result = await helper.hooks.triggerHookWithToken(
+        'foo', 'bar', res.token,
+        { location: 'New Zealand' },
+        { taskId: providedTaskId },
+      );
+      assume(result.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand' } },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, { location: 'Test' }, { taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
     });
   });
 

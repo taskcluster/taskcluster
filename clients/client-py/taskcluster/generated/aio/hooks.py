@@ -156,6 +156,9 @@ class Hooks(AsyncBaseClient):
         provided as the `payload` property of the JSON-e context used to render the
         task template.
 
+        Optionally, a `taskId` query parameter can be provided which the hook task
+        will use. It must be unique and follow the slugid format.
+
         This method is ``stable``
         """
 
@@ -198,6 +201,9 @@ class Hooks(AsyncBaseClient):
         The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
         provided as the `payload` property of the JSON-e context used to render the
         task template.
+
+        Optionally, a `taskId` query parameter can be provided which the hook task
+        will use. It must be unique and follow the slugid format.
 
         This method is ``stable``
         """
@@ -335,6 +341,7 @@ class Hooks(AsyncBaseClient):
             "method": "post",
             "name": "triggerHook",
             "output": "v1/trigger-hook-response.json#",
+            "query": ["taskId"],
             "route": "/hooks/<hookGroupId>/<hookId>/trigger",
             "stability": "stable",
         },
@@ -344,6 +351,7 @@ class Hooks(AsyncBaseClient):
             "method": "post",
             "name": "triggerHookWithToken",
             "output": "v1/trigger-hook-response.json#",
+            "query": ["taskId"],
             "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
             "stability": "stable",
         },
