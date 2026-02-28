@@ -19,23 +19,15 @@ export class Estimator {
     // we assume that idle workers are going to pick up tasks soon
     const adjustedPendingTasks = Math.max(0, pendingTasks - totalIdleCapacity);
 
-    // Due to the fact that workers could fail to start on azure, deprovisioning will take significant amount of time
-    // and on the next provision loop, those workers wouldn't be considered as requested or existing capacity
-    // so worker manager would try to provision for this pool again
-    // workers in stopping state would keep growing, and deprovisioning takes many calls, even though it wasn't created
-    // to avoid this situation we would take into account stopping capacity and don't allow worker pool
-    // to have existing + stopping capacity > max capacity to prevent affected pool start extra instances
-    const totalNonStopped = existingCapacity + stoppingCapacity;
-
     // First we find the amount of capacity we want. This is a very simple approximation
-    // We add totalNonStopped here to represent existing workers and subtract it later.
+    // We add existingCapacity here to represent existing workers and subtract it later.
     // We scale up based on the scaling ratio and number of pending tasks.
     // We ask to spawn as much capacity as the scaling ratio dictates to cover all
     // pending tasks at any time unless it would create more than maxCapacity instances
     const desiredCapacity = Math.max(
       minCapacity,
       // only scale as high as maxCapacity
-      Math.min(adjustedPendingTasks * scalingRatio + totalNonStopped, maxCapacity),
+      Math.min(adjustedPendingTasks * scalingRatio + existingCapacity, maxCapacity),
     );
 
     return { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity };
@@ -107,7 +99,7 @@ export class Estimator {
 
     // Workers turn themselves off so we just return a positive number for
     // how many extra we want if we do want any
-    const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
+    const toSpawn = Math.max(0, desiredCapacity - existingCapacity);
 
     this.exposeMetrics({
       workerPoolId,
