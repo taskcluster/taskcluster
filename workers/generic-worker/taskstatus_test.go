@@ -53,3 +53,35 @@ func TestReclaimCancelledTask(t *testing.T) {
 		t.Fatalf("Task should have expired long before the max run time (300s) but took %v", duration)
 	}
 }
+
+func TestStatusListenerCanCallBackIntoManager(t *testing.T) {
+	tsm := &TaskStatusManager{
+		task: &TaskRun{
+			TaskID: "task-id",
+			RunID:  0,
+			Status: claimed,
+		},
+		statusChangeListeners: map[*TaskStatusChangeListener]bool{},
+	}
+
+	done := make(chan struct{})
+	listener := &TaskStatusChangeListener{
+		Name: "self-reader",
+		Callback: func(ts TaskStatus) {
+			_ = tsm.LastKnownStatus()
+			close(done)
+		},
+	}
+	tsm.RegisterListener(listener)
+
+	err := tsm.updateStatus(reclaimed, func(task *TaskRun) error { return nil }, claimed)
+	if err != nil {
+		t.Fatalf("unexpected status update error: %v", err)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("listener callback timed out; likely blocked on TaskStatusManager lock")
+	}
+}
