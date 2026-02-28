@@ -145,7 +145,7 @@ func (taskMount *TaskMount) Error(message string) {
 
 func MkdirAll(taskMount *TaskMount, dir string) error {
 	taskMount.Infof("Creating directory %v", dir)
-	return MkdirAllTaskUser(dir, taskMount.task.pd)
+	return MkdirAllTaskUser(dir, taskMount.task)
 }
 
 func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -389,7 +389,7 @@ func (taskMount *TaskMount) initIndexClient() {
 func garbageCollection() error {
 	r := fileCaches.SortedResources()
 	r = append(r, directoryCaches.SortedResources()...)
-	return runGarbageCollection(r)
+	return runGarbageCollection(r, pool.Peek().TaskDir)
 }
 
 // called when a task starts
@@ -512,7 +512,7 @@ func (f *FileMount) FSContent() (FSContent, error) {
 }
 
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
-	target := filepath.Join(taskContext.TaskDir, w.Directory)
+	target := filepath.Join(taskMount.task.TaskDir, w.Directory)
 	// cache already there?
 	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
 		// bump counter
@@ -580,7 +580,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	cache := directoryCaches[w.CacheName]
 	cacheDir := cache.Location
-	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
+	taskCacheDir := filepath.Join(taskMount.task.TaskDir, w.Directory)
 	taskMount.Infof("Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
 	err := RenameCrossDevice(taskCacheDir, cacheDir)
 	if err != nil {
@@ -624,7 +624,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 	if err != nil {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
-	dir := filepath.Join(taskContext.TaskDir, r.Directory)
+	dir := filepath.Join(taskMount.task.TaskDir, r.Directory)
 	err = extract(c, r.Format, dir, taskMount)
 	if err != nil {
 		return err
@@ -643,7 +643,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return err
 	}
 
-	file := filepath.Join(taskContext.TaskDir, f.File)
+	file := filepath.Join(taskMount.task.TaskDir, f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}
@@ -738,7 +738,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	if err != nil {
 		return
 	}
-	copyToPath := filepath.Join(taskContext.TaskDir, filepath.Base(cacheFile))
+	copyToPath := filepath.Join(taskMount.task.TaskDir, filepath.Base(cacheFile))
 	defer func() {
 		taskMount.Infof("Removing file '%v'", copyToPath)
 		err2 := os.Remove(copyToPath)
@@ -758,7 +758,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 	taskMount.Infof("Extracting %v file %v to '%v'", format, copyToPath, dir)
 	// Useful for worker logs too (not just task logs)
 	log.Printf("[mounts] Extracting %v file %v to '%v'", format, copyToPath, dir)
-	return unarchive(copyToPath, dir, format, taskMount.task.pd)
+	return unarchive(copyToPath, dir, format, taskMount.task)
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
@@ -793,7 +793,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
 		// the user could change the rights and then modify it.
-		dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
+		dst, err := CreateFileAsTaskUser(file, taskMount.task)
 		if err != nil {
 			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
@@ -823,7 +823,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
-	dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
+	dst, err := CreateFileAsTaskUser(file, taskMount.task)
 	if err != nil {
 		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}

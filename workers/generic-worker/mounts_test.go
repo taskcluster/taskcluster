@@ -267,7 +267,7 @@ func LogTest(m *MountsLoggingTestCase) {
 			m.PerTaskExtraTesting(m.Test)
 		}
 
-		err := os.RemoveAll(taskContext.TaskDir)
+		err := os.RemoveAll(testTaskDir())
 		if err != nil {
 			m.Test.Fatalf("Could not delete task directory: %v", err)
 		}

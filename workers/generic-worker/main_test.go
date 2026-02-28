@@ -152,7 +152,7 @@ func TestExecutionErrorsText(t *testing.T) {
 func TestNonExecutableBinaryFailsTask(t *testing.T) {
 	setup(t)
 	commands := copyTestdataFile("ed25519_public_key")
-	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "ed25519_public_key"))...)
+	commands = append(commands, singleCommandNoArgs(filepath.Join(testTaskDir(), "ed25519_public_key"))...)
 	payload := GenericWorkerPayload{
 		Command:    commands,
 		MaxRunTime: 10,

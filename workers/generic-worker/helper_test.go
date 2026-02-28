@@ -31,6 +31,8 @@ import (
 	"github.com/taskcluster/taskcluster/v96/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
 )
 
 var (
@@ -186,11 +188,26 @@ func ensureDirContainsNFiles(t *testing.T, dir string, n int) {
 
 func LogText(t *testing.T) string {
 	t.Helper()
-	bytes, err := os.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	bytes, err := os.ReadFile(filepath.Join(testTaskDir(), logPath))
 	if err != nil {
 		t.Fatalf("Error when trying to read log file: %v", err)
 	}
 	return string(bytes)
+}
+
+// testTaskDir returns the current test task directory from the pool.
+func testTaskDir() string {
+	return pool.Peek().TaskDir
+}
+
+// testUser returns the current test user from the pool.
+func testUser() *gwruntime.OSUser {
+	return pool.Peek().User
+}
+
+// testPlatformData returns the current test platform data from the pool.
+func testPlatformData() *process.PlatformData {
+	return pool.Peek().PlatformData
 }
 
 func submitAndAssert[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P, state, reason string) (taskID string) {
@@ -514,7 +531,7 @@ func (gwtest *Test) Teardown() {
 	if err != nil {
 		gwtest.t.Logf("WARNING: Not able to clean up after test: %v", err)
 	}
-	taskContext = nil
+	pool = nil
 	globalTestName = ""
 	config = nil
 	// gwtest.srv nil if no services

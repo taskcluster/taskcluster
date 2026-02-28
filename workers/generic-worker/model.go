@@ -13,6 +13,7 @@ import (
 	"github.com/taskcluster/taskcluster/v96/tools/d2g/dockerworker"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
 )
 
 type (
@@ -20,6 +21,8 @@ type (
 		TaskID              string                         `json:"taskId"`
 		RunID               uint                           `json:"runId"`
 		TaskGroupID         string                         `json:"taskGroupId"`
+		TaskDir             string                         `json:"-"`
+		User                *gwruntime.OSUser              `json:"-"`
 		TaskClaimResponse   tcqueue.TaskClaimResponse      `json:"-"`
 		TaskReclaimResponse tcqueue.TaskReclaimResponse    `json:"-"`
 		Definition          tcqueue.TaskDefinitionResponse `json:"-"`

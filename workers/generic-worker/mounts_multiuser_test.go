@@ -54,7 +54,7 @@ func updateOwnership(t *testing.T) []string {
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	setup(t)
 
-	dir, err := os.MkdirTemp(taskContext.TaskDir, t.Name())
+	dir, err := os.MkdirTemp(testTaskDir(), t.Name())
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}

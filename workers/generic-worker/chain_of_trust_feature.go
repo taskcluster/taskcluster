@@ -140,15 +140,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if feature.disabled {
 		return
 	}
-	logFile := filepath.Join(taskContext.TaskDir, logPath)
-	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
-	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)
-	ed25519SignedCert := filepath.Join(taskContext.TaskDir, ed25519SignedCertPath)
+	logFile := filepath.Join(feature.task.TaskDir, logPath)
+	certifiedLogFile := filepath.Join(feature.task.TaskDir, certifiedLogPath)
+	unsignedCert := filepath.Join(feature.task.TaskDir, unsignedCertPath)
+	ed25519SignedCert := filepath.Join(feature.task.TaskDir, ed25519SignedCertPath)
 	copyErr := copyFileContents(logFile, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, filepath.Join(feature.task.TaskDir, certifiedLogPath)))
 	artifactHashes := map[string]ArtifactHash{}
 	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
@@ -209,7 +209,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, filepath.Join(feature.task.TaskDir, unsignedCertPath)))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
@@ -223,8 +223,8 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
-			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
-			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
+			filepath.Join(feature.task.TaskDir, ed25519SignedCertPath),
+			filepath.Join(feature.task.TaskDir, ed25519SignedCertPath),
 			"application/octet-stream",
 			"gzip",
 		),
@@ -245,7 +245,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 }
 
 func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (mergedCert []byte, err error) {
-	additionalDataFile := filepath.Join(taskContext.TaskDir, additionalDataPath)
+	additionalDataFile := filepath.Join(cot.task.TaskDir, additionalDataPath)
 
 	// Additional data is optional, if file hasn't been created by task, just return the original data
 	if _, err = os.Stat(additionalDataFile); errors.Is(err, os.ErrNotExist) {
@@ -253,7 +253,7 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	}
 
 	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
-	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd)
+	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd, cot.task.TaskDir)
 	if err != nil {
 		return
 	}

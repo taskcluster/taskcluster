@@ -21,14 +21,17 @@ func TestRunAfterUserCreation(t *testing.T) {
 		script = "run-after-user.bat"
 	}
 	config.RunAfterUserCreation = filepath.Join(testdataDir, script)
-	PrepareTaskEnvironment()
+	// Re-provision to trigger RunAfterUserCreation script
+	provisioner := newProvisioner()
+	pool = NewTaskEnvironmentPool(provisioner, 1)
+	pool.Initialize()
 	defer func() {
 		err := purgeOldTasks()
 		if err != nil {
 			t.Fatalf("Problem deleting old tasks: %v", err)
 		}
 	}()
-	fileContents, err := os.ReadFile(filepath.Join(taskContext.TaskDir, "run-after-user.txt"))
+	fileContents, err := os.ReadFile(filepath.Join(testTaskDir(), "run-after-user.txt"))
 	if err != nil {
 		t.Fatalf("Got error when looking for file run-after-user.txt: %v", err)
 	}
