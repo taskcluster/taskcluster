@@ -18,8 +18,8 @@ backon = "1.6"
 slugid = "1.0.0"
 percent-encoding = "2.3.2"
 tokio = { version = "1.49", features = ["macros", "time"] }
-chrono = { version = "0.4.43", features = ["serde"] }
-hmac-sha256 = "1.1.13"
+chrono = { version = "0.4.44", features = ["serde"] }
+hmac-sha256 = "1.1.14"
 
 [dev-dependencies]
 httptest = "0.16"
