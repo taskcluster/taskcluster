@@ -2817,17 +2817,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@matrix-org/matrix-sdk-crypto-wasm@npm:^9.0.0":
-  version: 9.1.0
-  resolution: "@matrix-org/matrix-sdk-crypto-wasm@npm:9.1.0"
-  checksum: 10c0/f56de1f5ab1b326146c95d645f0c15abd3e1cd8c9543f863bf3781d7a1acdfd3a3266d8adb3aac7d949dfdeb08e2b268c61fbd9a5a8077e033e1739b9ddcaaa1
-  languageName: node
-  linkType: hard
-
-"@matrix-org/olm@npm:3.2.15":
-  version: 3.2.15
-  resolution: "@matrix-org/olm@npm:3.2.15"
-  checksum: 10c0/82a40d6e4e632a90670d4f15e8962272e302f4b9deed4fc78455c5ca78422c13bde6b53ebfc406630336926c9574386c9d9069c9c023db1c3d143117985c1e50
+"@matrix-org/matrix-sdk-crypto-wasm@npm:^15.1.0":
+  version: 15.3.0
+  resolution: "@matrix-org/matrix-sdk-crypto-wasm@npm:15.3.0"
+  checksum: 10c0/45628f36b7b0e54a8777ae67a7233dbdf3e3cf14e0d95d21f62f89a7ea7e3f907232f1eb7b1262193b1e227759fad47af829dcccc103ded89011f13c66f01d76
   languageName: node
   linkType: hard
 
@@ -10979,7 +10972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loglevel@npm:^1.6.8, loglevel@npm:^1.7.1, loglevel@npm:^1.9.2":
+"loglevel@npm:^1.6.8, loglevel@npm:^1.9.2":
   version: 1.9.2
   resolution: "loglevel@npm:1.9.2"
   checksum: 10c0/1e317fa4648fe0b4a4cffef6de037340592cee8547b07d4ce97a487abe9153e704b98451100c799b032c72bb89c9366d71c9fb8192ada8703269263ae77acdc7
@@ -11208,18 +11201,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"matrix-js-sdk@npm:^34.13.0":
-  version: 34.13.0
-  resolution: "matrix-js-sdk@npm:34.13.0"
+"matrix-js-sdk@npm:^38.2.0":
+  version: 38.2.0
+  resolution: "matrix-js-sdk@npm:38.2.0"
   dependencies:
     "@babel/runtime": "npm:^7.12.5"
-    "@matrix-org/matrix-sdk-crypto-wasm": "npm:^9.0.0"
-    "@matrix-org/olm": "npm:3.2.15"
+    "@matrix-org/matrix-sdk-crypto-wasm": "npm:^15.1.0"
     another-json: "npm:^0.2.0"
     bs58: "npm:^6.0.0"
     content-type: "npm:^1.0.4"
     jwt-decode: "npm:^4.0.0"
-    loglevel: "npm:^1.7.1"
+    loglevel: "npm:^1.9.2"
     matrix-events-sdk: "npm:0.0.1"
     matrix-widget-api: "npm:^1.10.0"
     oidc-client-ts: "npm:^3.0.1"
@@ -11227,7 +11219,7 @@ __metadata:
     sdp-transform: "npm:^2.14.1"
     unhomoglyph: "npm:^1.0.6"
     uuid: "npm:11"
-  checksum: 10c0/cd94e73b06fcf527a37c847e8c97847b941964ee8f5222a7a0c274fa216f8dddfed59daf8d52feaf4ba69bdbfcb15c92f20f8626fe902ea6774294c604899281
+  checksum: 10c0/c01841732f4a0460b0d6ea5237f54a45e8e089720da150289a24913f93bfdece1f1f03bb5796fd799c4f40e78ab18b7f0d9f5bbad6aa5a205b26ea49bf3fd157
   languageName: node
   linkType: hard
 
@@ -14511,7 +14503,7 @@ __metadata:
     loglevel: "npm:^1.9.2"
     markdown-table: "npm:^3.0.4"
     marked: "npm:^4.1.1"
-    matrix-js-sdk: "npm:^34.13.0"
+    matrix-js-sdk: "npm:^38.2.0"
     md-directory: "npm:^1.0.2"
     memorystore: "npm:^1.6.1"
     mkdirp: "npm:^1.0.0"
