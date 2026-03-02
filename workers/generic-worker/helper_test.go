@@ -331,7 +331,6 @@ type (
 		OldConfigureForGCP bool
 		srv                *http.Server
 		router             *mux.Router
-		Mocks              *mocktc.Mocks
 	}
 	ArtifactTraits struct {
 		Extracts         []string
@@ -476,11 +475,8 @@ func GWTest(t *testing.T) *Test {
 		_ = srv.ListenAndServe()
 	}()
 
-	var mocks *mocktc.Mocks
 	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") == "" {
-		providers, m := mocktc.ServiceProviders(t, "http://localhost:13243")
-		mocks = m
-		for _, s := range providers {
+		for _, s := range mocktc.ServiceProviders(t, "http://localhost:13243") {
 			s.RegisterService(r)
 		}
 		testConfig.AccessToken = "test-access-token"
@@ -496,7 +492,6 @@ func GWTest(t *testing.T) *Test {
 		Config: testConfig,
 		srv:    srv,
 		router: r,
-		Mocks:  mocks,
 	}
 }
 

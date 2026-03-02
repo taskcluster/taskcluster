@@ -13,6 +13,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v96/internal/mocktc"
 )
 
 // Test failure should resolve as "failed"
@@ -49,17 +50,11 @@ func TestIdleWithoutCrash(t *testing.T) {
 // so the idle timer resets. On the second idle timeout, WM says terminate,
 // so the worker exits with IDLE_TIMEOUT. This proves the timer was reset.
 func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
-	test := GWTest(t)
-	err := test.Setup()
-	if err != nil {
-		test.Teardown()
-		t.Fatal(err)
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
 	}
-	t.Cleanup(test.Teardown)
 
-	if test.Mocks == nil {
-		t.Skip("This test requires mock services (cannot run with GW_TESTS_USE_EXTERNAL_TASKCLUSTER)")
-	}
+	setup(t)
 
 	// The main loop calls checkWhetherToTerminate() at the top of each
 	// iteration (loop-top check) and again when idle timeout fires. With a
@@ -70,7 +65,8 @@ func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
 	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
 	//   call 4: loop-top (t≈10s)
 	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
-	test.Mocks.WorkerManager.ShouldTerminateAfterNCalls = 5
+	mocktc.ShouldTerminateAfterNCalls = 5
+	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
 
 	withWorkerRunner = true
 	t.Cleanup(func() { withWorkerRunner = false })
