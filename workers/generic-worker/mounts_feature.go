@@ -647,6 +647,26 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}
+
+	// If a file mount handler is registered for this filename, ensure the
+	// content is cached and pass the cache info to the handler instead of
+	// copying the file to the task directory.
+	if handler, ok := taskMount.task.FileMountHandlers[f.File]; ok {
+		cachedFile, err := ensureCached(fsContent, taskMount)
+		if err != nil {
+			return err
+		}
+
+		cacheKey, err := fsContent.UniqueKey(taskMount)
+		if err != nil {
+			return err
+		}
+
+		sha256 := fileCaches[cacheKey].SHA256
+		taskMount.Infof("File mount %q handled by registered handler (cache: %v, SHA256: %v)", f.File, cachedFile, sha256)
+		return handler(cachedFile, sha256)
+	}
+
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
 		return err

@@ -36,6 +36,11 @@ type (
 		CopyArtifacts []CopyArtifact
 		EnvVars       string
 		Image         Image
+		// Populated by mounts feature when a docker image artifact is
+		// downloaded to the file cache. Used by d2g feature to avoid
+		// copying the image to the task directory.
+		ImageArtifactPath   string
+		ImageArtifactSHA256 string
 	}
 	CopyArtifact struct {
 		Name     string
