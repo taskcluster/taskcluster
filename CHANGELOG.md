@@ -3,6 +3,37 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v96.7.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+D2G: avoids unnecessary I/O of copying cached docker image to task user's directory.
+
+▶ [patch] [#8326](https://github.com/taskcluster/taskcluster/issues/8326)
+Generic Worker: when running with worker-runner, the worker now checks with Worker Manager before shutting down due to idle timeout. If Worker Manager says the worker is still needed (e.g., to satisfy `minCapacity`), the idle timer resets instead of shutting down. Workers not running with worker-runner are unaffected.
+
+▶ [patch] [#8328](https://github.com/taskcluster/taskcluster/issues/8328)
+Worker Manager: the worker scanner now uses a dedicated target capacity formula for termination decisions based on pending tasks, claimed tasks, and `minCapacity`/`maxCapacity`. Previously, the provisioning formula was reused, which inflated the target by existing worker counts, so idle workers were never terminated even when `minCapacity` was lowered to 0.
+
+### USERS
+
+▶ [patch] [#8323](https://github.com/taskcluster/taskcluster/issues/8323)
+Fixes queue.listTaskGroup endpoint that in some cases didn't return full list of tasks in the given group.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (4a2992b6dd)
+* build(deps): bump the client-rust-deps group (6daeb5a345)
+* build(deps): bump the go-deps group with 4 updates (a27fd5c923)
+* build(deps): bump minimatch from 3.1.3 to 3.1.5 (6f9f3a29cb)
+* build(deps): bump minimatch from 3.1.3 to 3.1.5 in /clients/client-web (f4b5f3dfef)
+
+</details>
+
 ## v96.7.0
 
 ### WORKER-DEPLOYERS
