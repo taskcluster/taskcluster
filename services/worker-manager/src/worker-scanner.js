@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
-import { Worker, WorkerPool, WorkerPoolStats } from './data.js';
+import { Worker, WorkerPool } from './data.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -56,8 +56,7 @@ export class WorkerScanner {
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
 
-    // Phase 1: Check workers and accumulate per-pool stats
-    const poolStats = new Map();
+    // Phase 1: Check workers and collect termination candidates
     const poolCandidates = new Map();
 
     const fetch =
@@ -92,14 +91,9 @@ export class WorkerScanner {
         });
       }
 
-      // Accumulate stats for phase 2, skipping static provider workers
+      // Collect termination candidates, skipping static provider workers
       if (provider && !provider.setupFailed && provider.providerType !== 'static') {
         const poolId = worker.workerPoolId;
-
-        if (!poolStats.has(poolId)) {
-          poolStats.set(poolId, new WorkerPoolStats(poolId));
-        }
-        poolStats.get(poolId).updateFromWorker(worker);
 
         // Only RUNNING, non-quarantined workers are candidates for termination decisions
         const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
