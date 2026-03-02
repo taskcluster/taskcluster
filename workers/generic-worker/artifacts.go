@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -39,13 +40,15 @@ func createDataArtifact(
 	contentPath string,
 	contentType string,
 	contentEncoding string,
+	contentLength int64,
 ) artifacts.TaskArtifact {
 	if config.CreateObjectArtifacts {
 		// note that contentEncoding is currently ignored for object artifacts
 		return &artifacts.ObjectArtifact{
-			BaseArtifact: base,
-			Path:         path,
-			ContentType:  contentType,
+			BaseArtifact:  base,
+			Path:          path,
+			ContentType:   contentType,
+			ContentLength: contentLength,
 		}
 	}
 
@@ -55,10 +58,15 @@ func createDataArtifact(
 		ContentPath:     contentPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
+		ContentLength:   contentLength,
 	}
 }
 
 func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
+	var contentLength int64
+	if info, err := os.Stat(path); err == nil {
+		contentLength = info.Size()
+	}
 	return task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
@@ -70,6 +78,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 			path,
 			"text/plain; charset=utf-8",
 			"gzip",
+			contentLength,
 		),
 	)
 }

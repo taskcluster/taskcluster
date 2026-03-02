@@ -371,7 +371,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			contentEncoding = "gzip"
 		}
 	}
-	return createDataArtifact(base, fullPath, tempPath, contentType, contentEncoding)
+	return createDataArtifact(base, fullPath, tempPath, contentType, contentEncoding, fileinfo.Size())
 }
 
 // The Queue expects paths to use a forward slash, so let's make sure we have a

@@ -227,6 +227,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 			filepath.Join(taskContext.TaskDir, ed25519SignedCertPath),
 			"application/octet-stream",
 			"gzip",
+			int64(len(sig)),
 		),
 	))
 }

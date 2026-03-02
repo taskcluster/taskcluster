@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -93,6 +94,11 @@ func (l *RDPTask) createRDPArtifact() {
 }
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
+	rdpInfoFile := filepath.Join(taskContext.TaskDir, rdpInfoPath)
+	var contentLength int64
+	if fi, err := os.Stat(rdpInfoFile); err == nil {
+		contentLength = fi.Size()
+	}
 	return l.task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
@@ -100,10 +106,11 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				// RDP info expires one day after task
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
-			filepath.Join(taskContext.TaskDir, rdpInfoPath),
-			filepath.Join(taskContext.TaskDir, rdpInfoPath),
+			rdpInfoFile,
+			rdpInfoFile,
 			"application/json",
 			"gzip",
+			contentLength,
 		),
 	)
 }
