@@ -4474,7 +4474,7 @@ end
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
-* *Last defined on version*: 63
+* *Last defined on version*: 122
 
 Get all properties of all tasks in the given task group.
 
@@ -4508,6 +4508,7 @@ begin
     tasks.taken_until
   from tasks
   where tasks.task_group_id = task_group_id_in
+  order by tasks.task_id  -- to avoid pagination overlaps
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
