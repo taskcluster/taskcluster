@@ -390,4 +390,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(result, 50);
     });
   });
+
+  suite('targetCapacity', function() {
+    test('returns minCapacity when no tasks', async function() {
+      helper.queue.setPending('foo/bar', 0);
+      helper.queue.setClaimed('foo/bar', 0);
+      const result = await estimator.targetCapacity({
+        workerPoolId: 'foo/bar', minCapacity: 3, maxCapacity: 10,
+      });
+      assert.strictEqual(result, 3);
+    });
+
+    test('counts both pending and claimed tasks as demand', async function() {
+      helper.queue.setPending('foo/bar', 2);
+      helper.queue.setClaimed('foo/bar', 3);
+      const result = await estimator.targetCapacity({
+        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 100,
+      });
+      // (2 + 3) * 1.0 = 5
+      assert.strictEqual(result, 5);
+    });
+
+    test('respects maxCapacity ceiling', async function() {
+      helper.queue.setPending('foo/bar', 50);
+      helper.queue.setClaimed('foo/bar', 50);
+      const result = await estimator.targetCapacity({
+        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 10,
+      });
+      assert.strictEqual(result, 10);
+    });
+
+    test('applies scaling ratio', async function() {
+      helper.queue.setPending('foo/bar', 10);
+      helper.queue.setClaimed('foo/bar', 0);
+      const result = await estimator.targetCapacity({
+        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 100, scalingRatio: 0.5,
+      });
+      // 10 * 0.5 = 5
+      assert.strictEqual(result, 5);
+    });
+
+    test('minCapacity wins over zero demand', async function() {
+      helper.queue.setPending('foo/bar', 0);
+      helper.queue.setClaimed('foo/bar', 0);
+      const result = await estimator.targetCapacity({
+        workerPoolId: 'foo/bar', minCapacity: 5, maxCapacity: 100,
+      });
+      assert.strictEqual(result, 5);
+    });
+  });
 });

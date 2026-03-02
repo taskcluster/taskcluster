@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
-import { Worker, WorkerPool, WorkerPoolStats } from './data.js';
+import { Worker, WorkerPool } from './data.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -56,8 +56,7 @@ export class WorkerScanner {
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
 
-    // Phase 1: Check workers and accumulate per-pool stats
-    const poolStats = new Map();
+    // Phase 1: Check workers and collect termination candidates
     const poolCandidates = new Map();
 
     const fetch =
@@ -92,14 +91,9 @@ export class WorkerScanner {
         });
       }
 
-      // Accumulate stats for phase 2, skipping static provider workers
+      // Collect termination candidates, skipping static provider workers
       if (provider && !provider.setupFailed && provider.providerType !== 'static') {
         const poolId = worker.workerPoolId;
-
-        if (!poolStats.has(poolId)) {
-          poolStats.set(poolId, new WorkerPoolStats(poolId));
-        }
-        poolStats.get(poolId).updateFromWorker(worker);
 
         // Only RUNNING, non-quarantined workers are candidates for termination decisions
         const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
@@ -115,10 +109,10 @@ export class WorkerScanner {
     await this.providers.forAll(p => p.scanCleanup());
 
     // Phase 2: Compute termination decisions
-    await this.#computeTerminationDecisions(poolStats, poolCandidates);
+    await this.#computeTerminationDecisions(poolCandidates);
   }
 
-  async #computeTerminationDecisions(poolStats, poolCandidates) {
+  async #computeTerminationDecisions(poolCandidates) {
     for (const [poolId, candidates] of poolCandidates) {
       try {
         const pool = await WorkerPool.get(this.db, poolId);
@@ -131,16 +125,15 @@ export class WorkerScanner {
           allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id),
         );
 
-        const desiredCapacity = await this.estimator.desiredCapacity({
+        const targetCapacity = await this.estimator.targetCapacity({
           workerPoolId: poolId,
           minCapacity: pool.config.minCapacity ?? 0,
           maxCapacity: pool.config.maxCapacity ?? 0,
           scalingRatio: pool.config.scalingRatio ?? 1.0,
-          workerInfo: poolStats.get(poolId).forProvision(),
         });
 
         // 1. Determine who lives and who dies
-        const decisions = this.#evaluatePolicies(candidates, archivedConfigIds, desiredCapacity);
+        const decisions = this.#evaluatePolicies(candidates, archivedConfigIds, targetCapacity);
 
         // Emit termination metrics by reason
         const terminationCounts = new Map();
