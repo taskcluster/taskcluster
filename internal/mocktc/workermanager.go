@@ -20,11 +20,12 @@ type WorkerManager struct {
 
 	mu                   sync.Mutex
 	shouldTerminateCalls int
-	// ShouldTerminateAfterNCalls controls when ShouldWorkerTerminate returns
-	// Terminate: true. 0 means never terminate (default). N > 0 means return
-	// true starting at the Nth call.
-	ShouldTerminateAfterNCalls int
 }
+
+// ShouldTerminateAfterNCalls controls when ShouldWorkerTerminate returns
+// Terminate: true. 0 means never terminate (default). N > 0 means return
+// true starting at the Nth call.
+var ShouldTerminateAfterNCalls int
 
 func NewWorkerManager(t *testing.T) *WorkerManager {
 	t.Helper()
@@ -92,7 +93,7 @@ func (wm *WorkerManager) ShouldWorkerTerminate(workerPoolId, workerGroup, worker
 	calls := wm.shouldTerminateCalls
 	wm.mu.Unlock()
 
-	terminate := wm.ShouldTerminateAfterNCalls > 0 && calls >= wm.ShouldTerminateAfterNCalls
+	terminate := ShouldTerminateAfterNCalls > 0 && calls >= ShouldTerminateAfterNCalls
 	reason := "no reason"
 	if terminate {
 		reason = "over_capacity"
