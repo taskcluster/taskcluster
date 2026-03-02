@@ -13,6 +13,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v96/internal/mocktc"
 )
 
 // Test failure should resolve as "failed"
@@ -40,6 +41,49 @@ func TestIdleWithoutCrash(t *testing.T) {
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	if secsAlive := end.Round(0).Sub(start).Seconds(); secsAlive < 7 {
 		t.Fatalf("Worker died early - lasted for %v seconds", secsAlive)
+	}
+}
+
+// TestIdleTimeoutChecksWorkerManager verifies that when running with
+// worker-runner, the worker checks with Worker Manager before shutting down
+// due to idle timeout. On the first idle timeout, WM says don't terminate,
+// so the idle timer resets. On the second idle timeout, WM says terminate,
+// so the worker exits with IDLE_TIMEOUT. This proves the timer was reset.
+func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	// The main loop calls checkWhetherToTerminate() at the top of each
+	// iteration (loop-top check) and again when idle timeout fires. With a
+	// 5-second wait between iterations and IdleTimeoutSecs=3, the call
+	// sequence is:
+	//   call 1: loop-top (t≈0s)
+	//   call 2: loop-top (t≈5s)
+	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
+	//   call 4: loop-top (t≈10s)
+	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
+	mocktc.ShouldTerminateAfterNCalls = 5
+	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
+
+	withWorkerRunner = true
+	t.Cleanup(func() { withWorkerRunner = false })
+
+	config.IdleTimeoutSecs = 3
+	start := time.Now()
+	exitCode := RunWorker()
+	elapsed := time.Since(start)
+
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v (IDLE_TIMEOUT), but got exit code %v", IDLE_TIMEOUT, exitCode)
+	}
+	// Worker should have been alive for at least 8 seconds, proving the idle
+	// timer was reset at least once (3s timeout + reset + 3s timeout ≈ 10s
+	// with the 5s inter-loop wait).
+	if elapsed.Seconds() < 8 {
+		t.Fatalf("Worker should have been alive for at least 8s (idle timer reset), but was alive for %v", elapsed)
 	}
 }
 
