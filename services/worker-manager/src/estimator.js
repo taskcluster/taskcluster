@@ -41,6 +41,19 @@ export class Estimator {
     return { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity };
   }
 
+  /**
+   * Compute the target capacity for termination decisions.
+   * Unlike desiredCapacity/simple (which are designed for provisioning and
+   * include existing worker counts), this returns how many workers the pool
+   * actually needs based purely on demand (pending + claimed tasks),
+   * minCapacity, and maxCapacity.
+   */
+  async targetCapacity({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0 }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const demand = (pendingTasks + claimedTasks) * scalingRatio;
+    return Math.max(minCapacity, Math.min(demand, maxCapacity));
+  }
+
   async desiredCapacity({
     workerPoolId,
     minCapacity,

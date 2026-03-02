@@ -2,4 +2,4 @@ audience: worker-deployers
 level: patch
 reference: issue 8328
 ---
-Worker Manager: the `shouldWorkerTerminate` API now uses the latest `minCapacity` setting when computing termination decisions. Previously, the worker scanner's capacity formula was inflated by existing workers, so changes to `minCapacity` (e.g., lowering from 1 to 0) had no effect on running workers.
+Worker Manager: the worker scanner now uses a dedicated target capacity formula for termination decisions based on pending tasks, claimed tasks, and `minCapacity`/`maxCapacity`. Previously, the provisioning formula was reused, which inflated the target by existing worker counts, so idle workers were never terminated even when `minCapacity` was lowered to 0.

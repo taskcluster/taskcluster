@@ -131,22 +131,15 @@ export class WorkerScanner {
           allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id),
         );
 
-        // For termination decisions we pass zeroed worker info so the
-        // estimator returns the raw target capacity based on demand
-        // (pending tasks) and minCapacity, not inflated by existing
-        // workers. The provisioner's formula adds totalNonStopped and
-        // later subtracts it to get toSpawn, but here we compare
-        // directly against running workers.
-        const desiredCapacity = await this.estimator.desiredCapacity({
+        const targetCapacity = await this.estimator.targetCapacity({
           workerPoolId: poolId,
           minCapacity: pool.config.minCapacity ?? 0,
           maxCapacity: pool.config.maxCapacity ?? 0,
           scalingRatio: pool.config.scalingRatio ?? 1.0,
-          workerInfo: { existingCapacity: 0, stoppingCapacity: 0, requestedCapacity: 0 },
         });
 
         // 1. Determine who lives and who dies
-        const decisions = this.#evaluatePolicies(candidates, archivedConfigIds, desiredCapacity);
+        const decisions = this.#evaluatePolicies(candidates, archivedConfigIds, targetCapacity);
 
         // Emit termination metrics by reason
         const terminationCounts = new Map();

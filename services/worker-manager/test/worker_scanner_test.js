@@ -368,7 +368,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // desiredCapacity with 0 pending, minCapacity=0 = max(0, min(0, 10)) = 0
+      // targetCapacity: max(0, min((0+0)*1, 10)) = 0
       const wOldest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest' });
       const wMiddle = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle' });
       const wNewest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest' });
@@ -407,7 +407,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // desiredCapacity with 5 pending, minCapacity=0 = max(0, min(5, 10)) = 5
+      // targetCapacity: max(0, min((5+0)*1, 10)) = 5
       const wOldest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest' });
       const wMiddle = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle' });
       const wNewest = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest' });
@@ -440,13 +440,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // desiredCapacity with 5 pending, maxCapacity=1: max(0, min(5, 1)) = 1
+      // targetCapacity: max(0, min((5+0)*1, 1)) = 1
       const wOld = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old' });
       const wNew = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-new' });
       assert.strictEqual(wOld.providerData.shouldTerminate.terminate, true);
       assert.strictEqual(wOld.providerData.shouldTerminate.reason, 'over capacity');
       assert.strictEqual(wNew.providerData.shouldTerminate.terminate, false);
       assert.strictEqual(wNew.providerData.shouldTerminate.reason, 'needed');
+    });
+
+    test('workers with claimed tasks and pending tasks are not terminated', async function() {
+      const poolId = 'pp/claimed';
+      await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
+      await createLaunchConfig('lc-claimed', poolId, false);
+
+      // 2 claimed (actively running tasks) + 1 pending (waiting for a worker)
+      helper.queue.setPending(poolId, 1);
+      helper.queue.setClaimed(poolId, 2);
+
+      const now = new Date();
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1',
+        providerId: 'testing1', created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+      });
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w2',
+        providerId: 'testing1', created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+      });
+      await createWorker({
+        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w3',
+        providerId: 'testing1', created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+      });
+
+      await scanner.scan();
+
+      // targetCapacity: max(0, min((1+2)*1, 10)) = 3 — all workers needed
+      const w1 = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1' });
+      const w2 = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w2' });
+      const w3 = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w3' });
+      assert.strictEqual(w1.providerData.shouldTerminate.terminate, false);
+      assert.strictEqual(w2.providerData.shouldTerminate.terminate, false);
+      assert.strictEqual(w3.providerData.shouldTerminate.terminate, false);
     });
 
     test('workers at minCapacity are not marked even with no pending tasks', async function() {
@@ -473,7 +513,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // minCapacity=2, 2 existing, 0 pending => desired = max(2, min(0 + 2, 10)) = 2
+      // targetCapacity: max(2, min((0+0)*1, 10)) = 2
       const w1 = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1' });
       const w2 = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w2' });
       assert.strictEqual(w1.providerData.shouldTerminate.terminate, false);
@@ -510,7 +550,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await scanner.scan();
 
-      // With 5 pending tasks, desired = max(0, min(5, 10)) = 5 — both workers now needed
+      // targetCapacity: max(0, min((5+0)*1, 10)) = 5 — both workers now needed
       const w = await Worker.get(helper.db, { workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old' });
       assert(w.providerData.shouldTerminate, 'shouldTerminate should be set');
       assert.strictEqual(w.providerData.shouldTerminate.terminate, false);
@@ -664,7 +704,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Run the scanner
       await scanner.scan();
 
-      // Verify via API endpoint — desiredCapacity = max(0, min(1, 1)) = 1
+      // Verify via API endpoint — targetCapacity: max(0, min((1+0)*1, 1)) = 1
       const resultOld = await helper.workerManager.shouldWorkerTerminate(poolId, 'wg', 'w-old');
       assert.strictEqual(resultOld.terminate, true);
       assert.strictEqual(resultOld.reason, 'over capacity');
