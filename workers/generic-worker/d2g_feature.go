@@ -69,17 +69,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	var isImageArtifact bool
 	var key string
-	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
-	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
-		// DockerImageName or NamedDockerImage, no image artifact
-		key = dtf.task.D2GInfo.Image.String()
-	} else {
-		// DockerImageArtifact or IndexedDockerImage
+	if dtf.task.D2GInfo.ImageArtifactSHA256 != "" {
+		// DockerImageArtifact or IndexedDockerImage — mounts feature
+		// has downloaded the image to the file cache
 		isImageArtifact = true
-		key, err = fileutil.CalculateSHA256(imageArtifactPath)
-		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not calculate SHA256 of docker image artifact: %v", err))
-		}
+		key = dtf.task.D2GInfo.ImageArtifactSHA256
+	} else {
+		// DockerImageName or NamedDockerImage — pull from registry
+		key = dtf.task.D2GInfo.Image.String()
 	}
 
 	image := dtf.imageCache[key]
@@ -94,13 +91,24 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		var cmd *process.Command
 		var err error
 		if isImageArtifact {
+			// Open the cached image file as the worker user (which owns
+			// the cache directory). Pipe it to docker load via stdin so
+			// the task user process doesn't need file system access.
+			cachedImageFile, err := os.Open(dtf.task.D2GInfo.ImageArtifactPath)
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not open cached docker image at %v: %v", dtf.task.D2GInfo.ImageArtifactPath, err))
+			}
+			defer cachedImageFile.Close()
+
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"load",
 				"--quiet",
-				"--input",
-				"dockerimage",
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+			}
+			cmd.Stdin = cachedImageFile
 		} else {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
@@ -108,9 +116,9 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"--quiet",
 				key,
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		}
-		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to pull docker image: %v", err))
+			}
 		}
 		out, err := cmd.Output()
 		if err != nil {

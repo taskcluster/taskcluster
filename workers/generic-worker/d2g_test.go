@@ -1044,6 +1044,108 @@ func TestD2GChainOfTrustIndexedDockerImage(t *testing.T) {
 	D2GChainOfTrustHelper(t, &image, []string{}, expected)
 }
 
+// TestD2GDockerImageArtifactCaching verifies the full caching lifecycle for
+// d2g docker image artifacts:
+//
+// Run 1 (cold): downloads the artifact to the file cache, pipes it to docker
+// load via stdin (no file copy to task directory), and caches the loaded image.
+//
+// Run 2 (warm): the file cache is hit (no re-download), the d2g image cache
+// is hit (no docker load), and no file is copied to the task directory.
+func TestD2GDockerImageArtifactCaching(t *testing.T) {
+	setup(t)
+	taskID := CreateArtifactFromFile(t, "docker-images/taskcluster-proxy-v81.0.2.tar.gz", "public/taskcluster-proxy.tar.gz")
+
+	image := d2g.DockerImageArtifact{
+		Path:   "public/taskcluster-proxy.tar.gz",
+		TaskID: taskID,
+		Type:   "task-image",
+	}
+	imageBytes, err := json.Marshal(image)
+	if err != nil {
+		t.Fatalf("Error marshaling JSON: %v", err)
+	}
+
+	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
+	case "multiuser:linux":
+		// Run 1: cold caches — should download artifact + docker load via stdin
+		payload1 := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload1)
+		td1 := testTask(t)
+		td1.Dependencies = []string{taskID}
+
+		resultTaskID1 := submitAndAssert(t, td1, payload1, "completed", "completed")
+		ExpectedArtifacts{
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td1.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					// mounts feature downloaded the artifact and used the handler
+					fmt.Sprintf("[mounts] Downloading task %s artifact public/taskcluster-proxy.tar.gz to", taskID),
+					"[mounts] File mount \"dockerimage\" handled by registered handler",
+					// d2g feature loaded the image (cache miss)
+					"[d2g] Loading docker image",
+					"[d2g] Loaded docker image",
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td1.Expires,
+			},
+		}.Validate(t, resultTaskID1, 0)
+
+		// Run 2: warm caches — should skip download and skip docker load
+		payload2 := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload2)
+		td2 := testTask(t)
+		td2.Dependencies = []string{taskID}
+
+		resultTaskID2 := submitAndAssert(t, td2, payload2, "completed", "completed")
+		ExpectedArtifacts{
+			"public/logs/live_backing.log": {
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td2.Expires,
+			},
+			"public/logs/live.log": {
+				Extracts: []string{
+					// mounts feature still used the handler (file cache hit, no re-download)
+					"[mounts] File mount \"dockerimage\" handled by registered handler",
+					// d2g feature used the cached image (no docker load)
+					"[d2g] Using cached docker image",
+					"=== Task Finished ===",
+					"Exit Code: 0",
+				},
+				ContentType:     "text/plain; charset=utf-8",
+				ContentEncoding: "gzip",
+				Expires:         td2.Expires,
+			},
+		}.Validate(t, resultTaskID2, 0)
+	default:
+		payload := dockerworker.DockerWorkerPayload{
+			Command:    []string{"taskcluster-proxy", "--version"},
+			Image:      json.RawMessage(imageBytes),
+			MaxRunTime: 30,
+		}
+		defaults.SetDefaults(&payload)
+		td := testTask(t)
+		td.Dependencies = []string{taskID}
+		_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+	}
+}
+
 // Helper method to submit a Docker Worker Chain of Trust task, and compare the
 // resulting Chain Of Trust certificate against the partial one passed into the
 // function.
