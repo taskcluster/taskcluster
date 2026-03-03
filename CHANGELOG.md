@@ -3,6 +3,17 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v97.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#8101](https://github.com/taskcluster/taskcluster/issues/8101)
+Generic worker now reports artifact file sizes to the queue via the optional `contentLength` parameter when creating artifacts. This applies to all file-based artifacts (S3 and object) as well as log artifacts. The reported size is the original file size on disk, before any encoding such as gzip compression.
+This feature relies on the API changes introduced in [v96.7.0](https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md#v9670) and will fail schema validation if services are not upgraded.
+
+▶ [patch] [#8339](https://github.com/taskcluster/taskcluster/issues/8339)
+Worker Manager: provides `worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>` scope to worker during (re)registration so the worker can properly call out to the `ShouldWorkerTerminate` API.
+
 ## v96.7.1
 
 ### WORKER-DEPLOYERS

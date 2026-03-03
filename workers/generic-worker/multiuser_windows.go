@@ -16,11 +16,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/interactive"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )

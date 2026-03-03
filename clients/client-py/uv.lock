@@ -1619,7 +1619,7 @@ wheels = [
 
 [[package]]
 name = "taskcluster"
-version = "96.7.1"
+version = "97.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
