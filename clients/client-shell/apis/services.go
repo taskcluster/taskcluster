@@ -780,7 +780,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHook",
 				Title:       "Trigger a hook",
-				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -822,7 +822,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHookWithToken",
 				Title:       "Trigger a hook with a token",
-				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger/<token>",

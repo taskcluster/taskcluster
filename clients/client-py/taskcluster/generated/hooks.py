@@ -156,6 +156,9 @@ class Hooks(BaseClient):
         provided as the `payload` property of the JSON-e context used to render the
         task template.
 
+        Optionally, a `taskId` can be provided in the payload which the hook task
+        will use. It must be unique and follow the slugid format.
+
         This method is ``stable``
         """
 
@@ -194,6 +197,9 @@ class Hooks(BaseClient):
         The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
         provided as the `payload` property of the JSON-e context used to render the
         task template.
+
+        Optionally, a `taskId` can be provided in the payload which the hook task
+        will use. It must be unique and follow the slugid format.
 
         This method is ``stable``
         """
