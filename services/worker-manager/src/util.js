@@ -43,6 +43,7 @@ export const createCredentials = (worker, expires, cfg) => {
       `queue:claim-work:${worker.workerPoolId}`,
       `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
       `worker-manager:reregister-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+      `worker-manager:should-worker-terminate:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
