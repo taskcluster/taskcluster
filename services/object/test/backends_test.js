@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import helper from './helper/index.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { Backends } from '../src/backends/index.js';
 import { TestBackend } from '../src/backends/test.js';
 

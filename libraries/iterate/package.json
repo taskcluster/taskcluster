@@ -1,7 +1,7 @@
 {
-  "name": "taskcluster-lib-iterate",
+  "name": "@taskcluster/lib-iterate",
   "private": true,
-  "version": "60.4.2",
+  "version": "97.0.1",
   "description": "A library to share iteration logic",
   "exports": "./src/index.js",
   "type": "module",
@@ -16,6 +16,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.3.0"
+    "mocha": "^10.8.2"
   }
 }

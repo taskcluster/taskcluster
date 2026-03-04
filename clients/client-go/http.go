@@ -45,7 +45,7 @@ type CallSummary struct {
 	HTTPRequestBody string
 	// The Go Type which is marshaled into json and used as the http request
 	// body.
-	HTTPRequestObject interface{}
+	HTTPRequestObject any
 	HTTPResponse      *http.Response
 	// Keep a copy of response body in addition to the *http.Response, since
 	// accessing the Body via the *http.Response object, you get a
@@ -224,7 +224,7 @@ func (err *APICallException) Error() string {
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (client *Client) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (client *Client) APICall(payload any, method, route string, result any, query url.Values) (any, *CallSummary, error) {
 	rawPayload := []byte{}
 	var err error
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {

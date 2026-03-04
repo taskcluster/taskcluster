@@ -1,8 +1,8 @@
 import assume from 'assume';
 import slugid from 'slugid';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import WorkClaimer from '../src/workclaimer.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
@@ -20,6 +20,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     deadline: taskcluster.fromNowJSON('1 days'),
     expires: taskcluster.fromNowJSON('2 days'),
     payload: {},
+    tags: { tag: 'value' },
     metadata: {
       name: 'Unit testing task',
       description: 'Task created during unit tests',
@@ -89,6 +90,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const claims = await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 1, aborted);
     assume(claims.length).equal(1);
     assume(claims[0].status.taskId).equal(taskId);
+    helper.assertPulseMessage('task-running', m => m.payload.task?.tags?.tag === 'value');
   });
 
   test('hint poller errors are recovered', async () => {

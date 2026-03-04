@@ -1,4 +1,4 @@
-const debug = require('debug')('taskcluster-lib-validate');
+const debug = require('debug')('@taskcluster/lib-validate');
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +15,7 @@ const ABSTRACT_SCHEMA_ROOT_URL = '';
 
 class SchemaSet {
   constructor(options) {
-    assert(options.serviceName, 'A `serviceName` must be provided to taskcluster-lib-validate!');
+    assert(options.serviceName, 'A `serviceName` must be provided to @taskcluster/lib-validate!');
 
     this._schemas = {};
 

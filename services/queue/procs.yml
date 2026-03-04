@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/queue/src/main.js server
+  metrics: true
 write-docs:
   type: build
   command: node services/queue/src/main.js writeDocs
@@ -8,10 +9,16 @@ claimResolver:
   type: background
   subType: 'iterate'
   command: node services/queue/src/main.js claim-resolver
+  metrics: true
+workerRemovedResolver:
+  type: background
+  command: node services/queue/src/main.js worker-removed-resolver
+  metrics: true
 deadlineResolver:
   type: background
   subType: 'iterate'
   command: node services/queue/src/main.js deadline-resolver
+  metrics: true
 dependencyResolver:
   type: background
   subType: 'iterate'
@@ -46,3 +53,8 @@ expireWorkerInfo:
   schedule: '5 0 * * *'
   deadline: 86400
   command: node services/queue/src/main.js expire-worker-info
+workerMetrics:
+  type: background
+  subType: 'iterate'
+  command: node services/queue/src/main.js queue-metrics
+  metrics: true

@@ -6,19 +6,53 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
+	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
 )
+
+// grantingDenying returns regexp strings that match the log lines for granting
+// and denying a task user access to a file/folder (specified by taskPath).
+// filetype should be 'directory' or 'file'.
+func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...string) (granting, denying []string) {
+	t.Helper()
+	// We need to escape file path that is contained in final regexp, e.g. due
+	// to '\' path separator on Windows. However, the path also includes an
+	// unknown task user (task_[0-9]*) which we don't want to escape. The
+	// simplest way to properly escape the expression but without escaping this
+	// one part of it, is to swap out the task user expression with a randomly
+	// generated slugid (122 bits of randomness) which doesn't contain
+	// characters that need escaping, then to escape the full expression, and
+	// finally to replace the swapped in slug with the desired regexp that we
+	// couldn't include before escaping.
+	var pathRegExp string
+	if cacheFile {
+		pathRegExp = ".*"
+	} else {
+		slug := slugid.V4()
+		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*")
+	}
+	return []string{
+			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
+		}, []string{
+			`Denying task_[0-9]* access to '.*'`,
+		}
+}
+
+func updateOwnership(t *testing.T) []string {
+	t.Helper()
+	return []string{
+		"Updating ownership of files inside directory '.*" + t.Name() + "' from .* to task_[0-9]*",
+	}
+}
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
 	setup(t)
-
-	if config.RunTasksAsCurrentUser {
-		t.Skip("This test is only relevant when running as task user")
-	}
 
 	dir, err := os.MkdirTemp(taskContext.TaskDir, t.Name())
 	if err != nil {
@@ -78,7 +112,7 @@ func TestHardLinksInArchive(t *testing.T) {
 
 	// task users on windows do not have permission to create hard links
 	// they are missing the SeCreateSymbolicLinkPrivilege privilege
-	if runtime.GOOS == "windows" && !config.RunTasksAsCurrentUser {
+	if runtime.GOOS == "windows" {
 		_ = submitAndAssert(t, td, payload, "failed", "failed")
 	} else {
 		_ = submitAndAssert(t, td, payload, "completed", "completed")

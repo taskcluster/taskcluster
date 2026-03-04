@@ -3,7 +3,7 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import child_process from 'child_process';
 import Observable from 'zen-observable';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import { rimraf } from 'rimraf';
 
@@ -23,7 +23,7 @@ export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
   // set up the cargo credentials
   if (token) {
     await mkdirp(path.join(homeDir, '.cargo'));
-    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials'), `[registry]\ntoken = "${token}"\n`);
+    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials.toml'), `[registry]\ntoken = "${token}"\n`);
   }
 
   try {
@@ -45,8 +45,27 @@ export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
 
       if (logfile) {
         const logStream = fs.createWriteStream(logfile);
-        proc.stdout.pipe(logStream);
-        proc.stderr.pipe(logStream);
+        proc.stdout.pipe(logStream, { end: false });
+        proc.stderr.pipe(logStream, { end: false });
+
+        let stdoutEnded = false;
+        let stderrEnded = false;
+
+        const checkToCloseStream = () => {
+          if (stdoutEnded && stderrEnded) {
+            logStream.end();
+          }
+        };
+
+        proc.stdout.on('end', () => {
+          stdoutEnded = true;
+          checkToCloseStream();
+        });
+
+        proc.stderr.on('end', () => {
+          stderrEnded = true;
+          checkToCloseStream();
+        });
       }
 
       const loglines = data =>

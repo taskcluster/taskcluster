@@ -16,6 +16,7 @@ export const GITHUB_TASKS_FOR = {
   RELEASE: 'github-release',
   PULL_REQUEST: 'github-pull-request',
   PULL_REQUEST_UNTRUSTED: 'github-pull-request-untrusted',
+  ISSUE_COMMENT: 'github-issue-comment',
 };
 
 export const GITHUB_BUILD_STATES = {
@@ -58,6 +59,7 @@ export const EVENT_TYPES = {
   INSTALLATION: 'installation',
   CHECK_SUITE: 'check_suite',
   CHECK_RUN: 'check_run',
+  ISSUE_COMMENT: 'issue_comment',
 };
 
 export const CHECK_RUN_ACTIONS = {
@@ -65,6 +67,12 @@ export const CHECK_RUN_ACTIONS = {
   COMPLETED: 'completed',
   REREQUESTED: 'rerequested',
   REQUESTED_ACTION: 'requested_action',
+};
+
+export const ISSUE_COMMENT_ACTIONS = {
+  CREATED: 'created',
+  DELETED: 'deleted',
+  EDITED: 'edited',
 };
 
 export const PUBLISHERS = {
@@ -76,6 +84,7 @@ export const PUBLISHERS = {
 
 export const CHECKLOGS_TEXT = 'View logs in Taskcluster';
 export const CHECKRUN_TEXT = 'View task in Taskcluster';
+export const CHECK_TASK_GROUP_TEXT = 'View task group in Taskcluster';
 export const LIVE_BACKING_LOG_ARTIFACT_NAME = 'public/logs/live_backing.log';
 export const CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME = 'public/github/customCheckRunText.md';
 export const CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME = 'public/github/customCheckRunAnnotations.json';
@@ -92,6 +101,7 @@ export default {
   GITHUB_RELEASE_ACTION,
   CHECKLOGS_TEXT,
   CHECKRUN_TEXT,
+  CHECK_TASK_GROUP_TEXT,
   LIVE_BACKING_LOG_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,

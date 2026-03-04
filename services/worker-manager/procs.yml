@@ -1,18 +1,22 @@
 web:
   type: web
   command: node services/worker-manager/src/main.js server
+  metrics: true
 provisioner:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js runProvisioner
+  metrics: true
 workerscanner:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js workerScanner
+  metrics: true
 workerscanner-azure:
   type: background
   subType: 'iterate'
   command: node services/worker-manager/src/main.js workerScannerAzure
+  metrics: true
 expire-workers:
   type: cron
   schedule: '30 1 * * *'
@@ -23,6 +27,11 @@ expire-worker-pools:
   schedule: '1 0 * * *'
   deadline: 86400
   command: node services/worker-manager/src/main.js expireWorkerPools
+expire-launch-configs:
+  type: cron
+  schedule: '0 1 * * *'
+  deadline: 86400
+  command: node services/worker-manager/src/main.js expireLaunchConfigs
 expire-errors:
   type: cron
   schedule: '10 0 * * *'

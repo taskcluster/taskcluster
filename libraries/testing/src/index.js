@@ -1,5 +1,5 @@
 // allow both non-default exports
-// import { withDb } from 'taskcluster-lib-testing';
+// import { withDb } from '@taskcluster/lib-testing';
 
 export { default as schemas } from './schemas.js';
 export { default as stickyLoader } from './stickyloader.js';
@@ -14,7 +14,7 @@ export * from './time.js';
 export * from './fakeauth.js';
 
 // and default exports
-// import testing from 'taskcluster-lib-testing'; testing.withDb();
+// import testing from '@taskcluster/lib-testing'; testing.withDb();
 import * as fakeauth from './fakeauth.js';
 import { resetDb, resetTables, withDb } from './with-db.js';
 import { runWithFakeTime, sleep } from './time.js';

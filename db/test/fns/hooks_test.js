@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import slug from 'slugid';
 import { strict as assert } from 'assert';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'hooks' });
@@ -531,6 +531,41 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('delete_hook does not throw when no such row', async function(db) {
       await db.fns.delete_hook('hook/group/id', 'hook-id');
+    });
+
+    helper.dbTest('get_hook_groups returns unique groups', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/3', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups();
+      assert.equal(rows.length, 2);
+      assert.equal(rows[0].hook_group_id, 'baz');
+      assert.equal(rows[1].hook_group_id, 'foo');
+    });
+  });
+
+  suite(`${testing.suiteName()} - hooks audit history`, function() {
+    helper.dbTest('insert_hooks_audit_history creates audit entry', async function(db) {
+      await db.fns.insert_hooks_audit_history(
+        'hook/1',
+        'client-1',
+        'created',
+      );
+
+      const rows = await helper.withDbClient(async client => {
+        const result = await client.query(`
+          SELECT client_id, action_type, created
+          FROM audit_history
+          WHERE entity_id = $1 AND entity_type = $2
+        `, ['hook/1', 'hook']);
+        return result.rows;
+      });
+
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].client_id, 'client-1');
+      assert.equal(rows[0].action_type, 'created');
+      assert(rows[0].created instanceof Date);
     });
   });
 });

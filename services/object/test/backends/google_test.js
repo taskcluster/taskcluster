@@ -7,8 +7,8 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import { AwsBackend } from '../../src/backends/aws.js';
 import { promisify } from 'util';
 import zlib from 'zlib';
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       Prefix: prefix,
     }));
     if (objects.Contents?.length > 0) {
-      for(let obj of objects.Contents) {
+      for (let obj of objects.Contents) {
         await s3.send(new DeleteObjectCommand({
           Bucket: secret.testBucket,
           Key: obj.Key,

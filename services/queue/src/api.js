@@ -1,9 +1,9 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import taskcluster from 'taskcluster-client';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import taskcluster from '@taskcluster/client';
 import taskCreds from './task-creds.js';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
 import { addSplitFields, useOnlyTaskQueueId, joinTaskQueueId, splitTaskQueueId } from './utils.js';
 import { loadArtifactsRoutes } from './artifacts.js';
@@ -57,11 +57,37 @@ const PRIORITY_LEVELS = [
  */
 
 // Common patterns URL parameters
-let SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
-let GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
-let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
+const RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
+const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$');
 
-/** API end-point for version v1/ */
+/**
+ * API end-point for version v1/
+ *
+ * @type {APIBuilder<{
+ *  cfg: object;
+ *  db: import('@taskcluster/lib-postgres').Database;
+ *  monitor: import('@taskcluster/lib-monitor').Monitor;
+ *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
+ *  taskGroupExpiresExtension: object; // todo
+ *  signPublicArtifactUrls: object; // todo
+ *  publicBucket: import('./bucket.js');
+ *  privateBucket: import('./bucket.js');
+ *  claimTimeout: object; // todo
+ *  queueService: object; // todo
+ *  regionResolver: object; // todo
+ *  credentials: object; // todo
+ *  dependencyTracker: object; // todo
+ *  workClaimer: object; // todo
+ *  workerInfo: object; // todo
+ *  artifactRegion: object; // todo
+ *  LRUcache: import('quick-lru')<string, any>;
+ *  objectService: object; // todo
+ *  maxTaskDeadlineDays: object; // todo
+ *  taskMaxDependencies: object; // todo
+ * }>}
+ */
 let builder = new APIBuilder({
   title: 'Queue Service',
   description: [
@@ -116,7 +142,7 @@ let builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
-    taskQueueId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+    taskQueueId: TASK_QUEUE_ID_PATTERN,
     provisionerId: GENERIC_ID_PATTERN,
     workerType: GENERIC_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
@@ -143,6 +169,7 @@ let builder = new APIBuilder({
     'LRUcache', // LRU cache for tasks
     'objectService', // Object service API client
     'maxTaskDeadlineDays', // maximum value allowed for task deadlines in days
+    'taskMaxDependencies', // maximum number of dependencies allowed for a task
   ],
 });
 
@@ -157,7 +184,6 @@ builder.declare({
   scopes: 'queue:get-task:<taskId>',
   stability: APIBuilder.stability.stable,
   category: 'Tasks',
-  idempotent: true,
   output: 'task.yml',
   title: 'Get Task Definition',
   description: [
@@ -190,6 +216,82 @@ builder.declare({
   let definition = await task.definition();
 
   return res.reply(definition);
+});
+
+/** Get task batched */
+builder.declare({
+  method: 'post',
+  route: '/tasks',
+  query: paginateResults.query,
+  name: 'tasks',
+  scopes: { AllOf: [{
+    for: 'taskId',
+    in: 'taskIds',
+    each: 'queue:get-task:<taskId>',
+  }] },
+  input: 'tasks-request.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  output: 'tasks-response.yml',
+  title: 'Get multiple task definitions',
+  description: [
+    'This end-point will return the task definition for each input task id.',
+    'Notice that the task definitions may have been modified by queue.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskIds = req.body.taskIds;
+
+  await req.authorize({ taskIds });
+
+  const { tasks, continuationToken } = await Task.getMultiple(
+    this.db,
+    { taskIds },
+    { query: req.query },
+  );
+  const definitions = [];
+  for (const task of tasks) {
+    definitions.push({ taskId: task.taskId, task: task.definition() });
+  }
+  return res.reply({ tasks: definitions, continuationToken });
+});
+
+/** Get task status batched */
+builder.declare({
+  method: 'post',
+  route: '/tasks/status',
+  query: paginateResults.query,
+  name: 'statuses',
+  scopes: { AllOf: [{
+    for: 'taskId',
+    in: 'taskIds',
+    each: 'queue:status:<taskId>',
+  }] },
+  input: 'tasks-request.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  output: 'tasks-statuses-response.yml',
+  title: 'Get multiple task definitions',
+  description: [
+    'This end-point will return the task statuses for each input task id.',
+    'If a given taskId does not match a task, it will be ignored,',
+    'and callers will need to handle the difference.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskIds = req.body.taskIds;
+
+  await req.authorize({ taskIds });
+
+  const { tasks, continuationToken } = await Task.getMultiple(
+    this.db,
+    { taskIds },
+    { query: req.query },
+  );
+  const statuses = [];
+  for (const task of tasks) {
+    statuses.push({ taskId: task.taskId, status: task.status() });
+  }
+
+  return res.reply({ statuses: statuses, continuationToken });
 });
 
 /** Get task status */
@@ -335,8 +437,15 @@ const cancelSingleTask = async (task, ctx) => {
     await ctx.publisher.taskException(_.defaults({
       status,
       runId,
+      task: { tags: task.tags || {} },
     }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
     ctx.monitor.log.taskException({ taskId: task.taskId, runId });
+
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    ctx.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
   }
 
   return status;
@@ -704,7 +813,6 @@ builder.declare({
   route: '/task/:taskId',
   name: 'createTask',
   stability: APIBuilder.stability.stable,
-  idempotent: true,
   category: 'Tasks',
   scopes: { AllOf: [
     { for: 'scope', in: 'scopes', each: '<scope>' },
@@ -779,6 +887,13 @@ builder.declare({
     return res.reportError('InputError',
       'at least a provisionerId and a workerType or a taskQueueId must be provided"',
       {});
+  }
+
+  // schema defines 10.000 maximum dependencies but deployment can specify lower values
+  if (taskDef.dependencies && taskDef.dependencies.length > this.maxDependencies) {
+    return res.reportError('InputError',
+      'task.dependencies exceeds the maximum allowed number of dependencies',
+      { maxDependencies: this.taskMaxDependencies });
   }
 
   // fill in the default `none` projectId if none was given
@@ -1049,6 +1164,7 @@ builder.declare({
       this.publisher.taskPending({
         status: status,
         runId: runId,
+        task: { tags: task.tags || {} },
       }, task.routes),
     ]);
     this.monitor.log.taskPending({ taskId, runId });
@@ -1132,6 +1248,147 @@ builder.declare({
   const status = await cancelSingleTask(task, this);
 
   return res.reply({ status });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/task/:taskId/priority',
+  name: 'changeTaskPriority',
+  stability: APIBuilder.stability.experimental,
+  category: 'Tasks',
+  scopes: {
+    AnyOf: [
+      'queue:change-task-priority:<taskId>',
+      'queue:change-task-priority-in-queue:<taskQueueId>',
+    ],
+  },
+  input: 'change-task-priority-request.yml',
+  output: 'task-status-response.yml',
+  title: 'Change Task Priority',
+  description: [
+    'This method updates the priority of a single unresolved task.',
+    '',
+    '* Claimed or running tasks keep their current run priority until they are retried.',
+    '* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.',
+  ].join('\n'),
+}, async function (req, res) {
+  const { taskId } = req.params;
+  const { newPriority } = req.body;
+  let task = await Task.get(this.db, taskId);
+
+  if (!task) {
+    return res.reportError('ResourceNotFound',
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
+        taskId,
+      });
+  }
+
+  await req.authorize({
+    taskId,
+    taskQueueId: task.taskQueueId,
+  });
+
+  if (task.deadline.getTime() <= Date.now()) {
+    return res.reportError(
+      'RequestConflict',
+      'Task `{{taskId}}` can\'t be reprioritized past its deadline of {{deadline}}.', {
+        taskId,
+        deadline: task.deadline.toJSON(),
+      },
+    );
+  }
+
+  const updateResult = await task.updatePriority(this.db, newPriority);
+  if (!updateResult) {
+    return res.reportError(
+      'RequestConflict',
+      'Task `{{taskId}}` is already resolved and cannot be reprioritized.', {
+        taskId,
+      },
+    );
+  }
+
+  this.LRUcache.delete(taskId);
+
+  const status = task.status();
+  await this.publisher.taskPriorityChanged({
+    status,
+    oldPriority: updateResult.oldPriority,
+    newPriority,
+  }, task.routes || []);
+  this.monitor.log.taskPriorityChanged({
+    taskId,
+    oldPriority: updateResult.oldPriority,
+    newPriority,
+  });
+
+  return res.reply({ status });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/task-group/:taskGroupId/priority',
+  name: 'changeTaskGroupPriority',
+  stability: APIBuilder.stability.experimental,
+  category: 'Task-Groups',
+  scopes: 'queue:change-task-group-priority:<schedulerId>/<taskGroupId>',
+  input: 'change-task-priority-request.yml',
+  output: 'task-group-priority-change-response.yml',
+  title: 'Change Task Group Priority',
+  description: [
+    'This method applies a new priority to unresolved tasks within a task group.',
+    '',
+    '* Updates run in bounded batches to avoid long locks.',
+    '* Claimed or running tasks keep their current run priority until they are retried.',
+    '* Emits `taskGroupPriorityChanged` summary event at the end.',
+  ].join('\n'),
+}, async function (req, res) {
+  const { taskGroupId } = req.params;
+  const { newPriority } = req.body;
+
+  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+  if (!taskGroup) {
+    return res.reportError('ResourceNotFound',
+      'Task group `{{taskGroupId}}` not found.', { taskGroupId });
+  }
+
+  await req.authorize({
+    schedulerId: taskGroup.schedulerId,
+    taskGroupId,
+  });
+
+  if (!PRIORITY_LEVELS.includes(newPriority)) {
+    return res.reportError('InputError', 'Unknown priority `{{priority}}`.', { priority: newPriority });
+  }
+
+  let tasksAffected = 0;
+  const taskIds = [];
+  while (true) {
+    const rows = await this.db.fns.queue_change_task_group_priority(taskGroupId, newPriority, 200);
+    if (!rows.length) {
+      break;
+    }
+
+    rows.forEach(row => {
+      const task = Task.fromDb(row);
+      this.LRUcache.delete(task.taskId);
+      taskIds.push(task.taskId);
+    });
+
+    tasksAffected += rows.length;
+  }
+
+  const event = {
+    taskGroupId,
+    schedulerId: taskGroup.schedulerId,
+    newPriority,
+    tasksAffected,
+  };
+  this.monitor.log.taskGroupPriorityChanged({ ...event });
+  await this.publisher.taskGroupPriorityChanged({ ...event }, []);
+
+  const response = { ...event, taskIds };
+  return res.reply(response);
 });
 
 // Hack to get promises that resolve after 20s without creating a setTimeout
@@ -1320,6 +1577,7 @@ builder.declare({
     );
   }
 
+  await this.queueService.removePendingMessage(taskId, runId);
   await this.workerInfo.taskSeen(task.taskQueueId, workerGroup, workerId, [result]);
 
   // Reply to caller
@@ -1541,6 +1799,8 @@ let resolveTask = async function(req, res, taskId, runId, target) {
   let taskPulseContents = {
     tags: task.tags,
   };
+
+  const metricLabels = splitTaskQueueId(task.taskQueueId);
   // Post message about task resolution
   if (target === 'completed') {
     await this.publisher.taskCompleted({
@@ -1550,6 +1810,7 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
+    this.monitor.metric.completedTasks(1, metricLabels);
     this.monitor.log.taskCompleted({ taskId, runId });
   } else {
     await this.publisher.taskFailed({
@@ -1559,6 +1820,10 @@ let resolveTask = async function(req, res, taskId, runId, target) {
       workerGroup: run.workerGroup,
       workerId: run.workerId,
     }, task.routes);
+    this.monitor.metric.failedTasks(1, {
+      ...metricLabels,
+      reasonResolved: status.runs[runId].reasonResolved,
+    });
     this.monitor.log.taskFailed({ taskId, runId });
   }
 
@@ -1709,10 +1974,25 @@ builder.declare({
     tags: task.tags,
   };
 
-  // If a newRun was created and it is a retry with state pending then we better
-  // publish messages about it. And if we're not retrying the task, because then
-  // the task is resolved as it has no more runs, and we publish a message about
-  // task-exception.
+  // Publish message about taskException
+  await this.publisher.taskException({
+    status,
+    runId,
+    task: taskPulseContents,
+    workerGroup: run.workerGroup,
+    workerId: run.workerId,
+  }, task.routes);
+  this.monitor.log.taskException({ taskId, runId });
+
+  const metricLabels = splitTaskQueueId(task.taskQueueId);
+  this.monitor.metric.exceptionTasks(1, {
+    ...metricLabels,
+    reasonResolved: run.reasonResolved,
+  });
+
+  // If a newRun was created and it is a retry with state pending then we
+  // better publish messages about it. If we're not retrying the task, the task
+  // is resolved as it has no more runs.
   let newRun = task.runs[runId + 1];
   if (newRun &&
       task.runs.length - 1 === runId + 1 &&
@@ -1736,16 +2016,6 @@ builder.declare({
       task.schedulerId,
       'exception',
     );
-
-    // Publish message about taskException
-    await this.publisher.taskException({
-      status,
-      runId,
-      task: taskPulseContents,
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
-    this.monitor.log.taskException({ taskId, runId });
   }
 
   // Reply to caller
@@ -1884,7 +2154,7 @@ builder.declare({
   route: '/pending/:taskQueueId(*)',
   name: 'pendingTasks',
   scopes: 'queue:pending-count:<taskQueueId>',
-  stability: APIBuilder.stability.stable,
+  stability: APIBuilder.stability.deprecated,
   category: 'Worker Metadata',
   output: 'pending-tasks-response.yml',
   title: 'Get Number of Pending Tasks',
@@ -1893,6 +2163,8 @@ builder.declare({
     '',
     'As task states may change rapidly, this number may not represent the exact',
     'number of pending tasks, but a very good approximation.',
+    '',
+    'This method is **deprecated**, use queue.taskQueueCounts instead.',
   ].join('\n'),
 }, async function(req, res) {
   const taskQueueId = req.params.taskQueueId;
@@ -1907,6 +2179,47 @@ builder.declare({
     workerType: workerType,
     taskQueueId: taskQueueId,
     pendingTasks: count,
+  });
+});
+
+/** Pending and claimed counts for a queue */
+builder.declare({
+  method: 'get',
+  route: '/task-queues/:taskQueueId(*)/counts',
+  name: 'taskQueueCounts',
+  scopes: {
+    AllOf: [
+      'queue:pending-count:<taskQueueId>',
+      'queue:claimed-count:<taskQueueId>',
+    ],
+  },
+  stability: APIBuilder.stability.stable,
+  category: 'Worker Metadata',
+  output: 'task-queue-counts-response.yml',
+  title: 'Get Number of Pending and Claimed Tasks',
+  description: [
+    'Get an approximate number of pending and claimed tasks for the given `taskQueueId`.',
+    '',
+    'As task states may change rapidly, this number may not represent the exact',
+    'number of pending and claimed tasks, but a very good approximation.',
+  ].join('\n'),
+}, async function(req, res) {
+  const taskQueueId = req.params.taskQueueId;
+  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
+
+  // Get number of pending message
+  const [pendingCount, claimedCount] = await Promise.all([
+    this.queueService.countPendingTasks(taskQueueId),
+    this.queueService.countClaimedTasks(taskQueueId),
+  ]);
+
+  // Reply to call with count `pendingTasks`
+  return res.reply({
+    provisionerId: provisionerId,
+    workerType: workerType,
+    taskQueueId: taskQueueId,
+    pendingTasks: pendingCount,
+    claimedTasks: claimedCount,
   });
 });
 

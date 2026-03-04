@@ -1,2 +1,3 @@
 #!/bin/bash
-tox
+# Run tests using uv
+uv run pytest

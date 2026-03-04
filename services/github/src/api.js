@@ -1,4 +1,4 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
@@ -15,7 +15,7 @@ import {
   GITHUB_BUILD_STATES,
 } from './constants.js';
 
-import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature } from './utils.js';
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand } from './utils.js';
 import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
@@ -114,6 +114,15 @@ function getRerunDetails(eventData) {
   };
 }
 
+function getIssueCommentDetails(eventData) {
+  return {
+    'event.type': `issue_comment.${eventData.action}`,
+    'event.head.user.login': eventData.sender.login,
+    'taskcluster_comment': getTaskclusterCommand(eventData.comment),
+    // rest of the details would be fetched in the handler
+  };
+}
+
 /***
  Helper function to look up repo owner in the Azure table to get installation ID,
  and authenticate with GitHub using that ID.
@@ -146,7 +155,12 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   let statuses;
 
   try {
-    statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
+    statuses = (await github.repos.listCommitStatusesForRef({
+      owner,
+      repo,
+      ref: branch,
+      request: { retries: 1 },
+    })).data;
   } catch (e) {
     // github sends 422 when branch doesn't exist
     if (e.code === 404 || e.code === 422) {
@@ -165,7 +179,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
   let checks;
 
   try {
-    checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
+    checks = (await github.checks.listForRef({ owner, repo, ref: branch, request: { retries: 1 } })).data.check_runs;
   } catch (e) {
     if (e.code === 404 || e.code === 422) {
       return [];
@@ -204,11 +218,13 @@ export default builder;
 builder.declare({
   method: 'post',
   route: '/github',
+  input: 'github-webhook-event.yml',
   name: 'githubWebHookConsumer',
   scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
+  noPublish: true, // Webhook endpoint is server-side only, not called by clients
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release, check run or pull request.',
@@ -314,6 +330,31 @@ builder.declare({
         msg.branch = body.ref.split('/').slice(2).join('/');
         break;
 
+      case EVENT_TYPES.ISSUE_COMMENT:
+        // Comments on PRs can trigger tasks, too
+        // For this to work, there should be a `/taskcluster cmd` in the comment
+        // Plus repository should have a `.taskcluster.yml` in default branch with
+        // "policy.allowComments: collaborators" in it
+        // Message is being processed in the same way as PULL_REQUEST
+        // and missing data would be fetched from the PR
+
+        if (shouldSkipComment(body)) {
+          debugMonitor.debug({
+            message: 'Skipping issue_comment event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping issue_comment event');
+        }
+
+        publisherKey = PUBLISHERS.PULL_REQUEST;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.installationId = installationId;
+        msg.tasks_for = GITHUB_TASKS_FOR.ISSUE_COMMENT;
+        msg.action = body.action; // not a PR action, but a comment action
+        msg.branch = 'unknown'; // not yet available at this point
+        msg.details = getIssueCommentDetails(body);
+        break;
+
       case EVENT_TYPES.PING:
         return resolve(res, 200, 'Received ping event!');
 
@@ -337,7 +378,7 @@ builder.declare({
       case EVENT_TYPES.CHECK_RUN:
         // We only want to check if re-run was requested
         if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
-          return resolve(res, 400, 'Only rerequested for check runs is supported');
+          return resolve(res, 200, 'Only rerequested for check runs is supported');
         }
 
         if (body?.sender?.type?.toLowerCase() === 'bot') {
@@ -362,7 +403,7 @@ builder.declare({
         break;
 
       default:
-        return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+        return resolve(res, 200, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
     e.webhookPayload = body;
@@ -374,11 +415,27 @@ builder.declare({
   const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
-  let headUser = msg.details['event.head.user.login'].toString();
-  let userDetails = (await instGithub.users.getByUsername({ username: headUser })).data;
-  msg.details['event.head.user.email'] = this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)
-    ? userDetails.email
-    : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  const headUser = msg.details['event.head.user.login'].toString();
+  const defaultEmail = msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  let resolvedEmail = defaultEmail;
+
+  try {
+    const { data: userDetails } = await instGithub.users.getByUsername({ username: headUser });
+    if (this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)) {
+      resolvedEmail = userDetails.email;
+    }
+  } catch (err) {
+    if (err.status !== 404 && err.code !== 404) {
+      throw err;
+    }
+    debugMonitor.debug({
+      message: `GitHub user ${headUser} not found when resolving email, falling back to noreply`,
+      status: err.status || err.code,
+      fallbackEmail: defaultEmail,
+    });
+  }
+
+  msg.details['event.head.user.email'] = resolvedEmail;
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
@@ -864,6 +921,7 @@ builder.declare({
     'github-pull-request': getPullRequestDetails,
     'github-pull-request-untrusted': getPullRequestDetails,
     'github-release': getReleaseDetails,
+    'github-issue-comment': getIssueCommentDetails,
   };
 
   const branch = fakeEventData?.branch || 'main';
@@ -883,6 +941,11 @@ builder.declare({
     details: fakeEventToFnMap[fakeEventType](fakePayload),
     ...fakeEventData,
   };
+
+  // simulate what handlers/job.js:219 would do with injecting extra variable
+  if (fakeEventType === 'github-issue-comment') {
+    payload.body.taskcluster_comment = payload.details.taskcluster_comment;
+  }
 
   const { rootUrl } = this.cfg.taskcluster;
   const validator = await this.schemaset.validator(rootUrl);

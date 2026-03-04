@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcobject"
+	"maps"
+
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
 )
 
 type (
@@ -81,9 +83,7 @@ func (object *Object) FinishUpload(name string, payload *tcobject.FinishUploadRe
 			return err
 		}
 
-		for k, v := range newHashes {
-			o.hashes[k] = v
-		}
+		maps.Copy(o.hashes, newHashes)
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 
 	var err error
 	var dor tcobject.DownloadObjectResponse
-	var resp interface{}
+	var resp any
 	switch {
 	case payload.AcceptDownloadMethods.Simple:
 		if o.onMockS3 {

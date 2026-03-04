@@ -71,6 +71,7 @@ const pullRequestActions = [
   'unassigned',
   'unlabeled',
 ];
+const issueCommentActions = ['created', 'edited'];
 const isValidYamlUrl = url => {
   const urlRe = /(.*)\/\.taskcluster.yml$/;
 
@@ -692,6 +693,14 @@ export default class TcYamlDebug extends Component {
                         key={`gpru-${action}`}
                         value={`github-pull-request-untrusted.${action}`}>
                         <code>github-pull-request-untrusted</code>.
+                        <strong>{action}</strong>
+                      </MenuItem>
+                    ))}
+                    {issueCommentActions.map(action => (
+                      <MenuItem
+                        key={`gic-${action}`}
+                        value={`github-issue-comment.${action}`}>
+                        <code>github-issue-comment</code>.
                         <strong>{action}</strong>
                       </MenuItem>
                     ))}

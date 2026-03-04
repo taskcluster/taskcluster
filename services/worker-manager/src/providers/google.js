@@ -1,12 +1,15 @@
 import assert from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import * as uuid from 'uuid';
-import { google } from 'googleapis';
+import gcpCompute from '@googleapis/compute';
+import gcpIam from '@googleapis/iam';
 import { ApiError, Provider } from './provider.js';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
+
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
 export class GoogleProvider extends Provider {
 
@@ -28,7 +31,7 @@ export class GoogleProvider extends Provider {
 
     // There are different rate limits per type of request
     // as documented here: https://cloud.google.com/compute/docs/api-rate-limits
-    const cloud = new CloudAPI({
+    this.cloudApi = new CloudAPI({
       types: ['query', 'get', 'list', 'opRead'],
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
@@ -48,8 +51,9 @@ export class GoogleProvider extends Provider {
         // calling code figure out what to do
         throw err;
       },
+      collectMetrics: true,
     });
-    this._enqueue = cloud.enqueue.bind(cloud);
+    this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
 
     // If creds are a string or a base64d string, parse them
     if (_.isString(creds)) {
@@ -64,20 +68,36 @@ export class GoogleProvider extends Provider {
     }
 
     this.ownClientEmail = creds.client_email;
-    const client = google.auth.fromJSON(creds);
+    const client = gcpCompute.auth.fromJSON(creds);
     client.scopes = [
       'https://www.googleapis.com/auth/compute', // For configuring instance templates, groups, etc
       'https://www.googleapis.com/auth/iam', // For fetching service account name
     ];
-    this.compute = google.compute({
+    this.compute = gcpCompute.compute({
       version: 'v1',
       auth: client,
     });
-    this.iam = google.iam({
+    this.iam = gcpIam.iam({
       version: 'v1',
       auth: client,
     });
-    this.oauth2 = new google.auth.OAuth2();
+    this.oauth2 = new gcpCompute.auth.OAuth2();
+  }
+
+  #extractGoogleApiErrors(err) {
+    if (err.response?.data?.error?.errors && Array.isArray(err.response.data.error.errors)) {
+      return err.response.data.error.errors;
+    }
+    if (err.errors && Array.isArray(err.errors)) {
+      return err.errors;
+    }
+    if (err.response?.data?.error?.message) {
+      return [{
+        message: err.response.data.error.message,
+        code: err.response.data.error.code,
+      }];
+    }
+    return null;
   }
 
   async setup() {
@@ -141,18 +161,13 @@ export class GoogleProvider extends Provider {
       expires = new Date(Date.now() + worker.providerData.reregistrationTimeout);
     }
 
-    this.monitor.log.workerRunning({
-      workerPoolId: workerPool.workerPoolId,
-      providerId: this.providerId,
-      workerId: worker.workerId,
-    });
     monitor.debug('setting state to RUNNING');
-
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
     });
+    await this.onWorkerRunning({ worker });
 
     // assume for the moment that workers self-terminate before 96 hours
     const workerConfig = worker.providerData.workerConfig || {};
@@ -167,13 +182,14 @@ export class GoogleProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
-    this.monitor.log.workerRemoved({
-      workerPoolId: worker.workerPoolId,
-      providerId: worker.providerId,
-      workerId: worker.workerId,
-      reason,
+    // trigger event before saving worker state
+    await this.onWorkerRemoved({ worker, reason });
+    await worker.update(this.db, w => {
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
+        w.lastModified = new Date();
+        w.state = Worker.states.STOPPING;
+      }
     });
-
     try {
       // This returns an operation that we could track but the chances
       // that this fails due to user input being wrong are low so
@@ -192,8 +208,13 @@ export class GoogleProvider extends Provider {
     }
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
+    const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -202,11 +223,13 @@ export class GoogleProvider extends Provider {
 
     let toSpawn = await this.estimator.simple({
       workerPoolId,
+      providerId: this.providerId,
       ...workerPool.config,
       workerInfo,
+      workerInfoByWorkerGroup,
     });
 
-    if (toSpawn === 0 || workerPool.config.launchConfigs.length === 0) {
+    if (toSpawn === 0 || workerPool.config?.launchConfigs?.length === 0) {
       return; // Nothing to do
     }
 
@@ -214,14 +237,11 @@ export class GoogleProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const cfgs = [];
-    while (toSpawn > 0) {
-      const cfg = _.sample(workerPool.config.launchConfigs);
-      cfgs.push(cfg);
-      toSpawn -= cfg.capacityPerInstance;
-    }
+    const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
-    await Promise.all(cfgs.map(async cfg => {
+    await Promise.all(cfgs.map(async launchConfig => {
+      const cfg = launchConfig.configuration;
+
       // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
@@ -238,6 +258,7 @@ export class GoogleProvider extends Provider {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
         'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+        'launch-config-id': launchConfig.launchConfigId,
       };
       let op;
 
@@ -245,7 +266,20 @@ export class GoogleProvider extends Provider {
         ...(cfg.disks || {}),
       ];
       for (let disk of disks) {
-        disk.labels = { ...disk.labels, ...labels };
+        if (disk.type !== 'PERSISTENT') {
+          delete disk.labels;
+          continue;
+        }
+        const initializeParams = disk.initializeParams || {};
+        disk.initializeParams = {
+          ...initializeParams,
+          labels: {
+            ...initializeParams.labels,
+            ...disk.labels,
+            ...labels,
+          },
+        };
+        delete disk.labels;
       }
 
       try {
@@ -254,7 +288,7 @@ export class GoogleProvider extends Provider {
           zone: cfg.zone,
           requestId: uuid.v4(), // This is just for idempotency
           requestBody: {
-            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'capacityPerInstance']),
+            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'workerManager', 'capacityPerInstance']),
             name: instanceName,
             labels: {
               ...(cfg.labels || {}),
@@ -301,10 +335,11 @@ export class GoogleProvider extends Provider {
         }));
         op = res.data;
       } catch (err) {
-        if (!err.errors) {
+        const errors = this.#extractGoogleApiErrors(err);
+        if (!errors) {
           throw err;
         }
-        for (const error of err.errors) {
+        for (const error of errors) {
           await this.reportError({
             workerPool,
             kind: 'creation-error',
@@ -312,19 +347,14 @@ export class GoogleProvider extends Provider {
             description: error.message,
             extra: {
               config: cfg,
+              errorCode: error.code,
             },
+            launchConfigId: launchConfig.launchConfigId,
           });
         }
         return;
       }
 
-      this.monitor.log.workerRequested({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        workerId: op.targetId,
-        terminateAfter,
-      });
       const worker = Worker.fromApi({
         workerPoolId,
         providerId: this.providerId,
@@ -332,7 +362,7 @@ export class GoogleProvider extends Provider {
         workerId: op.targetId,
         expires: taskcluster.fromNow('1 week'),
         state: Worker.states.REQUESTED,
-        capacity: cfg.capacityPerInstance,
+        capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
         providerData: {
           project: this.project,
           zone: cfg.zone,
@@ -345,8 +375,10 @@ export class GoogleProvider extends Provider {
           queueInactivityTimeout,
           workerConfig: cfg.workerConfig || {},
         },
+        launchConfigId: launchConfig.launchConfigId,
       });
       await worker.create(this.db);
+      await this.onWorkerRequested({ worker, terminateAfter });
     }));
   }
 
@@ -355,6 +387,7 @@ export class GoogleProvider extends Provider {
    */
   async scanPrepare() {
     this.seen = {};
+    this.seenByWorkerGroup = {};
     this.errors = {};
   }
 
@@ -365,6 +398,7 @@ export class GoogleProvider extends Provider {
   async checkWorker({ worker }) {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
     this.errors[worker.workerPoolId] = this.errors[worker.workerPoolId] || [];
 
     const monitor = this.workerMonitor({ worker });
@@ -380,6 +414,8 @@ export class GoogleProvider extends Provider {
       monitor.debug(`instance status is ${status}`);
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
         this.seen[worker.workerPoolId] += worker.capacity || 1;
+        this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] =
+          (this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] || 0) + (worker.capacity || 1);
 
         if (worker.providerData.terminateAfter && worker.providerData.terminateAfter < Date.now()) {
           // reload the worker to make sure we have the latest data
@@ -398,11 +434,6 @@ export class GoogleProvider extends Provider {
           zone: worker.providerData.zone,
           instance: worker.workerId,
         }));
-        this.monitor.log.workerStopped({
-          workerPoolId: worker.workerPoolId,
-          providerId: this.providerId,
-          workerId: worker.workerId,
-        });
         state = states.STOPPED;
       }
     } catch (err) {
@@ -417,21 +448,21 @@ export class GoogleProvider extends Provider {
           op: worker.providerData.operation,
           errors: this.errors[worker.workerPoolId],
           monitor,
+          worker,
         })) {
           monitor.debug('operation still running');
           // return to poll the operation again..
           return;
         }
       }
-      this.monitor.log.workerStopped({
-        workerPoolId: worker.workerPoolId,
-        providerId: this.providerId,
-        workerId: worker.workerId,
-      });
       state = states.STOPPED;
     }
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
+    if (state === states.STOPPED) {
+      // trigger before changing worker.state
+      await this.onWorkerStopped({ worker });
+    }
     await worker.update(this.db, worker => {
       if (state !== undefined) {
         worker.state = state;
@@ -441,7 +472,7 @@ export class GoogleProvider extends Provider {
     });
   }
 
-  /*
+  /**
    * Called after an iteration of the worker scanner
    */
   async scanCleanup() {
@@ -450,16 +481,37 @@ export class GoogleProvider extends Provider {
       seen: this.seen,
       total: Provider.calcSeenTotal(this.seen),
     });
+    this.cloudApi?.logAndResetMetrics();
     await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on
       }
 
+      const seenByGroup = this.seenByWorkerGroup[workerPoolId] || {};
+      Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) =>
+        this.monitor.metric.scanSeen(groupSeen, {
+          providerId: this.providerId,
+          workerPoolId,
+          workerGroup,
+        }));
+
       if (this.errors[workerPoolId].length) {
         await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
       }
+
+      this.monitor.metric.scanErrors(this.errors[workerPoolId].length, {
+        providerId: this.providerId,
+        workerPoolId,
+      });
     }));
+  }
+
+  /**
+   * This is called at the end of the provision loop
+   */
+  async cleanup() {
+    this.cloudApi?.logAndResetMetrics();
   }
 
   /**
@@ -474,7 +526,7 @@ export class GoogleProvider extends Provider {
    * op: an object with keys `name` and optionally `region` or `zone` if it is a region or zone based operation
    * errors: a list that will have any errors found for that operation appended to it
    */
-  async handleOperation({ op, errors, monitor }) {
+  async handleOperation({ op, errors, monitor, worker }) {
     let operation;
     let opService;
     const args = {
@@ -518,8 +570,7 @@ export class GoogleProvider extends Provider {
           extra: {
             code: err.code,
           },
-          notify: this.notify,
-          WorkerPoolError: this.WorkerPoolError,
+          launchConfigId: worker?.launchConfigId ?? undefined,
         });
       }
     }

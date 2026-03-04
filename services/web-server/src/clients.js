@@ -1,4 +1,4 @@
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 const {
   Auth,
   Github,

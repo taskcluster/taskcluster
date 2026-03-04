@@ -4,8 +4,8 @@ import { APIBuilder } from '../src/index.js';
 import helper, { monitor, monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import path from 'path';
-import SchemaSet from 'taskcluster-lib-validate';
-import testing from 'taskcluster-lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
+import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

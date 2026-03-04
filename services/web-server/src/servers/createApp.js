@@ -8,19 +8,17 @@ import express from 'express';
 import graphqlPlayground from 'graphql-playground-middleware-express';
 const playground = graphqlPlayground.default;
 import passport from 'passport';
-import url from 'url';
 import MemoryStoreFactory from 'memorystore';
 const MemoryStore = MemoryStoreFactory(session);
 import credentials from './credentials.js';
 import oauth2AccessToken from './oauth2AccessToken.js';
 import oauth2 from './oauth2.js';
 import PostgresSessionStore from '../login/PostgresSessionStore.js';
-import { traceMiddleware } from 'taskcluster-lib-app';
-import { loadVersion } from 'taskcluster-lib-api';
+import { traceMiddleware } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-export default async ({ cfg, strategies, auth, monitor, db }) => {
+export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, api }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -70,13 +68,14 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     saveUninitialized: false,
     unset: 'destroy',
     cookie: {
-      secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
+      secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
       httpOnly: true,
       // 1 week
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   }));
 
+  app.disable('x-powered-by');
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(compression());
@@ -115,11 +114,18 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
     return done(null, obj);
   });
 
-  app.post('/login/logout', cors(corsOptions), (req, res) => {
+  app.post('/login/logout', cors(corsOptions), async (req, res) => {
     // Remove the req.user property and clear the login session
-    req.logout();
+    await new Promise((resolve, reject) => {
+      try {
+        req.logout(resolve);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
     res
-      .status('200')
+      .status(200)
       .send();
   });
 
@@ -145,35 +151,27 @@ export default async ({ cfg, strategies, auth, monitor, db }) => {
   app.options('/login/oauth/credentials', cors(thirdPartyCorsOptions));
   app.get('/login/oauth/credentials', cors(thirdPartyCorsOptions), oauth2AccessToken(), getCredentials);
 
-  // Dockerflow endpoints
-  // https://github.com/mozilla-services/Dockerflow
-  app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
-    res.json({});
-  });
-  app.get('/api/web-server/v1/__version__', async (_req, res) => {
-    res.json(await loadVersion());
-  });
-  // TODO: add implementation
-  app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
-    res.json({});
-  });
-  app.get('/api/web-server/v1/ping', (_req, res) => {
-    res.status(200).json({
-      alive: true,
-      uptime: process.uptime(),
-    });
-  });
+  // Mount lib-api routes (profiler endpoints, Dockerflow health checks)
+  if (api) {
+    api.express(app);
+  }
 
   // Error handling middleware
   app.use((err, req, res, next) => {
     // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
     const error = { code: err.code, name: err.name };
+    monitor.reportError(err);
+    let statusCode = 500;
 
     if (err.name === 'InputError') {
       Object.assign(error, { message: err.message });
     }
+    if (err.name === 'PayloadTooLargeError') {
+      Object.assign(error, { code: 413, message: 'Payload too large' });
+      statusCode = 413;
+    }
 
-    res.status(500).json(error);
+    res.status(statusCode).json(error);
   });
 
   return app;

@@ -1,0 +1,39 @@
+version: 100
+description: Improves speed for batched tasks fetching
+methods:
+  get_tasks_from_indexes:
+    deprecated: true
+
+  get_tasks_from_indexes_and_namespaces:
+    description: |-
+      Get tasks matching the given indexes, 0 or 1 per input index.
+
+      Indexes are expected to be a JSON array of "namespace.name" values:
+      '["ns.one.name1", "ns.two.name2"]'
+
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: indexes_in jsonb, page_size_in integer, page_offset_in integer
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        cross join jsonb_array_elements_text(indexes_in) as index_pairs
+        where
+          -- use regexp to extract namespace part of index
+          indexed_tasks.namespace = (select (regexp_matches(index_pairs, '(.+)\.[^.]+'))[1])
+          and
+          -- use regexp to extract name part of index
+          indexed_tasks.name = (select (regexp_matches(index_pairs, '.+\.([^.]+)'))[1])
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end

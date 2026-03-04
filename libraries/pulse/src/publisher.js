@@ -1,8 +1,8 @@
 import assert from 'assert';
 import libUrls from 'taskcluster-lib-urls';
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-pulse.publisher');
-import { MonitorManager } from 'taskcluster-lib-monitor';
+const debug = debugFactory('@taskcluster/lib-pulse.publisher');
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({
   name: 'pulsePublisherBlocked',
@@ -44,7 +44,7 @@ export class Exchanges {
 
   reference() {
     return {
-      // this refers to a schema defined in taskcluster-lib-references
+      // this refers to a schema defined in @taskcluster/lib-references
       $schema: '/schemas/common/exchanges-reference-v0.json#',
       serviceName: this.serviceName,
       apiVersion: this.apiVersion,

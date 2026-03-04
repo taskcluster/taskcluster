@@ -22,6 +22,7 @@ it('should render TaskDetailsCard', () => {
           expires: '2023-02-15T12:00:00.000Z',
           scopes: ['scopes'],
           routes: [],
+          dependencies: [],
           payload: {
             command: [
               '/bin/bash',
@@ -36,7 +37,7 @@ it('should render TaskDetailsCard', () => {
           },
           extra: {},
         }}
-        dependents={[]}
+        dependents={{}}
         onDependentsPageChange={jest.fn()}
         objectContent={{}}
       />

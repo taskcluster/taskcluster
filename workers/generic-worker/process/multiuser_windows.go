@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v60/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -21,24 +21,24 @@ var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool
 type PlatformData struct {
 	CommandAccessToken syscall.Token
 	LoginInfo          *LoginInfo
+	HideCmdWindow      bool
 }
 
-func NewPlatformData(currentUser bool) (pd *PlatformData, err error) {
-	if currentUser {
-		return &PlatformData{
-			LoginInfo: &LoginInfo{},
-		}, nil
-	}
-	pd, err = TaskUserPlatformData()
+func NewPlatformData(headlessTasks bool, user *gwruntime.OSUser) (pd *PlatformData, err error) {
+	pd, err = TaskUserPlatformData(user, headlessTasks)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func TaskUserPlatformData() (pd *PlatformData, err error) {
+func TaskUserPlatformData(user *gwruntime.OSUser, headlessTasks bool) (pd *PlatformData, err error) {
 	pd = &PlatformData{}
-	pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	if headlessTasks {
+		pd.LoginInfo, err = NewLoginInfo(user.Name, user.Password)
+	} else {
+		pd.LoginInfo, err = InteractiveLoginInfo(3 * time.Minute)
+	}
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (r *Result) Crashed() bool {
 	return r.SystemError != nil && !r.Aborted
 }
 
-func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
+func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
 	cmd := f()
 	var err error
 	var combined *[]string
@@ -82,22 +82,33 @@ func newCommand(f func() *exec.Cmd, commandLine []string, workingDirectory strin
 		combined, err = win32.MergeEnvLists(&parentEnv, &env)
 
 	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
+	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP)
+
+	if pd.HideCmdWindow {
+		creationFlags |= win32.CREATE_NO_WINDOW
+	} else {
+		creationFlags |= win32.CREATE_NEW_CONSOLE
+	}
+
 	if !isWindows8OrGreater {
 		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
 	}
+
 	if accessToken != 0 {
 		cmd.SysProcAttr = &syscall.SysProcAttr{
 			Token:         accessToken,
 			CreationFlags: creationFlags,
 		}
 	}
+
 	return &Command{
 		Cmd:   cmd,
 		abort: make(chan struct{}),
@@ -111,17 +122,19 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, pd 
 		cmd.Stderr = os.Stderr
 		return cmd
 	}
-	return newCommand(f, commandLine, workingDirectory, env, pd)
+	return newCommand(f, workingDirectory, env, pd)
 }
 
 func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, env []string, pd *PlatformData) (*Command, error) {
 	f := func() *exec.Cmd {
 		return exec.Command(commandLine[0], commandLine[1:]...)
 	}
-	return newCommand(f, commandLine, workingDirectory, env, pd)
+	return newCommand(f, workingDirectory, env, pd)
 }
 
 func (c *Command) Kill() (killOutput string, err error) {
+	// abort even if process hasn't started
+	close(c.abort)
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
@@ -134,31 +147,34 @@ func (c *Command) Kill() (killOutput string, err error) {
 	// 	// If process has finished, nothing to kill
 	// 	return
 	// }
-	close(c.abort)
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed
 	return host.CombinedOutput("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t")
 }
 
-func (pd *PlatformData) RefreshLoginSession(user, pass string) {
+func (pd *PlatformData) RefreshLoginSession(user, pass string, winstaAccess bool) {
 	err := pd.LoginInfo.Release()
 	if err != nil {
 		panic(err)
 	}
-	// This is the SID of "Everyone" group
-	// TODO: we should probably change this to the logon SID of the user
-	sid := "S-1-1-0"
-	GrantSIDWinstaAccess(sid, pd)
+	if winstaAccess {
+		// This is the SID of "Everyone" group
+		// TODO: we should probably change this to the logon SID of the user
+		sid := "S-1-1-0"
+		GrantSIDWinstaAccess(sid, pd)
+	}
 	pd.LoginInfo, err = NewLoginInfo(user, pass)
 	if err != nil {
 		// implies a serious bug
 		panic(err)
 	}
-	err = pd.LoginInfo.SetActiveConsoleSessionId()
-	if err != nil {
-		// implies a serious bug
-		panic(fmt.Sprintf("could not set token session information: %v", err))
+	if winstaAccess {
+		err = pd.LoginInfo.SetActiveConsoleSessionId()
+		if err != nil {
+			// implies a serious bug
+			panic(fmt.Sprintf("could not set token session information: %v", err))
+		}
 	}
 	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
 	win32.DumpTokenInfo(pd.LoginInfo.AccessToken())
@@ -172,11 +188,11 @@ func GrantSIDWinstaAccess(sid string, pd *PlatformData) {
 		log.Printf("SID %v NOT found in %#v - granting access...", sid, sidsThatCanControlDesktopAndWindowsStation)
 
 		cmd, err := NewCommand([]string{gwruntime.GenericWorkerBinary(), "grant-winsta-access", "--sid", sid}, ".", []string{}, pd)
-		cmd.DirectOutput(os.Stdout)
-		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		if err != nil {
 			panic(err)
 		}
+		cmd.DirectOutput(os.Stdout)
+		log.Printf("About to run command: %#v", *(cmd.Cmd))
 		result := cmd.Execute()
 		if !result.Succeeded() {
 			panic(fmt.Sprintf("failed to grant everyone access to windows station and desktop:\n%v", result))

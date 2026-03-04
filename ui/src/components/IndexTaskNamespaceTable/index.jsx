@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { memoize } from '../../utils/memoize';
 import TableCellItem from '../TableCellItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
@@ -102,7 +102,7 @@ export default class IndexTaskNamespaceTable extends Component {
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Name']}
+        headers={['Name', 'Task Group']}
         renderRow={({ node: { namespace } }) => (
           <TableRow key={namespace}>
             <TableCell>
@@ -115,6 +115,20 @@ export default class IndexTaskNamespaceTable extends Component {
                 )}/${this.taskFromNamespace(namespace)}`}>
                 <TableCellItem button>
                   {this.taskFromNamespace(namespace)}
+                  <LinkIcon size={iconSize} />
+                </TableCellItem>
+              </Link>
+            </TableCell>
+            <TableCell size="medium">
+              <Link
+                to={`/tasks/index/${encodeURIComponent(
+                  namespace
+                    .split('.')
+                    .slice(0, -1)
+                    .join('.')
+                )}/${this.taskFromNamespace(namespace)}/task-group`}>
+                <TableCellItem button>
+                  Task Group
                   <LinkIcon size={iconSize} />
                 </TableCellItem>
               </Link>

@@ -51,6 +51,7 @@ var (
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
 	procGetUserObjectInformationW    = user32.NewProc("GetUserObjectInformationW")
 	procDeleteProfileW               = userenv.NewProc("DeleteProfileW")
+	procCreateProfile                = userenv.NewProc("CreateProfile")
 	procGetDiskFreeSpaceExW          = kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	FOLDERID_LocalAppData   = syscall.GUID{Data1: 0xF1B32785, Data2: 0x6FBA, Data3: 0x4FCF, Data4: [8]byte{0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91}}
@@ -66,9 +67,11 @@ const (
 
 	KF_FLAG_CREATE uint32 = 0x00008000
 
+	// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
 	CREATE_BREAKAWAY_FROM_JOB = 0x01000000
 	CREATE_NEW_CONSOLE        = 0x00000010
 	CREATE_NEW_PROCESS_GROUP  = 0x00000200
+	CREATE_NO_WINDOW          = 0x08000000
 
 	VER_MAJORVERSION     = 0x0000002
 	VER_MINORVERSION     = 0x0000001
@@ -833,6 +836,38 @@ func DeleteProfile(
 	return
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createprofile
+// USERENVAPI HRESULT CreateProfile(
+//
+//	[in]  LPCWSTR pszUserSid,
+//	[in]  LPCWSTR pszUserName,
+//	[out] LPWSTR  pszProfilePath,
+//	[in]  DWORD   cchProfilePath
+//
+// );
+func CreateProfile(
+	lpSidString *uint16,
+	lpUserName *uint16,
+	lpProfilePath *uint16,
+	cchProfilePath uint32,
+) (err error) {
+	r1, _, e1 := procCreateProfile.Call(
+		uintptr(unsafe.Pointer(lpSidString)),
+		uintptr(unsafe.Pointer(lpUserName)),
+		uintptr(unsafe.Pointer(lpProfilePath)),
+		uintptr(cchProfilePath),
+	)
+	// HRESULT: S_OK = 0, failure < 0
+	// HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS) = 0x800700B7
+	if int32(r1) < 0 {
+		// Ignore if profile already exists
+		if uint32(r1) != 0x800700B7 {
+			err = os.NewSyscallError("CreateProfile", e1)
+		}
+	}
+	return
+}
+
 // ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
 //
 //	https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
@@ -872,4 +907,22 @@ func CMDExeEscape(text string) string {
 		cmdEscaped += string(c)
 	}
 	return cmdEscaped
+}
+
+func VerSetConditionMask(lConditionMask uint64, typeBitMask uint32, conditionMask uint8) uint64 {
+	r1, _, _ := procVerSetConditionMask.Call(uintptr(lConditionMask), uintptr(typeBitMask), uintptr(conditionMask))
+	return uint64(r1)
+}
+
+func VerifyWindowsInfoW(vi OSVersionInfoEx, typeMask uint32, conditionMask uint64) (bool, error) {
+	vi.OSVersionInfoSize = uint32(unsafe.Sizeof(vi))
+
+	r1, _, e1 := procVerifyVersionInfoW.Call(uintptr(unsafe.Pointer(&vi)), uintptr(typeMask), uintptr(conditionMask))
+	if r1 != 0 {
+		return true, nil
+	}
+	if r1 == 0 && e1 == ERROR_OLD_WIN_VERSION {
+		return false, nil
+	}
+	return false, os.NewSyscallError("VerifyVersionInfoW", e1)
 }

@@ -134,3 +134,4 @@ The following environment variables can be used to configure the server.
  * `DEBUG` set to '*' to see debug logs (optional)
  * `LIVELOG_PUT_PORT` PUT port number (optional - default is 60022)
  * `LIVELOG_GET_PORT` GET port number (optional - default is 60023)
+ * `LIVELOG_TEMP_DIR` directory for temporary streaming files (optional - default is system temp dir)

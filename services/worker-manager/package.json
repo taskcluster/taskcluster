@@ -1,6 +1,6 @@
 {
-  "name": "taskcluster-worker-manager",
-  "version": "60.4.2",
+  "name": "@taskcluster/worker-manager",
+  "version": "97.0.1",
   "description": "Taskcluster Worker Manager",
   "exports": "./src/main.js",
   "type": "module",
@@ -17,6 +17,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.3.0"
+    "mocha": "^10.8.2"
   }
 }

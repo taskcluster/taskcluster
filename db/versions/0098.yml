@@ -1,0 +1,27 @@
+version: 98
+description: Add batched tasks fetching
+methods:
+  get_tasks_from_indexes:
+    description: |-
+      Get tasks matching the given indexes, 0 or 1 per input index.
+      If the pagination arguments are both NULL, all rows are returned.
+      Otherwise, page_size rows are returned at offset page_offset.
+    mode: read
+    serviceName: index
+    args: indexes_in jsonb, page_size_in integer, page_offset_in integer
+    returns: table(namespace text, name text, rank integer, task_id text, data jsonb, expires timestamptz)
+    body: |-
+      begin
+        return query select
+          indexed_tasks.namespace,
+          indexed_tasks.name,
+          indexed_tasks.rank,
+          uuid_to_slugid(indexed_tasks.task_id) as task_id,
+          indexed_tasks.data,
+          indexed_tasks.expires
+        from indexed_tasks
+        where
+          indexed_tasks.namespace || '.' || indexed_tasks.name in (SELECT jsonb_array_elements_text(indexes_in))
+          limit get_page_limit(page_size_in)
+          offset get_page_offset(page_offset_in);
+      end

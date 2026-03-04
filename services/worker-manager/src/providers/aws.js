@@ -6,7 +6,7 @@ import {
   DescribeInstanceStatusCommand,
   TerminateInstancesCommand,
 } from '@aws-sdk/client-ec2';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -14,40 +14,20 @@ import _ from 'lodash';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';
 
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
 const __dirname = new URL('.', import.meta.url).pathname;
 
 export class AwsProvider extends Provider {
-  constructor({
-    providerId,
-    monitor,
-    rootUrl,
-    Worker,
-    WorkerPoolError,
-    estimator,
-    validator,
-    notify,
-    db,
-    providerConfig,
-  }) {
-    super({
-      providerId,
-      monitor,
-      rootUrl,
-      Worker,
-      WorkerPoolError,
-      estimator,
-      validator,
-      notify,
-      db,
-      providerConfig,
-    });
+  constructor(conf) {
+    super(conf);
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
     this.providerConfig = Object.assign({}, {
       intervalCapDefault: 150,
       intervalDefault: 10 * 1000,
       _backoffDelay: 2000,
-    }, providerConfig);
+    }, conf.providerConfig);
 
   }
 
@@ -74,7 +54,7 @@ export class AwsProvider extends Provider {
       }
     });
 
-    const cloud = new CloudAPI({
+    this.cloudApi = new CloudAPI({
       types: Object.keys(requestTypes),
       apiRateLimits: requestTypes,
       intervalDefault: this.providerConfig.intervalDefault,
@@ -89,12 +69,18 @@ export class AwsProvider extends Provider {
         }
         throw err;
       },
+      collectMetrics: true,
     });
-    this._enqueue = cloud.enqueue.bind(cloud);
+    this._enqueue = this.cloudApi.enqueue.bind(this.cloudApi);
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
     const { workerPoolId } = workerPool;
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
+    const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
 
     if (!workerPool.providerData[this.providerId]) {
       await this.db.fns.update_worker_pool_provider_data(
@@ -103,13 +89,15 @@ export class AwsProvider extends Provider {
 
     const toSpawn = await this.estimator.simple({
       workerPoolId,
+      providerId: this.providerId,
       minCapacity: workerPool.config.minCapacity,
       maxCapacity: workerPool.config.maxCapacity,
       scalingRatio: workerPool.config.scalingRatio,
       workerInfo,
+      workerInfoByWorkerGroup,
     });
 
-    if (toSpawn === 0 || workerPool.config.launchConfigs.length === 0) {
+    if (toSpawn === 0 || workerPool.config?.launchConfigs?.length === 0) {
       return; // Nothing to do
     }
 
@@ -117,11 +105,18 @@ export class AwsProvider extends Provider {
       terminateAfter, reregistrationTimeout, queueInactivityTimeout,
     } = Provider.interpretLifecycle(workerPool.config);
 
-    const toSpawnPerConfig = Math.ceil(toSpawn / workerPool.config.launchConfigs.length);
-    const shuffledConfigs = _.shuffle(workerPool.config.launchConfigs);
+    const cfgs = await this.selectLaunchConfigsForSpawn({
+      workerPool,
+      toSpawn,
+      workerPoolStats,
+      returnAll: true,
+    });
+    const shuffledConfigs = _.shuffle(cfgs);
+    const toSpawnPerConfig = Math.ceil(toSpawn / shuffledConfigs.length);
 
     let toSpawnCounter = toSpawn;
-    for await (let config of shuffledConfigs) {
+    for await (let lc of shuffledConfigs) {
+      const config = lc.configuration;
       if (toSpawnCounter <= 0) break; // eslint-disable-line
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
@@ -145,6 +140,7 @@ export class AwsProvider extends Provider {
         workerPoolId,
         providerId: this.providerId,
         workerGroup: config.region,
+        launchConfigId: lc.launchConfigId,
         workerConfig: config.workerConfig || {},
       }));
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
@@ -158,10 +154,12 @@ export class AwsProvider extends Provider {
           extra: {
             config: config.launchConfig,
           },
+          launchConfigId: lc.launchConfigId,
         });
       }
 
-      const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / config.capacityPerInstance);
+      const capacityPerInstance = config?.workerManager?.capacityPerInstance || config.capacityPerInstance || 1;
+      const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / capacityPerInstance);
       let spawned;
       try {
         spawned = await this._enqueue(`${config.region}.modify`, () => this.ec2s[config.region].send(new RunInstancesCommand({
@@ -237,16 +235,9 @@ export class AwsProvider extends Provider {
 
       // count down the capacity we actually spawned (which may be somewhat
       // greater than toSpawnPerConfig due to rounding)
-      toSpawnCounter -= instanceCount * config.capacityPerInstance;
+      toSpawnCounter -= instanceCount * capacityPerInstance;
 
-      await Promise.all(spawned.Instances.map(i => {
-        this.monitor.log.workerRequested({
-          workerPoolId,
-          providerId: this.providerId,
-          workerGroup: config.region,
-          workerId: i.InstanceId,
-          terminateAfter,
-        });
+      await Promise.all(spawned.Instances.map(async (i) => {
         const worker = Worker.fromApi({
           workerPoolId,
           providerId: this.providerId,
@@ -254,7 +245,7 @@ export class AwsProvider extends Provider {
           workerId: i.InstanceId,
           expires: taskcluster.fromNow('1 week'),
           state: Worker.states.REQUESTED,
-          capacity: config.capacityPerInstance,
+          capacity: capacityPerInstance,
           providerData: {
             region: config.region,
             groups: spawned.Groups,
@@ -272,7 +263,9 @@ export class AwsProvider extends Provider {
             queueInactivityTimeout,
             workerConfig: config.workerConfig || {},
           },
+          launchConfigId: lc.launchConfigId,
         });
+        await this.onWorkerRequested({ worker, terminateAfter });
         return worker.create(this.db);
       }));
     }
@@ -308,17 +301,13 @@ export class AwsProvider extends Provider {
     }
 
     // mark it as running
-    this.monitor.log.workerRunning({
-      workerPoolId: workerPool.workerPoolId,
-      providerId: this.providerId,
-      workerId: worker.workerId,
-    });
     monitor.debug('setting state to RUNNING');
     await worker.update(this.db, worker => {
       worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
     });
+    await this.onWorkerRunning({ worker });
 
     const workerConfig = worker.providerData.workerConfig || {};
     return {
@@ -329,6 +318,7 @@ export class AwsProvider extends Provider {
 
   async checkWorker({ worker }) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
+    this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
     const monitor = this.workerMonitor({ worker });
 
     let state;
@@ -346,15 +336,16 @@ export class AwsProvider extends Provider {
           case 'shutting-down': //so that we don't turn on new instances until they're entirely gone
           case 'stopping':
             this.seen[worker.workerPoolId] += worker.capacity || 1;
+            this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] =
+              (this.seenByWorkerGroup[worker.workerPoolId][worker.workerGroup] || 0) + (worker.capacity || 1);
             break;
 
           case 'terminated':
           case 'stopped':
-            this.monitor.log.workerStopped({
-              workerPoolId: worker.workerPoolId,
-              providerId: this.providerId,
-              workerId: worker.workerId,
-            });
+            await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
+              InstanceIds: [worker.workerId.toString()],
+            })));
+            await this.onWorkerStopped({ worker });
             state = Worker.states.STOPPED;
             break;
 
@@ -374,15 +365,11 @@ export class AwsProvider extends Provider {
         await this.removeWorker({ worker, reason });
       }
     } catch (e) {
-      if (e.code !== 'InvalidInstanceID.NotFound') { // aws throws this error for instances that had been terminated, too
+      if (![e.code, e.Code].includes('InvalidInstanceID.NotFound')) { // aws throws this error for instances that had been terminated, too
         throw e;
       }
       monitor.debug('instance status not found');
-      this.monitor.log.workerStopped({
-        workerPoolId: worker.workerPoolId,
-        providerId: this.providerId,
-        workerId: worker.workerId,
-      });
+      await this.onWorkerStopped({ worker });
       state = Worker.states.STOPPED;
     }
 
@@ -398,18 +385,19 @@ export class AwsProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
-    this.monitor.log.workerRemoved({
-      workerPoolId: worker.workerPoolId,
-      providerId: worker.providerId,
-      workerId: worker.workerId,
-      reason,
+    // trigger before state update so we can check the current state
+    await this.onWorkerRemoved({ worker, reason });
+    await worker.update(this.db, w => {
+      if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
+        w.lastModified = new Date();
+        w.state = Worker.states.STOPPING;
+      }
     });
-
     let result;
     try {
       const region = worker.providerData.region;
       result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
-        InstanceIds: [worker.workerId],
+        InstanceIds: [worker.workerId.toString()],
       })));
     } catch (e) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
@@ -437,6 +425,7 @@ export class AwsProvider extends Provider {
 
   async scanPrepare() {
     this.seen = {};
+    this.seenByWorkerGroup = {};
   }
 
   async scanCleanup() {
@@ -445,6 +434,23 @@ export class AwsProvider extends Provider {
       seen: this.seen,
       total: Provider.calcSeenTotal(this.seen),
     });
+
+    this.cloudApi?.logAndResetMetrics();
+
+    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) =>
+      Object.entries(seenByGroup).forEach(([workerGroup, seen]) =>
+        this.monitor.metric.scanSeen(seen, {
+          providerId: this.providerId,
+          workerPoolId,
+          workerGroup,
+        })));
+  }
+
+  /**
+   * This is called at the end of the provision loop
+   */
+  async cleanup() {
+    this.cloudApi?.logAndResetMetrics();
   }
 
   /**

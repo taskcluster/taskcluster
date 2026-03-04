@@ -102,14 +102,18 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
 Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
   if (this.bucketCDN && !forceS3) {
-    return `${this.bucketCDN}/${prefix}`;
+    return `${this.bucketCDN}/${encodeURI(prefix)}`;
   }
   const command = new GetObjectCommand({
     Bucket: this.bucket,
     Key: prefix,
   });
   const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
-  url.pathname = path.join(url.pathname, prefix);
+  // Some aws-sdk versions return prefix already in pathname,
+  // avoid double prefixing
+  if (!url.pathname.endsWith(prefix)) {
+    url.pathname = path.join(url.pathname, prefix);
+  }
   return url.href;
 };
 
@@ -157,7 +161,7 @@ Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
           Key: prefix,
         };
       }),
-      ...(quiet ? { Quiet: true } : {} ),
+      ...(quiet ? { Quiet: true } : {}),
     },
   }));
 };

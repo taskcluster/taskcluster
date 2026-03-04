@@ -1,9 +1,9 @@
-const errorStackParser = require('error-stack-parser');
-const path = require('path');
+import errorStackParser from 'error-stack-parser';
+import path from 'path';
 
 // Restore TASKCLUSTER_* env vars after this test suite runs, to the values they
 // had when it began.
-exports.withRestoredEnvVars = () => {
+export const withRestoredEnvVars = () => {
   const vars = ['TASKCLUSTER_CLIENT_ID', 'TASKCLUSTER_ROOT_URL', 'TASKCLUSTER_ACCESS_TOKEN'];
 
   let values;
@@ -27,16 +27,21 @@ exports.withRestoredEnvVars = () => {
   });
 };
 
-const ROOT_DIR = path.resolve(__dirname, '../../..');
-const suiteName = () => {
+const ROOT_DIR = new URL('../../..', import.meta.url).pathname;
+export const suiteName = () => {
   const o = {}; Error.captureStackTrace(o, suiteName);
   const stack = errorStackParser.parse(o);
   return path.relative(ROOT_DIR, stack[0].fileName);
 };
-exports.suiteName = suiteName;
 
-exports.sleep = function (delay) {
+export const sleep = function (delay) {
   return new Promise(function (accept) {
     setTimeout(accept, delay);
   });
+};
+
+export default {
+  withRestoredEnvVars,
+  suiteName,
+  sleep,
 };

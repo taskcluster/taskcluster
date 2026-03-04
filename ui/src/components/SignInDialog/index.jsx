@@ -15,6 +15,7 @@ import KeyboardOutlineIcon from 'mdi-react/KeyboardOutlineIcon';
 import { withAuth } from '../../utils/Auth';
 import CredentialsDialog from './CredentialsDialog';
 import UserSession from '../../auth/UserSession';
+import { AUTH_STARTED } from '../../utils/constants';
 
 @withAuth
 @withApollo
@@ -73,6 +74,10 @@ export default class SignInDialog extends Component {
     this.props.onClose();
   };
 
+  onAuthStart(providerId) {
+    localStorage.setItem(AUTH_STARTED, providerId);
+  }
+
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
@@ -94,6 +99,7 @@ export default class SignInDialog extends Component {
                 component="a"
                 href="/login/mozilla-auth0"
                 rel="opener"
+                onClick={() => this.onAuthStart('mozilla-auth0')}
                 target="_blank">
                 <ListItemAvatar>
                   <Avatar>
@@ -109,6 +115,7 @@ export default class SignInDialog extends Component {
                 component="a"
                 href="/login/github"
                 rel="opener"
+                onClick={() => this.onAuthStart('github')}
                 target="_blank">
                 <ListItemAvatar>
                   <Avatar>

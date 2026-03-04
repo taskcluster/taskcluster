@@ -1,7 +1,7 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import builder from './api.js';
 import exchanges from './exchanges.js';
 import Bucket from './bucket.js';
@@ -9,18 +9,20 @@ import QueueService from './queueservice.js';
 import EC2RegionResolver from './ec2regionresolver.js';
 import DeadlineResolver from './deadlineresolver.js';
 import ClaimResolver from './claimresolver.js';
+import WorkerRemovedResolver from './workerremovedresolver.js';
 import DependencyTracker from './dependencytracker.js';
 import DependencyResolver from './dependencyresolver.js';
+import MetricsCollector from './metricscollector.js';
 import WorkClaimer from './workclaimer.js';
 import WorkerInfo from './workerinfo.js';
-import loader from 'taskcluster-lib-loader';
-import config from 'taskcluster-lib-config';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import SchemaSet from 'taskcluster-lib-validate';
-import libReferences from 'taskcluster-lib-references';
-import { App } from 'taskcluster-lib-app';
-import tcdb from 'taskcluster-db';
-import pulse from 'taskcluster-lib-pulse';
+import loader from '@taskcluster/lib-loader';
+import config from '@taskcluster/lib-config';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import { App } from '@taskcluster/lib-app';
+import tcdb from '@taskcluster/db';
+import pulse from '@taskcluster/lib-pulse';
 import QuickLRU from 'quick-lru';
 import { artifactUtils } from './utils.js';
 import { fileURLToPath } from 'url';
@@ -38,6 +40,9 @@ const MAX_BULK_DELETE_SIZE = 1000;
 // maximum number of records to process at once in claim, deadline, and dependency resolvers
 // this is to limit total amount of concurrent updates to DB
 const NUMBER_OF_RECORDS_TO_PROCESS = 32;
+
+// maximum number of task dependencies to track
+const DEFAULT_MAX_TASK_DEPENDENCIES = 10000;
 
 import './monitor.js';
 
@@ -124,6 +129,13 @@ let load = loader({
     }),
   },
 
+  workerManagerEvents: {
+    requires: ['cfg'],
+    setup: ({ cfg }) => new taskcluster.WorkerManagerEvents({
+      rootUrl: cfg.taskcluster.rootUrl,
+    }),
+  },
+
   db: {
     requires: ["cfg", "process", "monitor"],
     setup: ({ cfg, process, monitor }) => tcdb.setup({
@@ -195,7 +207,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue'), MonitorManager.metricsReference('queue')],
     }).then(ref => ref.generateReferences()),
   },
 
@@ -206,31 +218,41 @@ let load = loader({
       'regionResolver', 'monitor', 'dependencyTracker',
       'workClaimer', 'workerInfo', 'objectService',
     ],
-    setup: (ctx) => builder.build({
-      context: {
-        db: ctx.db,
-        taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
-        dependencyTracker: ctx.dependencyTracker,
-        publisher: ctx.publisher,
-        claimTimeout: ctx.cfg.app.claimTimeout || DEFAULT_CLAIM_TIMEOUT,
-        maxTaskDeadlineDays: ctx.cfg.app.maxTaskDeadlineDays || DEFAULT_MAX_TASK_DEADLINE_DAYS,
-        queueService: ctx.queueService,
-        signPublicArtifactUrls: !!ctx.cfg.app.signPublicArtifactUrls,
-        publicBucket: ctx.publicArtifactBucket,
-        privateBucket: ctx.privateArtifactBucket,
-        regionResolver: ctx.regionResolver,
-        credentials: ctx.cfg.taskcluster.credentials,
-        artifactRegion: ctx.cfg.aws.region,
-        monitor: ctx.monitor.childMonitor('api-context'),
-        workClaimer: ctx.workClaimer,
-        workerInfo: ctx.workerInfo,
-        LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
-        objectService: ctx.objectService,
-      },
-      rootUrl: ctx.cfg.taskcluster.rootUrl,
-      schemaset: ctx.schemaset,
-      monitor: ctx.monitor.childMonitor('api'),
-    }),
+    setup: (ctx) => {
+      const monitor = ctx.monitor.childMonitor('api');
+      const api = builder.build({
+        context: {
+          db: ctx.db,
+          taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
+          dependencyTracker: ctx.dependencyTracker,
+          publisher: ctx.publisher,
+          claimTimeout: ctx.cfg.app.claimTimeout || DEFAULT_CLAIM_TIMEOUT,
+          maxTaskDeadlineDays: ctx.cfg.app.maxTaskDeadlineDays || DEFAULT_MAX_TASK_DEADLINE_DAYS,
+          queueService: ctx.queueService,
+          signPublicArtifactUrls: !!ctx.cfg.app.signPublicArtifactUrls,
+          publicBucket: ctx.publicArtifactBucket,
+          privateBucket: ctx.privateArtifactBucket,
+          regionResolver: ctx.regionResolver,
+          credentials: ctx.cfg.taskcluster.credentials,
+          artifactRegion: ctx.cfg.aws.region,
+          monitor: ctx.monitor.childMonitor('api-context'),
+          workClaimer: ctx.workClaimer,
+          workerInfo: ctx.workerInfo,
+          LRUcache: new QuickLRU({ maxSize: ctx.cfg.app.taskCacheMaxSize || 10 }),
+          objectService: ctx.objectService,
+          taskMaxDependencies: Math.min(
+            ctx.cfg.app.taskMaxDependencies ?? DEFAULT_MAX_TASK_DEPENDENCIES,
+            DEFAULT_MAX_TASK_DEPENDENCIES,
+          ),
+        },
+        rootUrl: ctx.cfg.taskcluster.rootUrl,
+        schemaset: ctx.schemaset,
+        monitor,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   // Create the server process
@@ -264,6 +286,28 @@ let load = loader({
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
+      return resolver;
+    },
+  },
+
+  // Create the worker-removed-resolver process
+  'worker-removed-resolver': {
+    requires: [
+      'cfg', 'db', 'queueService', 'publisher', 'monitor',
+      'dependencyTracker', 'pulseClient', 'workerManagerEvents',
+    ],
+    setup: async ({
+      db, queueService, publisher, dependencyTracker,
+      monitor, pulseClient, workerManagerEvents,
+    }) => {
+      let resolver = new WorkerRemovedResolver({
+        db, queueService, publisher, dependencyTracker,
+        pulseClient, workerManagerEvents,
+        monitor: monitor.childMonitor('worker-removed-resolver'),
+      });
+      await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },
@@ -286,6 +330,7 @@ let load = loader({
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },
@@ -397,6 +442,25 @@ let load = loader({
         const count = await workerInfo.expire(now);
         debug('Expired %s worker-info', count);
       });
+    },
+  },
+
+  // Create the worker metrics collection process (continuous background job)
+  'queue-metrics': {
+    requires: ['cfg', 'db', 'monitor', 'queueService'],
+    setup: async ({ cfg, db, monitor, queueService }, ownName) => {
+      /** @type {import('@taskcluster/lib-monitor').Monitor} */
+      const childMonitor = monitor.childMonitor('queue-metrics');
+      const collector = new MetricsCollector({
+        ownName,
+        db,
+        queueService,
+        monitor: childMonitor,
+        pollingDelay: cfg.app.workerMetrics?.pollingDelay || 30000,
+      });
+      await collector.start();
+      childMonitor.exposeMetrics('totals');
+      return collector;
     },
   },
 

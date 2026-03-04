@@ -1,8 +1,8 @@
 import assert from 'assert';
 import QueueService from './queueservice.js';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
-import { sleep } from './utils.js';
+import { sleep, splitTaskQueueId } from './utils.js';
 
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
@@ -145,6 +145,22 @@ class ClaimResolver {
 
     let status = task.status();
 
+    // Publish message about task exception
+    await this.publisher.taskException({
+      status: status,
+      runId: runId,
+      task: { tags: task.tags || {} },
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+    }, task.routes);
+    this.monitor.log.taskException({ taskId, runId });
+
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    this.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
+
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
     let newRun = task.runs[runId + 1];
@@ -157,21 +173,13 @@ class ClaimResolver {
         this.publisher.taskPending({
           status: status,
           runId: runId + 1,
+          task: { tags: task.tags || {} },
         }, task.routes),
       ]);
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       // Update dependencyTracker
       await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
-
-      // Publish message about task exception
-      await this.publisher.taskException({
-        status: status,
-        runId: runId,
-        workerGroup: run.workerGroup,
-        workerId: run.workerId,
-      }, task.routes);
-      this.monitor.log.taskException({ taskId, runId });
     }
 
     return remove();

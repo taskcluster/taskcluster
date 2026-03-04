@@ -6,7 +6,7 @@ const Registry = require('./helper/docker_registry');
 const settings = require('../settings');
 const TestWorker = require('../testworker');
 const { removeImage } = require('../../src/util/remove_image');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 const CREDENTIALS = {
@@ -56,7 +56,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     settings.cleanup();
     try {
       await removeImage(docker, registryImageName);
-    } catch(e) {
+    } catch (e) {
       // 404's are ok if the test failed to pull the image
       if (e.statusCode !== 404) {
         throw e;

@@ -21,12 +21,16 @@ spec:
         spec:
           restartPolicy: OnFailure
           imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+          securityContext:
+            runAsNonRoot: true
           containers:
             - name: taskcluster-worker-manager-expire-workers
               image: '{{ .Values.dockerImage }}'
               imagePullPolicy: Always
               args:
                 - worker-manager/expire-workers
+              securityContext:
+                allowPrivilegeEscalation: false
               resources:
                 requests:
                   cpu: '{{ .Values.worker_manager.procs.expire_workers.cpu }}'
@@ -40,4 +44,6 @@ spec:
                   value: production
               envFrom:
                 - secretRef:
+                    name: taskcluster-worker-manager
+                - configMapRef:
                     name: taskcluster-worker-manager

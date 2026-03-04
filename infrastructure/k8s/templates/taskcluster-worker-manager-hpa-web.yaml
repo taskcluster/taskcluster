@@ -1,0 +1,33 @@
+{{- if .Values.worker_manager.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskcluster-worker-manager-hpa
+  labels:
+    app.kubernetes.io/name: taskcluster-worker-manager
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-worker-manager-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskcluster-worker-manager
+  minReplicas: {{ .Values.worker_manager.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.worker_manager.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.worker_manager.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.worker_manager.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.worker_manager.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

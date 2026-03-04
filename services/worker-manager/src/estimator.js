@@ -4,9 +4,20 @@ export class Estimator {
     this.monitor = monitor;
   }
 
-  async simple({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0, workerInfo }) {
-    const { pendingTasks } = await this.queue.pendingTasks(workerPoolId);
-    const { existingCapacity, stoppingCapacity = 0, requestedCapacity = 0 } = workerInfo;
+  #calculateCapacity({
+    pendingTasks,
+    claimedTasks,
+    existingCapacity,
+    stoppingCapacity,
+    minCapacity,
+    maxCapacity,
+    scalingRatio,
+  }) {
+    // if data is stale we might have more claimed tasks than existing capacity
+    const totalIdleCapacity = Math.max(0, existingCapacity - claimedTasks);
+
+    // we assume that idle workers are going to pick up tasks soon
+    const adjustedPendingTasks = Math.max(0, pendingTasks - totalIdleCapacity);
 
     // Due to the fact that workers could fail to start on azure, deprovisioning will take significant amount of time
     // and on the next provision loop, those workers wouldn't be considered as requested or existing capacity
@@ -24,13 +35,63 @@ export class Estimator {
     const desiredCapacity = Math.max(
       minCapacity,
       // only scale as high as maxCapacity
-      Math.min(pendingTasks * scalingRatio + totalNonStopped, maxCapacity),
+      Math.min(adjustedPendingTasks * scalingRatio + totalNonStopped, maxCapacity),
     );
+
+    return { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity };
+  }
+
+  /**
+   * Compute the target capacity for termination decisions.
+   * Unlike desiredCapacity/simple (which are designed for provisioning and
+   * include existing worker counts), this returns how many workers the pool
+   * actually needs based purely on demand (pending + claimed tasks),
+   * minCapacity, and maxCapacity.
+   */
+  async targetCapacity({ workerPoolId, minCapacity, maxCapacity, scalingRatio = 1.0 }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const demand = (pendingTasks + claimedTasks) * scalingRatio;
+    return Math.max(minCapacity, Math.min(demand, maxCapacity));
+  }
+
+  async desiredCapacity({
+    workerPoolId,
+    minCapacity,
+    maxCapacity,
+    scalingRatio = 1.0,
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+  }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const { desiredCapacity } = this.#calculateCapacity({
+      pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
+      minCapacity, maxCapacity, scalingRatio,
+    });
+    return desiredCapacity;
+  }
+
+  async simple({
+    workerPoolId,
+    providerId,
+    minCapacity,
+    maxCapacity,
+    scalingRatio = 1.0,
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+    workerInfoByWorkerGroup = new Map(),
+  }) {
+    const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
+    const { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity } =
+      this.#calculateCapacity({
+        pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
+        minCapacity, maxCapacity, scalingRatio,
+      });
+
     const estimatorInfo = {
       workerPoolId,
       pendingTasks,
       minCapacity,
       maxCapacity,
+      totalIdleCapacity,
+      adjustedPendingTasks,
       scalingRatio,
       existingCapacity,
       desiredCapacity,
@@ -61,8 +122,68 @@ export class Estimator {
     // how many extra we want if we do want any
     const toSpawn = Math.max(0, desiredCapacity - totalNonStopped);
 
+    this.exposeMetrics({
+      workerPoolId,
+      providerId,
+      existingCapacity,
+      stoppingCapacity,
+      requestedCapacity,
+      desiredCapacity,
+      totalIdleCapacity,
+      adjustedPendingTasks,
+      pendingTasks,
+      claimedTasks,
+      workerInfoByWorkerGroup,
+    });
+
     // subtract the instances that are starting up from that number to spawn
     // if the value is <= 0, than we don't need to spawn any new instance
     return Math.max(toSpawn - requestedCapacity, 0);
+  }
+
+  /**
+   * Expose all metrics for provisioning
+   * @param {{
+   *    workerPoolId: string, providerId: string,
+   *    existingCapacity: number, stoppingCapacity: number, requestedCapacity: number,
+   *    desiredCapacity: number, totalIdleCapacity: number, adjustedPendingTasks: number,
+   *    pendingTasks: number, claimedTasks: number,
+   *    workerInfoByWorkerGroup: Map<string, {
+   *        existingCapacity: number, stoppingCapacity: number, requestedCapacity: number }>,
+   *  }} metrics
+   */
+  exposeMetrics({
+    workerPoolId,
+    providerId,
+    existingCapacity,
+    stoppingCapacity,
+    requestedCapacity,
+    desiredCapacity,
+    totalIdleCapacity,
+    adjustedPendingTasks,
+    pendingTasks,
+    claimedTasks,
+    workerInfoByWorkerGroup,
+  }) {
+    const poolLabels = { workerPoolId, providerId };
+
+    this.monitor.metric.desiredCapacity(desiredCapacity, poolLabels);
+    this.monitor.metric.totalIdleCapacity(totalIdleCapacity, poolLabels);
+    this.monitor.metric.adjustedPendingTasks(adjustedPendingTasks, poolLabels);
+    this.monitor.metric.pendingTasks(pendingTasks, poolLabels);
+    this.monitor.metric.claimedTasks(claimedTasks, poolLabels);
+
+    if (workerInfoByWorkerGroup.size > 0) {
+      for (const [workerGroup, info] of workerInfoByWorkerGroup) {
+        const labels = { workerPoolId, providerId, workerGroup };
+        this.monitor.metric.existingCapacity(info.existingCapacity, labels);
+        this.monitor.metric.stoppingCapacity(info.stoppingCapacity, labels);
+        this.monitor.metric.requestedCapacity(info.requestedCapacity, labels);
+      }
+    } else {
+      this.monitor.metric.existingCapacity(existingCapacity, poolLabels);
+      this.monitor.metric.stoppingCapacity(stoppingCapacity, poolLabels);
+      this.monitor.metric.requestedCapacity(requestedCapacity, poolLabels);
+    }
   }
 }

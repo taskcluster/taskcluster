@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -170,7 +170,7 @@ type (
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitzero"`
 	}
 
 	// List of lastFires
@@ -239,7 +239,7 @@ type (
 		// Another copy of the taskId, at the location where it was published in
 		// Taskcluster versions before v42.  Prefer to use the top-level property,
 		// as `status.taskId` may be removed in future versions.
-		Status Status `json:"status,omitempty"`
+		Status Status `json:"status,omitzero"`
 
 		// TaskId of the task created by triggering the hook.
 		//

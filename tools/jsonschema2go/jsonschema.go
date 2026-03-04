@@ -100,7 +100,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 	"sigs.k8s.io/yaml"
 )
 
@@ -118,12 +118,12 @@ type (
 		AdditionalProperties *AdditionalProperties  `json:"additionalProperties,omitempty"`
 		AllOf                *Items                 `json:"allOf,omitempty"`
 		AnyOf                *Items                 `json:"anyOf,omitempty"`
-		Const                *interface{}           `json:"const,omitempty"`
-		Default              *interface{}           `json:"default,omitempty"`
+		Const                *any                   `json:"const,omitempty"`
+		Default              *any                   `json:"default,omitempty"`
 		Definitions          *Properties            `json:"definitions,omitempty"`
 		Dependencies         map[string]*Dependency `json:"dependencies,omitempty"`
 		Description          *string                `json:"description,omitempty"`
-		Enum                 []interface{}          `json:"enum,omitempty"`
+		Enum                 []any                  `json:"enum,omitempty"`
 		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum,omitempty"`
 		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum,omitempty"`
 		Format               *string                `json:"format,omitempty"`
@@ -269,7 +269,7 @@ func (subSchema JsonSubSchema) String() string {
 	return string(b)
 }
 
-func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDefaults bool, topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
+func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDefaults bool, topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ, typeCategory string) {
 	// Ignore all other properties if this has a $ref, and only redirect to the referened schema.
 	// See https://tools.ietf.org/html/draft-handrews-json-schema-01#section-8.3:
 	//   `All other properties in a "$ref" object MUST be ignored.`
@@ -365,14 +365,16 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 		comment += "//\n" + metadata
 	}
 	typ = "json.RawMessage"
+	typeCategory = "raw"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
 	}
 	switch typ {
 	case "array":
-		typ = "[]interface{}"
+		typ = "[]any"
+		typeCategory = "slice"
 		if jsonSubSchema.Items != nil {
-			arrayComment, arrayType := jsonSubSchema.Items.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
+			arrayComment, arrayType, _ := jsonSubSchema.Items.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			typ = "[]" + arrayType
 			// only add array comments if target schema is a primitive type
 			if jsonSubSchema.Items.TargetSchema().TypeName == "" {
@@ -383,6 +385,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 	case "object":
 		if jsonSubSchema.AnyOf != nil || jsonSubSchema.AllOf != nil || jsonSubSchema.OneOf != nil {
 			typ = "json.RawMessage"
+			typeCategory = "raw"
 			break
 		}
 		ap := jsonSubSchema.AdditionalProperties
@@ -392,15 +395,18 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 			// generate a struct with all allowed property names.
 			if !topLevel && disableNested {
 				typ = jsonSubSchema.getTypeName()
+				typeCategory = "struct"
 			} else {
 				typ = jsonSubSchema.Properties.AsStruct(disableNested, enableDefaults, extraPackages, rawMessageTypes)
+				typeCategory = "struct"
 			}
 		} else if ap != nil && ap.Properties != nil && jsonSubSchema.Properties == nil {
 			// In the special case no properties have been specified, but
 			// additionalProperties is an object, we can create a
 			// map[string]<additionalProperties definition>.
-			subComment, subType := ap.Properties.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
+			subComment, subType, _ := ap.Properties.typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			typ = "map[string]" + subType
+			typeCategory = "map"
 			// only add subcomments if target schema is a primitive type
 			if ap.Properties.TargetSchema().TypeName == "" {
 				// subComment already contains leading newline char (\n)
@@ -418,27 +424,33 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 			}
 			if ap != nil && ap.Properties != nil {
 				comment += "//\n// Additional properties:\n"
-				subComment, subType := ap.Properties.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
+				subComment, subType, _ := ap.Properties.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
 				comment += text.Indent(subComment, "//  ")
 				comment += text.Indent(subType, "//  ") + "\n"
 			} else {
 				comment += "//\n// Additional properties allowed\n"
 			}
 			typ = "json.RawMessage"
+			typeCategory = "raw"
 		}
 	case "number":
 		typ = "float64"
+		typeCategory = "primitive"
 	case "integer":
 		typ = "int64"
+		typeCategory = "primitive"
 	case "boolean":
 		typ = "bool"
+		typeCategory = "primitive"
 	// json type string maps to go type string, so only need to test case of when
 	// string is a json date-time, so we can convert to go type Time...
 	case "string":
+		typeCategory = "primitive"
 		if f := jsonSubSchema.Format; f != nil {
 			if *f == "date-time" {
 				typ = "tcclient.Time"
-				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v60/clients/client-go\""] = true
+				typeCategory = "struct"
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v97/clients/client-go\""] = true
 			}
 		}
 	}
@@ -466,15 +478,15 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 			rawMessageTypes[jsonSubSchema.TypeName] = true
 		}
 	}
-	return comment, typ
+	return comment, typ, typeCategory
 }
 
 func (p Properties) String() string {
-	result := ""
+	var result strings.Builder
 	for _, i := range p.SortedPropertyNames {
-		result += "Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  ")
+		result.WriteString("Property '" + i + "' =\n" + text.Indent(p.Properties[i].String(), "  "))
 	}
-	return result
+	return result.String()
 }
 
 func (p *Properties) prepare(job *Job) error {
@@ -584,11 +596,11 @@ func (aP AdditionalProperties) String() string {
 }
 
 func (items Items) String() string {
-	result := ""
+	var result strings.Builder
 	for i, j := range items.Items {
-		result += fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  ")
+		result.WriteString(fmt.Sprintf("Item '%v' =\n", i) + text.Indent(j.String(), "  "))
 	}
-	return result
+	return result.String()
 }
 
 func (items *Items) prepare(job *Job) error {
@@ -802,7 +814,7 @@ func (items *Items) MergeIn(subSchema *JsonSubSchema, skipFields StringSet) {
 	// loop through all struct fields of Jsonsubschema
 	for i := range p.NumField() {
 		// don't copy fields that are blacklisted, or that aren't pointers
-		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Ptr {
+		if skipFields[p.Type().Field(i).Name] || p.Field(i).Kind() != reflect.Pointer {
 			continue
 		}
 		// loop through all items (e.g. the list of oneOf schemas)
@@ -937,22 +949,23 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 func generateGoTypes(disableNested bool, enableDefaults bool, schemaSet *SchemaSet) (string, StringSet, StringSet) {
 	extraPackages := make(StringSet)
 	rawMessageTypes := make(StringSet)
-	content := "type (" // intentionally no \n here since each type starts with one already
+	var content strings.Builder
+	content.WriteString("type (") // intentionally no \n here since each type starts with one already
 	// Loop through all json schemas that were found referenced inside the API json schemas...
 	typeDefinitions := make(map[string]string)
 	typeNames := make([]string, 0, len(schemaSet.used))
 	for _, i := range schemaSet.used {
 		log.Printf("Type name: '%v' - %v", i.getTypeName(), i.SourceURL)
 		var newComment, newType string
-		newComment, newType = i.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
+		newComment, newType, _ = i.typeDefinition(disableNested, enableDefaults, true, extraPackages, rawMessageTypes)
 		typeDefinitions[i.TypeName] = text.Indent(newComment+i.TypeName+" "+newType, "\t")
 		typeNames = append(typeNames, i.getTypeName())
 	}
 	sort.Strings(typeNames)
 	for _, t := range typeNames {
-		content += typeDefinitions[t] + "\n"
+		content.WriteString(typeDefinitions[t] + "\n")
 	}
-	return content + ")\n\n", extraPackages, rawMessageTypes
+	return content.String() + ")\n\n", extraPackages, rawMessageTypes
 }
 
 func (job *Job) Execute() (*Result, error) {
@@ -1044,9 +1057,9 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 		i++
 	}
 	sort.Strings(sortedRawMessageTypes)
-	content := ""
+	var content strings.Builder
 	for _, goType := range sortedRawMessageTypes {
-		content += `
+		content.WriteString(`
 
 	// MarshalJSON calls json.RawMessage method of the same name. Required since
 	// ` + goType + ` is of type json.RawMessage...
@@ -1062,9 +1075,9 @@ func jsonRawMessageImplementors(rawMessageTypes StringSet) string {
 		}
 		*m = append((*m)[0:0], data...)
 		return nil
-	}`
+	}`)
 	}
-	return content
+	return content.String()
 }
 
 func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPackages StringSet, rawMessageTypes StringSet) (typ string) {
@@ -1072,12 +1085,16 @@ func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPack
 	if s != nil {
 		for _, j := range s.SortedPropertyNames {
 			// recursive call to build structs inside structs
-			var subComment, subType string
 			subMember := s.MemberNames[j]
-			subComment, subType = s.Properties[j].typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
+			subComment, subType, subTypeCategory := s.Properties[j].typeDefinition(disableNested, enableDefaults, false, extraPackages, rawMessageTypes)
 			jsonStructTagOptions := ""
 			if !s.Properties[j].IsRequired {
-				jsonStructTagOptions = ",omitempty"
+				switch subTypeCategory {
+				case "struct":
+					jsonStructTagOptions = ",omitzero"
+				case "slice", "map", "raw", "primitive":
+					jsonStructTagOptions = ",omitempty"
+				}
 			}
 			defaultStructTag := ""
 			if def := s.Properties[j].Default; enableDefaults && (def != nil) {
@@ -1087,10 +1104,10 @@ func (s *Properties) AsStruct(disableNested bool, enableDefaults bool, extraPack
 				// when more types are needed
 				case string, bool:
 					defaultStructTag = fmt.Sprintf(` default:"%v"`, *def)
-					// remove omitempty since a default value is provided
+					// remove omitempty/omitzero since a default value is provided
 					// if user provides an empty string or false,
 					// json.Marshal will disregard the default value if
-					// omitempty is present
+					// omitempty/omitzero is present
 					jsonStructTagOptions = ""
 				}
 			}
@@ -1180,7 +1197,7 @@ func (subSchema *JsonSubSchema) inferType() *string {
 	return nil
 }
 
-func jsonSchemaTypeFromValue(v interface{}) *string {
+func jsonSchemaTypeFromValue(v any) *string {
 	var inferredType string
 	switch t := v.(type) {
 	case bool:
@@ -1189,9 +1206,9 @@ func jsonSchemaTypeFromValue(v interface{}) *string {
 		inferredType = "number"
 	case string:
 		inferredType = "string"
-	case []interface{}:
+	case []any:
 		inferredType = "array"
-	case map[string]interface{}:
+	case map[string]any:
 		inferredType = "object"
 	case nil:
 		inferredType = "null"

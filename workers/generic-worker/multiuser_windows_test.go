@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
@@ -15,10 +16,6 @@ func TestAppDataNotShared(t *testing.T) {
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
 	setup(t)
-
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Not running, since APPDATA does not change when running as current user")
-	}
 
 	// Run two tasks in sequence...
 
@@ -71,9 +68,6 @@ func TestNoCreateFileMappingError(t *testing.T) {
 		t.Skip("Skipping since GW_SKIP_MOZILLA_BUILD_TESTS env var is set")
 	}
 	setup(t)
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
-	}
 
 	payload := GenericWorkerPayload{
 		// run several bash commands, as running one is horribly slow, but
@@ -101,28 +95,96 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
-func TestDesktopResizeAndMovePointer(t *testing.T) {
-	if os.Getenv("GW_SKIP_PYTHON_TESTS") != "" {
-		t.Skip("Skipping since GW_SKIP_PYTHON_TESTS env var is set")
-	}
+// TestHideCmdWindowEnabled verifies that when hideCmdWindow feature is enabled,
+// the spawned process does not have a console window attached.
+// This uses the GetConsoleWindow() Win32 API which returns NULL when no console
+// is attached (i.e., when CREATE_NO_WINDOW flag is used).
+func TestHideCmdWindowEnabled(t *testing.T) {
 	setup(t)
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
-	}
-	commands := copyTestdataFile("mouse_and_screen_resolution.py")
-	commands = append(commands, copyTestdataFile("machine-configuration.json")...)
-	commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")
+
 	payload := GenericWorkerPayload{
-		Command:    commands,
-		MaxRunTime: 90,
-		// Don't assume python 2 is in the default system PATH, but rather
-		// require that python 2 is in the PATH of the test process.
-		Env: map[string]string{
-			"PATH": os.Getenv("PATH"),
+		Command:    goRun("check-console-window.go", "true"),
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			HideCmdWindow: true,
 		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// TestHideCmdWindowDisabled verifies that when hideCmdWindow feature is disabled
+// (the default), the spawned process has a console window attached.
+// This uses the GetConsoleWindow() Win32 API which returns a non-NULL handle
+// when a console is attached (i.e., when CREATE_NEW_CONSOLE flag is used).
+func TestHideCmdWindowDisabled(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("check-console-window.go", "false"),
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			HideCmdWindow: false,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// TestHideCmdWindowDefault verifies that when hideCmdWindow feature is not
+// explicitly set, the default behavior is to have a console window attached.
+func TestHideCmdWindowDefault(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("check-console-window.go", "false"),
+		MaxRunTime: 30,
+		// Features.HideCmdWindow not set - should default to false
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestDesktopResizeAndMovePointer(t *testing.T) {
+	if os.Getenv("GW_SKIP_PYTHON_TESTS") != "" {
+		t.Skip("Skipping since GW_SKIP_PYTHON_TESTS env var is set")
+	}
+
+	// We run the same test under both headless and non-headless mode, but
+	// expect different results. So pull it out into its own function...
+	f := func(t *testing.T, headless bool) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+		t.Helper()
+		setup(t)
+		config.HeadlessTasks = headless
+		commands := copyTestdataFile("mouse_and_screen_resolution.py")
+		commands = append(commands, copyTestdataFile("machine-configuration.json")...)
+		commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")
+		payload = GenericWorkerPayload{
+			Command:    commands,
+			MaxRunTime: 90,
+			// Don't assume python 2 is in the default system PATH, but rather
+			// require that python 2 is in the PATH of the test process.
+			Env: map[string]string{
+				"PATH": os.Getenv("PATH"),
+			},
+		}
+		defaults.SetDefaults(&payload)
+		td = testTask(t)
+		return
+	}
+
+	// Not headless test
+	td, payload := f(t, false)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+
+	// Headless test
+	td, payload = f(t, true)
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
 }

@@ -3,7 +3,7 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import child_process from 'child_process';
 import Observable from 'zen-observable';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import { rimraf } from 'rimraf';
 
@@ -26,18 +26,36 @@ export const pyClientRelease = async ({ dir, username, password, logfile, utils 
         env: {
           ...process.env,
           HOME: homeDir,
-          TWINE_USERNAME: username,
-          TWINE_PASSWORD: password,
-          TWINE_REPOSITORY_URL: 'https://upload.pypi.org/legacy/',
-          TWINE_NON_INTERACTIVE: '1',
+          UV_PUBLISH_USERNAME: username,
+          UV_PUBLISH_PASSWORD: password,
+          UV_PUBLISH_URL: 'https://upload.pypi.org/legacy/',
         },
         cwd: dir,
       });
 
       if (logfile) {
         const logStream = fs.createWriteStream(logfile);
-        proc.stdout.pipe(logStream);
-        proc.stderr.pipe(logStream);
+        proc.stdout.pipe(logStream, { end: false });
+        proc.stderr.pipe(logStream, { end: false });
+
+        let stdoutEnded = false;
+        let stderrEnded = false;
+
+        const checkToCloseStream = () => {
+          if (stdoutEnded && stderrEnded) {
+            logStream.end();
+          }
+        };
+
+        proc.stdout.on('end', () => {
+          stdoutEnded = true;
+          checkToCloseStream();
+        });
+
+        proc.stderr.on('end', () => {
+          stderrEnded = true;
+          checkToCloseStream();
+        });
       }
 
       const loglines = data =>

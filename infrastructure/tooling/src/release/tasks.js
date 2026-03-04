@@ -22,9 +22,10 @@ import {
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
+  execCommand,
 } from '../utils/index.js';
 
-import { schema as readSchema } from 'taskcluster-db';
+import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
@@ -149,11 +150,21 @@ export default ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
-      const pyclient = 'clients/client-py/setup.py';
-      utils.status({ message: `Update ${pyclient}` });
-      await modifyRepoFile(pyclient, contents =>
-        contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
-      changed.push(pyclient);
+      const pyClientDir = path.join('clients', 'client-py');
+      const pyClientPyprojectToml = path.join(pyClientDir, 'pyproject.toml');
+      utils.status({ message: `Update ${pyClientPyprojectToml}` });
+      await modifyRepoFile(pyClientPyprojectToml, contents =>
+        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+      changed.push(pyClientPyprojectToml);
+
+      const pyClientUvLock = path.join(pyClientDir, 'uv.lock');
+      utils.status({ message: `Update ${pyClientUvLock}` });
+      await execCommand({
+        command: ['uv', 'lock', '-P', 'taskcluster'],
+        dir: path.join(REPO_ROOT, pyClientDir),
+        utils,
+      });
+      changed.push(pyClientUvLock);
 
       for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;

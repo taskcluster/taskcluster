@@ -1,11 +1,29 @@
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import slug from 'slugid';
 import assert from 'assert';
 import { ApiError, Provider } from './providers/provider.js';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  WORKER_POOL: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
+/**
+ * @type {APIBuilder<{
+ *  cfg: object;
+ *  providers: import('./providers/index.js').Providers;
+ *  db: import('@taskcluster/lib-postgres').Database;
+ *  monitor: import('@taskcluster/lib-monitor').Monitor;
+ *  notify: object; // TODO import('@taskcluster/client').Notify;
+ *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
+ * }>}
+ */
 let builder = new APIBuilder({
   title: 'Worker Manager Service',
   description: [
@@ -52,6 +70,26 @@ const declareWithTrailingColon = (options, handler) => {
 
   // declare the un-modified version
   builder.declare(options, handler);
+};
+
+const publishLaunchConfigEvents = async ({
+  publisher,
+  workerPoolId, providerId,
+  updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs }) => {
+
+  for (const launchConfigId of updatedLaunchConfigs) {
+    await publisher.launchConfigUpdated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of createdLaunchConfigs) {
+    await publisher.launchConfigCreated({ workerPoolId, providerId, launchConfigId });
+  }
+  for (const launchConfigId of archivedLaunchConfigs) {
+    await publisher.launchConfigArchived({ workerPoolId, providerId, launchConfigId });
+  }
+};
+
+const launchConfigIdQuery = {
+  launchConfigId: /^[a-zA-Z0-9-]{1,38}$/,
 };
 
 builder.declare({
@@ -108,7 +146,6 @@ builder.declare({
   const { workerPoolId } = req.params;
   const input = req.body;
   const providerId = input.providerId;
-
   await req.authorize({ workerPoolId, providerId });
 
   const provider = this.providers.get(providerId);
@@ -133,16 +170,55 @@ builder.declare({
 
   let workerPool = WorkerPool.fromApi({ workerPoolId, ...input });
 
+  let updatedLaunchConfigs = [];
+  let createdLaunchConfigs = [];
+  let archivedLaunchConfigs = [];
+
   try {
-    await workerPool.create(this.db);
+    const rows = await workerPool.create(this.db);
+    if (rows.length === 1) {
+      updatedLaunchConfigs = rows[0].updated_launch_configs;
+      createdLaunchConfigs = rows[0].created_launch_configs;
+      archivedLaunchConfigs = rows[0].archived_launch_configs;
+    }
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
     }
-    return res.reportError('RequestConflict', 'Worker pool already exists', {});
+    const message = err.message.includes('Launch config') ?
+      err.message :
+      'Worker pool already exists';
+    return res.reportError('RequestConflict', message, {});
   }
 
-  await this.publisher.workerPoolCreated({ workerPoolId, providerId });
+  // messages would be published with extra info
+  await this.publisher.workerPoolCreated({
+    workerPoolId,
+    providerId,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
+  });
+
+  // refresh from DB to include launchConfigIds
+  workerPool = await WorkerPool.get(this.db, workerPoolId);
+
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker-pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.CREATED,
+  );
+
   res.reply(workerPool.serializable());
 });
 
@@ -196,24 +272,59 @@ builder.declare({
     return res.reportError('InputError', 'Incorrect workerPoolId in request body', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
-    workerPoolId,
-    input.providerId,
-    input.description,
-    input.config,
-    new Date(),
-    input.owner,
-    input.emailOnError);
+  let row;
+  try {
+    const rows = await this.db.fns.update_worker_pool_with_launch_configs(
+      workerPoolId,
+      input.providerId,
+      input.description,
+      input.config,
+      new Date(),
+      input.owner,
+      input.emailOnError);
+    row = rows[0];
+  } catch (err) {
+    if (err.code !== UNIQUE_VIOLATION) {
+      throw err;
+    }
+    return res.reportError('RequestConflict', err.message, {});
+  }
+
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const workerPool = WorkerPool.fromDb(row);
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
+  const workerPool = WorkerPool.fromDb(wp);
+
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker-pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.UPDATED,
+  );
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
+  });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
   });
   res.reply(workerPool.serializable());
 });
@@ -231,6 +342,7 @@ builder.declare({
     'Mark a worker pool for deletion.  This is the same as updating the pool to',
     'set its providerId to `"null-provider"`, but does not require scope',
     '`worker-manager:provider:null-provider`.',
+    'This will also mark all launch configurations as archived.',
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId } = req.params;
@@ -243,25 +355,144 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
 
-  const [row] = await this.db.fns.update_worker_pool_with_capacity_and_counts_by_state(
+  // updating worker pool without launch configs would mark all existing as archived
+  const newConfig = workerPool.config?.launchConfigs ? { ...workerPool.config, launchConfigs: [] } : workerPool.config;
+
+  const [row] = await this.db.fns.update_worker_pool_with_launch_configs(
     workerPoolId,
     providerId,
     workerPool.description,
-    workerPool.config,
+    newConfig,
     new Date(),
     workerPool.owner,
     workerPool.emailOnError);
   if (!row) {
     return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
   }
-  workerPool = WorkerPool.fromDb(row);
+
+  const {
+    updated_launch_configs: updatedLaunchConfigs,
+    created_launch_configs: createdLaunchConfigs,
+    archived_launch_configs: archivedLaunchConfigs,
+    ...wp
+  } = row;
+
+  // reload full worker pool
+  workerPool = WorkerPool.fromDb(wp);
+
+  this.monitor.log.auditEvent({
+    service: 'worker-manager',
+    entity: 'worker-pool',
+    entityId: workerPoolId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,
+  });
+
+  await this.db.fns.insert_worker_manager_audit_history(
+    workerPoolId,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.WORKER_POOL.DELETED,
+  );
 
   await this.publisher.workerPoolUpdated({
     workerPoolId,
     providerId,
     previousProviderId: row.previous_provider_id,
   });
+  await publishLaunchConfigEvents({
+    publisher: this.publisher,
+    workerPoolId, providerId,
+    updatedLaunchConfigs, createdLaunchConfigs, archivedLaunchConfigs,
+  });
   res.reply(workerPool.serializable());
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pool/:workerPoolId/launch-configs',
+  query: {
+    ...paginateResults.query,
+    includeArchived: /^(true|false)$/,
+  },
+  name: 'listWorkerPoolLaunchConfigs',
+  scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
+  title: 'List Worker Pool Launch Configs',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Pool Launch Configs',
+  output: 'worker-pool-launch-config-list.yml',
+  description: [
+    'Get the list of launch configurations for a given worker pool.',
+    'Include archived launch configurations by setting includeArchived=true.',
+    'By default, only active launch configurations are returned.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId } = req.params;
+  const includeArchived = req.query.includeArchived === 'true';
+
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pool_launch_configs(
+      workerPoolId, includeArchived ? null : false, size, offset),
+  });
+
+  const result = {
+    workerPoolLaunchConfigs: rows.map(row => ({
+      launchConfigId: row.launch_config_id,
+      workerPoolId: row.worker_pool_id,
+      isArchived: row.is_archived,
+      configuration: row.configuration,
+      created: row.created.toJSON(),
+      lastModified: row.last_modified.toJSON(),
+    })),
+    continuationToken,
+  };
+
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pool/:workerPoolId(*)/stats',
+  name: 'workerPoolStats',
+  scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
+  title: 'Get Worker Pool Statistics',
+  category: 'Worker Pools',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-pool-stats.yml',
+  description: [
+    'Fetch statistics for an existing worker pool, broken down by launch configuration.',
+    'This includes counts and capacities of requested, running, stopping, and stopped workers.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId } = req.params;
+
+  const workerPool = await WorkerPool.get(this.db, workerPoolId);
+  if (!workerPool) {
+    return res.reportError('ResourceNotFound', 'Worker pool does not exist', {});
+  }
+
+  const rows = await this.db.fns.get_worker_pool_counts_and_capacity_lc(workerPoolId, null);
+
+  const launchConfigStats = rows.map(row => ({
+    workerPoolId: row.worker_pool_id,
+    launchConfigId: row.launch_config_id || 'unknown',
+    currentCapacity: row.current_capacity || 0,
+    requestedCapacity: row.requested_capacity || 0,
+    runningCapacity: row.running_capacity || 0,
+    stoppingCapacity: row.stopping_capacity || 0,
+    stoppedCapacity: row.stopped_capacity || 0,
+    requestedCount: row.requested_count || 0,
+    runningCount: row.running_count || 0,
+    stoppingCount: row.stopping_count || 0,
+    stoppedCount: row.stopped_count || 0,
+  }));
+
+  return res.reply({ launchConfigStats });
 });
 
 builder.declare({
@@ -302,10 +533,35 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pools_with_capacity_and_counts_by_state(size, offset),
+    fetch: (size, offset) => this.db.fns.get_worker_pools_with_launch_configs(size, offset),
   });
   const result = {
     workerPools: rows.map(r => WorkerPool.fromDb(r).serializable()),
+    continuationToken,
+  };
+  return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/worker-pools/stats',
+  query: paginateResults.query,
+  name: 'listWorkerPoolsStats',
+  scopes: 'worker-manager:list-worker-pools',
+  title: 'List All Worker Pools Stats',
+  stability: APIBuilder.stability.experimental,
+  category: 'Worker Pools',
+  output: 'worker-pool-list-stats.yml',
+  description: [
+    'Get the stats for all worker pools - number of requested, running, stopping and stopped capacity',
+  ].join('\n'),
+}, async function(req, res) {
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_worker_pools_counts_and_capacity(size, offset),
+  });
+  const result = {
+    workerPoolsStats: rows.map(r => WorkerPoolStats.fromDb(r).serializable()),
     continuationToken,
   };
   return res.reply(result);
@@ -361,12 +617,15 @@ builder.declare({
     });
   }
 
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+
   const wpe = await provider.reportError({
     workerPool,
     kind: input.kind,
     title: input.title,
     description: input.description,
     extra: { ...input.extra, workerGroup, workerId },
+    launchConfigId: worker?.launchConfigId,
   });
 
   res.reply(wpe.serializable());
@@ -413,6 +672,7 @@ builder.declare({
       title: {},
       code: {},
       workerPool: {},
+      launchConfig: {},
     },
   };
 
@@ -421,17 +681,18 @@ builder.declare({
       if (row[column] instanceof Date) {
         dict[row[column].toISOString()] = row.count;
       } else {
-        dict[row[column]] = row.count;
+        dict[row[column] ?? 'unknown'] = row.count;
       }
     }
   };
 
-  const [daily, hourly, titles, codes, pools] = await Promise.all([
+  const [daily, hourly, titles, codes, pools, launchConfigs] = await Promise.all([
     this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
     this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
     this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
     this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
     this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
+    workerPoolId ? this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, null) : [],
   ]);
 
   for (const row of daily) {
@@ -442,6 +703,7 @@ builder.declare({
   rowsToDict(out.totals.title, titles, 'title');
   rowsToDict(out.totals.code, codes, 'code');
   rowsToDict(out.totals.workerPool, pools, 'worker_pool');
+  rowsToDict(out.totals.launchConfig, launchConfigs, 'launch_config_id');
 
   return res.reply(out);
 });
@@ -449,7 +711,11 @@ builder.declare({
 builder.declare({
   method: 'get',
   route: '/worker-pool-errors/:workerPoolId(*)',
-  query: paginateResults.query,
+  query: {
+    ...paginateResults.query,
+    ...launchConfigIdQuery,
+    errorId: /^[a-zA-Z0-9-_]+$/,
+  },
   name: 'listWorkerPoolErrors',
   scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
   title: 'List Worker Pool Errors',
@@ -460,12 +726,14 @@ builder.declare({
     'Get the list of worker pool errors.',
   ].join('\n'),
 }, async function(req, res) {
-  const { errorId, workerPoolId } = req.params;
+  const { workerPoolId } = req.params;
+  const { errorId, launchConfigId } = req.query;
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool(
-      errorId || null,
+    fetch: (size, offset) => this.db.fns.get_worker_pool_errors_for_worker_pool2(
+      errorId ? String(errorId) : null,
       workerPoolId || null,
+      launchConfigId ? String(launchConfigId) : null,
       size,
       offset,
     ),
@@ -495,9 +763,10 @@ declareWithTrailingColon({
 
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers(
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2(
       workerPoolId,
       workerGroup,
+      null,
       null,
       null,
       size,
@@ -594,6 +863,9 @@ declareWithTrailingColon({
       },
     });
   } catch (err) {
+    if (err.code === UNIQUE_VIOLATION) {
+      return res.reportError('RequestConflict', 'Worker already exists', {});
+    }
     if (!(err instanceof ApiError)) {
       throw err;
     }
@@ -720,9 +992,44 @@ builder.declare({
 
 builder.declare({
   method: 'get',
+  route: '/workers/:workerPoolId/:workerGroup/:workerId/should-terminate',
+  name: 'shouldWorkerTerminate',
+  title: 'Should worker terminate',
+  category: 'Workers',
+  output: 'should-worker-terminate-response.yml',
+  stability: APIBuilder.stability.experimental,
+  scopes: 'worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>',
+  description: [
+    'Informs if worker should terminate or keep working.',
+    'Worker might no longer be needed based on the set of factors:',
+    ' - current capacity of the worker pool',
+    ' - amount of pending and claimed tasks',
+    ' - launch configuration changes',
+    '',
+    'Decision is made during provision or scanning loop based on above mentioned conditions.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { workerPoolId, workerGroup, workerId } = req.params;
+  const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
+
+  if (!worker) {
+    return res.reportError('ResourceNotFound', 'Worker not found', {});
+  }
+
+  const decision = worker.providerData.shouldTerminate;
+  if (decision) {
+    return res.reply({ terminate: decision.terminate, reason: decision.reason });
+  }
+
+  return res.reply({ terminate: false, reason: 'none' });
+});
+
+builder.declare({
+  method: 'get',
   route: '/workers/:workerPoolId(*)',
   query: {
     ...paginateResults.query,
+    ...launchConfigIdQuery,
     state: /^(requested|running|stopping|stopped|standalone)$/,
   },
   name: 'listWorkersForWorkerPool',
@@ -738,18 +1045,21 @@ builder.declare({
   const { workerPoolId } = req.params;
   const workerPool = await WorkerPool.get(this.db, workerPoolId);
 
-  if(!workerPool){
+  if (!workerPool) {
     return res.reportError('ResourceNotFound',
       `Worker Pool does not exist`, {});
   }
 
+  const { state, launchConfigId } = req.query;
+
   const { rows, continuationToken } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_worker_manager_workers({
+    fetch: (size, offset) => this.db.fns.get_worker_manager_workers2({
       worker_pool_id_in: workerPoolId,
       worker_group_in: null,
       worker_id_in: null,
-      state_in: req.query.state || null,
+      state_in: state || null,
+      launch_config_id_in: launchConfigId || null,
       page_size_in: size,
       page_offset_in: offset,
     }),
@@ -786,7 +1096,7 @@ builder.declare({
     'some proof of its identity, and that proof varies by provider type.',
   ].join('\n'),
 }, async function(req, res) {
-  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof } = req.body;
+  const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof, systemBootTime } = req.body;
 
   // carefully check each value provided, since we have not yet validated the
   // worker's "proof"
@@ -858,6 +1168,30 @@ builder.declare({
   }
   assert(expires, 'registerWorker did not return expires');
   assert(expires > new Date(), 'registerWorker returned expires in the past');
+
+  // Record provision and startup duration sub-metrics when systemBootTime is provided.
+  // These break down the existing workerRegistrationDuration into:
+  //   workerProvisionDuration = systemBootTime - worker.created (VM provisioning)
+  //   workerStartupDuration = now - systemBootTime (worker startup)
+  if (systemBootTime) {
+    const bootTimeMs = new Date(systemBootTime).getTime();
+    const createdMs = worker.created?.getTime?.();
+    const nowMs = Date.now();
+
+    if (Number.isFinite(bootTimeMs) && Number.isFinite(createdMs)) {
+      const labels = { workerPoolId, providerId, workerGroup };
+
+      const provisionSeconds = (bootTimeMs - createdMs) / 1000;
+      if (provisionSeconds >= 0) {
+        this.monitor.metric.workerProvisionDuration(provisionSeconds, labels);
+      }
+
+      const startupSeconds = (nowMs - bootTimeMs) / 1000;
+      if (startupSeconds >= 0) {
+        this.monitor.metric.workerStartupDuration(startupSeconds, labels);
+      }
+    }
+  }
 
   // We use these fields from inside the worker rather than
   // what was passed in because that is the thing we have verified
@@ -950,6 +1284,7 @@ builder.declare({
   route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
     ...paginateResults.query,
+    ...launchConfigIdQuery,
     quarantined: /^(true|false)$/,
     workerState: /^(requested|running|stopping|stopped)$/,
   },
@@ -979,7 +1314,7 @@ builder.declare({
   const { rows: workers, continuationToken } = await Worker.getWorkers(
     this.db,
     { workerPoolId },
-    { query: req.query },
+    req.query,
   );
 
   const result = {
@@ -993,9 +1328,11 @@ builder.declare({
         state: worker.state || 'standalone',
         capacity: worker.capacity || 0,
         providerId: worker.providerId || 'none',
+        launchConfigId: worker.launchConfigId,
         quarantineUntil: worker.quarantineUntil?.toJSON(),
+        latestTask: undefined,
       };
-      if (worker.recentTasks.length > 0) {
+      if (worker?.recentTasks?.length > 0) {
         entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
       }
       return entry;

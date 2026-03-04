@@ -15,7 +15,7 @@ class WorkClaimer extends events.EventEmitter {
    *   publisher:     // Pulse publisher from exchanges.js
    *   db:            // Database object
    *   queueService:  // queueService from queueservice.js
-   *   monitor:       // monitor object from taskcluster-lib-monitor
+   *   monitor:       // monitor object from @taskcluster/lib-monitor
    *   claimTimeout:  // Time for a claim to timeout in seconds
    *   credentials:   // Taskcluster credentials for creating temp creds.
    * }
@@ -154,6 +154,7 @@ class WorkClaimer extends events.EventEmitter {
       workerGroup: workerGroup,
       workerId: workerId,
       takenUntil: run.takenUntil,
+      task: { tags: task.tags || {} },
     }, task.routes);
     this._monitor.log.taskRunning({ taskId, runId });
 

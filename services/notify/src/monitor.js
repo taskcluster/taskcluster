@@ -1,4 +1,4 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({
   name: 'email',

@@ -1,14 +1,14 @@
 import _ from 'lodash';
 import util from 'util';
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import events from 'events';
 import LRU from 'quick-lru';
 import debugFactory from 'debug';
 const debug = debugFactory('auth:ScopeResolver');
 import * as trie from './trie.js';
 import ScopeSetBuilder from './scopesetbuilder.js';
-import { consume } from 'taskcluster-lib-pulse';
+import { consume } from '@taskcluster/lib-pulse';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
@@ -30,7 +30,7 @@ class ScopeResolver extends events.EventEmitter {
       disableCache: false, // useful for performance measurement
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
-    assert(options.monitor, 'expected an instance of taskcluster-lib-monitor');
+    assert(options.monitor, 'expected an instance of @taskcluster/lib-monitor');
     assert(/^ *-/.test(options.maxLastUsedDelay),
       'maxLastUsedDelay must be negative');
 

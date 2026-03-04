@@ -1,5 +1,5 @@
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import Strategy from '../src/login/strategies/mozilla-auth0.js';
 import sinon from 'sinon';
 import PersonAPI from '../src/login/clients/PersonAPI.js';

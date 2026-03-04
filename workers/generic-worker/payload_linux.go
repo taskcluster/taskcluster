@@ -1,35 +1,27 @@
-//go:build linux
-
 package main
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v60/tools/d2g"
-	"github.com/taskcluster/taskcluster/v60/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go/text"
-
-	"sigs.k8s.io/yaml"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
 )
 
 func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
 
 	// Convert the validated JSON input
-	dwPayload := new(dockerworker.DockerWorkerPayload)
-	defaults.SetDefaults(dwPayload)
-	err := json.Unmarshal(jsonPayload, &dwPayload)
+	task.DockerWorkerPayload = new(dockerworker.DockerWorkerPayload)
+	defaults.SetDefaults(task.DockerWorkerPayload)
+	err := json.Unmarshal(jsonPayload, &task.DockerWorkerPayload)
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 
-	// Convert dwPayload to gwPayload
-	gwPayload, err := d2g.Convert(dwPayload)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
-	}
 	taskQueueID := task.Definition.TaskQueueID
 	if taskQueueID == "" {
 		taskQueueID = fmt.Sprintf("%s/%s", task.Definition.ProvisionerID, task.Definition.WorkerType)
@@ -37,7 +29,20 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	if taskQueueID == "" {
 		return executionError(malformedPayload, errored, fmt.Errorf("taskQueueId ('provisionerId/workerType') is required"))
 	}
-	task.Definition.Scopes = d2g.Scopes(task.Definition.Scopes, dwPayload, taskQueueID)
+
+	// Validate that the required docker worker scopes
+	// are present for the given docker worker payload
+	// and then convert dwScopes to gwScopes
+	task.Definition.Scopes, err = d2g.ConvertScopes(task.Definition.Scopes, task.DockerWorkerPayload, taskQueueID, serviceFactory.Auth(config.Credentials(), config.RootURL))
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
+
+	// Convert task.DockerWorkerPayload to gwPayload
+	gwPayload, conversionInfo, err := d2g.ConvertPayload(task.DockerWorkerPayload, config.D2GConfig, os.ReadDir)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("failed to convert docker worker payload to a generic worker payload: %v", err))
+	}
 
 	// Convert gwPayload to JSON
 	d2gConvertedPayloadJSON, err := json.MarshalIndent(*gwPayload, "", "  ")
@@ -57,30 +62,32 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	}
 
 	task.Definition.Payload = json.RawMessage(d2gConvertedPayloadJSON)
+	task.D2GInfo = &conversionInfo
 
-	// Convert full task definition to JSON
-	d2gConvertedTaskDefinitionJSON, err := json.MarshalIndent(task.Definition, "", "  ")
-	if err != nil {
-		return executionError(malformedPayload, errored, fmt.Errorf("cannot marshal d2g converted task definition %#v to JSON: %s", task.Definition, err))
+	// Register a file mount handler for docker image artifacts so the
+	// mounts feature stores the cache info on D2GInfo instead of copying
+	// the image to the task directory. The d2g feature will pipe it to
+	// docker load via stdin.
+	if task.FileMountHandlers == nil {
+		task.FileMountHandlers = map[string]FileMountHandler{}
 	}
-
-	d2gConvertedTaskDefinitionYAML, err := yaml.JSONToYAML(d2gConvertedTaskDefinitionJSON)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not convert task definition from JSON to YAML: %v", err))
+	task.FileMountHandlers["dockerimage"] = func(cachedFile, sha256 string) error {
+		task.D2GInfo.ImageArtifactPath = cachedFile
+		task.D2GInfo.ImageArtifactSHA256 = sha256
+		return nil
 	}
-
-	task.Warn("This task was designed to run under Docker Worker. Docker Worker is no longer maintained.")
-	task.Warn("In order to execute this task, it is being converted to a Generic Worker task, using the D2G")
-	task.Warn("utility (Docker Worker 2 Generic Worker):")
-	task.Warn("    https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell#translating-docker-worker-task-definitionpayload-to-generic-worker-task-definitionpayload")
-	task.Warn("")
-	task.Warn("We recommend that you convert all your Docker Worker tasks to Generic Worker tasks, to ensure")
-	task.Warn("continued support. For this task, see the converted payload below. If you have many tasks that")
-	task.Warn("require conversion, consider using the d2g tool (above) directly. It simply takes a Docker")
-	task.Warn("Worker task payload as input, and outputs a Generic Worker task payload. It can also convert")
-	task.Warn("Docker Worker scopes to equivalent Generic Worker scopes.")
-	task.Warn("")
-	task.Warn("Converted task definition (conversion performed by d2g):\n---\n" + text.Indent(string(d2gConvertedTaskDefinitionYAML), "  "))
 
 	return nil
+}
+
+// Get an environment variable from the first command that has it set.
+func (task *TaskRun) getVariable(variable string) (string, bool) {
+	for _, cmd := range task.Commands {
+		for _, envVar := range cmd.Env {
+			if value, found := strings.CutPrefix(envVar, variable+"="); found {
+				return value, true
+			}
+		}
+	}
+	return "", false
 }

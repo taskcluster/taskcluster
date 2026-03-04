@@ -1,5 +1,3 @@
-//go:build linux
-
 package main
 
 import (
@@ -35,13 +33,13 @@ func TestLoopbackAudio(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	logText := LogText(t)
-	if !strings.Contains(logText, "crw-rw----") {
-		t.Fatalf("Expected log to contain 'crw-rw----', but it didn't\n%s", logText)
+	if !strings.Contains(logText, "crw-rw----+ 1 root audio") {
+		t.Fatalf("Expected log to contain 'crw-rw----+ 1 root audio', but it didn't\n%s", logText)
 	}
 }
 
@@ -91,7 +89,7 @@ func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -109,7 +107,7 @@ func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
 	}
 	defaults.SetDefaults(&payload)
 	td = testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
@@ -143,10 +141,16 @@ func TestLoopbackAudioInvalidDeviceNumber(t *testing.T) {
 		Features: FeatureFlags{
 			LoopbackAudio: true,
 		},
+		OnExitStatus: ExitCodeHandling{
+			// This tests that OnExitStatus does not
+			// break when no task commands run, since
+			// task is resolved exception/malformed-payload
+			PurgeCaches: []int64{1234567},
+		},
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)
-	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio")
+	td.Scopes = append(td.Scopes, "generic-worker:loopback-audio:"+td.ProvisionerID+"/"+td.WorkerType)
 
 	_ = submitAndAssert(t, td, payload, "exception", "internal-error")
 }

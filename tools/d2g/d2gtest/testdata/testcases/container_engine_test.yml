@@ -1,0 +1,53 @@
+testSuite:
+  description: Test that the container engine should be set properly in the resulting
+    generic worker task payload.
+  name: Container engine tests
+  payloadTests:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that docker should be set as the default container engine in
+      the resulting generic worker task payload.
+    dockerWorkerTaskPayload:
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      command:
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
+      features:
+        backingLog: true
+        liveLog: true
+        resourceMonitor: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      osGroups:
+      - docker
+      taskclusterProxyInterface: docker-bridge
+    name: Default container engine test

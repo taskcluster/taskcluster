@@ -1,6 +1,6 @@
-import { APIBuilder } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import taskcluster from 'taskcluster-client';
+import { APIBuilder } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import taskcluster from '@taskcluster/client';
 
 /**
  * Known download methods, in order of preference (preferring earlier

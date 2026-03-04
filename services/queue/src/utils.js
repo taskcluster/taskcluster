@@ -19,6 +19,7 @@ export const artifactUtils = {
       details: row.details,
       present: row.present,
       expires: row.expires,
+      contentLength: row.content_length != null ? Number(row.content_length) : null,
     };
   },
   // Create a serializable representation of this namespace suitable for response
@@ -29,6 +30,7 @@ export const artifactUtils = {
       name: artifact.name,
       expires: artifact.expires.toJSON(),
       contentType: artifact.contentType,
+      ...(artifact.contentLength != null ? { contentLength: artifact.contentLength } : {}),
     };
   },
   /**
@@ -52,7 +54,7 @@ export const artifactUtils = {
     // then remove the entity from the database
     // repeat until there are no more expired artifacts
     while (true) {
-      const rows = await db.fns.get_expired_artifacts_for_deletion({
+      const rows = await db.fns.get_expired_artifacts_for_deletion_2({
         expires_in: expires,
         page_size_in: expireArtifactsBatchSize,
       });
@@ -162,10 +164,14 @@ export const artifactUtils = {
         );
 
         count += entries.length;
+        const totalContentLength = entries.reduce((sum, e) => {
+          return e.contentLength != null ? sum + e.contentLength : sum;
+        }, 0);
         monitor.debug({
           message: 'Deleted artifacts from db',
           batch: entries.length,
           total: count,
+          deletedContentLength: totalContentLength,
         });
       } catch (err) {
         monitor.debug('WARNING: Failed to delete expired artifacts: %s, %j', err, err);

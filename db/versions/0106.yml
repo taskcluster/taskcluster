@@ -1,0 +1,137 @@
+version: 106
+description: insert, fetch and purge audit history for auth, hooks and secrets
+
+migrationScript: 0106-migration.sql
+downgradeScript: 0106-downgrade.sql
+
+methods:
+  insert_auth_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: auth
+    args: entity_id_in text, entity_type_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          entity_id_in,
+          entity_type_in,
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end
+  insert_secrets_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: secrets
+    args: secret_id_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          secret_id_in,
+          'secret',
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end
+  insert_hooks_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: hooks
+    args: hook_id_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          hook_id_in,
+          'hook',
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end;
+  insert_worker_manager_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          worker_pool_id_in,
+          'worker_pool',
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end;
+  get_audit_history:
+    description: |
+      Get Audit History against a entityId and entity type
+    mode: read
+    serviceName: auth
+    args: entity_id_in text, entity_type_in text, page_size_in integer, page_offset_in integer
+    returns:
+      table (
+        client_id text,
+        action_type text,
+        created timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          audit_history.client_id,
+          audit_history.action_type,
+          audit_history.created
+        from audit_history
+        where audit_history.entity_id = entity_id_in
+        and audit_history.entity_type = entity_type_in
+        order by audit_history.created
+        limit get_page_limit(page_size_in)
+        offset get_page_offset(page_offset_in);
+      end
+  purge_audit_history:
+    description: |
+      Purge audit history entries older than the specified date
+    mode: write
+    serviceName: auth
+    args: cutoff_date_in timestamptz
+    returns: void
+    body: |-
+      begin
+          DELETE FROM audit_history
+          WHERE created < cutoff_date_in;
+      end

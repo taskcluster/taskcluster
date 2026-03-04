@@ -1,5 +1,5 @@
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-validate');
+const debug = debugFactory('@taskcluster/lib-validate');
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
@@ -21,7 +21,7 @@ const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(
 
 class SchemaSet {
   constructor(options) {
-    assert(options.serviceName, 'A `serviceName` must be provided to taskcluster-lib-validate!');
+    assert(options.serviceName, 'A `serviceName` must be provided to @taskcluster/lib-validate!');
 
     this._schemas = {};
 

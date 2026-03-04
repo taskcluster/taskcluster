@@ -10,7 +10,7 @@ import (
 	s "strings"
 
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v60/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
 )
 
 // Asset describes a download url for a published releases.
@@ -44,7 +44,12 @@ var (
 
 	// VersionNumber is a formatted string with the version information. This is
 	// filled in by `yarn release`
-	VersionNumber = "60.4.2"
+	VersionNumber = "97.0.1"
+)
+
+var (
+	// short version flag
+	shortVersion bool
 )
 
 var log = root.Logger
@@ -52,9 +57,14 @@ var log = root.Logger
 func init() {
 	root.Command.AddCommand(Command)
 	root.Command.AddCommand(Updcommand)
+	Command.Flags().BoolVarP(&shortVersion, "short-version", "s", false, "Prints the version number only")
 }
 
 func printVersion(cmd *cobra.Command, _ []string) {
+	if shortVersion {
+		fmt.Fprintf(cmd.OutOrStdout(), "%s\n", VersionNumber)
+		return
+	}
 	fmt.Fprintf(cmd.OutOrStdout(), "taskcluster version %s\n", VersionNumber)
 }
 

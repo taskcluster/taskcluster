@@ -47,15 +47,18 @@ properties:
       commands:
         * `TASK_ID` - the task ID of the currently running task
         * `RUN_ID` - the run ID of the currently running task
+        * `TASK_WORKDIR` - the working directory of the currently running task
+        * `TASK_GROUP_ID` - the task group ID of the currently running task
         * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
         * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
            taskcluster authentication proxy for making unauthenticated taskcluster
            API calls
-        * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-          `true` in `generic-worker.config` file - the absolute file location of a
+        * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+          `true` in the task definition - the absolute file location of a
           json file containing the current task OS user account name and password.
           This is only useful for the generic-worker multiuser CI tasks, where
-          `runTasksAsCurrentUser` is set to `true`.
+          `runTaskAsCurrentUser` is set to `true`.
+        * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
         * `TASKCLUSTER_WORKER_LOCATION` (if running in AWS or GCP or explicitly set
           in the generic-worker config file). See
           [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
@@ -163,6 +166,7 @@ properties:
             * gz
             * jpeg
             * jpg
+            * npz
             * png
             * swf
             * tbz
@@ -179,6 +183,15 @@ properties:
             encoding to all the files contained in the directory.
 
             Since: generic-worker 16.2.0
+        optional:
+          title: Optional artifact
+          type: boolean
+          default: false
+          description: |-
+            If `true`, the artifact is optional. If the file or directory
+            doesn't exist, the artifact won't be created.
+
+            Since: generic-worker 83.1.0
       required:
       - type
       - path
@@ -202,6 +215,12 @@ properties:
           for the artifacts produced by the task and the environment it ran in.
 
           Since: generic-worker 5.3.0
+
+          Tasks may inject additional data into the certificate by writing them
+          as json to file chain-of-trust-additional-data.json in the task
+          directory.
+
+          Since: generic-worker 81.0.0
       taskclusterProxy:
         type: boolean
         title: Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services
@@ -251,6 +270,71 @@ properties:
 
           Since: generic-worker 48.2.0
         default: true
+      runTaskAsCurrentUser:
+        type: boolean
+        title: Run task as current user
+        description: |-
+          If `true`, task commands will be executed as the
+          user currently running Generic Worker (typically
+          `root` or `LocalSystem`), rather than as the
+          dedicated task user created for the task. The task
+          user account will still be created, and is
+          available for the task to use.
+
+          Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+          Tasks submitted without this scope will be resolved
+          as `exception/malformed-payload`.
+
+          Since: generic-worker 81.0.0
+      resourceMonitor:
+        type: boolean
+        title: Resource monitor
+        description: |-
+          The resource monitor feature reports Peak System Memory Used,
+          Average System Memory Used, Average Available System Memory,
+          and Total System Memory in the task log for each task command
+          executed. It also will abort any task command if the used
+          system memory exceeds worker config maxMemoryUsagePercent
+          _AND_ available system memory drops below worker config
+          minAvailableMemoryBytes for longer than worker config
+          allowedHighMemoryDuration seconds. When this happens, the
+          task will be resolved as failed.
+
+          Since: generic-worker 83.4.0
+        default: true
+      interactive:
+        type: boolean
+        title: Interactive shell
+        description: |-
+          This allows you to interactively run commands from within the worker
+          as the task user. This may be useful for debugging purposes.
+          Can be used for SSH-like access to the running worker.
+          Note that this feature works differently from the `interactive` feature
+          in docker worker, which `docker exec`s into the running container.
+          Since tasks on generic worker are not guaranteed to be running in a
+          container, a powershell instance is started on the task user's account.
+          A user can then `docker exec` into the a running container, if there
+          is one.
+
+          Since: generic-worker 83.6.0
+      hideCmdWindow:
+        type: boolean
+        title: Hide cmd.exe window
+        description: |-
+          If `true`, the command window for each command will be hidden.
+          This is useful for tasks that run GUI applications to prevent
+          the command window from obscuring the application window.
+
+          The process creation flags used when this is set to `true`
+          are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+          set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+          More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+
+          If your task needs to allocate new consoles (with
+          AllocConsole(), for example) then you should not use this.
+
+          Since: generic-worker 96.1.0
+        default: false
   mounts:
     type: array
     description: |-
@@ -376,6 +460,19 @@ properties:
           Since: generic-worker 48.2.0
         type: string
         default: public/logs/live_backing.log
+  taskclusterProxyInterface:
+    title: Network Interface for Taskcluster Proxy to listen on
+    type: string
+    description: |-
+      Specifies whether taskcluster-proxy should listen on
+      localhost interface (default) or search for a docker bridge
+      interface (for tasks that wish to call the taskcluster
+      proxy from inside a docker container that does not share
+      the host network).
+    default: localhost
+    enum:
+    - localhost
+    - docker-bridge
 definitions:
   mount:
     title: Mount

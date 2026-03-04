@@ -1,0 +1,33 @@
+{{- if .Values.notify.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskcluster-notify-hpa
+  labels:
+    app.kubernetes.io/name: taskcluster-notify
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-notify-web
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskcluster-notify
+  minReplicas: {{ .Values.notify.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.notify.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.notify.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.notify.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.notify.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

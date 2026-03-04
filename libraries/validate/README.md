@@ -14,7 +14,7 @@ Schemas are typically stored under `services/<serviceName>/schemas/`, with a dir
 Schema files in the repository are `.yml` files, but will be published as `.json` files.
 
 ```javascript
-import SchemaSet from 'taskcluster-lib-validate';
+import SchemaSet from '@taskcluster/lib-validate';
 
 const doc = {'what-is-this': 'it-is-the-json-you-wish-to-validate'};
 
@@ -137,7 +137,7 @@ Here are the options along with their default values:
 
 ## Testing
 
-Just `yarn install` and `yarn test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
+Just `yarn install` and `yarn test`. You can set `DEBUG=@taskcluster/lib-validate,test` if you want to see what's going on.
 There are no keys needed to test this library.
 
 ## Changelog

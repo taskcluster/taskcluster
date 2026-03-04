@@ -1,4 +1,4 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 /**
  * For ease of debugging, the following top-level fields are shared by all

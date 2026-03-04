@@ -91,7 +91,7 @@ export default ({ helper, skipping, namespace }) => {
 
 /**
  * FakeClient is a fake version of tc-lib-pulse's `Client` class, used to fake
- * publishing and consuming.  Taskcluster-lib-pulse identifies it via
+ * publishing and consuming. @taskcluster/lib-pulse identifies it via
  * `isFakeClient` and calls the `make..` methods.
  */
 class FakeClient {
@@ -99,7 +99,7 @@ class FakeClient {
     this.isFakeClient = true;
     this._onPublish = null;
     this.namespace = namespace;
-    this.debug = debug('taskcluster-lib-pulse.conn-fake');
+    this.debug = debug('@taskcluster/lib-pulse.conn-fake');
 
     // a list of current FakePulseConsumer instances
     this.consumers = [];

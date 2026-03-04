@@ -1,0 +1,57 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Launch Config List
+description: A list of worker pool launch configurations
+type: object
+properties:
+  workerPoolLaunchConfigs:
+    type: array
+    title: "Worker Pool Launch Configs"
+    description: List of all worker pool launch configurations
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        launchConfigId:
+          type: string
+          description: Unique identifier for this launch configuration
+        workerPoolId:
+          type: string
+          description: The worker pool ID this launch config belongs to
+        isArchived:
+          type: boolean
+          description: Whether this launch configuration is archived
+        configuration:
+          type: object
+          description: The launch configuration
+        created:
+          type: string
+          format: date-time
+          description: Time when this launch configuration was created
+        lastModified:
+          type: string
+          format: date-time
+          description: Time when this launch configuration was last modified
+      required:
+        - launchConfigId
+        - workerPoolId
+        - isArchived
+        - configuration
+        - created
+        - lastModified
+      additionalProperties: false
+
+  continuationToken:
+    type: string
+    title: "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of worker pool launch configurations.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`
+      until you get a result without a `continuationToken`.
+
+additionalProperties: false
+required:
+  - workerPoolLaunchConfigs

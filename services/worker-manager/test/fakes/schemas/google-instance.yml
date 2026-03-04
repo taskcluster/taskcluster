@@ -41,7 +41,10 @@ properties:
         items:
           type: object
           properties:
-            labels: {$ref: "#/definitions/labels"}
+            initializeParams: {}
+            type:
+              type: string
+              enum: [PERSISTENT, SCRATCH]
             testProperty: {}
           additionalProperties: false
           required: []

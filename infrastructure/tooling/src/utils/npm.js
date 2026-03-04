@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { execCommand } from './command.js';
 import { REPO_ROOT } from './repo.js';
 import { rimraf } from 'rimraf';

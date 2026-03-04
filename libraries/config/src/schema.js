@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
  * Create a YAML type that loads from environment variable
  */
 const createType = (env, vars, basename, typeName, deserialize) => {
-  return [basename, `${basename}:optional`].map(name => {
+  return [basename, `${basename}:secret`, `${basename}:optional`, `${basename}:secret:optional`].map(name => {
     return new yaml.Type(name, {
       kind: 'scalar', // Takes a string as input
       resolve: (data) => {
@@ -19,6 +19,7 @@ const createType = (env, vars, basename, typeName, deserialize) => {
             type: basename,
             var: data,
             optional: name.endsWith(':optional'),
+            secret: name.includes(':secret'),
           });
           return undefined;
         }

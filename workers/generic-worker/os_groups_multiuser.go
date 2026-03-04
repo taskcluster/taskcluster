@@ -19,7 +19,7 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 	if len(groupNames) == 0 {
 		return nil
 	}
-	if config.RunTasksAsCurrentUser {
+	if osGroups.Task.Payload.Features.RunTaskAsCurrentUser {
 		osGroups.Task.Infof("Not adding task user to group(s) %v since we are running as current user.", groupNames)
 		return nil
 	}

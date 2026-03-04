@@ -9,8 +9,8 @@ const TestWorker = require('../testworker');
 const { removeImage } = require('../../src/util/remove_image');
 const pipe = require('promisepipe');
 const sleep = require('./helper/sleep');
-const taskcluster = require('taskcluster-client');
-const { suiteName } = require('taskcluster-lib-testing');
+const taskcluster = require('@taskcluster/client');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 function createImageName(taskId, runId) {

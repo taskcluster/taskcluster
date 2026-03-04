@@ -3,7 +3,7 @@ import makeDebug from 'debug';
 const debug = makeDebug('app:queue');
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
@@ -130,6 +130,7 @@ export class QueueService {
    *
    * At this moment we can also drop record from the claim queue,
    * since the task was resolved.
+   * If task was cancelled while being scheduled, we can also drop it from the pending queue.
    * But we should leave the message in deadline queue, since task could get new run
    * which might not be resolved before deadline.
    */
@@ -151,6 +152,8 @@ export class QueueService {
       // we no longer need existing claimed queue message
       // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
+      // if task was cancelled while being scheduled, we can drop it from pending queue
+      this.db.fns.queue_pending_task_delete(taskId, runId),
     ]);
   }
 
@@ -298,6 +301,14 @@ export class QueueService {
     );
   }
 
+  // Remove single pending task run from the queue
+  async removePendingMessage(taskId, runId) {
+    assert(typeof taskId === 'string', 'Expected taskId as string');
+    assert(typeof runId === 'number', 'Expected runId as number');
+
+    return this.db.fns.queue_pending_task_delete(taskId, runId);
+  }
+
   /**
    * Return tasks for a given task queue id in order of priority.
    *
@@ -340,11 +351,22 @@ export class QueueService {
    * Count number of pending tasks for a given task queue
    *
    * @param {String} taskQueueId
-   * @returns {Number} number of pending tasks
+   * @returns {Promise<Number>} number of pending tasks
    */
   async countPendingTasks(taskQueueId) {
     const [{ queue_pending_tasks_count }] = await this.db.fns.queue_pending_tasks_count(taskQueueId);
     return queue_pending_tasks_count;
+  }
+
+  /**
+   * Count number of currently claimed tasks for a given task queue
+   *
+   * @param {String} taskQueueId
+   * @returns {Promise<Number>} number of claimed tasks
+   */
+  async countClaimedTasks(taskQueueId) {
+    const [{ queue_claimed_tasks_count }] = await this.db.fns.queue_claimed_tasks_count(taskQueueId);
+    return queue_claimed_tasks_count;
   }
 }
 

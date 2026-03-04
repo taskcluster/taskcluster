@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import oauth2orize from 'oauth2orize';
 import _ from 'lodash';
@@ -20,7 +20,7 @@ export default (cfg, db, strategies, auth, monitor) => {
   server.deserializeClient((client, done) => done(null, client));
 
   function findRegisteredClient(clientId) {
-    return cfg.login.registeredClients.find(client => client.clientId === clientId);
+    return cfg.login.registeredClients?.find(client => client.clientId === clientId);
   }
 
   /**

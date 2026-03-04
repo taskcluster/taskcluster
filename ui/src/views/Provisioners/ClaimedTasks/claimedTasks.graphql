@@ -30,4 +30,8 @@ query WorkerPoolClaimedTasks($taskQueueId: String!, $connection: PageConnection)
       }
     }
   }
+
+  WorkerPool(workerPoolId: $taskQueueId) {
+    workerPoolId
+  }
 }

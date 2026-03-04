@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import { TableRow, TableCell, Chip, Box, Typography } from '@material-ui/core';
+import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
-import HourglassIcon from 'mdi-react/HourglassIcon';
-import WorkerIcon from 'mdi-react/WorkerIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE } from '../../../utils/constants';
@@ -15,11 +13,18 @@ import TableCellItem from '../../../components/TableCellItem';
 import DateDistance from '../../../components/DateDistance';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
+import WorkersNavbar from '../../../components/WorkersNavbar';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(claimedTasks, {
   options: props => ({
+    errorPolicy: 'all',
     variables: {
-      taskQueueId: `${props.match.params.provisionerId}/${props.match.params.workerType}`,
+      taskQueueId: joinWorkerPoolId(
+        props.match.params.provisionerId,
+        props.match.params.workerType
+      ),
       connection: {
         limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
       },
@@ -81,9 +86,11 @@ export default class WMViewClaimedTasks extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
-        <TableCell>
-          <DateDistance from={new Date(claimed)} />
-        </TableCell>
+        <CopyToClipboardTableCell
+          tooltipTitle={claimed}
+          textToCopy={claimed}
+          text={<DateDistance from={claimed} />}
+        />
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );
@@ -91,9 +98,12 @@ export default class WMViewClaimedTasks extends Component {
 
   render() {
     const {
-      data: { loading, error, listClaimedTasks },
+      data: { loading, error, listClaimedTasks, WorkerPool },
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
+    // Claimed tasks could exist for the pools that are not managed by w-m
+    // so one of the request would fail with errors
+    const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
       <Dashboard
@@ -118,36 +128,19 @@ export default class WMViewClaimedTasks extends Component {
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
                 <Typography variant="body2">{workerType}</Typography>
               </Link>
-              <Typography variant="body2" color="textSecondary">
-                Claimed Tasks
-              </Typography>
+              <WorkersNavbar
+                provisionerId={provisionerId}
+                workerType={workerType}
+                hasWorkerPool={!!WorkerPool?.workerPoolId}
+              />
             </Breadcrumbs>
-          </div>
-          <div>
-            <Chip
-              size="medium"
-              icon={<HourglassIcon />}
-              label="View Pending Tasks"
-              component={Link}
-              clickable
-              to={`${this.workersLink}/pending-tasks`}
-              style={{ marginRight: 4 }}
-            />
-            <Chip
-              size="medium"
-              icon={<WorkerIcon />}
-              label="Workers (Queue View)"
-              component={Link}
-              clickable
-              to={this.workersLink}
-            />
           </div>
         </Box>
         {loading && <Spinner loading />}
 
-        {error && <ErrorPanel fixed error={error} />}
+        {error && !wpMissing && <ErrorPanel fixed error={error} />}
 
-        {!error && !loading && (
+        {!loading && listClaimedTasks && (
           <ConnectionDataTable
             noItemsMessage="No claimed tasks"
             connection={listClaimedTasks}

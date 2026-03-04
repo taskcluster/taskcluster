@@ -15,7 +15,13 @@ import (
 
 func TestInteractiveArtifact(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,
@@ -54,7 +60,13 @@ func TestInteractiveArtifact(t *testing.T) {
 
 func TestInteractiveCommand(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
 		MaxRunTime: 10,
@@ -88,7 +100,7 @@ func TestInteractiveCommand(t *testing.T) {
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
-				err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\x01echo %s\n", SENTINEL)))
+				err = conn.WriteMessage(websocket.TextMessage, fmt.Appendf(nil, "\x01echo %s\n", SENTINEL))
 				if err != nil {
 					t.Fatalf("write error: %v", err)
 				}
@@ -141,7 +153,13 @@ func TestInteractiveCommand(t *testing.T) {
 
 func TestInteractiveWrongSecret(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
 		MaxRunTime: 10,
@@ -183,7 +201,13 @@ func TestInteractiveWrongSecret(t *testing.T) {
 
 func TestInteractiveNoConfigSetMalformedPayload(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = false
+
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,

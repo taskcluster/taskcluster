@@ -1,9 +1,7 @@
-//go:build linux || freebsd
-
 package runtime
 
 import (
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {
@@ -17,7 +15,8 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 		homedir="/home/${0}"
 		password="${1}"
 		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
-		/usr/sbin/adduser --disabled-password --gecos "" --debug --home "${homedir}" "${username}"
+		/usr/sbin/useradd -m -d "${homedir}" "${username}"
+		/usr/bin/chfn -f "${username}"
 		echo "${username}:${password}" | /usr/sbin/chpasswd
 	`
 
@@ -25,5 +24,5 @@ func (user *OSUser) CreateNew(okIfExists bool) (err error) {
 }
 
 func DeleteUser(username string) (err error) {
-	return host.Run("/usr/sbin/deluser", "--force", "--remove-all-files", username)
+	return host.Run("/usr/sbin/userdel", "--force", "-r", username)
 }

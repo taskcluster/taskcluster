@@ -1,5 +1,5 @@
-query WorkerManagerWorkers($workerPoolId: String!, $state: String, $workersConnection: PageConnection) {
-  WorkerManagerWorkers(workerPoolId: $workerPoolId, state: $state, connection: $workersConnection) {
+query WorkerManagerWorkers($workerPoolId: String!, $state: String, $launchConfigId: String, $workersConnection: PageConnection) {
+  WorkerManagerWorkers(workerPoolId: $workerPoolId,  state: $state, launchConfigId: $launchConfigId, connection: $workersConnection) {
     pageInfo {
       hasNextPage
       hasPreviousPage
@@ -19,6 +19,7 @@ query WorkerManagerWorkers($workerPoolId: String!, $state: String, $workersConne
         capacity
         lastModified
         lastChecked
+        launchConfigId
       }
     }
   }

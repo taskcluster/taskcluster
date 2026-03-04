@@ -2,7 +2,7 @@ import path from 'path';
 import os from 'os';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 import { generateTasks } from './tasks/index.js';
 import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
@@ -121,7 +121,6 @@ class Build extends Base {
       'target-monoimage-devel',
       'target-livelog',
       'target-client-shell',
-      'target-docker-worker',
       'target-generic-worker',
       'target-generic-worker-image',
       'target-taskcluster-proxy',

@@ -32,7 +32,7 @@ The method returns null if everything is fine and an error message if not.
 
 The worker-manager API exposes several worker-related methods, and these methods call out to the appropriate provider after performing some basic checks.
 In each of these call-outs, the called method can throw an `ApiError` to generate a 400 response to the user containing the `message` from the error.
-Any other error will result in a 500 error response and an error reported via taskcluster-lib-monitor.
+Any other error will result in a 500 error response and an error reported via @taskcluster/lib-monitor.
 
 #### Creating and Removing
 

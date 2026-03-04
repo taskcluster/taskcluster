@@ -1,12 +1,12 @@
 package main
 
-import "github.com/taskcluster/taskcluster/v60/internal/scopes"
+import "github.com/taskcluster/taskcluster/v97/internal/scopes"
 
 type (
 	Feature interface {
 		Initialise() error
-		PersistState() error
-		IsEnabled(task *TaskRun) bool
+		IsEnabled() bool
+		IsRequested(task *TaskRun) bool
 		NewTaskFeature(task *TaskRun) TaskFeature
 		Name() string
 	}

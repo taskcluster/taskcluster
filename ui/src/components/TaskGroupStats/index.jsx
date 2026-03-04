@@ -10,6 +10,7 @@ import {
   quantile,
   filterTasksWithDuration,
 } from '../../utils/task';
+import { clearAllCaches } from '../../utils/memoize';
 
 @withStyles(theme => ({
   container: {
@@ -123,6 +124,10 @@ export default class TaskGroupStats extends Component {
     this.setState(state => ({
       selectedTask: state.selectedTask?.taskId === task?.taskId ? null : task,
     }));
+  }
+
+  componentWillUnmount() {
+    clearAllCaches([sampleTasks, filterTasksWithDuration]);
   }
 
   toggleGraphAll() {

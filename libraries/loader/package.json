@@ -1,9 +1,15 @@
 {
-  "name": "taskcluster-lib-loader",
+  "name": "@taskcluster/lib-loader",
   "private": true,
-  "version": "60.4.2",
+  "version": "97.0.1",
   "description": "a component loader for taskcluster",
-  "exports": "./src/index.js",
+  "exports": {
+    ".": {
+      "default": "./src/index.js",
+      "types": "./@types/index.d.ts"
+    }
+  },
+  "types": "./@types/index.d.ts",
   "type": "module",
   "directories": {
     "test": "test"
@@ -19,6 +25,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.3.0"
+    "mocha": "^10.8.2"
   }
 }

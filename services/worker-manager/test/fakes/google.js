@@ -1,7 +1,8 @@
 import { FakeCloud } from './fake.js';
 import { strict as assert } from 'assert';
 import slugid from 'slugid';
-import { google } from 'googleapis';
+import google from '@googleapis/compute';
+import gcpIam from '@googleapis/iam';
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
 const PROJECT = 'testy';
@@ -10,8 +11,8 @@ const PROJECT = 'testy';
  * Fake the Google SDK.
  *
  * This fakes `google.auth`, `google.compute`, where `google` is imported from the
- * `googleapis` package.  The results of the fake `google.compute()` and
- * `google.iam()` calls are `fake.compute` and `fake.iam`.
+ * `@googleapis/compute` package.  The results of the fake `google.compute()` and
+ * `gcpIam.iam()` calls are `fake.compute` and `fake.iam`.
  *
  * The `google.auth.OAuth2` class is defined by the `FakeOAuth2` class below, and
  * the instance returned from the constructor is available at `fake.oauth2`.
@@ -45,7 +46,7 @@ export class FakeGoogle extends FakeCloud {
       return this.compute;
     });
 
-    this.sinon.stub(google, 'iam').callsFake(({ version, auth }) => {
+    this.sinon.stub(gcpIam, 'iam').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
       assert(auth.fake);
       assert.deepEqual(auth.scopes, [
@@ -75,13 +76,20 @@ export class FakeGoogle extends FakeCloud {
     };
   }
 
-  /**
-   * Make an API error in the shape the google apis return
-   */
   makeError(message, code) {
     const err = new Error(message);
     err.code = code;
-    err.errors = [{ message }];
+    err.status = code;
+    err.response = {
+      data: {
+        error: {
+          code,
+          message,
+          errors: [{ message, code }],
+        },
+      },
+    };
+    err.errors = err.response.data.error.errors;
     return err;
   }
 }
@@ -147,7 +155,8 @@ export class Instances {
     }
     return {
       data: {
-        targetId: `instance-${parameters.requestBody.name}`,
+        // workerIds have a max length of 38
+        targetId: `i-${parameters.requestBody.name}`.substring(0, 38),
         ...this.fake.compute.zoneOperations.fakeOperation({
           zone: parameters.zone,
           status: 'RUNNING',

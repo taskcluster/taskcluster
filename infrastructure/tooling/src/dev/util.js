@@ -1,7 +1,7 @@
 import { URL } from 'url';
 
 // Generate a postgres connection URL suitable for use in the configuration and
-// passing to taskcluster-lib-postgres.  Note that this will not work directly
+// passing to @taskcluster/lib-postgres.  Note that this will not work directly
 // with node-postgres, as the `?ssl=1` option expects valid certificates, which
 // Cloud SQL does not provide.
 export const makePgUrl = ({ hostname, username, password, dbname }) => {

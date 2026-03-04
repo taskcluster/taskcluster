@@ -28,7 +28,7 @@ class AudioDeviceManager {
       try {
         deviceList.push(new AudioDevice(`${BASE_DIR}/${deviceFile}`));
       }
-      catch(e) {
+      catch (e) {
         debug(`Could not create audio device. Error: ${e.stack || e}`);
       }
     });

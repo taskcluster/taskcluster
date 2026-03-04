@@ -1,0 +1,21 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "GitHub Webhook Event"
+description: |
+  Validates GitHub webhook event payloads to prevent errors from missing or
+  malformed fields. Uses OneOf pattern to strictly validate each event type
+  with its own schema, preventing TypeErrors identified in PR #7958.
+
+  Validation Philosophy:
+  - STRICT on structure: Required fields, types, and patterns are validated
+  - LENIENT on enum values: Action/status/conclusion accept any string where
+    GitHub may add new values in the future
+  - This prevents rejecting valid webhooks when GitHub adds new action types
+
+oneOf:
+  - $ref: "webhook-pull-request-payload.json#"
+  - $ref: "webhook-push-payload.json#"
+  - $ref: "webhook-issue-comment-payload.json#"
+  - $ref: "webhook-release-payload.json#"
+  - $ref: "webhook-installation-payload.json#"
+  - $ref: "webhook-check-run-payload.json#"
+  - $ref: "webhook-ping-payload.json#"

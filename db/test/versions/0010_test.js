@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import * as hugeBufs from './fixtures/huge_bufs.js';
 import { entityBufDecodeTest } from './0008_test.js';
 

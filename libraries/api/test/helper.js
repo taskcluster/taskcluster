@@ -1,9 +1,9 @@
-import testing from 'taskcluster-lib-testing';
-import SchemaSet from 'taskcluster-lib-validate';
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 import assert from 'assert';
 import path from 'path';
-import { App } from 'taskcluster-lib-app';
+import { App } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 let runningServer = null;

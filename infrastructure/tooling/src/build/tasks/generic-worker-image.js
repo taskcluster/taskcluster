@@ -89,7 +89,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       await execCommand({
         command,
         dir: sourceDir,
-        logfile: path.join(logsDir, 'docker-build.log'),
+        logfile: path.join(logsDir, 'generic-worker-docker-build.log'),
         utils,
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
@@ -128,7 +128,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'generic-worker-docker-push.log'),
         tag,
         utils,
         baseDir,

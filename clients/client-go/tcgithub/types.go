@@ -5,7 +5,7 @@ package tcgithub
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -111,6 +111,33 @@ type (
 	//
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	GithubGUID string
+
+	// Emulate one of the github events with mocked payload.
+	// Some of the events have sub-actions, that can be specified.
+	// Event type names follow the `tasks_for` naming convention.
+	IssueCommentEvents struct {
+
+		// Possible values:
+		//   * "created"
+		//   * "edited"
+		Action string `json:"action"`
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		// To make sure which properties are available for each event type,
+		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-issue-comment"
+		Type string `json:"type"`
+	}
 
 	// .taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.
 	// The difference is that `github-pull-request-untrusted` will use different set of scopes.
@@ -227,6 +254,7 @@ type (
 		//   * PushEvents
 		//   * PullRequestEvents
 		//   * ReleaseEvents
+		//   * IssueCommentEvents
 		FakeEvent json.RawMessage `json:"fakeEvent"`
 
 		// Syntax:     ^[-a-zA-Z0-9]{1,39}$

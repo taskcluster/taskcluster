@@ -46,7 +46,7 @@ These are all under an umbrella we call Getting Things Built&#8482;. None of our
 - Self-Service
 - Changes are made in an open fashion, considering all (real and potential) users of the platform
   - In particular, we strive to implement _general_ solutions even when a single user has a very _specific_ requirement.
-    More precisely, despite Firefox CI being the dominant user of Taskcluster, implemnetations of features are never Firefox-specific.
+    More precisely, despite Firefox CI being the dominant user of Taskcluster, implementations of features are never Firefox-specific.
 
 ## In Practice..
 
@@ -70,4 +70,4 @@ Here are a few bullet-point practical principles we follow in developing and rev
 
 * *Database access has lots of rules* - special care is required around database design.
   Important user-facing features such as downtime-free upgrades depend on adherence to these rules.
-  See the [taskcluster-lib-postgres](../libraries/postgres) and [db](../db) documentation for details.
+  See the [@taskcluster/lib-postgres](../libraries/postgres) and [db](../db) documentation for details.

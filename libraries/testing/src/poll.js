@@ -1,5 +1,5 @@
 import Debug from 'debug';
-const debug = Debug('taskcluster-lib-testing:poll');
+const debug = Debug('@taskcluster/lib-testing:poll');
 import { sleep } from './time.js';
 
 /**

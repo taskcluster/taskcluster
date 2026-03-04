@@ -1,5 +1,6 @@
 import path from 'path';
 import assert from 'assert';
+import _ from 'lodash';
 import { readRepoFile, writeRepoFile, modifyRepoFile } from './repo.js';
 
 /**
@@ -173,6 +174,14 @@ export const updateDbFns = async (schema, releases, currentTcVersion) => {
       output.push('');
       output.push(method.description);
       output.push('');
+      output.push('<details><summary>Function Body</summary>');
+      output.push('');
+      output.push('```');
+      output.push(method.body);
+      output.push('```');
+      output.push('');
+      output.push('</details>');
+      output.push('');
     }
 
     const depMethods = methods.filter(method => method.deprecated);
@@ -212,4 +221,148 @@ export const updateDbFns = async (schema, releases, currentTcVersion) => {
   await writeRepoFile(dbFnsFile, output.join('\n'));
 
   return dbFnsFile;
+};
+
+const typeName = (...parts) => parts.map(a => _.upperFirst(_.camelCase(a))).join('');
+
+/**
+ * Generate TypeScript type definitions for all DB functions
+ */
+export const generateDbTypes = async (schema) => {
+  const methods = schema.allMethods();
+  methods.sort((a, b) => a.name.localeCompare(b.name));
+  const serviceNames = [...new Set([...methods].map(({ serviceName }) => serviceName).sort())];
+  const services = new Map();
+
+  const pgToTs = (pgType) => {
+    const typeMap = {
+      'text': 'string',
+      'integer': 'number',
+      'boolean': 'boolean',
+      'jsonb': 'JsonB',
+      'timestamptz': 'Date',
+      'uuid': 'string',
+      'task_requires': 'TaskRequires',
+      'task_priority': 'TaskPriority',
+      'int': 'number',
+      'void': 'void',
+    };
+    return typeMap[pgType] || 'any';
+  };
+
+  serviceNames.forEach(sn => {
+    const serviceMethods = [...methods].reduce((acc, method) => {
+      if (method.serviceName !== sn) {
+        return acc;
+      }
+      return acc.concat(method);
+    }, []);
+
+    services.set(sn, serviceMethods.sort((a, b) => a.name.localeCompare(b.name)));
+  });
+
+  let output = [];
+
+  output.push('// Generated type definitions for DB functions');
+  output.push('// DO NOT EDIT MANUALLY\n');
+
+  output.push('export type DbFunctionMode = "read" | "write";');
+  output.push('export type JsonB = any; // PostgreSQL JSONB type');
+  output.push('export type TaskRequires = string; // Enum type from DB');
+  output.push('export type TaskPriority = string; // Enum type from DB\n');
+
+  /**
+   * most args are optional, and the only way to tell is to analyze the function body
+   * @param {string} arg
+   * @param {string} body
+   */
+  const isArgOptional = (arg, body) => {
+    const allowedNulls = ['page_size_in', 'page_offset_in'];
+    return allowedNulls.includes(arg) || body.includes(`${arg} is null`);
+  };
+
+  // Generate function signatures for each service
+  for (let [serviceName, methods] of services.entries()) {
+    output.push(`// ${serviceName} function signatures\n`);
+
+    for (let method of methods) {
+      // Parse arguments
+      const args = method.args ? method.args.split(',').map(arg => {
+        const [name, type] = arg.trim().split(' ');
+        return {
+          name,
+          type: pgToTs(type),
+        };
+      }) : [];
+
+      // Parse return type
+      let returnType = 'void';
+      if (method.returns !== 'void') {
+        if (method.returns.match(/^\s*table/)) {
+          const tableMatch = /table\s*\(([^)]+)\)/.exec(method.returns);
+          if (tableMatch) {
+            const columns = tableMatch[1].split(',').map(col => {
+              const [name, type] = col.trim().split(' ');
+              return `${name}: ${pgToTs(type)}`;
+            });
+            returnType = `Array<{${columns.join(', ')}}>`;
+          }
+        } else {
+          // single return value is a column with the function name
+          returnType = `[{ ${method.name}: ${pgToTs(method.returns)} }]`;
+        }
+      }
+
+      // Generate function signature for calls fn(arg1, arg2..)
+      if (method.deprecated) {
+        output.push(`/** @deprecated */\ntype ${typeName(serviceName, method.name, 'DeprecatedFn')} = {`);
+      } else {
+        output.push(`type ${typeName(serviceName, method.name, 'Fn')} = {`);
+      }
+      output.push(' ('); // union
+      if (args.length > 0) {
+        args.forEach((arg, i) => {
+          const argType = `${arg.type}${isArgOptional(arg.name, method.body) ? ' | null' : ''}`;
+          output.push(`   ${arg.name}: ${argType}${i < args.length - 1 ? ',' : ''}`);
+        });
+      }
+      output.push(` ): Promise<${returnType}>;`);
+      output.push(` (params: {`);
+      if (args.length > 0) {
+        args.forEach((arg, i) => {
+          const isOptional = isArgOptional(arg.name, method.body);
+          const argType = `${arg.type}${isOptional ? ' | null' : ''}`;
+          output.push(`  ${arg.name}${isOptional ? '?' : ''}: ${argType};`);
+        });
+      }
+
+      output.push(` }): Promise<${returnType}>;`);
+      output.push('};');
+
+    }
+  }
+
+  const writeSection = (title, isDeprecated, isClass = false) => {
+    output.push(`${title} {`);
+    if (isClass) {
+      output.push('  constructor(config: any);');
+    }
+    for (let [serviceName, methods] of services.entries()) {
+      output.push(`\n  // ${typeName(serviceName)}`);
+      for (let method of methods) {
+        if ((isDeprecated && method.deprecated) || (!isDeprecated && !method.deprecated)) {
+          output.push(`  ${method.name}: ${typeName(serviceName, method.name, method.deprecated ? 'DeprecatedFn' : 'Fn')};`);
+        }
+      }
+    }
+    output.push('}\n');
+  };
+
+  writeSection('export interface DbFunctions', false);
+  writeSection('export interface DeprecatedDbFunctions', true);
+
+  const typesFile = path.join('libraries', 'postgres', '@types', 'fns.d.ts');
+  await writeRepoFile(typesFile, output.join('\n'));
+
+  return typesFile;
 };

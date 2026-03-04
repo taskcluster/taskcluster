@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('app:sentry');
 import assert from 'assert';

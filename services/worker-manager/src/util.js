@@ -1,5 +1,6 @@
+import { hrtime } from 'process';
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 /**
  * We consider a "workerPoolId" to be a string of the shape "<provisionerId>/<workerType>".
@@ -42,6 +43,7 @@ export const createCredentials = (worker, expires, cfg) => {
       `queue:claim-work:${worker.workerPoolId}`,
       `worker-manager:remove-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
       `worker-manager:reregister-worker:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
+      `worker-manager:should-worker-terminate:${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`,
     ],
     start: taskcluster.fromNow('-15 minutes'),
     expiry: expires,
@@ -60,4 +62,23 @@ export const sanitizeRegisterWorkerPayload = (obj = {}) => {
     }
     return res;
   }, {});
+};
+
+/**
+ * Start measuring execution time and return a function
+ * that returns the time elapsed since the start.
+ *
+ * The precision argument is used to control the result units
+ * 1e6 (default) for milliseconds
+ * 1e9 for seconds
+ *
+ * @example
+ *   const time = measureTime();
+ *   operation();
+ *   const total = time();
+ * @param {number} precision 1e6, 1e9, etc
+ */
+export const measureTime = (precision = 1e6) => {
+  const start = hrtime.bigint();
+  return () => Number(hrtime.bigint() - start) / precision;
 };

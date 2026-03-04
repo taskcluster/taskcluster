@@ -10,6 +10,11 @@ const NoTaskGroup = lazy(() =>
 const ViewTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
 );
+const TaskArtifactRedirect = lazy(() =>
+  import(
+    /* webpackChunkName: 'Tasks.TaskArtifactRedirect' */ './TaskArtifactRedirect'
+  )
+);
 const TaskLog = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
 );
@@ -33,13 +38,23 @@ const InteractiveConnect = lazy(() =>
     /* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect'
   )
 );
+const TaskProfiler = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskProfiler' */ './TaskProfiler')
+);
 const taskGroupDescription =
   'Inspect task groups, monitor progress, view dependencies and states, and inspect the individual tasks that make up a task group.';
 const taskDescription =
   'Inspect the state, runs, public and private artifacts, definition, and logs of a task.';
 const createTaskDescription = `Write and submit a task to ${window.env.APPLICATION_NAME}.`;
+const profilerDescription =
+  'View task execution timelines and log event timelines in Firefox Profiler.';
 
 export default path => [
+  {
+    component: TaskProfiler,
+    path: `${path}/groups/:taskGroupId/profiler`,
+    description: profilerDescription,
+  },
   {
     component: TaskGroup,
     path: `${path}/groups/:taskGroupId`,
@@ -70,6 +85,11 @@ export default path => [
     path: `${path}/:taskId/runs/:runId/logs/:name+`,
   },
   {
+    component: TaskArtifactRedirect,
+    path: `${path}/:taskId/runs/:runId/:artifactName+`,
+    description: taskDescription,
+  },
+  {
     component: ViewTask,
     path: `${path}/:taskId/runs/:runId`,
     description: taskDescription,
@@ -81,6 +101,11 @@ export default path => [
   {
     component: InteractiveConnect,
     path: `${path}/:taskId/connect`,
+  },
+  {
+    component: TaskProfiler,
+    path: `${path}/:taskId/profiler`,
+    description: profilerDescription,
   },
   {
     component: TaskRedirect,

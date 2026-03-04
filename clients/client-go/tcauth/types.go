@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -382,6 +382,14 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// Response from getEntityHistory endpoint containing audit history entries
+	GetEntityHistoryResponse struct {
+		AuditHistory []Var `json:"auditHistory"`
+
+		// Token to be used to get the next page of results
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
 	// If no limit is given, the roleIds of all roles are returned. Since this
 	// list may become long, callers can use the `limit` and `continuationToken`
 	// query arguments to page through the responses.
@@ -649,6 +657,24 @@ type (
 		//
 		// Syntax:     ^[ -~]*$
 		Scopes []string `json:"scopes"`
+	}
+
+	Var struct {
+
+		// The type of action performed
+		ActionType string `json:"actionType"`
+
+		// The ID of the client that performed the action
+		ClientID string `json:"clientId"`
+
+		// Timestamp when the action occurred
+		Created tcclient.Time `json:"created"`
+
+		// The entity Id on which an action was performed
+		EntityID string `json:"entityId"`
+
+		// The entity type on which the action was performed (client, role, secret, hook, worker_pool)
+		EntityType string `json:"entityType"`
 	}
 
 	// Token for connecting a worker to websocktunnel proxy
