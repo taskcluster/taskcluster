@@ -127,15 +127,14 @@ export class StreamingProfileBuilder {
   }
 
   finalize() {
-    if (this.profileStartTime === null) {
-      throw new Error('Could not find a time in the log rows');
+    if (this.profileStartTime !== null) {
+      const lastTime = this.lastTime || this.profileStartTime;
+      this.profile.meta.startTime = this.profileStartTime;
+
+      // Patch the task duration marker (slot 0)
+      this.markers.endTime[0] = lastTime - this.profileStartTime;
     }
 
-    const lastTime = this.lastTime || this.profileStartTime;
-    this.profile.meta.startTime = this.profileStartTime;
-
-    // Patch the task duration marker (slot 0)
-    this.markers.endTime[0] = lastTime - this.profileStartTime;
     this.markers.data[0] = {
       type: 'Task',
       name: 'Task',
