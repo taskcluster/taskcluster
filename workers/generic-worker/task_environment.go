@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 )
 
 // TaskEnvironment bundles everything needed to execute a task:

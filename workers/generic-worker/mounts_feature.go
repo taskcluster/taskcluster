@@ -18,10 +18,10 @@ import (
 	"github.com/mholt/archiver/v3"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
-	"github.com/taskcluster/taskcluster/v96/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v96/internal/scopes"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
 )
 
 var (
@@ -647,6 +647,26 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}
+
+	// If a file mount handler is registered for this filename, ensure the
+	// content is cached and pass the cache info to the handler instead of
+	// copying the file to the task directory.
+	if handler, ok := taskMount.task.FileMountHandlers[f.File]; ok {
+		cachedFile, err := ensureCached(fsContent, taskMount)
+		if err != nil {
+			return err
+		}
+
+		cacheKey, err := fsContent.UniqueKey(taskMount)
+		if err != nil {
+			return err
+		}
+
+		sha256 := fileCaches[cacheKey].SHA256
+		taskMount.Infof("File mount %q handled by registered handler (cache: %v, SHA256: %v)", f.File, cachedFile, sha256)
+		return handler(cachedFile, sha256)
+	}
+
 	err = decompress(fsContent, f.Format, file, taskMount)
 	if err != nil {
 		return err
@@ -887,7 +907,10 @@ func (ac *ArtifactContent) Download(taskMount *TaskMount) (file string, sha256 s
 	taskMount.Infof("Downloading %v to %v", ac, file)
 
 	var runID int64 = -1 // use the latest run
-	_, contentLength, err := taskMount.task.Queue.DownloadArtifactToFile(ac.TaskID, runID, ac.Artifact, file)
+	taskMount.task.queueMux.RLock()
+	queue := taskMount.task.Queue
+	taskMount.task.queueMux.RUnlock()
+	_, contentLength, err := queue.DownloadArtifactToFile(ac.TaskID, runID, ac.Artifact, file)
 	if err != nil {
 		return
 	}

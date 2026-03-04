@@ -22,6 +22,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"slices"
@@ -29,20 +30,20 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
-	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v96/internal"
-	"github.com/taskcluster/taskcluster/v96/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v96/internal/scopes"
-	"github.com/taskcluster/taskcluster/v96/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -450,6 +451,15 @@ func RunWorker() (exitCode ExitCode) {
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
 	lastReportedNoTasks := time.Now()
+
+	sigTerm := make(chan os.Signal, 1)
+	signal.Notify(sigTerm, syscall.SIGTERM)
+	go func() {
+		<-sigTerm
+		log.Println("Received SIGTERM, initiating graceful termination")
+		graceful.Terminate(false)
+	}()
+
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
 	provisioner := newProvisioner()
@@ -544,9 +554,14 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
-					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-					return IDLE_TIMEOUT
+					if !withWorkerRunner || checkWhetherToTerminate() {
+						_ = purgeOldTasks()
+						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+						return IDLE_TIMEOUT
+					}
+					// Worker Manager says don't terminate - reset idle timer
+					log.Printf("Idle timeout reached but Worker Manager says not to terminate. Resetting idle timer.")
+					lastActive = time.Now()
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,

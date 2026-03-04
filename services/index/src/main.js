@@ -5,6 +5,7 @@ import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
 import Handlers from './handlers.js';
 import builder from './api.js';
+import helpers from './helpers.js';
 import Config from '@taskcluster/lib-config';
 import loader from '@taskcluster/lib-loader';
 import { MonitorManager } from '@taskcluster/lib-monitor';
@@ -51,6 +52,19 @@ export const load = loader({
     }),
   },
 
+  auth: {
+    requires: ['cfg'],
+    setup: ({ cfg }) => new taskcluster.Auth({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
+  isPublicArtifact: {
+    requires: ['auth'],
+    setup: ({ auth }) => helpers.isPublicArtifact(auth),
+  },
+
   queueEvents: {
     requires: ['cfg'],
     setup: ({ cfg }) => new taskcluster.QueueEvents({
@@ -77,12 +91,13 @@ export const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'monitor', 'queue', 'db'],
-    setup: async ({ cfg, schemaset, monitor, queue, db }) => {
+    requires: ['cfg', 'schemaset', 'monitor', 'queue', 'db', 'isPublicArtifact'],
+    setup: async ({ cfg, schemaset, monitor, queue, db, isPublicArtifact }) => {
       const api = builder.build({
         context: {
           queue,
           db,
+          isPublicArtifact,
         },
         rootUrl: cfg.taskcluster.rootUrl,
         schemaset,

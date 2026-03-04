@@ -9,7 +9,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v96/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -34,14 +34,14 @@ func (api *API) Name() string {
 
 func (api *API) String() string {
 	var result strings.Builder
-	result.WriteString(fmt.Sprintf(
+	fmt.Fprintf(&result,
 		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n",
 		api.Schema, api.Title, api.Description,
-	))
+	)
 	for i, entry := range api.Entries {
-		result.WriteString(fmt.Sprintf("Entry %-6v=\n%v", i, entry.String()))
+		fmt.Fprintf(&result, "Entry %-6v=\n%v", i, entry.String())
 	}
 	return result.String()
 }
@@ -125,7 +125,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client

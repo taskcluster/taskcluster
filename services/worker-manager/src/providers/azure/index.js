@@ -48,6 +48,7 @@ const InstanceStates = {
 const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
 
 const DEPLOYMENT_METHOD_ARM = 'arm-template';
+const maxInstanceView404Streak = 2;
 
 export class AzureProvider extends Provider {
 
@@ -70,6 +71,8 @@ export class AzureProvider extends Provider {
     this.cloudApi = null;
     /** @type {Map<string, boolean>} Cache for verified resource groups */
     this.resourceGroupCache = new Map();
+    /** @type {Map<string, number>} Consecutive `instanceView` 404s per worker */
+    this.instanceView404Streaks = new Map();
   }
 
   // Add a PEM-encoded root certificate rootCertPem
@@ -1575,12 +1578,14 @@ export class AzureProvider extends Provider {
    */
   async queryInstance({ worker, monitor }) {
     const states = Worker.states;
+    const workerKey = `${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`;
     try {
       // lets us get power states for the VM
       const instanceView = await this._enqueue('get', () => this.computeClient.virtualMachines.instanceView(
         worker.providerData.resourceGroupName,
         worker.providerData.vm.name,
       ));
+      this.instanceView404Streaks.delete(workerKey);
       const powerStates = instanceView.statuses.map(i => i.code);
       monitor.debug({ message: 'fetched instance view', powerStates });
 
@@ -1619,7 +1624,55 @@ export class AzureProvider extends Provider {
       if (err.statusCode !== 404) {
         throw err;
       }
-      monitor.debug({ message: `vm instance view not found, in state ${worker.state}` });
+      const instanceView404Streak = (this.instanceView404Streaks.get(workerKey) || 0) + 1;
+      this.instanceView404Streaks.set(workerKey, instanceView404Streak);
+      monitor.debug({
+        message: `vm instance view not found, in state ${worker.state}`,
+        instanceView404Streak,
+      });
+
+      // Confirm the VM is truly gone — instanceView can transiently 404 even when the VM exists.
+      try {
+        const { provisioningState } = await this.fetchVmInfo(worker);
+
+        if (failProvisioningStates.has(provisioningState)) {
+          return {
+            instanceState: InstanceStates.FAILED,
+            instanceStateReason: `instanceView 404 but vm has provisioningState ${provisioningState}`,
+          };
+        }
+
+        if (instanceView404Streak > maxInstanceView404Streak) {
+          this.monitor.log.azureInstanceViewRepeated404({
+            providerId: this.providerId,
+            workerId: worker.workerId,
+            workerPoolId: worker.workerPoolId,
+            workerGroup: worker.workerGroup,
+            vmName: worker.providerData.vm.name,
+            provisioningState,
+            instanceView404Streak,
+          });
+          return {
+            instanceState: InstanceStates.MISSING,
+            instanceStateReason: `instanceView returned 404 ${instanceView404Streak} consecutive times`,
+          };
+        }
+
+        // VM exists and is not failing — instanceView 404 was transient
+        monitor.warning({
+          message: 'instanceView returned 404 but VM exists; treating as OK',
+          workerId: worker.workerId,
+          workerPoolId: worker.workerPoolId,
+          vmName: worker.providerData.vm.name,
+          provisioningState,
+        });
+        return { instanceState: InstanceStates.OK, instanceStateReason: 'instanceView 404 but vm exists' };
+      } catch (confirmErr) {
+        if (confirmErr.statusCode !== 404) {
+          throw confirmErr;
+        }
+      }
+
       return { instanceState: InstanceStates.MISSING, instanceStateReason: `vm not found in state ${worker.state}` };
     }
   }

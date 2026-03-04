@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v96/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ func (exchange *Exchange) Name() string {
 
 func (exchange *Exchange) String() string {
 	var result strings.Builder
-	result.WriteString(fmt.Sprintf(
+	fmt.Fprintf(&result,
 		"Version         = '%v'\n"+
 			"Schema          = '%v'\n"+
 			"Title           = '%v'\n"+
@@ -44,9 +44,9 @@ func (exchange *Exchange) String() string {
 			"Exchange Prefix = '%v'\n",
 		exchange.APIVersion, exchange.Schema, exchange.Title,
 		exchange.Description, exchange.ExchangePrefix,
-	))
+	)
 	for i, entry := range exchange.Entries {
-		result.WriteString(fmt.Sprintf("Entry %-6v= \n%v", i, entry.String()))
+		fmt.Fprintf(&result, "Entry %-6v= \n%v", i, entry.String())
 	}
 	return result.String()
 }
@@ -95,7 +95,7 @@ func (entry *ExchangeEntry) String() string {
 		entry.Description)
 	var loopResult strings.Builder
 	for i, element := range entry.RoutingKey {
-		loopResult.WriteString(fmt.Sprintf("    Routing Key Element %-6v= \n%v", i, element.String()))
+		fmt.Fprintf(&loopResult, "    Routing Key Element %-6v= \n%v", i, element.String())
 	}
 	result += loopResult.String()
 	result += fmt.Sprintf("    Entry Schema      = '%v'\n", entry.Schema)
@@ -161,7 +161,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 `

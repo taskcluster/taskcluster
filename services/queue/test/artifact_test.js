@@ -422,6 +422,42 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.contentType).equals('application/json');
     });
 
+    test('S3 artifact with contentLength', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({
+        ...s3Artifact,
+        contentLength: 12345,
+        putFn: null,
+      });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId + ':0',
+      );
+
+      const list = await helper.queue.listArtifacts(taskId, 0);
+      assume(list.artifacts.length).equals(1);
+      assume(list.artifacts[0].contentLength).equals(12345);
+
+      const info = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
+      assume(info.contentLength).equals(12345);
+    });
+
+    test('S3 artifact without contentLength', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId + ':0',
+      );
+
+      const list = await helper.queue.listArtifacts(taskId, 0);
+      assume(list.artifacts.length).equals(1);
+      assert.equal(list.artifacts[0].contentLength, undefined);
+
+      const info = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
+      assert.equal(info.contentLength, undefined);
+    });
+
     test('artifact (missing task)', async () => {
       await assert.rejects(
         () => helper.queue.artifact(slugid.v4(), 0, s3Artifact.name),

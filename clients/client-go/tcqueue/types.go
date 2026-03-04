@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -89,6 +89,12 @@ type (
 
 	// Information about an artifact
 	Artifact struct {
+
+		// Size of the artifact content in bytes, if reported by the worker.
+		// This value is null if the worker did not report the size.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Expected content-type of the artifact.  This is informational only:
 		// it is suitable for use to choose an icon for the artifact, for example.
@@ -591,6 +597,12 @@ type (
 	// Request to create an artifact via the object service.
 	ObjectArtifactRequest struct {
 
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
+
 		// Artifact content type.  This is advisory in nature and can be used,
 		// for example, to select appropriate icons to display artifact links.
 		//
@@ -965,6 +977,12 @@ type (
 	// Request for a signed PUT URL that will allow you to upload an artifact
 	// to an S3 bucket managed by the queue.
 	S3ArtifactRequest struct {
+
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Artifact mime-type, when uploading artifact to the signed
 		// `PUT` URL returned from this request this must given with the

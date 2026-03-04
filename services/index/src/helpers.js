@@ -2,6 +2,7 @@ import assert from 'assert';
 import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 /** Regular expression for valid namespaces */
 export const namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
@@ -348,4 +349,35 @@ export const splitNamespace = namespace => {
   return [namespace, name];
 };
 
-export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat };
+const satisfiesArtifactScope = async (anonymousScopeCache, artifactName) => {
+  try {
+    const scopes = await anonymousScopeCache();
+    return satisfiesExpression(scopes, `queue:get-artifact:${artifactName}`);
+  } catch {
+    return false;
+  }
+};
+
+export { satisfiesArtifactScope as _satisfiesArtifactScope };
+
+const ANONYMOUS_SCOPE_CACHE_TTL = 5 * 60 * 1000;
+
+const isPublicArtifact = (auth) => {
+  let cachedScopes = null;
+  let cachedAt = 0;
+
+  const anonymousScopeCache = async () => {
+    const now = Date.now();
+    if (cachedScopes && (now - cachedAt) < ANONYMOUS_SCOPE_CACHE_TTL) {
+      return cachedScopes;
+    }
+    const result = await auth.expandScopes({ scopes: ['assume:anonymous'] });
+    cachedScopes = result.scopes;
+    cachedAt = Date.now();
+    return cachedScopes;
+  };
+
+  return (artifactName) => satisfiesArtifactScope(anonymousScopeCache, artifactName);
+};
+
+export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat, isPublicArtifact };

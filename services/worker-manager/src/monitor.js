@@ -262,6 +262,27 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'azureInstanceViewRepeated404',
+  title: 'Azure InstanceView Repeated 404',
+  type: 'azure-instance-view-repeated-404',
+  version: 1,
+  level: 'warning',
+  description: `
+    Azure VM instanceView returned 404 repeatedly for the same worker.
+    Worker Manager treats this as missing to avoid getting stuck in a transient loop.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    workerGroup: 'Worker Group',
+    workerId: 'Worker ID',
+    vmName: 'Azure VM name',
+    provisioningState: 'Provisioning state returned by virtualMachines.get',
+    instanceView404Streak: 'Consecutive count of instanceView 404 responses',
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
   providerId: 'ID of the provider',
@@ -457,5 +478,17 @@ MonitorManager.registerMetric('scanErrors', {
   title: 'Worker pool errors during scan',
   description: 'Total number of errors for worker pool during scanning',
   labels: commonLabels,
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('workersToTerminate', {
+  name: 'worker_manager_workers_to_terminate',
+  type: 'gauge',
+  title: 'Workers marked for termination',
+  description: 'Number of workers marked for termination per worker pool during scanning, labeled by reason.',
+  labels: {
+    ...commonLabels,
+    reason: 'Reason for termination (over_capacity, launch_config_archived)',
+  },
   registers: ['scan'],
 });

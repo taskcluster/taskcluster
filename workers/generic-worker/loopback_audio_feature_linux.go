@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v96/internal/scopes"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 type LoopbackAudioFeature struct {

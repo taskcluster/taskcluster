@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
-	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v96/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 type ObjectArtifact struct {
@@ -18,13 +18,17 @@ type ObjectArtifact struct {
 	Path string
 	// ContentType is used in the Content-Type header.
 	ContentType string
+	// ContentLength is the original file size in bytes, before any
+	// encoding (e.g. gzip). Sent to the queue for monitoring purposes.
+	ContentLength int64
 }
 
 func (a *ObjectArtifact) RequestObject() any {
 	return &tcqueue.ObjectArtifactRequest{
-		ContentType: a.ContentType,
-		Expires:     a.Expires,
-		StorageType: "object",
+		ContentType:   a.ContentType,
+		ContentLength: a.ContentLength,
+		Expires:       a.Expires,
+		StorageType:   "object",
 	}
 }
 
@@ -60,10 +64,11 @@ func (a *ObjectArtifact) FinishArtifact(resp any, queue tc.Queue, taskID, runID,
 }
 
 func (a *ObjectArtifact) String() string {
-	return fmt.Sprintf("Object Artifact - Name: '%v', Path: '%v', Expires: %v, Content-Type: '%v'",
+	return fmt.Sprintf("Object Artifact - Name: '%v', Path: '%v', Expires: %v, Content-Type: '%v', Content-Length: '%v'",
 		a.Name,
 		a.Path,
 		a.Expires,
 		a.ContentType,
+		a.ContentLength,
 	)
 }

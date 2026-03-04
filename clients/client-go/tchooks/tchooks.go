@@ -41,7 +41,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Hooks tcclient.Client
@@ -285,6 +285,9 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
 //
+// Optionally, a `taskId` can be provided in the payload which the hook task
+// will use. It must be unique and follow the slugid format.
+//
 // Required scopes:
 //
 //	hooks:trigger-hook:<hookGroupId>/<hookId>
@@ -341,6 +344,9 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
+//
+// Optionally, a `taskId` can be provided in the payload which the hook task
+// will use. It must be unique and follow the slugid format.
 //
 // See #triggerHookWithToken
 func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TriggerHookResponse, error) {

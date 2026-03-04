@@ -2338,4 +2338,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       }
     });
   });
+
+  suite('shouldWorkerTerminate', function() {
+    test('worker marked terminate: true returns true', async function() {
+      await createWorkerPool();
+      await createWorker({
+        providerData: {
+          shouldTerminate: {
+            terminate: true,
+            reason: 'over capacity',
+            decidedAt: new Date().toISOString(),
+          },
+        },
+      });
+      const result = await helper.workerManager.shouldWorkerTerminate(workerPoolId, workerGroup, workerId);
+      assert.strictEqual(result.terminate, true);
+      assert.strictEqual(result.reason, 'over capacity');
+    });
+
+    test('worker marked terminate: false returns false', async function() {
+      await createWorkerPool();
+      await createWorker({
+        providerData: {
+          shouldTerminate: {
+            terminate: false,
+            reason: 'needed',
+            decidedAt: new Date().toISOString(),
+          },
+        },
+      });
+      const result = await helper.workerManager.shouldWorkerTerminate(workerPoolId, workerGroup, workerId);
+      assert.strictEqual(result.terminate, false);
+      assert.strictEqual(result.reason, 'needed');
+    });
+
+    test('no decision yet returns terminate: false', async function() {
+      await createWorkerPool();
+      await createWorker();
+      const result = await helper.workerManager.shouldWorkerTerminate(workerPoolId, workerGroup, workerId);
+      assert.strictEqual(result.terminate, false);
+      assert.strictEqual(result.reason, 'none');
+    });
+
+    test('non-existent worker returns 404', async function() {
+      await assert.rejects(
+        () => helper.workerManager.shouldWorkerTerminate('no/such', 'wg', 'wi'),
+        err => err.statusCode === 404,
+      );
+    });
+  });
 });
