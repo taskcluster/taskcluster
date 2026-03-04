@@ -5,11 +5,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/dockerworker"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/dummy"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/genericworker"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/dummy"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/genericworker"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/worker"
 )
 
 type workerInfo struct {
@@ -25,12 +25,12 @@ var workers map[string]workerInfo = map[string]workerInfo{
 
 func New(runnercfg *cfg.RunnerConfig) (worker.Worker, error) {
 	if runnercfg.WorkerImplementation.Implementation == "" {
-		return nil, fmt.Errorf("No worker implementation given in configuration")
+		return nil, fmt.Errorf("no worker implementation given in configuration")
 	}
 
 	pi, ok := workers[runnercfg.WorkerImplementation.Implementation]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized worker implementation %s", runnercfg.WorkerImplementation.Implementation)
+		return nil, fmt.Errorf("unrecognized worker implementation %s", runnercfg.WorkerImplementation.Implementation)
 	}
 	return pi.constructor(runnercfg)
 }

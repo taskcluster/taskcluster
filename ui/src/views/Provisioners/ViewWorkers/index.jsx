@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import HammerIcon from 'mdi-react/HammerIcon';
+import { Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import SpeedDial from '../../../components/SpeedDial';
@@ -16,13 +17,14 @@ import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workersQuery from './workers.graphql';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 const STATES = {
-  requested: 'requested',
   running: 'running',
   stopping: 'stopping',
   stopped: 'stopped',
@@ -34,6 +36,7 @@ const STATES = {
   options: ({ location, match: { params } }) => ({
     errorPolicy: 'all',
     variables: {
+      workerPoolId: joinWorkerPoolId(params.provisionerId, params.workerType),
       provisionerId: params.provisionerId,
       workerType: params.workerType,
       workersConnection: {
@@ -56,13 +59,15 @@ const STATES = {
     display: 'flex',
     flexWrap: 'wrap',
     alignItems: 'center',
+    gap: theme.spacing(2),
   },
   breadcrumbsPaper: {
-    marginRight: theme.spacing(4),
+    marginRight: theme.spacing(2),
     flex: 1,
   },
   dropdown: {
     minWidth: 200,
+    marginTop: 0,
   },
   link: {
     ...theme.mixins.link,
@@ -218,7 +223,7 @@ export default class ViewWorkers extends Component {
       location,
       classes,
       match: { params },
-      data: { loading, error, workers, workerType },
+      data: { loading, error, workers, workerType, WorkerPool },
     } = this.props;
     const query = parse(location.search.slice(1));
     const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
@@ -232,7 +237,7 @@ export default class ViewWorkers extends Component {
           {shouldIgnoreGraphqlError && this.state.error && (
             <ErrorPanel fixed error={this.state.error} />
           )}
-          <div className={classes.bar}>
+          <Box className={classes.bar}>
             <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
               <Link to="/provisioners">
                 <Typography variant="body2" className={classes.link}>
@@ -247,24 +252,31 @@ export default class ViewWorkers extends Component {
               <Typography variant="body2" color="textSecondary">
                 {`${params.workerType}`}
               </Typography>
+              <WorkersNavbar
+                provisionerId={params.provisionerId}
+                workerType={params.workerType}
+                hasWorkerPool={!!WorkerPool?.workerPoolId}
+              />
             </Breadcrumbs>
-            <TextField
-              disabled={loading}
-              className={classes.dropdown}
-              select
-              label="Filter By"
-              value={query.filterBy || ''}
-              onChange={this.handleFilterChange}>
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              <MenuItem value="quarantined">Quarantined</MenuItem>
-              <MenuItem value="requested">Requested</MenuItem>
-              <MenuItem value="running">Running</MenuItem>
-              <MenuItem value="stopping">Stopping</MenuItem>
-              <MenuItem value="stopped">Stopped</MenuItem>
-            </TextField>
-          </div>
+
+            <Box marginTop={-2}>
+              <TextField
+                disabled={loading}
+                className={classes.dropdown}
+                select
+                label="Filter By"
+                value={query.filterBy || ''}
+                onChange={this.handleFilterChange}>
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="quarantined">Quarantined</MenuItem>
+                <MenuItem value="running">Running</MenuItem>
+                <MenuItem value="stopping">Stopping</MenuItem>
+                <MenuItem value="stopped">Stopped</MenuItem>
+              </TextField>
+            </Box>
+          </Box>
           <br />
           <WorkersTable
             workersConnection={workers}

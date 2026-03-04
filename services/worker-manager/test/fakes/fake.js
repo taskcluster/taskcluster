@@ -1,9 +1,13 @@
-const sinon = require('sinon');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const fs = require('fs');
-const yaml = require('js-yaml');
-const path = require('path');
+import sinon from 'sinon';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import fs from 'fs';
+import yaml from 'js-yaml';
+import path from 'path';
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const schemaPath = new URL('../../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
 
 /**
  * A parent class for fake cloud implementations.
@@ -15,7 +19,7 @@ const path = require('path');
  *  - only fake what is necessary
  *  - be as strict as possible, prohibiting unknown fields, arguments, etc.
  */
-class FakeCloud {
+export class FakeCloud {
   constructor() {
     this.sinon = sinon.createSandbox({});
   }
@@ -28,6 +32,7 @@ class FakeCloud {
     setup(() => this._reset());
     suiteTeardown(() => {
       this.sinon.restore();
+      this._restore();
     });
   }
 
@@ -46,11 +51,18 @@ class FakeCloud {
   }
 
   /**
+   * Restore removes the mock altogether
+   */
+  _restore() {
+    return;
+  }
+
+  /**
    * Validate the given value against the given schema in ./schemas
    */
   validate(value, schemaFile) {
     if (!this.ajv) {
-      const ajv = new Ajv({
+      const ajv = new Ajv.default({
         useDefaults: true,
         validateFormats: true,
         verbose: true,
@@ -59,8 +71,7 @@ class FakeCloud {
       });
 
       addFormats(ajv);
-      ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
-
+      ajv.addMetaSchema(jsonSchemaDraft06);
       const dir = path.join(__dirname, 'schemas');
       fs.readdirSync(dir).forEach(file => {
         if (!file.endsWith('.yml')) {
@@ -89,5 +100,3 @@ class FakeCloud {
     ].join(''));
   }
 }
-
-exports.FakeCloud = FakeCloud;

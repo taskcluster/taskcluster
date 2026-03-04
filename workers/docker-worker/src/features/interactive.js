@@ -155,7 +155,7 @@ class WebsocketServer {
     if (this.ssh && this.ssh.httpServ) {
       this.ssh.httpServ.close();
     }
-    if(this.shellServer) {
+    if (this.shellServer) {
       this.shellServer.close();
     }
     try {

@@ -1,7 +1,7 @@
 package files
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -24,7 +24,7 @@ func TestFile(t *testing.T) {
 
 	err := file.extract()
 	if assert.NoError(t, err) {
-		bytes, err := ioutil.ReadFile(path)
+		bytes, err := os.ReadFile(path)
 		if assert.NoError(t, err) {
 			assert.Equal(t, "Hello, World", string(bytes))
 		}
@@ -46,7 +46,7 @@ func TestFileSubdir(t *testing.T) {
 
 	err := file.extract()
 	if assert.NoError(t, err) {
-		bytes, err := ioutil.ReadFile(path)
+		bytes, err := os.ReadFile(path)
 		if assert.NoError(t, err) {
 			assert.Equal(t, "Hello, World", string(bytes))
 		}
@@ -69,15 +69,15 @@ func TestZipSubdir(t *testing.T) {
 
 	err := file.extract()
 	if assert.NoError(t, err) {
-		bytes, err := ioutil.ReadFile(filepath.Join(path, "hi"))
+		bytes, err := os.ReadFile(filepath.Join(path, "hi"))
 		if assert.NoError(t, err) {
 			assert.Equal(t, "hi\n", string(bytes))
 		}
-		bytes, err = ioutil.ReadFile(filepath.Join(path, "bye"))
+		bytes, err = os.ReadFile(filepath.Join(path, "bye"))
 		if assert.NoError(t, err) {
 			assert.Equal(t, "bye\n", string(bytes))
 		}
-		bytes, err = ioutil.ReadFile(filepath.Join(path, "dir/sub"))
+		bytes, err = os.ReadFile(filepath.Join(path, "dir/sub"))
 		if assert.NoError(t, err) {
 			assert.Equal(t, "sub\n", string(bytes))
 		}

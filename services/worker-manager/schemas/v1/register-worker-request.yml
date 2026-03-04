@@ -64,6 +64,15 @@ properties:
               curl http://169.254.169.254/metadata/attested/document on the instance
         additionalProperties: false
         required: [document]
+  systemBootTime:
+    title: System Boot Time
+    description: |
+      The time that the worker's system booted.
+      This is used to increase granularity of worker
+      registration time metrics.
+      See https://github.com/taskcluster/taskcluster/issues/8232.
+    type: string
+    format: date-time
 additionalProperties: false
 required:
   - workerPoolId

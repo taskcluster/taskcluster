@@ -2,10 +2,12 @@
 # If you need to override some values, please use docker-compose.override.yml file instead
 LEVEL=info
 ERROR_CONFIG=
-PORT=80
+PROMETHEUS_CONFIG={"server": {"ip": "0.0.0.0", "port": 9100 }}
+PORT=8080
 NODE_ENV=development
 FORCE_SSL=false
 TRUST_PROXY=true
+KEEP_ALIVE_TIMEOUT_SECONDS=
 READ_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 WRITE_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 TASKCLUSTER_ROOT_URL=http://taskcluster

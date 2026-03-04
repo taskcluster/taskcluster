@@ -1,4 +1,4 @@
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: ${projectName}-${lowercase(procName)}
@@ -22,11 +22,16 @@ spec:
           # the face of k8s node failure, with the concurrencyPolicy ensuring
           # that two pods never run in parallel.
           restartPolicy: OnFailure
+          imagePullSecrets: IMAGE_PULL_SECRETS_STRING
+          securityContext:
+            runAsNonRoot: true
           containers:
           - name: ${projectName}-${lowercase(procName)}
             image: '{{ .Values.dockerImage }}'
             imagePullPolicy: Always
             args: ['${serviceName}/${procName}']
+            securityContext:
+              allowPrivilegeEscalation: false
             resources:
               requests:
                 cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'
@@ -40,4 +45,6 @@ spec:
                 value: 'production'
             envFrom:
               - secretRef:
+                  name: ${projectName}
+              - configMapRef:
                   name: ${projectName}

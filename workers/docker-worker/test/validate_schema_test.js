@@ -2,7 +2,7 @@ const assert = require('assert').strict;
 const { validatePayload } = require('../src/util/validate_schema');
 const SchemaSet = require('../src/validate');
 const libUrls = require('taskcluster-lib-urls');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 
 suite('validate_schema_test.js', function() {
   const schemaset = new SchemaSet({
@@ -30,7 +30,7 @@ suite('validate_schema_test.js', function() {
       image: 'abc/def',
       maxRunTime: false,
     }, { expires: new Date() }, schema);
-    assert(payloadErrors.some(e => e.match(/data\/maxRunTime should be number/)));
+    assert(payloadErrors.some(e => e.match(/data\/maxRunTime should be integer/)));
   });
 
   test('validatePayload with artifact expiring after task', function() {

@@ -3,14 +3,14 @@ package genericworker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type genericworkerConfig struct {
@@ -54,6 +54,16 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 		}
 	}
 
+	workerLocationJson, err := json.Marshal(state.WorkerLocation)
+	if err != nil {
+		return fmt.Errorf("error encoding worker location: %v", err)
+	}
+
+	state.WorkerConfig, err = state.WorkerConfig.Set("workerLocation", string(workerLocationJson))
+	if err != nil {
+		return fmt.Errorf("could not set worker location in the worker config: %v", err)
+	}
+
 	set := func(key, value string) {
 		var err error
 		// only programming errors can cause this to fail
@@ -72,6 +82,11 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 
 	// split to workerType and provisionerId
 	splitWorkerPoolID := strings.SplitAfterN(state.WorkerPoolID, "/", 2)
+
+	// ensure that the workerPoolID has a slash in it
+	if len(splitWorkerPoolID) != 2 {
+		return fmt.Errorf("workerPoolID %q does not contain a slash", state.WorkerPoolID)
+	}
 
 	// required settings
 	// see https://docs.taskcluster.net/docs/reference/workers/generic-worker/installing#set-up-your-env
@@ -102,15 +117,15 @@ func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, er
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Error constructing worker config: %v", err)
+		return nil, fmt.Errorf("error constructing worker config: %v", err)
 	}
-	err = ioutil.WriteFile(d.wicfg.ConfigPath, content, 0600)
+	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
+		return nil, fmt.Errorf("error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
 	if (d.wicfg.Path != "" && d.wicfg.Service != "") || (d.wicfg.Path == "" && d.wicfg.Service == "") {
-		return nil, fmt.Errorf("Specify exactly one of worker.path and worker.windowsService")
+		return nil, fmt.Errorf("specify exactly one of worker.path and worker.windowsService")
 	}
 	if d.wicfg.Path != "" {
 		d.runMethod, err = newCmdRunMethod()

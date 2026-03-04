@@ -1,29 +1,31 @@
-const assert = require('assert');
-const fs = require('fs');
-const { getCommonSchemas } = require('../src/common-schemas');
-const { makeSerializable } = require('../src/serializable');
-const mockFs = require('mock-fs');
-const References = require('..');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import fs from 'fs';
+import { getCommonSchemas } from '../src/common-schemas.js';
+import { makeSerializable } from '../src/serializable.js';
+import mockFs from 'mock-fs';
+import References from '../src/index.js';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   teardown(function() {
     mockFs.restore();
   });
 
-  const references = new References({
-    schemas: getCommonSchemas(),
-    references: [],
-  });
+  const getReferences = async () => {
+    return new References({
+      schemas: await getCommonSchemas(),
+      references: [],
+    });
+  };
 
-  test('getSchema', function() {
+  test('getSchema', async function() {
     assert.equal(
-      references.getSchema('/schemas/common/manifest-v3.json#').$id,
+      (await getReferences()).getSchema('/schemas/common/manifest-v3.json#').$id,
       '/schemas/common/manifest-v3.json#');
   });
 
-  test('fromService', function() {
-    // mock SchemaSet from taskcluster-lib-validate
+  test('fromService', async function() {
+    // mock SchemaSet from @taskcluster/lib-validate
     const schemaset = {
       abstractSchemas() {
         return {
@@ -34,7 +36,7 @@ suite(testing.suiteName(), function() {
       },
     };
 
-    const references = References.fromService({
+    const references = await References.fromService({
       schemaset,
       references: [
         {
@@ -47,13 +49,14 @@ suite(testing.suiteName(), function() {
     assert(references.schemas.some(s => s.content.$id === 'somefile.json#'));
   });
 
-  test('makeSerializable', function() {
+  test('makeSerializable', async function() {
+    const references = await getReferences();
     assert.deepEqual(
       references.makeSerializable(),
       makeSerializable({ references }));
   });
 
-  test('writes uri-structured', function() {
+  test('writes uri-structured', async function() {
     mockFs({});
     const references = new References({
       references: [
@@ -80,7 +83,7 @@ suite(testing.suiteName(), function() {
           },
         },
       ],
-      schemas: getCommonSchemas().concat([{
+      schemas: (await getCommonSchemas()).concat([{
         filename: 'foo.json',
         content: {
           $schema: '/schemas/common/metaschema.json#',
@@ -91,7 +94,7 @@ suite(testing.suiteName(), function() {
       }]),
     });
 
-    references.writeUriStructured({ directory: '/refdata' });
+    await references.writeUriStructured({ directory: '/refdata' });
     assert.deepEqual(JSON.parse(fs.readFileSync('/refdata/schemas/test/sch.json')), {
       $id: '/schemas/test/sch.json#',
       $schema: '/schemas/common/metaschema.json#',

@@ -1,10 +1,13 @@
-const _ = require('lodash');
-const assert = require('assert');
-const assume = require('assume');
-const debug = require('debug')('test:api:createhook');
-const taskcluster = require('taskcluster-client');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import _ from 'lodash';
+import assert from 'assert';
+import assume from 'assume';
+import debugFactory from 'debug';
+const debug = debugFactory('test:api:createhook');
+import taskcluster from '@taskcluster/client';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
+
+import taskDefinition from './test_definition.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -14,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   // Use the same hook definition for everything
-  const hookDef = _.cloneDeep(require('./test_definition'));
+  const hookDef = _.cloneDeep(taskDefinition);
   const hookWithTriggerSchema = _.defaults({
     triggerSchema: {
       type: 'object',
@@ -99,6 +102,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     error: '',
   };
 
+  const auditRecordExists = async (entityId, action) => {
+    await helper.withAdminDbClient(async (client) => {
+      const res = await client.query(
+        `SELECT * FROM audit_history WHERE entity_id = $1 AND entity_type = $2 AND action_type = $3`,
+        [entityId, 'hook', action],
+      );
+      assert.ok(res.rows.length > 0);
+      assert.equal(res.rows[0].entity_id, entityId);
+      assert.equal(res.rows[0].action_type, action);
+    });
+  };
+
   // work around https://github.com/mochajs/mocha/issues/2819.
   const subSkip = () => {
     suiteSetup(function() {
@@ -116,6 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
+      await auditRecordExists('foo/bar', 'created');
     });
 
     test('returns 500 when pulse publish fails', async () => {
@@ -143,6 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar/slash' }, payload));
+      await auditRecordExists('foo/bar/slash', 'created');
     });
 
     test('with invalid scopes', async () => {
@@ -179,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => {
-          if (!/should have required property 'routingKeyPattern'/.test(err)) {
+          if (!/must have required property 'routingKeyPattern'/.test(err)) {
             throw err;
           }
         });
@@ -192,7 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => {
-          if (!/should be array/.test(err)) {
+          if (!/must be array/.test(err)) {
             throw err;
           }
         });
@@ -275,6 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r2.task).deep.equals(r1.task);
       helper.assertPulseMessage('hook-updated', ({ payload }) =>
         _.isEqual({ hookId: 'bar', hookGroupId: 'foo' }, payload));
+      await auditRecordExists('foo/bar', 'updated');
     });
 
     test('fails if pulse publisher fails', async function() {
@@ -336,6 +354,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
+      await auditRecordExists('foo/bar', 'deleted');
     });
 
     test('fails if pulse publisher fails', async function() {
@@ -645,6 +664,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       throw new Error('should have thrown an exception');
     });
 
+    test('should use provided taskId from payload', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const providedTaskId = taskcluster.slugid();
+      const res = await helper.hooks.triggerHook('foo', 'bar', { location: 'Belo Horizonte, MG', taskId: providedTaskId });
+      assume(res.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHook', payload: { location: 'Belo Horizonte, MG', taskId: providedTaskId }, clientId: 'test-client' },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', { location: 'Test', taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
+    });
+
     test('fails if no hook exists', async () => {
       await helper.hooks.triggerHook('foo', 'bar', { bar: { location: 'Belo Horizonte, MG' },
         foo: 'triggerHook' }).then(
@@ -694,7 +733,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => { throw new Error('Expected an error'); },
         (err) => {
           debug('Got expected error: %s', err);
-          assert(/should be/.test(err.message));
+          assert(/must be/.test(err.message));
         });
     });
 
@@ -720,7 +759,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => { throw new Error('Expected an error'); },
         (err) => {
           debug('Got expected error: %s', err);
-          assert(/should be/.test(err.message));
+          assert(/must be/.test(err.message));
         });
     });
   });
@@ -801,6 +840,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         options: {},
       }]);
     });
+
+    test('should use provided taskId from payload with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      const providedTaskId = taskcluster.slugid();
+      const result = await helper.hooks.triggerHookWithToken(
+        'foo', 'bar', res.token,
+        { location: 'New Zealand', taskId: providedTaskId },
+      );
+      assume(result.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand', taskId: providedTaskId } },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, { location: 'Test', taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
+    });
   });
 
   suite('listLastFires', function() {
@@ -817,6 +881,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         creator.fakeCreate = true;
       }
     });
+    const createTask = async (taskId, state) => {
+      await helper.withAdminDbClient(async (client) => {
+        await client.query(
+          'select create_task_projid($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
+          [
+            taskId, // task_id text,
+            'prov/wt', // task_queue_id text,
+            'hooks', // scheduler_id text,
+            'proj', // project_id text,
+            taskId, // task_group_id text,
+            '[]', // dependencies jsonb,
+            'all-resolved', // requires task_requires,
+            '[]', // routes jsonb,
+            'high', // priority task_priority,
+            5, // retries integer,
+            new Date(), // created timestamptz,
+            new Date(), // deadline timestamptz,
+            new Date(), // expires timestamptz,
+            '[]', // scopes jsonb,
+            '{}', // payload jsonb,
+            '{}', // metadata jsonb,
+            '{}', // tags jsonb,
+            '{}', // extra jsonb
+          ],
+        );
+        await client.query(
+          'update tasks set runs = $1 where task_id = $2;',
+          [JSON.stringify([{ state }]), taskId],
+        );
+      });
+    };
 
     test('without scopes', async function() {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
@@ -835,12 +930,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           taskId: taskIds[i],
           taskCreateTime: new Date(),
         });
+        await createTask(taskIds[i], 'completed');
       }
       const { lastFires } = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
       const dataTaskIds = lastFires.map(lastFire => lastFire.taskId);
       taskIds.sort();
       dataTaskIds.sort();
       assume(taskIds).eql(dataTaskIds);
+      assume(lastFires[0].taskState).equals('completed');
+    });
+    test('lists lastfires and reports "unknown" for task status', async () => {
+      const taskIds = [];
+      const hookGroupId = 'test-listLastFiresState';
+      for (let i = 0; i < 2; i++) {
+        taskIds.push(taskcluster.slugid());
+        await appendLastFire({ ...lastFire,
+          hookGroupId,
+          taskId: taskIds[i],
+          taskCreateTime: new Date(),
+        });
+      }
+      await createTask(taskIds[1], 'unscheduled'); // set the last one
+      const { lastFires } = await helper.hooks.listLastFires(hookGroupId, lastFire.hookId);
+      assume(lastFires[0].taskState).equals('unscheduled'); // it will be the most recent
+      assume(lastFires[1].taskState).equals('unknown');
     });
   });
 

@@ -2,13 +2,12 @@ package main
 
 import (
 	"testing"
+
+	"github.com/mcuadros/go-defaults"
 )
 
 func TestRunAsAdministratorDisabled(t *testing.T) {
-	defer setup(t)()
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
-	}
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`whoami /groups`,
@@ -19,16 +18,14 @@ func TestRunAsAdministratorDisabled(t *testing.T) {
 		},
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
-	defer setup(t)()
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
-	}
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`whoami /groups`,
@@ -45,6 +42,7 @@ func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
 			"Administrators",
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
@@ -54,10 +52,7 @@ func TestRunAsAdministratorEnabledMissingScopes(t *testing.T) {
 }
 
 func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
-	defer setup(t)()
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
-	}
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`whoami /groups`,
@@ -72,6 +67,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 			RunAsAdministrator: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
@@ -87,7 +83,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 
 // the payload never actually runs, so we don't need to also cover ed25519.
 func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
@@ -99,19 +95,11 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 			RunAsAdministrator: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
 		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
-	}
-
-	if config.RunTasksAsCurrentUser {
-		// When running as current user, chain of trust key is not private so
-		// generic-worker should detect that it isn't secured from task user
-		// and cause malformed-payload exception.
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-
 	}
 
 	// if UAC is disabled, we should have malformed-payload for trying to use
@@ -120,8 +108,9 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
-func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
-	defer setup(t)()
+// the payload never actually runs, so we don't need to also cover ed25519.
+func TestChainOfTrustWithRunAsAdministratorAsCurrentUser(t *testing.T) {
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + config.Ed25519SigningKeyLocation + `"`,
@@ -129,23 +118,44 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
 		Features: FeatureFlags{
-			ChainOfTrust:       true,
-			RunAsAdministrator: false, // FALSE !!!!
+			ChainOfTrust:         true,
+			RunAsAdministrator:   true,
+			RunTaskAsCurrentUser: true,
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
 		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
+		"generic-worker:run-task-as-current-user:" + td.ProvisionerID + "/" + td.WorkerType,
 	}
 
-	if config.RunTasksAsCurrentUser {
-		// When running as current user, chain of trust key is not private so
-		// generic-worker should detect that it isn't secured from task user
-		// and cause malformed-payload exception.
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
+	// When running as current user, chain of trust key is not private so
+	// generic-worker should detect that it isn't secured from task user
+	// and cause malformed-payload exception.
+	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+}
 
+func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
+	setup(t)
+	payload := GenericWorkerPayload{
+		Command: []string{
+			`type "` + config.Ed25519SigningKeyLocation + `"`,
+		},
+		MaxRunTime: 5,
+		OSGroups:   []string{"Administrators"},
+		Features: FeatureFlags{
+			ChainOfTrust:         true,
+			RunAsAdministrator:   false, // FALSE !!!!
+			RunTaskAsCurrentUser: false,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = []string{
+		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
+		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
 	}
 
 	if UACEnabled() {
@@ -155,11 +165,36 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 	}
 }
 
-func TestRunAsAdministratorEnabled(t *testing.T) {
-	defer setup(t)()
-	if config.RunTasksAsCurrentUser {
-		t.Skip("Skipping since running as current user...")
+func TestChainOfTrustWithoutRunAsAdministratorAsCurrentUser(t *testing.T) {
+	setup(t)
+	payload := GenericWorkerPayload{
+		Command: []string{
+			`type "` + config.Ed25519SigningKeyLocation + `"`,
+		},
+		MaxRunTime: 5,
+		OSGroups:   []string{"Administrators"},
+		Features: FeatureFlags{
+			ChainOfTrust:         true,
+			RunAsAdministrator:   false, // FALSE !!!!
+			RunTaskAsCurrentUser: true,
+		},
 	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = []string{
+		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,
+		"generic-worker:os-group:" + td.ProvisionerID + "/" + td.WorkerType + "/Administrators",
+		"generic-worker:run-task-as-current-user:" + td.ProvisionerID + "/" + td.WorkerType,
+	}
+
+	// When running as current user, chain of trust key is not private so
+	// generic-worker should detect that it isn't secured from task user
+	// and cause malformed-payload exception.
+	expectChainOfTrustKeyNotSecureMessage(t, td, payload)
+}
+
+func TestRunAsAdministratorEnabled(t *testing.T) {
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`whoami /groups`,
@@ -176,6 +211,7 @@ func TestRunAsAdministratorEnabled(t *testing.T) {
 			"Administrators",
 		},
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 	td.Scopes = []string{
 		"generic-worker:run-as-administrator:" + td.ProvisionerID + "/" + td.WorkerType,

@@ -1,11 +1,15 @@
-const debug = require('debug')('notify');
-const _ = require('lodash');
-const path = require('path');
-const crypto = require('crypto');
-const sanitizeHtml = require('sanitize-html');
-const { marked } = require('marked');
-const Email = require('email-templates');
-const nodemailer = require('nodemailer');
+import debugFactory from 'debug';
+const debug = debugFactory('notify');
+import _ from 'lodash';
+import path from 'path';
+import crypto from 'crypto';
+import sanitizeHtml from 'sanitize-html';
+import { marked } from 'marked';
+import Email from 'email-templates';
+import nodemailer from 'nodemailer';
+import { SendEmailCommand } from '@aws-sdk/client-sesv2';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -24,7 +28,7 @@ class Notifier {
     this.monitor = options.monitor;
 
     const transport = nodemailer.createTransport({
-      SES: options.ses,
+      SES: { sesClient: options.ses, SendEmailCommand },
     });
     this.emailer = new Email({
       transport,
@@ -59,18 +63,18 @@ class Notifier {
   async email({ address, subject, content, link, replyTo, template }) {
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
-      return;
+      return false;
     }
 
     if (await this.options.denier.isDenied('email', address)) {
       debug('Denylist email: denylisted send detected, discarding the notification');
-      return;
+      return false;
     }
 
     const rateLimit = this.rateLimit.remaining(address);
     if (rateLimit <= 0) {
       debug('Ratelimited email: %s is over its rate limit, discarding the notification', address);
-      return;
+      return false;
     }
 
     debug(`Sending email to ${address}`);
@@ -102,58 +106,61 @@ class Notifier {
   async pulse({ routingKey, message }) {
     if (this.isDuplicate(routingKey, message)) {
       debug('Duplicate pulse send detected. Not attempting resend.');
-      return;
+      return false;
     }
 
     if (await this.options.denier.isDenied('pulse', routingKey)) {
       debug('Denylist pulse: denylisted send detected, discarding the notification');
-      return;
+      return false;
     }
 
     debug(`Publishing message on ${routingKey}`);
-    const res = this.publisher.notify({ message }, [routingKey]);
+    await this.publisher.notify({ message }, [routingKey]);
     this.markSent(routingKey, message);
     this.monitor.log.pulse({ routingKey });
-    return res;
+    // publisher doesn't return anything so we need to return successful here
+    return true;
   }
 
   async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
-      return;
+      return false;
     }
 
     if (await this.options.denier.isDenied('matrix-room', roomId)) {
       debug('Denylist matrix: denylisted send detected, discarding the notification');
-      return;
+      return false;
     }
 
     await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
     this.monitor.log.matrix({ dest: roomId });
+    return true;
   }
 
   async slack({ channelId, text, blocks, attachments }) {
     if (!this._slack) {
       this.monitor.warning(`Slack message sent to ${channelId} but Slack is not configured.`);
-      return;
+      return false;
     }
 
-    if (this.isDuplicate('slack-channel', channelId, text)) {
+    if (this.isDuplicate('slack-channel', channelId, text, blocks, attachments)) {
       debug('Duplicate slack message detected. Not attempting resend.');
-      return;
+      return false;
     }
 
     if (await this.options.denier.isDenied('slack-channel', channelId, text)) {
       debug('Denylist slack: denylisted send detected, discarding the notification');
-      return;
+      return false;
     }
 
     await this._slack.sendMessage({ channelId, text, blocks, attachments });
-    this.markSent('slack-channel', channelId, text);
+    this.markSent('slack-channel', channelId, text, blocks, attachments);
     this.monitor.log.slack({ channelId });
+    return true;
   }
 }
 
 // Export notifier
-module.exports = Notifier;
+export default Notifier;

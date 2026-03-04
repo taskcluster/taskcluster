@@ -1,7 +1,6 @@
-const { formatError } = require('graphql');
-
-module.exports = error => {
-  const data = formatError(error);
+// https://www.apollographql.com/docs/apollo-server/migration#error-formatting-changes
+export default (formattedError, error) => {
+  const data = error?.toJson?.() || error;
 
   if (
     error.originalError &&

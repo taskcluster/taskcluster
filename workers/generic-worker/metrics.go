@@ -8,7 +8,7 @@ import (
 )
 
 func logEvent(eventType string, task *TaskRun, timestamp time.Time) {
-	fields := map[string]interface{}{
+	fields := map[string]any{
 		"eventType":    eventType,
 		"worker":       "generic-worker",
 		"workerPoolId": fmt.Sprintf("%s/%s", config.ProvisionerID, config.WorkerType),

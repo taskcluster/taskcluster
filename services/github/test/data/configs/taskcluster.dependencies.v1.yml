@@ -6,8 +6,8 @@ tasks:
   then:
     - taskId: "docker_build"
       dependencies:
-      - "py36"
-      - "py37"
+      - "py38"
+      - "py39"
       provisionerId: test-provisioner
       workerType: releng-svc
       created: {$fromNow: ''}
@@ -18,22 +18,6 @@ tasks:
       metadata:
         name: docker build
         description: build latest docker image
-        owner: owner
-        source: source
-
-    - taskId: "py36"
-      provisionerId: test-provisioner
-      workerType: github-worker
-      created: {$fromNow: ''}
-      deadline: {$fromNow: '1 hour'}
-      payload:
-        maxRunTime: 3600
-        image: python:3.6
-        command:
-          - sh
-      metadata:
-        name: tox py36
-        description: code linting & unit tests on py36
         owner: owner
         source: source
 
@@ -53,18 +37,34 @@ tasks:
         owner: owner
         source: source
 
-    - taskId: "py37"
+    - taskId: "py38"
       provisionerId: test-provisioner
       workerType: github-worker
       created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
       payload:
         maxRunTime: 3600
-        image: python:3.7
+        image: python:3.8
         command:
           - sh
       metadata:
-        name: tox py37
-        description: code linting & unit tests on py37
+        name: tox py38
+        description: code linting & unit tests on py38
+        owner: owner
+        source: source
+
+    - taskId: "py39"
+      provisionerId: test-provisioner
+      workerType: github-worker
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        maxRunTime: 3600
+        image: python:3.9
+        command:
+          - sh
+      metadata:
+        name: tox py39
+        description: code linting & unit tests on py39
         owner: owner
         source: source

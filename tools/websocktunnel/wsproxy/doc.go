@@ -3,7 +3,7 @@
 // multiplexed as separate streams over a WS connection. It uses JWT
 // for auth.
 //
-//     viewer ----> [ proxy ] <--- websocket --- client
+//	viewer ----> [ proxy ] <--- websocket --- client
 //
 // proxy serves endpoints exposed by client to viewers.
 //

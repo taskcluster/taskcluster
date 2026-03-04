@@ -13,9 +13,19 @@ const WorkerManagerViewWorkers = lazy(() =>
 const WorkerManagerViewErrors = lazy(() =>
   import(/* webpackChunkName: 'WorkerManager.WMViewErrors' */ './WMViewErrors')
 );
+const WorkerManagerViewErrorCenter = lazy(() =>
+  import(
+    /* webpackChunkName: 'WorkerManager.WMViewErrorCenter' */ './WMViewErrorCenter'
+  )
+);
 const WMWorkerPoolEditor = lazy(() =>
   import(
     /* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'
+  )
+);
+const WMWorkerPoolLaunchConfigs = lazy(() =>
+  import(
+    /* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'
   )
 );
 
@@ -27,6 +37,11 @@ export default path => [
     description: 'Create a worker pool',
   },
   {
+    component: WorkerManagerViewErrorCenter,
+    path: `${path}/errors`,
+    description: 'Worker manager errors center',
+  },
+  {
     component: WorkerManagerViewWorkers,
     path: `${path}/:workerPoolId/workers`,
     description: 'View workers for that specific worker pool',
@@ -34,17 +49,17 @@ export default path => [
   {
     component: WorkerManagerViewErrors,
     path: `${path}/:workerPoolId/errors`,
-    description: 'View workers for that specific worker pool',
+    description: 'View errors for that specific worker pool',
+  },
+  {
+    component: WMWorkerPoolLaunchConfigs,
+    path: `${path}/:workerPoolId/launch-configs`,
+    description: 'View launch configs for that specific worker pool',
   },
   {
     component: WMWorkerPoolEditor,
     path: `${path}/:workerPoolId`,
     description: 'A view to inspect/edit a worker pool',
-  },
-  {
-    component: WorkerManagerViewWorkers,
-    path: `${path}/providers/:provider`,
-    description: 'View workers for that specific provider',
   },
   {
     component: WorkerManagerViewWorkerPools,

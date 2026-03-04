@@ -1,7 +1,8 @@
-const semver = require('semver');
-const path = require('path');
-const { ChangeLog } = require('../changelog');
-const {
+import semver from 'semver';
+import path from 'path';
+import { ChangeLog } from '../changelog/index.js';
+
+import {
   ensureTask,
   gitLsFiles,
   gitRemoteRev,
@@ -21,12 +22,14 @@ const {
   modifyRepoFile,
   removeRepoFile,
   REPO_ROOT,
-} = require('../utils');
-const { schema: readSchema } = require('taskcluster-db');
+  execCommand,
+} from '../utils/index.js';
+
+import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
-module.exports = ({ tasks, cmdOptions, credentials }) => {
+export default ({ tasks, cmdOptions, credentials }) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
     requires: [
@@ -128,6 +131,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
       }
 
       const releaseImage = `taskcluster/taskcluster:v${requirements['release-version']}`;
+      const releaseImageGenericWorker = `taskcluster/generic-worker:v${requirements['release-version']}`;
 
       const build = 'infrastructure/tooling/current-release.yml';
       utils.status({ message: `Update ${build}` });
@@ -146,11 +150,21 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
       changed.push(helmchart);
 
-      const pyclient = 'clients/client-py/setup.py';
-      utils.status({ message: `Update ${pyclient}` });
-      await modifyRepoFile(pyclient, contents =>
-        contents.replace(/VERSION = .*/, `VERSION = '${requirements['release-version']}'`));
-      changed.push(pyclient);
+      const pyClientDir = path.join('clients', 'client-py');
+      const pyClientPyprojectToml = path.join(pyClientDir, 'pyproject.toml');
+      utils.status({ message: `Update ${pyClientPyprojectToml}` });
+      await modifyRepoFile(pyClientPyprojectToml, contents =>
+        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+      changed.push(pyClientPyprojectToml);
+
+      const pyClientUvLock = path.join(pyClientDir, 'uv.lock');
+      utils.status({ message: `Update ${pyClientUvLock}` });
+      await execCommand({
+        command: ['uv', 'lock', '-P', 'taskcluster'],
+        dir: path.join(REPO_ROOT, pyClientDir),
+        utils,
+      });
+      changed.push(pyClientUvLock);
 
       for (const dir of ['client', 'upload', 'download', 'integration_tests']) {
         const rsclient = `clients/client-rust/${dir}/Cargo.toml`;
@@ -200,6 +214,7 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
         'clients/client-go/**',
         'clients/client-shell/**',
         'internal/**',
+        'taskcluster/kinds/generic-worker/**',
         'tools/**',
         'ui/docs/reference/workers/generic-worker/installing.mdx',
         'ui/docs/reference/workers/websocktunnel.mdx',
@@ -223,17 +238,20 @@ module.exports = ({ tasks, cmdOptions, credentials }) => {
           `\\"version\\": \\"${requirements['release-version']}`));
       changed.push('Dockerfile');
 
-      const dockerCompose = 'docker-compose.yml';
-      utils.status({ message: `Update ${dockerCompose}` });
-      await modifyRepoFile(dockerCompose, contents =>
-        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
-      changed.push(dockerCompose);
+      utils.status({ message: 'Update generic-worker.Dockerfile' });
+      await modifyRepoFile('generic-worker.Dockerfile',
+        contents => contents.replace(
+          /\\"version\\":\s*\\"[0-9.]*/gm,
+          `\\"version\\": \\"${requirements['release-version']}`));
+      changed.push('generic-worker.Dockerfile');
 
-      const dockerComposeDev = 'docker-compose.dev.yml';
-      utils.status({ message: `Update ${dockerComposeDev}` });
-      await modifyRepoFile(dockerComposeDev, contents =>
-        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage));
-      changed.push(dockerComposeDev);
+      const dockerEnv = '.env';
+      utils.status({ message: `Update ${dockerEnv}` });
+      await modifyRepoFile(dockerEnv, contents =>
+        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage)
+          .replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker),
+      );
+      changed.push(dockerEnv);
 
       return { 'version-updated': changed };
     },

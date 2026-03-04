@@ -1,34 +1,38 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/notify/v1/api.json
+// This package was generated from the reference schema of
+// the Notify service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/notify/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The notification service listens for tasks with associated notifications
 // and handles requests to send emails and post pulse messages.
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create a Notify object:
 //
-//  notify := tcnotify.New(nil)
+//	notify := tcnotify.New(nil)
 //
 // and then call one or more of notify's methods, e.g.:
 //
-//  err := notify.Ping(.....)
+//	err := notify.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/notify/v1/api.json together with the input and output schemas it references,
@@ -38,7 +42,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Notify tcclient.Client
@@ -47,14 +51,14 @@ type Notify tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  notify := tcnotify.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := notify.Ping(.....)                     // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	notify := tcnotify.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := notify.Ping(.....)                     // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Notify {
 	return &Notify{
 		Credentials:  credentials,
@@ -73,9 +77,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Notify {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -128,8 +132,12 @@ func (notify *Notify) Version() error {
 // email. If a link is included, it will be rendered to a nice button in the
 // HTML version of the email
 //
+// In case when duplicate message has been detected and no email was sent,
+// this endpoint will return 204 status code.
+//
 // Required scopes:
-//   notify:email:<address>
+//
+//	notify:email:<address>
 //
 // See #email
 func (notify *Notify) Email(payload *SendEmailRequest) error {
@@ -142,8 +150,11 @@ func (notify *Notify) Email(payload *SendEmailRequest) error {
 //
 // Publish a message on pulse with the given `routingKey`.
 //
+// # Endpoint will return 204 when duplicate message has been detected
+//
 // Required scopes:
-//   notify:pulse:<routingKey>
+//
+//	notify:pulse:<routingKey>
 //
 // See #pulse
 func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
@@ -162,8 +173,12 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 // Note that the matrix client used by taskcluster must be invited to a room before
 // it can post there!
 //
+// In case when duplicate message has been detected and no message was sent,
+// this endpoint will return 204 status code.
+//
 // Required scopes:
-//   notify:matrix-room:<roomId>
+//
+//	notify:matrix-room:<roomId>
 //
 // See #matrix
 func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
@@ -181,8 +196,12 @@ func (notify *Notify) Matrix(payload *SendMatrixNoticeRequest) error {
 // The Slack app can post into public channels by default but will need to be added
 // to private channels before it can post messages there.
 //
+// In case when duplicate message has been detected and no message was sent,
+// this endpoint will return 204 status code.
+//
 // Required scopes:
-//   notify:slack-channel:<channelId>
+//
+//	notify:slack-channel:<channelId>
 //
 // See #slack
 func (notify *Notify) Slack(payload *SendSlackMessage) error {
@@ -197,7 +216,8 @@ func (notify *Notify) Slack(payload *SendSlackMessage) error {
 // by the notification service.
 //
 // Required scopes:
-//   notify:manage-denylist
+//
+//	notify:manage-denylist
 //
 // See #addDenylistAddress
 func (notify *Notify) AddDenylistAddress(payload *NotificationTypeAndAddress) error {
@@ -211,7 +231,8 @@ func (notify *Notify) AddDenylistAddress(payload *NotificationTypeAndAddress) er
 // Delete the specified address from the notification denylist.
 //
 // Required scopes:
-//   notify:manage-denylist
+//
+//	notify:manage-denylist
 //
 // See #deleteDenylistAddress
 func (notify *Notify) DeleteDenylistAddress(payload *NotificationTypeAndAddress) error {
@@ -235,7 +256,8 @@ func (notify *Notify) DeleteDenylistAddress(payload *NotificationTypeAndAddress)
 // use the query-string option `limit` to return fewer.
 //
 // Required scopes:
-//   notify:manage-denylist
+//
+//	notify:manage-denylist
 //
 // See #listDenylist
 func (notify *Notify) ListDenylist(continuationToken, limit string) (*ListOfNotificationAdresses, error) {
@@ -254,7 +276,8 @@ func (notify *Notify) ListDenylist(continuationToken, limit string) (*ListOfNoti
 // Returns a signed URL for ListDenylist, valid for the specified duration.
 //
 // Required scopes:
-//   notify:manage-denylist
+//
+//	notify:manage-denylist
 //
 // See ListDenylist for more details.
 func (notify *Notify) ListDenylist_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {

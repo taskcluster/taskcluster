@@ -1,7 +1,7 @@
-const debug = require('debug');
-const amqplib = require('amqplib');
-const assert = require('assert');
-const slugid = require('slugid');
+import debug from 'debug';
+import amqplib from 'amqplib';
+import assert from 'assert';
+import slugid from 'slugid';
 
 /**
  * Recognize some "expected", ignorable errors due to normal network failures.
@@ -28,7 +28,7 @@ const isExpectedError = err => {
  * that are deleted on disconnection.  This may lead to loss of messages,
  * and the caller must handle this via the onConnected handler.
  */
-class PulseConsumer {
+export class PulseConsumer {
   constructor({ client, bindings, queueName, ephemeral, prefetch, onConnected, handleMessage, ...queueOptions }) {
     assert(handleMessage, 'Must provide a message handler function');
 
@@ -154,6 +154,10 @@ class PulseConsumer {
       durable: true,
       autoDelete: this.ephemeral,
       ...this.queueOptions,
+      arguments: {
+        ...(!this.ephemeral && { 'x-queue-type': 'quorum' }),
+        ...this.queueOptions.arguments,
+      },
     });
 
     for (let { exchange, routingKeyPattern } of this.bindings) {
@@ -321,7 +325,7 @@ class PulseConsumer {
   }
 }
 
-const consume = async (options, handleMessage, onConnected) => {
+export const consume = async (options, handleMessage, onConnected) => {
   if (handleMessage) {
     options.handleMessage = handleMessage;
   }
@@ -336,5 +340,3 @@ const consume = async (options, handleMessage, onConnected) => {
   await pq._start();
   return pq;
 };
-
-exports.consume = consume;

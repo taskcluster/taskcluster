@@ -15,9 +15,9 @@
 // This document describes the exchange offered for workers by the
 // cache-purge service.
 //
-// See: https://docs.taskcluster.net/reference/core/purge-cache/exchanges
+// See: https://docs.taskcluster.net/docs/reference/core/purge-cache
 //
-// How to use this package
+// # How to use this package
 //
 // This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
@@ -28,17 +28,17 @@
 //
 // For example, when specifying a binding, rather than using:
 //
-//  pulse.Bind(
-//  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined",
-//  )
+//	pulse.Bind(
+//		"*.*.*.*.*.*.gaia.#",
+//		"exchange/taskcluster-queue/v1/task-defined",
+//	)
 //
 // You can rather use:
 //
-//  queueevents.TaskDefined{WorkerType: "gaia"}
+//	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcpurgecacheevents
 
 import (
@@ -50,7 +50,7 @@ import (
 // exchange with designated `provisionerId` and `workerType` in the
 // routing-key and the name of the `cacheFolder` as payload
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/exchanges#purgeCache
+// See https://docs.taskcluster.net/docs/reference/core/purge-cache
 type PurgeCache struct {
 	RoutingKeyKind string `mwords:"*"`
 	ProvisionerID  string `mwords:"*"`
@@ -65,14 +65,14 @@ func (binding PurgeCache) ExchangeName() string {
 	return "exchange/taskcluster-purge-cache/v1/purge-cache"
 }
 
-func (binding PurgeCache) NewPayloadObject() interface{} {
+func (binding PurgeCache) NewPayloadObject() any {
 	return new(PurgeCacheMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

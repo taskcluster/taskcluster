@@ -83,7 +83,13 @@ methods:
         end if;
       end
   is_task_group_active:
-    description: temp, removed in next commit
+    description: |
+      Determine whether a task group is currently active.  An "active" task
+      group is one with one or more tasks that has never been resolved.
+
+      An unsealed, inactive task group can become active if a new task is
+      added, so this value may change from tue to false or false to true at any
+      time unless a task group is sealed.
     mode: read
     serviceName: queue
     args: task_group_id_in text

@@ -10,7 +10,7 @@ import (
 func TestMessageMarshal(t *testing.T) {
 	msg := Message{
 		Type: "hey-you",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"x": true,
 			"y": "twenty",
 		},
@@ -18,7 +18,7 @@ func TestMessageMarshal(t *testing.T) {
 	bytes, err := json.Marshal(&msg)
 	assert.NoError(t, err, "should not fail")
 
-	var obj map[string]interface{}
+	var obj map[string]any
 	err = json.Unmarshal(bytes, &obj)
 	assert.NoError(t, err, "should not fail")
 
@@ -33,7 +33,7 @@ func TestMessageUnmarshal(t *testing.T) {
 	assert.NoError(t, err, "should not fail")
 
 	assert.Equal(t, "hey-you", msg.Type, "did not get expected properties")
-	assert.Equal(t, map[string]interface{}{"value": "sure"}, msg.Properties, "did not get expected properties")
+	assert.Equal(t, map[string]any{"value": "sure"}, msg.Properties, "did not get expected properties")
 }
 
 func TestMessageUnmarshalNoType(t *testing.T) {

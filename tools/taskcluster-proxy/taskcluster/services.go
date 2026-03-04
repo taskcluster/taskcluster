@@ -29,7 +29,6 @@ var hostnamePattern = regexp.MustCompile(`^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-
 // "/queue/v1/stuff" -> "http://tc.example.com/api/queue/v1/stuff"
 // "/myserver.com/v1/stuff" -> "http://myserver.com/v1/stuff"
 // "/api/queue/v1/stuff" => "http://tc.example.com/api/queue/v1/stuff"
-//
 func (s *Services) ConvertPath(u *url.URL) (*url.URL, error) {
 	rawPath := u.EscapedPath()
 

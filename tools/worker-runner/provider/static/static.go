@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 
+	"maps"
+
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type staticProviderConfig struct {
@@ -27,7 +29,7 @@ type StaticProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 }
 
 func (p *StaticProvider) ConfigureRun(state *run.State) error {
@@ -51,7 +53,7 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 	}
 
 	if workerLocation, ok := p.runnercfg.Provider.Data["workerLocation"]; ok {
-		for k, v := range workerLocation.(map[string]interface{}) {
+		for k, v := range workerLocation.(map[string]any) {
 			state.WorkerLocation[k], ok = v.(string)
 			if !ok {
 				return fmt.Errorf("workerLocation value %s is not a string", k)
@@ -59,27 +61,25 @@ func (p *StaticProvider) ConfigureRun(state *run.State) error {
 		}
 	}
 
-	state.ProviderMetadata = map[string]interface{}{}
+	state.ProviderMetadata = map[string]any{}
 
 	if providerMetadata, ok := p.runnercfg.Provider.Data["providerMetadata"]; ok {
-		for k, v := range providerMetadata.(map[string]interface{}) {
-			state.ProviderMetadata[k] = v
-		}
+		maps.Copy(state.ProviderMetadata, providerMetadata.(map[string]any))
 	}
 
-	p.workerIdentityProof = map[string]interface{}{
-		"staticSecret": interface{}(pc.StaticSecret),
+	p.workerIdentityProof = map[string]any{
+		"staticSecret": any(pc.StaticSecret),
 	}
 
 	return nil
 }
 
-func (p *StaticProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *StaticProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
 func (p *StaticProvider) UseCachedRun(run *run.State) error {
-	return errors.New("Do not use cacheOverRestarts with static provider")
+	return errors.New("do not use cacheOverRestarts with static provider")
 }
 
 func (p *StaticProvider) SetProtocol(proto *workerproto.Protocol) {

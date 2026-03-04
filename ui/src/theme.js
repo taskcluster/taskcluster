@@ -65,6 +65,17 @@ const themeOptions = isDarkTheme => {
     MEDIUM: 500,
     DARK: 600,
   };
+  const theme = createTheme({
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1100,
+        xl: 1500,
+      },
+    },
+  });
 
   return {
     palette: {
@@ -308,8 +319,42 @@ const themeOptions = isDarkTheme => {
           backgroundColor: isDarkTheme ? 'white' : '#000',
         },
       },
+      MuiTableHead: {
+        root: {
+          width: '100%',
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            position: 'absolute',
+            top: '-9999px',
+            left: '-9999px',
+          },
+        },
+      },
+      MuiTableRow: {
+        root: {
+          width: '100%',
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            borderRadius: '5%',
+            borderCollapse: 'separate',
+          },
+        },
+      },
+      MuiTableBody: {
+        root: {
+          width: '100%',
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+          },
+        },
+      },
       MuiTableCell: {
         root: {
+          [theme.breakpoints.down('md')]: {
+            display: 'block',
+            position: 'relative',
+            paddingLeft: '50%',
+          },
           borderBottom: `1px solid ${
             isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
           }`,

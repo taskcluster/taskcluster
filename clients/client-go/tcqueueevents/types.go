@@ -3,7 +3,7 @@
 package tcqueueevents
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -119,7 +119,7 @@ type (
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
+		Resolved tcclient.Time `json:"resolved,omitzero"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
@@ -134,7 +134,7 @@ type (
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
+		Started tcclient.Time `json:"started,omitzero"`
 
 		// State of this run
 		//
@@ -149,7 +149,7 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+		TakenUntil tcclient.Time `json:"takenUntil,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -169,6 +169,22 @@ type (
 		// Max length: 38
 		WorkerID string `json:"workerId,omitempty"`
 	}
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source string
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source1 string
 
 	// Subset of a task definition
 	Task struct {
@@ -202,7 +218,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -236,7 +252,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -262,7 +278,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -304,7 +320,7 @@ type (
 		// whether a message is interesting to the receiver. Where the full task
 		// definition is required, the receiver should call queue.task to download that
 		// definition.
-		Task Var `json:"task,omitempty"`
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -327,19 +343,33 @@ type (
 		WorkerID string `json:"workerId"`
 	}
 
-	// Message written once a task group has no tasks to be run. It is
-	// possible for a task group to later have another task added, in which
-	// case this message will be sent again once it finishes.
-	TaskGroupResolvedMessage struct {
+	// Message written once a task group has been sealed or resolved.
+	TaskGroupChangedMessage struct {
 
-		// Identifier for the scheduler that created this task-group.
+		// Date and time after the last expiration of any task in the task group.
+		// For the unsealed task group this could change to a later date.
+		Expires tcclient.Time `json:"expires"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
 		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 38
 		SchedulerID string `json:"schedulerId"`
 
-		// Identifier for the task-group being listed.
+		// Empty or date and time when task group was sealed.
+		Sealed tcclient.Time `json:"sealed,omitzero"`
+
+		// Identifier for the task-group.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`
@@ -348,7 +378,54 @@ type (
 		//
 		// Possible values:
 		//   * 1
-		Version int64 `json:"version,omitempty"`
+		Version int64 `json:"version"`
+	}
+
+	// Summary emitted after a task group priority request completes.
+	TaskGroupPriorityChangedMessage struct {
+
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		NewPriority string `json:"newPriority"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Identifier for the task-group.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Total number of tasks where priority was changed
+		//
+		// Mininum:    0
+		TasksAffected int64 `json:"tasksAffected"`
+
+		// Message version
+		//
+		// Possible values:
+		//   * 1
+		Version int64 `json:"version"`
 	}
 
 	// Required task metadata
@@ -377,8 +454,11 @@ type (
 		// repository. This should be place someone can go an do a git/hg blame
 		// to who came up with recipe for this task.
 		//
-		// Syntax:     ^(https?|ssh)://
+		// Syntax:     ^(https?://|ssh://|git@)
 		// Max length: 4096
+		// Any of:
+		//   * Source
+		//   * Source1
 		Source string `json:"source"`
 	}
 
@@ -395,7 +475,43 @@ type (
 		Status TaskStatusStructure `json:"status"`
 
 		// Subset of a task definition
-		Task Task `json:"task,omitempty"`
+		Task Task `json:"task,omitzero"`
+
+		// Message version
+		//
+		// Possible values:
+		//   * 1
+		Version int64 `json:"version"`
+	}
+
+	// Message emitted whenever `changeTaskPriority` updates
+	// the priority of an unresolved task.
+	TaskPriorityChangedMessage struct {
+
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		NewPriority string `json:"newPriority"`
+
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		OldPriority string `json:"oldPriority"`
+
+		// A representation of **task status** as known by the queue
+		Status TaskStatusStructure `json:"status"`
 
 		// Message version
 		//
@@ -419,6 +535,12 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the run
 		// isn't reclaimed.
 		TakenUntil tcclient.Time `json:"takenUntil"`
+
+		// Subset of a task definition containing values that are useful for determining
+		// whether a message is interesting to the receiver. Where the full task
+		// definition is required, the receiver should call queue.task to download that
+		// definition.
+		Task Var `json:"task,omitzero"`
 
 		// Message version
 		//
@@ -454,6 +576,24 @@ type (
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
+
+		// Priority of task. This defaults to `lowest` and the scope
+		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+		// to define a task with `<priority>`. The `normal` priority is treated as
+		// `lowest`.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		//
+		// Default:    "lowest"
+		Priority string `json:"priority,omitempty"`
 
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as

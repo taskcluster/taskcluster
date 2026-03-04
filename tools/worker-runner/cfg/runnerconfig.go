@@ -1,7 +1,7 @@
 package cfg
 
 import (
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -19,7 +19,7 @@ type RunnerConfig struct {
 
 // Load a configuration file
 func LoadRunnerConfig(filename string) (*RunnerConfig, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ tasks:
     created: {$eval: 'now'}
     deadline: {$fromNow: '1 hour'}
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:
@@ -22,7 +22,7 @@ tasks:
       created: {$eval: 'now'}
       deadline: {$fromNow: '1 hour'}
       payload:
-        image: "ubuntu:latest"
+        image: "ubuntu:jammy"
         command:
           - test
       metadata:

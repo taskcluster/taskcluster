@@ -1,19 +1,23 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/notify/v1/exchanges.json
+// This package was generated from the reference schema of
+// the NotifyEvents service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/notify/v1/exchanges.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // This pretty much only contains the simple free-form
 // message that can be published from this service from a request
 // by anybody with the proper scopes.
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
@@ -24,17 +28,17 @@
 //
 // For example, when specifying a binding, rather than using:
 //
-//  pulse.Bind(
-//  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined",
-//  )
+//	pulse.Bind(
+//		"*.*.*.*.*.*.gaia.#",
+//		"exchange/taskcluster-queue/v1/task-defined",
+//	)
 //
 // You can rather use:
 //
-//  queueevents.TaskDefined{WorkerType: "gaia"}
+//	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcnotifyevents
 
 import (
@@ -53,7 +57,7 @@ import (
 // See #notify
 type Notify struct {
 	RoutingKeyKind string `mwords:"*"`
-	Reserved       string `mwords:"#"`
+	Topic          string `mwords:"#"`
 }
 
 func (binding Notify) RoutingKey() string {
@@ -64,14 +68,14 @@ func (binding Notify) ExchangeName() string {
 	return "exchange/taskcluster-notify/v1/notification"
 }
 
-func (binding Notify) NewPayloadObject() interface{} {
+func (binding Notify) NewPayloadObject() any {
 	return new(NotificationMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

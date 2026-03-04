@@ -193,8 +193,9 @@ async fn download_url<AWF: AsyncWriterFactory>(
 
     loop {
         attempts += 1;
-        match get_url(url, writer_factory).await {
-            RetriableResult::Ok(content_type) => return Ok(content_type),
+        let mut writer = writer_factory.get_writer().await?;
+        match get_url(url, writer.as_mut()).await {
+            RetriableResult::Ok(fetchmeta) => return Ok(fetchmeta.content_type),
             RetriableResult::Retriable(err) => match backoff.next_backoff() {
                 Some(duration) => {
                     tokio::time::sleep(duration).await;
@@ -216,6 +217,7 @@ mod test {
     use super::*;
     use crate::test_helpers::{FakeDataServer, FakeObjectService, FakeQueueService, Logger};
     use serde_json::json;
+    use taskcluster::chrono::{Duration, Utc};
 
     /// object_service_factory function for cases where the object service is not used
     fn unused_object_service_factory(
@@ -326,8 +328,12 @@ mod test {
                 Ok(FakeObjectService {
                     logger,
                     response: json!({
-                        "method": "simple",
+                        "method": "getUrl",
                         "url": url,
+                        "hashes": {
+                            "sha256":"09ca7e4eaa6e8ae9c7d261167129184883644d07dfba7cbfbc4c8a2e08360d5b",
+                        },
+                        "expires": Utc::now() + Duration::hours(2),
                     }),
                 })
             }
@@ -345,7 +351,7 @@ mod test {
 
         logger.assert(vec![
             "artifact LyTqA-MYReaNrLTYYHyrtw 2 public/thing.txt".to_owned(),
-            "startDownload artifacts/data {\"simple\":true}".to_owned(),
+            "startDownload artifacts/data {\"getUrl\":true}".to_owned(),
         ]);
 
         assert_eq!(&content_type, "text/plain");
@@ -384,8 +390,12 @@ mod test {
                 Ok(FakeObjectService {
                     logger,
                     response: json!({
-                        "method": "simple",
+                        "method": "getUrl",
                         "url": url,
+                        "hashes": {
+                            "sha256":"09ca7e4eaa6e8ae9c7d261167129184883644d07dfba7cbfbc4c8a2e08360d5b",
+                        },
+                        "expires": Utc::now() + Duration::hours(2),
                     }),
                 })
             }
@@ -403,7 +413,7 @@ mod test {
 
         logger.assert(vec![
             "artifact LyTqA-MYReaNrLTYYHyrtw 2 public/thing.txt".to_owned(),
-            "startDownload artifacts/data {\"simple\":true}".to_owned(),
+            "startDownload artifacts/data {\"getUrl\":true}".to_owned(),
         ]);
 
         assert_eq!(&content_type, "text/plain");

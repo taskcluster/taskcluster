@@ -1,0 +1,161 @@
+"$schema": 'http://json-schema.org/draft-06/schema#'
+"$id": 'schemas/test_suites.json#'
+title: d2g test cases
+description: |-
+  Static d2g input/output test cases. Contains pairs of Docker Worker task def/payload
+  (inputs) and Generic Worker expected task def/payload (outputs).
+type: object
+required:
+- testSuite
+additionalProperties: false
+properties:
+  testSuite:
+    title: Test Suite
+    description: |-
+      A suite of tests for a particular d2g feature or set of features
+    type: object
+    required:
+      - name
+      - description
+    additionalProperties: false
+    properties:
+      name: {$ref: '#/definitions/suiteName'}
+      description: {$ref: '#/definitions/suiteDescription'}
+      payloadTests:
+        title: Task payload test cases
+        description: |-
+          The test cases which this test suite contains
+        type: array
+        items:
+          title: Task payload test case
+          description: |-
+            A test case contains a static input Docker Worker task payload, and an
+            expected Generic Worker task payload output. The Docker Worker task payload
+            is converted by d2g to a Generic Worker task payload. The test is successful
+            if the generated Generic Worker task payload exactly matches the Generic
+            Worker task payload in the test case.
+          type: object
+          required:
+            - name
+            - description
+            - dockerWorkerTaskPayload
+            - genericWorkerTaskPayload
+            - d2gConfig
+          additionalProperties: false
+          properties:
+            name: {$ref: '#/definitions/caseName'}
+            description: {$ref: '#/definitions/caseDescription'}
+            dockerWorkerTaskPayload:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            genericWorkerTaskPayload:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            d2gConfig: {$ref: '#/definitions/d2gConfig'}
+      taskDefTests:
+        title: Task definition test cases
+        description: |-
+          The test cases which this test suite contains
+        type: array
+        items:
+          title: Task definition test case
+          description: |-
+            A test case contains a static input Docker Worker task definition, and an
+            expected Generic Worker task definition output. The Docker Worker task definition
+            is converted by d2g to a Generic Worker task definition. The test is successful
+            if the generated Generic Worker task definition exactly matches the Generic
+            Worker task definition in the test case.
+          type: object
+          required:
+            - name
+            - description
+            - dockerWorkerTaskDefinition
+            - genericWorkerTaskDefinition
+            - d2gConfig
+          additionalProperties: false
+          properties:
+            name: {$ref: '#/definitions/caseName'}
+            description: {$ref: '#/definitions/caseDescription'}
+            dockerWorkerTaskDefinition:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            genericWorkerTaskDefinition:
+              # validation of this object is handled in test harness, rather
+              # than using $ref, since gojsonschema can't interpret yaml
+              # schemas and we prefer not to keep both json and yml versions in
+              # the repo
+              type: object
+            d2gConfig: {$ref: '#/definitions/d2gConfig'}
+definitions:
+  suiteName:
+    title: Test Suite Name
+    description: |-
+      Name for the test suite
+    type: string
+  suiteDescription:
+    title: Test Suite Description
+    description: |-
+      Detailed information about what the test cases do and do not test
+    type: string
+  caseName:
+    title: Test Case Name
+    description: |-
+      Name for the test case
+    type: string
+  caseDescription:
+    title: Test Case Description
+    description: |-
+      Detailed information about what the test case tests
+    type: string
+  d2gConfig:
+    title: d2g Configuration
+    description: |-
+      Configuration options for the d2g translation
+    type: object
+    properties:
+      allowChainOfTrust:
+        type: boolean
+        default: true
+      allowDisableSeccomp:
+        type: boolean
+        default: true
+      allowGPUs:
+        type: boolean
+        default: false
+      allowHostSharedMemory:
+        type: boolean
+        default: true
+      allowInteractive:
+        type: boolean
+        default: true
+      allowKVM:
+        type: boolean
+        default: true
+      allowLoopbackAudio:
+        type: boolean
+        default: true
+      allowLoopbackVideo:
+        type: boolean
+        default: true
+      allowPrivileged:
+        type: boolean
+        default: true
+      allowPtrace:
+        type: boolean
+        default: true
+      allowTaskclusterProxy:
+        type: boolean
+        default: true
+      gpus:
+        type: string
+        default: all
+    additionalProperties: false

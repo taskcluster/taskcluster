@@ -2,8 +2,9 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -15,7 +16,7 @@ import (
 // Exchange represents the set of AMQP interfaces for a Taskcluster service
 type Exchange struct {
 	Schema         string          `json:"$schema"`
-	APIVersion     interface{}     `json:"apiVersion"`
+	APIVersion     any             `json:"apiVersion"`
 	Description    string          `json:"description"`
 	Entries        []ExchangeEntry `json:"entries"`
 	ExchangePrefix string          `json:"exchangePrefix"`
@@ -34,7 +35,8 @@ func (exchange *Exchange) Name() string {
 }
 
 func (exchange *Exchange) String() string {
-	result := fmt.Sprintf(
+	var result strings.Builder
+	fmt.Fprintf(&result,
 		"Version         = '%v'\n"+
 			"Schema          = '%v'\n"+
 			"Title           = '%v'\n"+
@@ -44,9 +46,9 @@ func (exchange *Exchange) String() string {
 		exchange.Description, exchange.ExchangePrefix,
 	)
 	for i, entry := range exchange.Entries {
-		result += fmt.Sprintf("Entry %-6v= \n%v", i, entry.String())
+		fmt.Fprintf(&result, "Entry %-6v= \n%v", i, entry.String())
 	}
-	return result
+	return result.String()
 }
 
 func (exchange *Exchange) postPopulate(apiDef *APIDefinition) {
@@ -91,9 +93,11 @@ func (entry *ExchangeEntry) String() string {
 			"    Entry Description = '%v'\n",
 		entry.Type, entry.Exchange, entry.Name, entry.Title,
 		entry.Description)
+	var loopResult strings.Builder
 	for i, element := range entry.RoutingKey {
-		result += fmt.Sprintf("    Routing Key Element %-6v= \n%v", i, element.String())
+		fmt.Fprintf(&loopResult, "    Routing Key Element %-6v= \n%v", i, element.String())
 	}
+	result += loopResult.String()
 	result += fmt.Sprintf("    Entry Schema      = '%v'\n", entry.Schema)
 	result += fmt.Sprintf("    Entry SchemaURL   = '%v'\n", entry.schemaURL)
 	return result
@@ -150,27 +154,29 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 	comment += "//  queueevents.TaskDefined{WorkerType: \"gaia\"}\n"
 	comment += "// \n"
 	comment += "// In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage\n"
-	comment += "// rather than just interface{}.\n"
+	comment += "// rather than just any.\n"
 	content := comment
 	content += "package " + exchange.apiDef.PackageName + "\n"
 	content += `
 import (
 	"reflect"
 	"strings"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 `
 	exchange.apiDef.members = make(map[string]bool, len(exchange.Entries))
+	var loopContent strings.Builder
 	for _, entry := range exchange.Entries {
-		content += entry.generateAPICode()
+		loopContent.WriteString(entry.generateAPICode())
 	}
+	content += loopContent.String()
 
 	content += `
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag
@@ -217,7 +223,7 @@ func (entry *ExchangeEntry) generateAPICode() string {
 	content += "\treturn \"" + entry.Parent.ExchangePrefix + entry.Exchange + "\"\n"
 	content += "}\n"
 	content += "\n"
-	content += "func (binding " + entry.typeName + ") NewPayloadObject() interface{} {\n"
+	content += "func (binding " + entry.typeName + ") NewPayloadObject() any {\n"
 	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.schemaURL).TypeName + ")\n"
 	content += "}\n"
 	content += "\n"

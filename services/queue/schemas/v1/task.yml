@@ -74,6 +74,8 @@ properties:
     description: |
       List of dependent tasks. These must either be _completed_ or _resolved_
       before this task is scheduled. See `requires` for semantics.
+      There can be up to `max-task-dependencies` dependencies, but this value can be
+      overridden per-deployment to allow lower values.
     type:           array
     default:        []
     items:
@@ -126,15 +128,8 @@ properties:
       `lowest`.
     type:           string
     default: 'lowest'
-    enum:
-      - highest
-      - very-high
-      - high
-      - medium
-      - low
-      - very-low
-      - lowest
-      - normal
+    enum:    {$const: task-priorities}
+
   retries:
     title:          "Retries"
     description: |

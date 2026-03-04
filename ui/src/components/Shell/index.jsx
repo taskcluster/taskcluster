@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
-import { hterm, lib } from 'hterm-umd';
+import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
-const DECODER = new TextDecoder('utf-8');
+const DECODER = new TextDecoder('utf-8', { fatal: false });
 const defaultCommand = [
   'sh',
   '-c',
@@ -24,6 +24,9 @@ const defaultCommand = [
     'exec $SPAWN;',
   ].join(''),
 ];
+// Keep these in sync with the go code
+const MSG_PTY_DATA = 1;
+const MSG_RESIZE_DATA = 2;
 
 hterm.defaultStorage = new lib.Storage.Local();
 
@@ -56,8 +59,6 @@ export default class Shell extends Component {
         command: defaultCommand,
       };
 
-      io.sendString = d => this.client && this.client.stdin.write(d);
-      io.onVTKeystroke = io.sendString;
       io.onTerminalResize = () => null;
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
@@ -70,33 +71,106 @@ export default class Shell extends Component {
 
       // Create a shell client, with interface similar to child_process
       // With an additional method client.resize(cols, rows) for TTY sizing.
-      if (version === '1') {
-        this.client = new DockerExecClient(options);
-        await this.client.execute();
+      switch (version) {
+        // docker worker
+        case '1':
+          io.sendString = d => this.client?.stdin.write(d);
+          io.onVTKeystroke = io.sendString;
 
-        // Wrap client.resize to switch argument ordering
-        const { resize } = this.client;
+          this.client = new DockerExecClient(options);
+          await this.client.execute();
 
-        this.client.resize = (c, r) => resize.call(this.client, r, c);
-      } else {
-        io.writeUTF8(`inteactive shell API version ${version} not supported`);
+          this.client.resize.apply(this.client, [
+            terminal.screenSize.height,
+            terminal.screenSize.width,
+          ]);
+
+          this.client.on('exit', code => {
+            io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          });
+
+          this.client.resize(
+            terminal.screenSize.height,
+            terminal.screenSize.width
+          );
+          // onTerminalResize provides width then height;
+          // DockerExecClient.resize needs height then width
+          io.onTerminalResize = (cols, rows) => this.client.resize(rows, cols);
+          this.client.stdout.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stderr.on('data', data =>
+            io.writeUTF8(DECODER.decode(data))
+          );
+          this.client.stdout.resume();
+          this.client.stderr.resume();
+
+          break;
+        // generic worker
+        case '2':
+          this.wsClient = new WebSocket(url);
+          this.wsClient.binaryType = 'arraybuffer';
+          io.sendString = d => {
+            const txt = new TextEncoder().encode(d);
+            const buf = new Uint8Array([[MSG_PTY_DATA], ...txt]);
+
+            this.wsClient.send(buf);
+          };
+
+          io.onVTKeystroke = io.sendString;
+
+          io.onTerminalResize = (w, h) => {
+            if (this.wsClient.readyState === WebSocket.OPEN) {
+              const buf = Buffer.alloc(5);
+
+              buf.writeUInt8(MSG_RESIZE_DATA);
+              buf.writeUInt16LE(h, 1);
+              buf.writeUInt16LE(w, 3);
+              this.wsClient.send(buf);
+            }
+          };
+
+          this.wsClient.onmessage = ({ data }) => {
+            if (typeof data === 'string') {
+              // Generic-worker 60.3.5 and previous were sending text on the
+              // websocket, this ended up being an issue for invalid UTF-8.
+              // We switched to binary after, but we keep this here for
+              // backwards compatibility
+              io.writeUTF16(data);
+            } else {
+              io.writeUTF8(DECODER.decode(data));
+            }
+          };
+
+          this.wsClient.onopen = () => {
+            const sz = terminal.screenSize;
+
+            io.onTerminalResize(sz.width, sz.height);
+          };
+
+          this.wsClient.onclose = () => {
+            io.println(`\r\nRemote shell closed`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          this.wsClient.onerror = err => {
+            io.println(`\r\nRemote shell error: ${err}`);
+            terminal.uninstallKeyboard();
+            terminal.setCursorVisible(false);
+          };
+
+          break;
+        default:
+          io.println(`Interactive shell API version ${version} not supported`);
+
+          break;
       }
 
       terminal.installKeyboard();
-      io.writeUTF8(`Connected to remote shell for taskId: ${taskId}\r\n`);
-
-      this.client.on('exit', code => {
-        io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
-        terminal.uninstallKeyboard();
-        terminal.setCursorVisible(false);
-      });
-
-      this.client.resize(terminal.screenSize.width, terminal.screenSize.height);
-      io.onTerminalResize = (c, r) => this.client.resize(c, r);
-      this.client.stdout.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stderr.on('data', data => io.writeUTF8(DECODER.decode(data)));
-      this.client.stdout.resume();
-      this.client.stderr.resume();
+      io.println(`Connected to remote shell for taskId: ${taskId}`);
     };
 
     if (this.node) {

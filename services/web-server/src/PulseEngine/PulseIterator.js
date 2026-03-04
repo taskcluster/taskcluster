@@ -1,7 +1,7 @@
-const { $$asyncIterator } = require('iterall');
-const { List } = require('immutable');
+import { $$asyncIterator } from 'iterall';
+import { List } from 'immutable';
 
-module.exports = class PulseIterator {
+export default class PulseIterator {
   /**
    * Construct an AsyncIterator for the given subscriptions, of the form
    * [{exchange, pattern}].  The resulting values are of the form {payload,
@@ -101,4 +101,4 @@ module.exports = class PulseIterator {
       }
     }
   }
-};
+}

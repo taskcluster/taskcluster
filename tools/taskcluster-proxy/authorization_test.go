@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -15,8 +15,8 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/internal/testrooturl"
 )
 
 var (
@@ -43,6 +43,7 @@ func newTestClient() *httpbackoff.Client {
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
 func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode int) {
+	t.Helper()
 	res := test(t, permCredentials)
 	checkStatusCode(
 		t,
@@ -65,6 +66,7 @@ func testWithPermCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 }
 
 func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode int, tempScopes ...string) {
+	t.Helper()
 	tempScopesBytes, err := json.Marshal(tempScopes)
 	if err != nil {
 		t.Fatal("Bug in test")
@@ -98,6 +100,7 @@ func testWithTempCreds(t *testing.T, test IntegrationTest, expectedStatusCode in
 }
 
 func checkHeaders(t *testing.T, res *httptest.ResponseRecorder, requiredHeaders map[string]string) {
+	t.Helper()
 	for headerKey, expectedHeaderValue := range requiredHeaders {
 		actualHeaderValue := res.Header().Get(headerKey)
 		if actualHeaderValue != expectedHeaderValue {
@@ -114,7 +117,8 @@ func checkHeaders(t *testing.T, res *httptest.ResponseRecorder, requiredHeaders 
 }
 
 func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode int) {
-	respBody, err := ioutil.ReadAll(res.Body)
+	t.Helper()
+	respBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatalf("Could not read response body: %v", err)
 	}
@@ -138,6 +142,7 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 func TestBewit(t *testing.T) {
 	test := func(useAuthorizedScopes bool, expectedHTTPStatusCode int) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			t.Helper()
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
@@ -187,7 +192,7 @@ func TestBewit(t *testing.T) {
 					t.Fatalf("Bad response code %d", httpError.HttpResponseCode)
 				}
 			}
-			_, err = ioutil.ReadAll(resp.Body)
+			_, err = io.ReadAll(resp.Body)
 			if err != nil {
 				t.Fatalf("Exception thrown:\n%s", err)
 			}
@@ -213,6 +218,7 @@ func TestBewit(t *testing.T) {
 
 func TestBewitArbitraryURL(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+		t.Helper()
 		// Test setup
 		routes := NewRoutes(
 			tcclient.Client{
@@ -274,6 +280,7 @@ func TestBewitArbitraryURL(t *testing.T) {
 func TestAPICallGET(t *testing.T) {
 	test := func(scopes []string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			t.Helper()
 			// Test setup
 			routes := NewRoutes(
 				tcclient.Client{
@@ -328,6 +335,7 @@ func TestAPICallGET(t *testing.T) {
 func TestAPICallPOST(t *testing.T) {
 	test := func(scopes []string, sendContentType bool) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			t.Helper()
 
 			// Test setup
 			routes := NewRoutes(
@@ -388,6 +396,7 @@ func TestAPICallPOST(t *testing.T) {
 
 func TestNon200HasErrorBody(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+		t.Helper()
 
 		// Test setup
 		routes := NewRoutes(
@@ -424,6 +433,7 @@ func TestNon200HasErrorBody(t *testing.T) {
 
 func TestOversteppedScopes(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+		t.Helper()
 
 		// Test setup
 		routes := NewRoutes(
@@ -496,6 +506,7 @@ func TestBadCredsReturns500(t *testing.T) {
 
 func TestInvalidEndpoint(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+		t.Helper()
 
 		// Test setup
 		routes := NewRoutes(
@@ -536,6 +547,7 @@ func TestInvalidEndpoint(t *testing.T) {
 func TestGetResponseBody(t *testing.T) {
 	test := func(expectedClient string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
+			t.Helper()
 
 			// Test setup
 			routes := NewRoutes(
@@ -559,7 +571,7 @@ func TestGetResponseBody(t *testing.T) {
 			// Function to test
 			routes.RootHandler(res, req)
 
-			var body map[string]interface{}
+			var body map[string]any
 			err = json.Unmarshal(res.Body.Bytes(), &body)
 			if err != nil {
 				log.Fatal(err)

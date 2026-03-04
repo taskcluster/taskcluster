@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v44/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/internal/testrooturl"
 )
 
 func ExampleCredentials_CreateTemporaryCredentials() {
@@ -57,7 +57,7 @@ var testCreds = &tcclient.Credentials{
 }
 
 func checkAuthenticate(t *testing.T, response *tcauth.TestAuthenticateResponse, err error, expectedClientID string, expectedScopes []string) {
-
+	t.Helper()
 	if err != nil {
 		t.Error(err)
 		return
@@ -125,7 +125,7 @@ func Test_PermaCred_Bewit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Got error when fetching %v: %v", url, err)
 	}
-	if 200 != resp.StatusCode {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
 		return
 	}
@@ -143,7 +143,7 @@ func Test_PermaCred_Bewit_SignedURL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Got error when fetching %v: %v", url, err)
 	}
-	if 200 != resp.StatusCode {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
 		return
 	}
@@ -166,7 +166,7 @@ func Test_TempCred_Bewit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Got error when fetching %v: %v", url, err)
 	}
-	if 200 != resp.StatusCode {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
 		return
 	}
@@ -189,7 +189,7 @@ func Test_TempCred_Bewit_WrongScope(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Got error when fetching %v: %v", url, err)
 	}
-	if 403 != resp.StatusCode {
+	if resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
 		return
 	}
@@ -209,7 +209,7 @@ func Test_AuthScopes_Bewit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Got error when fetching %v: %v", url, err)
 	}
-	if 200 != resp.StatusCode {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Got unexpected statusCode %d", resp.StatusCode)
 		return
 	}

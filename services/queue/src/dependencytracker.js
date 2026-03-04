@@ -1,5 +1,5 @@
-let assert = require('assert');
-const { Task } = require('./data');
+import assert from 'assert';
+import { Task } from './data.js';
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -35,38 +35,46 @@ class DependencyTracker {
    * This will return {message, details} if there is an error.
    */
   async trackDependencies(task) {
-    for (let requiredTaskId of task.dependencies) {
-      await this.db.fns.add_task_dependency(task.taskId, requiredTaskId, task.requires, task.expires);
-    }
+    await this.db.fns.add_task_dependencies(
+      task.taskId,
+      JSON.stringify(task.dependencies),
+      task.requires,
+      task.expires,
+    );
 
     // Load all task dependencies to see if they have been resolved.
     // We will also check for missing and expiring dependencies.
-    let missing = []; // Dependencies that doesn't exist
     let expiring = []; // Dependencies that expire before deadline
     let anySatisfied = false; // Track if any dependencies were satisfied
-    await Promise.all(task.dependencies.map(async (requiredTaskId) => {
-      let requiredTask = await Task.get(this.db, requiredTaskId);
 
-      // If task is missing, we should report and error
-      if (!requiredTask) {
-        return missing.push(requiredTaskId);
-      }
+    // Load all dependencies (tasks can have aup to max-task-dependencies)
+    let rows = await this.db.fns.get_multiple_tasks(JSON.stringify(task.dependencies), null, null);
+    let requiredTasks = rows.map(row => Task.fromDb(row));
+    let loadedTasksIds = requiredTasks.map(task => task.taskId);
+    const missing = task.dependencies.filter(taskId => !loadedTasksIds.includes(taskId));
 
-      // Check if requiredTask expires before the deadline
-      if (task.deadline.getTime() > requiredTask.expires.getTime()) {
-        return expiring.push(requiredTaskId);
-      }
+    if (missing.length === 0) {
+      await Promise.all(requiredTasks.map(async (requiredTask) => {
+        // Check if requiredTask expires before the deadline
+        if (task.deadline.getTime() > requiredTask.expires.getTime()) {
+          return expiring.push(requiredTask.taskId);
+        }
 
-      // Check if requiredTask is satisfied
-      let state = requiredTask.state();
-      if (state === 'completed' || task.requires === 'all-resolved' &&
-          (state === 'exception' || state === 'failed')) {
-        await this.db.fns.satisfy_task_dependency(task.taskId, requiredTaskId);
-        // Track that we've deleted something, now we must check if any are left
-        // afterward (using isBlocked)
-        anySatisfied = true;
-      }
-    }));
+        // Check if requiredTask is satisfied
+        let state = requiredTask.state();
+        if (state === 'completed' || task.requires === 'all-resolved' &&
+            (state === 'exception' || state === 'failed')) {
+          await this.db.fns.satisfy_task_dependency(task.taskId, requiredTask.taskId);
+          // Track that we've deleted something, now we must check if any are left
+          // afterward (using isBlocked)
+          anySatisfied = true;
+        }
+      }));
+    }
+    // free up memory
+    rows = null;
+    requiredTasks = null;
+    loadedTasksIds = null;
 
     // If we found some missing dependencies we're done, createTask should
     // clearly return an error
@@ -128,10 +136,9 @@ class DependencyTracker {
       // First remove task
       await this.db.fns.remove_task(task.taskId);
 
-      // Then remove depdencies, because removing these makes it
+      // Then remove dependencies, because removing these makes it
       // easier to trigger the task. So we remove them after removing the task.
-      await Promise.all(task.dependencies.map(requiredTaskId =>
-        this.db.fns.remove_task_dependency(task.taskId, requiredTaskId)));
+      await this.db.fns.remove_task_dependencies(task.taskId, JSON.stringify(task.dependencies));
 
       return {
         message: msg,
@@ -145,7 +152,7 @@ class DependencyTracker {
 
     // If the task isn't blocked (dependencies resolved), or it has no
     // dependencies we ensure that the first run is pending (if not already).
-    if (anySatisfied && !await this.isBlocked(task.taskId) ||
+    if (anySatisfied && !(await this.isBlocked(task.taskId)) ||
         task.dependencies.length === 0) {
 
       task.updateStatusWith(
@@ -174,17 +181,17 @@ class DependencyTracker {
 
         if (resolution !== 'completed') {
           // If the resolution wasn't 'completed', we can only remove mark this
-          // dependency as satisified if the 'require' relation is
+          // dependency as satisfied if the 'require' relation is
           // 'all-resolved'.
           if (dep.requires !== 'all-resolved') {
-            return;
+            continue;
           }
         }
 
         // Remove the requirement that is blocking
         await this.db.fns.satisfy_task_dependency(dep.dependent_task_id, taskId);
 
-        if (!await this.isBlocked(dep.dependent_task_id)) {
+        if (!(await this.isBlocked(dep.dependent_task_id))) {
           await this.scheduleTask(dep.dependent_task_id);
         }
       }
@@ -216,9 +223,13 @@ class DependencyTracker {
     const [{ is_task_group_active }] = await this.db.fns.is_task_group_active(taskGroupId);
 
     if (!is_task_group_active) {
+      const [{ sealed, expires }] = await this.db.fns.get_task_group2(taskGroupId);
+
       await this.publisher.taskGroupResolved({
         taskGroupId,
         schedulerId,
+        expires: expires?.toJSON() || undefined,
+        sealed: sealed?.toJSON() || undefined,
       }, []);
     }
   }
@@ -261,7 +272,7 @@ class DependencyTracker {
     // Construct status structure
     let status = task.status();
 
-    // Put message in appropriate azure queue, and publish message to pulse,
+    // Put message into pending queue, and publish message to pulse,
     // if the initial run is pending
     if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([
@@ -269,6 +280,7 @@ class DependencyTracker {
         this.publisher.taskPending({
           status: status,
           runId: 0,
+          task: { tags: task.tags || {} },
         }, task.routes),
       ]);
       this.monitor.log.taskPending({ taskId: task.taskId, runId: 0 });
@@ -279,4 +291,4 @@ class DependencyTracker {
 }
 
 // Export DependencyTracker
-module.exports = DependencyTracker;
+export default DependencyTracker;

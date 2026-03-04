@@ -1,12 +1,12 @@
-let assert = require('assert');
-let _ = require('lodash');
-const { paginateResults } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const { splitTaskQueueId } = require('./utils');
+import assert from 'assert';
+import _ from 'lodash';
+import { paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import { splitTaskQueueId } from './utils.js';
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
 
-class Task {
+export class Task {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -66,6 +66,35 @@ class Task {
   // Get a task from the DB, or undefined
   static async get(db, taskId) {
     return Task.fromDbRows(await db.fns.get_task_projid(taskId));
+  }
+
+  // Get multiple tasks from the DB, or empty list
+  static async getMultiple(db, { taskIds }, { query } = {}) {
+    assert(_.isArray(taskIds), 'taskIds must be an Array');
+    for (let taskId of taskIds) {
+      assert(_.isString(taskId), 'taskId must be a String');
+    }
+    const fetchResults = async (continuation) => {
+      let q = query;
+
+      if (continuation) {
+        q.continuationToken = continuation;
+      }
+
+      const { continuationToken, rows } = await paginateResults({
+        query: q,
+        fetch: (size, offset) => db.fns.get_multiple_tasks(
+          JSON.stringify(taskIds),
+          size,
+          offset,
+        ),
+      });
+      let tasks = rows.map(Task.fromDb);
+      return { tasks, continuationToken };
+    };
+
+    // Fetch results
+    return fetchResults(query ? query.continuationToken : {});
   }
 
   // Call db.create_task_projid with the content of this instance.  This
@@ -156,6 +185,7 @@ class Task {
       schedulerId: this.schedulerId,
       projectId: this.projectId,
       taskGroupId: this.taskGroupId,
+      priority: this.priority,
       deadline: this.deadline.toJSON(),
       expires: this.expires.toJSON(),
       retriesLeft: this.retriesLeft,
@@ -199,6 +229,17 @@ class Task {
     return false;
   }
 
+  async updatePriority(db, newPriority) {
+    assert(typeof newPriority === 'string', 'newPriority must be provided');
+    const rows = await db.fns.queue_change_task_priority(this.taskId, newPriority);
+    if (!rows.length) {
+      return null;
+    }
+    const updated = Task.fromDb(rows[0]);
+    Object.assign(this, updated);
+    return { task: this, oldPriority: rows[0].old_priority };
+  }
+
   // Compare "important" fields to another task (used to check idempotency)
   equals(other) {
     return _.isEqual(
@@ -207,10 +248,7 @@ class Task {
   }
 }
 
-// Export Task
-exports.Task = Task;
-
-class Provisioner {
+export class Provisioner {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -321,10 +359,7 @@ class Provisioner {
   }
 }
 
-// Export Provisioner
-exports.Provisioner = Provisioner;
-
-class TaskQueue {
+export class TaskQueue {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -428,10 +463,7 @@ class TaskQueue {
   }
 }
 
-// Export TaskQueue
-exports.TaskQueue = TaskQueue;
-
-class Worker {
+export class Worker {
   // (private constructor)
   constructor(props) {
     Object.assign(this, props);
@@ -444,6 +476,7 @@ class Worker {
       workerGroup: row.worker_group,
       workerId: row.worker_id,
       quarantineUntil: row.quarantine_until,
+      quarantineDetails: row.quarantine_details || {},
       expires: row.expires,
       firstClaim: row.first_claim,
       recentTasks: row.recent_tasks,
@@ -470,6 +503,7 @@ class Worker {
       ...input,
       // convert to dates
       quarantineUntil: new Date(input.quarantineUntil),
+      quarantineDetails: input.quarantine_details || {},
       expires: new Date(input.expires),
       firstClaim: new Date(input.firstClaim),
       recentTasks: input.recentTasks || [],
@@ -535,5 +569,42 @@ class Worker {
   }
 }
 
-// Export Worker
-exports.Worker = Worker;
+export class TaskGroup {
+  constructor(props) {
+    Object.assign(this, props);
+  }
+
+  static fromDb(row) {
+    return new TaskGroup({
+      taskGroupId: row.task_group_id,
+      schedulerId: row.scheduler_id,
+      expires: row.expires,
+      sealed: row.sealed,
+    });
+  }
+
+  static fromDbRows(rows) {
+    if (rows.length === 1) {
+      return TaskGroup.fromDb(rows[0]);
+    }
+  }
+
+  static async get(db, taskGroupId) {
+    return TaskGroup.fromDbRows(
+      await db.fns.get_task_group2(taskGroupId),
+    );
+  }
+
+  serialize() {
+    return {
+      taskGroupId: this.taskGroupId,
+      schedulerId: this.schedulerId,
+      expires: this.expires.toJSON(),
+      ...(this.sealed ? {
+        sealed: this.sealed.toJSON(),
+      } : {}),
+    };
+  }
+}
+
+export default { Task, Provisioner, TaskQueue, Worker, TaskGroup };

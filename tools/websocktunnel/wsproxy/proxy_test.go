@@ -8,7 +8,6 @@ import (
 
 	// "crypto/tls"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,9 +21,9 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -201,11 +200,11 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Log(resp)
 		t.Fatalf("bad status code on get request")
 	}
-	reply, err := ioutil.ReadAll(resp.Body)
+	reply, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,10 +217,10 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("bad status code on post request")
 	}
-	reply, err = ioutil.ReadAll(resp.Body)
+	reply, err = io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,7 +233,7 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 504 {
+	if resp.StatusCode != http.StatusGatewayTimeout {
 		t.Fatalf("request should fail with 504")
 	}
 }
@@ -295,7 +294,7 @@ func TestProxyURIRewrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatal("bad status code")
 	}
 }
@@ -370,7 +369,7 @@ func TestProxyWebsocket(t *testing.T) {
 
 	// Generate 1M message
 	message := make([]byte, 0)
-	for i := 0; i < 1024*1024; i++ {
+	for i := range 1024 * 1024 {
 		message = append(message, byte(i%127))
 	}
 
@@ -753,7 +752,7 @@ func TestConcurrentConnections(t *testing.T) {
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
 	wg.Add(200)
-	for i := 0; i < 200; i++ {
+	for range 200 {
 		go func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
 			if err != nil {
@@ -928,14 +927,14 @@ func TestResponseStream(t *testing.T) {
 		}
 	}
 	close(done)
-	buf, err = ioutil.ReadAll(res.Body)
+	buf, err = io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if string(buf) != "world" {
 		t.Fatal("bad message")
 	}
-	logger.Printf(string(buf))
+	logger.Print(string(buf))
 }
 
 func TestWebSocketStreamClient(t *testing.T) {
@@ -1093,7 +1092,7 @@ func TestGetRequestWithClient(t *testing.T) {
 		}
 	}
 
-	data, err = ioutil.ReadAll(res.Body)
+	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1313,7 +1312,7 @@ func TestProxyVersion(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 200, resp.StatusCode)
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Equal(t, `{"version": "1.2.3"}`, string(body))
 }

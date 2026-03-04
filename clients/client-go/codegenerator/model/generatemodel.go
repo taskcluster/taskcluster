@@ -11,8 +11,8 @@ import (
 	"regexp"
 
 	docopt "github.com/docopt/docopt-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/codegenerator/model"
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/codegenerator/model"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go"
 )
 
 var (
@@ -67,7 +67,7 @@ func main() {
 
 	source := result.SourceCode
 	source = regexp.MustCompile(`APIEntry struct`).ReplaceAll(source, []byte(`Entry struct`))
-	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`ScopeExpressionTemplate`))
+	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`*ScopeExpressionTemplate`))
 
 	model.FormatSourceAndSave("types.go", source)
 

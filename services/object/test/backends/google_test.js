@@ -1,9 +1,20 @@
-const helper = require('../helper');
-const assert = require('assert');
-const aws = require('aws-sdk');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { AwsBackend } = require('../../src/backends/aws');
+import helper from '../helper/index.js';
+import assert from 'assert';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { AwsBackend } from '../../src/backends/aws.js';
+import { promisify } from 'util';
+import zlib from 'zlib';
+import { toEndpointV1 } from '@aws-sdk/middleware-endpoint';
+
+const gzip = promisify(zlib.gzip);
 
 helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skipping) {
   if (mock) {
@@ -25,12 +36,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
 
     secret = helper.secrets.get('google');
 
-    const credentials = {
-      accessKeyId: secret.accessKeyId,
-      secretAccessKey: secret.secretAccessKey,
+    const options = {
+      credentials: {
+        accessKeyId: secret.accessKeyId,
+        secretAccessKey: secret.secretAccessKey,
+      },
+      region: 'us-east-1',
+      followRegionRedirects: true,
     };
-    const endpoint = new aws.Endpoint('https://storage.googleapis.com');
-    s3 = new aws.S3({ endpoint, ...credentials });
+    const endpoint = toEndpointV1('https://storage.googleapis.com');
+    s3 = new S3Client({
+      endpoint,
+      ...options,
+    });
   });
 
   setup(async function() {
@@ -61,19 +79,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
-  const makeObject = async ({ name, data }) => {
-    const projectId = 'test-proj';
+  const projectId = 'test-proj';
+
+  const makeObject = async ({ name, data, hashes, gzipped }) => {
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
-    await helper.db.fns.create_object_for_upload(name, projectId, 'google', uploadId, expires, {}, expires);
+    await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
     const [object] = await helper.db.fns.get_object_with_upload(name);
 
-    await s3.putObject({
+    // ignore 'gzipped' and always upload gzipped data -- GCS supports
+    // "transcoding" gzip to identity on downloda.
+    const compressedData = await gzip(data);
+    await s3.send(new PutObjectCommand({
       Bucket: secret.testBucket,
       Key: name,
-      Body: data,
-    }).promise();
+      Body: compressedData,
+      ContentEncoding: "gzip",
+    }));
+
+    if (hashes) {
+      await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
+    }
 
     await helper.db.fns.object_upload_complete(name, uploadId);
 
@@ -84,15 +111,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     await helper.resetTables();
 
     // delete all objects with this prefix
-    const objects = await s3.listObjects({
+    const objects = await s3.send(new ListObjectsCommand({
       Bucket: secret.testBucket,
       Prefix: prefix,
-    }).promise();
-    for(let obj of objects.Contents) {
-      await s3.deleteObject({
-        Bucket: secret.testBucket,
-        Key: obj.Key,
-      }).promise();
+    }));
+    if (objects.Contents?.length > 0) {
+      for (let obj of objects.Contents) {
+        await s3.send(new DeleteObjectCommand({
+          Bucket: secret.testBucket,
+          Key: obj.Key,
+        }));
+      }
     }
   };
 
@@ -119,6 +148,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
+  helper.testBackend({
+    mock, skipping, prefix,
+    backendId: 'googlePublic',
+    makeObject,
+  }, async function() {
+    teardown(cleanup);
+  });
+
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
     title: 'public bucket',
@@ -126,8 +163,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     makeObject,
     async checkUrl({ name, url }) {
       // *not* signed
-      assert(!url.match(/AccessKeyId=/), `got ${url}`);
-      assert(!url.match(/Signature=/), `got ${url}`);
+      assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
     },
   }, async function() {
     teardown(cleanup);
@@ -142,8 +179,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       // ..contains S3 signature query args (note that testSimpleDownloadMethod
       // will verify that the URL actually works; this just verifies that it
       // is not un-signed).
-      assert(url.match(/AccessKeyId=/), `got ${url}`);
-      assert(url.match(/Signature=/), `got ${url}`);
+      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testGetUrlDownloadMethod({
+    mock, skipping, prefix,
+    backendId: 'googlePrivate',
+    makeObject,
+    async checkUrl({ name, url }) {
+      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
     },
   }, async function() {
     teardown(cleanup);
@@ -157,11 +206,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       'htmlContentDisposition',
     ],
     async getObjectContent({ name }) {
-      const res = await s3.getObject({
+      const res = await s3.send(new GetObjectCommand({
         Bucket: secret.testBucket,
         Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
+      }));
+      return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);
@@ -175,11 +224,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       'htmlContentDisposition',
     ],
     async getObjectContent({ name }) {
-      const res = await s3.getObject({
+      const res = await s3.send(new GetObjectCommand({
         Bucket: secret.testBucket,
         Key: name,
-      }).promise();
-      return { data: res.Body, contentType: res.ContentType };
+      }));
+      return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
     },
   }, async function() {
     teardown(cleanup);
@@ -198,11 +247,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       assert(await backend.expireObject(object));
 
       // object should now be gone
-      await assert.rejects(() => s3.getObject({
+      await assert.rejects(() => s3.send(new GetObjectCommand({
         Bucket: secret.testBucket,
         Key: name,
-      }).promise(),
-      err => err.code === 'NoSuchKey');
+      })),
+      err => err.Code === 'NoSuchKey');
     });
 
     test('succeeds for an object that no longer exists', async function() {

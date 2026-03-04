@@ -1,13 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  dockerPush,
-  REPO_ROOT,
-} = require('../../utils');
+import fs from 'fs';
+import path from 'path';
+import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
     requires: [
@@ -36,7 +31,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, '/websocktunnel-build.log'),
+        logfile: path.join(logsDir, 'websocktunnel-build.log'),
         utils,
         env: { CGO_ENABLED: '0', ...process.env },
       });
@@ -56,16 +51,10 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
       let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        'docker', 'build',
         '--no-cache',
-        '--progress',
-        'plain',
-        '--tag',
-        tag,
+        '--progress', 'plain',
+        '--tag', tag,
         contextDir,
       ];
       await execCommand({
@@ -91,7 +80,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'websocktunnel-docker-push.log'),
         tag,
         utils,
         baseDir,

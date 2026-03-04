@@ -1,5 +1,6 @@
-const helper = require('./helper');
-const {
+import helper from './helper.js';
+
+import {
   Schema,
   Database,
   READ,
@@ -8,11 +9,15 @@ const {
   QUERY_CANCELED,
   READ_ONLY_SQL_TRANSACTION,
   UNDEFINED_FUNCTION,
-} = require('..');
-const path = require('path');
-const assert = require('assert').strict;
+} from '../src/index.js';
+
+import path from 'path';
+import { strict as assert } from 'assert';
+import fs from 'fs';
 
 const monitor = helper.monitor;
+const __dirnname = new URL('.', import.meta.url).pathname;
+const __filename = new URL('', import.meta.url).pathname;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -190,7 +195,11 @@ helper.dbSuite(path.basename(__filename), function() {
     test('currentVersion after set', async function() {
       await db._withClient(WRITE, async client => {
         await client.query('begin');
-        await client.query('create table if not exists tcversion as select 0 as version');
+        await client.query(`
+          create table if not exists tcversion (
+            version int primary key
+          )`);
+        await client.query('insert into tcversion (version) values (0) on conflict do nothing');
         await client.query('update tcversion set version = $1', [3]);
         await client.query('commit');
       });
@@ -214,7 +223,8 @@ helper.dbSuite(path.basename(__filename), function() {
       await createUsers(db);
       await db._withClient('admin', async client => {
         // create some tables for permissions
-        await client.query('create table tcversion (version int)');
+        await client.query('create table tcversion (version int primary key)');
+        await client.query('insert into tcversion (version) values (0) on conflict do nothing');
         await client.query('create table foo (fooId int)');
         await client.query('create table bar (barId int)');
       });
@@ -331,7 +341,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
-    test('non-numeric statementTimeout is not alloewd', async function() {
+    test('non-numeric statementTimeout is not allowed', async function() {
       await assert.rejects(() => Database.setup({
         schema,
         readDbUrl: helper.dbUrl,
@@ -569,7 +579,8 @@ helper.dbSuite(path.basename(__filename), function() {
       //  const entity = Entity.types.EncryptedText('val');
       //  const encrypted = {v: 0, kid: 'azure'};
       //  entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
-      const encrypted = require('./big-encrypted-value.json');
+      const encrypted = JSON.parse(fs.readFileSync(
+        path.resolve(__dirnname, './big-encrypted-value.json')), 'utf8');
 
       // let's make sure this still tests what we mean it to even if lib-entity impl changes
       assert(encrypted.__bufchunks_val > 1);

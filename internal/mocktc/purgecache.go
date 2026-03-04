@@ -3,7 +3,7 @@ package mocktc
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcpurgecache"
 )
 
 type PurgeCache struct {
@@ -18,6 +18,7 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*tcpurg
 /////////////////////////////////////////////////
 
 func NewPurgeCache(t *testing.T) *PurgeCache {
+	t.Helper()
 	pc := &PurgeCache{}
 	return pc
 }

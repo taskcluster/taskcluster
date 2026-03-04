@@ -1,27 +1,27 @@
-require('../../prelude');
-const aws = require('aws-sdk');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-const { App } = require('taskcluster-lib-app');
-const loader = require('taskcluster-lib-loader');
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const taskcluster = require('taskcluster-client');
-const _ = require('lodash');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const builder = require('./api');
-const Notifier = require('./notifier');
-const RateLimit = require('./ratelimit');
-const Denier = require('./denier');
-const Handler = require('./handler');
-const exchanges = require('./exchanges');
-const matrix = require('matrix-js-sdk');
-const MatrixBot = require('./matrix');
-const slack = require('@slack/web-api');
-const SlackBot = require('./slack');
-const tcdb = require('taskcluster-db');
-
-require('./monitor');
+import '../../prelude.js';
+import { SESv2Client } from '@aws-sdk/client-sesv2';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
+import { App } from '@taskcluster/lib-app';
+import loader from '@taskcluster/lib-loader';
+import config from '@taskcluster/lib-config';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import taskcluster from '@taskcluster/client';
+import _ from 'lodash';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import builder from './api.js';
+import Notifier from './notifier.js';
+import RateLimit from './ratelimit.js';
+import Denier from './denier.js';
+import Handler from './handler.js';
+import exchanges from './exchanges.js';
+import matrix from 'matrix-js-sdk';
+import MatrixBot from './matrix.js';
+import slack from '@slack/web-api';
+import SlackBot from './slack.js';
+import tcdb from '@taskcluster/db';
+import './monitor.js';
+import { fileURLToPath } from 'url';
 
 // Create component loader
 const load = loader({
@@ -71,10 +71,10 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify')],
-    }).generateReferences(),
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('notify'), MonitorManager.metricsReference('notify')],
+    }).then(ref => ref.generateReferences()),
   },
 
   pulseClient: {
@@ -122,7 +122,13 @@ const load = loader({
 
   ses: {
     requires: ['cfg'],
-    setup: ({ cfg }) => new aws.SES(cfg.aws),
+    setup: ({ cfg }) => new SESv2Client({
+      credentials: {
+        accessKeyId: cfg.aws.accessKeyId,
+        secretAccessKey: cfg.aws.secretAccessKey,
+      },
+      region: cfg.aws.region || 'us-east-1',
+    }),
   },
 
   denier: {
@@ -211,12 +217,17 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'denier', 'db'],
-    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { notifier, denier, db },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: ({ cfg, monitor, schemaset, notifier, denier, db }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { notifier, denier, db },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -233,8 +244,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

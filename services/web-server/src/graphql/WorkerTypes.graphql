@@ -42,6 +42,6 @@ type WorkerTypesConnection implements Connection {
 
 extend type Query {
   workerType(provisionerId: String!, workerType: String!): WorkerType
-  pendingTasks(provisionerId: String!, workerType: String!): Int!
+  pendingTasks(provisionerId: String!, workerType: String!): Int!  # count of pending tasks
   workerTypes(provisionerId: String!, connection: PageConnection, filter: JSON): WorkerTypesConnection
 }

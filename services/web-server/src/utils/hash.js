@@ -1,7 +1,7 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // Create a sha512 hash
-module.exports = t => {
+export default t => {
   return crypto
     .createHash('sha512')
     .update(t, 'utf8')

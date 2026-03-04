@@ -35,7 +35,7 @@ properties:
           description: Github revision associated with the build.
         state:
           type: string
-          enum: ['pending', 'success', 'error', 'failure']
+          enum: ['pending', 'success', 'error', 'failure', 'cancelled']
           description: Github status associated with the build.
         taskGroupId:
           type: string
@@ -65,6 +65,10 @@ properties:
           format: date-time
           description: |
             The last updated of the build. If it is done, this is when it finished.
+        pullRequestNumber:
+          type: integer
+          description: |
+            Associated pull request number for 'pull_request' events.
       additionalProperties: false
       required:
         - organization

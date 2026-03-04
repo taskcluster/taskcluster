@@ -1,6 +1,6 @@
-const slugid = require('slugid');
+import slugid from 'slugid';
 
-class TestReporter {
+export class TestReporter {
   constructor({ bucket = [], log = false }) {
     this.internal = [];
     this.bucket = bucket;
@@ -26,4 +26,4 @@ class TestReporter {
   }
 }
 
-module.exports = TestReporter;
+export default TestReporter;

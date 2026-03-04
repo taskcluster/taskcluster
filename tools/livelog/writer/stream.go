@@ -1,11 +1,10 @@
 package writer
 
 import (
-	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -26,9 +25,10 @@ type Handles map[*StreamHandle]struct{}
 // emptyStruct cannot be declared as a constant, so var is next best option
 var emptyStruct = struct{}{}
 
-// by default, use the system temp dir; this is overridden in tests so they can
-// reliably clean up.
-var TempDir = ""
+// TempDir controls where livelog creates its temporary streaming files.
+// It defaults to the LIVELOG_TEMP_DIR environment variable if set, otherwise
+// the system temp dir. It is overridden in tests so they can reliably clean up.
+var TempDir = os.Getenv("LIVELOG_TEMP_DIR")
 
 type Stream struct {
 	Path   string
@@ -43,18 +43,19 @@ type Stream struct {
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
-	dir, err := ioutil.TempDir(TempDir, "livelog")
+	dir, err := os.MkdirTemp(TempDir, "livelog")
 	if err != nil {
 		return nil, err
 	}
 
-	path := fmt.Sprintf(dir + "/stream")
+	path := filepath.Join(dir, "stream")
 	log.Printf("created at path %v", path)
 
 	file, openErr :=
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 
 	if openErr != nil {
+		os.RemoveAll(dir)
 		return nil, openErr
 	}
 
@@ -70,65 +71,65 @@ func NewStream(read io.Reader) (*Stream, error) {
 	}, nil
 }
 
-func (self *Stream) Unobserve(handle *StreamHandle) {
+func (stream *Stream) Unobserve(handle *StreamHandle) {
 	log.Print("unobserve")
-	self.mutex.Lock()
-	defer self.mutex.Unlock()
-	delete(self.handles, handle)
+	stream.mutex.Lock()
+	defer stream.mutex.Unlock()
+	delete(stream.handles, handle)
 }
 
-func (self *Stream) Observe(start, stop int64) *StreamHandle {
+func (stream *Stream) Observe(start, stop int64) *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
-	handle := newStreamHandle(self, start, stop)
-	self.mutex.Lock()
-	defer self.mutex.Unlock()
-	self.handles[&handle] = emptyStruct
+	handle := newStreamHandle(stream, start, stop)
+	stream.mutex.Lock()
+	defer stream.mutex.Unlock()
+	stream.handles[&handle] = emptyStruct
 	return &handle
 }
 
 // Get the state of this stream in a thread-safe fashion
-func (self *Stream) GetState() (offset int64, ended bool) {
-	self.mutex.Lock()
-	offset = self.offset
-	ended = self.ended
-	self.mutex.Unlock()
+func (stream *Stream) GetState() (offset int64, ended bool) {
+	stream.mutex.Lock()
+	offset = stream.offset
+	ended = stream.ended
+	stream.mutex.Unlock()
 	return
 }
 
-func (self *Stream) Consume() error {
+func (stream *Stream) Consume() error {
 	log.Print("consume")
 
 	defer func() {
 		log.Print("consume cleanup...")
 
-		self.mutex.Lock()
-		defer self.mutex.Unlock()
-		self.file.Close()
+		stream.mutex.Lock()
+		defer stream.mutex.Unlock()
+		stream.file.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		log.Printf("removing %d handles", len(self.handles))
-		for k := range self.handles {
-			delete(self.handles, k)
+		log.Printf("removing %d handles", len(stream.handles))
+		for k := range stream.handles {
+			delete(stream.handles, k)
 		}
 	}()
 
-	tee := io.TeeReader(*self.reader, &self.file)
+	tee := io.TeeReader(*stream.reader, &stream.file)
 	eventNumber := 0
-	self.mutex.Lock()
-	defer self.mutex.Unlock()
+	stream.mutex.Lock()
+	defer stream.mutex.Unlock()
 	for {
 		// read (which may block) without the lock held
-		self.mutex.Unlock()
+		stream.mutex.Unlock()
 		buf := make([]byte, READ_BUFFER_SIZE)
 		bytesRead, readErr := tee.Read(buf)
 
 		// remainder of the loop body holds the lock
-		self.mutex.Lock()
+		stream.mutex.Lock()
 
-		startOffset := self.offset
+		startOffset := stream.offset
 
 		if bytesRead > 0 {
-			self.offset += int64(bytesRead)
+			stream.offset += int64(bytesRead)
 		}
 
 		eof := readErr == io.EOF
@@ -151,7 +152,7 @@ func (self *Stream) Consume() error {
 		eventNumber++
 
 		// Emit all the messages...
-		for handle := range self.handles {
+		for handle := range stream.handles {
 
 			// Don't write anything that starts after we end...
 			if event.Offset > handle.Stop || event.Offset+event.Length <= handle.Start {
@@ -163,9 +164,9 @@ func (self *Stream) Consume() error {
 			if pendingWrites >= EVENT_BUFFER_SIZE-1 {
 				log.Printf("Removing handle that has failed to keep up (losing data)")
 				// Remove the handle from any future event writes.  We can't use
-				// Unobserve here as it locks self.mutex, which we have already
+				// Unobserve here as it locks stream.mutex, which we have already
 				// locked.
-				delete(self.handles, handle)
+				delete(stream.handles, handle)
 				close(handle.events)
 				continue
 			}
@@ -180,7 +181,7 @@ func (self *Stream) Consume() error {
 
 		// If we are done reading the stream break the loop...
 		if eof {
-			self.ended = true
+			stream.ended = true
 			log.Print("finishing consume eof")
 			break
 		}

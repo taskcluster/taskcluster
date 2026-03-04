@@ -1,8 +1,7 @@
-use crate::factory::AsyncWriterFactory;
 use anyhow::Error;
 use futures_util::stream::StreamExt;
 use reqwest::header;
-use tokio::io::copy;
+use tokio::io::{copy, AsyncWrite};
 use tokio_util::io::StreamReader;
 
 /// A result from a possibly-retriable operation.
@@ -15,12 +14,16 @@ pub(crate) enum RetriableResult<R, E> {
     Ok(R),
 }
 
-/// Get a URL using `reqwest.get` and write it to an AsyncWriterFactory's factory.  The
-/// return value indicates whether the operation can be retried.  Returns the content-type.
-pub(crate) async fn get_url<AWF: AsyncWriterFactory>(
+pub(crate) struct FetchMetadata {
+    pub content_type: String,
+}
+
+/// Get a URL using `reqwest.get` and write it to an AsyncWriterFactory's factory.  The return
+/// value indicates whether the operation can be retried.  Returns metadata about the fetched data.
+pub(crate) async fn get_url(
     url: &str,
-    writer_factory: &mut AWF,
-) -> RetriableResult<String, Error> {
+    writer: &mut (dyn AsyncWrite + Unpin),
+) -> RetriableResult<FetchMetadata, Error> {
     let res = match reqwest::get(url)
         .await
         .and_then(|res| res.error_for_status())
@@ -37,7 +40,7 @@ pub(crate) async fn get_url<AWF: AsyncWriterFactory>(
         Ok(res) => res,
     };
 
-    // determine the content type before moving `res`
+    // determine the content type and length before moving `res`
     let default_content_type = "application/binary";
     let content_type = res
         .headers()
@@ -53,17 +56,11 @@ pub(crate) async fn get_url<AWF: AsyncWriterFactory>(
         .map(|r| r.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
     let mut reader = StreamReader::new(stream);
 
-    let mut writer = match writer_factory.get_writer().await {
-        Ok(w) => w,
-        // getting a writer from the factory is not retriable
-        Err(e) => return RetriableResult::Permanent(e),
-    };
-
-    match copy(&mut reader, &mut writer).await {
+    match copy(&mut reader, writer).await {
         Ok(_) => {}
         // an error copying data from the remote is common and retriable
         Err(e) => return RetriableResult::Retriable(e.into()),
     };
 
-    return RetriableResult::Ok(content_type);
+    return RetriableResult::Ok(FetchMetadata { content_type });
 }

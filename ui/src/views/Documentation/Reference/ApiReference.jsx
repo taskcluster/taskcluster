@@ -77,6 +77,7 @@ export default class ApiReference extends Component {
                     type="function"
                     entry={entry}
                     serviceName={ref.serviceName}
+                    apiVersion={ref.apiVersion}
                   />
                 ))}
               </Fragment>

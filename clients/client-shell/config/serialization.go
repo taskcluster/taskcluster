@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,14 +29,14 @@ func configFile() string {
 // Load will load configuration file, and initialize a default configuration
 // if no configuration is present. This only returns an error if a configuration
 // file is present, but we are unable to parse it.
-func Load() (map[string]map[string]interface{}, error) {
-	config := make(map[string]map[string]interface{})
+func Load() (map[string]map[string]any, error) {
+	config := make(map[string]map[string]any)
 
 	// Read config file and unmarshal into config overwriting default values
-	// if ioutil.ReadFile returns an error, it means the config file couldn't
+	// if os.ReadFile returns an error, it means the config file couldn't
 	// be found and we just skip
 	configFile := configFile()
-	if data, err := ioutil.ReadFile(configFile); err == nil {
+	if data, err := os.ReadFile(configFile); err == nil {
 		if err = yaml.Unmarshal(data, &config); err != nil {
 			return nil, fmt.Errorf(
 				"read config file %s, but failed to parse YAML, error: %s",
@@ -49,7 +48,7 @@ func Load() (map[string]map[string]interface{}, error) {
 	// Populate missing config fields with default values
 	for command, options := range OptionsDefinitions {
 		if _, ok := config[command]; !ok {
-			config[command] = make(map[string]interface{})
+			config[command] = make(map[string]any)
 		}
 
 		for option, definition := range options {
@@ -74,7 +73,7 @@ func Load() (map[string]map[string]interface{}, error) {
 			}
 
 			// parse value, if required
-			var value interface{}
+			var value any
 			if definition.Parse {
 				if err := json.Unmarshal([]byte(val), &value); err != nil {
 					return nil, fmt.Errorf(
@@ -127,8 +126,8 @@ func Load() (map[string]map[string]interface{}, error) {
 }
 
 // Save will save configuration.
-func Save(config map[string]map[string]interface{}) error {
-	result := make(map[string]map[string]interface{})
+func Save(config map[string]map[string]any) error {
+	result := make(map[string]map[string]any)
 
 	// go over new object
 	for name, options := range OptionsDefinitions {
@@ -144,7 +143,7 @@ func Save(config map[string]map[string]interface{}) error {
 				if err := option.Validate(value); err != nil {
 					val, _ := json.Marshal(value)
 					return fmt.Errorf(
-						"Invalid value '%s' for config key '%s.%s', error: %s",
+						"invalid value '%s' for config key '%s.%s', error: %s",
 						val, name, key, err,
 					)
 				}
@@ -152,7 +151,7 @@ func Save(config map[string]map[string]interface{}) error {
 
 			// Ensure we have an object to save the key
 			if result[name] == nil {
-				result[name] = make(map[string]interface{})
+				result[name] = make(map[string]any)
 			}
 
 			// Save the config key
@@ -170,8 +169,8 @@ func Save(config map[string]map[string]interface{}) error {
 	configFile := configFile()
 	// Attempt to create config folder if it doesn't exist... (ignore errors)
 	_ = os.MkdirAll(filepath.Dir(configFile), 0664)
-	if err = ioutil.WriteFile(configFile, data, 0664); err != nil {
-		return fmt.Errorf("Failed to write config file: %s, error: %s", configFile, err)
+	if err = os.WriteFile(configFile, data, 0664); err != nil {
+		return fmt.Errorf("failed to write config file: %s, error: %s", configFile, err)
 	}
 
 	return nil

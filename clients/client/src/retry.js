@@ -7,7 +7,7 @@
  * Note that as per the existing API, `retries` is the number of retries after the first
  * try; that is, a `retries` value of 3 means that `func` will be called 4 times.
  */
-module.exports = async ({ retries, delayFactor, randomizationFactor, maxDelay }, func) => {
+export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, func) => {
   let attempt = 0;
 
   while (true) {

@@ -19,6 +19,8 @@ Users for whom the supplied convenience functions are inadequate can add their o
 
  */
 use anyhow::{bail, Context as ErrorContext, Result};
+use base64::Engine;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_LENGTH};
 use reqwest::Body;
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -139,7 +141,7 @@ async fn upload_impl<O: ObjectService, ARF: AsyncReaderFactory>(
         let mut buf = vec![];
         let mut reader = reader_factory.get_reader().await?;
         reader.read_to_end(&mut buf).await?;
-        let data_b64 = base64::encode(buf);
+        let data_b64 = base64::engine::general_purpose::STANDARD.encode(buf);
         proposed_upload_methods["dataInline"] = json!({
             "contentType": content_type,
             "objectData": data_b64,
@@ -235,17 +237,26 @@ async fn simple_upload(
     let upload_method: Method = serde_json::from_value(upload_method.clone())?;
     let client = reqwest::Client::new();
 
-    let mut req = client
-        .put(&upload_method.url)
-        .header("Content-Length", content_length);
+    let mut req = client.put(&upload_method.url);
+
+    let mut req_headers = HeaderMap::new();
     for (k, v) in upload_method.headers.iter() {
-        req = req.header(k, v);
+        req_headers.insert(
+            HeaderName::from_bytes(k.as_bytes())?,
+            HeaderValue::from_str(v)?,
+        );
     }
+
+    if !req_headers.contains_key(CONTENT_LENGTH) {
+        req_headers.insert(CONTENT_LENGTH, content_length.into());
+    }
+
+    req = req.headers(req_headers);
 
     let stream = FramedRead::new(reader, BytesCodec::new());
     req = req.body(Body::wrap_stream(stream));
 
-    req.send().await?;
+    req.send().await?.error_for_status()?;
 
     Ok(())
 }
@@ -474,7 +485,7 @@ mod test {
             format!("create some/object {} proj {}", expires, upload_id),
             format!(
                 "dataInline application/binary {}",
-                base64::encode(b"hello world")
+                base64::engine::general_purpose::STANDARD.encode(b"hello world")
             ),
             format!("finish some/object proj {}", upload_id),
         ]);

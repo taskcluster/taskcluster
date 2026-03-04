@@ -1,17 +1,18 @@
-const { makeDebug, taskGroupUI } = require('./utils');
+import { GITHUB_BUILD_STATES } from '../constants.js';
+import { makeDebug, taskGroupUI } from './utils.js';
 
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
- * Taskcluster States: https://docs.taskcluster.net/reference/platform/queue/references/events
+ * Taskcluster States: https://docs.taskcluster.net/docs/reference/platform/queue/exchanges
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
-async function deprecatedStatusHandler(message) {
+export async function deprecatedStatusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
 
   let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Statuses API. Handling state change for task-group ${taskGroupId}`);
 
-  let [build] = await this.context.db.fns.get_github_build(taskGroupId);
+  let [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
   if (!build) {
     debug('no status to update..');
     return;
@@ -24,34 +25,60 @@ async function deprecatedStatusHandler(message) {
     installationId: build.installation_id,
   });
 
-  let state = 'success';
+  const { exchangeNames } = this;
 
-  if (message.exchange.endsWith('task-group-resolved')) {
+  let state = GITHUB_BUILD_STATES.SUCCESS;
+  let usesChecks = false;
+
+  if (message.exchange === exchangeNames.taskGroupResolved) {
+    // if this task group uses checks api, there is no need to go through all tasks
+    const [checks] = await this.context.db.fns.get_github_checks_by_task_group_id(1, 0, taskGroupId);
+    if (checks) {
+      usesChecks = true;
+    }
+
     let params = {};
     do {
       let group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
       params.continuationToken = group.continuationToken;
 
       for (let i = 0; i < group.tasks.length; i++) {
-        // don't post group status for checks API
-        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {
-          debug(`Task group result status not updated: Task group ${taskGroupId} uses Checks API. Exiting`);
-          return;
-        }
-
         if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
-          state = 'failure';
+          state = GITHUB_BUILD_STATES.FAILURE;
           break; // one failure is enough
         }
       }
-    } while (params.continuationToken && state === 'success');
+    } while (params.continuationToken && state === GITHUB_BUILD_STATES.SUCCESS);
+  } else if ([exchangeNames.taskException, exchangeNames.taskFailed].includes(message.exchange)) {
+    state = GITHUB_BUILD_STATES.FAILURE;
+  } else if ([exchangeNames.taskRunning, exchangeNames.taskPending].includes(message.exchange)) {
+    // if build is not pending, it means it was already resolved as success or failure
+    // seeing a running task means it was retried, so we should set the status back to pending
+    if (build.state !== GITHUB_BUILD_STATES.PENDING) {
+      state = GITHUB_BUILD_STATES.PENDING;
+    } else {
+      // no need to update state at this point, as we need the final status
+      debug(`Not updating status for ${taskGroupId} as it is still pending`);
+      return;
+    }
+  } else {
+    // this shouldn't happen .. but just in case
+    debug(`Cannot determine state from message exchange: ${message.exchange}`);
+    return;
   }
 
-  if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
-    state = 'failure';
+  // when github service cancels previous builds, they are going to be resolved with exception and end up here
+  // we don't want to update the status of the build in this case
+  if (build.state !== GITHUB_BUILD_STATES.CANCELLED) {
+    // It is worth noting that we always want to change the state of the build in the database.
+    // Although this handler is marked as deprecated, taskGroupResolved event should be handled in one place
+    await this.context.db.fns.set_github_build_state(taskGroupId, state);
   }
 
-  await this.context.db.fns.set_github_build_state(taskGroupId, state);
+  if (usesChecks) {
+    debug(`Create commit status not called: Task group ${taskGroupId} uses Checks API. Exiting`);
+    return;
+  }
 
   // Authenticating as installation.
   let instGithub = await this.context.github.getInstallationGithub(build.installation_id);
@@ -76,6 +103,4 @@ async function deprecatedStatusHandler(message) {
   }
 }
 
-module.exports = {
-  deprecatedStatusHandler,
-};
+export default deprecatedStatusHandler;

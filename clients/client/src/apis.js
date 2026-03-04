@@ -1,5 +1,5 @@
 /* eslint-disable */
-module.exports = {
+export default {
   "Auth": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
@@ -89,7 +89,7 @@ module.exports = {
             "clientId"
           ],
           "category": "Clients",
-          "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
+          "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you lose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned. You cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
           "input": "v1/create-client-request.json#",
           "method": "put",
           "name": "createClient",
@@ -113,10 +113,49 @@ module.exports = {
         },
         {
           "args": [
+            "entityType",
+            "entityId"
+          ],
+          "category": "Audit",
+          "description": "Get entity history based on entity type and entity name",
+          "method": "get",
+          "name": "getEntityHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/audit/<entityType>/<entityId>",
+          "scopes": "auth:audit-history:<entityType>",
+          "stability": "stable",
+          "title": "Get Entity History",
+          "type": "function"
+        },
+        {
+          "args": [
+            "clientId"
+          ],
+          "category": "Audit",
+          "description": "Get audit history of a client based on clientId.",
+          "method": "get",
+          "name": "listAuditHistory",
+          "output": "v1/get-entity-history-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/clients/<clientId>/audit",
+          "scopes": "auth:client-audit-history:<clientId>",
+          "stability": "stable",
+          "title": "List Audit History",
+          "type": "function"
+        },
+        {
+          "args": [
             "clientId"
           ],
           "category": "Clients",
-          "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
+          "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",
           "method": "post",
           "name": "resetAccessToken",
           "output": "v1/create-client-response.json#",
@@ -795,20 +834,6 @@ module.exports = {
           "args": [
           ],
           "category": "Github Service",
-          "description": "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
-          "method": "post",
-          "name": "githubWebHookConsumer",
-          "query": [
-          ],
-          "route": "/github",
-          "stability": "stable",
-          "title": "Consume GitHub WebHook",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "category": "Github Service",
           "description": "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
           "method": "get",
           "name": "builds",
@@ -818,12 +843,33 @@ module.exports = {
             "limit",
             "organization",
             "repository",
-            "sha"
+            "sha",
+            "pullRequest"
           ],
           "route": "/builds",
           "scopes": "github:list-builds",
           "stability": "stable",
           "title": "List of Builds",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
+            "repo"
+          ],
+          "category": "Github Service",
+          "description": "Cancel all running Task Groups associated with given repository and sha or pullRequest number",
+          "method": "post",
+          "name": "cancelBuilds",
+          "output": "v1/build-list.json#",
+          "query": [
+            "sha",
+            "pullRequest"
+          ],
+          "route": "/builds/<owner>/<repo>/cancel",
+          "scopes": "github:cancel-builds:<owner>:<repo>",
+          "stability": "stable",
+          "title": "Cancel repository builds",
           "type": "function"
         },
         {
@@ -916,6 +962,22 @@ module.exports = {
           "scopes": "github:create-comment:<owner>/<repo>",
           "stability": "stable",
           "title": "Post a comment on a given GitHub Issue or Pull Request",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Github Service",
+          "description": "This endpoint allows to render the .taskcluster.yml file for a given event or payload.\nThis is useful to preview the result of the .taskcluster.yml file before pushing it to\nthe repository.\nRead more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)",
+          "input": "v1/render-taskcluster-yml-input.json#",
+          "method": "post",
+          "name": "renderTaskclusterYml",
+          "output": "v1/render-taskcluster-yml-output.json#",
+          "query": [
+          ],
+          "route": "/taskcluster-yml",
+          "stability": "experimental",
+          "title": "Render .taskcluster.yml file",
           "type": "function"
         },
         {
@@ -1290,7 +1352,7 @@ module.exports = {
             "hookId"
           ],
           "category": "Hooks",
-          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
@@ -1346,7 +1408,7 @@ module.exports = {
             "token"
           ],
           "category": "Hooks",
-          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
@@ -1364,11 +1426,13 @@ module.exports = {
             "hookId"
           ],
           "category": "Hook Status",
-          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not\n\nBy default this endpoint will return up to 1000 most recent fires in one request.",
           "method": "get",
           "name": "listLastFires",
           "output": "v1/list-lastFires-response.json#",
           "query": [
+            "continuationToken",
+            "limit"
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
           "scopes": "hooks:list-last-fires:<hookGroupId>/<hookId>",
@@ -1520,6 +1584,33 @@ module.exports = {
           "scopes": "index:find-task:<indexPath>",
           "stability": "stable",
           "title": "Find Indexed Task",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Index Service",
+          "description": "List the tasks given their labels\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest, along with the same input data. If the input data is different\nthe continuationToken will have no effect.",
+          "input": "v1/list-tasks-at-index.json#",
+          "method": "post",
+          "name": "findTasksAtIndex",
+          "output": "v1/list-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/indexes",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "index:find-task:<indexPath>",
+                "for": "indexPath",
+                "in": "indexPaths"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Find tasks at indexes",
           "type": "function"
         },
         {
@@ -1683,7 +1774,7 @@ module.exports = {
           "args": [
           ],
           "category": "Notifications",
-          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
+          "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email\n\nIn case when duplicate message has been detected and no email was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/email-request.json#",
           "method": "post",
           "name": "email",
@@ -1699,7 +1790,7 @@ module.exports = {
           "args": [
           ],
           "category": "Notifications",
-          "description": "Publish a message on pulse with the given `routingKey`.",
+          "description": "Publish a message on pulse with the given `routingKey`.\n\nEndpoint will return 204 when duplicate message has been detected",
           "input": "v1/pulse-request.json#",
           "method": "post",
           "name": "pulse",
@@ -1715,7 +1806,7 @@ module.exports = {
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!",
+          "description": "Post a message to a room in Matrix. Optionally includes formatted message.\n\nThe `roomId` in the scopes is a fully formed `roomId` with leading `!` such\nas `!foo:bar.com`.\n\nNote that the matrix client used by taskcluster must be invited to a room before\nit can post there!\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/matrix-request.json#",
           "method": "post",
           "name": "matrix",
@@ -1731,7 +1822,7 @@ module.exports = {
           "args": [
           ],
           "category": "Notifications",
-          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.",
+          "description": "Post a message to a Slack channel.\n\nThe `channelId` in the scopes is a Slack channel ID, starting with a capital C.\n\nThe Slack app can post into public channels by default but will need to be added\nto private channels before it can post messages there.\n\nIn case when duplicate message has been detected and no message was sent,\nthis endpoint will return 204 status code.",
           "input": "v1/slack-request.json#",
           "method": "post",
           "name": "slack",
@@ -1833,9 +1924,9 @@ module.exports = {
             },
             {
               "multipleWords": true,
-              "name": "reserved",
-              "required": false,
-              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+              "name": "topic",
+              "required": true,
+              "summary": "Custom topic. This is the <topic> portion of the `notify.pulse.<topic>.on-<event>` routes."
             }
           ],
           "schema": "v1/notification-message.json#",
@@ -1920,7 +2011,7 @@ module.exports = {
             "name"
           ],
           "category": "Upload",
-          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
+          "description": "This endpoint marks an upload as complete.  This indicates that all data has been\ntransmitted to the backend.  After this call, no further calls to `uploadObject` are\nallowed, and downloads of the object may begin.  This method is idempotent, but will\nfail if given an incorrect uploadId for an unfinished upload.\n\nIt is possible to finish an upload with no hashes specified via either\n`startUpload` or `finishUpload`.  However, many clients will refuse to\ndownload an object with no hashes.  The utility methods included with the\nclient libraries always include hashes as of version 44.0.0.\n\nNote that, once `finishUpload` is complete, the object is considered immutable.",
           "input": "v1/finish-upload-request.json#",
           "method": "post",
           "name": "finishUpload",
@@ -2191,6 +2282,60 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task definition for each input task id.\nNotice that the task definitions may have been modified by queue.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "tasks",
+          "output": "v1/tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:get-task:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Tasks",
+          "description": "This end-point will return the task statuses for each input task id.\nIf a given taskId does not match a task, it will be ignored,\nand callers will need to handle the difference.",
+          "input": "v1/tasks-request.json#",
+          "method": "post",
+          "name": "statuses",
+          "output": "v1/tasks-statuses-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/tasks/status",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:status:<taskId>",
+                "for": "taskId",
+                "in": "taskIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get multiple task definitions",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskId"
           ],
           "category": "Tasks",
@@ -2210,8 +2355,8 @@ module.exports = {
           "args": [
             "taskGroupId"
           ],
-          "category": "Tasks",
-          "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must call\nthe `listTaskGroup` again with the `continuationToken` as the\nquery-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "category": "Task Groups",
+          "description": "List tasks sharing the same `taskGroupId`.\n\nAs a task-group may contain an unbounded number of tasks, this end-point\nmay return a `continuationToken`. To continue listing tasks you must call\nthe `listTaskGroup` again with the `continuationToken` as the\nquery-string option `continuationToken`.\n\nBy default this end-point will try to return up to 1000 members in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.\n\nIf you only want to to fetch task group metadata without the tasks,\nyou can call the `getTaskGroup` method.",
           "method": "get",
           "name": "listTaskGroup",
           "output": "v1/list-task-group-response.json#",
@@ -2223,6 +2368,57 @@ module.exports = {
           "scopes": "queue:list-task-group:<taskGroupId>",
           "stability": "stable",
           "title": "List Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Tasks",
+          "description": "This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)\nwith the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.\n\nIt is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.\nIf the task group is not sealed, this method will return a 409 response.\n\nIt is possible to rerun a canceled task which will result in a new run.\nCalling `cancelTaskGroup` again in this case will only cancel the new run.\nOther tasks that were already canceled would not be canceled again.",
+          "method": "post",
+          "name": "cancelTaskGroup",
+          "output": "v1/cancel-task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/cancel",
+          "scopes": "queue:cancel-task-group:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Cancel Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Task Groups",
+          "description": "Get task group information by `taskGroupId`.\n\nThis will return meta-information associated with the task group.\nIt contains information about task group expiry date or if it is sealed.\n\nIf you also want to see which tasks belong to this task group, you can call\n`listTaskGroup` method.",
+          "method": "get",
+          "name": "getTaskGroup",
+          "output": "v1/task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>",
+          "scopes": "queue:list-task-group:<taskGroupId>",
+          "stability": "stable",
+          "title": "Get Task Group",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Task Groups",
+          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
+          "method": "post",
+          "name": "sealTaskGroup",
+          "output": "v1/task-group-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/seal",
+          "scopes": "queue:seal-task-group:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Seal Task Group",
           "type": "function"
         },
         {
@@ -2249,7 +2445,7 @@ module.exports = {
             "taskId"
           ],
           "category": "Tasks",
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice that artifacts created by a task must expire before the\ntask's expiration.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific\nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key:\n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice that artifacts created by a task must expire before the\ntask's expiration.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific\nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key:\n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\nIf the task group was sealed, this end-point will return `409` reporting\n`RequestConflict` to indicate that it is no longer possible to add new tasks\nfor this `taskGroupId`.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -2319,7 +2515,7 @@ module.exports = {
             "taskId"
           ],
           "category": "Tasks",
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed. It will schedule a task that is _unscheduled_\nregardless of the state of its dependencies.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent: if it is invoked for a task that\nis `pending` or `running`, it will just return the current task status.",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed. It will schedule a task that is _unscheduled_\nregardless of the state of its dependencies.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent: if it is invoked for a task that\nis `pending` or `running`, it will just return the current task status.",
           "method": "post",
           "name": "rerunTask",
           "output": "v1/task-status-response.json#",
@@ -2368,6 +2564,47 @@ module.exports = {
           },
           "stability": "stable",
           "title": "Cancel Task",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId"
+          ],
+          "category": "Tasks",
+          "description": "This method updates the priority of a single unresolved task.\n\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskPriority",
+          "output": "v1/task-status-response.json#",
+          "query": [
+          ],
+          "route": "/task/<taskId>/priority",
+          "scopes": {
+            "AnyOf": [
+              "queue:change-task-priority:<taskId>",
+              "queue:change-task-priority-in-queue:<taskQueueId>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Change Task Priority",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Task-Groups",
+          "description": "This method applies a new priority to unresolved tasks within a task group.\n\n* Updates run in bounded batches to avoid long locks.\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskGroupPriorityChanged` summary event at the end.",
+          "input": "v1/change-task-priority-request.json#",
+          "method": "post",
+          "name": "changeTaskGroupPriority",
+          "output": "v1/task-group-priority-change-response.json#",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/priority",
+          "scopes": "queue:change-task-group-priority:<schedulerId>/<taskGroupId>",
+          "stability": "experimental",
+          "title": "Change Task Group Priority",
           "type": "function"
         },
         {
@@ -2562,7 +2799,7 @@ module.exports = {
             "name"
           ],
           "category": "Artifacts",
-          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+          "description": "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**Response**: the HTTP response to this method is a 303 redirect to the\nURL from which the artifact can be downloaded.  The body of that response\ncontains the data described in the output schema, contianing the same URL.\nCallers are encouraged to use whichever method of gathering the URL is\nmost convenient.  Standard HTTP clients will follow the redirect, while\nAPI client libraries will return the JSON body.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just use the most convenient API end-point.",
           "method": "get",
           "name": "getLatestArtifact",
           "output": "v1/get-artifact-response.json#",
@@ -2777,7 +3014,7 @@ module.exports = {
             "taskQueueId"
           ],
           "category": "Worker Metadata",
-          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nThe underlying Azure Storage Queues only promises to give us an estimate.\nFurthermore, we cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.\nIt is, however, a solid estimate of the number of pending tasks.",
+          "description": "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
           "method": "get",
           "name": "pendingTasks",
           "output": "v1/pending-tasks-response.json#",
@@ -2785,8 +3022,68 @@ module.exports = {
           ],
           "route": "/pending/<taskQueueId>",
           "scopes": "queue:pending-count:<taskQueueId>",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
+          "method": "get",
+          "name": "taskQueueCounts",
+          "output": "v1/task-queue-counts-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/<taskQueueId>/counts",
+          "scopes": {
+            "AllOf": [
+              "queue:pending-count:<taskQueueId>",
+              "queue:claimed-count:<taskQueueId>"
+            ]
+          },
+          "stability": "stable",
+          "title": "Get Number of Pending and Claimed Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listPendingTasks",
+          "output": "v1/list-pending-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/pending",
+          "scopes": "queue:pending-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskQueueId"
+          ],
+          "category": "Worker Metadata",
+          "description": "List claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this information might not represent the exact\nstate of such tasks, but a very good approximation.",
+          "method": "get",
+          "name": "listClaimedTasks",
+          "output": "v1/list-claimed-tasks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/task-queues/<taskQueueId>/claimed",
+          "scopes": "queue:claimed-list:<taskQueueId>",
+          "stability": "experimental",
+          "title": "List claimed Tasks",
           "type": "function"
         },
         {
@@ -2926,7 +3223,7 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "deprecated",
-          "title": "Get a worker-type",
+          "title": "Get a worker from worker-type",
           "type": "function"
         },
         {
@@ -3537,8 +3834,149 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "v1/task-group-resolved.json#",
+          "schema": "v1/task-group-changed-message.json#",
           "title": "Task Group Resolved Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message is published on task-group-sealed whenever task group is sealed.\nThis task group will no longer allow creation of new tasks.",
+          "exchange": "task-group-sealed",
+          "name": "taskGroupSealed",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-group-changed-message.json#",
+          "title": "Task Group Sealed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task priority was updated via `changeTaskPriority` API call.",
+          "exchange": "task-priority-changed",
+          "name": "taskPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskId",
+              "required": true,
+              "summary": "`taskId` for the task this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "runId",
+              "required": false,
+              "summary": "`runId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "`workerGroup` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "`workerId` of latest run for the task, `_` if no run is exists for the task."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "`provisionerId` this task is targeted at."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "`workerType` this task must run on."
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` this task was created by."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` this task was created in."
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-priority-changed-message.json#",
+          "title": "Task Priority Changed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "A message published when task group priority was changed via `changeTaskGroupPriority` API call.",
+          "exchange": "task-group-priority-changed",
+          "name": "taskGroupPriorityChanged",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "taskGroupId",
+              "required": true,
+              "summary": "`taskGroupId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": false,
+              "name": "schedulerId",
+              "required": true,
+              "summary": "`schedulerId` for the task-group this message concerns"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/task-group-priority-changed-message.json#",
+          "title": "Task Group Priority Changed Messages",
           "type": "topic-exchange"
         }
       ],
@@ -3684,6 +4122,104 @@ module.exports = {
     },
     "referenceKind": "api"
   },
+  "WebServer": {
+    "reference": {
+      "$schema": "/schemas/common/api-reference-v0.json#",
+      "apiVersion": "v1",
+      "description": "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+      "entries": [
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "lbheartbeat",
+          "query": [
+          ],
+          "route": "/__lbheartbeat__",
+          "stability": "stable",
+          "title": "Load Balancer Heartbeat",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+          "method": "get",
+          "name": "version",
+          "query": [
+          ],
+          "route": "/__version__",
+          "stability": "stable",
+          "title": "Taskcluster Version",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskGroupId"
+          ],
+          "category": "Profiler",
+          "description": "Generate a Firefox Profiler–compatible profile from a task group.\nThe profile contains scheduling and execution timing for all tasks.",
+          "method": "get",
+          "name": "taskGroupProfile",
+          "query": [
+          ],
+          "route": "/task-group/<taskGroupId>/profile",
+          "stability": "experimental",
+          "title": "Task Group Profile",
+          "type": "function"
+        },
+        {
+          "args": [
+            "taskId"
+          ],
+          "category": "Profiler",
+          "description": "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+          "method": "get",
+          "name": "taskProfile",
+          "query": [
+          ],
+          "route": "/task/<taskId>/profile",
+          "stability": "experimental",
+          "title": "Task Log Profile",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Monitoring",
+          "description": "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+          "method": "get",
+          "name": "heartbeat",
+          "query": [
+          ],
+          "route": "/__heartbeat__",
+          "stability": "stable",
+          "title": "Heartbeat",
+          "type": "function"
+        }
+      ],
+      "serviceName": "web-server",
+      "title": "Web Server Service"
+    },
+    "referenceKind": "api"
+  },
   "WorkerManager": {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
@@ -3801,7 +4337,7 @@ module.exports = {
             "workerPoolId"
           ],
           "category": "Worker Pools",
-          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+          "description": "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
           "method": "delete",
           "name": "deleteWorkerPool",
           "output": "v1/worker-pool-full.json#",
@@ -3811,6 +4347,43 @@ module.exports = {
           "scopes": "worker-manager:manage-worker-pool:<workerPoolId>",
           "stability": "stable",
           "title": "Delete Worker Pool",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pool Launch Configs",
+          "description": "Get the list of launch configurations for a given worker pool.\nInclude archived launch configurations by setting includeArchived=true.\nBy default, only active launch configurations are returned.",
+          "method": "get",
+          "name": "listWorkerPoolLaunchConfigs",
+          "output": "v1/worker-pool-launch-config-list.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "includeArchived"
+          ],
+          "route": "/worker-pool/<workerPoolId>/launch-configs",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Launch Configs",
+          "type": "function"
+        },
+        {
+          "args": [
+            "workerPoolId"
+          ],
+          "category": "Worker Pools",
+          "description": "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+          "method": "get",
+          "name": "workerPoolStats",
+          "output": "v1/worker-pool-stats.json#",
+          "query": [
+          ],
+          "route": "/worker-pool/<workerPoolId>/stats",
+          "scopes": "worker-manager:get-worker-pool:<workerPoolId>",
+          "stability": "experimental",
+          "title": "Get Worker Pool Statistics",
           "type": "function"
         },
         {
@@ -3850,6 +4423,24 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Worker Pools",
+          "description": "Get the stats for all worker pools - number of requested, running, stopping and stopped capacity",
+          "method": "get",
+          "name": "listWorkerPoolsStats",
+          "output": "v1/worker-pool-list-stats.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/worker-pools/stats",
+          "scopes": "worker-manager:list-worker-pools",
+          "stability": "experimental",
+          "title": "List All Worker Pools Stats",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Worker Interface",
@@ -3873,6 +4464,23 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "category": "Worker Pools",
+          "description": "Get the list of worker pool errors count.\nContains total count of errors for the past 7 days and 24 hours\nAlso includes total counts grouped by titles of error and error code.\n\nIf `workerPoolId` is not specified, it will return the count of all errors",
+          "method": "get",
+          "name": "workerPoolErrorStats",
+          "output": "v1/worker-pool-error-stats.json#",
+          "query": [
+            "workerPoolId"
+          ],
+          "route": "/worker-pool-errors/stats",
+          "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
+          "stability": "experimental",
+          "title": "List Worker Pool Errors Count",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Worker Pools",
@@ -3882,7 +4490,9 @@ module.exports = {
           "output": "v1/worker-pool-error-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "launchConfigId",
+            "errorId"
           ],
           "route": "/worker-pool-errors/<workerPoolId>",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
@@ -3904,7 +4514,7 @@ module.exports = {
             "continuationToken",
             "limit"
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>",
+          "route": "/workers/<workerPoolId>/<workerGroup>",
           "scopes": "worker-manager:list-workers:<workerPoolId>/<workerGroup>",
           "stability": "stable",
           "title": "Workers in a specific Worker Group in a Worker Pool",
@@ -3923,7 +4533,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Get a Worker",
@@ -3943,7 +4553,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:create-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Create a Worker",
@@ -3963,7 +4573,7 @@ module.exports = {
           "output": "v1/worker-full.json#",
           "query": [
           ],
-          "route": "/workers/<workerPoolId>:/<workerGroup>/<workerId>",
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>",
           "scopes": "worker-manager:update-worker:<workerPoolId>/<workerGroup>/<workerId>",
           "stability": "stable",
           "title": "Update an existing Worker",
@@ -3989,6 +4599,25 @@ module.exports = {
         },
         {
           "args": [
+            "workerPoolId",
+            "workerGroup",
+            "workerId"
+          ],
+          "category": "Workers",
+          "description": "Informs if worker should terminate or keep working.\nWorker might no longer be needed based on the set of factors:\n - current capacity of the worker pool\n - amount of pending and claimed tasks\n - launch configuration changes\n\nDecision is made during provision or scanning loop based on above mentioned conditions.",
+          "method": "get",
+          "name": "shouldWorkerTerminate",
+          "output": "v1/should-worker-terminate-response.json#",
+          "query": [
+          ],
+          "route": "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
+          "scopes": "worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>",
+          "stability": "experimental",
+          "title": "Should worker terminate",
+          "type": "function"
+        },
+        {
+          "args": [
             "workerPoolId"
           ],
           "category": "Workers",
@@ -3998,7 +4627,9 @@ module.exports = {
           "output": "v1/worker-list.json#",
           "query": [
             "continuationToken",
-            "limit"
+            "limit",
+            "launchConfigId",
+            "state"
           ],
           "route": "/workers/<workerPoolId>",
           "scopes": "worker-manager:list-workers:<workerPoolId>",
@@ -4025,7 +4656,7 @@ module.exports = {
         {
           "args": [
           ],
-          "category": "Workers",
+          "category": "Worker Interface",
           "description": "Reregister a running worker.\n\nThis will generate and return new Taskcluster credentials for the worker\non that instance to use. The credentials will not live longer the\n`registrationTimeout` for that worker. The endpoint will update `terminateAfter`\nfor the worker so that worker-manager does not terminate the instance.",
           "input": "v1/reregister-worker-request.json#",
           "method": "post",
@@ -4052,6 +4683,7 @@ module.exports = {
           "query": [
             "continuationToken",
             "limit",
+            "launchConfigId",
             "quarantined",
             "workerState"
           ],
@@ -4078,7 +4710,7 @@ module.exports = {
           "route": "/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>",
           "scopes": "worker-manager:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>",
           "stability": "experimental",
-          "title": "Get a worker-type",
+          "title": "Get a worker",
           "type": "function"
         },
         {
@@ -4108,7 +4740,7 @@ module.exports = {
       "description": "These exchanges provide notifications when a worker pool is created or updated.This is so that the provisioner running in a differentprocess at the other end can synchronize to the changes. But you are ofcourse welcome to use these for other purposes, monitoring changes for example.",
       "entries": [
         {
-          "description": "Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.",
+          "description": "Whenever the api receives a request to create a\nworker pool, a message is posted to this exchange and\na provider can act upon it.",
           "exchange": "worker-pool-created",
           "name": "workerPoolCreated",
           "routingKey": [
@@ -4118,6 +4750,42 @@ module.exports = {
               "name": "routingKeyKind",
               "required": true,
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
             },
             {
               "multipleWords": true,
@@ -4131,7 +4799,7 @@ module.exports = {
           "type": "topic-exchange"
         },
         {
-          "description": "Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.",
+          "description": "Whenever the api receives a request to update a\nworker pool, a message is posted to this exchange and\na provider can act upon it.",
           "exchange": "worker-pool-updated",
           "name": "workerPoolUpdated",
           "routingKey": [
@@ -4143,6 +4811,42 @@ module.exports = {
               "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
             },
             {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
               "multipleWords": true,
               "name": "reserved",
               "required": false,
@@ -4151,6 +4855,478 @@ module.exports = {
           ],
           "schema": "v1/pulse-worker-pool-message.json#",
           "title": "Worker Pool Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker reports an error\nor provisioner encounters an error while\nprovisioning a worker pool, a message is posted to this\nexchange.",
+          "exchange": "worker-pool-error",
+          "name": "workerPoolError",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-pool-error-message.json#",
+          "title": "Worker Pool Provisioning Error Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker is requested, a message is posted\nto this exchange.",
+          "exchange": "worker-requested",
+          "name": "workerRequested",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": true,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": true,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Requested Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker has registered, a message is posted\nto this exchange. This means that worker started\nsuccessfully and is ready to claim work.",
+          "exchange": "worker-running",
+          "name": "workerRunning",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": true,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": true,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Running Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker has stopped, a message is posted\nto this exchange. This means that instance was\neither terminated or stopped gracefully.",
+          "exchange": "worker-stopped",
+          "name": "workerStopped",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": true,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": true,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-message.json#",
+          "title": "Worker Stopped Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a worker is removed, a message is posted to this exchange.\nThis occurs when a worker is requested to be removed via an API call\nor when a worker is terminated by the worker manager.\nThe reason for the removal is included in the message.",
+          "exchange": "worker-removed",
+          "name": "workerRemoved",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": true,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": true,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": true,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": true,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": true,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-worker-removed-message.json#",
+          "title": "Worker Removed Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a new launch configuration is created for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-created",
+          "name": "launchConfigCreated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Created Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is updated for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-updated",
+          "name": "launchConfigUpdated",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Updated Messages",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "Whenever a launch configuration is archived for a worker pool,\na message is posted to this exchange.",
+          "exchange": "launch-config-archived",
+          "name": "launchConfigArchived",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "providerId",
+              "required": false,
+              "summary": "Provider."
+            },
+            {
+              "multipleWords": false,
+              "name": "provisionerId",
+              "required": false,
+              "summary": "First part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerType",
+              "required": false,
+              "summary": "Second part of the workerPoolId."
+            },
+            {
+              "multipleWords": false,
+              "name": "workerGroup",
+              "required": false,
+              "summary": "Worker group of the worker (region or location)"
+            },
+            {
+              "multipleWords": false,
+              "name": "workerId",
+              "required": false,
+              "summary": "Worker ID"
+            },
+            {
+              "multipleWords": false,
+              "name": "launchConfigId",
+              "required": false,
+              "summary": "ID of the launch configuration"
+            },
+            {
+              "multipleWords": true,
+              "name": "reserved",
+              "required": false,
+              "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
+            }
+          ],
+          "schema": "v1/pulse-launch-config-message.json#",
+          "title": "Launch Config Archived Messages",
           "type": "topic-exchange"
         }
       ],

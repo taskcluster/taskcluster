@@ -1,7 +1,6 @@
-const builder = require('./api');
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-builder.declare({
+export const websocktunnelBuilder = builder => builder.declare({
   method: 'get',
   route: '/websocktunnel/:wstAudience/:wstClient',
   params: {

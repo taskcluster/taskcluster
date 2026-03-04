@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type AzureProvider struct {
@@ -20,7 +20,7 @@ type AzureProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 	terminationTicker          *time.Ticker
 }
 
@@ -47,12 +47,12 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	instanceData, err := p.metadataService.queryInstanceData()
 	if err != nil {
-		return fmt.Errorf("Could not query instance data: %v", err)
+		return fmt.Errorf("could not query instance data: %v", err)
 	}
 
 	document, err := p.metadataService.queryAttestedDocument()
 	if err != nil {
-		return fmt.Errorf("Could not query attested document: %v", err)
+		return fmt.Errorf("could not query attested document: %v", err)
 	}
 
 	// bug 1621037: revert to using customData once it is fixed
@@ -72,7 +72,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		"region": instanceData.Compute.Location,
 	}
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"vm-id":         instanceData.Compute.VMID,
 		"instance-type": instanceData.Compute.VMSize,
 		"region":        instanceData.Compute.Location,
@@ -89,14 +89,14 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document": interface{}(document),
+	p.workerIdentityProof = map[string]any{
+		"document": any(document),
 	}
 
 	return nil
 }
 
-func (p *AzureProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *AzureProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -115,29 +115,37 @@ func (p *AzureProvider) checkTerminationTime() bool {
 		return false
 	}
 
-	// if there are any events, let's consider that a signal we should go away
-	if evts != nil && len(evts.Events) != 0 {
-		log.Println("Azure Metadata Service says a maintenance event is imminent")
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
-			p.proto.Send(workerproto.Message{
-				Type: "graceful-termination",
-				Properties: map[string]interface{}{
-					// termination generally doesn't leave time to finish
-					// tasks. We prefer to have the worker exit cleanly
-					// immediately, resolving tasks as
-					// exception/worker-shutdown, than to allow Azure to
-					// terminate the worker mid-tasks, which leaves the task
-					// still "running" on the queue until the claim expires, at
-					// which time it is completed as exception/claim-expired.
-					// Either one results in a retry, but the first option is
-					// faster and gives the user more context as to what
-					// happened.
-					"finish-tasks": false,
-				},
-			})
-		}
+	// if there are any events aside from Freeze,
+	// let's consider that a signal we should go away
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#event-properties
+	if evts != nil {
+		for _, evt := range evts.Events {
+			if evt.EventType == "Freeze" {
+				continue
+			}
+			log.Printf("Azure Metadata Service says a %s maintenance event is imminent\n", evt.EventType)
+			if p.proto != nil && p.proto.Capable("graceful-termination") {
+				log.Println("Sending graceful-termination request with finish-tasks=false")
+				p.proto.Send(workerproto.Message{
+					Type: "graceful-termination",
+					Properties: map[string]any{
+						// termination generally doesn't leave time to finish
+						// tasks. We prefer to have the worker exit cleanly
+						// immediately, resolving tasks as
+						// exception/worker-shutdown, than to allow Azure to
+						// terminate the worker mid-tasks, which leaves the task
+						// still "running" on the queue until the claim expires, at
+						// which time it is completed as exception/claim-expired.
+						// Either one results in a retry, but the first option is
+						// faster and gives the user more context as to what
+						// happened.
+						"finish-tasks": false,
+					},
+				})
+			}
 
-		return true
+			return true
+		}
 	}
 
 	return false
@@ -147,7 +155,9 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(30 * time.Second)
+	// Microsoft recommends once per second
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#polling-frequency
+	p.terminationTicker = time.NewTicker(1 * time.Second)
 	go func() {
 		for {
 			<-p.terminationTicker.C
@@ -211,16 +221,16 @@ func loadTaggedData(tags []Tag) (*TaggedData, error) {
 		}
 	}
 	if c.RootURL == "" {
-		return nil, fmt.Errorf("Did not get root-url from instance tagged data")
+		return nil, fmt.Errorf("did not get root-url from instance tagged data")
 	}
 	if c.WorkerPoolId == "" {
-		return nil, fmt.Errorf("Did not get worker-pool-id from instance tagged data")
+		return nil, fmt.Errorf("did not get worker-pool-id from instance tagged data")
 	}
 	if c.ProviderId == "" {
-		return nil, fmt.Errorf("Did not get provider-id from instance tagged data")
+		return nil, fmt.Errorf("did not get provider-id from instance tagged data")
 	}
 	if c.WorkerGroup == "" {
-		return nil, fmt.Errorf("Did not get worker-group from instance tagged data")
+		return nil, fmt.Errorf("did not get worker-group from instance tagged data")
 	}
 
 	return c, nil

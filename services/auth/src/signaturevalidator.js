@@ -1,8 +1,60 @@
-const hawk = require('hawk');
-const assert = require('assert');
+import hawk from 'hawk';
+import assert from 'assert';
+
 // Someone should rename utils to scopes...
-const utils = require('taskcluster-lib-scopes');
-const crypto = require('crypto');
+import utils from 'taskcluster-lib-scopes';
+
+import crypto from 'crypto';
+
+/**
+ * Normalize clientIds to avoid storing every id possible
+ * @param {string} clientId
+ */
+export const normalizeClientId = (clientId) => {
+  if (clientId.startsWith('task-client/')) {
+    return 'task-client/*';
+  } else if (clientId.startsWith('worker/')) {
+    return 'worker/*';
+  }
+  return clientId;
+};
+
+/**
+ * Categorize authentication failure reasons for metrics
+ * @param {string} message
+ */
+export const categorizeFailureReason = (message) => {
+  if (message.includes('client') && message.includes('not found')) {
+    return 'client_not_found';
+  }
+  if (message.includes('signature') || message.includes('mac')) {
+    return 'invalid_signature';
+  }
+  if (message.includes('timestamp') || message.includes('time')) {
+    return 'timestamp_error';
+  }
+  if (message.includes('certificate')) {
+    return 'certificate_error';
+  }
+  if (message.includes('ext')) {
+    return 'ext_validation_error';
+  }
+  return 'other';
+};
+
+/**
+ * Determine authentication scheme from request
+ * @param {Object} req
+ */
+export const determineSchemeFromRequest = (req) => {
+  if (req.authorization) {
+    return 'hawk';
+  }
+  if (/bewit\=/.test(req.resource)) {
+    return 'bewit';
+  }
+  return 'unknown';
+};
 
 /**
  * Limit the client scopes and possibly use temporary keys.
@@ -186,7 +238,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
  * {
  *    clientLoader:   async (clientId) => {clientId, expires, accessToken, scopes},
  *    expandScopes:   (scopes) => scopes,
- *    monitor:        // an instance of taskcluster-lib-monitor
+ *    monitor:        // an instance of @taskcluster/lib-monitor
  * }
  *
  * The function returned takes an object:
@@ -215,7 +267,6 @@ const createSignatureValidator = function(options) {
   assert(options.expandScopes instanceof Function,
     'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
-  assert(!options.nonceManager, 'nonceManager is not supported');
 
   const loadCredentials = async (clientId, ext) => {
     // We may have two clientIds here: the credentialName (the one the caller
@@ -264,10 +315,11 @@ const createSignatureValidator = function(options) {
   };
 
   return async function(req) {
-    let credentials, attributes, result, authResult;
+    let credentials, attributes, result, authResult, scheme;
 
     try {
       if (req.authorization) {
+        scheme = 'hawk';
         authResult = await hawk.server.authenticate({
           method: req.method.toUpperCase(),
           url: req.resource,
@@ -303,6 +355,7 @@ const createSignatureValidator = function(options) {
         credentials = authResult.credentials;
         attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
       } else if (/^\/.*[\?&]bewit\=/.test(req.resource)) { // using regex because query parsing is disabled
+        scheme = 'bewit';
         // Bewit present
         authResult = await hawk.uri.authenticate({
           method: req.method.toUpperCase(),
@@ -357,6 +410,14 @@ const createSignatureValidator = function(options) {
         scopes: credentials.scopes,
         clientId: credentials.clientId,
       };
+
+      if (result.status === 'auth-success') {
+        options.monitor.metric.authSuccessTotal(1, {
+          clientId: normalizeClientId(credentials.clientId),
+          scheme,
+        });
+      }
+
       if (attributes && attributes.hash) {
         result.hash = attributes.hash;
       }
@@ -376,10 +437,15 @@ const createSignatureValidator = function(options) {
         status: 'auth-failed',
         message: message.toString(),
       };
+
+      options.monitor.metric.authFailureTotal(1, {
+        reason: categorizeFailureReason(message),
+        scheme: determineSchemeFromRequest(req),
+      });
     }
 
     return result;
   };
 };
 
-exports.createSignatureValidator = createSignatureValidator;
+export default createSignatureValidator;

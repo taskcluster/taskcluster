@@ -1,11 +1,17 @@
 {
-  "name": "taskcluster-db",
+  "name": "@taskcluster/db",
   "private": true,
-  "version": "44.18.0",
+  "version": "97.0.1",
   "license": "MPL-2.0",
+  "type": "module",
   "scripts": {
     "test": "mocha test/*_test.js test/**/*_test.js",
     "lint": "eslint src/*.js src/**/*.js test/*_test.js test/**/*.js"
   },
-  "main": "./src/index.js"
+  "exports": "./src/index.js",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
+  }
 }

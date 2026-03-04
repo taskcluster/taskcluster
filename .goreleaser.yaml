@@ -1,0 +1,97 @@
+version: 2
+
+builds:
+  - main: ./clients/client-shell
+    id: taskcluster
+    binary: taskcluster
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - freebsd_amd64
+      - freebsd_arm64
+      - linux_amd64
+      - linux_arm64
+      - windows_arm64
+      - windows_amd64
+
+archives:
+  - id: taskcluster
+
+    # Archive name template.
+    name_template: "taskcluster-{{ .Os }}-{{ .Arch }}"
+
+    # Can be used to change the archive formats for specific GOOSs.
+    # Most common use case is to archive as zip on Windows.
+    # Default is empty.
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+
+    files:
+      - none*
+
+release:
+  # You can disable this pipe in order to not create the release on any SCM.
+  # Keep in mind that this might also break things that depend on the release
+  # URL, for instance, homebrew taps.
+  #
+  # Defaults to false.
+  disable: true
+
+changelog:
+  # Set this to true if you don't want any changelog at all.
+  # Warning: this will also ignore any changelog files passed via `--release-notes`,
+  # and will render an empty changelog.
+  # This may result in an empty release notes on GitHub/GitLab/Gitea.
+  disable: true
+
+checksum:
+  # Disable the generation/upload of the checksum file.
+  # Default is false.
+  disable: true
+
+brews:
+  - name: taskcluster
+
+    repository:
+      owner: taskcluster
+      name: homebrew-tap
+
+      # Optionally a token can be provided, if it differs from the token
+      # provided to GoReleaser
+      token: "{{ .Env.GH_TOKEN }}"
+
+    # Allows you to set a custom download strategy. Note that you'll need
+    # to implement the strategy and add it to your tap repository.
+    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
+    # Default is empty.
+    download_strategy: CurlDownloadStrategy
+
+    # The project name and current git tag are used in the format string.
+    commit_msg_template: "Brew formula update for taskcluster version {{ .Tag }}"
+
+    # Directory inside the repository to put the formula.
+    # Default is the root directory.
+    directory: Formula
+
+    # Your app's homepage.
+    # Default is empty.
+    homepage: "https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell"
+
+    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Template of your app's description.
+    # Default is empty.
+    description: "A Taskcluster client library for the command line"
+
+    # SPDX identifier of your app's license.
+    # Default is empty.
+    license: "MPL-2.0"
+
+    # So you can `brew test` your formula.
+    # Default is empty.
+    test: |
+      system "#{bin}/taskcluster version"

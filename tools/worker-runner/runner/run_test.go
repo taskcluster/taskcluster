@@ -2,7 +2,7 @@ package runner
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -11,8 +11,8 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/logging"
-	loggingCommon "github.com/taskcluster/taskcluster/v44/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {
@@ -63,15 +63,15 @@ worker:
   path: %s
 `, workerConfigPath, workerPath)
 
-	err := ioutil.WriteFile(configPath, []byte(configData), 0755)
+	err := os.WriteFile(configPath, []byte(configData), 0755)
 	require.NoError(t, err)
 
 	// checks exit code of running fake worker
 	_, err = Run(configPath)
 	require.NoError(t, err)
 
-	require.Equal(t, []map[string]interface{}{
-		map[string]interface{}{"conversationLevel": "low", "textPayload": "workin hard or hardly workin, amirite?"},
+	require.Equal(t, []map[string]any{
+		{"conversationLevel": "low", "textPayload": "workin hard or hardly workin, amirite?"},
 	}, loggingDestination.Messages())
 
 	// sleep a short bit to let NTFS figure out that fake.exe isn't in use anymore
@@ -86,7 +86,7 @@ func TestDummy(t *testing.T) {
 	dir := filet.TmpDir(t, "")
 	configPath := filepath.Join(dir, "runner.yaml")
 
-	err := ioutil.WriteFile(configPath, []byte(`
+	err := os.WriteFile(configPath, []byte(`
 provider:
   providerType: standalone
   rootURL: https://tc.example.com
@@ -117,7 +117,7 @@ func TestDummyCached(t *testing.T) {
 	configPath := filepath.Join(dir, "runner.yaml")
 	cachePath := filepath.Join(dir, "cache.json")
 
-	err := ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
+	err := os.WriteFile(configPath, fmt.Appendf(nil, `
 provider:
   providerType: standalone
   rootURL: https://tc.example.com
@@ -132,7 +132,7 @@ workerConfig:
   fromFirstRun: true
 worker:
   implementation: dummy
-`, cachePath)), 0755)
+`, cachePath), 0755)
 	require.NoError(t, err)
 
 	run, err := Run(configPath)
@@ -140,11 +140,11 @@ worker:
 
 	require.Equal(t, true, run.WorkerConfig.MustGet("fromFirstRun"))
 
-	cache, _ := ioutil.ReadFile(cachePath)
+	cache, _ := os.ReadFile(cachePath)
 	fmt.Printf("cache: %s", cache)
 
 	// slightly different config this time, omitting `fromFirstRun`:
-	err = ioutil.WriteFile(configPath, []byte(fmt.Sprintf(`
+	err = os.WriteFile(configPath, fmt.Appendf(nil, `
 provider:
   providerType: standalone
   rootURL: https://tc.example.com
@@ -157,7 +157,7 @@ getSecrets: false
 cacheOverRestarts: %s
 worker:
   implementation: dummy
-`, cachePath)), 0755)
+`, cachePath), 0755)
 	require.NoError(t, err)
 
 	run, err = Run(configPath)

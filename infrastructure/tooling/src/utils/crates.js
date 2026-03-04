@@ -1,12 +1,11 @@
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const child_process = require('child_process');
-const Observable = require('zen-observable');
-const taskcluster = require('taskcluster-client');
-const { REPO_ROOT } = require('./repo');
+import fs from 'fs';
+import path from 'path';
+import mkdirp from 'mkdirp';
+import child_process from 'child_process';
+import Observable from 'zen-observable';
+import taskcluster from '@taskcluster/client';
+import { REPO_ROOT } from './repo.js';
+import { rimraf } from 'rimraf';
 
 /**
  * Set up Cargo credentials and call `cargo publish`
@@ -17,14 +16,14 @@ const { REPO_ROOT } = require('./repo');
  * - logfile -- name of the file to write the log to
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-exports.cargoPublish = async ({ dir, token, push, logfile, utils }) => {
+export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
   // override HOME so this doesn't use the user's credentials
   const homeDir = path.join(REPO_ROOT, 'temp', taskcluster.slugid());
 
   // set up the cargo credentials
   if (token) {
     await mkdirp(path.join(homeDir, '.cargo'));
-    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials'), `[registry]\ntoken = "${token}"\n`);
+    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials.toml'), `[registry]\ntoken = "${token}"\n`);
   }
 
   try {
@@ -46,8 +45,27 @@ exports.cargoPublish = async ({ dir, token, push, logfile, utils }) => {
 
       if (logfile) {
         const logStream = fs.createWriteStream(logfile);
-        proc.stdout.pipe(logStream);
-        proc.stderr.pipe(logStream);
+        proc.stdout.pipe(logStream, { end: false });
+        proc.stderr.pipe(logStream, { end: false });
+
+        let stdoutEnded = false;
+        let stderrEnded = false;
+
+        const checkToCloseStream = () => {
+          if (stdoutEnded && stderrEnded) {
+            logStream.end();
+          }
+        };
+
+        proc.stdout.on('end', () => {
+          stdoutEnded = true;
+          checkToCloseStream();
+        });
+
+        proc.stderr.on('end', () => {
+          stderrEnded = true;
+          checkToCloseStream();
+        });
       }
 
       const loglines = data =>

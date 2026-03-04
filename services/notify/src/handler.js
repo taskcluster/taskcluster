@@ -1,7 +1,7 @@
-const _ = require('lodash');
-const jsone = require('json-e');
-const { consume } = require('taskcluster-lib-pulse');
-const libUrls = require('taskcluster-lib-urls');
+import _ from 'lodash';
+import jsone from 'json-e';
+import { consume } from '@taskcluster/lib-pulse';
+import libUrls from 'taskcluster-lib-urls';
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
@@ -115,10 +115,11 @@ class Handler {
           let formattedBody = undefined;
           let format = _.get(task, 'extra.notify.matrixFormat');
           if (_.has(task, 'extra.notify.matrixBody')) {
-            body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId });
+            body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId, rootUrl: this.rootUrl });
           }
           if (_.has(task, 'extra.notify.matrixFormattedBody')) {
-            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, { task, status, taskId });
+            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody,
+              { task, status, taskId, rootUrl: this.rootUrl });
           }
           try {
             return await this.notifier.matrix({
@@ -150,7 +151,7 @@ class Handler {
 
           let text = `${emoji} *<${href}|${task.metadata.name}>* transitioned to _${status.state}_`;
           if (_.has(task, 'extra.notify.slackText')) {
-            text = this.renderMessage(task.extra.notify.slackText, { task, status, taskId });
+            text = this.renderMessage(task.extra.notify.slackText, { task, status, taskId, rootUrl: this.rootUrl });
           }
 
           // This uses Slack blocks format, see https://api.slack.com/messaging/composing/layouts.
@@ -173,12 +174,13 @@ class Handler {
             },
           ];
           if (_.has(task, 'extra.notify.slackBlocks')) {
-            blocks = this.renderMessage(task.extra.notify.slackBlocks, { task, status, taskId });
+            blocks = this.renderMessage(task.extra.notify.slackBlocks, { task, status, taskId, rootUrl: this.rootUrl });
           }
 
           let attachments = [];
           if (_.has(task, 'extra.notify.slackAttachments')) {
-            attachments = this.renderMessage(task.extra.notify.slackAttachments, { task, status, taskId });
+            attachments = this.renderMessage(task.extra.notify.slackAttachments,
+              { task, status, taskId, rootUrl: this.rootUrl });
           }
 
           return this.notifier.slack({
@@ -209,9 +211,11 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           let template = 'simple';
           if (_.has(task, 'extra.notify.email')) {
             let extra = task.extra.notify.email;
-            content = extra.content ? this.renderMessage(extra.content, { task, status }) : content;
-            subject = extra.subject ? this.renderMessage(extra.subject, { task, status }) : subject;
-            link = extra.link ? jsone(extra.link, { task, status }) : link;
+            content = extra.content ? this.renderMessage(extra.content, { task, status, taskId, rootUrl: this.rootUrl })
+              : content;
+            subject = extra.subject ? this.renderMessage(extra.subject, { task, status, taskId, rootUrl: this.rootUrl })
+              : subject;
+            link = extra.link ? jsone(extra.link, { task, status, rootUrl: this.rootUrl }) : link;
             template = extra.template ? jsone(extra.template, { task, status }) : template;
           }
           return await this.notifier.email({
@@ -230,4 +234,4 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 }
 
 // Export Handler
-module.exports = Handler;
+export default Handler;

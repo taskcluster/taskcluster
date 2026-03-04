@@ -1,0 +1,17 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task definitions response"
+description: |
+  Request to list definitions of multiple tasks.
+type:               object
+properties:
+  taskIds:
+      type:           array
+      default:        []
+      uniqueItems: false
+      items:
+          title:              "Task ID"
+          description: |
+            ID of a task to list
+          type:               string
+additionalProperties: false
+required: []

@@ -1,0 +1,15 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Should worker terminate response
+description: Decision returned to a worker asking whether to keep running or be terminated
+type: object
+properties:
+  terminate:
+    type: boolean
+  reason:
+    type: string
+    description: Reason why worker should be terminated
+    minLength: 1
+additionalProperties: false
+required:
+  - terminate
+  - reason

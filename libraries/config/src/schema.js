@@ -1,12 +1,12 @@
-const _ = require('lodash');
-const assert = require('assert');
-const yaml = require('js-yaml');
+import _ from 'lodash';
+import assert from 'assert';
+import yaml from 'js-yaml';
 
 /*
  * Create a YAML type that loads from environment variable
  */
 const createType = (env, vars, basename, typeName, deserialize) => {
-  return [basename, `${basename}:optional`].map(name => {
+  return [basename, `${basename}:secret`, `${basename}:optional`, `${basename}:secret:optional`].map(name => {
     return new yaml.Type(name, {
       kind: 'scalar', // Takes a string as input
       resolve: (data) => {
@@ -19,6 +19,7 @@ const createType = (env, vars, basename, typeName, deserialize) => {
             type: basename,
             var: data,
             optional: name.endsWith(':optional'),
+            secret: name.includes(':secret'),
           });
           return undefined;
         }
@@ -36,7 +37,7 @@ const createType = (env, vars, basename, typeName, deserialize) => {
 /*
  * This schema allows our special !env types
  */
-module.exports = (env, vars) => yaml.JSON_SCHEMA.extend(_.flatten([
+export default (env, vars) => yaml.JSON_SCHEMA.extend(_.flatten([
   createType(env, vars, '!env', 'string', val => {
     return val;
   }),

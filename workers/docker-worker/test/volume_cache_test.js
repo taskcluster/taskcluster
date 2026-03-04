@@ -13,7 +13,7 @@ const rmrf = require('rimraf');
 const cmd = require('./integration/helper/cmd');
 const pipe = require('promisepipe');
 const monitor = require('./fixtures/monitor');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
 
@@ -119,7 +119,7 @@ suite(suiteName(), function() {
     try {
       await cache.get(cacheName);
       assert(false, 'Error should have been thrown when retrieving invalid cache name');
-    } catch(e) {
+    } catch (e) {
       assert.ok(!fs.existsSync(fullPath),
         'Volume cache created cached volume directory when it should not ' +
         'have.',

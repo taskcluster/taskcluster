@@ -1,22 +1,25 @@
-require('../../prelude');
-const Loader = require('taskcluster-lib-loader');
-const SchemaSet = require('taskcluster-lib-validate');
-const libReferences = require('taskcluster-lib-references');
-const tcdb = require('taskcluster-db');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { App } = require('taskcluster-lib-app');
-const Config = require('taskcluster-lib-config');
-const builder = require('./api');
-const debug = require('debug')('server');
-const exchanges = require('./exchanges');
-const ScopeResolver = require('./scoperesolver');
-const signaturevalidator = require('./signaturevalidator');
-const taskcluster = require('taskcluster-client');
-const makeSentryManager = require('./sentrymanager');
-const libPulse = require('taskcluster-lib-pulse');
-const { google: googleapis } = require('googleapis');
-const assert = require('assert');
-const { syncStaticClients } = require('./static-clients');
+import '../../prelude.js';
+import Loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import tcdb from '@taskcluster/db';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import Config from '@taskcluster/lib-config';
+import builder, { AUDIT_ENTRY_TYPE } from './api.js';
+import debugFactory from 'debug';
+const debug = debugFactory('server');
+import exchanges from './exchanges.js';
+import ScopeResolver from './scoperesolver.js';
+import createSignatureValidator from './signaturevalidator.js';
+import taskcluster, { fromNow } from '@taskcluster/client';
+import makeSentryManager from './sentrymanager.js';
+import * as libPulse from '@taskcluster/lib-pulse';
+import './monitor.js';
+import googleapis from '@googleapis/iamcredentials';
+import assert from 'assert';
+import { fileURLToPath } from 'url';
+import { syncStaticClients } from './static-clients.js';
 
 // Create component loader
 const load = Loader({
@@ -74,10 +77,10 @@ const load = Loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
-    }).generateReferences(),
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth'), MonitorManager.metricsReference('auth')],
+    }).then(ref => ref.generateReferences()),
   },
 
   pulseClient: {
@@ -120,13 +123,13 @@ const load = Loader({
         pulseClient,
       });
 
-      let signatureValidator = signaturevalidator.createSignatureValidator({
+      let signatureValidator = createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
         monitor: monitor.childMonitor('signature-validator'),
       });
 
-      return builder.build({
+      const api = builder.build({
         rootUrl: cfg.taskcluster.rootUrl,
         context: {
           db,
@@ -137,11 +140,15 @@ const load = Loader({
           sentryManager,
           websocktunnel: cfg.app.websocktunnel,
           gcp,
+          monitor: monitor.childMonitor('api-context'),
         },
         schemaset,
         signatureValidator,
         monitor: monitor.childMonitor('api'),
       });
+
+      monitor.exposeMetrics('default');
+      return api;
     },
   },
 
@@ -220,8 +227,35 @@ const load = Loader({
     setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Purging expired clients');
-        const [{ expire_clients: count }] = await db.fns.expire_clients();
-        debug(`Purged ${count} expired clients`);
+        const records = await db.fns.expire_clients_return_client_ids();
+        debug(`Purged ${records.length} expired clients`);
+
+        const clientId = 'static/taskcluster/auth';
+        for (const { client_id: name } of records) {
+          monitor.log.auditEvent({
+            service: 'auth',
+            entity: 'client',
+            entityId: name,
+            clientId,
+            action: AUDIT_ENTRY_TYPE.CLIENT.EXPIRED,
+          });
+
+          await db.fns.insert_auth_audit_history(
+            name,
+            'client',
+            clientId,
+            AUDIT_ENTRY_TYPE.CLIENT.CREATED,
+          );
+        }
+      });
+    },
+  },
+
+  'purge-audit-history': {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({ cfg, db, monitor }, ownName) => {
+      return monitor.oneShot(ownName, async () => {
+        await db.fns.purge_audit_history(fromNow(cfg.app.auditHistoryRetention));
       });
     },
   },
@@ -231,8 +265,8 @@ const load = Loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

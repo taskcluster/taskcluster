@@ -35,6 +35,7 @@ Users for whom the supplied convenience functions are inadequate can add their o
 mod artifact;
 mod factory;
 mod geturl;
+mod hashing;
 mod object;
 mod service;
 

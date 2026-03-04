@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -59,23 +58,23 @@ type APIDefinition struct {
 func GenerateGodocLinkInReadme(amqpLinks string, httpLinks string) {
 
 	path := `../../README.md`
-	formattedContent, err := ioutil.ReadFile(path)
+	formattedContent, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 
 	httpAPI := `<!--HTTP-API-start-->` +
-		amqpLinks +
+		httpLinks +
 		` <!--HTTP-API-end-->`
 
-	AmqpAPI := `<!--AMQP-API-start-->` +
-		httpLinks +
+	amqpAPI := `<!--AMQP-API-start-->` +
+		amqpLinks +
 		` <!--AMQP-API-end-->`
 
-	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(AmqpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	formattedContent = regexp.MustCompile(`(<!--(AMQP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--AMQP-API-end-->)`).ReplaceAll(formattedContent, []byte(amqpAPI))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 	formattedContent = regexp.MustCompile(`(<!--(HTTP-API-start:?(\w*?):?(\w*?)?)-->)([\s\S]*?)(<!--HTTP-API-end-->)`).ReplaceAll(formattedContent, []byte(httpAPI))
-	exitOnFail(ioutil.WriteFile(path, formattedContent, 0644))
+	exitOnFail(os.WriteFile(path, formattedContent, 0644))
 }
 
 func exitOnFail(err error) {
@@ -90,29 +89,29 @@ func (apiDef *APIDefinition) generateAPICode() string {
 }
 
 func (apiDef *APIDefinition) loadJSON(refRaw json.RawMessage) bool {
-	f := new(interface{})
+	f := new(any)
 	err = json.Unmarshal(refRaw, f)
 	exitOnFail(err)
-	schemaURL := (*f).(map[string]interface{})["$schema"].(string)
+	schemaURL := (*f).(map[string]any)["$schema"].(string)
 	apiDef.SchemaURL = schemaURL
 
 	schemaRaw := ReferencesServerGet(schemaURL[:len(schemaURL)-1])
 	if schemaRaw == nil {
 		panic("No schema")
 	}
-	var schema interface{}
+	var schema any
 	err = json.Unmarshal(*schemaRaw, &schema)
 	exitOnFail(err)
-	var x interface{}
+	var x any
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["name"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["name"]
 	schemaName := x.(string)
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["version"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["version"]
 	schemaVersion := int(x.(float64))
 
 	var m APIModel
@@ -185,13 +184,13 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v44/"))
+	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v97/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
 	exitOnFail(err)
 
-	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
+	exitOnFail(os.WriteFile(sourceFile, formattedContent, 0644))
 }
 
 type APIDefinitions []*APIDefinition
@@ -234,34 +233,47 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 		FormatSourceAndSave(typesSourceFile, result.SourceCode)
 
 		fmt.Printf("Generating functions and methods for %s\n", job.Package)
-		content := `
-// The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that ` + "`${GOPATH}/bin` is in your `PATH`" + `:
-//
-// go install && go generate
+		content := strings.Join(
+			[]string{
+				"// The following code is AUTO-GENERATED. Please DO NOT edit.",
+				"// To update this generated code, run `go generate` in the",
+				"// clients/client-go/codegenerator/model subdirectory of the",
+				"// taskcluster git repository.",
+				"",
+				"// This package was generated from the reference schema of",
+				"// the " + apiDefs[i].Data.Name() + " service, which is also published here:",
+				"//",
+				"//   * ${TASKCLUSTER_ROOT_URL}" + apiDefs[i].URL,
+				"//",
+				"// where ${TASKCLUSTER_ROOT_URL} points to the root URL of",
+				"// your taskcluster deployment.",
+				// This following blank line is intentional, so that the above
+				// comments are not included in the generated go docs. They are
+				// useful in the file so a developer can see not to modify the
+				// content, but consumers of the API are not concerned with the
+				// above information.
+				"",
+				apiDefs[i].generateAPICode(),
+			},
+			"\n",
+		)
 
-// This package was generated from the schema defined at
-// ` + apiDefs[i].URL + `
-`
-		content += apiDefs[i].generateAPICode()
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
 		FormatSourceAndSave(sourceFile, []byte(content))
 
 	}
 
-	amqpApiLinks := ""
-	httpApiLinks := ""
+	var amqpApiLinks strings.Builder
+	var httpApiLinks strings.Builder
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v97/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v44/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v97/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		}
 	}
-	GenerateGodocLinkInReadme(amqpApiLinks, httpApiLinks)
+	GenerateGodocLinkInReadme(amqpApiLinks.String(), httpApiLinks.String())
 }

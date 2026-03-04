@@ -1,5 +1,5 @@
-const { Exchanges } = require('taskcluster-lib-pulse');
-const assert = require('assert');
+import { Exchanges } from '@taskcluster/lib-pulse';
+import assert from 'assert';
 
 /** Declaration of exchanges offered by the queue */
 const exchanges = new Exchanges({
@@ -15,7 +15,7 @@ const exchanges = new Exchanges({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
 const buildCommonRoutingKey = function(options) {
@@ -28,12 +28,12 @@ const buildCommonRoutingKey = function(options) {
       constant: 'primary',
       required: true,
     }, {
-      name: 'reserved',
-      summary: 'Space reserved for future routing-key entries, you ' +
-                        'should always match this entry with `#`. As ' +
-                        'automatically done by our tooling, if not specified.',
+      name: 'topic',
+      summary: 'Custom topic. This is the <topic> portion of the ' +
+                        '`notify.pulse.<topic>.on-<event>` routes.',
+      maxSize: 100,
       multipleWords: true,
-      maxSize: 1,
+      required: true,
     },
   ];
 };
@@ -46,7 +46,9 @@ const commonMessageBuilder = function(message) {
 
 /** Build a message from message */
 const commonRoutingKeyBuilder = function(message, routing) {
-  return {};
+  return {
+    topic: routing[0],
+  };
 };
 
 /** Build list of routing keys to CC */

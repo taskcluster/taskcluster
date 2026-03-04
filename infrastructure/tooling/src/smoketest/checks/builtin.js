@@ -1,6 +1,6 @@
-const taskcluster = require('taskcluster-client');
+import taskcluster from '@taskcluster/client';
 
-exports.scopeExpression = {
+export const scopeExpression = {
   AllOf: [
     'queue:create-task:highest:built-in/succeed',
     'queue:create-task:highest:built-in/fail',
@@ -8,13 +8,13 @@ exports.scopeExpression = {
   ],
 };
 
-exports.tasks = [];
+export const tasks = [];
 
 [
   { taskType: 'succeed', successCondition: 'completed' },
   { taskType: 'fail', successCondition: 'failed' },
 ].forEach(({ taskType, successCondition })=>{
-  exports.tasks.push({
+  tasks.push({
     title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
     requires: [
       'ping-queue',
@@ -42,9 +42,9 @@ exports.tasks = [];
       let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
       let pollForStatusStart = new Date();
-      while((new Date() - pollForStatusStart) < 120000){
+      while ((new Date() - pollForStatusStart) < 120000) {
         let status = await queue.status(taskId);
-        if (status.status.state === 'pending' || status.status.state === 'running'){
+        if (status.status.state === 'pending' || status.status.state === 'running') {
           utils.status({
             message: 'Polling built-in/' + taskType + ' task. Current status: ' + status.status.state,
           });

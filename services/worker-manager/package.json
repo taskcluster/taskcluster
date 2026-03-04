@@ -1,8 +1,9 @@
 {
-  "name": "taskcluster-worker-manager",
-  "version": "44.18.0",
+  "name": "@taskcluster/worker-manager",
+  "version": "97.0.1",
   "description": "Taskcluster Worker Manager",
-  "main": "index.js",
+  "exports": "./src/main.js",
+  "type": "module",
   "author": "John Ford <john@johnford.org>",
   "license": "MPL-2.0",
   "private": true,
@@ -12,5 +13,10 @@
     "lint": "eslint src test",
     "fixlint": "eslint --fix src test",
     "test": "mocha test/*_test.js test/**/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
   }
 }

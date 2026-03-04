@@ -1,0 +1,180 @@
+version: 121
+description: Add content_length to queue artifacts
+migrationScript: |-
+  begin
+    alter table queue_artifacts add column content_length bigint;
+  end
+downgradeScript: |-
+  begin
+    alter table queue_artifacts drop column content_length;
+  end
+methods:
+  create_queue_artifact:
+    deprecated: true
+  create_queue_artifact_2:
+    description: |-
+      Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
+      Includes content_length parameter for tracking artifact file size.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz, content_length_in bigint
+    returns: |-
+      table (
+        task_id text,
+        run_id integer,
+        name text,
+        storage_type text,
+        content_type text,
+        details jsonb,
+        present boolean,
+        expires timestamptz,
+        content_length bigint
+      )
+    body: |-
+      begin
+        return query insert
+          into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)
+          values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)
+        returning
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires,
+          queue_artifacts.content_length;
+      end
+  get_queue_artifact:
+    deprecated: true
+  get_queue_artifact_2:
+    description: |-
+      Get a single queue artifact by task_id, run_id, and name.
+      Returns content_length in the result.
+    mode: read
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, name_in text
+    returns: |-
+      table (
+        task_id text,
+        run_id integer,
+        name text,
+        storage_type text,
+        content_type text,
+        details jsonb,
+        present boolean,
+        expires timestamptz,
+        content_length bigint
+      )
+    body: |-
+      begin
+        return query select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires,
+          queue_artifacts.content_length
+        from queue_artifacts
+        where
+          queue_artifacts.task_id = task_id_in and
+          queue_artifacts.run_id = run_id_in and
+          queue_artifacts.name = name_in;
+      end
+  get_queue_artifacts_paginated:
+    deprecated: true
+  get_queue_artifacts_paginated_2:
+    description: |-
+      Get queue artifacts with cursor-based pagination.
+      Returns content_length in the result.
+    mode: read
+    serviceName: queue
+    args: task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text
+    returns: |-
+      table (
+        task_id text,
+        run_id integer,
+        name text,
+        storage_type text,
+        content_type text,
+        details jsonb,
+        present boolean,
+        expires timestamptz,
+        content_length bigint
+      )
+    body: |-
+      begin
+        return query
+        select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires,
+          queue_artifacts.content_length
+        from queue_artifacts
+        where
+          (queue_artifacts.task_id = task_id_in or task_id_in is null) and
+          (queue_artifacts.run_id = run_id_in or run_id_in is null) and
+          (queue_artifacts.expires < expires_in or expires_in is null) and
+          (after_task_id_in is null or
+            (queue_artifacts.task_id >= after_task_id_in and
+              (queue_artifacts.task_id > after_task_id_in or
+                (queue_artifacts.task_id = after_task_id_in and
+                  (queue_artifacts.run_id > after_run_id_in or
+                    (queue_artifacts.run_id = after_run_id_in and
+                      queue_artifacts.name > after_name_in
+                    )
+                  )
+                )
+              )
+            )
+          )
+        order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name
+        limit get_page_limit(page_size_in);
+      end
+  get_expired_artifacts_for_deletion:
+    deprecated: true
+  get_expired_artifacts_for_deletion_2:
+    description: |-
+      Get expired artifacts for deletion, including content_length for logging deleted sizes.
+    mode: read
+    serviceName: queue
+    args: expires_in timestamptz, page_size_in integer
+    returns: |-
+      table (
+        task_id text,
+        run_id integer,
+        name text,
+        storage_type text,
+        content_type text,
+        details jsonb,
+        present boolean,
+        expires timestamptz,
+        content_length bigint
+      )
+    body: |-
+      begin
+        return query
+        select
+          queue_artifacts.task_id,
+          queue_artifacts.run_id,
+          queue_artifacts.name,
+          queue_artifacts.storage_type,
+          queue_artifacts.content_type,
+          queue_artifacts.details,
+          queue_artifacts.present,
+          queue_artifacts.expires,
+          queue_artifacts.content_length
+        from queue_artifacts
+        where
+          queue_artifacts.expires < expires_in
+        limit get_page_limit(page_size_in);
+      end

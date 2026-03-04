@@ -126,6 +126,14 @@ export default class SidebarListItem extends Component {
       );
     }
 
+    // don't highlight both links in sidebar that share same prefix
+    if (
+      route.url === '/worker-manager' &&
+      pathname.startsWith('/worker-manager/errors')
+    ) {
+      return false;
+    }
+
     return true;
   };
 

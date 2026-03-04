@@ -1,0 +1,95 @@
+version: 93
+description: Fix queue methods visibility issue, that was introduced in 91
+methods:
+  queue_pending_tasks_get:
+    description: |
+      Get up to `count` tasks for the pending tasks from the given taskQueueId.
+      Tasks are locked and will temporarily become invisible for the `visible` period.
+    mode: write
+    serviceName: queue
+    args: task_queue_id_in text, visible_in timestamptz, count integer
+    returns: table (task_id text, run_id integer, hint_id text, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_pending_tasks q
+            set pop_receipt = public.gen_random_uuid(),
+              visible = visible_in
+            where
+              (q.task_id, q.run_id, q.visible) in (
+                select q2.task_id, q2.run_id, q2.visible
+                from queue_pending_tasks q2
+                where q2.task_queue_id = task_queue_id_in
+                  and q2.visible <= now()
+                  and q2.expires > now()
+                order by q2.priority desc, q2.inserted asc
+                for update skip locked
+                limit count
+            )
+            returning q.priority, q.inserted, q.task_id, q.run_id, q.hint_id, q.pop_receipt
+          )
+          select u.task_id, u.run_id, u.hint_id, u.pop_receipt
+          from updated as u
+          order by u.priority desc, u.inserted asc;
+      end
+
+  queue_task_deadline_get:
+    description: |
+      Get up to `count` tasks from the deadline queue.
+    mode: write
+    serviceName: queue
+    args: visible_in timestamptz, count integer
+    returns: table (task_id text, task_group_id text, scheduler_id text, deadline timestamptz, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_task_deadlines q
+            set pop_receipt = public.gen_random_uuid(),
+              visible = visible_in
+            where
+              (q.task_id, q.visible) in (
+                select q2.task_id, q2.visible
+                from queue_task_deadlines q2
+                where q2.visible <= now()
+                order by q2.deadline
+                for update skip locked
+                limit count
+            )
+            returning q.task_id, q.task_group_id, q.scheduler_id, q.deadline, q.pop_receipt
+          )
+          select u.task_id, u.task_group_id, u.scheduler_id, u.deadline, u.pop_receipt
+          from updated as u
+          order by u.deadline;
+      end
+
+  queue_claimed_task_get:
+    description: |
+      Get up to `count` tasks from the claimed queue.
+    mode: write
+    serviceName: queue
+    args: visible_in timestamptz, count integer
+    returns: table (task_id text, run_id integer, taken_until timestamptz, pop_receipt uuid)
+    body: |-
+      begin
+        return query
+          with updated as (
+            update queue_claimed_tasks q
+            set pop_receipt = public.gen_random_uuid(),
+              visible = visible_in
+            where
+              (q.task_id, q.run_id, q.visible) in (
+                select q2.task_id, q2.run_id, q2.visible
+                from queue_claimed_tasks q2
+                where q2.visible <= now()
+                order by q2.taken_until
+                for update skip locked
+                limit count
+            )
+            returning q.task_id, q.run_id, q.taken_until, q.pop_receipt
+          )
+          select u.task_id, u.run_id, u.taken_until, u.pop_receipt
+          from updated as u
+          order by u.taken_until;
+      end

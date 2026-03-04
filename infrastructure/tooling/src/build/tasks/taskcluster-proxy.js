@@ -1,14 +1,9 @@
-const glob = require('glob');
-const fs = require('fs');
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  dockerPush,
-  REPO_ROOT,
-} = require('../../utils');
+import glob from 'glob';
+import fs from 'fs';
+import path from 'path';
+import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build taskcluster-proxy artifacts',
     requires: ['clean-artifacts-dir'],
@@ -65,29 +60,22 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        // get the latest ca-certificates from Ubuntu
-        'FROM ubuntu:latest as ubuntu',
-        'RUN apt-get update',
-        'RUN apt-get install -y ca-certificates',
+        // get the latest ca-certificates from Alpine
+        'FROM alpine:3 AS certs',
+        'RUN apk add --no-cache ca-certificates',
         // start over in an empty image and just copy the certs in
         'FROM scratch',
         'EXPOSE 80',
         'COPY version.json /app/version.json',
         'COPY taskcluster-proxy /taskcluster-proxy',
-        'COPY --from=ubuntu /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
       let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        'docker', 'build',
         '--no-cache',
-        '--progress',
-        'plain',
-        '--tag',
-        tag,
+        '--progress', 'plain',
+        '--tag', tag,
         contextDir,
       ];
       await execCommand({
@@ -113,7 +101,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'taskcluster-proxy-docker-push.log'),
         tag,
         utils,
         baseDir,

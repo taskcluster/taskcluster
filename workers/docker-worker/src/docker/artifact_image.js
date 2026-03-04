@@ -143,11 +143,11 @@ class ArtifactImage {
       this.knownHashes[`${this.taskId}-${this.artifactPath}`] = hash;
       this.task.imageArtifactHash = hash;
 
-    } catch(e) {
+    } catch (e) {
       debug(`Error loading docker image. ${e.stack}`);
       try {
         await removeDir(downloadDir);
-      } catch(e) {
+      } catch (e) {
         debug(`Error removing download dir. ${e.stack}`);
       }
       throw new Error(`Error loading docker image. ${e.message}`);
@@ -156,7 +156,7 @@ class ArtifactImage {
     this.runtime.monitor.measure('task.taskImage.loadTime', Date.now() - start);
     try {
       await removeDir(downloadDir);
-    } catch(e) {
+    } catch (e) {
       debug(`Error removing download dir. ${e.stack}`);
     }
   }
@@ -168,7 +168,7 @@ class ArtifactImage {
 
     try {
       await fs.unlink(originalTarball);
-    } catch(e) {
+    } catch (e) {
       debug(`Error when attempting to remove downloaded image. ${e.stack}`);
     }
 
@@ -221,7 +221,7 @@ class ArtifactImage {
       ));
 
       return true;
-    } catch(e) {
+    } catch (e) {
       delete this.knownHashes[`${this.taskId}-${this.artifactPath}`];
       if (e.statusCode === 404) {
         return false;
@@ -308,7 +308,7 @@ class ArtifactImage {
 
     try {
       await removeDir(extractedPath);
-    } catch(e) {
+    } catch (e) {
       debug('Error removing temporary task image directory. ' +
             `Path: ${extractedPath}. Error: ${e.message}`);
     }

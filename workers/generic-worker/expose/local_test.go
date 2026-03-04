@@ -2,7 +2,7 @@ package expose
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +15,7 @@ import (
 )
 
 func TestConstructor(t *testing.T) {
-	exposer, err := NewLocal(net.ParseIP("127.0.0.1"))
+	exposer, err := NewLocal(net.ParseIP("127.0.0.1"), 0)
 	if err != nil {
 		t.Fatalf("Constructor returned an error: %v", err)
 	}
@@ -25,7 +25,8 @@ func TestConstructor(t *testing.T) {
 }
 
 func makeLocalExposer(t *testing.T) Exposer {
-	exposer, err := NewLocal(net.ParseIP("127.0.0.1"))
+	t.Helper()
+	exposer, err := NewLocal(net.ParseIP("127.0.0.1"), 0)
 	if err != nil {
 		t.Fatalf("Constructor returned an error: %v", err)
 	}
@@ -40,7 +41,7 @@ func TestLocalExposeHTTP(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 
 	exposer := makeLocalExposer(t)
 	exposure, err := exposer.ExposeHTTP(uint16(testPort))
@@ -64,7 +65,7 @@ func TestLocalExposeHTTP(t *testing.T) {
 	}
 	assert.Equal(t, 200, res.StatusCode, "got 200 response via proxy")
 
-	greeting, err := ioutil.ReadAll(res.Body)
+	greeting, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		t.Fatal(err)

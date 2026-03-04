@@ -1,7 +1,7 @@
-from taskgraph.target_tasks import _target_task, standard_filter
+from taskgraph.target_tasks import register_target_task, standard_filter
 
 
-@_target_task("taskcluster-branches")
+@register_target_task("taskcluster-branches")
 def target_tasks_taskcluster_branches(full_task_graph, parameters, graph_config):
     only_on = "all"
     if parameters["tasks_for"] == "github-push":

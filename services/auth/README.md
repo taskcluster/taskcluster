@@ -6,7 +6,7 @@ The auth service manages permissions and credentials in a Taskcluster deployment
 
 No special configuration is required for development.
 
-Run `yarn workspace taskcluster-hooks test` to run the tests.
+Run `yarn workspace @taskcluster/hooks test` to run the tests.
 Some of the tests will be skipped without additional credentials, but it is fine to make a pull request as long as no tests fail.
 
 If you are modifying something requiring credentials, you may need to set up credentials.
@@ -28,7 +28,7 @@ The second is the service account for which credentials will be generated, calle
 It does not need any specific roles, but the IAM UI will not display it without a role, so pick a random role for it.
 
 Get the "key" for the credsgranter.
-Then set `gcpCredentials.alloewdProjects` in `user-config.yml` as follows (including the `invalid` account, which should not exist):
+Then set `gcpCredentials.allowedProjects` in `user-config.yml` as follows (including the `invalid` account, which should not exist):
 
 ```yaml
 gcpCredentials:

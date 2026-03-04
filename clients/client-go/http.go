@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -46,7 +45,7 @@ type CallSummary struct {
 	HTTPRequestBody string
 	// The Go Type which is marshaled into json and used as the http request
 	// body.
-	HTTPRequestObject interface{}
+	HTTPRequestObject any
 	HTTPResponse      *http.Response
 	// Keep a copy of response body in addition to the *http.Response, since
 	// accessing the Body via the *http.Response object, you get a
@@ -111,7 +110,7 @@ func setURL(client *Client, route string, query url.Values) (u *url.URL, err err
 	URL := tcurls.API(client.RootURL, client.ServiceName, client.APIVersion, route)
 	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) set correctly?\n%v\n", URL, client.RootURL, err)
+		return nil, fmt.Errorf("cannot parse url: '%v', is RootURL (%v) set correctly?\n%v", URL, client.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -134,11 +133,11 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		ioReader := bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v\n", u.String(), client.RootURL, err)
+			return nil, nil, fmt.Errorf("internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v", u.String(), client.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
@@ -183,7 +182,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 
 	// read response into memory, so that we can return the body
 	if callSummary.HTTPResponse != nil {
-		body, err2 := ioutil.ReadAll(callSummary.HTTPResponse.Body)
+		body, err2 := io.ReadAll(callSummary.HTTPResponse.Body)
 		if err2 == nil {
 			callSummary.HTTPResponseBody = string(body)
 		}
@@ -207,7 +206,7 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 	reqAuth := hawk.NewRequestAuth(req, credentials, 0)
 	reqAuth.Ext, err = getExtHeader(c)
 	if err != nil {
-		return fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
+		return fmt.Errorf("internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
 	}
 	req.Header.Set("Authorization", reqAuth.RequestHeader())
 	return nil
@@ -225,7 +224,7 @@ func (err *APICallException) Error() string {
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (client *Client) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (client *Client) APICall(payload any, method, route string, result any, query url.Values) (any, *CallSummary, error) {
 	rawPayload := []byte{}
 	var err error
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {
@@ -252,15 +251,15 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 
 		// httpbackoff considers a 3xx response to be an error, but the client
 		// treats it as success, so do not return an error in that case.
-		if callSummary.HTTPResponse.StatusCode >= 400 {
+		if callSummary.HTTPResponse != nil && callSummary.HTTPResponse.StatusCode < 400 {
+			err = nil
+		} else {
 			return result,
 				callSummary,
 				&APICallException{
 					CallSummary: callSummary,
 					RootCause:   err,
 				}
-		} else {
-			err = nil
 		}
 	}
 	// if result is passed in as nil, it means the API defines no response body
@@ -328,8 +327,8 @@ func (client *Client) SignedURL(route string, query url.Values, duration time.Du
 // string as meaning the ext header is not needed.
 //
 // See:
-//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
-//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
+//   - https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
+//   - https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 func getExtHeader(credentials *Credentials) (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {

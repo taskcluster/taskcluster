@@ -52,11 +52,11 @@ func newHeader(msg byte, id uint32) header {
 // A frame consists of a header and a payload, with format depending on the message
 // type:
 //
-// * msgDAT: the payload is the binary data
-// * msgSYN: no payload
-// * msgACK: payload is a little-endian u32 indicating the number of bytes handled
-//   on the remote end and thus no longer "in flight".
-// * msgFIN: no payload
+//   - msgDAT: the payload is the binary data
+//   - msgSYN: no payload
+//   - msgACK: payload is a little-endian u32 indicating the number of bytes handled
+//     on the remote end and thus no longer "in flight".
+//   - msgFIN: no payload
 type frame struct {
 	id      uint32
 	msg     byte

@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const url = require('url');
-const libUrls = require('taskcluster-lib-urls');
-const typeis = require('type-is');
-const Debug = require('debug');
+import _ from 'lodash';
+import url from 'url';
+import libUrls from 'taskcluster-lib-urls';
+import typeis from 'type-is';
+import Debug from 'debug';
 
 const debug = Debug('api:schema');
 
@@ -24,8 +24,18 @@ const debug = Debug('api:schema');
  * this will validate it against `outputSchema` if provided.
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   validator: (body: string | object[] | object, input: any) => Error | null,
+ *   absoluteSchemas: object[],
+ *   rootUrl: string,
+ *   serviceName: string,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
-const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
+export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
   // convert relative schema references to id's
   const input = entry.input && !entry.skipInputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
@@ -76,6 +86,7 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
         const error = validator(json, output);
         if (error) {
           debug('Output schema validation error: ' + error);
+          /** @type {Error & Record<string, any>} */
           const err = new Error('Output schema validation error: ' + error);
           err.schema = libUrls.schema(rootUrl, serviceName, output);
           err.url = req.url;
@@ -85,17 +96,17 @@ const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, ent
           throw err;
         }
       }
-      // Allow res.reply to support 204 with empty body
+
       if (!json) {
-        return res.status(responseCode || 204).send();
+        // Allow res.reply to support 204 with empty body
+        res.status(responseCode || 204).send();
+      } else {
+        // If JSON was valid or validation was skipped then reply normally
+        res.status(responseCode || 200).json(json);
       }
-      // If JSON was valid or validation was skipped then reply normally
-      res.status(responseCode || 200).json(json);
     };
 
     // Call next piece of middleware, typically the handler...
     next();
   };
 };
-
-exports.validateSchemas = validateSchemas;

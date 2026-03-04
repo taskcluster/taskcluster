@@ -1,8 +1,8 @@
-const helper = require('./helper');
-const assert = require('assert');
-const nock = require('nock');
-const githubAuth = require('../src/github-auth');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import assert from 'assert';
+import nock from 'nock';
+import githubAuth, { getCachedInstallationToken, getPrivatePEM } from '../src/github-auth.js';
+import testing from '@taskcluster/lib-testing';
 
 const WITH_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\nsomekey\nline2\n-----END RSA PRIVATE KEY-----';
 const WITH_ESCAPED_NEWLINES = '-----BEGIN RSA PRIVATE KEY-----\\nsomekey\\nline2\\n-----END RSA PRIVATE KEY-----';
@@ -62,21 +62,67 @@ suite(testing.suiteName(), function() {
   suite('getPrivatePEM', function() {
     test('with actual newlines', function() {
       const cfg = { github: { credentials: { privatePEM: WITH_NEWLINES } } };
-      assert.equal(githubAuth.getPrivatePEM(cfg), WITH_NEWLINES);
+      assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
     test('with escaped newlines', function() {
       const cfg = { github: { credentials: { privatePEM: WITH_ESCAPED_NEWLINES } } };
-      assert.equal(githubAuth.getPrivatePEM(cfg), WITH_NEWLINES);
+      assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
     test('with invalid value', function() {
       const cfg = { github: { credentials: { privatePEM: 'somekey' } } };
-      assert.throws(() => githubAuth.getPrivatePEM(cfg), err => {
+      assert.throws(() => getPrivatePEM(cfg), err => {
         assert(/must match/.test(err.toString()));
         assert(!/somekey/.test(err.toString()));
         return true;
       });
+    });
+  });
+  suite('getCachedInstallationToken', function () {
+    const getGh = async () => {
+      const gh = await githubAuth({
+        monitor: await helper.load('monitor'),
+        cfg: {
+          github: {
+            credentials: {
+              appId: 12345,
+              privatePEM: FAKE_KEY,
+            },
+          },
+        },
+      });
+      return gh.getAppGithub();
+    };
+
+    test('cache responses', async function() {
+      nock('https://api.github.com:443')
+        .post('/app/installations/500/access_tokens')
+        .reply(200, { expires_at: new Date('3000-01-01T00:00:00Z'), token: 'abc' });
+
+      const ghApp = await getGh();
+      const token1 = await getCachedInstallationToken(ghApp, 500);
+      // calling this second time ensures that nock() will not be activated, since it only expects one call
+      const token2 = await getCachedInstallationToken(ghApp, 500);
+
+      assert.equal('abc', token1.token);
+      assert.equal('abc', token2.token);
+      assert.equal(true, nock.isDone());
+    });
+
+    test('cache responses and checks expiration dates', async function() {
+      nock('https://api.github.com:443')
+        .post('/app/installations/505/access_tokens')
+        .times(2)
+        .reply(200, { expires_at: new Date('1000-01-01T00:00:00Z'), token: 'abc' });
+
+      const ghApp = await getGh();
+      const token1 = await getCachedInstallationToken(ghApp, 505);
+      const token2 = await getCachedInstallationToken(ghApp, 505);
+
+      assert.equal('abc', token1.token);
+      assert.equal('abc', token2.token);
+      assert.equal(true, nock.isDone());
     });
   });
 });

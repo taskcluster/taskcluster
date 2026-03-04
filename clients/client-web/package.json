@@ -1,6 +1,6 @@
 {
-  "name": "taskcluster-client-web",
-  "version": "44.18.0",
+  "name": "@taskcluster/client-web",
+  "version": "97.0.1",
   "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -10,31 +10,34 @@
   ],
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "test": "karma start --single-run"
+    "test": "NODE_OPTIONS=--openssl-legacy-provider karma start --single-run"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.9",
-    "chai": "^4.3.6",
-    "chai-as-promised": "^7.1.1",
-    "crypto-js": "^4.0.0",
-    "dotenv": "^10.0.0",
-    "eslint": "^8.21.0",
-    "karma": "^6.3.20",
+    "@babel/core": "^7.29.0",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^8.0.2",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.39.2",
+    "karma": "^6.4.4",
     "karma-cli": "^2.0.0",
-    "karma-coverage": "^2.2.0",
-    "karma-firefox-launcher": "^2.0.0",
+    "karma-coverage": "^2.2.1",
+    "karma-firefox-launcher": "^2.1.3",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "karma-sourcemap-loader": "^0.3.7",
+    "karma-sourcemap-loader": "^0.4.0",
     "karma-webpack": "^4.0.2",
     "query-string": "^7.0.0",
-    "webpack": "^4.29.6",
+    "webpack": "^4.47.0",
     "webpack-cli": "^4.0.0"
   },
   "dependencies": {
-    "crypto-js": "^4.0.0",
-    "hawk": "^9.0.1",
+    "crypto-js": "^4.2.0",
+    "hawk": "^9.0.2",
     "query-string": "^7.0.0",
-    "taskcluster-lib-urls": "^13.0.0"
+    "taskcluster-lib-urls": "^13.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

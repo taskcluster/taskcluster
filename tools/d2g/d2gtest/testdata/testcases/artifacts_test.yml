@@ -1,0 +1,129 @@
+testSuite:
+  description: Test that artifacts will be created.
+  name: Artifacts test
+  payloadTests:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that artifacts will be created in the resulting generic worker
+      task payload.
+    dockerWorkerTaskPayload:
+      artifacts:
+        public/build.tar.gz:
+          expires: "2024-05-28T16:12:56.693817Z"
+          path: /etc/passwd' artifact0; whoami; echo foo > /root/bar; cp 'foo
+          type: file
+        public/fred:
+          path: /home/worker/artifacts/fred.txt
+          type: file
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      artifacts:
+      - expires: "2024-05-28T16:12:56.693Z"
+        name: public/build.tar.gz
+        optional: true
+        path: artifact0
+        type: file
+      - name: public/fred
+        optional: true
+        path: artifact1.txt
+        type: file
+      command:
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
+      features:
+        backingLog: true
+        liveLog: true
+        resourceMonitor: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      osGroups:
+      - docker
+      taskclusterProxyInterface: docker-bridge
+    name: Artifacts test
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: Tests that volume artifacts will be created in the resulting generic
+      worker task payload.
+    dockerWorkerTaskPayload:
+      artifacts:
+        public/fred:
+          path: /home/worker/artifacts
+          type: volume
+      command:
+      - echo "Hello world"
+      image: ubuntu
+      maxRunTime: 3600
+    genericWorkerTaskPayload:
+      artifacts:
+      - name: public/fred
+        optional: true
+        path: volume0
+        type: directory
+      command:
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - __TASK_DIR__/volume0:/home/worker/artifacts
+        - --env-file
+        - env.list
+        - ubuntu
+        - echo "Hello world"
+      features:
+        backingLog: true
+        liveLog: true
+        resourceMonitor: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 3600
+      osGroups:
+      - docker
+      taskclusterProxyInterface: docker-bridge
+    name: Artifacts test

@@ -2,8 +2,9 @@ package mocks3
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"sync"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -16,8 +17,9 @@ type Resource struct {
 }
 
 type S3 struct {
-	t         *testing.T
-	resources map[string]*Resource
+	t            *testing.T
+	resources    map[string]*Resource
+	resourcesMux sync.RWMutex
 }
 
 func (s3 *S3) RegisterService(r *mux.Router) {
@@ -26,6 +28,7 @@ func (s3 *S3) RegisterService(r *mux.Router) {
 }
 
 func New(t *testing.T) *S3 {
+	t.Helper()
 	return &S3{
 		t:         t,
 		resources: map[string]*Resource{},
@@ -36,10 +39,12 @@ func (s3 *S3) Upload(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	contentEncoding := r.Header.Get("Content-Encoding")
 	contentType := r.Header.Get("Content-Type")
-	content, err := ioutil.ReadAll(r.Body)
+	content, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
 	}
+	s3.resourcesMux.Lock()
+	defer s3.resourcesMux.Unlock()
 	s3.resources[vars["name"]] = &Resource{
 		Content:         content,
 		ContentEncoding: contentEncoding,
@@ -49,6 +54,8 @@ func (s3 *S3) Upload(w http.ResponseWriter, r *http.Request) {
 
 func (s3 *S3) Download(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	s3.resourcesMux.RLock()
+	defer s3.resourcesMux.RUnlock()
 	a, exists := s3.resources[vars["name"]]
 	if !exists {
 		w.WriteHeader(404)
@@ -66,6 +73,8 @@ func (s3 *S3) Download(w http.ResponseWriter, r *http.Request) {
 // mocktc creates object names on the form "/taskId/runId/name" for s3 artifacts, and that
 // name is escaped with url.PathEscape.
 func (s3 *S3) FakeObject(name string, contentType string, content []byte) {
+	s3.resourcesMux.Lock()
+	defer s3.resourcesMux.Unlock()
 	s3.resources[name] = &Resource{
 		Content:         content,
 		ContentEncoding: "identity",

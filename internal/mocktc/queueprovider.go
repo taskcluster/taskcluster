@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
 )
 
 type QueueProvider struct {
@@ -27,6 +27,7 @@ func (qp *QueueProvider) RegisterService(r *mux.Router) {
 	s.HandleFunc("/task/{taskId}/artifacts/{name}", qp.GetLatestArtifact_SignedURL).Methods("GET")
 	// TODO: currently mocks don't support more than one task run per task - and all assume runId == "0"
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts/{name}", qp.GetLatestArtifact_SignedURL).Methods("GET")
+	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts/{name}", qp.FinishArtifact).Methods("PUT")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifacts", qp.ListArtifacts).Methods("GET")
 	s.HandleFunc("/task/{taskId}/runs/{runId}/artifact-content/{name}", qp.Artifact).Methods("GET")
 	s.HandleFunc("/task/{taskId}/artifact-content/{name}", qp.LatestArtifact).Methods("GET")
@@ -55,6 +56,14 @@ func (qp *QueueProvider) CreateArtifact(w http.ResponseWriter, r *http.Request) 
 	JSON(w, out, err)
 }
 
+func (qp *QueueProvider) FinishArtifact(w http.ResponseWriter, r *http.Request) {
+	vars := Vars(r)
+	var payload tcqueue.FinishArtifactRequest
+	Marshal(r, &payload)
+	err := qp.queue.FinishArtifact(vars["taskId"], vars["runId"], vars["name"], &payload)
+	JSON(w, map[string]string{}, err)
+}
+
 func (qp *QueueProvider) CreateTask(w http.ResponseWriter, r *http.Request) {
 	vars := Vars(r)
 	var payload tcqueue.TaskDefinitionRequest
@@ -70,7 +79,7 @@ func (qp *QueueProvider) GetLatestArtifact_SignedURL(w http.ResponseWriter, r *h
 		ReportError(w, err)
 		return
 	}
-	http.Redirect(w, r, location.String(), 302)
+	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
 func (qp *QueueProvider) ListArtifacts(w http.ResponseWriter, r *http.Request) {

@@ -1,7 +1,7 @@
-const { getTasks } = require('./tasks');
-const { TaskGraph, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
+import { getTasks } from './tasks.js';
+import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
-const main = async (options) => {
+export const main = async (options) => {
   const taskgraph = new TaskGraph(await getTasks(), {
     renderer: process.stdout.isTTY ?
       new ConsoleRenderer({ elideCompleted: true }) :
@@ -9,5 +9,3 @@ const main = async (options) => {
   });
   await taskgraph.run();
 };
-
-module.exports = { main };

@@ -1,20 +1,4 @@
-const fs = require('fs');
+import { loadTasks } from '../../utils/load-tasks.js';
 
-const checks = [];
-
-/**
- * Each file in this directory is expected to export `tasks` containing a list of
- * console-taskgraph tasks.
- */
-
-fs.readdirSync(`${__dirname}/`).forEach(file => {
-  if (file !== 'index.js' && file.match(/\.js$/)) {
-    const { tasks } = require(`./${file}`);
-
-    for (let task of tasks) {
-      checks.push(task);
-    }
-  }
-});
-
-exports.checks = checks;
+const __dirname = new URL('.', import.meta.url).pathname;
+export const loadChecks = async () => loadTasks(__dirname);

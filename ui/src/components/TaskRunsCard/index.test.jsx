@@ -8,6 +8,7 @@ it('should render TaskRunsCard', () => {
     <MemoryRouter keyLength={0}>
       <TaskRunsCard
         taskQueueId="task/queueId"
+        liveLogName="apple/banana.log"
         task={{
           taskId: 'taskId',
           status: {
@@ -27,17 +28,17 @@ it('should render TaskRunsCard', () => {
             command: [
               '/bin/bash',
               '-c',
-              'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done',
+              'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
             ],
             image: 'ubuntu:latest',
-            maxRunTime: 630,
+            maxRunTime: 90,
           },
           metadata: {
             source: 'https://test.taskcluster-dev.net/task/taskId',
           },
           extra: {},
         }}
-        selectedRunId=""
+        selectedRunId={0}
         runs={[
           {
             taskId: 'eR1kMya2SruyMaRMZguROg',
@@ -79,7 +80,7 @@ it('should render TaskRunsCard', () => {
                 },
                 {
                   node: {
-                    name: 'public/logs/live.log',
+                    name: 'apple/banana.log',
                     contentType: 'text/plain; charset=utf-8',
                     __typename: 'Artifact',
                   },

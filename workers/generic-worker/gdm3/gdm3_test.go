@@ -28,18 +28,3 @@ AutomaticLogin = user5`)
 		t.Fatalf("Got:\n%s", result)
 	}
 }
-
-func TestGetAutoLogon(t *testing.T) {
-	source := []byte(`
-[fred]
-[mary]
-[daemon]
-AutomaticLogin = user4
-[john]
-AutomaticLoginEnable = true
-AutomaticLogin = user5`)
-	autoLogonUser := AutoLogonUser(source)
-	if autoLogonUser != "user4" {
-		t.Fatalf("Was expecting user4 but got %v", autoLogonUser)
-	}
-}

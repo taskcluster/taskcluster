@@ -1,5 +1,5 @@
 // Regenerate a sessionId given a request
-module.exports = req => new Promise((resolve) => {
+export default req => new Promise((resolve) => {
   const temp = req.session.passport;
 
   req.session.regenerate((err) => {

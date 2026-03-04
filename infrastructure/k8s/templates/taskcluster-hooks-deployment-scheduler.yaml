@@ -18,12 +18,18 @@ spec:
       labels: *ref_0
     spec:
       serviceAccountName: taskcluster-hooks
+      imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-hooks-scheduler
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - hooks/scheduler
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.hooks.procs.scheduler.cpu }}'
@@ -38,6 +44,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-hooks
+            - configMapRef:
+                name: taskcluster-hooks
           ports: []
           livenessProbe:
             exec:
@@ -45,6 +53,6 @@ spec:
                 - /bin/sh
                 - '-c'
                 - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
+            initialDelaySeconds: 432000
             periodSeconds: 60
             failureThreshold: 1

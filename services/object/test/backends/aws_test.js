@@ -1,9 +1,21 @@
-const helper = require('../helper');
-const assert = require('assert');
-const aws = require('aws-sdk');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { AwsBackend, getBucketRegion } = require('../../src/backends/aws');
+import helper from '../helper/index.js';
+import assert from 'assert';
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  GetObjectTaggingCommand,
+  HeadObjectCommand,
+  ListObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { AwsBackend, getBucketRegion } from '../../src/backends/aws.js';
+import { promisify } from 'util';
+import zlib from 'zlib';
+
+const gzip = promisify(zlib.gzip);
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {
@@ -25,12 +37,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     secret = helper.secrets.get('aws');
 
-    const credentials = {
-      accessKeyId: secret.accessKeyId,
-      secretAccessKey: secret.secretAccessKey,
+    const options = {
+      credentials: {
+        accessKeyId: secret.accessKeyId,
+        secretAccessKey: secret.secretAccessKey,
+      },
+      region: 'us-east-1',
+      followRegionRedirects: true,
     };
-    const region = await getBucketRegion({ bucket: secret.testBucket, credentials });
-    s3 = new aws.S3({ region, ...credentials });
+    const region = await getBucketRegion({
+      bucket: secret.testBucket,
+      ...options,
+    });
+    options.region = region;
+    s3 = new S3Client(options);
   });
 
   setup(async function() {
@@ -63,18 +83,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   const projectId = 'test-proj';
 
-  const makeObject = async ({ name, data }) => {
+  const makeObject = async ({ name, data, hashes, gzipped }) => {
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
     await helper.db.fns.create_object_for_upload(name, projectId, 'aws', uploadId, expires, {}, expires);
     const [object] = await helper.db.fns.get_object_with_upload(name);
 
-    await s3.putObject({
-      Bucket: secret.testBucket,
-      Key: name,
-      Body: data,
-    }).promise();
+    if (gzipped) {
+      const compressedData = await gzip(data);
+      await s3.send(new PutObjectCommand({
+        Bucket: secret.testBucket,
+        Key: name,
+        Body: compressedData,
+        ContentEncoding: "gzip",
+      }));
+    } else {
+      await s3.send(new PutObjectCommand({
+        Bucket: secret.testBucket,
+        Key: name,
+        Body: data,
+      }));
+    }
+
+    if (hashes) {
+      await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
+    }
 
     await helper.db.fns.object_upload_complete(name, uploadId);
 
@@ -82,44 +116,48 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   const getObjectContent = async ({ name }) => {
-    const res = await s3.getObject({
+    const res = await s3.send(new GetObjectCommand({
       Bucket: secret.testBucket,
       Key: name,
-    }).promise();
+    }));
 
     // verify tagging is as expected
-    const tagging = await s3.getObjectTagging({
+    const tagging = await s3.send(new GetObjectTaggingCommand({
       Bucket: secret.testBucket,
       Key: name,
-    }).promise();
+    }));
     assert(
       tagging.TagSet.some(({ Key, Value }) => Key === 'ProjectId' && Value === 'test-proj') &&
       tagging.TagSet.some(({ Key, Value }) => Key === 'Extra' && Value === 'yes'),
       `got tags ${JSON.stringify(tagging)}`);
 
-    const head = await s3.headObject({
+    const head = await s3.send(new HeadObjectCommand({
       Bucket: secret.testBucket,
       Key: name,
-    }).promise();
+    }));
 
-    return { data: res.Body, contentType: res.ContentType, contentDisposition: head.ContentDisposition };
+    return {
+      data: await res.Body.transformToByteArray(),
+      contentType: res.ContentType,
+      contentDisposition: head.ContentDisposition,
+    };
   };
 
   const cleanup = async () => {
     await helper.resetTables();
 
     // delete all objects with this prefix
-    const objects = await s3.listObjects({
+    const objects = await s3.send(new ListObjectsCommand({
       Bucket: secret.testBucket,
       Prefix: prefix,
-    }).promise();
-    if (objects.Contents.length > 0) {
-      await s3.deleteObjects({
+    }));
+    if (objects.Contents?.length > 0) {
+      await s3.send(new DeleteObjectsCommand({
         Bucket: secret.testBucket,
         Delete: {
           Objects: objects.Contents.map(o => ({ Key: o.Key })),
         },
-      }).promise();
+      }));
     }
   };
 
@@ -145,6 +183,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  helper.testBackend({
+    mock, skipping, prefix,
+    backendId: 'awsPublic',
+    makeObject,
+  }, async function() {
+    teardown(cleanup);
+  });
+
   helper.testSimpleDownloadMethod({
     mock, skipping, prefix,
     title: 'public bucket',
@@ -152,8 +198,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     makeObject,
     async checkUrl({ name, url }) {
       // *not* signed
-      assert(!url.match(/AccessKeyId=/), `got ${url}`);
-      assert(!url.match(/Signature=/), `got ${url}`);
+      assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
     },
   }, async function() {
     teardown(cleanup);
@@ -168,8 +214,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       // ..contains S3 signature query args (note that testSimpleDownloadMethod
       // will verify that the URL actually works; this just verifies that it
       // is not un-signed).
-      assert(url.match(/AccessKeyId=/), `got ${url}`);
-      assert(url.match(/Signature=/), `got ${url}`);
+      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+    },
+  }, async function() {
+    teardown(cleanup);
+  });
+
+  helper.testGetUrlDownloadMethod({
+    mock, skipping, prefix,
+    backendId: 'awsPrivate',
+    makeObject,
+    async checkUrl({ name, url }) {
+      // URL should always be signed
+      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
     },
   }, async function() {
     teardown(cleanup);
@@ -204,11 +263,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assert(await backend.expireObject(object));
 
       // object should now be gone
-      await assert.rejects(() => s3.getObject({
+      await assert.rejects(() => s3.send(new GetObjectCommand({
         Bucket: secret.testBucket,
         Key: name,
-      }).promise(),
-      err => err.code === 'NoSuchKey');
+      })),
+      err => err.Code === 'NoSuchKey');
     });
 
     test('succeeds for an object that no longer exists', async function() {

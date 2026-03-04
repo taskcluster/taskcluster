@@ -1,6 +1,7 @@
-const helper = require('./helper');
-const debug = require('debug');
-const {
+import helper from './helper.js';
+import debug from 'debug';
+
+import {
   Schema,
   Database,
   ignorePgErrors,
@@ -9,18 +10,22 @@ const {
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
   UNDEFINED_FUNCTION,
-} = require('..');
-const path = require('path');
-const testing = require('taskcluster-lib-testing');
-const assert = require('assert').strict;
-const { dollarQuote } = require('../src/util');
-const {
+} from '../src/index.js';
+
+import path from 'path';
+import testing from '@taskcluster/lib-testing';
+import { strict as assert } from 'assert';
+import { dollarQuote } from '../src/util.js';
+
+import {
   runMigration,
   runOnlineMigration,
   runDowngrade,
   runOnlineDowngrade,
   runOnlineBatches,
-} = require('../src/migration');
+} from '../src/migration.js';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 helper.dbSuite(path.basename(__filename), function() {
   let db;
@@ -191,7 +196,8 @@ helper.dbSuite(path.basename(__filename), function() {
       runOnlineBatches.resetHooks();
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
       await db._withClient('admin', async client => {
-        await client.query('create table tcversion as select 1 as version');
+        await client.query('create table tcversion (version int primary key)');
+        await client.query('insert into tcversion (version) values (1)');
         for (let v of [0, 1, 2, 3]) {
           for (let fn of [
             `online_migration_v${v}_batch`,

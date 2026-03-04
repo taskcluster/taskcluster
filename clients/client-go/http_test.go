@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -20,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v44/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v97/internal/jsontest"
 )
 
 func (c *Client) quickBackoff() {
@@ -132,6 +134,7 @@ type ExtHeaderRawCert struct {
 // header; if they are set to anything, including an empty array, that this
 // matches what is found in the header.
 func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
+	t.Helper()
 	tempCredentials, err := permCreds.CreateTemporaryCredentials(time.Second*1, "d", "e", "f")
 	if err != nil {
 		t.Fatalf("Received error when generating temporary credentials: %s", err)
@@ -179,6 +182,7 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 // checkExtHeader simply checks if getExtHeader returns the same results as the
 // specified expected header.
 func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
+	t.Helper()
 	actualHeader, err := getExtHeader(creds)
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
@@ -286,12 +290,12 @@ func TestNoFollowRedirects(t *testing.T) {
 		Authenticate: false,
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	res, cs, err := client.APICall(nil, "GET", "/whatever", &result, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 303, cs.HTTPResponse.StatusCode)
 	assert.Equal(t,
-		&map[string]interface{}{"url": "http://nosuch.example.com"},
+		&map[string]any{"url": "http://nosuch.example.com"},
 		res)
 }
 
@@ -310,7 +314,7 @@ type MockHTTPRequest struct {
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	mockRequestBody, err := ioutil.ReadAll(req.Body)
+	mockRequestBody, err := io.ReadAll(req.Body)
 	if err != nil {
 		m.T.Fatalf("Hit error reading mock http request request body: %s", err)
 	}
@@ -326,7 +330,7 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	}
 	return &http.Response{
 		Status: "200 OK",
-		Body:   ioutil.NopCloser(&bytes.Buffer{}),
+		Body:   io.NopCloser(&bytes.Buffer{}),
 	}, nil
 }
 
@@ -518,4 +522,98 @@ func TestRetryFailure(t *testing.T) {
 	// 1) calling APICall with a nil payload
 	_, _, err := client.APICall(nil, "GET", "/whatever", nil, nil)
 	require.Error(t, err)
+}
+
+// Make sure client doesn't crash when the server drops all incoming connections
+// See https://github.com/taskcluster/taskcluster/issues/5666
+func TestDroppedConnections(t *testing.T) {
+
+	// Create a TCP listener on an available port
+	// Below, ":0" means "find an available port"
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		t.Fatalf("Cannot create listener: %v", err)
+	}
+
+	// Only the main go routine can call t.Fatal etc to fail the test, so
+	// communicate failures back to main go routine via an error channel and
+	// let it handle them.
+	errChan := make(chan error)
+
+	// Create a taskcluster client to connect to the listener, and configure it
+	// accordingly.
+	localPort := listener.Addr().(*net.TCPAddr).Port
+	client := Client{
+		RootURL:      fmt.Sprintf("http://127.0.0.1:%v", localPort),
+		Authenticate: false,
+	}
+	client.quickBackoff()
+
+	// Wait for client and listener go routines to complete before exiting test.
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// Listener to process connections in dedicated go routine, passing any
+	// errors back to main go routine via the created error channel.
+	go func() {
+		defer wg.Done()
+		for {
+			// Unblocks on receiving data, or on listener.Close()
+			conn, err := listener.Accept()
+			if err != nil {
+				// Allow error due to listener being closed
+				switch e1 := err.(type) {
+				case *net.OpError:
+					// Note, poll.errNetClosing is an unexported type in an
+					// internal package, so cannot perform regular type
+					// assertion. Therefore resorting to rendering type as
+					// a string and comparing string value.
+					if fmt.Sprintf("%T", e1.Err) == "poll.errNetClosing" {
+						return
+					}
+				}
+				// All other errors are problems
+				errChan <- fmt.Errorf("Cannot accept connection: %w", err)
+				return
+			}
+			// Drop all connections, to simulate a network having a bad hair
+			// day.
+			err = conn.Close()
+			if err != nil {
+				errChan <- fmt.Errorf("Cannot close connection: %w", err)
+				return
+			}
+		}
+	}()
+
+	// Execute API calls in a dedicated go routine too, to avoid deadlocks
+	// since the main go routine needs to concurrently consume any errors that
+	// may occur.
+	go func() {
+		defer wg.Done()
+		defer func() {
+			err = listener.Close()
+			if err != nil {
+				errChan <- fmt.Errorf("Cannot close listener: %w", err)
+			}
+		}()
+		_, _, err = client.APICall(nil, "GET", "/whatever", nil, nil)
+		if err == nil {
+			errChan <- errors.New("Was expecting an error, but did not get one")
+		}
+	}()
+
+	// In a separate go routine, wait for client and listener to complete and
+	// then close the error channel. This way, the main go routine can consume
+	// from the error channel without deadlocking if there is an error.
+	go func() {
+		wg.Wait()
+		close(errChan)
+	}()
+
+	// Consume any errors that occur. If no error occurs, channel is closed by
+	// above go routine, and for loop will exit with no iterations.
+	for err := range errChan {
+		t.Fatal(err)
+	}
 }

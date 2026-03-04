@@ -1,24 +1,29 @@
 package google
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
+
+const TERMINATION_PATH = "/instance/preempted"
 
 type GoogleProvider struct {
 	runnercfg                  *cfg.RunnerConfig
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
+	terminationMsgSent         bool
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
@@ -27,12 +32,12 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 
 	workerID, err := p.metadataService.queryMetadata("/instance/id")
 	if err != nil {
-		return fmt.Errorf("Could not query metadata: %v", err)
+		return fmt.Errorf("could not query metadata: %v", err)
 	}
 
 	userData, err := p.metadataService.queryUserData()
 	if err != nil {
-		return fmt.Errorf("Could not query user data: %v", err)
+		return fmt.Errorf("could not query user data: %v", err)
 	}
 
 	state.RootURL = userData.RootURL
@@ -41,7 +46,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	state.WorkerGroup = userData.WorkerGroup
 	state.WorkerID = workerID
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"instance-id": workerID,
 	}
 	for _, f := range []struct {
@@ -58,7 +63,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	} {
 		value, err := p.metadataService.queryMetadata(f.path)
 		if err != nil {
-			return fmt.Errorf("Error querying GCE metadata %v: %v", f.path, err)
+			return fmt.Errorf("error querying GCE metadata %v: %v", f.path, err)
 		}
 		providerMetadata[f.name] = value
 	}
@@ -85,14 +90,14 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	p.workerIdentityProof = map[string]interface{}{
-		"token": interface{}(proofToken),
+	p.workerIdentityProof = map[string]any{
+		"token": any(proofToken),
 	}
 
 	return nil
 }
 
-func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -104,8 +109,36 @@ func (p *GoogleProvider) SetProtocol(proto *workerproto.Protocol) {
 	p.proto = proto
 }
 
+func (p *GoogleProvider) checkTerminationTime() bool {
+	value, err := p.metadataService.queryMetadata(TERMINATION_PATH + "?wait_for_change=true")
+	// if the file exists and contains TRUE, it's time to go away
+	if err == nil && value == "TRUE" {
+		log.Println("GCP Metadata Service says termination is imminent")
+		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
+			p.proto.Send(workerproto.Message{
+				Type: "graceful-termination",
+				Properties: map[string]any{
+					// preemption generally doesn't leave time to finish tasks
+					"finish-tasks": false,
+				},
+			})
+			p.terminationMsgSent = true
+		}
+		return true
+	}
+	return false
+}
+
 func (p *GoogleProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
+
+	go func() {
+		for {
+			log.Println("polling for termination-time")
+			p.checkTerminationTime()
+		}
+	}()
 
 	return nil
 }
@@ -149,6 +182,9 @@ func new(runnercfg *cfg.RunnerConfig, workerManagerClientFactory tc.WorkerManage
 	}
 	if metadataService == nil {
 		metadataService = &realMetadataService{}
+	}
+	if value, err := metadataService.queryMetadata(TERMINATION_PATH); err == nil && value == "TRUE" {
+		return nil, errors.New("instance is about to shutdown")
 	}
 	return &GoogleProvider{
 		runnercfg:                  runnercfg,

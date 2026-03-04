@@ -1,12 +1,22 @@
-const parser = require('cron-parser');
-const taskcluster = require('taskcluster-client');
-const { APIBuilder } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION, paginatedIterator } = require('taskcluster-lib-postgres');
-const nextDate = require('../src/nextdate');
-const _ = require('lodash');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const { hookUtils } = require('./utils');
+import { CronExpressionParser as parser } from 'cron-parser';
+import taskcluster from '@taskcluster/client';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import nextDate from '../src/nextdate.js';
+import _ from 'lodash';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { hookUtils } from './utils.js';
+
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  HOOK: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
+
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 
 const builder = new APIBuilder({
   title: 'Hooks Service',
@@ -17,13 +27,13 @@ const builder = new APIBuilder({
   serviceName: 'hooks',
   apiVersion: 'v1',
   params: {
-    hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
-    hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
+    hookGroupId: /^[a-zA-Z0-9-_]{1,1000}$/,
+    hookId: /^[a-zA-Z0-9-_\/]{1,1000}$/,
   },
-  context: ['db', 'taskcreator', 'publisher', 'denylist'],
+  context: ['db', 'taskcreator', 'publisher', 'denylist', 'monitor'],
 });
 
-module.exports = builder;
+export default builder;
 
 /** Get hook groups **/
 builder.declare({
@@ -31,7 +41,6 @@ builder.declare({
   route: '/hooks',
   name: 'listHookGroups',
   scopes: 'hooks:list-hooks:',
-  idempotent: true,
   category: 'Hooks',
   output: 'list-hook-groups-response.yml',
   title: 'List hook groups',
@@ -40,13 +49,9 @@ builder.declare({
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
 }, async function(req, res) {
-  const groups = new Set();
-  const hooks = (await this.db.fns.get_hooks(null, null, null, null)).map(hookUtils.fromDb);
-
-  hooks.forEach(hook => {
-    groups.add(hook.hookGroupId);
-  });
-  return res.reply({ groups: Array.from(groups) });
+  const hookGroups = await this.db.fns.get_hook_groups();
+  const groups = hookGroups.map(row => row.hook_group_id);
+  return res.reply({ groups });
 });
 
 /** Get hooks in a given group **/
@@ -55,7 +60,6 @@ builder.declare({
   route: '/hooks/:hookGroupId',
   name: 'listHooks',
   scopes: 'hooks:list-hooks:<hookGroupId>',
-  idempotent: true,
   category: 'Hooks',
   output: 'list-hooks-response.yml',
   title: 'List hooks in a given group',
@@ -81,7 +85,6 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId',
   name: 'hook',
   scopes: 'hooks:get:<hookGroupId>:<hookId>',
-  idempotent: true,
   output: 'hook-definition.yml',
   title: 'Get hook definition',
   category: 'Hooks',
@@ -131,11 +134,9 @@ builder.declare({
 
   // find the latest entry in the LastFire table for this hook
   let latest = { task_create_time: new Date(1970, 1, 1) };
-  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let item of paginatedIterator({ fetch })) {
-    if (item.task_create_time > latest.task_create_time) {
-      latest = item;
-    }
+  const rows = await this.db.fns.get_last_fires_with_task_state(hookGroupId, hookId, 1, 0);
+  if (rows.length > 0) {
+    latest = rows[0];
   }
 
   let reply;
@@ -182,7 +183,6 @@ builder.declare({
   method: 'put',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'createHook',
-  idempotent: true,
   scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
@@ -203,7 +203,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -222,7 +222,7 @@ builder.declare({
   // Validate cron-parser expressions
   for (let schedElement of hookDef.schedule) {
     try {
-      parser.parseExpression(schedElement);
+      parser.parse(schedElement);
     } catch (err) {
       return res.reportError('InputError',
         '{{message}} in {{schedElement}}', { message: err.message, schedElement });
@@ -275,6 +275,20 @@ builder.declare({
       hook.nextScheduledDate,
       hook.triggerSchema,
     );
+
+    this.monitor.log.auditEvent({
+      service: 'hooks',
+      entity: 'hook',
+      entityId: `${hookGroupId}/${hookId}`,
+      clientId: await req.clientId(),
+      action: AUDIT_ENTRY_TYPE.HOOK.CREATED,
+    });
+
+    await this.db.fns.insert_hooks_audit_history(
+      `${hookGroupId}/${hookId}`,
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.HOOK.CREATED,
+    );
   } catch (err) {
     if (!err || err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -299,7 +313,6 @@ builder.declare({
   method: 'post',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'updateHook',
-  idempotent: true,
   scopes: { AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
@@ -317,7 +330,7 @@ builder.declare({
   const hookId = req.params.hookId;
   const hookDef = req.body;
 
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
@@ -358,7 +371,7 @@ builder.declare({
   const schedule = hookDef.schedule ? hookDef.schedule : [];
   for (let schedElement of schedule) {
     try {
-      parser.parseExpression(schedElement);
+      parser.parse(schedElement);
     } catch (err) {
       return res.reportError('InputError',
         '{{message}} in {{schedElement}}', { message: err.message, schedElement });
@@ -391,6 +404,20 @@ builder.declare({
     ),
   );
 
+  this.monitor.log.auditEvent({
+    service: 'hooks',
+    entity: 'hook',
+    entityId: `${hookGroupId}/${hookId}`,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.HOOK.UPDATED,
+  });
+
+  await this.db.fns.insert_hooks_audit_history(
+    `${hookGroupId}/${hookId}`,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.UPDATED,
+  );
+
   let definition = hookUtils.definition(hook);
   await this.publisher.hookUpdated({ hookGroupId, hookId });
 
@@ -402,7 +429,6 @@ builder.declare({
   method: 'delete',
   route: '/hooks/:hookGroupId/:hookId',
   name: 'removeHook',
-  idempotent: true,
   scopes: 'hooks:modify-hook:<hookGroupId>/<hookId>',
   title: 'Delete a hook',
   stability: 'stable',
@@ -418,6 +444,20 @@ builder.declare({
 
   // Remove the resource if it exists
   await this.db.fns.delete_hook(hookGroupId, hookId);
+
+  this.monitor.log.auditEvent({
+    service: 'hooks',
+    entity: 'hook',
+    entityId: `${hookGroupId}/${hookId}`,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.HOOK.DELETED,
+  });
+
+  await this.db.fns.insert_hooks_audit_history(
+    `${hookGroupId}/${hookId}`,
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.HOOK.DELETED,
+  );
   await this.publisher.hookDeleted({ hookGroupId, hookId });
 
   await this.db.fns.delete_last_fires(req.params.hookGroupId, req.params.hookId);
@@ -441,6 +481,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` can be provided in the payload which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;
@@ -554,6 +597,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` can be provided in the payload which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const payload = req.body;
@@ -578,7 +624,7 @@ builder.declare({
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function({ req, res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
+  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
   addFormats(ajv);
 
   const context = { firedBy, payload };
@@ -598,8 +644,18 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
     });
   }
 
+  const options = {};
+  if (payload.taskId) {
+    if (!SLUGID_PATTERN.test(payload.taskId)) {
+      return res.reportError('InputError', 'Invalid taskId format: {{taskId}}', {
+        taskId: payload.taskId,
+      });
+    }
+    options.taskId = payload.taskId;
+  }
+
   try {
-    resp = await this.taskcreator.fire(hook, context);
+    resp = await this.taskcreator.fire(hook, context, options);
     if (!resp) {
       // hook did not produce a response, so return an empty object
       return res.reply({});
@@ -659,22 +715,32 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId/last-fires',
   name: 'listLastFires',
   scopes: 'hooks:list-last-fires:<hookGroupId>/<hookId>',
-  idempotent: true,
   output: 'list-lastFires-response.yml',
   title: 'Get information about recent hook fires',
   stability: 'stable',
   category: 'Hook Status',
+  query: paginateResults.query,
   description: [
     'This endpoint will return information about the the last few times this hook has been',
     'fired, including whether the hook was fired successfully or not',
+    '',
+    'By default this endpoint will return up to 1000 most recent fires in one request.',
   ].join('\n'),
 }, async function(req, res) {
   const { hookGroupId, hookId } = req.params;
-  let lastFires = [];
+  const { continuationToken, rows: lastFires } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_last_fires_with_task_state(
+      hookGroupId, hookId, size, offset,
+    ),
+  });
 
-  const fetch = (size, offset) => this.db.fns.get_last_fires(hookGroupId, hookId, size, offset);
-  for await (let row of paginatedIterator({ fetch })) {
-    const item = {
+  if (lastFires.length === 0) {
+    return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
+  }
+
+  return res.reply({
+    lastFires: lastFires.map(row => ({
       hookGroupId: row.hook_group_id,
       hookId: row.hook_id,
       firedBy: row.fired_by,
@@ -682,14 +748,10 @@ builder.declare({
       taskCreateTime: row.task_create_time.toJSON(),
       result: row.result,
       error: row.error,
-    };
-    lastFires.push(item);
-  }
-
-  if (lastFires.length === 0) {
-    return res.reportError('ResourceNotFound', 'No such hook or never fired', {});
-  }
-  return res.reply({ lastFires: lastFires });
+      taskState: row.task_state || 'unknown',
+    })),
+    continuationToken,
+  });
 });
 
 builder.declare({

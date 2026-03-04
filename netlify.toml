@@ -8,9 +8,8 @@
   ignore = "git diff --quiet HEAD^ HEAD -- . ':!docs'"
 
 [build.environment]
-  YARN_FLAGS = "--frozen-lockfile"
-  YARN_VERSION = "1.22.4"
-  NODE_VERSION = "16.16.0"
+  YARN_FLAGS = "--immutable"
+  NODE_VERSION = "24.13.0"
   APPLICATION_NAME = "Taskcluster"
   GRAPHQL_ENDPOINT = "https://community-tc.services.mozilla.com/graphql"
   GRAPHQL_SUBSCRIPTION_ENDPOINT = "https://community-tc.services.mozilla.com/subscription"
@@ -23,8 +22,11 @@
   to = "/docs.html"
   status = 200
 
-# Rule for Single Page Applications (app)
+# Netlify is only used for docs.taskcluster.net
+# so always (force) a redirect to /docs so we don't
+# use the index page intended for the app as landing
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  from = "/"
+  to = "/docs/"
+  status = 301
+  force = true

@@ -92,6 +92,7 @@ Each backend has the following configuration parameters:
  * `secretAccessKey`
  * `signGetUrls` (optional, default false)
  * `endpoint` (optional, default null)
+ * `s3ForcePathStyle` (optional, default false)
  * `tags` (optional, default `{}`)
 
  For example:
@@ -163,6 +164,13 @@ In cases where the data is public anyway, signed URL signatures can cause unnece
 Setting `signGetUrls` to false in this case causes the backend to generate un-signed URLs, which are short and easy for users to pass around.
 
 In general, if the bucket contents are public, set this to `false` as signatures are unnecessary; otherwise, set it to true.
+
+Note that this setting applies only to `simple` downloads, and not to other download methods.
+
+#### Forcing Path Style
+
+The `s3ForcePathStyle` parameter is passed directly to the AWS SDK, which documents it as "whether to force path style URLs for S3 objects."
+This setting may be useful for utilities such as MinIO that emulate S3.
 
 ## Middleware
 

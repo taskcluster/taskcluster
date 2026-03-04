@@ -1,4 +1,4 @@
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 /**
  * For ease of debugging, the following top-level fields are shared by all
@@ -47,5 +47,22 @@ MonitorManager.register({
     repo: 'The repository name, if any',
     sha: 'The SHA of the commit being addressed, if any',
     message: 'Free-form message',
+  },
+});
+
+MonitorManager.register({
+  name: 'githubActiveHandlers',
+  title: 'Github active handler count',
+  type: 'github-handler-count',
+  level: 'notice',
+  version: 1,
+  description: `
+    This message logs the number of running and errored handlers periodically.
+  `,
+  fields: {
+    handlerName: 'The name of handler',
+    totalCount: 'The total number of events handled',
+    runningCount: 'The number of handles that are still running',
+    errorCount: 'The number of handlers that finished with errors',
   },
 });

@@ -9,7 +9,7 @@ The schema represents the organization of the data in the database, including ta
 This is constructed with:
 
 ```javascript
-const {Schema, Database} = require('taskcluster-lib-postgres');
+import { Schema, Database } from '@taskcluster/lib-postgres';
 const schema = Schema.fromDbDirectory('path/to/db/directory');
 ```
 
@@ -31,7 +31,7 @@ const db = Database.setup({
 
 The read and write URLs typically come from serivce configuration.
 The read URL is used for queries that only read data, and can operate on read-only server mirrors, while queries that will modify the content of the database use the write URL.
-The `monitor` is a taskcluster-lib-monitor instance, used to report database metrics.
+The `monitor` is a @taskcluster/lib-monitor instance, used to report database metrics.
 if `statementTimeout` is set, then it is treated as a timeout (in milliseconds) after which a statement will be aborted.
 This is typically used in web processes to abort statements running longer than 30s, after which time the HTTP client has likely given up.
 
@@ -317,7 +317,7 @@ An online migration may also be interrupted and replaced with an online downgrad
 ## Pagination
 
 Pagination is the process of returning only some of the rows from a query, with a mechanism for getting the next "page" of rows in a subsequent query.
-The [taskcluster-lib-api function `paginateResults`](./api#pagination) is useful for translating such paginated results into an API response (and supports both types of pagination).
+The [@taskcluster/lib-api function `paginateResults`](./api#pagination) is useful for translating such paginated results into an API response (and supports both types of pagination).
 
 ### Index-Based
 
@@ -327,7 +327,7 @@ The `after_.._in` parameters must correspond to an index on the table, so that P
 For other uses in Taskcluster services, this library provides `paginatedIterator` to convert paginated results into an async iterator.
 
 ```javascript
-const {paginatedIterator} = require('taskcluster-lib-postgres');
+import { paginatedIterator } from '@taskcluster/lib-postgres';
 
 const doTheThings = async () => {
   for await (let row of paginatedIterator({
@@ -352,7 +352,7 @@ This is the "old way", and is not preferred both because it is not performant (t
 The `paginatedIterator` also works for this type of pagination:
 
 ```javascript
-const {paginatedIterator} = require('taskcluster-lib-postgres');
+import { paginatedIterator } from '@taskcluster/lib-postgres';
 
 const doTheThings = async () => {
   for await (let row of paginatedIterator({
@@ -484,14 +484,14 @@ Because all configuration for a service is stored in memory, there is no additio
 ## Error Constants
 
 This module also defines a number of constants for Postgres's otherwise-cryptic SQLSTATE codes.
-The symbol names and values are drawn from [PostgreSQL Error Codes](https://www.postgresql.org/docs/11/errcodes-appendix.html).
+The symbol names and values are drawn from [PostgreSQL Error Codes](https://www.postgresql.org/docs/15/errcodes-appendix.html).
 For example `tcLibPg.UNDEFINED_TABLE` is `"42P01"`.
 Feel free to add any additional constants required in [`src/constants.js`](./src/constants.js).
 
 The `ignorePgErrors` function can be useful to perform an operation and ignore some errors, mostly in tests:
 
 ```js
-const {UNDEFINED, TABLE, ignorePgErrors} = require('taskcluster-lib-postgres');
+import { UNDEFINED, TABLE, ignorePgErrors } from '@taskcluster/lib-postgres';
 
 # ...
 
@@ -502,5 +502,5 @@ Note that the return promise does not carry a value on success, as that success 
 
 ## Development
 
-To test this library, you will need a Postgres database, running the latest release of Postgres 11.
+To test this library, you will need a Postgres database, running the latest release of Postgres 15.
 The easiest and best way to do this is to use docker, as described in the [Development Process docs](../dev-docs/development-process.md).

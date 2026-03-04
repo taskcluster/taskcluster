@@ -1,6 +1,6 @@
-import copy
 import os
 import json
+import toml
 
 from taskgraph.transforms.base import TransformSequence
 
@@ -8,47 +8,39 @@ transforms = TransformSequence()
 
 
 def _dependency_versions():
-    pg_version = 11
-    with open('clients/client-rust/rust-toolchain', 'r') as f:
-        rust_version = f.read().strip()
+    pg_version = 15
+    with open('clients/client-rust/rust-toolchain.toml', 'r') as f:
+        rust_version = toml.load(f)["toolchain"]["channel"].strip()
     with open('package.json', 'r') as pkg:
         node_version = json.load(pkg)["engines"]["node"].strip()
     with open('.go-version', 'r') as goversion:
         go_version = goversion.read().strip()
-    return (node_version, go_version, rust_version, pg_version)
+    with open('.golangci-lint-version', 'r') as golangcilintversion:
+        golangci_lint_version = golangcilintversion.read().strip()
+    return (node_version, go_version, golangci_lint_version, rust_version, pg_version)
 
 
 @transforms.add
-def taskcluster_images(config, jobs):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        image = job["worker"]["docker-image"]
-        if isinstance(image, dict) and tuple(image.keys())[0] == "taskcluster":
-            repo = image["taskcluster"]
-            if (repo == "ci-image"):
-                image = "taskcluster/ci-image:node{node_version}-pg{pg_version}-{go_version}"
-            elif (repo == "browser-test"):
-                image = "taskcluster/browser-test:{node_version}"
-            elif (repo == "rabbit-test"):
-                image = "taskcluster/rabbit-test:{node_version}"
-            elif (repo == "worker-ci"):
-                image = "taskcluster/worker-ci:node{node_version}"
-
-            job["worker"]["docker-image"] = image.format(
+def taskcluster_image_versions(config, tasks):
+    node_version, go_version, _, rust_version, pg_version = _dependency_versions()
+    for task in tasks:
+        image = task["worker"]["docker-image"]
+        if isinstance(image, str):
+            task["worker"]["docker-image"] = image.format(
                 node_version=node_version,
-                go_version=go_version,
+                go_version=go_version[2:],
                 rust_version=rust_version,
                 pg_version=pg_version
             ).strip()
 
-        yield job
+        yield task
 
 
 @transforms.add
-def add_task_env(config, jobs):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        env = job["worker"].setdefault("env", {})
+def add_task_env(config, tasks):
+    node_version, go_version, golangci_lint_version, rust_version, pg_version = _dependency_versions()
+    for task in tasks:
+        env = task["worker"].setdefault("env", {})
 
         # These are for the way docker-worker wants them
         env["GITHUB_REPO_URL"] = config.params["head_repository"]
@@ -66,6 +58,7 @@ def add_task_env(config, jobs):
         env["NODE_VERSION"] = node_version
         env["GO_VERSION"] = go_version
         env["GO_RELEASE"] = go_version[2:]  # Just strip the `go` prefix
+        env["GOLANGCI_LINT_VERSION"] = golangci_lint_version
         env["RUST_VERSION"] = rust_version
         env["POSTGRES_VERSION"] = str(pg_version)
 
@@ -75,53 +68,70 @@ def add_task_env(config, jobs):
         env["GITHUB_CLONE_URL"] = config.params["head_repository"]
 
         # We want to set this everywhere other than lib-testing
-        if job["name"] != "testing":
+        if task["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
-        yield job
+        yield task
 
 
 @transforms.add
-def direct_dependencies(config, jobs):
-    for job in jobs:
-        job.setdefault("soft-dependencies", [])
-        job["soft-dependencies"] += [task.label for task in config.kind_dependencies_tasks]
-        yield job
-
-
-@transforms.add
-def parameterize_mounts(config, jobs):
-    node_version, go_version, rust_version, pg_version = _dependency_versions()
-    for job in jobs:
-        mounts = job.get("worker", {}).get("mounts")
+def parameterize_mounts(config, tasks):
+    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
+    for task in tasks:
+        mounts = task.get("worker", {}).get("mounts")
         if mounts:
             for mount in mounts:
-                if mount["content"].get("url"):
-                    mount["content"]["url"] = mount["content"]["url"].format(
-                            go_version=go_version,
-                            rust_version=rust_version,
-                            node_version=node_version)
+                if "content" in mount:
+                    if mount["content"].get("url"):
+                        mount["content"]["url"] = mount["content"]["url"].format(
+                                go_version=go_version,
+                                golangci_lint_version=golangci_lint_version,
+                                rust_version=rust_version,
+                                node_version=node_version)
                 if mount.get("directory"):
                     mount["directory"] = mount["directory"].format(
                             go_version=go_version,
+                            golangci_lint_version=golangci_lint_version,
                             rust_version=rust_version,
                             node_version=node_version)
-        yield job
+        yield task
 
 
 @transforms.add
-def docker_worker_chunk(config, tasks):
+def parameterize_artifacts(config, tasks):
+    node_version, go_version, golangci_lint_version, rust_version, _ = _dependency_versions()
     for task in tasks:
-        total_chunks = task.pop("chunks", 5)
-        for chunk in range(1, total_chunks + 1):
-            c_task = copy.deepcopy(task)
-            c_task["name"] += f"-{chunk}"
-            c_task["description"] += f" #{chunk}"
-            c_task["run"]["command"] += f" --this-chunk {chunk} --total-chunks {total_chunks}"
+        artifacts = task.get("worker", {}).get("artifacts")
+        if artifacts:
+            for artifact in artifacts:
+                artifact["path"] = artifact["path"].format(
+                    go_version=go_version[2:],
+                    golangci_lint_version=golangci_lint_version,
+                    rust_version=rust_version,
+                    node_version=node_version)
+                if artifact.get("name"):
+                    artifact["name"] = artifact["name"].format(
+                        go_version=go_version[2:],
+                        golangci_lint_version=golangci_lint_version,
+                        rust_version=rust_version,
+                        node_version=node_version)
+        yield task
 
-            # TODO: uncomment this block to add dependency to the release-publish
-            # task once we combine the two task graphs into one during release.
-            # # include release-publish dependency in the case of a release
-            # if config.params["tasks_for"] == "github-push":
-            #     c_task["dependencies"] = dict(release="release-publish")
 
-            yield c_task
+@transforms.add
+def copy_command_from(config, tasks):
+    to_copy = {}
+    task_list = list(tasks)
+    for task in task_list:
+        if task.get("copy-command-from"):
+            other_task = task.get("copy-command-from")
+            to_copy[other_task] = None
+
+    for task in task_list:
+        if task["name"] in to_copy:
+            to_copy[task["name"]] = task["run"]["command"]
+
+    for task in task_list:
+        if task.get("copy-command-from"):
+            other_task = task.pop("copy-command-from")
+            task["run"]["command"] = to_copy[other_task]
+        yield task

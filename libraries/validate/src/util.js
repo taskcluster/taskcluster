@@ -1,10 +1,9 @@
-const _ = require('lodash');
-const url = require('url');
+import _ from 'lodash';
 
 /**
  * Render {$const: <key>} into JSON schema and update $ref
  */
-function renderConstants(schema, constants) {
+export function renderConstants(schema, constants) {
   // Replace val with constant, if it is an {$const: <key>} schema
   let substitute = (val) => {
     // Primitives and arrays shouldn't event be considered
@@ -31,22 +30,21 @@ function renderConstants(schema, constants) {
   return _.cloneDeepWith(schema, substitute);
 }
 
-exports.renderConstants = renderConstants;
-
 /**
  * Check that all use of $ref in this schema is relative.  Note that this
  * isn't foolproof: it will allow {$ref: '../../otherservice/v1/someschema.json'}.
  * But this is enough to dissuade users from inter-service linking.
  */
-const checkRefs = (schema, serviceName) => {
+export const checkRefs = (schema, serviceName) => {
   const check = val => {
     if (_.isObject(val)) {
       if (typeof val.$ref === 'string' && _.keys(val).length === 1) {
-        const ref = url.parse(val.$ref);
-        if (ref.hostname || ref.protocol) {
+        const ref = URL.parse(val.$ref);
+        // if url is parsed, it is absolute
+        if (ref !== null) {
           throw new Error(`Disallowed $ref '${ref}': absolute URIs are not allowed`);
         }
-        if (ref.path && ref.path.startsWith('/')) {
+        if (val.$ref.startsWith('/')) {
           throw new Error(`Disallowed $ref '${ref}': rooted URIs (starting with /) are not allowed`);
         }
         return;
@@ -63,5 +61,3 @@ const checkRefs = (schema, serviceName) => {
   };
   check(schema);
 };
-
-exports.checkRefs = checkRefs;

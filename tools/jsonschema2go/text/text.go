@@ -39,7 +39,8 @@ var reservedKeyWords = map[string]bool{
 	"var":         true,
 }
 
-// taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+// originally taken from https://github.com/golang/lint/blob/32a87160691b3c96046c0c678fe57c5bef761456/lint.go#L702
+// and then adapted to include extra terms
 var commonInitialisms = map[string]bool{
 	"API":   true,
 	"ASCII": true,
@@ -54,12 +55,14 @@ var commonInitialisms = map[string]bool{
 	"ID":    true,
 	"IP":    true,
 	"JSON":  true,
+	"KVM":   true,
 	"LHS":   true,
 	"OS":    true,
 	"QPS":   true,
 	"RAM":   true,
 	"RHS":   true,
 	"RPC":   true,
+	"SHA":   true,
 	"SLA":   true,
 	"SMTP":  true,
 	"SQL":   true,
@@ -89,14 +92,14 @@ func Indent(text, indent string) string {
 		return text
 	}
 	if text[len(text)-1:] == "\n" {
-		result := ""
-		for _, j := range strings.Split(text[:len(text)-1], "\n") {
-			result += indent + j + "\n"
+		var result strings.Builder
+		for j := range strings.SplitSeq(text[:len(text)-1], "\n") {
+			result.WriteString(indent + j + "\n")
 		}
-		return result
+		return result.String()
 	}
 	result := ""
-	for _, j := range strings.Split(strings.TrimRight(text, "\n"), "\n") {
+	for j := range strings.SplitSeq(strings.TrimRight(text, "\n"), "\n") {
 		result += indent + j + "\n"
 	}
 	return result[:len(result)-1]
@@ -107,7 +110,7 @@ func Indent(text, indent string) string {
 // the provided text, followed by a final newline character.
 func Underline(text string) string {
 	var maxlen int
-	for _, j := range strings.Split(text, "\n") {
+	for j := range strings.SplitSeq(text, "\n") {
 		if len(j) > maxlen {
 			maxlen = len(j)
 		}
@@ -180,11 +183,11 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 			return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
 		},
 	) {
-		caseAdaptedWord := ""
+		var caseAdaptedWord strings.Builder
 		for j, subWord := range camelcase.Split(word) {
-			caseAdaptedWord += fixCase(subWord, i == 0 && j == 0 && !exported)
+			caseAdaptedWord.WriteString(fixCase(subWord, i == 0 && j == 0 && !exported))
 		}
-		identifier += caseAdaptedWord
+		identifier += caseAdaptedWord.String()
 	}
 
 	if strings.IndexFunc(

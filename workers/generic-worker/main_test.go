@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -11,23 +10,27 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mcuadros/go-defaults"
 	"github.com/stretchr/testify/require"
+	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
 )
 
 // Test failure should resolve as "failed"
 func TestFailureResolvesAsFailure(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(1),
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestIdleWithoutCrash(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	start := time.Now()
 	config.IdleTimeoutSecs = 7
 	exitCode := RunWorker()
@@ -41,6 +44,49 @@ func TestIdleWithoutCrash(t *testing.T) {
 	}
 }
 
+// TestIdleTimeoutChecksWorkerManager verifies that when running with
+// worker-runner, the worker checks with Worker Manager before shutting down
+// due to idle timeout. On the first idle timeout, WM says don't terminate,
+// so the idle timer resets. On the second idle timeout, WM says terminate,
+// so the worker exits with IDLE_TIMEOUT. This proves the timer was reset.
+func TestIdleTimeoutChecksWorkerManager(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	// The main loop calls checkWhetherToTerminate() at the top of each
+	// iteration (loop-top check) and again when idle timeout fires. With a
+	// 5-second wait between iterations and IdleTimeoutSecs=3, the call
+	// sequence is:
+	//   call 1: loop-top (t≈0s)
+	//   call 2: loop-top (t≈5s)
+	//   call 3: idle timeout (t≈5s, idle time > 3s) → WM says false, timer resets
+	//   call 4: loop-top (t≈10s)
+	//   call 5: idle timeout (t≈10s) → WM says true, exits with IDLE_TIMEOUT
+	mocktc.ShouldTerminateAfterNCalls = 5
+	t.Cleanup(func() { mocktc.ShouldTerminateAfterNCalls = 0 })
+
+	withWorkerRunner = true
+	t.Cleanup(func() { withWorkerRunner = false })
+
+	config.IdleTimeoutSecs = 3
+	start := time.Now()
+	exitCode := RunWorker()
+	elapsed := time.Since(start)
+
+	if exitCode != IDLE_TIMEOUT {
+		t.Fatalf("Was expecting exit code %v (IDLE_TIMEOUT), but got exit code %v", IDLE_TIMEOUT, exitCode)
+	}
+	// Worker should have been alive for at least 8 seconds, proving the idle
+	// timer was reset at least once (3s timeout + reset + 3s timeout ≈ 10s
+	// with the 5s inter-loop wait).
+	if elapsed.Seconds() < 8 {
+		t.Fatalf("Worker should have been alive for at least 8s (idle timer reset), but was alive for %v", elapsed)
+	}
+}
+
 // TestRevisionNumberStored is useful for ensuring that the test binary
 // includes the git revision number, so that it emulates the release binary.
 // There is a separate test that the release binary includes the revision
@@ -51,7 +97,7 @@ func TestRevisionNumberStored(t *testing.T) {
 		// The version number in this error message is automatically updated on release by infrastructure/tooling/src/release/tasks.js
 
 		t.Fatalf("Git revision could not be determined - got '%v' but expected to match regular expression '^[0-9a-f](40)$'\n"+
-			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v44/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
+			"Did you specify `-ldflags \"-X github.com/taskcluster/taskcluster/v97/workers/generic-worker.revision=<GIT REVISION>\"` in your go test command?\n"+
 			"Try building generic-worker using the /workers/generic-worker/build.(sh|cmd) script in the taskcluster monorepo.", revision)
 	}
 	t.Logf("Git revision successfully retrieved: %v", revision)
@@ -148,13 +194,14 @@ func TestExecutionErrorsText(t *testing.T) {
 //
 // See https://bugzil.la/1479415
 func TestNonExecutableBinaryFailsTask(t *testing.T) {
-	defer setup(t)()
+	setup(t)
 	commands := copyTestdataFile("ed25519_public_key")
 	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "ed25519_public_key"))...)
 	payload := GenericWorkerPayload{
 		Command:    commands,
 		MaxRunTime: 10,
 	}
+	defaults.SetDefaults(&payload)
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -165,16 +212,7 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 // calls removeTaskDirs(tempDir), and tests that only folders that started with
 // 'task_' were deleted and that the other files and folders were not.
 func TestRemoveTaskDirs(t *testing.T) {
-	d, err := ioutil.TempDir("", t.Name())
-	if err != nil {
-		t.Fatalf("Could not create temp directory: %v", err)
-	}
-	defer func() {
-		err := os.RemoveAll(d)
-		if err != nil {
-			t.Fatalf("Could not remove temp dir %v: %v", d, err)
-		}
-	}()
+	d := t.TempDir()
 	for _, dir := range []string{
 		"task_1234561234", // should remain
 		"task_12345",      // should be deleted
@@ -182,7 +220,7 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"test_12345",      // should remain
 		"bfdnbdfd",        // should remain
 	} {
-		err = os.MkdirAll(filepath.Join(d, dir), 0777)
+		err := os.MkdirAll(filepath.Join(d, dir), 0777)
 		if err != nil {
 			t.Fatalf("Could not create temp %v directory: %v", dir, err)
 		}
@@ -195,23 +233,13 @@ func TestRemoveTaskDirs(t *testing.T) {
 		"applesnpears",                          // should remain
 		filepath.Join("task_12345", "abcde"),    // should be deleted
 	} {
-		err = ioutil.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
+		err := os.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
 		if err != nil {
 			t.Fatalf("Could not write %v file: %v", file, err)
 		}
 	}
 	deleteTaskDirs(d, "task_1234561234")
-	taskDirsParent, err := os.Open(d)
-	if err != nil {
-		t.Fatalf("Could not open %v directory: %v", d, err)
-	}
-	defer func() {
-		err := taskDirsParent.Close()
-		if err != nil {
-			t.Fatalf("Could not close %v directory: %v", d, err)
-		}
-	}()
-	fi, err := taskDirsParent.Readdir(-1)
+	fi, err := os.ReadDir(d)
 	if err != nil {
 		t.Fatalf("Error reading directory listing of %v: %v", d, err)
 	}
@@ -286,4 +314,73 @@ func TestProtocolNull(t *testing.T) {
 	defer teardownWorkerRunnerProtocol()
 	// withWorkerRunner is false, so we are using a NullTransport and the capability is not available
 	require.False(t, WorkerRunnerProtocol.Capable("graceful-termination"))
+}
+
+func TestAbortAfterMaxRunTime(t *testing.T) {
+	setup(t)
+
+	// Include a writable directory cache, to test that caches can be unmounted
+	// when a task aborts prematurely.
+	mounts := []MountEntry{
+		// requires scope "generic-worker:cache:banana-cache"
+		&WritableDirectoryCache{
+			CacheName: "banana-cache",
+			Directory: filepath.Join("bananas"),
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts: toMountArray(t, &mounts),
+		Command: append(
+			logOncePerSecond(33, filepath.Join("bananas", "banana.log")),
+			// also make sure subsequent commands after abort don't run
+			helloGoodbye()...,
+		),
+		MaxRunTime: 5,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+
+	taskID := scheduleTask(t, td, payload)
+	startTime := time.Now()
+	ensureResolution(t, taskID, "failed", "failed")
+	endTime := time.Now()
+	// check uploaded log mentions abortion
+	// note: we do this rather than local log, to check also log got uploaded
+	// as failure path requires that task is resolved before logs are uploaded
+	bytes := getArtifactContent(t, taskID, "public/logs/live_backing.log")
+	logtext := string(bytes)
+	if !strings.Contains(logtext, "max run time exceeded") {
+		t.Log("Was expecting log file to mention task abortion, but it doesn't:")
+		t.Fatal(logtext)
+	}
+	if strings.Contains(logtext, "hello") {
+		t.Log("Task should have been aborted before 'hello' was logged, but log contains 'hello':")
+		t.Fatal(logtext)
+	}
+	duration := endTime.Sub(startTime).Seconds()
+	if duration < 5 {
+		t.Fatalf("Task %v should have taken at least 5 seconds, but took %v seconds", taskID, duration)
+	}
+	if duration > 25 {
+		t.Fatalf("Task %v should have taken no more than 25 seconds, but took %v seconds", taskID, duration)
+	}
+}
+
+// If a task tries to execute a command that doesn't exist, it should result in
+// a task failure, rather than a task exception, since the task is at fault,
+// not the worker.
+//
+// See https://bugzil.la/1479415
+func TestNonExistentCommandFailsTask(t *testing.T) {
+	setup(t)
+	payload := GenericWorkerPayload{
+		Command:    singleCommandNoArgs(slugid.Nice()),
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }

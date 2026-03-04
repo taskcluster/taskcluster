@@ -1,8 +1,11 @@
-const taskcluster = require('taskcluster-client');
-const { Provider, ApiError } = require('./provider');
-const { Worker } = require('../data');
+import taskcluster from '@taskcluster/client';
+import { Provider, ApiError } from './provider.js';
+import { Worker } from '../data.js';
 
-class TestingProvider extends Provider {
+/** @typedef {import('../data.js').WorkerPool} WorkerPool */
+/** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
+
+export class TestingProvider extends Provider {
   constructor(conf) {
     super(conf);
     this.configSchema = 'config-testing';
@@ -16,7 +19,11 @@ class TestingProvider extends Provider {
     }
   }
 
-  async provision({ workerPool, workerInfo }) {
+  /**
+   * @param {{ workerPool: WorkerPool, workerPoolStats?: WorkerPoolStats }} opts
+   */
+  async provision({ workerPool, workerPoolStats }) {
+    const workerInfo = workerPoolStats?.forProvision() ?? {};
     this.monitor.notice('test-provision', { workerPoolId: workerPool.workerPoolId, workerInfo });
   }
 
@@ -99,7 +106,3 @@ class TestingProvider extends Provider {
     });
   }
 }
-
-module.exports = {
-  TestingProvider,
-};

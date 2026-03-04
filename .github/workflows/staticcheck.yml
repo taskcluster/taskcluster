@@ -1,0 +1,71 @@
+name: Staticcheck
+on: pull_request
+
+env:
+  STATICCHECK_VERSION: "2026.1"
+
+jobs:
+  staticcheck-gw-multiuser:
+    name: Multiuser Engine
+    strategy:
+      fail-fast: false
+      matrix:
+        os:  ["windows-latest", "ubuntu-latest", "macOS-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: go.mod
+    - uses: dominikh/staticcheck-action@v1.4.0
+      with:
+        working-directory: workers/generic-worker
+        build-tags: multiuser
+        install-go: false
+        version: ${{ env.STATICCHECK_VERSION }}
+
+  staticcheck-gw-insecure:
+    name: Insecure Engine
+    strategy:
+      fail-fast: false
+      matrix:
+        os:  ["ubuntu-latest", "macOS-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: go.mod
+    - uses: dominikh/staticcheck-action@v1.4.0
+      with:
+        working-directory: workers/generic-worker
+        build-tags: insecure
+        install-go: false
+        version: ${{ env.STATICCHECK_VERSION }}
+
+  staticcheck-go-source:
+    name: Go Source
+    strategy:
+      fail-fast: false
+      matrix:
+        dir:  ["clients/client-go", "internal", "tools"]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+        persist-credentials: false
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: go.mod
+    - uses: dominikh/staticcheck-action@v1.4.0
+      with:
+        working-directory: ${{ matrix.dir }}
+        install-go: false
+        version: ${{ env.STATICCHECK_VERSION }}

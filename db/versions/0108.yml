@@ -1,0 +1,26 @@
+version: 108
+description: missing primary keys to the tables created in version 91
+migrationScript: |-
+  begin
+    ALTER TABLE queue_claimed_tasks ADD PRIMARY KEY (task_id, run_id, taken_until);
+
+    -- For queue_pending_tasks, convert the existing unique index to a primary key
+    DROP INDEX queue_pending_task_idx;
+    ALTER TABLE queue_pending_tasks ADD PRIMARY KEY (task_id, run_id);
+
+    ALTER TABLE queue_resolved_tasks ADD PRIMARY KEY (task_id, resolution, resolved);
+
+    ALTER TABLE queue_task_deadlines ADD PRIMARY KEY (task_id, created, deadline);
+  end
+downgradeScript: |-
+  begin
+    ALTER TABLE queue_claimed_tasks DROP CONSTRAINT queue_claimed_tasks_pkey;
+
+    ALTER TABLE queue_pending_tasks DROP CONSTRAINT queue_pending_tasks_pkey;
+    CREATE UNIQUE INDEX queue_pending_task_idx ON queue_pending_tasks USING btree (task_id, run_id);
+
+    ALTER TABLE queue_resolved_tasks DROP CONSTRAINT queue_resolved_tasks_pkey;
+
+    ALTER TABLE queue_task_deadlines DROP CONSTRAINT queue_task_deadlines_pkey;
+  end
+methods: {}

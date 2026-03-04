@@ -1,8 +1,20 @@
-query Hooks {
-  hookGroups {
+query Hooks($filter: JSON) {
+  hookGroups(filter: $filter) {
     hookGroupId
     hooks {
       hookId
+      hookGroupId
+      lastFire {
+        taskId
+        taskCreateTime
+        result
+        taskState
+        error
+      }
+      bindings {
+        exchange
+      }
+      schedule
     }
   }
 }

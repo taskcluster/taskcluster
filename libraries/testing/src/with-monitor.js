@@ -1,7 +1,8 @@
-const { MonitorManager, LEVELS } = require('taskcluster-lib-monitor');
+import { MonitorManager, LEVELS } from '@taskcluster/lib-monitor';
 
 let monitor;
-module.exports = (helper, options = {}) => {
+
+export default (helper, options = {}) => {
   // ensure that a single monitor instance is injected as soon as possible
   // (even before suite setups run), and only once.
   if (!options.noLoader && !monitor) {
@@ -11,6 +12,7 @@ module.exports = (helper, options = {}) => {
       debug: true,
       verify: true,
       level: 'debug',
+      ...(options?.withPrometheus ? { prometheusConfig: {} } : {}),
     });
     helper.load.inject('monitor', monitor);
   }

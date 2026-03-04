@@ -27,15 +27,15 @@ platform, run `chmod +x` and run it!
 
 MacOS users run the following command:
 ```bash
-curl -L https://github.com/taskcluster/taskcluster/releases/download/v44.18.0/taskcluster-darwin-amd64 --output taskcluster
+curl -L https://github.com/taskcluster/taskcluster/releases/download/v97.0.1/taskcluster-darwin-amd64.tar.gz --output taskcluster.tar.gz && tar -xvf taskcluster.tar.gz && rm taskcluster.tar.gz && chmod +x taskcluster
 ```
 This is to ensure the binary is not quarantined by MacOS.
 You will need to `chmod +x` of
 course.
 
- * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v44.18.0/taskcluster-linux-amd64)
- * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v44.18.0/taskcluster-darwin-amd64)
- * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v44.18.0/taskcluster-darwin-arm64)
+ * [linux-amd64](https://github.com/taskcluster/taskcluster/releases/download/v97.0.1/taskcluster-linux-amd64.tar.gz)
+ * [darwin-amd64](https://github.com/taskcluster/taskcluster/releases/download/v97.0.1/taskcluster-darwin-amd64.tar.gz)
+ * [darwin-arm64](https://github.com/taskcluster/taskcluster/releases/download/v97.0.1/taskcluster-darwin-arm64.tar.gz)
 
 ## Usage
 
@@ -114,6 +114,34 @@ To generate a nice slugid:
 
 ```shell
 taskcluster slugid generate -n
+```
+
+### Translating Docker Worker Task Definition/Payload to Generic Worker Task Definition/Payload
+
+The `taskcluster d2g` subcommand can be used to translate a Docker Worker task definition or payload to a Generic Worker task definition or payload.
+Both the input and output are JSON. You can either pass the input as a file or pipe it in to the command.
+You must use the `(-t, --task-def)` flag to specify that your input is a task definition, otherwise it will be treated as a task payload and you'll get an error message like: `Error: input validation failed: validation failed:`.
+
+```shell
+taskcluster d2g -f /path/to/input/payload.json
+```
+
+_OR_
+
+```shell
+taskcluster d2g --task-def --file /path/to/input/task-definition.json
+```
+
+_OR_
+
+```shell
+cat /path/to/input/task-definition.json | taskcluster d2g -t
+```
+
+_OR_
+
+```shell
+echo '{"image": "ubuntu", "command": ["bash", "-c", "echo hello world"], "maxRunTime": 300}' | taskcluster d2g
 ```
 
 ### Task and Task Group Commands

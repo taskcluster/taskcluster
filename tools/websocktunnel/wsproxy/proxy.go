@@ -12,8 +12,10 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
+
+	"maps"
 
 	"github.com/sirupsen/logrus"
 	nullLog "github.com/sirupsen/logrus/hooks/test"
@@ -162,7 +164,7 @@ func (p *proxy) removeTunnel(id string) {
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
 	if !clientIdRe.MatchString(id) {
 		p.logerrorf(id, r.RemoteAddr, "client ID is invalid")
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
@@ -170,7 +172,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	if tokenString == "" {
 		// No jwt. Connection not authorized
 		p.logerrorf(id, r.RemoteAddr, "could not retreive auth token")
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
@@ -183,7 +185,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	// validation does not require lock
 	if err := p.validateJWT(id, tokenString); err != nil {
 		p.logerrorf(id, r.RemoteAddr, "unable to validate token: %v", err)
-		http.Error(w, http.StatusText(401), 401)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
@@ -222,7 +224,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	// generate config
 	conf := wsmux.Config{
-		StreamBufferSize: 4 * 1024,
+		StreamBufferSize: 4 * 1024 * 1024,
 		CloseCallback: func() {
 			p.removeTunnel(id)
 			if p.onSessionRemove != nil {
@@ -247,7 +249,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	// return 504 (bad gateway) if tunnel is not registered on this proxy
 	if !ok {
 		p.logerrorf(id, r.RemoteAddr, "could not find requested tunnel")
-		http.Error(w, "No client is connected with that id", 504)
+		http.Error(w, "No client is connected with that id", http.StatusGatewayTimeout)
 		return
 	}
 
@@ -298,9 +300,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	for k := range w.Header() {
 		w.Header().Del(k)
 	}
-	for k, v := range resp.Header {
-		w.Header()[k] = v
-	}
+	maps.Copy(w.Header(), resp.Header)
 
 	// dump headers
 	w.WriteHeader(resp.StatusCode)
@@ -340,7 +340,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		SkipClaimsValidation: true, // Claims will be verified if token can be decoded using secret
 	}
 
-	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrUnexpectedSigningMethod
 		}
@@ -351,7 +351,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		// log first error
 		p.logerrorf(id, "", "%v: trying with second secret", err)
 
-		token, err = parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err = parser.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, ErrUnexpectedSigningMethod
 			}
@@ -403,14 +403,14 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 // proxy logging utilities
 
 // NOTE: cannot use logrus methods
-func (p *proxy) logf(id string, remoteAddr string, format string, v ...interface{}) {
+func (p *proxy) logf(id string, remoteAddr string, format string, v ...any) {
 	p.logger.WithFields(logrus.Fields{
 		"tunnel-id":   id,
 		"remote-addr": remoteAddr,
 	}).Printf(format, v...)
 }
 
-func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...interface{}) {
+func (p *proxy) logerrorf(id string, remoteAddr string, format string, v ...any) {
 	p.logger.WithFields(logrus.Fields{
 		"tunnel-id":   id,
 		"remote-addr": remoteAddr,

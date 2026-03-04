@@ -7,7 +7,7 @@ package main
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -19,12 +19,14 @@ type (
 		//
 		// * 7z
 		// * bz2
+		// * deb
 		// * dmg
 		// * flv
 		// * gif
 		// * gz
 		// * jpeg
 		// * jpg
+		// * npz
 		// * png
 		// * swf
 		// * tbz
@@ -63,7 +65,7 @@ type (
 		// no later than task expiry. If not set, defaults to task expiry.
 		//
 		// Since: generic-worker 1.0.0
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Name of the artifact, as it will be published. If not set, `path` will be used.
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
@@ -73,6 +75,14 @@ type (
 		//
 		// Since: generic-worker 8.1.0
 		Name string `json:"name,omitempty"`
+
+		// If `true`, the artifact is optional. If the file or directory
+		// doesn't exist, the artifact won't be created.
+		//
+		// Since: generic-worker 83.1.0
+		//
+		// Default:    false
+		Optional bool `json:"optional" default:"false"`
 
 		// Relative path of the file/directory from the task directory. Note this is not an absolute
 		// path as is typically used in docker-worker, since the absolute task directory name is not
@@ -101,12 +111,12 @@ type (
 		// Max length: 1024
 		Artifact string `json:"artifact"`
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
@@ -132,6 +142,15 @@ type (
 	// based on exit code of task commands.
 	ExitCodeHandling struct {
 
+		// If the task exits with a purge caches exit status, all caches
+		// associated with the task will be purged.
+		//
+		// Since: generic-worker 49.0.0
+		//
+		// Array items:
+		// Mininum:    0
+		PurgeCaches []int64 `json:"purgeCaches,omitempty"`
+
 		// Exit codes for any command in the task payload to cause this task to
 		// be resolved as `exception/intermittent-task`. Typically the Queue
 		// will then schedule a new run of the existing `taskId` (rerun) if not
@@ -151,13 +170,80 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
+		// The backing log feature publishes a task artifact containing the complete
+		// stderr and stdout of the task.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		BackingLog bool `json:"backingLog" default:"true"`
+
 		// Artifacts named `public/chain-of-trust.json` and
 		// `public/chain-of-trust.json.sig` should be generated which will
 		// include information for downstream tasks to build a level of trust
 		// for the artifacts produced by the task and the environment it ran in.
 		//
 		// Since: generic-worker 5.3.0
+		//
+		// Tasks may inject additional data into the certificate by writing them
+		// as json to file chain-of-trust-additional-data.json in the task
+		// directory.
+		//
+		// Since: generic-worker 81.0.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// If `true`, the command window for each command will be hidden.
+		// This is useful for tasks that run GUI applications to prevent
+		// the command window from obscuring the application window.
+		//
+		// The process creation flags used when this is set to `true`
+		// are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+		// set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+		// More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+		//
+		// If your task needs to allocate new consoles (with
+		// AllocConsole(), for example) then you should not use this.
+		//
+		// Since: generic-worker 96.1.0
+		//
+		// Default:    false
+		HideCmdWindow bool `json:"hideCmdWindow" default:"false"`
+
+		// This allows you to interactively run commands from within the worker
+		// as the task user. This may be useful for debugging purposes.
+		// Can be used for SSH-like access to the running worker.
+		// Note that this feature works differently from the `interactive` feature
+		// in docker worker, which `docker exec`s into the running container.
+		// Since tasks on generic worker are not guaranteed to be running in a
+		// container, a powershell instance is started on the task user's account.
+		// A user can then `docker exec` into the a running container, if there
+		// is one.
+		//
+		// Since: generic-worker 83.6.0
+		Interactive bool `json:"interactive,omitempty"`
+
+		// The live log feature streams the combined stderr and stdout to a task artifact
+		// so that the output is available while the task is running.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    true
+		LiveLog bool `json:"liveLog" default:"true"`
+
+		// The resource monitor feature reports Peak System Memory Used,
+		// Average System Memory Used, Average Available System Memory,
+		// and Total System Memory in the task log for each task command
+		// executed. It also will abort any task command if the used
+		// system memory exceeds worker config maxMemoryUsagePercent
+		// _AND_ available system memory drops below worker config
+		// minAvailableMemoryBytes for longer than worker config
+		// allowedHighMemoryDuration seconds. When this happens, the
+		// task will be resolved as failed.
+		//
+		// Since: generic-worker 83.4.0
+		//
+		// Default:    true
+		ResourceMonitor bool `json:"resourceMonitor" default:"true"`
 
 		// Runs commands with UAC elevation. Only set to true when UAC is
 		// enabled on the worker and Administrative privileges are required by
@@ -179,6 +265,20 @@ type (
 		// Since: generic-worker 10.11.0
 		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
 
+		// If `true`, task commands will be executed as the
+		// user currently running Generic Worker (typically
+		// `root` or `LocalSystem`), rather than as the
+		// dedicated task user created for the task. The task
+		// user account will still be created, and is
+		// available for the task to use.
+		//
+		// Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+		// Tasks submitted without this scope will be resolved
+		// as `exception/malformed-payload`.
+		//
+		// Since: generic-worker 81.0.0
+		RunTaskAsCurrentUser bool `json:"runTaskAsCurrentUser,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) for more information.
@@ -191,6 +291,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -200,6 +301,18 @@ type (
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
+
+		// Compression format of the preloaded content.
+		//
+		// Since: generic-worker 55.3.0
+		//
+		// Possible values:
+		//   * "bz2"
+		//   * "gz"
+		//   * "lz4"
+		//   * "xz"
+		//   * "zst"
+		Format string `json:"format,omitempty"`
 	}
 
 	// This schema defines the structure of the `payload` property referred to in a
@@ -240,15 +353,18 @@ type (
 		// commands:
 		//   * `TASK_ID` - the task ID of the currently running task
 		//   * `RUN_ID` - the run ID of the currently running task
+		//   * `TASK_WORKDIR` - the working directory of the currently running task
+		//   * `TASK_GROUP_ID` - the task group ID of the currently running task
 		//   * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
 		//   * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
 		//      taskcluster authentication proxy for making unauthenticated taskcluster
 		//      API calls
-		//   * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-		//     `true` in `generic-worker.config` file - the absolute file location of a
+		//   * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+		//     `true` in the task definition - the absolute file location of a
 		//     json file containing the current task OS user account name and password.
 		//     This is only useful for the generic-worker multiuser CI tasks, where
-		//     `runTasksAsCurrentUser` is set to `true`.
+		//     `runTaskAsCurrentUser` is set to `true`.
+		//   * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
 		//   * `TASKCLUSTER_WORKER_LOCATION`. See
 		//     [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
 		//     for details.
@@ -261,14 +377,19 @@ type (
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitzero"`
+
+		// Configuration for task logs.
+		//
+		// Since: generic-worker 48.2.0
+		Logs Logs `json:"logs,omitzero"`
 
 		// Maximum time the task container can run in seconds.
+		// The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
 		//
 		// Since: generic-worker 0.0.1
 		//
 		// Mininum:    1
-		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// Directories and/or files to be mounted.
@@ -286,7 +407,7 @@ type (
 		// if all task commands have a zero exit code, or `failed/failed` if any command has a
 		// non-zero exit code. This payload property allows customsation of the task resolution
 		// based on exit code of task commands.
-		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitzero"`
 
 		// A list of OS Groups that the task user should be a member of. Requires scope
 		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
@@ -327,6 +448,53 @@ type (
 
 		// This property is allowed for backward compatibility, but is unused.
 		SupersederURL string `json:"supersederUrl,omitempty"`
+
+		// Specifies whether taskcluster-proxy should listen on
+		// localhost interface (default) or search for a docker bridge
+		// interface (for tasks that wish to call the taskcluster
+		// proxy from inside a docker container that does not share
+		// the host network).
+		//
+		// Possible values:
+		//   * "localhost"
+		//   * "docker-bridge"
+		//
+		// Default:    "localhost"
+		TaskclusterProxyInterface string `json:"taskclusterProxyInterface" default:"localhost"`
+	}
+
+	// Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+	//
+	// Since: generic-worker 51.0.0
+	IndexedContent struct {
+
+		// Max length: 1024
+		Artifact string `json:"artifact"`
+
+		// Max length: 255
+		Namespace string `json:"namespace"`
+	}
+
+	// Configuration for task logs.
+	//
+	// Since: generic-worker 48.2.0
+	Logs struct {
+
+		// Specifies a custom name for the backing log artifact.
+		// This is only used if `features.backingLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live_backing.log"
+		Backing string `json:"backing" default:"public/logs/live_backing.log"`
+
+		// Specifies a custom name for the live log artifact.
+		// This is only used if `features.liveLog` is `true`.
+		//
+		// Since: generic-worker 48.2.0
+		//
+		// Default:    "public/logs/live.log"
+		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
 	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
@@ -346,6 +514,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -364,6 +533,7 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz4"
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
@@ -375,12 +545,12 @@ type (
 	// Since: generic-worker 5.4.0
 	URLContent struct {
 
-		// The required SHA 256 of the content body.
+		// If provided, the required SHA256 of the content body.
 		//
 		// Since: generic-worker 10.8.0
 		//
 		// Syntax:     ^[a-f0-9]{64}$
-		Sha256 string `json:"sha256,omitempty"`
+		SHA256 string `json:"sha256,omitempty"`
 
 		// URL to download content from.
 		//
@@ -400,6 +570,7 @@ type (
 
 		// One of:
 		//   * ArtifactContent
+		//   * IndexedContent
 		//   * URLContent
 		//   * RawContent
 		//   * Base64Content
@@ -418,6 +589,7 @@ type (
 		//   * "rar"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz4"
 		//   * "tar.xz"
 		//   * "tar.zst"
 		//   * "zip"
@@ -430,14 +602,14 @@ type (
 // to be *part of the compiled executable*. If this sat in another file that
 // was loaded at runtime, it would not be burned into the build, which would be
 // bad for the following two reasons:
-//  1) we could no longer distribute a single binary file that didn't require
+//  1. we could no longer distribute a single binary file that didn't require
 //     installation/extraction
-//  2) the payload schema is specific to the version of the code, therefore
+//  2. the payload schema is specific to the version of the code, therefore
 //     should be versioned directly with the code and *frozen on build*.
 //
 // Run `generic-worker show-payload-schema` to output this schema to standard
 // out.
-func taskPayloadSchema() string {
+func JSONSchema() string {
 	return `{
   "$id": "/schemas/generic-worker/multiuser_windows.json#",
   "$schema": "/schemas/common/metaschema.json#",
@@ -454,7 +626,7 @@ func taskPayloadSchema() string {
               "type": "string"
             },
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
@@ -473,10 +645,30 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
+          "description": "Content originating from a task artifact that has been indexed by the Taskcluster Index Service.\n\nSince: generic-worker 51.0.0",
+          "properties": {
+            "artifact": {
+              "maxLength": 1024,
+              "type": "string"
+            },
+            "namespace": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "namespace",
+            "artifact"
+          ],
+          "title": "Indexed Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
           "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
           "properties": {
             "sha256": {
-              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "description": "If provided, the required SHA256 of the content body.\n\nSince: generic-worker 10.8.0",
               "pattern": "^[a-f0-9]{64}$",
               "title": "SHA 256",
               "type": "string"
@@ -542,6 +734,18 @@ func taskPayloadSchema() string {
           "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
+        },
+        "format": {
+          "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
+          "enum": [
+            "bz2",
+            "gz",
+            "lz4",
+            "xz",
+            "zst"
+          ],
+          "title": "Format",
+          "type": "string"
         }
       },
       "required": [
@@ -584,6 +788,7 @@ func taskPayloadSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.lz4",
             "tar.xz",
             "tar.zst",
             "zip"
@@ -632,6 +837,7 @@ func taskPayloadSchema() string {
             "rar",
             "tar.bz2",
             "tar.gz",
+            "tar.lz4",
             "tar.xz",
             "tar.zst",
             "zip"
@@ -656,7 +862,7 @@ func taskPayloadSchema() string {
         "additionalProperties": false,
         "properties": {
           "contentEncoding": {
-            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+            "description": "Content-Encoding for the artifact. If not provided, ` + "`" + `gzip` + "`" + ` will be used, except for the\nfollowing file extensions, where ` + "`" + `identity` + "`" + ` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting ` + "`" + `contentEncoding` + "`" + ` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
             "enum": [
               "identity",
               "gzip"
@@ -679,6 +885,12 @@ func taskPayloadSchema() string {
             "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
             "title": "Name of the artifact",
             "type": "string"
+          },
+          "optional": {
+            "default": false,
+            "description": "If ` + "`" + `true` + "`" + `, the artifact is optional. If the file or directory\ndoesn't exist, the artifact won't be created.\n\nSince: generic-worker 83.1.0",
+            "title": "Optional artifact",
+            "type": "boolean"
           },
           "path": {
             "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
@@ -720,7 +932,7 @@ func taskPayloadSchema() string {
       "additionalProperties": {
         "type": "string"
       },
-      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if config property ` + "`" + `runTasksAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in ` + "`" + `generic-worker.config` + "`" + ` file - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTasksAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
+      "description": "Env vars must be string to __string__ mappings (not number or boolean). For example:\n` + "`" + `` + "`" + `` + "`" + `\n{\n  \"PATH\": \"C:\\\\Windows\\\\system32;C:\\\\Windows\",\n  \"GOOS\": \"windows\",\n  \"FOO_ENABLE\": \"true\",\n  \"BAR_TOTAL\": \"3\"\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nNote, the following environment variables will automatically be set in the task\ncommands:\n  * ` + "`" + `TASK_ID` + "`" + ` - the task ID of the currently running task\n  * ` + "`" + `RUN_ID` + "`" + ` - the run ID of the currently running task\n  * ` + "`" + `TASK_WORKDIR` + "`" + ` - the working directory of the currently running task\n  * ` + "`" + `TASK_GROUP_ID` + "`" + ` - the task group ID of the currently running task\n  * ` + "`" + `TASKCLUSTER_ROOT_URL` + "`" + ` - the root URL of the taskcluster deployment\n  * ` + "`" + `TASKCLUSTER_PROXY_URL` + "`" + ` (if taskcluster proxy feature enabled) - the\n     taskcluster authentication proxy for making unauthenticated taskcluster\n     API calls\n  * ` + "`" + `TASK_USER_CREDENTIALS` + "`" + ` (if payload feature ` + "`" + `runTaskAsCurrentUser` + "`" + ` set to\n    ` + "`" + `true` + "`" + ` in the task definition - the absolute file location of a\n    json file containing the current task OS user account name and password.\n    This is only useful for the generic-worker multiuser CI tasks, where\n    ` + "`" + `runTaskAsCurrentUser` + "`" + ` is set to ` + "`" + `true` + "`" + `.\n  * ` + "`" + `TASKCLUSTER_INSTANCE_TYPE` + "`" + ` - the cloud instance type of the worker (optional, not all workers run in a cloud)\n  * ` + "`" + `TASKCLUSTER_WORKER_LOCATION` + "`" + `. See\n    [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)\n    for details.\n\nSince: generic-worker 0.0.1",
       "title": "Env vars",
       "type": "object"
     },
@@ -728,14 +940,48 @@ func taskPayloadSchema() string {
       "additionalProperties": false,
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
+        "backingLog": {
+          "default": true,
+          "description": "The backing log feature publishes a task artifact containing the complete\nstderr and stdout of the task.\n\nSince: generic-worker 48.2.0",
+          "title": "Enable backing log",
+          "type": "boolean"
+        },
         "chainOfTrust": {
-          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker 81.0.0",
           "title": "Enable generation of signed Chain of Trust artifacts",
+          "type": "boolean"
+        },
+        "hideCmdWindow": {
+          "default": false,
+          "description": "If ` + "`" + `true` + "`" + `, the command window for each command will be hidden.\nThis is useful for tasks that run GUI applications to prevent\nthe command window from obscuring the application window.\n\nThe process creation flags used when this is set to ` + "`" + `true` + "`" + `\nare CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is\nset to ` + "`" + `false` + "`" + `, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.\nMore info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).\n\nIf your task needs to allocate new consoles (with\nAllocConsole(), for example) then you should not use this.\n\nSince: generic-worker 96.1.0",
+          "title": "Hide cmd.exe window",
+          "type": "boolean"
+        },
+        "interactive": {
+          "description": "This allows you to interactively run commands from within the worker\nas the task user. This may be useful for debugging purposes.\nCan be used for SSH-like access to the running worker.\nNote that this feature works differently from the ` + "`" + `interactive` + "`" + ` feature\nin docker worker, which ` + "`" + `docker exec` + "`" + `s into the running container.\nSince tasks on generic worker are not guaranteed to be running in a\ncontainer, a powershell instance is started on the task user's account.\nA user can then ` + "`" + `docker exec` + "`" + ` into the a running container, if there\nis one.\n\nSince: generic-worker 83.6.0",
+          "title": "Interactive shell",
+          "type": "boolean"
+        },
+        "liveLog": {
+          "default": true,
+          "description": "The live log feature streams the combined stderr and stdout to a task artifact\nso that the output is available while the task is running.\n\nSince: generic-worker 48.2.0",
+          "title": "Enable [livelog](https://github.com/taskcluster/taskcluster/tree/main/tools/livelog)",
+          "type": "boolean"
+        },
+        "resourceMonitor": {
+          "default": true,
+          "description": "The resource monitor feature reports Peak System Memory Used,\nAverage System Memory Used, Average Available System Memory,\nand Total System Memory in the task log for each task command\nexecuted. It also will abort any task command if the used\nsystem memory exceeds worker config maxMemoryUsagePercent\n_AND_ available system memory drops below worker config\nminAvailableMemoryBytes for longer than worker config\nallowedHighMemoryDuration seconds. When this happens, the\ntask will be resolved as failed.\n\nSince: generic-worker 83.4.0",
+          "title": "Resource monitor",
           "type": "boolean"
         },
         "runAsAdministrator": {
           "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the ` + "`" + `Administrators` + "`" + `\ngroup - see the ` + "`" + `osGroups` + "`" + ` property for that. Typically\n` + "`" + `task.payload.osGroups` + "`" + ` should include an Administrative group, such\nas ` + "`" + `Administrators` + "`" + `, when setting to true.\n\nFor security, ` + "`" + `runAsAdministrator` + "`" + ` feature cannot be used in\nconjunction with ` + "`" + `chainOfTrust` + "`" + ` feature.\n\nRequires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\n\nSince: generic-worker 10.11.0",
           "title": "Run commands with UAC process elevation",
+          "type": "boolean"
+        },
+        "runTaskAsCurrentUser": {
+          "description": "If ` + "`" + `true` + "`" + `, task commands will be executed as the\nuser currently running Generic Worker (typically\n` + "`" + `root` + "`" + ` or ` + "`" + `LocalSystem` + "`" + `), rather than as the\ndedicated task user created for the task. The task\nuser account will still be created, and is\navailable for the task to use.\n\nRequires scope ` + "`" + `generic-worker:run-task-as-current-user:\u003cprovisionerID\u003e/\u003cworkerType\u003e` + "`" + `.\nTasks submitted without this scope will be resolved\nas ` + "`" + `exception/malformed-payload` + "`" + `.\n\nSince: generic-worker 81.0.0",
+          "title": "Run task as current user",
           "type": "boolean"
         },
         "taskclusterProxy": {
@@ -748,9 +994,29 @@ func taskPayloadSchema() string {
       "title": "Feature flags",
       "type": "object"
     },
+    "logs": {
+      "additionalProperties": false,
+      "description": "Configuration for task logs.\n\nSince: generic-worker 48.2.0",
+      "properties": {
+        "backing": {
+          "default": "public/logs/live_backing.log",
+          "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "title": "Backing log artifact name",
+          "type": "string"
+        },
+        "live": {
+          "default": "public/logs/live.log",
+          "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "title": "Live log artifact name",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "Logs",
+      "type": "object"
+    },
     "maxRunTime": {
-      "description": "Maximum time the task container can run in seconds.\n\nSince: generic-worker 0.0.1",
-      "maximum": 86400,
+      "description": "Maximum time the task container can run in seconds.\nThe maximum value for ` + "`" + `maxRunTime` + "`" + ` is set by a ` + "`" + `maxTaskRunTime` + "`" + ` config property specific to each worker-pool.\n\nSince: generic-worker 0.0.1",
       "minimum": 1,
       "multipleOf": 1,
       "title": "Maximum run time in seconds",
@@ -769,6 +1035,17 @@ func taskPayloadSchema() string {
       "additionalProperties": false,
       "description": "By default tasks will be resolved with ` + "`" + `state/reasonResolved` + "`" + `: ` + "`" + `completed/completed` + "`" + `\nif all task commands have a zero exit code, or ` + "`" + `failed/failed` + "`" + ` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
       "properties": {
+        "purgeCaches": {
+          "description": "If the task exits with a purge caches exit status, all caches\nassociated with the task will be purged.\n\nSince: generic-worker 49.0.0",
+          "items": {
+            "minimum": 0,
+            "title": "Exit statuses",
+            "type": "integer"
+          },
+          "title": "Purge caches exit status",
+          "type": "array",
+          "uniqueItems": true
+        },
         "retry": {
           "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as ` + "`" + `exception/intermittent-task` + "`" + `. Typically the Queue\nwill then schedule a new run of the existing ` + "`" + `taskId` + "`" + ` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
           "items": {
@@ -792,7 +1069,7 @@ func taskPayloadSchema() string {
       },
       "title": "OS Groups",
       "type": "array",
-      "uniqueItems": false
+      "uniqueItems": true
     },
     "rdpInfo": {
       "description": "Specifies an artifact name for publishing RDP connection information.\n\nSince this is potentially sensitive data, care should be taken to publish\nto a suitably locked down path, such as\n` + "`" + `login-identity/\u003clogin-identity\u003e/rdpinfo.json` + "`" + ` which is only readable for\nthe given login identity (for example\n` + "`" + `login-identity/mozilla-ldap/pmoore@mozilla.com/rdpinfo.json` + "`" + `). See the\n[artifact namespace guide](https://docs.taskcluster.net/docs/manual/using/namespaces#artifacts) for more information.\n\nUse of this feature requires scope\n` + "`" + `generic-worker:allow-rdp:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + ` which must be\ndeclared as a task scope.\n\nThe RDP connection data is published during task startup so that a user\nmay interact with the running task.\n\nThe task environment will be retained for 12 hours after the task\ncompletes, to enable an interactive user to perform investigative tasks.\nAfter these 12 hours, the worker will delete the task's Windows user\naccount, and then continue with other tasks.\n\nNo guarantees are given about the resolution status of the interactive\ntask, since the task is inherently non-reproducible and no automation\nshould rely on this value.\n\nSince: generic-worker 10.5.0",
@@ -802,6 +1079,16 @@ func taskPayloadSchema() string {
     "supersederUrl": {
       "description": "This property is allowed for backward compatibility, but is unused.",
       "title": "unused",
+      "type": "string"
+    },
+    "taskclusterProxyInterface": {
+      "default": "localhost",
+      "description": "Specifies whether taskcluster-proxy should listen on\nlocalhost interface (default) or search for a docker bridge\ninterface (for tasks that wish to call the taskcluster\nproxy from inside a docker container that does not share\nthe host network).",
+      "enum": [
+        "localhost",
+        "docker-bridge"
+      ],
+      "title": "Network Interface for Taskcluster Proxy to listen on",
       "type": "string"
     }
   },

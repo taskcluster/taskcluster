@@ -1,16 +1,20 @@
-const assert = require('assert');
-const request = require('superagent');
-const Debug = require('debug');
+import assert from 'assert';
+import request from 'superagent';
+import Debug from 'debug';
 
 const debug = Debug('PersonAPI');
 const baseUrl = 'https://person.api.sso.mozilla.com/v2';
 
 // A client for the PersonAPI v2 endpoints.
 // https://github.com/mozilla-iam/cis/blob/master/docs/PersonAPI.md#what-routes-are-available-ie-what-queries-can-i-make
-module.exports = class PersonAPI {
+export default class PersonAPI {
   constructor({ accessToken }) {
     assert(accessToken, 'An access token is required to access PersonAPI endpoints');
 
+    this.accessToken = accessToken;
+  }
+
+  setAccessToken(accessToken) {
     this.accessToken = accessToken;
   }
 
@@ -61,4 +65,4 @@ module.exports = class PersonAPI {
 
     return profile;
   }
-};
+}

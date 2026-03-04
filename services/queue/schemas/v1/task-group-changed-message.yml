@@ -1,0 +1,19 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task Group Changed Message"
+description: |
+  Message written once a task group has been sealed or resolved.
+type:               object
+
+properties:
+  version:     {$const: message-version}
+  taskGroupId: {$ref: "task-group-response.json#/properties/taskGroupId"}
+  schedulerId: {$ref: "task-group-response.json#/properties/schedulerId"}
+  expires:     {$ref: "task-group-response.json#/properties/expires"}
+  sealed:      {$ref: "task-group-response.json#/properties/sealed"}
+
+additionalProperties: false
+required:
+ - version
+ - taskGroupId
+ - schedulerId
+ - expires

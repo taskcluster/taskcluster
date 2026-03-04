@@ -1,16 +1,24 @@
-const tcpg = require('taskcluster-lib-postgres');
-const testing = require('taskcluster-lib-testing');
-const parseDbURL = require('pg-connection-string').parse;
-const { REPO_ROOT, writeRepoFile, execCommand } = require('../../utils');
+import * as tcpg from '@taskcluster/lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import pgConnectionString from 'pg-connection-string';
+const { parse: parseDbURL } = pgConnectionString;
+import { REPO_ROOT, writeRepoFile, execCommand, checkExecutableExists } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
-exports.tasks = [{
+export const tasks = [{
   title: 'DB Schema Dump',
   requires: ['db-schema-serializable'],
   provides: ['db-schema-dump'],
   run: async (requirements, utils) => {
     if (!process.env.TEST_DB_URL) {
       throw new Error("'yarn generate' requires $TEST_DB_URL to be set");
+    }
+
+    const hasNativePgDump = await checkExecutableExists('pg_dump');
+    const hasDocker = await checkExecutableExists('docker');
+
+    if (!hasNativePgDump && !hasDocker) {
+      throw new Error('Cannot find pg_dump or docker in PATH, cannot dump schema');
     }
 
     // reset the DB back to its empty state..
@@ -30,9 +38,28 @@ exports.tasks = [{
     // now dump the schema of the DB
     utils.step({ title: 'Dump Test Database' });
     const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
+
+    let commandPrefix = [];
+    // running in docker would be preferred, since it will have same version of pg_dump
+    if (hasDocker) {
+      // check if docker process is running
+      const dockerProcessId = await execCommand({
+        dir: REPO_ROOT,
+        command: ['docker', 'ps', '-q', '--filter', 'ancestor=postgres:15'],
+        keepAllOutput: true,
+        utils,
+      });
+
+      // having newline in the output means there are multiple docker processes running
+      if (dockerProcessId && !dockerProcessId.trim().includes('\n')) {
+        commandPrefix = ['docker', 'exec', dockerProcessId.trim()];
+      }
+    }
+
     const pgdump = await execCommand({
       dir: REPO_ROOT,
       command: [
+        ...commandPrefix,
         'pg_dump',
         '--schema-only',
         '-h', host,

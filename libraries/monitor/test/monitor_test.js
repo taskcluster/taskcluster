@@ -1,9 +1,11 @@
-const path = require('path');
-const { fork } = require('child_process');
-const mockFs = require('mock-fs');
-const assert = require('assert');
-const testing = require('taskcluster-lib-testing');
-const MonitorManager = require('../src/monitormanager');
+import path from 'path';
+import { fork } from 'child_process';
+import mockFs from 'mock-fs';
+import assert from 'assert';
+import testing from '@taskcluster/lib-testing';
+import MonitorManager from '../src/monitormanager.js';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;
@@ -461,24 +463,6 @@ suite(testing.suiteName(), function() {
       const doodad = monitor.timeKeeper('doodadgood');
       doodad.measure();
       assert.throws(() => doodad.measure(), Error);
-    });
-
-    test('monitor.patchAWS(service)', async () => {
-      const aws = require('aws-sdk');
-      const ec2 = new aws.EC2({
-        region: 'us-west-2',
-        credentials: new aws.Credentials('akid', 'fake', 'session'),
-      });
-      monitor.patchAWS(ec2);
-      await ec2.describeAvailabilityZones().promise().catch(err => {
-        // Ignored ec2 error, we measure duration, not success
-      });
-      assert.equal(monitorManager.messages.length, 1);
-      assert.equal(monitorManager.messages[0].Logger, 'taskcluster.testing-service');
-      assert.equal(monitorManager.messages[0].Fields.operation, 'describeAvailabilityZones');
-      assert.equal(monitorManager.messages[0].Fields.service, 'ec2');
-      assert.equal(monitorManager.messages[0].Fields.region, 'us-west-2');
-      assert(monitorManager.messages[0].Fields.duration > 0);
     });
   });
 

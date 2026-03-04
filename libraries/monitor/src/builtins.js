@@ -1,4 +1,4 @@
-const MonitorManager = require('./monitormanager');
+import MonitorManager from './monitormanager.js';
 
 MonitorManager.register({
   name: 'periodic',
@@ -140,4 +140,48 @@ MonitorManager.register({
   version: 1,
   description: 'An internal type for reporting malformed logging calls.',
   fields: {},
+});
+
+MonitorManager.register({
+  name: 'auditEvent',
+  title: 'Audit Event',
+  type: 'audit-event',
+  level: 'notice',
+  version: 1,
+  description: 'Audit event that happens .. .',
+  fields: {
+    service: 'The name of the service.',
+    entity: 'Name of the entity',
+    entityId: 'Id of the entity',
+    clientId: 'ClientID associated with the change',
+    action: 'Type of action: create, edit, delete, etc..',
+  },
+});
+
+// Register built-in Prometheus metrics
+MonitorManager.registerMetric('httpRequestsTotal', {
+  name: 'http_requests_total',
+  type: 'counter',
+  title: 'Total number of HTTP requests',
+  description: 'Total number of HTTP requests',
+  labels: {
+    method: 'HTTP method',
+    name: 'API method name',
+    status: 'Response status code',
+    service: 'Service name',
+  },
+});
+
+MonitorManager.registerMetric('httpRequestDurationSeconds', {
+  name: 'http_request_duration_seconds',
+  type: 'histogram',
+  title: 'HTTP request duration in seconds',
+  description: 'HTTP request duration in seconds',
+  labels: {
+    method: 'HTTP method',
+    name: 'API method name',
+    status: 'Response status code',
+    service: 'Service name',
+  },
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
 });

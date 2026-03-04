@@ -5,7 +5,6 @@ defaults:
     deprecatedResultStatusQueue: 'stat-result'
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
-    initialStatusQueue: 'ch-init'
     rerunQueue: 're-run'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
@@ -17,44 +16,47 @@ defaults:
     schedulerId: taskcluster-github
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
-      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+      accessToken: !env:secret TASKCLUSTER_ACCESS_TOKEN
 
   github:
     credentials:
-      privatePEM: !env GITHUB_PRIVATE_PEM
+      privatePEM: !env:secret GITHUB_PRIVATE_PEM
       appId: !env GITHUB_APP_ID
 
   webhook:
-    secret: !env:list WEBHOOK_SECRET
+    secret: !env:list:secret WEBHOOK_SECRET
 
   intree:
     provisionerId: !env:optional PROVISIONER_ID
     workerType: !env:optional WORKER_TYPE
 
   postgres:
-    readDbUrl: !env READ_DB_URL
-    writeDbUrl: !env WRITE_DB_URL
+    readDbUrl: !env:secret READ_DB_URL
+    writeDbUrl: !env:secret WRITE_DB_URL
 
   monitoring:
     level: !env:optional LEVEL
-    errorConfig: !env:json:optional ERROR_CONFIG
+    errorConfig: !env:json:secret:optional ERROR_CONFIG
+    prometheusConfig: !env:json:optional PROMETHEUS_CONFIG
 
   server:
     port: !env:number PORT
     env: !env NODE_ENV
     forceSSL: !env:bool FORCE_SSL
     trustProxy: !env:bool TRUST_PROXY
+    # This is required to be larger than the downstream proxy timeout, default: 90s
+    keepAliveTimeoutSeconds: !env:number:optional KEEP_ALIVE_TIMEOUT_SECONDS
 
   pulse:
     hostname: !env PULSE_HOSTNAME
-    username: !env PULSE_USERNAME
-    password: !env PULSE_PASSWORD
+    username: !env:secret PULSE_USERNAME
+    password: !env:secret PULSE_PASSWORD
     vhost: !env PULSE_VHOST
     amqps: !env:bool:optional PULSE_AMQPS
     namespace: taskcluster-github
 
   # new relic config (processed in services/prelude.js)
-  newRelic: !env:json:optional NEW_RELIC
+  newRelic: !env:json:secret:optional NEW_RELIC
 
 test:
   app:
@@ -63,7 +65,6 @@ test:
     deprecatedResultStatusQueue: 'deprecated-statuses'
     deprecatedInitialStatusQueue: 'deprecated-tasks'
     resultStatusQueue: 'checks-statuses'
-    initialStatusQueue: 'checks-tasks'
     statusContext: 'Taskcluster-Test'
 
   github:

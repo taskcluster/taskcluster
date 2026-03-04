@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
 )
 
 type clientState int
@@ -38,6 +38,13 @@ type Config struct {
 
 	// A Logger for logging status updates; default is no logging
 	Logger util.Logger
+
+	// A function that will be called each time the client connects or reconnects.
+	// This is useful to handle cases where a Client loses connection. Generally,
+	// if you have any post-connect set-up that must be run, you should run inside
+	// of a ConnectHook to ensure that it is done both for initial connections,
+	// and reconnections.
+	ConnectHook func(*Client)
 }
 
 // Configurer is a function which can generate a Config object to be used by
@@ -48,18 +55,19 @@ type Configurer func() (Config, error)
 // Client is used to connect to a websocktunnel instance and serve content over
 // the tunnel.  Client implements net.Listener.
 type Client struct {
-	m          sync.Mutex
-	id         string
-	tunnelAddr string
-	token      string
-	url        atomic.Value
-	retry      RetryConfig
-	logger     util.Logger
-	configurer Configurer
-	session    *wsmux.Session
-	state      clientState
-	closed     chan struct{}
-	acceptErr  net.Error
+	m           sync.Mutex
+	id          string
+	tunnelAddr  string
+	token       string
+	url         atomic.Value
+	retry       RetryConfig
+	logger      util.Logger
+	configurer  Configurer
+	session     *wsmux.Session
+	state       clientState
+	closed      chan struct{}
+	acceptErr   net.Error
+	connectHook func(*Client)
 }
 
 // New creates a new Client instance.
@@ -77,7 +85,12 @@ func New(configurer Configurer) (*Client, error) {
 		return nil, err
 	}
 	cl.url.Store(url)
-	cl.session = wsmux.Client(conn, wsmux.Config{})
+	cl.session = wsmux.Client(conn, wsmux.Config{
+		StreamBufferSize: 4 * 1024 * 1024,
+	})
+	if cl.connectHook != nil {
+		cl.connectHook(cl)
+	}
 	return cl, nil
 }
 
@@ -105,7 +118,19 @@ func (c *Client) Accept() (net.Conn, error) {
 		return nil, c.acceptErr
 	}
 
+	// c.session.Accept() will block until c.session.Close() is called
+	// c.session.Close() is called when c.Close() is called, but
+	// c.Close() also locks c.m, so we need to unlock c.m before calling
+	// c.session.Accept() to avoid the deadlock
+	//
+	// The deadlock was first observed in go1.19 due to
+	// https://go-review.googlesource.com/c/go/+/409537.
+	// This started enforcing that listeners are closed before
+	// active connections are cleaned up after a server shutdown.
+	// Prior to this, we unknowingly leaked deadlocked goroutines.
+	c.m.Unlock()
 	stream, err := c.session.Accept()
+	c.m.Lock()
 	if err != nil {
 		c.state = stateBroken
 		c.acceptErr = ErrClientReconnecting
@@ -152,6 +177,7 @@ func (c *Client) setConfig(config Config) {
 	if c.logger == nil {
 		c.logger = &util.NilLogger{}
 	}
+	c.connectHook = config.ConnectHook
 }
 
 // connectWithRetry returns a websocket connection to the tunnel
@@ -232,14 +258,16 @@ func (c *Client) reconnect() {
 
 	sessionConfig := wsmux.Config{
 		// Log:              c.logger,
-		StreamBufferSize: 4 * 1024,
+		StreamBufferSize: 4 * 1024 * 1024,
 	}
 	c.session = wsmux.Client(conn, sessionConfig)
 	c.url.Store(url)
 	c.state = stateRunning
 	c.logger.Printf("state: running")
 	c.acceptErr = nil
-
+	if c.connectHook != nil {
+		c.connectHook(c)
+	}
 }
 
 // simple utility to check if client should retry connection

@@ -1,0 +1,106 @@
+version: 96
+description: Worker pool errors statistics
+methods:
+  get_worker_pool_error_stats_last_24_hours:
+    description: |
+      Returns total number of errors for given worker pool or all worker pools
+      broken down by hour.
+      There will be a breakdown for the last 24h even if there are no errors.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (hour timestamptz, count integer)
+    body: |-
+      begin
+        -- fill in missing hours and add zeroes for them
+        RETURN query
+        WITH hours AS (
+          SELECT generate_series(
+            date_trunc('hour', now() - interval '23 hours'),
+            date_trunc('hour', now()), -- including now
+            interval '1 hour'
+          ) as hour
+        )
+        SELECT
+          hours.hour,
+          COALESCE(worker_pool_errors.count, 0)::int
+        FROM hours
+        LEFT JOIN (
+          SELECT
+            date_trunc('hour', reported) as hour,
+            count(*) as count
+          FROM worker_pool_errors
+          WHERE
+            (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+          GROUP BY hour
+        ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;
+      end
+
+  get_worker_pool_error_stats_last_7_days:
+    description: |
+      Returns total number of errors for given worker pool or all worker pools
+      broken down by hour.
+      There will be a breakdown for the last 7 days even if there are no errors.
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (day timestamptz, count integer)
+    body: |-
+      begin
+        -- fill in missing hours and add zeroes for them
+        RETURN query
+        WITH days AS (
+          SELECT generate_series(
+            date_trunc('day', now() - interval '6 days'),
+            date_trunc('day', now()), -- including now
+            interval '1 day'
+          ) as day
+        )
+        SELECT
+          days.day,
+          COALESCE(worker_pool_errors.count, 0)::int
+        FROM days
+        LEFT JOIN (
+          SELECT
+            date_trunc('day', reported) as day,
+            count(*) as count
+          FROM worker_pool_errors
+          WHERE
+            (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+          GROUP BY day
+        ) worker_pool_errors ON worker_pool_errors.day = days.day;
+      end
+
+  get_worker_pool_error_titles:
+    description: |
+      Returns errors grouped by title for given worker pool or all worker pools
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (title text, count integer)
+    body: |-
+      begin
+        RETURN query
+        SELECT worker_pool_errors.title, count(*)::int
+        FROM worker_pool_errors
+        WHERE
+          (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+        GROUP BY worker_pool_errors.title;
+      end
+
+  get_worker_pool_error_codes:
+    description: |
+      Returns errors grouped by error code for given worker pool or all worker pools
+    mode: read
+    serviceName: worker_manager
+    args: worker_pool_id_in text
+    returns: table (code text, count integer)
+    body: |-
+      begin
+        RETURN query
+        SELECT COALESCE(worker_pool_errors.extra->>'code', 'other'), count(*)::int
+        FROM worker_pool_errors
+        WHERE
+          (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+        GROUP BY worker_pool_errors.extra->>'code';
+      end

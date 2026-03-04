@@ -1,7 +1,7 @@
-const assert = require('assert');
-const WebServerError = require('./WebServerError');
+import assert from 'assert';
+import WebServerError from './WebServerError.js';
 
-module.exports = async ({ cfg, strategy, identity, monitor }) => {
+export default async ({ cfg, strategy, identity, monitor }) => {
   [cfg, strategy, identity, monitor].map(assert.ok);
 
   // Don't report much to the user, to avoid revealing sensitive information, although

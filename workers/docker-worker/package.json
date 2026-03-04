@@ -1,12 +1,12 @@
 {
   "name": "docker-worker",
   "private": true,
-  "version": "44.18.0",
+  "version": "97.0.1",
   "engine-strict": true,
   "engines": {
-    "node": "16.16.0",
-    "yarn": "^1.22.19"
+    "node": "24.13.0"
   },
+  "packageManager": "yarn@4.12.0",
   "description": "Docker task host for linux.",
   "bin": {
     "docker-worker": "bin/worker.js"
@@ -27,10 +27,10 @@
   "dependencies": {
     "@sentry/node": "^6.0.0",
     "ajv": "^7.2.1",
-    "ajv-formats": "^1.5.1",
+    "ajv-formats": "^2.1.1",
     "app-root-dir": "^1.0.2",
     "co": "^4.6.0",
-    "commander": "^9.4.0",
+    "commander": "^9.4.1",
     "debug": "*",
     "diskspace": "^2.0.0",
     "diveSync": "^0.3.0",
@@ -58,13 +58,13 @@
     "request-promise-native": "^1.0.7",
     "rimraf": "^3.0.0",
     "serialize-error": "^8.0.0",
-    "slugid": "^3.0.0",
+    "slugid": "^3.1.0",
     "source-map-support": "^0.5.0",
     "split2": "^3.0.0",
     "stateless-dns-server": "^0.2.1",
     "tar-fs": "^2.1.0",
     "tar-stream": "^2.1.3",
-    "taskcluster-client": "^44.17.2",
+    "@taskcluster/client": "^44.20.4",
     "taskcluster-lib-urls": "^13.0.0",
     "tweetnacl": "^1.0.0",
     "typed-env-config": "^3.0.0",

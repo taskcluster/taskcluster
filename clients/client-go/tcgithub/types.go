@@ -3,7 +3,9 @@
 package tcgithub
 
 import (
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	"encoding/json"
+
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -29,6 +31,9 @@ type (
 		// Max length: 100
 		Organization string `json:"organization"`
 
+		// Associated pull request number for 'pull_request' events.
+		PullRequestNumber int64 `json:"pullRequestNumber,omitempty"`
+
 		// Github repository associated with the build.
 		//
 		// Syntax:     ^([a-zA-Z0-9-_%]*)$
@@ -40,7 +45,7 @@ type (
 		//
 		// Min length: 40
 		// Max length: 40
-		Sha string `json:"sha"`
+		SHA string `json:"sha"`
 
 		// Github status associated with the build.
 		//
@@ -49,6 +54,7 @@ type (
 		//   * "success"
 		//   * "error"
 		//   * "failure"
+		//   * "cancelled"
 		State string `json:"state"`
 
 		// Taskcluster task-group associated with the build.
@@ -105,6 +111,176 @@ type (
 	//
 	// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
 	GithubGUID string
+
+	// Emulate one of the github events with mocked payload.
+	// Some of the events have sub-actions, that can be specified.
+	// Event type names follow the `tasks_for` naming convention.
+	IssueCommentEvents struct {
+
+		// Possible values:
+		//   * "created"
+		//   * "edited"
+		Action string `json:"action"`
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		// To make sure which properties are available for each event type,
+		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-issue-comment"
+		Type string `json:"type"`
+	}
+
+	// .taskcluster.yml supports `github-pull-request` and `github-pull-request-untrusted` events.
+	// The difference is that `github-pull-request-untrusted` will use different set of scopes.
+	// See [RFC 175](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0175-restricted-pull-requests.md)
+	PullRequestEvents struct {
+
+		// Possible values:
+		//   * "opened"
+		//   * "synchronize"
+		//   * "reopened"
+		//   * "assigned"
+		//   * "auto_merge_disabled"
+		//   * "auto_merge_enabled"
+		//   * "closed"
+		//   * "converted_to_draft"
+		//   * "dequeued"
+		//   * "edited"
+		//   * "enqueued"
+		//   * "labeled"
+		//   * "ready_for_review"
+		//   * "review_requested"
+		//   * "review_request_removed"
+		//   * "unassigned"
+		//   * "unlabeled"
+		Action string `json:"action"`
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		// To make sure which properties are available for each event type,
+		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-pull-request"
+		//   * "github-pull-request-untrusted"
+		Type string `json:"type"`
+	}
+
+	// Github sends `push` event for commits and for tags.
+	// To distinguish between those two, the `ref` property is used.
+	// If you want to mock a tag push, please specify `ref` property in the overrides:
+	// "ref": "refs/tags/v1.0.0"
+	PushEvents struct {
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		// To make sure which properties are available for each event type,
+		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-push"
+		Type string `json:"type"`
+	}
+
+	// Emulate one of the github events with mocked payload.
+	// Some of the events have sub-actions, that can be specified.
+	// Event type names follow the `tasks_for` naming convention.
+	ReleaseEvents struct {
+
+		// Possible values:
+		//   * "published"
+		//   * "unpublished"
+		//   * "created"
+		//   * "edited"
+		//   * "deleted"
+		//   * "prereleased"
+		//   * "released"
+		Action string `json:"action"`
+
+		// Additional data to be mixed to the mocked event object.
+		// This can be used to set some specific properties of the event or override the existing ones.
+		// For example:
+		//   "ref": "refs/heads/main"
+		//   "before": "000"
+		//   "after": "111"
+		// To make sure which properties are available for each event type,
+		// please refer to the github [documentation](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads)
+		//
+		// Additional properties allowed
+		Overrides json.RawMessage `json:"overrides,omitempty"`
+
+		// Possible values:
+		//   * "github-release"
+		Type string `json:"type"`
+	}
+
+	// Render .taskcluster.yml for one of the supported events.
+	//
+	// Read more about the `.taskcluster.yml` file format in
+	// [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+	RenderTaskclusterYmlInput struct {
+
+		// The contents of the .taskcluster.yml file.
+		Body string `json:"body"`
+
+		// Emulate one of the github events with mocked payload.
+		// Some of the events have sub-actions, that can be specified.
+		// Event type names follow the `tasks_for` naming convention.
+		//
+		// One of:
+		//   * PushEvents
+		//   * PullRequestEvents
+		//   * ReleaseEvents
+		//   * IssueCommentEvents
+		FakeEvent json.RawMessage `json:"fakeEvent"`
+
+		// Syntax:     ^[-a-zA-Z0-9]{1,39}$
+		Organization string `json:"organization,omitempty"`
+
+		// Syntax:     ^[-a-zA-Z0-9_.]{1,100}$
+		Repository string `json:"repository,omitempty"`
+	}
+
+	// Rendered .taskcluster.yml output.
+	RenderTaskclusterYmlOutput struct {
+
+		// Scopes that will be used by the github client to create tasks.
+		// Those are different that the scopes inside the tasks itself.
+		//
+		// Array items:
+		Scopes []string `json:"scopes"`
+
+		// Rendered tasks objects.
+		// Those objects not guaranteed to produce valid task definitions
+		// that conform to the json schema.
+		//
+		// Array items:
+		// Additional properties allowed
+		Tasks []json.RawMessage `json:"tasks"`
+	}
 
 	// Any Taskcluster-specific Github repository information.
 	RepositoryResponse struct {

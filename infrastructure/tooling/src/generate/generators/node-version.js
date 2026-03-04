@@ -1,10 +1,18 @@
-const { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } = require('../../utils');
+import {
+  readRepoFile,
+  modifyRepoFile,
+  writeRepoFile,
+  modifyRepoJSON,
+  modifyRepoYAML,
+} from '../../utils/index.js';
+
+export const tasks = [];
 
 /**
  * Update the node version to match everywhere, treating that in `package.json`
  * as authoritative.
  */
-exports.tasks = [{
+tasks.push({
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
@@ -20,23 +28,20 @@ exports.tasks = [{
         /^( *node: ')[0-9.]+(')$/m,
         `$1${nodeVersion}$2`));
 
-    utils.status({ message: 'Dockerfile' });
-    await modifyRepoFile('Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
-
-    utils.status({ message: 'workers/docker-worker/test/images/test/Dockerfile' });
-    await modifyRepoFile('workers/docker-worker/test/images/test/Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
-
-    utils.status({ message: 'ui/Dockerfile' });
-    await modifyRepoFile('ui/Dockerfile',
-      contents => contents.replace(
-        /^FROM node:[0-9.]+(.*)$/gm,
-        `FROM node:${nodeVersion}$1`));
+    [
+      'Dockerfile',
+      'workers/docker-worker/test/images/test/Dockerfile',
+      'ui/Dockerfile',
+      'taskcluster/docker/browser-test/Dockerfile',
+      'taskcluster/docker/ci/Dockerfile',
+      'taskcluster/docker/rabbit-test/Dockerfile',
+    ].forEach(async file => {
+      utils.status({ message: file });
+      await modifyRepoFile(file,
+        contents => contents.replace(
+          /^FROM node:[0-9.]+(.*)$/gm,
+          `FROM node:${nodeVersion}$1`));
+    });
 
     utils.status({ message: '.nvmrc' });
     await writeRepoFile('.nvmrc', nodeVersion + '\n');
@@ -53,19 +58,19 @@ exports.tasks = [{
         /^( *NODE_VERSION *= *")[0-9.]+(")$/m,
         `$1${nodeVersion}$2`));
 
-    utils.status({ message: 'ui/package.json' });
-    await modifyRepoJSON('ui/package.json',
-      contents => {
-        contents.engines.node = nodeVersion;
-        return contents;
-      });
-
-    utils.status({ message: 'workers/docker-worker/package.json' });
-    await modifyRepoJSON('workers/docker-worker/package.json',
-      contents => {
-        contents.engines.node = nodeVersion;
-        return contents;
-      });
+    [
+      'ui/package.json',
+      'workers/docker-worker/package.json',
+      'clients/client/package.json',
+      'clients/client-test/package.json',
+    ].forEach(async file => {
+      utils.status({ message: file });
+      await modifyRepoJSON(file,
+        contents => {
+          contents.engines.node = nodeVersion;
+          return contents;
+        });
+    });
 
     utils.status({ message: 'cloudbuild.yaml' });
     await modifyRepoYAML('cloudbuild.yaml',
@@ -74,4 +79,32 @@ exports.tasks = [{
         return contents;
       });
   },
-}];
+});
+
+/**
+ * Update the yarn version to match everywhere, treating that in `package.json`
+ * as authoritative.
+ */
+tasks.push({
+  title: 'Yarn Version',
+  provides: ['target-yarn-version'],
+  run: async (requirements, utils) => {
+    const yarnVersion = JSON.parse(await readRepoFile('package.json')).packageManager;
+    if (!yarnVersion || !yarnVersion.match(/yarn@[0-9.]+/)) {
+      throw new Error(`invalid yarn version ${yarnVersion} in package.json`);
+    }
+    utils.step({ title: `Setting yarn version ${yarnVersion}` });
+
+    [
+      'ui/package.json',
+      'workers/docker-worker/package.json',
+    ].forEach(file => {
+      utils.status({ message: file });
+      modifyRepoJSON(file,
+        contents => {
+          contents.packageManager = yarnVersion;
+          return contents;
+        });
+    });
+  },
+});

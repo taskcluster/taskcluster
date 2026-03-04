@@ -1,0 +1,7 @@
+mutation CancelTaskGroup($taskGroupId: ID!) {
+  cancelTaskGroup(taskGroupId: $taskGroupId) {
+    taskGroupSize
+    cancelledCount
+    taskGroupId
+  }
+}

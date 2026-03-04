@@ -51,6 +51,7 @@ var (
 	procGetThreadDesktop             = user32.NewProc("GetThreadDesktop")
 	procGetUserObjectInformationW    = user32.NewProc("GetUserObjectInformationW")
 	procDeleteProfileW               = userenv.NewProc("DeleteProfileW")
+	procCreateProfile                = userenv.NewProc("CreateProfile")
 	procGetDiskFreeSpaceExW          = kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	FOLDERID_LocalAppData   = syscall.GUID{Data1: 0xF1B32785, Data2: 0x6FBA, Data3: 0x4FCF, Data4: [8]byte{0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91}}
@@ -66,9 +67,11 @@ const (
 
 	KF_FLAG_CREATE uint32 = 0x00008000
 
+	// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
 	CREATE_BREAKAWAY_FROM_JOB = 0x01000000
 	CREATE_NEW_CONSOLE        = 0x00000010
 	CREATE_NEW_PROCESS_GROUP  = 0x00000200
+	CREATE_NO_WINDOW          = 0x08000000
 
 	VER_MAJORVERSION     = 0x0000002
 	VER_MINORVERSION     = 0x0000001
@@ -369,8 +372,10 @@ func SetAndCreateFolder(hUser syscall.Token, folder *syscall.GUID, value string)
 
 // https://msdn.microsoft.com/en-us/library/aa383840(VS.85).aspx
 // BOOL WTSQueryUserToken(
-//    _In_  ULONG   SessionId,
-//    _Out_ PHANDLE phToken
+//
+//	_In_  ULONG   SessionId,
+//	_Out_ PHANDLE phToken
+//
 // );
 func WTSQueryUserToken(
 	sessionId uint32,
@@ -391,7 +396,7 @@ func WTSQueryUserToken(
 func WTSGetActiveConsoleSessionId() (sessionId uint32, err error) {
 	r1, _, _ := procWTSGetActiveConsoleSessionId.Call()
 	if r1 == 0xFFFFFFFF {
-		err = os.NewSyscallError("WTSGetActiveConsoleSessionId", errors.New("There is no session attached to the physical console (return code 0xFFFFFFFF in WTSGetActiveConsoleSessionId)"))
+		err = os.NewSyscallError("WTSGetActiveConsoleSessionId", errors.New("there is no session attached to the physical console (return code 0xFFFFFFFF in WTSGetActiveConsoleSessionId)"))
 	} else {
 		sessionId = uint32(r1)
 	}
@@ -449,8 +454,10 @@ func InteractiveUserToken(timeout time.Duration) (hToken syscall.Token, err erro
 
 // https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getprofilesdirectoryw
 // USERENVAPI BOOL GetProfilesDirectoryW(
-//   LPWSTR  lpProfileDir,
-//   LPDWORD lpcchSize
+//
+//	LPWSTR  lpProfileDir,
+//	LPDWORD lpcchSize
+//
 // );
 func GetProfilesDirectory(dir *uint16, dirLen *uint32) (err error) {
 	r1, _, e1 := procGetProfilesDirectoryW.Call(uintptr(unsafe.Pointer(dir)), uintptr(unsafe.Pointer(dirLen)))
@@ -509,9 +516,11 @@ func ProfilesDirectory() string {
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762280(v=vs.85).aspx
 // BOOL WINAPI GetUserProfileDirectory(
-//   _In_      HANDLE  hToken,
-//   _Out_opt_ LPTSTR  lpProfileDir,
-//   _Inout_   LPDWORD lpcchSize
+//
+//	_In_      HANDLE  hToken,
+//	_Out_opt_ LPTSTR  lpProfileDir,
+//	_Inout_   LPDWORD lpcchSize
+//
 // );
 func GetUserProfileDirectory(
 	hToken syscall.Token,
@@ -531,11 +540,13 @@ func GetUserProfileDirectory(
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa446671(v=vs.85).aspx
 // BOOL WINAPI GetTokenInformation(
-//   _In_      HANDLE                  TokenHandle,
-//   _In_      TOKEN_INFORMATION_CLASS TokenInformationClass,
-//   _Out_opt_ LPVOID                  TokenInformation,
-//   _In_      DWORD                   TokenInformationLength,
-//   _Out_     PDWORD                  ReturnLength
+//
+//	_In_      HANDLE                  TokenHandle,
+//	_In_      TOKEN_INFORMATION_CLASS TokenInformationClass,
+//	_Out_opt_ LPVOID                  TokenInformation,
+//	_In_      DWORD                   TokenInformationLength,
+//	_Out_     PDWORD                  ReturnLength
+//
 // );
 func GetTokenInformation(
 	tokenHandle syscall.Token,
@@ -563,7 +574,7 @@ func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenLinkedToken, (*byte)(unsafe.Pointer(&linkedToken)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -573,10 +584,12 @@ func GetLinkedToken(hToken syscall.Token) (syscall.Token, error) {
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa379591(v=vs.85).aspx
 // BOOL WINAPI SetTokenInformation(
-//   _In_ HANDLE                  TokenHandle,
-//   _In_ TOKEN_INFORMATION_CLASS TokenInformationClass,
-//   _In_ LPVOID                  TokenInformation,
-//   _In_ DWORD                   TokenInformationLength
+//
+//	_In_ HANDLE                  TokenHandle,
+//	_In_ TOKEN_INFORMATION_CLASS TokenInformationClass,
+//	_In_ LPVOID                  TokenInformation,
+//	_In_ DWORD                   TokenInformationLength
+//
 // );
 func SetTokenInformation(
 	tokenHandle syscall.Token,
@@ -602,7 +615,7 @@ func GetTokenSessionID(hToken syscall.Token) (uint32, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenSessionId, (*byte)(unsafe.Pointer(&tokenSessionID)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -616,7 +629,7 @@ func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 	returnLength := uint32(0)
 	err := GetTokenInformation(hToken, TokenUIAccess, (*byte)(unsafe.Pointer(&tokenUIAccess)), tokenInformationLength, &returnLength)
 	if returnLength != tokenInformationLength {
-		return 0, fmt.Errorf("Was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
+		return 0, fmt.Errorf("was expecting %v bytes of data from GetTokenInformation, but got %v bytes", returnLength, tokenInformationLength)
 	}
 	if err != nil {
 		return 0, err
@@ -625,9 +638,10 @@ func GetTokenUIAccess(hToken syscall.Token) (uint32, error) {
 }
 
 // https://msdn.microsoft.com/en-us/library/windows/desktop/bb530719(v=vs.85).aspx
-// typedef struct _TOKEN_LINKED_TOKEN {
-//   HANDLE LinkedToken;
-// } TOKEN_LINKED_TOKEN, *PTOKEN_LINKED_TOKEN;
+//
+//	typedef struct _TOKEN_LINKED_TOKEN {
+//	  HANDLE LinkedToken;
+//	} TOKEN_LINKED_TOKEN, *PTOKEN_LINKED_TOKEN;
 type TOKEN_LINKED_TOKEN struct {
 	LinkedToken syscall.Token // HANDLE
 }
@@ -640,7 +654,9 @@ type LUID struct {
 
 // https://msdn.microsoft.com/en-us/library/Aa378612(v=VS.85).aspx
 // BOOL WINAPI ImpersonateLoggedOnUser(
-//   _In_ HANDLE hToken
+//
+//	_In_ HANDLE hToken
+//
 // );
 func ImpersonateLoggedOnUser(hToken syscall.Token) (err error) {
 	r1, _, e1 := procImpersonateLoggedOnUser.Call(
@@ -755,7 +771,7 @@ func DumpTokenInfo(token syscall.Token) {
 		panic(err)
 	}
 	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount)
-	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
+	for i := range tokenGroups.GroupCount {
 		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
 		groupSid := groups[i].Sid.String()
 		account, domain, accType, err := groups[i].Sid.LookupAccount("")
@@ -771,10 +787,12 @@ func DumpTokenInfo(token syscall.Token) {
 
 // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespaceexw
 // BOOL GetDiskFreeSpaceExW(
-//   LPCWSTR         lpDirectoryName,
-//   PULARGE_INTEGER lpFreeBytesAvailableToCaller,
-//   PULARGE_INTEGER lpTotalNumberOfBytes,
-//   PULARGE_INTEGER lpTotalNumberOfFreeBytes
+//
+//	LPCWSTR         lpDirectoryName,
+//	PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+//	PULARGE_INTEGER lpTotalNumberOfBytes,
+//	PULARGE_INTEGER lpTotalNumberOfFreeBytes
+//
 // );
 func GetDiskFreeSpace(
 	lpDirectoryName *uint16,
@@ -796,9 +814,11 @@ func GetDiskFreeSpace(
 
 // https://docs.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteprofilew
 // USERENVAPI BOOL DeleteProfileW(
-//   LPCWSTR lpSidString,
-//   LPCWSTR lpProfilePath,
-//   LPCWSTR lpComputerName
+//
+//	LPCWSTR lpSidString,
+//	LPCWSTR lpProfilePath,
+//	LPCWSTR lpComputerName
+//
 // );
 func DeleteProfile(
 	lpSidString *uint16,
@@ -816,15 +836,49 @@ func DeleteProfile(
 	return
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createprofile
+// USERENVAPI HRESULT CreateProfile(
+//
+//	[in]  LPCWSTR pszUserSid,
+//	[in]  LPCWSTR pszUserName,
+//	[out] LPWSTR  pszProfilePath,
+//	[in]  DWORD   cchProfilePath
+//
+// );
+func CreateProfile(
+	lpSidString *uint16,
+	lpUserName *uint16,
+	lpProfilePath *uint16,
+	cchProfilePath uint32,
+) (err error) {
+	r1, _, e1 := procCreateProfile.Call(
+		uintptr(unsafe.Pointer(lpSidString)),
+		uintptr(unsafe.Pointer(lpUserName)),
+		uintptr(unsafe.Pointer(lpProfilePath)),
+		uintptr(cchProfilePath),
+	)
+	// HRESULT: S_OK = 0, failure < 0
+	// HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS) = 0x800700B7
+	if int32(r1) < 0 {
+		// Ignore if profile already exists
+		if uint32(r1) != 0x800700B7 {
+			err = os.NewSyscallError("CreateProfile", e1)
+		}
+	}
+	return
+}
+
 // ArgvToCommandLineW performs the reverse of shell32 CommandLineToArgvW:
-//   https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
+//
+//	https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw?redirectedfrom=MSDN
+//
 // See: https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
 func ArgvToCommandLineW(text string) string {
 	if text != "" && !strings.ContainsAny(text, " \t\n\v\"") {
 		return text
 	}
 	escaped := `"`
-	for i := 0; i < len(text); i++ {
+	for i := range len(text) {
 		backslashes := 0
 		for ; i < len(text) && text[i] == '\\'; i++ {
 			backslashes++
@@ -853,4 +907,22 @@ func CMDExeEscape(text string) string {
 		cmdEscaped += string(c)
 	}
 	return cmdEscaped
+}
+
+func VerSetConditionMask(lConditionMask uint64, typeBitMask uint32, conditionMask uint8) uint64 {
+	r1, _, _ := procVerSetConditionMask.Call(uintptr(lConditionMask), uintptr(typeBitMask), uintptr(conditionMask))
+	return uint64(r1)
+}
+
+func VerifyWindowsInfoW(vi OSVersionInfoEx, typeMask uint32, conditionMask uint64) (bool, error) {
+	vi.OSVersionInfoSize = uint32(unsafe.Sizeof(vi))
+
+	r1, _, e1 := procVerifyVersionInfoW.Call(uintptr(unsafe.Pointer(&vi)), uintptr(typeMask), uintptr(conditionMask))
+	if r1 != 0 {
+		return true, nil
+	}
+	if r1 == 0 && e1 == ERROR_OLD_WIN_VERSION {
+		return false, nil
+	}
+	return false, os.NewSyscallError("VerifyVersionInfoW", e1)
 }

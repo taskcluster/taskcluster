@@ -1,0 +1,33 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+
+task-defaults:
+  worker-type: ubuntu-24-04
+  run:
+    using: bare
+  worker:
+    docker-image: {in-tree: ci}
+    chain-of-trust: true
+    max-run-time: 600
+
+tasks:
+  library:
+    description: db library tests
+    run:
+      command: >-
+        corepack yarn --immutable &> /dev/null &&
+        ./db/test-setup.sh &&
+        cd db && corepack yarn test
+  upgrade:
+    description: yarn db:upgrade tests
+    run:
+      command: >-
+        corepack yarn --immutable &> /dev/null &&
+        ./db/test-setup.sh --users &&
+        export ADMIN_DB_URL="$TEST_DB_URL" &&
+        export USERNAME_PREFIX="test" &&
+        corepack yarn db:upgrade

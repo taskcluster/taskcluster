@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v44/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 )
 
 func TestAWSConfigureRun(t *testing.T) {
@@ -51,7 +51,7 @@ func TestAWSConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-55555nonesense5", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"instance-id":       "i-55555nonesense5",
 		"image":             "banana",
 		"instance-type":     "t2.micro",
@@ -76,7 +76,7 @@ func TestAWSConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"document":  "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}",
 		"signature": "thisisasignature",
 	}, proof)
@@ -84,7 +84,7 @@ func TestAWSConfigureRun(t *testing.T) {
 
 func TestCheckTerminationTime(t *testing.T) {
 	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
-
+		t.Helper()
 		metaData := map[string]string{}
 		instanceIdentityDocument := "{\n  \"instanceId\" : \"i-55555nonesense5\",\n  \"region\" : \"us-west-2\",\n  \"availabilityZone\" : \"us-west-2a\",\n  \"instanceType\" : \"t2.micro\",\n  \"imageId\" : \"banana\"\n,  \"privateIp\" : \"1.1.1.1\"\n}"
 
@@ -107,6 +107,7 @@ func TestCheckTerminationTime(t *testing.T) {
 	}
 
 	t.Run("without capability", func(t *testing.T) {
+		t.Helper()
 		wkr := ptesting.NewFakeWorkerWithCapabilities()
 		defer wkr.Close()
 
@@ -118,6 +119,7 @@ func TestCheckTerminationTime(t *testing.T) {
 	})
 
 	t.Run("with capability", func(t *testing.T) {
+		t.Helper()
 		wkr := ptesting.NewFakeWorkerWithCapabilities("graceful-termination")
 		defer wkr.Close()
 

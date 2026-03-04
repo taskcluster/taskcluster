@@ -2,7 +2,7 @@ package expose
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v44/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v44/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsproxy"
 )
 
 const WST_WORKER_GROUP = "expose-tests"
@@ -32,6 +32,7 @@ type wstServer struct {
 }
 
 func makeWSTServer(t *testing.T) wstServer {
+	t.Helper()
 	listener, port, err := listenOnRandomPort()
 	if err != nil {
 		t.Fatalf("listenOnRandomPort: %s", err)
@@ -80,6 +81,7 @@ func (s *wstServer) close() {
 
 // Create a new exposer with fake auth
 func makeWSTExposer(t *testing.T, serverURL string) Exposer {
+	t.Helper()
 	exposer, err := NewWST(
 		serverURL,
 		mocktc.WST_AUDIENCE,
@@ -107,7 +109,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())
@@ -129,7 +131,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 	}
 	assert.Equal(t, 200, res.StatusCode, "got 200 response via proxy")
 
-	greeting, err := ioutil.ReadAll(res.Body)
+	greeting, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -147,7 +149,7 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())

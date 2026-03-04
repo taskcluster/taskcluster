@@ -13,6 +13,7 @@ definitions:
         enum:
           - file
           - directory
+          - volume
       path:
         title: Location of artifact in container, as an absolute path.
         type: string
@@ -26,9 +27,17 @@ definitions:
       - path
 properties:
   log:
-    title: Custom log location
-    description: Specifies a custom location for the livelog artifact
+    title: Livelog artifact name
+    description: >-
+      Specifies a custom name for the livelog artifact. Note that this is
+      also used in determining the name of the backing log artifact name.
+      Backing log artifact name matches livelog artifact name with `_backing`
+      appended, prior to the file extension (if present). For example,
+      `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt`
+      and backing log artifact `apple/banana.log_backing.txt`.
+      Defaults to `public/logs/live.log`.
     type: string
+    default: public/logs/live.log
   image:
     title: Docker image.
     description: >-
@@ -89,6 +98,8 @@ properties:
       Caches are mounted within the docker container at the mount point
       specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
     type: object
+    additionalProperties:
+      type: string
   capabilities:
     title: Capabilities that must be available/enabled for the task container.
     description: >-
@@ -102,6 +113,15 @@ properties:
           Allows a task to run in a privileged container, similar to running
           docker with `--privileged`.  This only works for worker-types
           configured to enable it.
+        type: boolean
+        default: false
+      disableSeccomp:
+        title: Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.
+        description: >-
+          Allowed a task to run without seccomp, similar to running docker with
+          `--security-opt seccomp=unconfined`.  This only worked for worker-types
+          configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload
+          still includes feature in order for d2g to work with it.
         type: boolean
         default: false
       devices:
@@ -148,15 +168,15 @@ properties:
       }
       ```
     type: object
+    additionalProperties:
+      type: string
   maxRunTime:
-    type: number
+    type: integer
     title: Maximum run time in seconds
-    description: >-
-      Maximum time the task container can run in seconds.  Maximum is one week,
-      as a sanity-check.  A task that takes so long is unlikely to succeed!
+    description: |-
+      Maximum time the task container can run in seconds.
     multipleOf: 1
     minimum: 1
-    maximum: 604800
   onExitStatus:
     title: Exit status handling
     description: >-
@@ -168,30 +188,39 @@ properties:
       retry:
         title: Retriable exit statuses
         description: >-
-          If the task exists with a retriable exit status, the task will be
+          If the task exits with a retriable exit status, the task will be
           marked as an exception and a new run created.
         type: array
         items:
           title: Exit statuses
-          type: number
+          type: integer
       purgeCaches:
         title: Purge caches exit status
         description: >-
-          If the task exists with a purge caches exit status, all caches
+          If the task exits with a purge caches exit status, all caches
           associated with the task will be purged.
         type: array
         items:
           title: Exit statuses
-          type: number
+          type: integer
     required: []
     additionalProperties: false
   artifacts:
     type: object
     title: Artifacts
-    description: >-
-      Artifact upload map example: ```{"public/build.tar.gz": {"path":
-      "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z",
-      "type": "file"}}```
+    description: |-
+      Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+      Artifacts can be an individual `file`, a `directory` containing
+      potentially multiple files with recursively included subdirectories,
+      or a `volume` (d2g only) which will create a volume mount from the
+      host to the running container. Unlike `directory` artifacts, the
+      `volume` directory will already exist as the task starts. Since the
+      artifacts will be created directly on the host, they do not need to
+      be copied from the container to the host prior to being published,
+      so perform more efficiently, and simplify the d2g-generated task payload.
+      Moreover, in the case of time-critical spot terminations, tasks have
+      more chance of successfully publishing volume artifacts than directory
+      artifacts, due to the efficiency gain.
     additionalProperties:
       $ref: '#/definitions/artifact'
   supersederUrl:
@@ -209,12 +238,14 @@ properties:
         description: >-
           Logs are stored on the worker during the duration of tasks and
           available via http chunked streaming then uploaded to s3
+        default: true
       bulkLog:
         type: boolean
         title: Bulk upload the task log into a single artifact
         description: >-
           Useful if live logging is not interesting but the overalllog is later
           on
+        default: true
       taskclusterProxy:
         type: boolean
         title: Taskcluster auth proxy service
@@ -224,21 +255,12 @@ properties:
           set in the task. This can be used to make api calls via the
           [client](https://github.com/taskcluster/taskcluster-client) CURL,
           etc... Without embedding credentials in the task.
+        default: false
       artifacts:
         type: boolean
         title: Artifact uploads
         description: ''
-      dind:
-        type: boolean
-        title: Docker in Docker
-        description: >-
-          Runs docker-in-docker and binds `/var/run/docker.sock` into the
-          container. Doesn't allow privileged mode, capabilities or host volume
-          mounts.
-      dockerSave:
-        type: boolean
-        title: Docker save
-        description: Uploads docker images as artifacts
+        default: true
       interactive:
         type: boolean
         title: Docker Exec Interactive
@@ -246,12 +268,14 @@ properties:
           This allows you to interactively run commands inside the container and
           attaches you to the stdin/stdout/stderr over a websocket. Can be used
           for SSH-like access to docker containers.
+        default: false
       allowPtrace:
         type: boolean
         title: Allow ptrace within the container
         description: >-
           This allows you to use the Linux ptrace functionality inside the
           container; it is otherwise disallowed by Docker's security policy.
+        default: false
       chainOfTrust:
         type: boolean
         title: Enable generation of ed25519-signed Chain of Trust artifacts
@@ -260,6 +284,7 @@ properties:
           be generated which will include information for downstream tasks to
           build a level of trust for the artifacts produced by the task and the
           environment it ran in.
+        default: false
     required: []
     additionalProperties: false
 additionalProperties: false

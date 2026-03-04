@@ -1,10 +1,9 @@
-//go:build linux || darwin
+//go:build linux || darwin || freebsd
 
 package perms
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"syscall"
 )
@@ -21,9 +20,9 @@ func WritePrivateFile(filename string, content []byte) error {
 	_ = os.Remove(filename)
 
 	// 0600 permissions actually mean what they say on POSIX (unlike Windows)
-	err := ioutil.WriteFile(filename, content, 0600)
+	err := os.WriteFile(filename, content, 0600)
 	if err != nil {
-		return fmt.Errorf("Could not write to %s: %w", filename, err)
+		return fmt.Errorf("could not write to %s: %w", filename, err)
 	}
 
 	return verifyPrivateToOwner(filename)
@@ -36,7 +35,7 @@ func ReadPrivateFile(filename string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }
 
 // verifyPrivateToOwner verifies that the given file can only be read by the

@@ -1,10 +1,9 @@
-const fs = require('fs');
-const _ = require('lodash');
-const glob = require('glob');
-const { REPO_ROOT } = require('../../utils');
+import fs from 'fs';
+import _ from 'lodash';
+import glob from 'glob';
+import { REPO_ROOT } from '../../utils/index.js';
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [{
   title: 'Docs headings match expectations',
   requires: [],
   provides: [],
@@ -37,7 +36,7 @@ exports.tasks.push({
       let topLevelHd = 7;
       for (let i = 1; i <= 6; i++) {
         if (hd[i] != null && hd[i].length > 0) {
-          if (i < topLevelHd){
+          if (i < topLevelHd) {
             topLevelHd = i;
           }
         }
@@ -54,8 +53,8 @@ exports.tasks.push({
     }
 
     //if there are any errors found
-    if(countErrors > 0) {
+    if (countErrors > 0) {
       throw new Error(errors);
     }
   },
-});
+}];

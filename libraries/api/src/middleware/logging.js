@@ -1,5 +1,5 @@
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { hrtime } = require('process');
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { hrtime } from 'process';
 
 MonitorManager.register({
   name: 'apiMethod',
@@ -48,8 +48,15 @@ MonitorManager.register({
 /**
  * Log an API request on completion, including information determined
  * by the `remoteAuthentication` middleware, if present.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   builder: import('../index.js').APIBuilder<TContext>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
-const logRequest = ({ builder, entry }) => {
+export const logRequest = ({ builder, entry }) => {
   return (req, res, next) => {
     let sent = false;
     const start = hrtime.bigint();
@@ -75,6 +82,17 @@ const logRequest = ({ builder, entry }) => {
       }
 
       const end = hrtime.bigint();
+      const duration = Number(end - start) / 1e6; // in ms
+
+      const labels = {
+        method: req.method,
+        name: entry.name,
+        status: res.statusCode.toString(),
+        service: builder.serviceName,
+      };
+
+      req.tcContext.monitor.metric.httpRequestsTotal(1, labels);
+      req.tcContext.monitor.metric.httpRequestDurationSeconds(duration / 1000, labels);
 
       req.tcContext.monitor.log.apiMethod({
         name: entry.name,
@@ -94,7 +112,7 @@ const logRequest = ({ builder, entry }) => {
         sourceIp: req.ip,
         satisfyingScopes: req.satisfyingScopes ? req.satisfyingScopes : [],
         statusCode: res.statusCode,
-        duration: Number(end - start) / 1e6, // in ms
+        duration,
       });
     };
     res.once('finish', send);
@@ -102,5 +120,3 @@ const logRequest = ({ builder, entry }) => {
     next();
   };
 };
-
-exports.logRequest = logRequest;

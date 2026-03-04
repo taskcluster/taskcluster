@@ -76,7 +76,7 @@ export default class PulseBindings extends Component {
           <div className={classes.inputList}>
             <Autocomplete
               freeSolo
-              options={exchangesDictionary}
+              options={exchangesDictionary || []}
               inputValue={pulseExchange}
               onInputChange={(event, newValue) =>
                 onPulseExchangeChange({

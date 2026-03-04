@@ -1,18 +1,17 @@
-const _ = require('lodash');
-const stringify = require('fast-json-stable-stringify');
-const crypto = require('crypto');
-const taskcluster = require('taskcluster-client');
-const yaml = require('js-yaml');
-const assert = require('assert');
-const { consume } = require('taskcluster-lib-pulse');
-
-const { deprecatedStatusHandler } = require('./deprecatedStatus');
-const { taskGroupCreationHandler } = require('./taskGroupCreation');
-const { statusHandler } = require('./status');
-const { taskDefinedHandler } = require('./taskDefined');
-const { jobHandler } = require('./job');
-const { rerunHandler } = require('./rerun');
-const { POLICIES } = require('./policies');
+import _ from 'lodash';
+import stringify from 'fast-json-stable-stringify';
+import crypto from 'crypto';
+import taskcluster from '@taskcluster/client';
+import yaml from 'js-yaml';
+import assert from 'assert';
+import { consume } from '@taskcluster/lib-pulse';
+import { deprecatedStatusHandler } from './deprecatedStatus.js';
+import { taskGroupCreationHandler } from './taskGroupCreation.js';
+import { statusHandler } from './status.js';
+import { jobHandler } from './job.js';
+import { rerunHandler } from './rerun.js';
+import { POLICIES } from './policies.js';
+import { GITHUB_BUILD_STATES } from '../constants.js';
 
 /**
  * Create handlers
@@ -28,11 +27,11 @@ class Handlers {
       deprecatedResultStatusQueueName,
       deprecatedInitialStatusQueueName,
       resultStatusQueueName,
-      initialStatusQueueName,
       rerunQueueName,
       intree,
       context,
       pulseClient,
+      queueClient,
     } = options;
 
     assert(monitor, 'monitor is required for statistics');
@@ -50,7 +49,6 @@ class Handlers {
     this.jobQueueName = jobQueueName;
     this.rerunQueueName = rerunQueueName;
     this.deprecatedInitialStatusQueueName = deprecatedInitialStatusQueueName;
-    this.initialStatusQueueName = initialStatusQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
 
@@ -62,11 +60,14 @@ class Handlers {
     this.jobPq = null;
     this.resultStatusPq = null;
     this.deprecatedResultStatusPq = null;
-    this.initialTaskStatusPq = null;
     this.deprecatedInitialStatusPq = null;
     this.rerunPq = null;
 
-    this.queueClient = null;
+    this.queueClient = queueClient;
+
+    this.handlersCount = {};
+
+    this.exchangeNames = {};
   }
 
   /**
@@ -75,19 +76,9 @@ class Handlers {
   async setup(options = {}) {
     assert(!this.jobPq, 'Cannot setup twice!');
     assert(!this.resultStatusPq, 'Cannot setup twice!');
-    assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
     assert(!this.rerunPq, 'Cannot setup twice!');
-
-    // This is a powerful Queue client without scopes to use throughout the handlers for things
-    // where taskcluster-github is acting of its own accord
-    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
-    // (see this.createTasks for example)
-    this.queueClient = new taskcluster.Queue({
-      rootUrl: this.context.cfg.taskcluster.rootUrl,
-      credentials: this.context.cfg.taskcluster.credentials,
-    });
 
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
@@ -106,11 +97,22 @@ class Handlers {
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
 
-    const statusBindings = [
+    this.exchangeNames = {
+      taskDefined: queueEvents.taskDefined().exchange,
+      taskFailed: queueEvents.taskFailed().exchange,
+      taskException: queueEvents.taskException().exchange,
+      taskCompleted: queueEvents.taskCompleted().exchange,
+      taskPending: queueEvents.taskPending().exchange,
+      taskRunning: queueEvents.taskRunning().exchange,
+      taskGroupResolved: queueEvents.taskGroupResolved().exchange,
+    };
+
+    // Listen for state changes of tasks and update check runs on github
+    const taskStatusBindings = [
+      queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskCompleted(`route.${this.context.cfg.app.checkTaskRoute}`),
-      queueEvents.taskPending(`route.${this.context.cfg.app.checkTaskRoute}`),
       queueEvents.taskRunning(`route.${this.context.cfg.app.checkTaskRoute}`),
     ];
 
@@ -119,6 +121,8 @@ class Handlers {
     // tasks. We wait for the entire group to be resolved before checking
     // for success.
     const deprecatedResultStatusBindings = [
+      queueEvents.taskPending(`route.${this.context.cfg.app.statusTaskRoute}`),
+      queueEvents.taskRunning(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskFailed(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskException(`route.${this.context.cfg.app.statusTaskRoute}`),
       queueEvents.taskGroupResolved({ schedulerId }),
@@ -129,22 +133,29 @@ class Handlers {
       githubEvents.taskGroupCreationRequested(`route.${this.context.cfg.app.statusTaskRoute}`),
     ];
 
-    // Listen for taskDefined event to create initial status on github
-    const taskBindings = [
-      queueEvents.taskDefined(`route.${this.context.cfg.app.checkTaskRoute}`),
-    ];
+    // This handler is called by PulseConsumer in sync manner
+    // If this would have wait for handler to finish,
+    // it will block new messages from being processed on time
+    // Consumer by default uses "prefetch: 5", which means only 5 messages would be delivered to client at a time,
+    // before client ACK them.
+    // To avoid queue grow over time we consume all messages and let nodejs runtime handle concurrent routines.
+    const callHandler = (name, handler) => {
+      const timedHandler = this.monitor.timedHandler(`${name}listener`, handler.bind(this));
 
-    const callHandler = (name, handler) => message => {
-      handler.call(this, message).catch(async err => {
-        await this.monitor.reportError(err);
-        return err;
-      }).then((err = null) => {
-        if (this.handlerComplete && !err) {
-          this.handlerComplete();
-        } else if (this.handlerRejected && err) {
-          this.handlerRejected(err);
-        }
-      });
+      return (message) => {
+        this._handlerStarted(name);
+        timedHandler.call(this, message).catch(async err => {
+          await this.monitor.reportError(err);
+          return err;
+        }).then((err = null) => {
+          this._handlerFinished(name, !!err);
+          if (this.handlerComplete && !err) {
+            this.handlerComplete();
+          } else if (this.handlerRejected && err) {
+            this.handlerRejected(err);
+          }
+        });
+      };
     };
 
     this.jobPq = await consume(
@@ -153,7 +164,7 @@ class Handlers {
         bindings: jobBindings,
         queueName: this.jobQueueName,
       },
-      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler).bind(this)),
+      callHandler('job', jobHandler),
     );
 
     this.deprecatedResultStatusPq = await consume(
@@ -162,7 +173,7 @@ class Handlers {
         bindings: deprecatedResultStatusBindings,
         queueName: this.deprecatedResultStatusQueueName,
       },
-      this.monitor.timedHandler('deprecatedStatuslistener', callHandler('status', deprecatedStatusHandler).bind(this)),
+      callHandler('status', deprecatedStatusHandler),
     );
 
     this.deprecatedInitialStatusPq = await consume(
@@ -171,25 +182,16 @@ class Handlers {
         bindings: deprecatedInitialStatusBindings,
         queueName: this.deprecatedInitialStatusQueueName,
       },
-      this.monitor.timedHandler('deprecatedlistener', callHandler('task', taskGroupCreationHandler).bind(this)),
+      callHandler('task', taskGroupCreationHandler),
     );
 
     this.resultStatusPq = await consume(
       {
         client: this.pulseClient,
-        bindings: statusBindings,
+        bindings: taskStatusBindings,
         queueName: this.resultStatusQueueName,
       },
-      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this)),
-    );
-
-    this.initialTaskStatusPq = await consume(
-      {
-        client: this.pulseClient,
-        bindings: taskBindings,
-        queueName: this.initialStatusQueueName,
-      },
-      this.monitor.timedHandler('tasklistener', callHandler('task', taskDefinedHandler).bind(this)),
+      callHandler('status', statusHandler),
     );
 
     this.rerunPq = await consume(
@@ -198,9 +200,10 @@ class Handlers {
         bindings: rerunBindings,
         queueName: this.rerunQueueName,
       },
-      this.monitor.timedHandler('rerunlistener', callHandler('rerun', rerunHandler).bind(this)),
+      callHandler('rerun', rerunHandler),
     );
 
+    this.reportHandlersCount = setInterval(() => this._reportHandlersCount(), 60 * 1000);
   }
 
   async terminate() {
@@ -210,9 +213,6 @@ class Handlers {
     if (this.resultStatusPq) {
       await this.resultStatusPq.stop();
     }
-    if (this.initialTaskStatusPq) {
-      await this.initialTaskStatusPq.stop();
-    }
     if (this.deprecatedResultStatusPq) {
       await this.deprecatedResultStatusPq.stop();
     }
@@ -221,6 +221,9 @@ class Handlers {
     }
     if (this.rerunPq) {
       await this.rerunPq.stop();
+    }
+    if (this.reportHandlersCount) {
+      clearInterval(this.reportHandlersCount);
     }
   }
 
@@ -253,6 +256,98 @@ class Handlers {
     }
   }
 
+  /**
+   * Cancel any running builds that are not the current build for a given pull request.
+   * This will not cancel builds for the same SHA because they can belong to different branches.
+   * If this is a pull request event, we only want to cancel builds of the same type:
+   *  [pull_request.opened, pull_request.synchronize] are treated as the same type
+   *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
+   */
+  async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
+    const { organization, repository, sha, pull_number: pullNumber,
+      task_group_id: newTaskGroupId, event_type: eventType } = newBuild;
+    debug(`canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
+
+    // avoid performing cancellation for non-push and non-pull-request events
+    if (!eventType || !['pull_request'].includes(eventType.split('.')[0])) {
+      debug(`event type ${eventType} is not supported. skipping cancelPreviousTaskGroups`);
+      return;
+    }
+
+    if (!pullNumber) {
+      debug(`pullNumber is not defined. Skipping cancelPreviousTaskGroups`);
+      return;
+    }
+
+    const scopes = [
+      `assume:repo:github.com/${organization}/${repository}:*`,
+      'queue:seal-task-group:taskcluster-github/*',
+      'queue:cancel-task-group:taskcluster-github/*',
+    ];
+
+    try {
+      let includedEventTypes = [eventType];
+      if (['pull_request.opened', 'pull_request.synchronize'].includes(eventType)) {
+        includedEventTypes = ['pull_request.opened', 'pull_request.synchronize'];
+      }
+
+      const builds = await this.context.db.fns.get_pending_github_builds(
+        null,
+        null,
+        organization,
+        repository,
+        null, // no cancelling by sha here
+        pullNumber,
+      );
+      const taskGroupIds = builds?.filter(
+        build => build.task_group_id !== newTaskGroupId && includedEventTypes.includes(build.event_type),
+      ).map(build => build.task_group_id);
+
+      if (taskGroupIds.length > 0) {
+        // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
+        const limitedQueueClient = this.queueClient.use({ authorizedScopes: scopes });
+
+        debug(`Found running task groups: ${taskGroupIds.join(', ')}. Sealing and cancelling`);
+        try {
+          await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
+          await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+        } catch (queueErr) {
+          if (queueErr.code !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
+            throw queueErr;
+          }
+          // we can ignore task groups that were not yet created on queue side, and simply mark as cancelled in the db
+          this.monitor.reportError(`Task group not found in queue: ${queueErr.message} while canceling`);
+        }
+
+        await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(
+          taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
+        )));
+      }
+    } catch (err) {
+      debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
+      err.message = [
+        'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
+        '',
+        '```',
+        scopes.join(', '),
+        '```',
+        '',
+        err.message,
+      ].join('\n');
+
+      await this.monitor.reportError(err);
+      await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        pullNumber,
+        error: err,
+      });
+    }
+  }
+
   commentKey(idents) {
     return crypto
       .createHash('md5')
@@ -280,37 +375,73 @@ class Handlers {
     if (typeof errorBody === 'object') {
       errorBody = stringify(errorBody, null, 4);
     }
-    let body = [
-      '<details>\n',
-      '<summary>Uh oh! Looks like an error! Details</summary>',
-      '',
-      errorBody, // already in Markdown..
-      '',
-      '</details>',
-    ].join('\n') ;
 
     // Warn the user know that there was a problem handling their request
     // by posting a comment; this error is then considered handled and not
     // reported to the taskcluster team or retried
+    await this.createComment({ debug, instGithub, organization, repository, sha, pullNumber,
+      body: {
+        summary: 'Uh oh! Looks like an error!',
+        details: errorBody,
+      },
+    });
+  }
+
+  async createComment({ debug, instGithub, organization, repository, sha, pullNumber, body }) {
+    if (this.isDuplicateComment(organization, repository, sha, body, pullNumber)) {
+      debug(`comment on ${organization}/${repository}#${pullNumber} found to be duplicate. skipping`);
+      return;
+    }
+
+    let commentBody = body;
+    if (commentBody.summary && commentBody.details) {
+      commentBody = [
+        '<details>\n',
+        `<summary>${commentBody.summary}</summary>`,
+        '',
+        commentBody.details, // already in Markdown..
+        '',
+        '</details>',
+      ].join('\n');
+    }
+
     if (pullNumber) {
-      debug(`creating exception comment on ${organization}/${repository}#${pullNumber}`);
+      debug(`creating comment on ${organization}/${repository}#${pullNumber}`);
       await instGithub.issues.createComment({
         owner: organization,
         repo: repository,
         issue_number: pullNumber,
-        body,
+        body: commentBody,
       });
-      this.markCommentSent(organization, repository, sha, error, pullNumber);
+      this.markCommentSent(organization, repository, sha, body, pullNumber);
       return;
     }
-    debug(`creating exception comment on ${organization}/${repository}@${sha}`);
+    debug(`creating comment on ${organization}/${repository}@${sha}`);
     await instGithub.repos.createCommitComment({
       owner: organization,
       repo: repository,
       commit_sha: sha,
-      body,
+      body: commentBody,
     });
-    this.markCommentSent(organization, repository, sha, error, pullNumber);
+    this.markCommentSent(organization, repository, sha, body, pullNumber);
+  }
+
+  async addCommentReaction({ instGithub, organization, repository, commentId, reaction }) {
+    assert(['+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes'].includes(reaction),
+      `Invalid reaction: ${reaction}`);
+    try {
+      await instGithub.reactions.createForIssueComment({
+        owner: organization,
+        repo: repository,
+        comment_id: commentId,
+        content: reaction,
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        return;
+      }
+      throw err;
+    }
   }
 
   /**
@@ -333,6 +464,23 @@ class Handlers {
     }
 
     return DEFAULT_POLICY;
+  }
+
+  /**
+   * Checks if the repository allows comments to trigger builds on Pull Requests.
+   * Only v1 of `.taskcluster.yml` supports this feature.
+   * `policy.allowComments` needs to be set to `"collaborators"` to enable this feature.
+   * (Currently the only option allowed)
+   *
+   * @param {object} taskclusterYml
+   * @returns string | null
+   */
+  getRepoAllowCommentsPolicy(taskclusterYml) {
+    if (taskclusterYml.version === 1) {
+      return taskclusterYml?.policy?.allowComments || null;
+    }
+
+    return null;
   }
 
   /**
@@ -373,6 +521,40 @@ class Handlers {
 
     return yaml.load(Buffer.from(response.data.content, 'base64').toString());
   }
+
+  _handlerStarted(name) {
+    if (typeof this.handlersCount[name] === 'undefined') {
+      this.handlersCount[name] = {
+        total: 1,
+        finished: 0,
+        error: 0,
+      };
+    } else {
+      this.handlersCount[name].total += 1;
+    }
+  }
+
+  _handlerFinished(name, hasError = false) {
+    this.handlersCount[name].finished += 1;
+    if (hasError) {
+      this.handlersCount[name].error += 1;
+    }
+  }
+
+  _reportHandlersCount() {
+    if (!this.monitor) {
+      return;
+    }
+
+    for (const [handlerName, stats] of Object.entries(this.handlersCount)) {
+      this.monitor.log.githubActiveHandlers({
+        handlerName,
+        totalCount: stats.total,
+        runningCount: stats.total - stats.finished,
+        errorCount: stats.error,
+      });
+    }
+  }
 }
 
-module.exports = Handlers;
+export default Handlers;

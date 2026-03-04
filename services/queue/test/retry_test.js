@@ -1,16 +1,16 @@
-const debug = require('debug')('test:retry');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test:retry');
+import slugid from 'slugid';
+import taskcluster from '@taskcluster/client';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
-  helper.withQueueService(mock, skipping);
   helper.withServer(mock, skipping);
   helper.withPollingServices(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -56,8 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].state === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'claim-expired'));
     }, 100, 250);
-    // there should be no task-exception message in this case
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.clearPulseMessages();
 
     debug('### Stop claimResolver');

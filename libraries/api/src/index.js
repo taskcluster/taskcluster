@@ -1,23 +1,48 @@
-const assert = require('assert');
-const _ = require('lodash');
-const utils = require('./utils');
-const errors = require('./middleware/errors');
-const ScopeExpressionTemplate = require('./expressions');
-const API = require('./api');
-const { paginateResults } = require('./pagination');
-const { reportError } = require('./error-reply');
-const path = require('path');
+import assert from 'assert';
+import { cleanRouteAndParams } from './utils.js';
+import { ERROR_CODES } from './middleware/errors.js';
+import ScopeExpressionTemplate from './expressions.js';
+import API from './api.js';
+import path from 'path';
+import fs from 'fs/promises';
+import * as middleware from './middleware/index.js';
 
-exports.paginateResults = paginateResults;
-exports.reportError = reportError;
+export * from './pagination.js';
+export * from './error-reply.js';
 
-const REPO_ROOT = path.join(__dirname, '../../../');
+/**
+ * @template {Record<string, any>} TContext
+ * @typedef {import('../@types/index.d.ts').APIEntryOptions<TContext>} APIEntryOptions
+ */
+/**
+ * @template {Record<string, any>} TContext
+ * @typedef {import('../@types/index.d.ts').APIBuilderOptions<TContext>} APIBuilderOptions
+ */
 
-const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-const taskclusterVersion = require(taskclusterVersionFile);
+/**
+ * @typedef {import('../@types/index.d.ts').StabilityLevel} StabilityLevel
+ * @typedef {import('../@types/index.d.ts').APIRequest} APIRequest
+ * @typedef {import('../@types/index.d.ts').APIResponse} APIResponse
+ */
+
+/**
+ * @type {object | null}
+ */
+let taskclusterVersion = null;
+export const loadVersion = async () => {
+  if (!taskclusterVersion) {
+    const __dirname = new URL('.', import.meta.url).pathname;
+    const REPO_ROOT = path.join(__dirname, '../../../');
+    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
+
+    taskclusterVersion = JSON.parse(await fs.readFile(taskclusterVersionFile, 'utf8'));
+  }
+  return taskclusterVersion;
+};
 
 /**
  * A ping method, added automatically to every service
+ * @type {APIEntryOptions<{}>}
  */
 const ping = {
   method: 'get',
@@ -42,6 +67,7 @@ const ping = {
  * A load balancer heartbeat method, added automatically to every service
  * Following Dockerflow standards https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements
  * Can likely remove the /ping endpoint but I left for backwards compatibility
+ * @type {APIEntryOptions<{}>}
  */
 const lbHeartbeat = {
   method: 'get',
@@ -62,6 +88,7 @@ const lbHeartbeat = {
 /**
  * A version method, added automatically to every service
  * Following Dockerflow standards https://github.com/mozilla-services/Dockerflow/#containerized-app-requirements
+ * @type {APIEntryOptions<{}>}
  */
 const version = {
   method: 'get',
@@ -74,41 +101,56 @@ const version = {
     'Respond with the JSON version object.',
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
   ].join('\n'),
-  handler: function(_req, res) {
-    res.json(taskclusterVersion);
+  handler: async function(_req, res) {
+    res.json(await loadVersion());
   },
 };
 
 /**
  * Create an APIBuilder; see README for syntax
+ *
+ * @template {Record<string, any>} TContext
  */
-class APIBuilder {
+export class APIBuilder {
+  /**
+   * Create an APIBuilder
+   * @param {APIBuilderOptions<TContext>} options
+   */
   constructor(options) {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
     assert(!options.version, 'version is now apiVersion');
-    ['title', 'description', 'serviceName', 'apiVersion'].forEach(function(key) {
+    /** @satisfies {Array<keyof APIBuilderOptions<TContext>>} */
+    (['title', 'description', 'serviceName', 'apiVersion']).forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
     assert(/^v[0-9]+$/.test(options.apiVersion), `apiVersion "${options.apiVersion}" is not valid`);
-    options = _.defaults({
-      errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
-    }, options, {
+    options = {
       params: {},
       context: [],
-      errorCodes: {},
-    });
-    _.forEach(options.errorCodes, (value, key) => {
+      ...options,
+      ...{
+        errorCodes: {
+          ...ERROR_CODES,
+          ...(options?.errorCodes || {}),
+        },
+      },
+    };
+    // @ts-ignore - we know that options.errorCodes is defined
+    Object.entries(options.errorCodes).forEach(([key, value]) => {
       assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
       assert(typeof value === 'number', 'Expected HTTP status code to be int');
     });
+    /** @type {string} */
     this.serviceName = options.serviceName;
     this.apiVersion = options.apiVersion;
     this.title = options.title;
     this.description = options.description;
     this.params = options.params;
     this.context = options.context;
+    /** @type {import('../@types/index.d.ts').ErrorCodes} */
     this.errorCodes = options.errorCodes;
+    /** @type {APIEntryOptions<TContext>[]} */
     this.entries = [ping, lbHeartbeat, version];
     this.hasSchemas = false;
   }
@@ -158,9 +200,14 @@ class APIBuilder {
    * **Note** the handler may return a promise, if this promise fails we will
    * log the error and return an error message. If the promise is successful,
    * nothing happens.
+   *
+   * @template {keyof TContext} K
+   * @param {APIEntryOptions<TContext>} options
+   * @param {(this: Pick<TContext, K>, req: APIRequest, res: APIResponse) => Promise<void>} handler
    */
   declare(options, handler) {
-    ['name', 'method', 'route', 'title', 'description', 'category'].forEach(function(key) {
+    /** @satisfies {Array<keyof APIEntryOptions<TContext>>} */
+    (['name', 'method', 'route', 'title', 'description', 'category']).forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     // unlike other options above, scopes is allowed to be null, but not undefined...
@@ -172,9 +219,9 @@ class APIBuilder {
     assert(STABILITY_LEVELS.indexOf(options.stability) !== -1,
       'options.stability must be a valid stability-level, ' +
            'see base.API.stability for valid options');
-    options.params = _.defaults({}, options.params || {}, this.params);
+    options.params = { ...this.params, ...(options.params || {}) };
     options.query = options.query || {};
-    _.forEach(options.query, (value, key) => {
+    Object.entries(options.query).forEach(([key, value]) => {
       if (!(value instanceof RegExp || value instanceof Function)) {
         throw new Error('query.' + key + ' must be a RegExp or a function!');
       }
@@ -211,6 +258,7 @@ class APIBuilder {
 
   /**
    * Build an API.
+   * @param {import('../@types/index.d.ts').APIOptions<TContext>} options
    */
   async build(options) {
     options.builder = this;
@@ -234,13 +282,14 @@ class APIBuilder {
       serviceName: this.serviceName,
       apiVersion: this.apiVersion,
       entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
-        const [route, params] = utils.cleanRouteAndParams(entry.route);
+        const [route, params] = cleanRouteAndParams(entry.route);
 
+        /** @type {Record<string, any>} */
         const retval = {
           type: 'function',
           method: entry.method,
           route: route,
-          query: _.keys(entry.query || {}),
+          query: Object.keys(entry.query || {}),
           args: params,
           name: entry.name,
           stability: entry.stability,
@@ -261,7 +310,11 @@ class APIBuilder {
   }
 }
 
-/** Stability levels offered by API method */
+/**
+ * Stability levels offered by API method
+ *
+ * @type {Record<StabilityLevel, StabilityLevel>}
+ */
 const stability = {
   /**
    * API has been marked for deprecation and should not be used in new clients.
@@ -301,10 +354,8 @@ const stability = {
 };
 
 // List of valid stability-levels
-const STABILITY_LEVELS = _.values(stability);
+const STABILITY_LEVELS = Object.values(stability);
 APIBuilder.stability = stability;
 
-exports.APIBuilder = APIBuilder;
-
 // Re-export middleware
-APIBuilder.middleware = require('./middleware');
+APIBuilder.middleware = middleware;

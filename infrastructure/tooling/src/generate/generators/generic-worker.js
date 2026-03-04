@@ -1,14 +1,12 @@
-const path = require('path');
-const util = require('util');
-const rimraf = util.promisify(require('rimraf'));
-const glob = require('glob');
-const { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } = require('../../utils');
-
-exports.tasks = [];
+import path from 'path';
+import glob from 'glob';
+import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
+import { rimraf } from 'rimraf';
+export const tasks = [];
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
-exports.tasks.push({
+tasks.push({
   title: 'Generate Generic-Worker',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-generic-worker'],
@@ -21,7 +19,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: `Generate Generic-Worker Schemas`,
   requires: [],
   provides: [
@@ -48,7 +46,7 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
+tasks.push({
   title: 'Update generic-worker README',
   requires: ['target-generic-worker'],
   provides: ['generic-worker-readme'],
@@ -59,11 +57,19 @@ exports.tasks.push({
     await execCommand({
       command: ['go', 'build', '-tags', 'multiuser', '-o', binary, './workers/generic-worker'],
       utils,
+      env: { GOOS: 'linux', GOARCH: 'amd64', ...process.env },
     });
+
+    let gwHelpCommand;
+    if (process.platform === 'linux') {
+      gwHelpCommand = [binary, '--help'];
+    } else {
+      gwHelpCommand = ['docker', 'run', '--rm', '-q', '-v', `${tempDir}:/app`, '-w', '/app', 'alpine', './generic-worker', '--help'];
+    }
 
     let gwHelp = await execCommand({
       dir: REPO_ROOT,
-      command: [binary, '--help'],
+      command: gwHelpCommand,
       utils,
       keepAllOutput: true,
     });
@@ -75,12 +81,17 @@ exports.tasks.push({
     gwHelp = gwHelp.replace(/\[default \(varies by platform\): .*\]/, '[default varies by platform]');
 
     const ticks = '```';
-    await modifyRepoFile(
+    [
       path.join('workers', 'generic-worker', 'README.md'),
-      async content => content
-        .replace(
-          /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
-          `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
+      path.join('ui', 'docs', 'reference', 'workers', 'generic-worker', 'usage.mdx'),
+    ].forEach(async file => {
+      await modifyRepoFile(
+        file,
+        async content => content
+          .replace(
+            /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
+            `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
+    });
   },
 });
 
@@ -88,12 +99,12 @@ const schemaMdx = (title, $id) => `---
 title: ${title.replace(/^.* - /, 'Task Payload - ')}
 order: 1000
 ---
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 <SchemaTable schema="${$id}" />
 `;
 
-exports.tasks.push({
+tasks.push({
   title: 'Update generic-worker payload formats',
   requires: ['generic-worker-schemas'],
   provides: ['target-gw-docs'],
@@ -116,7 +127,7 @@ exports.tasks.push({
     }
 
     const links = schemaFiles
-      .map(({ title, filename_base }) => ` * [${title}](/docs/reference/workers/generic-worker/${filename_base})`)
+      .map(({ title, filename_base }) => ` * [Generic worker payload -${title.split('-')[1]}](/docs/reference/workers/generic-worker/${filename_base})`)
       .join('\n');
 
     await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'),

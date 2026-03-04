@@ -1,4 +1,4 @@
-const assume = require('assume');
+import assume from 'assume';
 /* eslint-disable quote-props */
 
 /** Test cases for use in trie_test.js */
@@ -503,7 +503,8 @@ const testcases = [
   }
   return { title, rules, hasIndirctResults, results };
 });
+
 /* eslint-enable quote-props */
 
 // Export testcases
-module.exports = testcases;
+export default testcases;

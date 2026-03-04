@@ -1,13 +1,23 @@
-const yaml = require('js-yaml');
-const semver = require('semver');
-const glob = require('glob');
-const chalk = require('chalk');
-const appRootDir = require('app-root-dir');
-const { REPO_ROOT, readRepoFile, readRepoJSON, writeRepoFile, gitAdd, gitLog, gitCurrentBranch } = require('../utils');
-const taskcluster = require('taskcluster-client');
-const path = require('path');
-const openEditor = require('open-editor');
-const { Octokit } = require("@octokit/rest");
+import yaml from 'js-yaml';
+import semver from 'semver';
+import glob from 'glob';
+import chalk from 'chalk';
+import appRootDir from 'app-root-dir';
+
+import {
+  REPO_ROOT,
+  readRepoFile,
+  readRepoJSON,
+  writeRepoFile,
+  gitAdd,
+  gitLog,
+  gitCurrentBranch,
+} from '../utils/index.js';
+
+import taskcluster from '@taskcluster/client';
+import path from 'path';
+import openEditor from 'open-editor';
+import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
   'major': 1,
@@ -49,10 +59,10 @@ const strcmp = (a, b) => {
  * Representation of the as-yet-unreleased changelog snippets
  *
  * options: {
- *   skipUpdates: if true, don't load renovate updates
+ *   skipUpdates: if true, don't load dependabot updates
  * }
  */
-class ChangeLog {
+export class ChangeLog {
   constructor(options = {}) {
     this.loaded = false;
     this.snippets = [];
@@ -119,7 +129,7 @@ class ChangeLog {
     const lastVersion = await this.lastVersion();
     this.updates = await gitLog({
       dir: REPO_ROOT,
-      args: [`v${lastVersion}..HEAD`, "--author=bot@renovateapp.com", "--pretty=%s (%h)"],
+      args: [`v${lastVersion}..HEAD`, '--author=dependabot', "--pretty=%s (%h)"],
     });
   }
 
@@ -207,7 +217,7 @@ class ChangeLog {
         '### Automated Package Updates',
         '',
         '<details>',
-        `<summary>${this.updates.length} Renovate updates</summary>`,
+        `<summary>${this.updates.length} Dependabot updates</summary>`,
         '', // without this newline, the list will not render correctly
       ]
         .concat(this.updates.map(u => `* ${u}`))
@@ -245,6 +255,8 @@ const check_pr = async (pr) => {
   const boringFiles = [
     /yarn\.lock$/,
     /package\.json$/,
+    /requirements\.txt$/,
+    /Cargo\.(lock|toml)$/,
     /^go\.(mod|sum)$/,
     /^\.yarn$/,
     /^README.md$/,
@@ -255,6 +267,7 @@ const check_pr = async (pr) => {
     /^clients\/client-web\/src\/clients\//,
     /^clients\/client-py\/taskcluster\/generated\//,
     /^clients\/client-py\/README\.md$/,
+    /^clients\/client-py\/uv\.lock$/,
     /^clients\/client\/src\/apis\.js$/,
     /^clients\/client-rust\/src\/generated\//,
     /^clients\/client-shell\/apis\/services\.go$/,
@@ -284,7 +297,7 @@ const check_pr = async (pr) => {
   return true;
 };
 
-const add = async (options) => {
+export const add = async (options) => {
   let level, bad;
   if (options.major) {
     level = 'major';
@@ -371,7 +384,7 @@ const add = async (options) => {
   }
 };
 
-const show = async (options) => {
+export const show = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);
@@ -380,16 +393,14 @@ const show = async (options) => {
   console.log(await cl.format());
 };
 
-const check = async (options) => {
+export const check = async (options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
 
   if (options.pr) {
-    if (!await check_pr(options.pr)) {
+    if (!(await check_pr(options.pr))) {
       process.exit(1);
     }
   }
 };
-
-module.exports = { add, show, check, ChangeLog };

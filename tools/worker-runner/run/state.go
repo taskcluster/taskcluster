@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
-	taskcluster "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/perms"
+	taskcluster "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/perms"
 )
 
 // State represents the state of the worker run.  Its contents are built up
@@ -52,7 +52,7 @@ type State struct {
 	// but may fall onto undesirable defaults if these are not provided
 	// A bit more info on that here
 	// https://github.com/taskcluster/taskcluster-worker-runner/pull/30#pullrequestreview-277378260
-	ProviderMetadata map[string]interface{}
+	ProviderMetadata map[string]any
 
 	// the accumulated WorkerConfig for this run, including files to create
 	WorkerConfig *cfg.WorkerConfig

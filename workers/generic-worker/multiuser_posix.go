@@ -1,42 +1,38 @@
-//go:build (multiuser && darwin) || (multiuser && linux)
+//go:build multiuser && (darwin || linux || freebsd)
 
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
 
+	"maps"
+
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v44/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
 	return shell.Escape(task.Payload.Command[index]...)
 }
 
-func platformFeatures() []Feature {
-	return []Feature{
-		// keep chain of trust as low down as possible, as it checks permissions
-		// of signing key file, and a feature could change them, so we want these
-		// checks as late as possible
-		&ChainOfTrustFeature{},
-	}
-}
-
 func deleteDir(path string) error {
 	log.Print("Removing directory '" + path + "'...")
-	err := host.Run("/usr/bin/sudo", "/bin/chmod", "-R", "u+w", path)
+	err := host.Run("/bin/chmod", "-R", "u+w", path)
 	if err != nil {
 		log.Print("WARNING: could not chmod -R u+w '" + path + "'")
 		log.Printf("%v", err)
 	}
-	err = host.Run("/usr/bin/sudo", "/bin/rm", "-rf", path)
+	err = host.Run("/bin/rm", "-rf", path)
 	if err != nil {
 		log.Print("WARNING: could not delete directory '" + path + "'")
 		log.Printf("%v", err)
@@ -47,7 +43,7 @@ func deleteDir(path string) error {
 
 func (task *TaskRun) generateCommand(index int) error {
 	var err error
-	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), taskContext.pd)
+	task.Commands[index], err = process.NewCommand(task.Payload.Command[index], taskContext.TaskDir, task.EnvVars(), task.pd)
 	if err != nil {
 		return err
 	}
@@ -55,6 +51,46 @@ func (task *TaskRun) generateCommand(index int) error {
 	defer task.logMux.RUnlock()
 	task.Commands[index].DirectOutput(task.logWriter)
 	return nil
+}
+
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	var cmd []string
+	var env []string
+
+	if d2gConversionInfo != nil {
+		pathEnv := os.Getenv("PATH")
+		env = []string{"PATH=" + pathEnv}
+
+		cmd = []string{"docker", "exec", "-it", d2gConversionInfo.ContainerName, "/bin/bash"}
+	} else {
+		env = task.EnvVars()
+		cmd = []string{"bash"}
+	}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	pathEnv := os.Getenv("PATH")
+	env := []string{"PATH=" + pathEnv}
+	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx context.Context) (*exec.Cmd, error) {
+	var processCmd *process.Command
+	var err error
+
+	env = append(env, "TERM=hterm-256color")
+
+	if ctx == nil {
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env, task.pd)
+	} else {
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env, task.pd)
+	}
+
+	return processCmd.Cmd, err
 }
 
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
@@ -70,29 +106,14 @@ func (task *TaskRun) setVariable(variable string, value string) error {
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	return nil
 }
 
-func RenameCrossDevice(oldpath, newpath string) (err error) {
+func RenameCrossDevice(oldpath, newpath string) error {
 	// TODO: here we should be able to rename when oldpath and newpath are on
 	// different partitions - for now this will cover 99% of cases.
 	return os.Rename(oldpath, newpath)
-}
-
-func defaultTasksDir() string {
-	// assume all user home directories are all in same folder, i.e. the parent
-	// folder of the current user's home folder
-	return filepath.Dir(os.Getenv("HOME"))
-}
-
-func rebootBetweenTasks() bool {
-	return true
-}
-
-func platformTargets(arguments map[string]interface{}) ExitCode {
-	log.Print("Internal error - no target found to run, yet command line parsing successful")
-	return INTERNAL_ERROR
 }
 
 // we put this in init() instead of startup() as we want tests to be able to change
@@ -117,22 +138,23 @@ func (task *TaskRun) EnvVars() []string {
 	taskEnv["PATH"] = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 	taskEnv["USER"] = taskContext.User.Name
 
-	for k, v := range task.Payload.Env {
-		taskEnv[k] = v
-	}
+	maps.Copy(taskEnv, task.Payload.Env)
 
 	// Values that should be overwritten if also set in task definition
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
+	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
-	if config.RunTasksAsCurrentUser {
-		taskEnv["TASK_USER_CREDENTIALS"] = filepath.Join(cwd, "current-task-user.json")
-	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && !config.HeadlessTasks {
 		taskEnv["DISPLAY"] = ":0"
+		taskEnv["XDG_RUNTIME_DIR"] = "/run/user/" + strconv.Itoa(int(task.pd.SysProcAttr.Credential.Uid))
 	}
 	if config.WorkerLocation != "" {
 		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
+	}
+	if config.InstanceType != "" {
+		taskEnv["TASKCLUSTER_INSTANCE_TYPE"] = config.InstanceType
 	}
 
 	for i, j := range taskEnv {
@@ -142,19 +164,25 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
-}
+func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
+	if dir == "" || newOwnerUsername == "" || cache == nil {
+		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
+	}
 
-func MkdirAllTaskUser(dir string, perms os.FileMode) (err error) {
-	cmd, err := process.NewCommand([]string{"mkdir", "-p", dir}, taskContext.TaskDir, []string{}, taskContext.pd)
-	if err != nil {
-		return fmt.Errorf("Cannot create process to create directory %v with permissions %v as task user %v from directory %v: %v", dir, perms, taskContext.User.Name, taskContext.TaskDir, err)
+	// Do nothing if the current owner is the same as the new owner
+	if cache.OwnerUsername == newOwnerUsername {
+		return nil
 	}
-	result := cmd.Execute()
-	if result.ExitError != nil {
-		return fmt.Errorf("Cannot create directory %v with permissions %v as task user %v from directory %v: %v", dir, perms, taskContext.User.Name, taskContext.TaskDir, result)
+
+	switch runtime.GOOS {
+	case "darwin":
+		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":staff", dir)
+	case "linux":
+		return host.Run("/usr/bin/chown", "-R", "--quiet", "--from", cache.OwnerUID, newOwnerUsername+":"+newOwnerUsername, dir)
+	case "freebsd":
+		return host.Run("/usr/sbin/chown", "-R", newOwnerUsername+":"+newOwnerUsername, dir)
 	}
-	return nil
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
@@ -173,30 +201,18 @@ func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwru
 			return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", fileOrDir)
 		case "linux":
 			return host.Run("/bin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
+		case "freebsd":
+			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
 		}
-		return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
+		return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 	}
 	switch runtime.GOOS {
 	case "darwin":
 		return host.Run("/usr/sbin/chown", user.Name+":staff", fileOrDir)
 	case "linux":
 		return host.Run("/bin/chown", user.Name+":"+user.Name, fileOrDir)
+	case "freebsd":
+		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
 	}
-	return fmt.Errorf("Unknown platform: %v", runtime.GOOS)
-}
-
-func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
-	// Note, only need to set top directory, not recursively, since without
-	// access to top directory, nothing inside can be read anyway
-	var err error
-	switch runtime.GOOS {
-	case "darwin":
-		err = host.Run("/usr/sbin/chown", "0:0", dir)
-	case "linux":
-		err = host.Run("/bin/chown", "0:0", dir)
-	}
-	if err != nil {
-		return fmt.Errorf("[mounts] Not able to make directory %v owned by root/root in order to prevent %v from having access: %v", dir, user.Name, err)
-	}
-	return os.Chmod(dir, 0700)
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 }

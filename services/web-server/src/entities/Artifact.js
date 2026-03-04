@@ -1,4 +1,4 @@
-module.exports = class Artifact {
+export default class Artifact {
   constructor(taskId, data, runId) {
     Object.assign(this, data);
     this.taskId = taskId;
@@ -6,4 +6,4 @@ module.exports = class Artifact {
       this.runId = runId;
     }
   }
-};
+}

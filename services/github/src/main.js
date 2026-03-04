@@ -1,21 +1,22 @@
-require('../../prelude');
-const builder = require('./api');
-const exchanges = require('./exchanges');
-const Handlers = require('./handlers');
-const Intree = require('./intree');
-const Ajv = require('ajv').default;
-const addFormats = require('ajv-formats').default;
-const config = require('taskcluster-lib-config');
-const SchemaSet = require('taskcluster-lib-validate');
-const loader = require('taskcluster-lib-loader');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const libReferences = require('taskcluster-lib-references');
-const { App } = require('taskcluster-lib-app');
-const tcdb = require('taskcluster-db');
-const githubAuth = require('./github-auth');
-const { Client, pulseCredentials } = require('taskcluster-lib-pulse');
-
-require('./monitor');
+import '../../prelude.js';
+import builder from './api.js';
+import exchanges from './exchanges.js';
+import Handlers from './handlers/index.js';
+import Intree from './intree.js';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import taskcluster from '@taskcluster/client';
+import config from '@taskcluster/lib-config';
+import SchemaSet from '@taskcluster/lib-validate';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import libReferences from '@taskcluster/lib-references';
+import { App } from '@taskcluster/lib-app';
+import tcdb from '@taskcluster/db';
+import githubAuth from './github-auth.js';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
+import './monitor.js';
+import { fileURLToPath } from 'url';
 
 const load = loader({
   cfg: {
@@ -51,7 +52,7 @@ const load = loader({
   ajv: {
     requires: [],
     setup: () => {
-      const ajv = new Ajv();
+      const ajv = new Ajv.default();
       addFormats(ajv);
       return ajv;
     },
@@ -59,10 +60,10 @@ const load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github')],
-    }).generateReferences(),
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github'), MonitorManager.metricsReference('github')],
+    }).then(ref => ref.generateReferences()),
   },
 
   pulseClient: {
@@ -106,22 +107,42 @@ const load = loader({
     }),
   },
 
+  queueClient: {
+    requires: ['cfg'],
+    // This is a powerful Queue client without scopes to use throughout the handlers for things
+    // where taskcluster-github is acting of its own accord
+    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
+    // (see handlers.createTasks for example)
+    setup: ({ cfg, monitor }) => new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
   api: {
     requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        publisher,
-        cfg,
-        github,
-        db,
-        ajv,
-        monitor: monitor.childMonitor('api-context'),
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
+    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          publisher,
+          cfg,
+          github,
+          db,
+          ajv,
+          monitor: monitor.childMonitor('api-context'),
+          queueClient,
+          intree,
+          schemaset,
+        },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -131,6 +152,7 @@ const load = loader({
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
       trustProxy: cfg.server.trustProxy,
+      keepAliveTimeoutSeconds: cfg.server.keepAliveTimeoutSeconds,
       apis: [api],
     }),
   },
@@ -162,6 +184,7 @@ const load = loader({
       'pulseClient',
       'publisher',
       'db',
+      'queueClient',
     ],
     setup: async ({
       cfg,
@@ -173,6 +196,7 @@ const load = loader({
       pulseClient,
       publisher,
       db,
+      queueClient,
     }) =>
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
@@ -184,10 +208,10 @@ const load = loader({
         deprecatedResultStatusQueueName: cfg.app.deprecatedResultStatusQueue,
         deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
         resultStatusQueueName: cfg.app.resultStatusQueue,
-        initialStatusQueueName: cfg.app.initialStatusQueue,
         rerunQueueName: cfg.app.rerunQueue,
         context: { cfg, github, schemaset, db, publisher },
         pulseClient,
+        queueClient,
       }),
   },
 
@@ -201,8 +225,8 @@ const load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

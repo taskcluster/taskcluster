@@ -1,7 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const debug = require('debug')('tc-lib-testing:secrets');
+import _ from 'lodash';
+import assert from 'assert';
+import taskcluster from '@taskcluster/client';
+import debugFactory from 'debug';
+const debug = debugFactory('tc-lib-testing:secrets');
 
 class Secrets {
   constructor({ secretName, secrets, load }) {
@@ -63,7 +64,7 @@ class Secrets {
     }
 
     // Remove variables from process.env, so that nothing can use them directly. In
-    // particular, taskcluster-client will happiliy use TASKCLUSTER_* from the env,
+    // particular, @taskcluster/client will happiliy use TASKCLUSTER_* from the env,
     // allowing bugs to slip through where the values are not passed explicitly
     for (let name of Object.keys(this.secrets)) {
       for (let secret of this.secrets[name]) {
@@ -210,4 +211,4 @@ class Secrets {
   }
 }
 
-module.exports = Secrets;
+export default Secrets;

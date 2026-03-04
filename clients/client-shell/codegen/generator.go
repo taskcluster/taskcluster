@@ -20,12 +20,12 @@ func (g *Generator) Write(p []byte) (n int, err error) {
 }
 
 // Printf prints the given format+args to the buffer.
-func (g *Generator) Printf(format string, args ...interface{}) {
+func (g *Generator) Printf(format string, args ...any) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
 // Print prints the given a to the buffer.
-func (g *Generator) Print(a ...interface{}) {
+func (g *Generator) Print(a ...any) {
 	fmt.Fprint(&g.buf, a...)
 }
 
@@ -34,7 +34,7 @@ func (g *Generator) Print(a ...interface{}) {
 // There are special rules for some composite types to ensure we have verbose
 // output, but simple types such as strings and numbers are printed using the
 // built-in `%#v` format filter.
-func (g *Generator) PrettyPrint(data interface{}) {
+func (g *Generator) PrettyPrint(data any) {
 	v := reflect.ValueOf(data)
 	t := v.Type()
 
@@ -46,14 +46,14 @@ func (g *Generator) PrettyPrint(data interface{}) {
 			break
 		}
 		g.Print("{\n")
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			g.PrettyPrint(v.Index(i).Interface())
 			g.Print(",\n")
 		}
 		g.Print("}")
 	case reflect.Struct:
 		g.Printf("%s{\n", t.String())
-		for i := 0; i < v.NumField(); i++ {
+		for i := range v.NumField() {
 			g.Printf("%s: ", t.Field(i).Name)
 			g.PrettyPrint(v.Field(i).Interface())
 			g.Print(",\n")
@@ -83,7 +83,7 @@ func (g *Generator) PrettyPrint(data interface{}) {
 			}
 		} else {
 			// If the keys are not strings, we don't sort them for now.
-			for i := 0; i < v.Len(); i++ {
+			for i := range v.Len() {
 				k := keys[i]
 				g.Printf("%#v: ", k)
 				g.PrettyPrint(v.MapIndex(k).Interface())

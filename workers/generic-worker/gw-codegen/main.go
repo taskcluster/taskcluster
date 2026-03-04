@@ -1,22 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"go/build"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/taskcluster/taskcluster/v97/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
-
-	"github.com/ghodss/yaml"
-	"github.com/kr/text"
-	"github.com/taskcluster/taskcluster/v44/internal/jsontest"
-	"github.com/taskcluster/taskcluster/v44/tools/jsonschema2go"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
@@ -66,6 +62,7 @@ func generateTypes(input, output, constraint string) []byte {
 		URLs:                 []string{input},
 		SkipCodeGen:          false,
 		DisableNestedStructs: true,
+		EnableDefaults:       true,
 	}
 	result, err := job.Execute()
 	if err != nil {
@@ -83,7 +80,7 @@ func generateFunctions(ymlFile string) []byte {
 		return []byte{}
 	}
 	ymlFile = ymlFile[7:]
-	data, err := ioutil.ReadFile(ymlFile)
+	data, err := os.ReadFile(ymlFile)
 	if err != nil {
 		log.Fatalf("ERROR: Problem reading from file '%v' - %s", ymlFile, err)
 	}
@@ -98,7 +95,7 @@ func generateFunctions(ymlFile string) []byte {
 	}
 
 	// the following strings.Replace function call safely escapes backticks (`) in rawJSON
-	escapedJSON := "`" + strings.Replace(text.Indent(fmt.Sprintf("%v", string(rawJSON)), ""), "`", "` + \"`\" + `", -1) + "`"
+	escapedJSON := "`" + strings.ReplaceAll(string(rawJSON), "`", "` + \"`\" + `") + "`"
 
 	response := `
 // Returns json schema for the payload part of the task definition. Please
@@ -113,7 +110,7 @@ func generateFunctions(ymlFile string) []byte {
 //
 // Run ` + "`generic-worker show-payload-schema`" + ` to output this schema to standard
 // out.
-func taskPayloadSchema() string {
+func JSONSchema() string {
     return ` + escapedJSON + `
 }`
 	return []byte(response)
@@ -129,7 +126,7 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	var fixedFixedImports []byte
 	if err == nil {
 		importFixer := regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`)
-		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v44/"))
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v97/"))
 	}
 
 	// only perform general format, if that worked...
@@ -143,8 +140,8 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	// more easily...
 	if err != nil {
 		// no need to handle error as we exit below anyway
-		_ = ioutil.WriteFile(sourceFile, sourceCode, 0644)
+		_ = os.WriteFile(sourceFile, sourceCode, 0644)
 		return err
 	}
-	return ioutil.WriteFile(sourceFile, formattedContent, 0644)
+	return os.WriteFile(sourceFile, formattedContent, 0644)
 }

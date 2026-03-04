@@ -1,38 +1,42 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/auth/v1/api.json
+// This package was generated from the reference schema of
+// the Auth service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/auth/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // Authentication related API end-points for Taskcluster and related
 // services. These API end-points are of interest if you wish to:
-//   * Authorize a request signed with Taskcluster credentials,
-//   * Manage clients and roles,
-//   * Inspect or audit clients and roles,
-//   * Gain access to various services guarded by this API.
+//   - Authorize a request signed with Taskcluster credentials,
+//   - Manage clients and roles,
+//   - Inspect or audit clients and roles,
+//   - Gain access to various services guarded by this API.
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // First create an Auth object:
 //
-//  auth := tcauth.New(nil)
+//	auth := tcauth.New(nil)
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  err := auth.Ping(.....)
+//	err := auth.Ping(.....)
 //
 // handling any errors...
 //
-//  if err != nil {
-//  	// handle error...
-//  }
+//	if err != nil {
+//		// handle error...
+//	}
 //
-// Taskcluster Schema
+// # Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
 // <rootUrl>/references/auth/v1/api.json together with the input and output schemas it references,
@@ -42,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Auth tcclient.Client
@@ -51,14 +55,14 @@ type Auth tcclient.Client
 // nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  auth := tcauth.New(
-//      nil,                                      // client without authentication
-//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
-//  )
-//  err := auth.Ping(.....)                       // for example, call the Ping(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
+//	auth := tcauth.New(
+//	    nil,                                      // client without authentication
+//	    "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//	)
+//	err := auth.Ping(.....)                       // for example, call the Ping(.....) API endpoint (described further down)...
+//	if err != nil {
+//		// handle errors...
+//	}
 func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 	return &Auth{
 		Credentials:  credentials,
@@ -77,9 +81,9 @@ func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 //
 // The credentials are taken from environment variables:
 //
-//  TASKCLUSTER_CLIENT_ID
-//  TASKCLUSTER_ACCESS_TOKEN
-//  TASKCLUSTER_CERTIFICATE
+//	TASKCLUSTER_CLIENT_ID
+//	TASKCLUSTER_ACCESS_TOKEN
+//	TASKCLUSTER_CERTIFICATE
 //
 // If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
 // disabled.
@@ -136,7 +140,8 @@ func (auth *Auth) Version() error {
 // get a result without a `continuationToken`.
 //
 // Required scopes:
-//   auth:list-clients
+//
+//	auth:list-clients
 //
 // See #listClients
 func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListClientResponse, error) {
@@ -158,7 +163,8 @@ func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListCli
 // Returns a signed URL for ListClients, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-clients
+//
+//	auth:list-clients
 //
 // See ListClients for more details.
 func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string, duration time.Duration) (*url.URL, error) {
@@ -179,32 +185,34 @@ func (auth *Auth) ListClients_SignedURL(continuationToken, limit, prefix string,
 // Get information about a single client.
 //
 // Required scopes:
-//   auth:get-client:<clientId>
+//
+//	auth:get-client:<clientId>
 //
 // See #client
 func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.PathEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
 // Returns a signed URL for Client, valid for the specified duration.
 //
 // Required scopes:
-//   auth:get-client:<clientId>
+//
+//	auth:get-client:<clientId>
 //
 // See Client for more details.
 func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/clients/"+url.QueryEscape(clientId), nil, duration)
+	return (&cd).SignedURL("/clients/"+url.PathEscape(clientId), nil, duration)
 }
 
 // Create a new client and get the `accessToken` for this client.
 // You should store the `accessToken` from this API call as there is no
 // other way to retrieve it.
 //
-// If you loose the `accessToken` you can call `resetAccessToken` to reset
-// it, and a new `accessToken` will be returned, but you cannot retrieve the
+// If you lose the `accessToken` you can call `resetAccessToken` to reset
+// it, and a new `accessToken` will be returned. You cannot retrieve the
 // current `accessToken`.
 //
 // If a client with the same `clientId` already exists this operation will
@@ -213,31 +221,111 @@ func (auth *Auth) Client_SignedURL(clientId string, duration time.Duration) (*ur
 // The caller's scopes must satisfy `scopes`.
 //
 // Required scopes:
-//   All of:
-//   * auth:create-client:<clientId>
-//   * For scope in scopes each <scope>
+//
+//	All of:
+//	* auth:create-client:<clientId>
+//	* For scope in scopes each <scope>
 //
 // See #createClient
 func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.PathEscape(clientId), new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
+}
+
+// Get entity history based on entity type and entity name
+//
+// Required scopes:
+//
+//	auth:audit-history:<entityType>
+//
+// See #getEntityHistory
+func (auth *Auth) GetEntityHistory(entityType, entityId, continuationToken, limit string) (*GetEntityHistoryResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/audit/"+url.PathEscape(entityType)+"/"+url.PathEscape(entityId), new(GetEntityHistoryResponse), v)
+	return responseObject.(*GetEntityHistoryResponse), err
+}
+
+// Returns a signed URL for GetEntityHistory, valid for the specified duration.
+//
+// Required scopes:
+//
+//	auth:audit-history:<entityType>
+//
+// See GetEntityHistory for more details.
+func (auth *Auth) GetEntityHistory_SignedURL(entityType, entityId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/audit/"+url.PathEscape(entityType)+"/"+url.PathEscape(entityId), v, duration)
+}
+
+// Get audit history of a client based on clientId.
+//
+// Required scopes:
+//
+//	auth:client-audit-history:<clientId>
+//
+// See #listAuditHistory
+func (auth *Auth) ListAuditHistory(clientId, continuationToken, limit string) (*GetEntityHistoryResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.PathEscape(clientId)+"/audit", new(GetEntityHistoryResponse), v)
+	return responseObject.(*GetEntityHistoryResponse), err
+}
+
+// Returns a signed URL for ListAuditHistory, valid for the specified duration.
+//
+// Required scopes:
+//
+//	auth:client-audit-history:<clientId>
+//
+// See ListAuditHistory for more details.
+func (auth *Auth) ListAuditHistory_SignedURL(clientId, continuationToken, limit string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	return (&cd).SignedURL("/clients/"+url.PathEscape(clientId)+"/audit", v, duration)
 }
 
 // Reset a clients `accessToken`, this will revoke the existing
 // `accessToken`, generate a new `accessToken` and return it from this
 // call.
 //
-// There is no way to retrieve an existing `accessToken`, so if you loose it
+// There is no way to retrieve an existing `accessToken`, so if you lose it
 // you must reset the accessToken to acquire it again.
 //
 // Required scopes:
-//   auth:reset-access-token:<clientId>
+//
+//	auth:reset-access-token:<clientId>
 //
 // See #resetAccessToken
 func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/reset", new(CreateClientResponse), nil)
 	return responseObject.(*CreateClientResponse), err
 }
 
@@ -248,14 +336,15 @@ func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, erro
 // unchanged
 //
 // Required scopes:
-//   All of:
-//   * auth:update-client:<clientId>
-//   * For scope in scopesAdded each <scope>
+//
+//	All of:
+//	* auth:update-client:<clientId>
+//	* For scope in scopesAdded each <scope>
 //
 // See #updateClient
 func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.PathEscape(clientId), new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -266,12 +355,13 @@ func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*
 // had been disabled when the corresponding identity's scopes changed.
 //
 // Required scopes:
-//   auth:enable-client:<clientId>
+//
+//	auth:enable-client:<clientId>
 //
 // See #enableClient
 func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/enable", new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/enable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -281,12 +371,13 @@ func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 // corresponding identity's scopes no longer satisfy the client's scopes.
 //
 // Required scopes:
-//   auth:disable-client:<clientId>
+//
+//	auth:disable-client:<clientId>
 //
 // See #disableClient
 func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/disable", new(GetClientResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.PathEscape(clientId)+"/disable", new(GetClientResponse), nil)
 	return responseObject.(*GetClientResponse), err
 }
 
@@ -294,12 +385,13 @@ func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 // be deleted independently.
 //
 // Required scopes:
-//   auth:delete-client:<clientId>
+//
+//	auth:delete-client:<clientId>
 //
 // See #deleteClient
 func (auth *Auth) DeleteClient(clientId string) error {
 	cd := tcclient.Client(*auth)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.PathEscape(clientId), nil, nil)
 	return err
 }
 
@@ -310,7 +402,8 @@ func (auth *Auth) DeleteClient(clientId string) error {
 // To get paginated results, use `listRoles2`.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoles
 func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
@@ -322,7 +415,8 @@ func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 // Returns a signed URL for ListRoles, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoles for more details.
 func (auth *Auth) ListRoles_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -339,7 +433,8 @@ func (auth *Auth) ListRoles_SignedURL(duration time.Duration) (*url.URL, error) 
 // query arguments to page through the responses.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoles2
 func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesResponse, error) {
@@ -358,7 +453,8 @@ func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesRespo
 // Returns a signed URL for ListRoles2, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoles2 for more details.
 func (auth *Auth) ListRoles2_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -380,7 +476,8 @@ func (auth *Auth) ListRoles2_SignedURL(continuationToken, limit string, duration
 // query arguments to page through the responses.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See #listRoleIds
 func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
@@ -399,7 +496,8 @@ func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsRespo
 // Returns a signed URL for ListRoleIds, valid for the specified duration.
 //
 // Required scopes:
-//   auth:list-roles
+//
+//	auth:list-roles
 //
 // See ListRoleIds for more details.
 func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duration time.Duration) (*url.URL, error) {
@@ -418,24 +516,26 @@ func (auth *Auth) ListRoleIds_SignedURL(continuationToken, limit string, duratio
 // role expands to.
 //
 // Required scopes:
-//   auth:get-role:<roleId>
+//
+//	auth:get-role:<roleId>
 //
 // See #role
 func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
 // Returns a signed URL for Role, valid for the specified duration.
 //
 // Required scopes:
-//   auth:get-role:<roleId>
+//
+//	auth:get-role:<roleId>
 //
 // See Role for more details.
 func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/roles/"+url.QueryEscape(roleId), nil, duration)
+	return (&cd).SignedURL("/roles/"+url.PathEscape(roleId), nil, duration)
 }
 
 // Create a new role.
@@ -449,14 +549,15 @@ func (auth *Auth) Role_SignedURL(roleId string, duration time.Duration) (*url.UR
 // in an error response.
 //
 // Required scopes:
-//   All of:
-//   * auth:create-role:<roleId>
-//   * For scope in scopes each <scope>
+//
+//	All of:
+//	* auth:create-role:<roleId>
+//	* For scope in scopes each <scope>
 //
 // See #createRole
 func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
@@ -469,14 +570,15 @@ func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // in an error response.
 //
 // Required scopes:
-//   All of:
-//   * auth:update-role:<roleId>
-//   * For scope in scopesAdded each <scope>
+//
+//	All of:
+//	* auth:update-role:<roleId>
+//	* For scope in scopesAdded each <scope>
 //
 // See #updateRole
 func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.PathEscape(roleId), new(GetRoleResponse), nil)
 	return responseObject.(*GetRoleResponse), err
 }
 
@@ -484,12 +586,13 @@ func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // the role exists.
 //
 // Required scopes:
-//   auth:delete-role:<roleId>
+//
+//	auth:delete-role:<roleId>
 //
 // See #deleteRole
 func (auth *Auth) DeleteRole(roleId string) error {
 	cd := tcclient.Client(*auth)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.PathEscape(roleId), nil, nil)
 	return err
 }
 
@@ -497,7 +600,8 @@ func (auth *Auth) DeleteRole(roleId string) error {
 // roles included.
 //
 // Required scopes:
-//   auth:expand-scopes
+//
+//	auth:expand-scopes
 //
 // See #expandScopes
 func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
@@ -511,7 +615,8 @@ func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 // and roles).
 //
 // Required scopes:
-//   auth:current-scopes
+//
+//	auth:current-scopes
 //
 // See #currentScopes
 func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
@@ -523,7 +628,8 @@ func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
 // Returns a signed URL for CurrentScopes, valid for the specified duration.
 //
 // Required scopes:
-//   auth:current-scopes
+//
+//	auth:current-scopes
 //
 // See CurrentScopes for more details.
 func (auth *Auth) CurrentScopes_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -569,10 +675,11 @@ func (auth *Auth) CurrentScopes_SignedURL(duration time.Duration) (*url.URL, err
 // [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:aws-s3:read-only:<bucket>/<prefix>
-//     - auth:aws-s3:read-write:<bucket>/<prefix>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:aws-s3:read-only:<bucket>/<prefix>
+//	  - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See #awsS3Credentials
 func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
@@ -581,17 +688,18 @@ func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3
 		v.Add("format", format)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), new(AWSS3CredentialsResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/aws/s3/"+url.PathEscape(level)+"/"+url.PathEscape(bucket)+"/"+url.PathEscape(prefix), new(AWSS3CredentialsResponse), v)
 	return responseObject.(*AWSS3CredentialsResponse), err
 }
 
 // Returns a signed URL for AwsS3Credentials, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:aws-s3:read-only:<bucket>/<prefix>
-//     - auth:aws-s3:read-write:<bucket>/<prefix>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:aws-s3:read-only:<bucket>/<prefix>
+//	  - auth:aws-s3:read-write:<bucket>/<prefix>
 //
 // See AwsS3Credentials for more details.
 func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format string, duration time.Duration) (*url.URL, error) {
@@ -600,7 +708,7 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 		v.Add("format", format)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/aws/s3/"+url.QueryEscape(level)+"/"+url.QueryEscape(bucket)+"/"+url.QueryEscape(prefix), v, duration)
+	return (&cd).SignedURL("/aws/s3/"+url.PathEscape(level)+"/"+url.PathEscape(bucket)+"/"+url.PathEscape(prefix), v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -608,7 +716,8 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 //
 // Required scopes:
-//   auth:azure-table:list-accounts
+//
+//	auth:azure-table:list-accounts
 //
 // See #azureAccounts
 func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
@@ -620,7 +729,8 @@ func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
 // Returns a signed URL for AzureAccounts, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:list-accounts
+//
+//	auth:azure-table:list-accounts
 //
 // See AzureAccounts for more details.
 func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, error) {
@@ -633,7 +743,8 @@ func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, err
 // Retrieve a list of all tables in an account.
 //
 // Required scopes:
-//   auth:azure-table:list-tables:<account>
+//
+//	auth:azure-table:list-tables:<account>
 //
 // See #azureTables
 func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTableResponse, error) {
@@ -642,14 +753,15 @@ func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTabl
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/tables", new(AzureListTableResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/tables", new(AzureListTableResponse), v)
 	return responseObject.(*AzureListTableResponse), err
 }
 
 // Returns a signed URL for AzureTables, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-table:list-tables:<account>
+//
+//	auth:azure-table:list-tables:<account>
 //
 // See AzureTables for more details.
 func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -658,7 +770,7 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/tables", v, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/tables", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -671,30 +783,32 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 // table if it doesn't already exist.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-table:read-only:<account>/<table>
-//     - auth:azure-table:read-write:<account>/<table>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-table:read-only:<account>/<table>
+//	  - auth:azure-table:read-write:<account>/<table>
 //
 // See #azureTableSAS
 func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureTableSharedAccessSignature), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), new(AzureTableSharedAccessSignature), nil)
 	return responseObject.(*AzureTableSharedAccessSignature), err
 }
 
 // Returns a signed URL for AzureTableSAS, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-table:read-only:<account>/<table>
-//     - auth:azure-table:read-write:<account>/<table>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-table:read-only:<account>/<table>
+//	  - auth:azure-table:read-write:<account>/<table>
 //
 // See AzureTableSAS for more details.
 func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), nil, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/table/"+url.PathEscape(table)+"/"+url.PathEscape(level), nil, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -702,7 +816,8 @@ func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration
 // Retrieve a list of all containers in an account.
 //
 // Required scopes:
-//   auth:azure-container:list-containers:<account>
+//
+//	auth:azure-container:list-containers:<account>
 //
 // See #azureContainers
 func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
@@ -711,14 +826,15 @@ func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureList
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers", new(AzureListContainersResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers", new(AzureListContainersResponse), v)
 	return responseObject.(*AzureListContainersResponse), err
 }
 
 // Returns a signed URL for AzureContainers, valid for the specified duration.
 //
 // Required scopes:
-//   auth:azure-container:list-containers:<account>
+//
+//	auth:azure-container:list-containers:<account>
 //
 // See AzureContainers for more details.
 func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, duration time.Duration) (*url.URL, error) {
@@ -727,7 +843,7 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 		v.Add("continuationToken", continuationToken)
 	}
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers", v, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers", v, duration)
 }
 
 // Stability: *** DEPRECATED ***
@@ -740,30 +856,32 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 // container if it doesn't already exist.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-container:read-only:<account>/<container>
-//     - auth:azure-container:read-write:<account>/<container>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-container:read-only:<account>/<container>
+//	  - auth:azure-container:read-write:<account>/<container>
 //
 // See #azureContainerSAS
 func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(AzureBlobSharedAccessSignature), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), new(AzureBlobSharedAccessSignature), nil)
 	return responseObject.(*AzureBlobSharedAccessSignature), err
 }
 
 // Returns a signed URL for AzureContainerSAS, valid for the specified duration.
 //
 // Required scopes:
-//   If levelIsReadOnly:
-//     Any of:
-//     - auth:azure-container:read-only:<account>/<container>
-//     - auth:azure-container:read-write:<account>/<container>
+//
+//	If levelIsReadOnly:
+//	  Any of:
+//	  - auth:azure-container:read-only:<account>/<container>
+//	  - auth:azure-container:read-write:<account>/<container>
 //
 // See AzureContainerSAS for more details.
 func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), nil, duration)
+	return (&cd).SignedURL("/azure/"+url.PathEscape(account)+"/containers/"+url.PathEscape(container)+"/"+url.PathEscape(level), nil, duration)
 }
 
 // Get temporary DSN (access credentials) for a sentry project.
@@ -775,24 +893,26 @@ func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, 
 // to have the project transferred to a team you have access to if needed
 //
 // Required scopes:
-//   auth:sentry:<project>
+//
+//	auth:sentry:<project>
 //
 // See #sentryDSN
 func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.QueryEscape(project)+"/dsn", new(SentryDSNResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.PathEscape(project)+"/dsn", new(SentryDSNResponse), nil)
 	return responseObject.(*SentryDSNResponse), err
 }
 
 // Returns a signed URL for SentryDSN, valid for the specified duration.
 //
 // Required scopes:
-//   auth:sentry:<project>
+//
+//	auth:sentry:<project>
 //
 // See SentryDSN for more details.
 func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/sentry/"+url.QueryEscape(project)+"/dsn", nil, duration)
+	return (&cd).SignedURL("/sentry/"+url.PathEscape(project)+"/dsn", nil, duration)
 }
 
 // Get a temporary token suitable for use connecting to a
@@ -807,24 +927,26 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 // refresh it before expiration.
 //
 // Required scopes:
-//   auth:websocktunnel-token:<wstAudience>/<wstClient>
+//
+//	auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See #websocktunnelToken
 func (auth *Auth) WebsocktunnelToken(wstAudience, wstClient string) (*WebsocktunnelTokenResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), new(WebsocktunnelTokenResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel/"+url.PathEscape(wstAudience)+"/"+url.PathEscape(wstClient), new(WebsocktunnelTokenResponse), nil)
 	return responseObject.(*WebsocktunnelTokenResponse), err
 }
 
 // Returns a signed URL for WebsocktunnelToken, valid for the specified duration.
 //
 // Required scopes:
-//   auth:websocktunnel-token:<wstAudience>/<wstClient>
+//
+//	auth:websocktunnel-token:<wstAudience>/<wstClient>
 //
 // See WebsocktunnelToken for more details.
 func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/websocktunnel/"+url.QueryEscape(wstAudience)+"/"+url.QueryEscape(wstClient), nil, duration)
+	return (&cd).SignedURL("/websocktunnel/"+url.PathEscape(wstAudience)+"/"+url.PathEscape(wstClient), nil, duration)
 }
 
 // Get temporary GCP credentials for the given serviceAccount in the given project.
@@ -838,24 +960,26 @@ func (auth *Auth) WebsocktunnelToken_SignedURL(wstAudience, wstClient string, du
 // application.
 //
 // Required scopes:
-//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+//	auth:gcp:access-token:<projectId>/<serviceAccount>
 //
 // See #gcpCredentials
 func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredentialsResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), new(GCPCredentialsResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), new(GCPCredentialsResponse), nil)
 	return responseObject.(*GCPCredentialsResponse), err
 }
 
 // Returns a signed URL for GcpCredentials, valid for the specified duration.
 //
 // Required scopes:
-//   auth:gcp:access-token:<projectId>/<serviceAccount>
+//
+//	auth:gcp:access-token:<projectId>/<serviceAccount>
 //
 // See GcpCredentials for more details.
 func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/gcp/credentials/"+url.QueryEscape(projectId)+"/"+url.QueryEscape(serviceAccount), nil, duration)
+	return (&cd).SignedURL("/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes

@@ -1,14 +1,14 @@
-const path = require('path');
-const libUrls = require('taskcluster-lib-urls');
-const got = require('got');
-const { listServices, readRepoYAML } = require('../../utils');
+import path from 'path';
+import libUrls from 'taskcluster-lib-urls';
+import got from 'got';
+import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
-exports.scopeExpression = { AllOf: [] };
-exports.tasks = [];
+export const scopeExpression = { AllOf: [] };
+export const tasks = [];
 
-exports.tasks.push({
+tasks.push({
   title: `Fetch version endpoint for deployment`,
   requires: [],
   provides: [
@@ -27,26 +27,8 @@ exports.tasks.push({
   },
 });
 
-exports.tasks.push({
-  title: `Ping health endpoint for web-server`,
-  requires: ['deployment-version'],
-  provides: [
-    `ping-web-server`,
-  ],
-  run: async (requirements, utils) => {
-    const serverHealth = `${process.env.TASKCLUSTER_ROOT_URL}/.well-known/apollo/server-health`;
-    const resp = await got.get(serverHealth);
-
-    // For now we just check statuscode because ping doesn't return
-    // anything useful anyway and web-server doesn't even return json.
-    if (resp.statusCode !== 200) {
-      throw new Error(`${name} is not responding`);
-    }
-  },
-});
-
-SERVICES.filter(name => name !== 'web-server').forEach(name => {
-  exports.tasks.push({
+SERVICES.forEach(name => {
+  tasks.push({
     title: `Ping health endpoint for ${name}`,
     requires: ['deployment-version'],
     provides: [
@@ -80,7 +62,7 @@ SERVICES.filter(name => name !== 'web-server').forEach(name => {
   });
 });
 
-exports.tasks.push({
+tasks.push({
   title: `API ping endpoints succeed (--target ping)`,
   requires: [
     ...SERVICES.map(name => `ping-${name}`),

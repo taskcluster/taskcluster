@@ -1,13 +1,32 @@
-const taskcluster = require('../');
-const nock = require('nock');
-const crypto = require('crypto');
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { WritableStreamBuffer, ReadableStreamBuffer } = require('stream-buffers');
-const helper = require('./helper');
+import taskcluster from '../src/index.js';
+import nock from 'nock';
+import { Readable, Writable } from 'node:stream';
+import crypto from 'crypto';
+import { strict as assert } from 'assert';
+import testing from './helper.js';
+
+class WritableStream extends Writable {
+  constructor() {
+    super();
+    this.contents = null;
+  }
+
+  getContents() {
+    return this.contents;
+  }
+
+  write(chunk, encoding, callback) {
+    if (!this.contents) {
+      this.contents = chunk;
+    } else {
+      this.contents = Buffer.concat([this.contents, chunk]);
+    }
+    callback?.();
+  }
+}
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   /**
    * These tests require credentials with the scopes shown in authorizedScopes, below.
@@ -46,9 +65,9 @@ suite(testing.suiteName(), function() {
       expires,
       object,
       streamFactory: async () => {
-        const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-        stream.put(data);
-        stream.stop();
+        const stream = new Readable();
+        stream.push(data);
+        stream.push(null);
         return stream;
       },
     });
@@ -58,7 +77,7 @@ suite(testing.suiteName(), function() {
       name,
       object,
       streamFactory: async () => {
-        stream = new WritableStreamBuffer();
+        stream = new WritableStream();
         return stream;
       },
     });
@@ -83,7 +102,7 @@ suite(testing.suiteName(), function() {
       err => err.statusCode === 404);
   });
 
-  const nockSuccessfulObjectApi = () => {
+  const nockSuccessfulObjectApi = ({ hashes }) => {
     nock(process.env.TASKCLUSTER_ROOT_URL)
       .put('/api/object/v1/upload/some-object')
       .reply(200, {
@@ -106,8 +125,10 @@ suite(testing.suiteName(), function() {
     nock(process.env.TASKCLUSTER_ROOT_URL)
       .put('/api/object/v1/start-download/some-object')
       .reply(200, {
-        method: 'simple',
+        method: 'getUrl',
         url: 'http://testing.example.com/download',
+        expires: taskcluster.fromNow('1h'),
+        hashes,
       });
   };
 
@@ -121,38 +142,136 @@ suite(testing.suiteName(), function() {
       expires: taskcluster.fromNow('1 hour'),
       object,
       streamFactory: async () => {
-        const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-        stream.put(data);
-        stream.stop();
+        const stream = new Readable();
+        stream.push(data);
+        stream.push(null);
         return stream;
       },
       ...overrides,
     });
   };
 
-  test('simple download that encounters a 500 error retries', async function() {
+  test('download that encounters a 500 error retries', async function() {
     try {
-      nockSuccessfulObjectApi();
+      nockSuccessfulObjectApi({ hashes: {
+        sha256: '6185f05eedae5f2c26d91088b90bce00200bd77d26d794050de09ed18fa72f17',
+        sha512: '5d01a0927e0b4eeafebecb13fe308a3a6b4d0b95d6f3714d5a813b5d1856abbe45f5d20728a81a1b984cd650e01d0b565645f0543fc0d238467c46aba2de7ee1',
+      } });
       nock('http://testing.example.com')
         .get('/download')
         .reply(500, 'uhoh!');
       nock('http://testing.example.com')
         .get('/download')
-        .reply(200, 'HeLlOwOrLd');
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' });
 
       await taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       });
     } finally {
       nock.cleanAll();
     }
   });
 
-  test('simple download that encounters a 400 error fails immediately', async function() {
+  test('download with no acceptable hashes fails', async function() {
     try {
-      nockSuccessfulObjectApi();
+      nockSuccessfulObjectApi({ hashes: { 'md5': 'hahaha' } });
+      nock('http://testing.example.com')
+        .get('/download')
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' });
+
+      await assert.rejects(() => taskcluster.download({
+        name: 'some-object',
+        object,
+        streamFactory: async () => new WritableStream(),
+      }));
+    } finally {
+      nock.cleanAll();
+    }
+  });
+
+  test('download with one matching and one incorrect hash fails', async function() {
+    try {
+      nockSuccessfulObjectApi({ hashes: {
+        sha256: '9999999999999999999999999999999999999999999999999999999999999999',
+        sha512: '5d01a0927e0b4eeafebecb13fe308a3a6b4d0b95d6f3714d5a813b5d1856abbe45f5d20728a81a1b984cd650e01d0b565645f0543fc0d238467c46aba2de7ee1',
+      } });
+      nock('http://testing.example.com')
+        .get('/download')
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' });
+
+      await assert.rejects(() => taskcluster.download({
+        name: 'some-object',
+        object,
+        streamFactory: async () => new WritableStream(),
+      }));
+    } finally {
+      nock.cleanAll();
+    }
+  });
+
+  test('download with only one matching acceptable hash succeeds', async function() {
+    try {
+      nockSuccessfulObjectApi({ hashes: {
+        sha256: '6185f05eedae5f2c26d91088b90bce00200bd77d26d794050de09ed18fa72f17',
+      } });
+      nock('http://testing.example.com')
+        .get('/download')
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' });
+
+      await taskcluster.download({
+        name: 'some-object',
+        object,
+        streamFactory: async () => new WritableStream(),
+      });
+    } finally {
+      nock.cleanAll();
+    }
+  });
+
+  test('download that retries after startDownload response expires re-calls that method', async function() {
+    try {
+      nock(process.env.TASKCLUSTER_ROOT_URL)
+        .put('/api/object/v1/start-download/some-object')
+        .reply(200, {
+          method: 'getUrl',
+          url: 'http://testing.example.com/download',
+          expires: taskcluster.fromNow('0s'), // expires immediately
+          hashes: {
+            sha256: 'incorrect', // this is how we verify that the second startDownload was called
+          },
+        });
+      nock(process.env.TASKCLUSTER_ROOT_URL)
+        .put('/api/object/v1/start-download/some-object')
+        .reply(200, {
+          method: 'getUrl',
+          url: 'http://testing.example.com/download',
+          expires: taskcluster.fromNow('1h'),
+          hashes: {
+            sha256: '6185f05eedae5f2c26d91088b90bce00200bd77d26d794050de09ed18fa72f17',
+          },
+        });
+      nock('http://testing.example.com')
+        .get('/download')
+        .reply(500, 'uhoh!'); // fail the first time
+      nock('http://testing.example.com')
+        .get('/download')
+        .reply(200, 'HeLlOwOrLd', { 'Content-Length': '10' }); // succeed the second time
+
+      await taskcluster.download({
+        name: 'some-object',
+        object,
+        streamFactory: async () => new WritableStream(),
+      });
+    } finally {
+      nock.cleanAll();
+    }
+  });
+
+  test('download that encounters a 400 error fails immediately', async function() {
+    try {
+      nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
         .get('/download')
         .reply(403, 'not great');
@@ -160,7 +279,7 @@ suite(testing.suiteName(), function() {
       await assert.rejects(() => taskcluster.download({
         name: 'some-object',
         object,
-        streamFactory: async () => new WritableStreamBuffer(),
+        streamFactory: async () => new WritableStream(),
       }),
       /403/);
     } finally {
@@ -170,7 +289,7 @@ suite(testing.suiteName(), function() {
 
   test('putUrl upload that encounters a 500 error retries', async function() {
     try {
-      nockSuccessfulObjectApi();
+      nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
         .put('/upload')
         .reply(500, 'aws is being aws');
@@ -186,7 +305,7 @@ suite(testing.suiteName(), function() {
 
   test('putUrl upload that encounters a 400 error fails right away', async function() {
     try {
-      nockSuccessfulObjectApi();
+      nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
         .put('/upload')
         .reply(400, 'ya messed up that request');
@@ -199,7 +318,7 @@ suite(testing.suiteName(), function() {
 
   test('putUrl upload that encounters many 500 errors fails', async function() {
     try {
-      nockSuccessfulObjectApi();
+      nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
         .put('/upload')
         .reply(500, 'nope');
@@ -221,6 +340,7 @@ suite(testing.suiteName(), function() {
     let artifact;
 
     suiteSetup(function() {
+      nock.cleanAll();
       // for testing artifact downloads, we use a fake queue but a real object service.
       queue = new taskcluster.Queue({
         ...taskcluster.fromEnvVars(),
@@ -254,9 +374,9 @@ suite(testing.suiteName(), function() {
         expires,
         object,
         streamFactory: async () => {
-          const stream = new ReadableStreamBuffer({ initialSize: data.length, frequency: 0 });
-          stream.put(data);
-          stream.stop();
+          const stream = new Readable();
+          stream.push(data);
+          stream.push(null);
           return stream;
         },
       });
@@ -271,7 +391,7 @@ suite(testing.suiteName(), function() {
         name: "public/test.file",
         queue,
         streamFactory: async () => {
-          stream = new WritableStreamBuffer();
+          stream = new WritableStream();
           return stream;
         },
         retries: 0,

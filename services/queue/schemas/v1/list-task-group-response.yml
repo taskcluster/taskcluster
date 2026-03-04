@@ -4,12 +4,11 @@ description: |
   Response from a `listTaskGroup` request.
 type:               object
 properties:
-  taskGroupId:
-    title:          "Task-Group Identifier"
-    description: |
-      Identifier for the task-group being listed.
-    type:           string
-    pattern:        {$const: slugid-pattern}
+  taskGroupId:      {$ref: "task-group-response.json#/properties/taskGroupId"}
+  schedulerId:      {$ref: "task-group-response.json#/properties/schedulerId"}
+  expires:          {$ref: "task-group-response.json#/properties/expires"}
+  sealed:           {$ref: "task-group-response.json#/properties/sealed"}
+
   tasks:
     type:           array
     title:          "Tasks from the Task-Group"
@@ -31,4 +30,6 @@ properties:
 additionalProperties: false
 required:
  - taskGroupId
+ - schedulerId
+ - expires
  - tasks

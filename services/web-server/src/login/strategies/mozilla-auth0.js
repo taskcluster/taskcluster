@@ -1,16 +1,17 @@
-const assert = require('assert');
-const request = require('superagent');
-const passport = require('passport');
-const Auth0Strategy = require('passport-auth0');
-const User = require('../User');
-const PersonAPI = require('../clients/PersonAPI');
-const WebServerError = require('../../utils/WebServerError');
-const { encode, decode } = require('../../utils/codec');
-const tryCatch = require('../../utils/tryCatch');
-const login = require('../../utils/login');
-const verifyJwtAuth0 = require('../../utils/verifyJwtAuth0');
+import assert from 'assert';
+import request from 'superagent';
+import passport from 'passport';
+import Auth0Strategy from 'passport-auth0';
+import User from '../User.js';
+import PersonAPI from '../clients/PersonAPI.js';
+import WebServerError from '../../utils/WebServerError.js';
+import { encode, decode } from '../../utils/codec.js';
+import tryCatch from '../../utils/tryCatch.js';
+import login from '../../utils/login.js';
+import verifyJwtAuth0 from '../../utils/verifyJwtAuth0/index.js';
+import { applySecurityHeaders } from '../../utils/headers.js';
 
-module.exports = class MozillaAuth0 {
+export default class MozillaAuth0 {
   constructor({ name, cfg, monitor }) {
     const strategyCfg = cfg.login.strategies[name];
 
@@ -28,11 +29,7 @@ module.exports = class MozillaAuth0 {
 
   // Get a personAPI instance, by requesting an API token as needed.
   // See https://github.com/mozilla-iam/cis/blob/f90ba5033785fd4fb14faf9f066e17356babb5aa/docs/PersonAPI.md#do-you-have-code-examples
-  async getPersonApi() {
-    if (this._personApi && new Date().getTime() / 1000 < this._personApiExp - 10) {
-      return this._personApi;
-    }
-
+  async fetchAccessToken() {
     const res = await request.post(`https://${this.domain}/oauth/token`)
       .set('content-type', 'application/json')
       .send({
@@ -51,8 +48,26 @@ module.exports = class MozillaAuth0 {
       throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
     }
 
-    // Create a new
-    this._personApi = new PersonAPI({ accessToken });
+    return { accessToken, expires };
+  }
+
+  get isTokenExpired() {
+    const offset = 10 * 60 * 1000; // expire a bit earlier to be safe
+    return this._personApiExp - offset < new Date().getTime();
+  }
+
+  async getPersonApi() {
+    if (this._personApi && !this.isTokenExpired) {
+      return this._personApi;
+    }
+
+    const { accessToken, expires } = await this.fetchAccessToken();
+    if (this._personApi) {
+      this._personApi.setAccessToken(accessToken);
+    } else {
+      this._personApi = new PersonAPI({ accessToken });
+    }
+
     this._personApiExp = expires;
 
     return this._personApi;
@@ -217,12 +232,13 @@ module.exports = class MozillaAuth0 {
     );
 
     // Called by the consumer
-    app.get('/login/mozilla-auth0', passport.authenticate('auth0'));
+    app.get('/login/mozilla-auth0', applySecurityHeaders, passport.authenticate('auth0'));
     // Called by the provider
     app.get(
       callback,
+      applySecurityHeaders,
       passport.authenticate('auth0'),
       loginMiddleware,
     );
   }
-};
+}

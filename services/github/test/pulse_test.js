@@ -1,7 +1,14 @@
-const assert = require('assert');
-const helper = require('./helper');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import path from 'path';
+import fs from 'fs/promises';
+import helper from './helper.js';
+import libUrls from 'taskcluster-lib-urls';
+import testing from '@taskcluster/lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const loadWebhookJson = async filename => {
+  return JSON.parse(await fs.readFile(path.join(__dirname, 'data', 'webhooks', filename)));
+};
 
 // Webhooks payloads can be introspected by going to the app admin page
 // https://github.com/organizations/taskcluster/settings/apps/community-tc-integration/advanced
@@ -42,7 +49,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test(params.testName, async function() {
       // Trigger a pull-request message
       let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
-      res.connection.destroy();
+      res.connection?.destroy();
+
+      const webhook = await loadWebhookJson(params.jsonFile);
 
       helper.assertPulseMessage(params.listenFor, m => {
         if (m.routingKey === params.routingKey && m.payload.eventId === params.eventId) {
@@ -54,12 +63,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             repository: params.repository || 'hooks-testing',
             eventId: params.eventId,
             version: 1,
-            body: require('./data/webhooks/' + params.jsonFile).body,
+            body: webhook.body,
             tasks_for: params.tasks_for,
-            ...params.branch ? { branch: params.branch } : {},
-            ...params.action ? { action: params.action } : {},
-            ...params.checkRunId ? { checkRunId: params.checkRunId } : {},
-            ...params.checkSuiteId ? { checkSuiteId: params.checkSuiteId } : {},
+            ...(params.branch ? { branch: params.branch } : {}),
+            ...(params.action ? { action: params.action } : {}),
+            ...(params.checkRunId ? { checkRunId: params.checkRunId } : {}),
+            ...(params.checkSuiteId ? { checkSuiteId: params.checkSuiteId } : {}),
           });
           return true;
         }

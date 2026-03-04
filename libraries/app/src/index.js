@@ -1,35 +1,39 @@
-const express = require('express');
-const _ = require('lodash');
-const debug = require('debug')('base:app');
-const assert = require('assert');
-const http = require('http');
-const sslify = require('express-sslify');
-const hsts = require('hsts');
-const csp = require('content-security-policy');
-const uuid = require('uuid');
-const path = require('path');
-const fs = require('fs');
-
-const REPO_ROOT = path.join(__dirname, '../../../');
+import express from 'express';
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('base:app');
+import assert from 'assert';
+import http from 'http';
+import sslify from 'express-sslify';
+import hsts from 'hsts';
+import csp from 'content-security-policy';
+import { v4 } from 'uuid';
+import { loadVersion } from '@taskcluster/lib-api';
 
 /**
  * Attach trace headers to requests. This is exported
  * to be used in web-server as well sice it doesn't use
  * lib-app.
+ *
+ * @param {import('express').Request & Record<string, any>} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
  */
-const traceMiddleware = (req, res, next) => {
+export const traceMiddleware = (req, res, next) => {
   let traceId;
   if (req.headers['x-taskcluster-trace-id']) {
     traceId = req.headers['x-taskcluster-trace-id'];
   } else {
-    traceId = uuid.v4();
+    traceId = v4();
   }
   req.traceId = traceId;
-  req.requestId = uuid.v4();
+  req.requestId = v4();
   res.setHeader('x-for-trace-id', traceId);
   res.setHeader('x-for-request-id', req.requestId);
   next();
 };
+
+let listenersAdded = false;
 
 /**
  * Create server; this becomes a method of the `app` object, so `this`
@@ -42,12 +46,53 @@ const createServer = function() {
     res.status(404).json({ error: 'Not found' });
   });
 
+  let server;
+  let terminating;
+
+  function shutdown() {
+    if (terminating || !server) {
+      debug('Already terminating or server not started');
+      return terminating;
+    }
+
+    terminating = true;
+    debug('Shutting down server');
+
+    server.getConnections((err, count) => {
+      if (err) {
+        debug('Error getting connections', err);
+        return;
+      }
+      debug('Connections open: ' + count);
+    });
+    server.terminate()
+      .then(() => {
+        debug('Server terminated');
+        process.exit(0);
+      });
+  }
+
+  if (!listenersAdded) {
+    listenersAdded = true;
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+  }
+
   return new Promise((accept, reject) => {
     // Launch HTTP server
-    const server = http.createServer(this);
+    server = http.createServer(this);
 
     // Add a little method to help kill the server
     server.terminate = () => {
+      debug('Terminating server');
+      // tell existing connections to close
+      server.on('request', (req, res) => {
+        if (!res.headersSent) {
+          res.setHeader('Connection', 'close');
+        }
+        res.on('finish', () => req.socket.destroy());
+      });
+
       return new Promise((accept, reject) => {
         server.close(accept);
       }).then(() => {
@@ -63,12 +108,31 @@ const createServer = function() {
       debug('Server listening on port ' + this.get('port'));
       accept(server);
     });
+
+    // let reverse proxies and load balancer enough time to read the response
+    debug(`Setting keepAliveTimeout to ${this.get('keepAliveTimeout')} seconds`);
+    server.keepAliveTimeout = this.get('keepAliveTimeout') * 1000;
   });
 };
 
-/** Create express application.  See the README for docs.
+/**
+ * Create express application.  See the README for docs.
+ *
+ * @param {object} options
+ * @param {number} options.port
+ * @param {string} options.env
+ * @param {boolean} options.forceSSL
+ * @param {boolean} options.forceHSTS
+ * @param {boolean} options.trustProxy
+ * @param {object[]} options.apis
+ * @param {boolean} [options.contentSecurityPolicy]
+ * @param {boolean} [options.robotsTxt]
+ * @param {number|string} [options.keepAliveTimeoutSeconds]
+ * @param {string} [options.rootDocsLink] - deprecated
+ * @param {object} [options.docs] - deprecated
+ * @returns {Promise<import('express').Express>}
  */
-const app = async (options) => {
+export const App = async (options) => {
   assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
@@ -76,18 +140,25 @@ const app = async (options) => {
   });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env === 'development' ||
-         options.env === 'production', 'env must be production or development');
+  options.env === 'production', 'env must be production or development');
   assert(options.forceSSL !== undefined, 'forceSSL must be defined');
   assert(options.trustProxy !== undefined, 'trustProxy must be defined');
   assert(options.apis, 'Must provide an array of apis');
+  assert(options.keepAliveTimeoutSeconds !== '' || typeof options.keepAliveTimeoutSeconds === 'number', 'keepAliveTimeout must be a number');
   assert(!options.rootDocsLink, '`rootDocsLink` is no longer allowed');
   assert(!options.docs, '`docs` is no longer allowed');
+
+  // This mitigates the issue with reverse proxy and Load Balancer,
+  // where connections are being closed before response is sent.
+  // This timeout should be larger than downstream's timeout
+  const DEFAULT_KEEP_ALIVE_TIMEOUT_SECONDS = 90;
 
   // Create application
   const app = express();
   app.set('port', options.port);
   app.set('env', options.env);
   app.set('json spaces', 2);
+  app.set('keepAliveTimeout', options.keepAliveTimeoutSeconds || DEFAULT_KEEP_ALIVE_TIMEOUT_SECONDS);
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
@@ -139,8 +210,7 @@ const app = async (options) => {
   }
 
   try {
-    const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-    const taskclusterVersion = fs.readFileSync(taskclusterVersionFile).toString().trim();
+    const taskclusterVersion = await loadVersion();
     app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
@@ -173,6 +243,3 @@ const app = async (options) => {
 
   return app.createServer();
 };
-
-// Export app creation utility
-module.exports = { App: app, traceMiddleware };

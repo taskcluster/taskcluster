@@ -6,9 +6,9 @@ const { createHash } = require('crypto');
 const slugid = require('slugid');
 const { createLogger } = require('../src/log');
 const { NAMESPACE, TASK_ID, ROOT_URL } = require('./fixtures/image_artifacts');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const monitor = require('./fixtures/monitor');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('./helper');
 
 let docker = Docker();
@@ -26,7 +26,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
   }
 
   test('download docker image from registry', async () => {
-    let image = 'gliderlabs/alpine:latest';
+    let image = 'alpine:latest';
     await dockerUtils.removeImageIfExists(docker, image);
     let runtime = {
       docker: docker,
@@ -172,7 +172,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Images should not be used when proper scopes are not provided');
-    } catch(e) {
+    } catch (e) {
       return;
     }
   });
@@ -253,7 +253,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Could not find a task associated'),
         'Error message did not appear indicating a task could not be found.',
@@ -293,7 +293,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Could not download artifact'),
         `Error message did not appear indicating an artifact could not be found. ${e.message}`,
@@ -332,7 +332,7 @@ helper.secrets.mockSuite(suiteName(), ['docker'], function(mock, skipping) {
     try {
       await im.ensureImage(image, process.stdout, task, []);
       assert.ok(false, 'Exception should have been thrown');
-    } catch(e) {
+    } catch (e) {
       assert.ok(
         e.message.includes('Unrecognized image type'),
         `Error message did not appear indicating unrecognized image type was used. ${e.message}`,

@@ -1,14 +1,15 @@
-const debug = require('debug')('test:artifacts');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const request = require('superagent');
-const taskcluster = require('taskcluster-client');
-const { Netmask } = require('netmask');
-const { createArtifactCallsCompatible } = require('../src/artifacts.js');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test:artifacts');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import request from 'superagent';
+import taskcluster from '@taskcluster/client';
+import { Netmask } from 'netmask';
+import { createArtifactCallsCompatible } from '../src/artifacts.js';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   if (mock) {
@@ -96,7 +97,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.withAmazonIPRanges(mock, skipping);
     helper.withPulse(mock, skipping);
     helper.withS3(mock, skipping);
-    helper.withQueueService(mock, skipping);
     helper.withServer(mock, skipping);
     helper.resetTables(mock, skipping);
 
@@ -171,7 +171,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         let res = await request.get(url).ok(() => true).redirects(0);
         assume(res.status).equals(303);
         assume(res.headers.location).to.not.be.empty();
-        assume(res.headers.location).does.not.contain('&Signature=');
+        assume(res.headers.location).does.not.contain('&X-Amz-Signature=');
         const location = res.headers.location;
         res = await request.get(location);
         assume(res.ok).is.ok();
@@ -420,6 +420,42 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.name).equals(s3Artifact.name);
       assume(res.expires).equals(s3Artifact.expires);
       assume(res.contentType).equals('application/json');
+    });
+
+    test('S3 artifact with contentLength', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({
+        ...s3Artifact,
+        contentLength: 12345,
+        putFn: null,
+      });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId + ':0',
+      );
+
+      const list = await helper.queue.listArtifacts(taskId, 0);
+      assume(list.artifacts.length).equals(1);
+      assume(list.artifacts[0].contentLength).equals(12345);
+
+      const info = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
+      assume(info.contentLength).equals(12345);
+    });
+
+    test('S3 artifact without contentLength', async () => {
+      await makeAndClaimTask();
+      await makeArtifact({ ...s3Artifact, putFn: null });
+
+      helper.scopes(
+        'queue:list-artifacts:' + taskId + ':0',
+      );
+
+      const list = await helper.queue.listArtifacts(taskId, 0);
+      assume(list.artifacts.length).equals(1);
+      assert.equal(list.artifacts[0].contentLength, undefined);
+
+      const info = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
+      assert.equal(info.contentLength, undefined);
     });
 
     test('artifact (missing task)', async () => {
@@ -1083,7 +1119,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.withDb(mock, skipping);
     helper.withPulse(mock, skipping);
     helper.withS3(mock, skipping);
-    helper.withQueueService(mock, skipping);
     helper.withServer(mock, skipping);
     helper.resetTables(mock, skipping);
 
@@ -1125,7 +1160,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       res = await request.get(url).ok(() => true).redirects(0);
       assume(res.status).equals(303);
       assume(res.headers.location).to.not.be.empty();
-      assume(res.headers.location).contains('&Signature=');
+      assume(res.headers.location).contains('&X-Amz-Signature=');
       res = await request.get(res.headers.location);
       assume(res.ok).is.ok();
       assume(res.body).to.be.eql({ message: 'Hello World' });

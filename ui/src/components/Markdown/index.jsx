@@ -8,13 +8,16 @@ import { alpha, withStyles } from '@material-ui/core/styles';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const markdown = parser({ linkify: true });
+const markdownHtml = parser({ html: true, linkify: true });
 
-markdown.use(highlighter);
-markdown.use(linkAttributes, {
-  attrs: {
-    target: '_blank',
-    rel: 'noopener noreferrer',
-  },
+[markdown, markdownHtml].forEach(md => {
+  md.use(highlighter);
+  md.use(linkAttributes, {
+    attrs: {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+  });
 });
 
 @withStyles(theme => ({
@@ -197,14 +200,15 @@ export default class Markdown extends Component {
   };
 
   render() {
-    const { classes, children, className, ...props } = this.props;
+    const { classes, children, className, allowHtml, ...props } = this.props;
+    const md = allowHtml ? markdownHtml : markdown;
 
     /* eslint-disable react/no-danger */
     return (
       <span
         className={classNames(classes.root, className)}
         dangerouslySetInnerHTML={{
-          __html: markdown.render(children),
+          __html: md.render(children),
         }}
         {...props}
       />

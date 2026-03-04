@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   task: {
     provisionerId: 'no-provisioner',
     workerType: 'test-worker',

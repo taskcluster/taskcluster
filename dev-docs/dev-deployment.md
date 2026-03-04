@@ -16,7 +16,7 @@ You will need to have the following
 * A RabbitMQ cluster running the latest available version. (see also [install RabbitMQ](#own-rabbitmq-in-cluster))
   The deployment process requires administrative access (the RabbitMQ management API) and creates multiple users.
   The free levels of CloudAMQP's service do not support this.
-* A Postgres server running Postgres 11.x (see below for Google Cloud SQL, or use another provider). (see also [install Postgres](#own-postgres-in-cluster))
+* A Postgres server running Postgres 15.x (see below for Google Cloud SQL, or use another provider). (see also [install Postgres](#own-postgres-in-cluster))
   The Postgres server must be initialized with the `en_US.utf8` locale; see [the deployment docs](../ui/docs/manual/deploying/database.mdx).
 * An AWS account and an IAM user in that account
   Set up your `aws` command-line to use the IAM user (`aws configure`).
@@ -50,10 +50,8 @@ If you want more flexibility you can use [ingress nginx](https://kubernetes.gith
 1. Install ingress nginx by running following or checking deployment-specific [documentation](https://kubernetes.github.io/ingress-nginx/deploy/)
 
    ```sh
-   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-   helm repo update
-   helm install ingress-nginx/ingress-nginx \
-      --name nginx-ingress \
+   helm upgrade --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx \
       --set controller.service.loadBalancerIP="$STATIC_IP_ADDRESS"
    ```
@@ -114,6 +112,28 @@ docker push username/taskcluster-dev:${VERSION}
 
 # run deployment
 yarn dev:apply
+```
+
+### Deploying custom images from private registry
+
+Kubernetes supports [pulling images from private registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
+
+You will have to set those two variables in your `dev-config.yml`:
+
+```yml
+dockerImage: path.to/private/registry:tag
+imagePullSecret: dockerSecretsName
+```
+
+Where `dockerSecretsName` is a secret name that holds docker authentication for that private registry. See [docs](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials)
+
+```sh
+# using credentials:
+kubectl create secret docker-registry dockerSecretsName --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+# or using .dockerconfigjson
+kubectl create secret generic dockerSecretsName \
+    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+    --type=kubernetes.io/dockerconfigjson
 ```
 
 #### Troubleshooting:
@@ -346,7 +366,7 @@ Warning: by using this approach, you are responsible for maintenance and backups
       enabled: true
 
    image:
-      tag: 11  # Taskcluster currently supports version 11
+      tag: 15  # Taskcluster currently supports version 11 and 15
    ```
 
    More details at <https://github.com/bitnami/charts/tree/master/bitnami/postgresql>
@@ -387,14 +407,11 @@ You have a choice to use [cert manager](https://cert-manager.io/docs/) that can 
 You can use [helm](https://cert-manager.io/docs/installation/helm/#example-usage) to install it:
 
 ```sh
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm install \
-  --name cert-manager \
+helm upgrade --install \
+   cert-manager oci://quay.io/jetstack/charts/cert-manager \
   --namespace cert-manager \
-  --version v1.9.1 \  # check latest version for cert-manager.io
-  jetstack/cert-manager \
-  --set installCRDs=true
+  --version v1.19.2 \  # check latest version for cert-manager.io
+  --set crds.enabled=true
 ```
 
 You will also need to create `ClusterIssuer` resources that will tell cert-manager how to obtain those certificates.

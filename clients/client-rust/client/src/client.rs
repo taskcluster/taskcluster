@@ -2,6 +2,7 @@ use crate::retry::Backoff;
 use crate::util::collect_scopes;
 use crate::{Credentials, Retry};
 use anyhow::{anyhow, bail, Context, Error, Result};
+use base64::Engine;
 use reqwest::header::HeaderValue;
 use serde_json::json;
 use serde_json::Value;
@@ -189,7 +190,7 @@ impl Client {
 
         let ext = if let Some(ext) = ext_json {
             let ext_str = serde_json::to_string(&ext)?;
-            Some(base64::encode_config(ext_str, base64::URL_SAFE_NO_PAD))
+            Some(base64::engine::general_purpose::STANDARD.encode(ext_str))
         } else {
             None
         };
@@ -512,7 +513,16 @@ mod tests {
             bail!("client has no ext")
         };
 
-        let ext = base64::decode(ext)?;
+        use base64::engine::{
+            general_purpose::{GeneralPurpose, GeneralPurposeConfig},
+            DecodePaddingMode,
+        };
+        let engine = GeneralPurpose::new(
+            &base64::alphabet::STANDARD,
+            GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
+        );
+
+        let ext = engine.decode(ext)?;
 
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase")]

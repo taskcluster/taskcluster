@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,10 +13,12 @@ import (
 	"sync"
 	"time"
 
+	"maps"
+
 	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	tc "github.com/taskcluster/taskcluster/v44/tools/taskcluster-proxy/taskcluster"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	tc "github.com/taskcluster/taskcluster/v97/tools/taskcluster-proxy/taskcluster"
 )
 
 // Routes represents the context of the running service
@@ -100,7 +102,7 @@ func (routes *Routes) BewitHandler(res http.ResponseWriter, req *http.Request) {
 	// Using ReadAll could be sketchy here since we are reading unbounded data
 	// into memory...
 	routes.setHeaders(res)
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 
 	if err != nil {
 		res.WriteHeader(500)
@@ -201,7 +203,7 @@ func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 		// apiVersion, path, query) based on the configured RootURL.
 		targetPath, err = url.Parse(tcUrls.API(routes.RootURL, match[1], match[2], match[3]+query))
 	} else {
-		err = fmt.Errorf("Invalid /api path")
+		err = fmt.Errorf("invalid /api path")
 	}
 
 	if err != nil {
@@ -234,7 +236,7 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	body := []byte{}
 	var err error
 	if req.Body != nil {
-		body, err = ioutil.ReadAll(req.Body)
+		body, err = io.ReadAll(req.Body)
 		// If we fail to create a request notify the client.
 		if err != nil {
 			res.WriteHeader(500)
@@ -249,11 +251,9 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	httpCall := func() (*http.Response, error, error) {
 		proxyreq, err := http.NewRequest(req.Method, targetPath.String(), bytes.NewReader(body))
 		if err != nil {
-			return nil, nil, fmt.Errorf("Error constructing request: %s", err)
+			return nil, nil, fmt.Errorf("error constructing request: %s", err)
 		}
-		for k, v := range req.Header {
-			proxyreq.Header[k] = v
-		}
+		maps.Copy(proxyreq.Header, req.Header)
 
 		// for compatibility, if there is no request Content-Type and the body
 		// has nonzero length, we add a Content-Type header.  See #3521.
@@ -277,7 +277,7 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 	var resbody []byte
 	if proxyres != nil {
 		var err2 error
-		resbody, err2 = ioutil.ReadAll(proxyres.Body)
+		resbody, err2 = io.ReadAll(proxyres.Body)
 		if err == nil && err2 != nil {
 			res.WriteHeader(500)
 			fmt.Fprintf(res, "Failed to read response body: %s", err2)

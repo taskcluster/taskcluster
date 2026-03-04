@@ -1,9 +1,10 @@
-const _ = require('lodash');
-const slug = require('slugid');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { fromNow } = require('taskcluster-client');
+import _ from 'lodash';
+import slug from 'slugid';
+import { strict as assert } from 'assert';
+import helper from '../helper.js';
+import testing from '@taskcluster/lib-testing';
+import tc from '@taskcluster/client';
+const { fromNow } = tc;
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'index' });
@@ -191,14 +192,70 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 1);
     });
 
+    helper.dbTest('get_tasks_from_indexes_and_namespaces does not omit expired indexed tasks', async function(db, isFake) {
+      const now = new Date();
+      const taskId = slug.nice();
+      await create_indexed_task(db, { expires: now, taskId });
+
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
+      assert.equal(rows.length, 1);
+    });
+
+    helper.dbTest('get_tasks_from_indexes_and_namespaces not found', async function(db, isFake) {
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
+      assert.deepEqual(rows, []);
+    });
+
     helper.dbTest('get_indexed_task not found', async function(db, isFake) {
       const rows = await db.fns.get_indexed_task('name/space', 'name');
+      assert.deepEqual(rows, []);
+    });
+
+    helper.dbTest('get_tasks_from_indexes_and_namespaces empty', async function(db, isFake) {
+      const rows = await db.fns.get_tasks_from_indexes_and_namespaces(null, null, null);
       assert.deepEqual(rows, []);
     });
 
     helper.dbTest('get_indexed_tasks empty', async function(db, isFake) {
       const rows = await db.fns.get_indexed_tasks(null, null, null, null);
       assert.deepEqual(rows, []);
+    });
+
+    helper.dbTest('get_tasks_from_indexes_and_namespaces pagination', async function(db, isFake) {
+      const oneDay = fromNow('1 day');
+      const expectedIndexes = [];
+      const expectedTasks = [];
+      for (let i = 0; i < 10; i++) {
+        const data = {
+          namespace: `namespace/${i}`,
+          name: `name/${i}`,
+          expires: oneDay,
+          taskId: slug.nice(),
+          data: { data: "testing" },
+          rank: 1,
+        };
+        await create_indexed_task(db, data);
+        expectedIndexes.push(`namespace/${i}.name/${i}`);
+        data.task_id = data.taskId;
+        delete data.taskId;
+        expectedTasks.push(data);
+      }
+
+      // Full query
+      let rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 1000, 0);
+      assert.equal(rows.length, expectedIndexes.length);
+      assert.deepStrictEqual(rows, expectedTasks);
+
+      // Test pagination
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 2, 0);
+      assert.deepStrictEqual(rows, expectedTasks.slice(0, 2));
+
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(expectedIndexes), 3, 2);
+      assert.deepStrictEqual(rows, expectedTasks.slice(2, 5));
+
+      rows = await db.fns.get_tasks_from_indexes_and_namespaces(
+        JSON.stringify(expectedIndexes), 2, expectedIndexes.length);
+      assert.equal(rows.length, 0);
     });
 
     helper.dbTest('get_indexed_tasks full, pagination', async function(db, isFake) {

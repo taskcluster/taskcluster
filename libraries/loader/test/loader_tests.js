@@ -1,6 +1,6 @@
-let assume = require('assume');
-let subject = require('../src');
-let assert = require('assert');
+import assume from 'assume';
+import subject from '../src/index.js';
+import assert from 'assert';
 
 suite('component loader', () => {
   test('should load a single component with a static value', async () => {
@@ -441,7 +441,7 @@ suite('component loader', () => {
       },
     });
 
-    assert.throws( function() { load.crashOnError(true); }, 'false');
+    assert.throws(function() { load.crashOnError(true); }, 'false');
   });
 
   test('should pass own name to setup', async () => {

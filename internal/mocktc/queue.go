@@ -3,10 +3,11 @@ package mocktc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -14,8 +15,9 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
+	"github.com/taskcluster/slugid-go/slugid"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -30,16 +32,17 @@ type Queue struct {
 	tasks map[string]*tcqueue.TaskDefinitionAndStatus
 
 	// artifacts["<taskId>:<runId>"]["<name>"]
-	artifacts map[string]map[string]interface{}
+	artifacts map[string]map[string]any
 
 	baseURL string
 }
 
 func NewQueue(t *testing.T, baseURL string) *Queue {
+	t.Helper()
 	return &Queue{
 		t:         t,
 		tasks:     map[string]*tcqueue.TaskDefinitionAndStatus{},
-		artifacts: map[string]map[string]interface{}{},
+		artifacts: map[string]map[string]any{},
 		baseURL:   baseURL,
 	}
 }
@@ -98,7 +101,7 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 
 func (queue *Queue) ensureArtifactMap(taskId, runId string) {
 	if _, mapAlreadyCreated := queue.artifacts[taskId+":"+runId]; !mapAlreadyCreated {
-		queue.artifacts[taskId+":"+runId] = map[string]interface{}{}
+		queue.artifacts[taskId+":"+runId] = map[string]any{}
 	}
 }
 
@@ -114,7 +117,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		queue.t.Fatalf("Error unmarshalling from json: %v", err)
 	}
 
-	var req, resp interface{}
+	var req, resp any
 	switch request.StorageType {
 	case "s3":
 		var s3Request tcqueue.S3ArtifactRequest
@@ -124,6 +127,14 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		}
 		req = &s3Request
 		resp, err = queue.createS3Artifact(taskId, runId, name, &s3Request)
+	case "object":
+		var objectRequest tcqueue.ObjectArtifactRequest
+		err = json.Unmarshal([]byte(*payload), &objectRequest)
+		if err != nil {
+			queue.t.Fatalf("Error unmarshalling Object Artifact Request from json: %v", err)
+		}
+		req = &objectRequest
+		resp, err = queue.createObjectArtifact(taskId, runId, name, &objectRequest)
 	case "error":
 		var errorRequest tcqueue.ErrorArtifactRequest
 		err = json.Unmarshal([]byte(*payload), &errorRequest)
@@ -166,7 +177,15 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 	return &par, nil
 }
 
-func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request interface{}) error {
+func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *tcqueue.FinishArtifactRequest) error {
+	queue.mu.Lock()
+	defer queue.mu.Unlock()
+
+	// do nothing (for now)
+	return nil
+}
+
+func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request any) error {
 	previousVersion, existed := queue.artifacts[taskId+":"+runId][name]
 	if !existed || reflect.DeepEqual(previousVersion, request) {
 		return nil
@@ -179,6 +198,20 @@ func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, r
 			HttpResponseCode: 409,
 		},
 	}
+}
+
+func (queue *Queue) createObjectArtifact(taskId, runId, name string, objectRequest *tcqueue.ObjectArtifactRequest) (*tcqueue.ObjectArtifactResponse, error) {
+	err := queue.ensureUnchangedIfAlreadyExists(taskId, runId, name, objectRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &tcqueue.ObjectArtifactResponse{
+		Expires:     objectRequest.Expires,
+		Name:        name,
+		ProjectID:   "test-project",
+		UploadID:    slugid.Nice(),
+		StorageType: objectRequest.StorageType,
+	}, nil
 }
 
 func (queue *Queue) createS3Artifact(taskId, runId, name string, s3Request *tcqueue.S3ArtifactRequest) (*tcqueue.S3ArtifactResponse, error) {
@@ -374,7 +407,7 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 		return queue.GetLatestArtifact_SignedURL(taskId, a.Artifact, duration)
 	}
 	queue.t.Fatalf("Unknown artifact type %T", artifact)
-	return nil, fmt.Errorf("Unknown artifact type %T", artifact)
+	return nil, fmt.Errorf("unknown artifact type %T", artifact)
 }
 
 func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*tcqueue.ListArtifactsResponse, error) {
@@ -407,10 +440,19 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 			}
 		case *tcqueue.S3ArtifactRequest:
 			a = tcqueue.Artifact{
-				ContentType: A.ContentType,
-				Expires:     A.Expires,
-				Name:        name,
-				StorageType: A.StorageType,
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
+			}
+		case *tcqueue.ObjectArtifactRequest:
+			a = tcqueue.Artifact{
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
 			}
 		default:
 			queue.t.Fatalf("Invalid artifact request type for artifact %#v for task %v runId %v", a, taskId, runId)
@@ -492,7 +534,7 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 		return queue.Artifact(taskId, runId, a.Artifact)
 
 	default:
-		return nil, fmt.Errorf("Unsupported artifact storage type %T", artifact)
+		return nil, fmt.Errorf("unsupported artifact storage type %T", artifact)
 	}
 
 	// convert that encoded JSON into an object of the correct type
@@ -584,7 +626,7 @@ func (queue *Queue) DownloadArtifactToFile(taskId string, runId int64, name stri
 	if err != nil {
 		return "", 0, err
 	}
-	err = ioutil.WriteFile(filename, buf, 0600)
+	err = os.WriteFile(filename, buf, 0600)
 	if err != nil {
 		return "", 0, err
 	}
@@ -627,7 +669,7 @@ func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name strin
 		}
 
 		contentType = resp.Header.Get("Content-Type")
-		buf, err = ioutil.ReadAll(resp.Body)
+		buf, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return
 		}
@@ -664,7 +706,7 @@ func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name strin
 		return queue.DownloadArtifactToBuf(taskId, runId, linkContent.Artifact)
 
 	default:
-		err = fmt.Errorf("Unsupported artifact storageType '%s'", artifact.StorageType)
+		err = fmt.Errorf("unsupported artifact storageType '%s'", artifact.StorageType)
 		return
 	}
 }

@@ -1,7 +1,7 @@
-const { DateResolver, DateTimeResolver, TimeResolver } = require('graphql-scalars');
-const GraphQLJSON = require('graphql-type-json');
+import { DateResolver, DateTimeResolver, TimeResolver } from 'graphql-scalars';
+import GraphQLJSON from 'graphql-type-json';
 
-module.exports = {
+export default {
   Date: DateResolver,
   Time: TimeResolver,
   DateTime: DateTimeResolver,

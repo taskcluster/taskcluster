@@ -1,7 +1,7 @@
 package fileutil
 
 import (
-	"github.com/taskcluster/taskcluster/v44/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 // SecureFiles modifies the discretionary access control list (DACL) of each
@@ -15,4 +15,21 @@ func SecureFiles(filepaths ...string) (err error) {
 		}
 	}
 	return
+}
+
+func GetPermissions(path string) (string, func() error, error) {
+	permissions, err := host.Output("icacls", path)
+	if err != nil {
+		return "", nil, err
+	}
+
+	reset := func() error {
+		return resetPermissions(path)
+	}
+
+	return permissions, reset, nil
+}
+
+func resetPermissions(path string) error {
+	return host.Run("icacls", path, "/reset", "/t")
 }

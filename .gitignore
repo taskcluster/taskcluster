@@ -1,8 +1,10 @@
 node_modules
+install-state.gz
 .eslintcache
 user-build-config.yml
 *.log
 .idea
+.vscode
 user-config.*
 dev-config.*
 /artifacts/
@@ -34,6 +36,7 @@ _testmain.go
 
 # Coverage report
 /coverage.report
+coverage
 
 # Created by generic worker tests
 /downloads/
@@ -48,6 +51,7 @@ worker_type_definitions
 generic-worker.config
 directory-caches.json
 file-caches.json
+d2g-image-cache.json
 tasks-resolved-count.txt
 current-task-user.json
 next-task-user.json
@@ -55,6 +59,7 @@ next-task-user.json
 /workers/generic-worker/generic-worker-*
 /workers/generic-worker/generic-worker
 /workers/generic-worker/testdata/Test*
+/workers/generic-worker/downloads
 /tools/worker-runner/start-worker
 /tools/worker-runner/start-worker-*-*
 /tools/worker-runner/fake.exe
@@ -78,3 +83,6 @@ __pycache__
 # docker-compose artifacts
 /docker/buckets
 docker-compose.override.yml
+
+dist/
+.DS_Store

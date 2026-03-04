@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/queue/v1/exchanges.json
+// This package was generated from the reference schema of
+// the QueueEvents service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/queue/v1/exchanges.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The queue service is responsible for accepting tasks and track their state
 // as they are executed by workers. In order ensure they are eventually
 // resolved.
@@ -14,9 +18,9 @@
 // This document describes AMQP exchanges offered by the queue, which allows
 // third-party listeners to monitor tasks as they progress to resolution.
 // These exchanges targets the following audience:
-//  * Schedulers, who takes action after tasks are completed,
-//  * Workers, who wants to listen for new or canceled tasks (optional),
-//  * Tools, that wants to update their view as task progress.
+//   - Schedulers, who takes action after tasks are completed,
+//   - Workers, who wants to listen for new or canceled tasks (optional),
+//   - Tools, that wants to update their view as task progress.
 //
 // You'll notice that all the exchanges in the document shares the same
 // routing key pattern. This makes it very easy to bind to all messages
@@ -57,7 +61,7 @@
 //
 // See:
 //
-// How to use this package
+// # How to use this package
 //
 // This package is designed to sit on top of https://pkg.go.dev/github.com/taskcluster/pulse-go/pulse. Please read
 // the pulse package overview to get an understanding of how the pulse client is implemented in go.
@@ -68,17 +72,17 @@
 //
 // For example, when specifying a binding, rather than using:
 //
-//  pulse.Bind(
-//  	"*.*.*.*.*.*.gaia.#",
-//  	"exchange/taskcluster-queue/v1/task-defined",
-//  )
+//	pulse.Bind(
+//		"*.*.*.*.*.*.gaia.#",
+//		"exchange/taskcluster-queue/v1/task-defined",
+//	)
 //
 // You can rather use:
 //
-//  queueevents.TaskDefined{WorkerType: "gaia"}
+//	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcqueueevents
 
 import (
@@ -115,7 +119,7 @@ func (binding TaskDefined) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-defined"
 }
 
-func (binding TaskDefined) NewPayloadObject() interface{} {
+func (binding TaskDefined) NewPayloadObject() any {
 	return new(TaskDefinedMessage)
 }
 
@@ -149,7 +153,7 @@ func (binding TaskPending) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-pending"
 }
 
-func (binding TaskPending) NewPayloadObject() interface{} {
+func (binding TaskPending) NewPayloadObject() any {
 	return new(TaskPendingMessage)
 }
 
@@ -178,7 +182,7 @@ func (binding TaskRunning) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-running"
 }
 
-func (binding TaskRunning) NewPayloadObject() interface{} {
+func (binding TaskRunning) NewPayloadObject() any {
 	return new(TaskRunningMessage)
 }
 
@@ -226,7 +230,7 @@ func (binding ArtifactCreated) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/artifact-created"
 }
 
-func (binding ArtifactCreated) NewPayloadObject() interface{} {
+func (binding ArtifactCreated) NewPayloadObject() any {
 	return new(ArtifactCreatedMessage)
 }
 
@@ -258,7 +262,7 @@ func (binding TaskCompleted) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-completed"
 }
 
-func (binding TaskCompleted) NewPayloadObject() interface{} {
+func (binding TaskCompleted) NewPayloadObject() any {
 	return new(TaskCompletedMessage)
 }
 
@@ -288,7 +292,7 @@ func (binding TaskFailed) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-failed"
 }
 
-func (binding TaskFailed) NewPayloadObject() interface{} {
+func (binding TaskFailed) NewPayloadObject() any {
 	return new(TaskFailedMessage)
 }
 
@@ -322,7 +326,7 @@ func (binding TaskException) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-exception"
 }
 
-func (binding TaskException) NewPayloadObject() interface{} {
+func (binding TaskException) NewPayloadObject() any {
 	return new(TaskExceptionMessage)
 }
 
@@ -348,14 +352,87 @@ func (binding TaskGroupResolved) ExchangeName() string {
 	return "exchange/taskcluster-queue/v1/task-group-resolved"
 }
 
-func (binding TaskGroupResolved) NewPayloadObject() interface{} {
-	return new(TaskGroupResolvedMessage)
+func (binding TaskGroupResolved) NewPayloadObject() any {
+	return new(TaskGroupChangedMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+// A message is published on task-group-sealed whenever task group is sealed.
+// This task group will no longer allow creation of new tasks.
+//
+// See #taskGroupSealed
+type TaskGroupSealed struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupSealed) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupSealed) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-sealed"
+}
+
+func (binding TaskGroupSealed) NewPayloadObject() any {
+	return new(TaskGroupChangedMessage)
+}
+
+// A message published when task priority was updated via `changeTaskPriority` API call.
+//
+// See #taskPriorityChanged
+type TaskPriorityChanged struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskPriorityChanged) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskPriorityChanged) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-priority-changed"
+}
+
+func (binding TaskPriorityChanged) NewPayloadObject() any {
+	return new(TaskPriorityChangedMessage)
+}
+
+// A message published when task group priority was changed via `changeTaskGroupPriority` API call.
+//
+// See #taskGroupPriorityChanged
+type TaskGroupPriorityChanged struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupPriorityChanged) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupPriorityChanged) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-priority-changed"
+}
+
+func (binding TaskGroupPriorityChanged) NewPayloadObject() any {
+	return new(TaskGroupPriorityChangedMessage)
+}
+
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

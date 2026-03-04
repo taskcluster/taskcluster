@@ -1,4 +1,4 @@
-const { CLIENT_ID_PATTERN } = require('../utils/constants');
+import { CLIENT_ID_PATTERN } from '../utils/constants.js';
 
 /**
  * Returns the user's identity given a clientId
@@ -6,7 +6,7 @@ const { CLIENT_ID_PATTERN } = require('../utils/constants');
  *    mozilla-auth0/ad|Mozilla-LDAP|haali/ -> mozilla-auth0/ad|Mozilla-LDAP|haali
  *    mozilla-auth0/ad|Mozilla-LDAP|haali -> mozilla-auth0/ad|Mozilla-LDAP|haali
  */
-module.exports = (clientId) => {
+export default (clientId) => {
   const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
 
   return patternMatch && patternMatch[1];

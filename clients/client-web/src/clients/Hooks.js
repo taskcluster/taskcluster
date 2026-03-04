@@ -24,7 +24,7 @@ export default class Hooks extends Client {
     this.getTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"getTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:get-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.resetTriggerToken.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"post","name":"resetTriggerToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/token","scopes":"hooks:reset-trigger-token:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.triggerHookWithToken.entry = {"args":["hookGroupId","hookId","token"],"category":"Hooks","input":true,"method":"post","name":"triggerHookWithToken","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/trigger/<token>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","scopes":"hooks:list-last-fires:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listLastFires.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"listLastFires","output":true,"query":["continuationToken","limit"],"route":"/hooks/<hookGroupId>/<hookId>/last-fires","scopes":"hooks:list-last-fires:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -123,6 +123,8 @@ export default class Hooks extends Client {
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  // Optionally, a `taskId` can be provided in the payload which the hook task
+  // will use. It must be unique and follow the slugid format.
   /* eslint-enable max-len */
   triggerHook(...args) {
     this.validate(this.triggerHook.entry, args);
@@ -152,6 +154,8 @@ export default class Hooks extends Client {
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  // Optionally, a `taskId` can be provided in the payload which the hook task
+  // will use. It must be unique and follow the slugid format.
   /* eslint-enable max-len */
   triggerHookWithToken(...args) {
     this.validate(this.triggerHookWithToken.entry, args);
@@ -161,6 +165,7 @@ export default class Hooks extends Client {
   /* eslint-disable max-len */
   // This endpoint will return information about the the last few times this hook has been
   // fired, including whether the hook was fired successfully or not
+  // By default this endpoint will return up to 1000 most recent fires in one request.
   /* eslint-enable max-len */
   listLastFires(...args) {
     this.validate(this.listLastFires.entry, args);

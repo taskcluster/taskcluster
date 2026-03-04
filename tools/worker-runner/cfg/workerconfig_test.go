@@ -16,7 +16,7 @@ func TestUnmarshalYAML(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": 10.0}, wc.data, "should read yaml correctly")
+	assert.Equal(t, map[string]any{"x": 10.0}, wc.data, "should read yaml correctly")
 }
 
 func TestUnmarshalJSON(t *testing.T) {
@@ -26,7 +26,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": "y"}, wc.data, "should read json correctly")
+	assert.Equal(t, map[string]any{"x": "y"}, wc.data, "should read json correctly")
 }
 
 func TestMergeDistinctProperties(t *testing.T) {
@@ -39,7 +39,7 @@ func TestMergeDistinctProperties(t *testing.T) {
 
 	merged := wc1.Merge(&wc2)
 
-	assert.Equal(t, map[string]interface{}{"x": 10.0, "y": 20.0}, merged.data, "should merge configs")
+	assert.Equal(t, map[string]any{"x": 10.0, "y": 20.0}, merged.data, "should merge configs")
 }
 
 func TestMergeOverwriteProperty(t *testing.T) {
@@ -52,7 +52,7 @@ func TestMergeOverwriteProperty(t *testing.T) {
 
 	merged := wc1.Merge(&wc2)
 
-	assert.Equal(t, map[string]interface{}{"x": 20.0}, merged.data, "should merge configs")
+	assert.Equal(t, map[string]any{"x": 20.0}, merged.data, "should merge configs")
 }
 
 func TestMergeOverwritePropertyDifferentTypes(t *testing.T) {
@@ -65,7 +65,7 @@ func TestMergeOverwritePropertyDifferentTypes(t *testing.T) {
 
 	merged := wc1.Merge(&wc2)
 
-	assert.Equal(t, map[string]interface{}{"x": 13.0}, merged.data, "should merge configs")
+	assert.Equal(t, map[string]any{"x": 13.0}, merged.data, "should merge configs")
 }
 
 func TestMergeAppendArray(t *testing.T) {
@@ -79,9 +79,9 @@ func TestMergeAppendArray(t *testing.T) {
 	merged := wc1.Merge(&wc2)
 
 	assert.Equal(t,
-		map[string]interface{}{"x": []interface{}{
-			interface{}("a"),
-			interface{}("b"),
+		map[string]any{"x": []any{
+			any("a"),
+			any("b"),
 		}},
 		merged.data,
 		"should append arrays")
@@ -98,8 +98,8 @@ func TestMergeRecurseObjects(t *testing.T) {
 	merged := wc1.Merge(&wc2)
 
 	assert.Equal(t,
-		map[string]interface{}{
-			"x": map[string]interface{}{
+		map[string]any{
+			"x": map[string]any{
 				"a": 10.0,
 				"b": 10.0,
 			},
@@ -117,7 +117,7 @@ func TestMergeFirstNil(t *testing.T) {
 
 	merged := wc1.Merge(&wc2)
 
-	assert.Equal(t, map[string]interface{}{"x": 10.0}, merged.data, "should return existing config")
+	assert.Equal(t, map[string]any{"x": 10.0}, merged.data, "should return existing config")
 }
 
 func TestMergeSecondNil(t *testing.T) {
@@ -129,7 +129,7 @@ func TestMergeSecondNil(t *testing.T) {
 
 	merged := wc1.Merge(wc2)
 
-	assert.Equal(t, map[string]interface{}{"x": 10.0}, merged.data, "should return existing config")
+	assert.Equal(t, map[string]any{"x": 10.0}, merged.data, "should return existing config")
 }
 
 func TestMergeBothNil(t *testing.T) {
@@ -138,7 +138,7 @@ func TestMergeBothNil(t *testing.T) {
 
 	merged := wc1.Merge(wc2)
 
-	assert.Equal(t, map[string]interface{}{}, merged.data, "should return empty config")
+	assert.Equal(t, map[string]any{}, merged.data, "should return empty config")
 }
 
 func TestSetNilNoDot(t *testing.T) {
@@ -147,7 +147,7 @@ func TestSetNilNoDot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": "a"}, wc2.data, "should set x")
+	assert.Equal(t, map[string]any{"x": "a"}, wc2.data, "should set x")
 }
 
 func TestSetEmptyNoDot(t *testing.T) {
@@ -159,7 +159,7 @@ func TestSetEmptyNoDot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": "a"}, wc2.data, "should set x")
+	assert.Equal(t, map[string]any{"x": "a"}, wc2.data, "should set x")
 }
 
 func TestSetEmptyWithDot(t *testing.T) {
@@ -171,7 +171,7 @@ func TestSetEmptyWithDot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": map[string]interface{}{"y": "a"}}, wc2.data, "should set x.y")
+	assert.Equal(t, map[string]any{"x": map[string]any{"y": "a"}}, wc2.data, "should set x.y")
 }
 
 func TestSetExistingData(t *testing.T) {
@@ -183,7 +183,7 @@ func TestSetExistingData(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to set: %s", err)
 	}
-	assert.Equal(t, map[string]interface{}{"x": map[string]interface{}{"y": "a"}}, wc2.data, "should set x.y")
+	assert.Equal(t, map[string]any{"x": map[string]any{"y": "a"}}, wc2.data, "should set x.y")
 }
 
 func TestSetExistingDataSiblings(t *testing.T) {
@@ -196,9 +196,9 @@ func TestSetExistingDataSiblings(t *testing.T) {
 		t.Fatalf("failed to set: %s", err)
 	}
 	assert.Equal(t,
-		map[string]interface{}{
+		map[string]any{
 			"p": true,
-			"x": map[string]interface{}{
+			"x": map[string]any{
 				"q": true,
 				"y": "a",
 			},
@@ -206,9 +206,9 @@ func TestSetExistingDataSiblings(t *testing.T) {
 
 	// and just check wc wasn't modified
 	assert.Equal(t,
-		map[string]interface{}{
+		map[string]any{
 			"p": true,
-			"x": map[string]interface{}{
+			"x": map[string]any{
 				"q": true,
 				"y": "xxx",
 			},

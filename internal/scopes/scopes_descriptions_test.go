@@ -6,6 +6,7 @@ import (
 )
 
 func assert(t *testing.T, o fmt.Stringer, s string) {
+	t.Helper()
 	if o.String() != s {
 		t.Log("Expected object to be resolved differently as a String:")
 		t.Logf("Object: %#v", o)

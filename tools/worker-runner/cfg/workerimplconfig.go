@@ -12,7 +12,7 @@ import (
 // plus any additional worker implementation-specific properties.
 type WorkerImplementationConfig struct {
 	Implementation string
-	Data           map[string]interface{}
+	Data           map[string]any
 }
 
 func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -40,9 +40,9 @@ func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
 //
 // Structs should be tagged with `workerimpl:"name"`, with the name defaulting to the
 // lowercased version of the field name.
-func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
+func (pc *WorkerImplementationConfig) Unpack(out any) error {
 	outval := reflect.ValueOf(out)
-	if outval.Kind() != reflect.Ptr || outval.IsNil() {
+	if outval.Kind() != reflect.Pointer || outval.IsNil() {
 		return fmt.Errorf("expected a pointer, got %s", outval.Kind())
 	}
 	destval := reflect.Indirect(outval)
@@ -51,7 +51,7 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 	}
 	desttype := destval.Type()
 	numfield := desttype.NumField()
-	for i := 0; i < numfield; i++ {
+	for i := range numfield {
 		// get the expected property name
 		field := desttype.Field(i)
 		var name string
@@ -77,14 +77,14 @@ func (pc *WorkerImplementationConfig) Unpack(out interface{}) error {
 			if optional {
 				continue
 			}
-			return fmt.Errorf("Configuration value `worker.%s` not found in %#v", name, pc.Data)
+			return fmt.Errorf("configuration value `worker.%s` not found in %#v", name, pc.Data)
 		}
 
 		// check types and set the struct field
 		destfield := destval.Field(i)
 		gotval := reflect.ValueOf(val)
 		if destfield.Type() != gotval.Type() {
-			return fmt.Errorf("Configuration value `worker.%s` should have type %s, got %s", name, destfield.Type(), gotval.Type())
+			return fmt.Errorf("configuration value `worker.%s` should have type %s, got %s", name, destfield.Type(), gotval.Type())
 		}
 		destfield.Set(gotval)
 	}

@@ -9,5 +9,5 @@ type Logger interface {
 	LogUnstructured(message string)
 
 	// Log a structured message.
-	LogStructured(message map[string]interface{})
+	LogStructured(message map[string]any)
 }

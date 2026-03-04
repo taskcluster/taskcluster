@@ -22,21 +22,22 @@ it('should render TaskDetailsCard', () => {
           expires: '2023-02-15T12:00:00.000Z',
           scopes: ['scopes'],
           routes: [],
+          dependencies: [],
           payload: {
             command: [
               '/bin/bash',
               '-c',
-              'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done',
+              'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
             ],
             image: 'ubuntu:latest',
-            maxRunTime: 630,
+            maxRunTime: 90,
           },
           metadata: {
             source: 'https://test.taskcluster-dev.net/task/taskId',
           },
           extra: {},
         }}
-        dependents={[]}
+        dependents={{}}
         onDependentsPageChange={jest.fn()}
         objectContent={{}}
       />

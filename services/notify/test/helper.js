@@ -1,33 +1,55 @@
-const assert = require('assert');
-const path = require('path');
-const aws = require('aws-sdk');
-const taskcluster = require('taskcluster-client');
-const { stickyLoader, Secrets, fakeauth, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
-const builder = require('../src/api');
-const load = require('../src/main');
-const RateLimit = require('../src/ratelimit');
-const debug = require('debug')('test');
-const sinon = require('sinon');
+import assert from 'assert';
+import path from 'path';
+import {
+  SESv2Client,
+  SendEmailCommand,
+} from '@aws-sdk/client-sesv2';
+import {
+  SNSClient,
+  CreateTopicCommand,
+  ListSubscriptionsByTopicCommand,
+  SubscribeCommand,
+} from '@aws-sdk/client-sns';
+import {
+  SQSClient,
+  CreateQueueCommand,
+  DeleteMessageCommand,
+  GetQueueAttributesCommand,
+  PurgeQueueCommand,
+  ReceiveMessageCommand,
+  SetQueueAttributesCommand,
+} from '@aws-sdk/client-sqs';
+import { mockClient } from 'aws-sdk-client-mock';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+import builder from '../src/api.js';
+import mainLoad from '../src/main.js';
+import RateLimit from '../src/ratelimit.js';
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import sinon from 'sinon';
 
 const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
-exports.suiteName = path.basename;
-exports.rootUrl = 'http://localhost:60401';
+const suiteName = path.basename;
+const rootUrl = 'http://localhost:60401';
+const load = testing.stickyLoader(mainLoad);
 
-exports.load = stickyLoader(load);
+const helper = { load, rootUrl, suiteName };
+export default helper;
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+helper.secrets = new testing.Secrets({
   secretName: [
     'project/taskcluster/testing/taskcluster-notify',
   ],
@@ -37,49 +59,26 @@ exports.secrets = new Secrets({
       { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey' },
     ],
   },
-  load: exports.load,
+  load: load,
 });
 
 /**
  * Define a fake denier that will deny anything with 'denied' in the address
  */
-exports.withDenier = (mock, skipping) => {
+helper.withDenier = (mock, skipping) => {
   suiteSetup('withDenier', async function() {
     if (skipping()) {
       return;
     }
 
-    exports.load.inject('denier', {
+    load.inject('denier', {
       isDenied: async (notificationType, notificationAddress) =>
         /denied/.test(notificationAddress),
     });
   });
 };
 
-class MockSES {
-  constructor() {
-    this.emails = [];
-  }
-
-  // simulate the AWS SDK v2 API
-  sendRawEmail(c) {
-    return {
-      promise: async () => {
-        this.emails.push({
-          delivery: { recipients: c.Destinations },
-          data: c.RawMessage.Data.toString(),
-        });
-        return { MessageId: 'a-message' };
-      },
-    };
-  }
-
-  reset() {
-    this.emails = [];
-  }
-}
-
-exports.withSES = (mock, skipping) => {
+helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
 
@@ -88,52 +87,69 @@ exports.withSES = (mock, skipping) => {
       return;
     }
 
-    const cfg = await exports.load('cfg');
+    const cfg = await load('cfg');
 
     if (mock) {
-      ses = new MockSES();
-      exports.load.inject('ses', ses);
-      exports.checkEmails = (check) => {
+      ses = mockClient(SESv2Client);
+      ses.emails = [];
+      ses
+        .on(SendEmailCommand)
+        .callsFake(async (c) => {
+          ses.emails.push({
+            delivery: { recipients: c.Destination.ToAddresses },
+            data: c.Content.Raw.Data.toString(),
+          });
+          return { MessageId: 'a-message' };
+        });
+      load.inject('ses', ses);
+
+      helper.checkEmails = (check) => {
         assert.equal(ses.emails.length, 1, 'Not exactly one email present!');
         check(ses.emails.pop());
       };
     } else {
-      sqs = new aws.SQS(cfg.aws);
-      const emailSQSQueue = await sqs.createQueue({
+      sqs = new SQSClient({
+        credentials: {
+          accessKeyId: cfg.aws.accessKeyId,
+          secretAccessKey: cfg.aws.secretAccessKey,
+        },
+        region: cfg.aws.region || 'us-east-1',
+      });
+      const { QueueUrl: emailSQSQueue } = await sqs.send(new CreateQueueCommand({
         QueueName: 'taskcluster-notify-test-emails',
-      }).promise().then(req => req.QueueUrl);
-      let emailAttr = await sqs.getQueueAttributes({
+      }));
+      const { Attributes: emailAttr } = await sqs.send(new GetQueueAttributesCommand({
         QueueUrl: emailSQSQueue,
         AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
-      }).promise().then(req => req.Attributes);
+      }));
       if (emailAttr.ApproximateNumberOfMessages !== '0') {
         debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
-        await sqs.purgeQueue({
+        await sqs.send(new PurgeQueueCommand({
           QueueUrl: emailSQSQueue,
-        }).promise();
+        }));
       }
 
       // Send emails to sqs for testing
-      let sns = new aws.SNS(cfg.aws);
-      let snsArn = await sns.createTopic({
-        Name: 'taskcluster-notify-test',
-      }).promise().then(res => res.TopicArn);
-      let subscribed = await sns.listSubscriptionsByTopic({
-        TopicArn: snsArn,
-      }).promise().then(req => {
-        for (let subscription of req.Subscriptions) {
-          if (subscription.Endpoint === emailAttr.QueueArn) {
-            return true;
-          }
-        }
-        return false;
+      let sns = new SNSClient({
+        credentials: {
+          accessKeyId: cfg.aws.accessKeyId,
+          secretAccessKey: cfg.aws.secretAccessKey,
+        },
+        region: cfg.aws.region || 'us-east-1',
       });
+      const { TopicArn: snsArn } = await sns.send(new CreateTopicCommand({
+        Name: 'taskcluster-notify-test',
+      }));
+      const { Subscriptions: subscriptions } = await sns.send(new ListSubscriptionsByTopicCommand({
+        TopicArn: snsArn,
+      }));
+      const subscribed = subscriptions.some(subscription => subscription.Endpoint === emailAttr.QueueArn);
       if (!subscribed) {
-        await sns.subscribe({
+        await sns.send(new SubscribeCommand({
           Protocol: 'sqs',
           TopicArn: snsArn,
           Endpoint: emailAttr.QueueArn,
-        }).promise();
+        }));
 
         // This policy allows the SNS topic subscription to send messages to
         // the SQS queue.  The AWS Console adds a policy automatically when you
@@ -155,28 +171,28 @@ exports.withSES = (mock, skipping) => {
             },
           ],
         };
-        await sns.setQueueAttributes({
+        await sqs.send(new SetQueueAttributesCommand({
           QueueUrl: emailSQSQueue,
           Attributes: {
             Policy,
           },
-        }).promise();
+        }));
       }
 
-      exports.checkEmails = async (check) => {
-        const resp = await sqs.receiveMessage({
+      helper.checkEmails = async (check) => {
+        const resp = await sqs.send(new ReceiveMessageCommand({
           QueueUrl: emailSQSQueue,
           AttributeNames: ['ApproximateReceiveCount'],
           MaxNumberOfMessages: 10,
           VisibilityTimeout: 30,
           WaitTimeSeconds: 20,
-        }).promise();
+        }));
         const messages = resp.Messages || [];
         for (let message of messages) {
-          await sqs.deleteMessage({
+          await sqs.send(new DeleteMessageCommand({
             QueueUrl: emailSQSQueue,
             ReceiptHandle: message.ReceiptHandle,
-          }).promise();
+          }));
         }
         assert.equal(messages.length, 1);
         check(JSON.parse(JSON.parse(messages[0].Body).Message));
@@ -189,7 +205,7 @@ exports.withSES = (mock, skipping) => {
       return;
     }
     if (mock) {
-      ses.reset();
+      ses.restore();
     }
   });
 };
@@ -201,7 +217,7 @@ exports.withSES = (mock, skipping) => {
 const stubbedQueue = () => {
   const tasks = {};
   const queue = new taskcluster.Queue({
-    rootUrl: exports.rootUrl,
+    rootUrl: rootUrl,
     credentials: {
       clientId: 'index-server',
       accessToken: 'none',
@@ -229,14 +245,14 @@ const stubbedQueue = () => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = (mock, skipping) => {
   suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
     }
 
-    exports.queue = stubbedQueue();
-    exports.load.inject('queue', exports.queue);
+    helper.queue = stubbedQueue();
+    load.inject('queue', helper.queue);
   });
 };
 
@@ -248,24 +264,25 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
   }
 });
 
-exports.withFakeMatrix = (mock, skipping) => {
+helper.withFakeMatrix = (mock, skipping) => {
   suiteSetup('withFakeMatrix', function() {
     if (skipping()) {
       return;
     }
 
-    exports.matrixClient = {
+    helper.matrixClient = {
       sendEvent: fakeMatrixSend(),
     };
-    exports.load.inject('matrixClient', exports.matrixClient);
+
+    load.inject('matrixClient', helper.matrixClient);
   });
 
   setup(function() {
-    exports.matrixClient.sendEvent = fakeMatrixSend();
+    helper.matrixClient.sendEvent = fakeMatrixSend();
   });
 };
 
-exports.withFakeSlack = (mock, skipping) => {
+helper.withFakeSlack = (mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async function() {
@@ -273,57 +290,58 @@ exports.withFakeSlack = (mock, skipping) => {
       return;
     }
 
-    exports.slackClient = {
+    helper.slackClient = {
       chat: {
         postMessage: fakeSlackSend(),
       },
     };
-    exports.load.inject('slackClient', exports.slackClient);
+
+    load.inject('slackClient', helper.slackClient);
   });
 
   setup(function() {
-    exports.slackClient.chat.postMessage = fakeSlackSend();
+    helper.slackClient.chat.postMessage = fakeSlackSend();
   });
 };
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-notify' });
+helper.withPulse = (mock, skipping) => {
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-notify' });
 };
 
 /**
  * Set up an API server.
  */
-exports.withServer = (mock, skipping) => {
+helper.withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.load.cfg('taskcluster.clientId', null);
-    exports.load.cfg('taskcluster.accessToken', null);
-    fakeauth.start(testclients, { rootUrl: exports.rootUrl });
+    load.cfg('taskcluster.rootUrl', rootUrl);
+    load.cfg('taskcluster.clientId', null);
+    load.cfg('taskcluster.accessToken', null);
+    testing.fakeauth.start(testclients, { rootUrl: rootUrl });
 
-    exports.load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
+    load.inject('rateLimit', new RateLimit({ count: 100, time: 100, noPeriodicPurge: true }));
 
-    exports.NotifyClient = taskcluster.createClient(builder.reference());
+    helper.NotifyClient = taskcluster.createClient(builder.reference());
 
-    exports.apiClient = new exports.NotifyClient({
+    helper.apiClient = new helper.NotifyClient({
       credentials: {
         clientId: 'test-client',
         accessToken: 'doesnt-matter',
       },
       retries: 0,
-      rootUrl: exports.rootUrl,
+      rootUrl,
     });
 
-    webServer = await exports.load('server');
+    webServer = await load('server');
   });
 
   suiteTeardown(async function() {
@@ -334,17 +352,17 @@ exports.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'notify');
+helper.withDb = (mock, skipping) => {
+  testing.withDb(mock, skipping, helper, 'notify');
 };
 
-exports.resetTables = (mock, skipping) => {
+helper.resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'denylisted_notifications',
     ] });
   });

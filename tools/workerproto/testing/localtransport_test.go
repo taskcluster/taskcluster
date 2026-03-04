@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 func TestLocalTransport(t *testing.T) {
 	worker, runner := NewLocalTransportPair()
 
 	testDirection := func(t *testing.T, a *LocalTransport, b *LocalTransport) {
+		t.Helper()
 		a.Send(workerproto.Message{
 			Type: "test",
-			Properties: map[string]interface{}{
+			Properties: map[string]any{
 				"test": true,
 			},
 		})
@@ -27,6 +28,7 @@ func TestLocalTransport(t *testing.T) {
 	t.Run("runner-to-worker", func(t *testing.T) { testDirection(t, runner, worker) })
 
 	testClosed := func(t *testing.T, a *LocalTransport) {
+		t.Helper()
 		_, ok := a.Recv()
 		require.Equal(t, false, ok)
 	}

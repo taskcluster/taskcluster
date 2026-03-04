@@ -1,7 +1,6 @@
-const builder = require('./api');
-const _ = require('lodash');
+import _ from 'lodash';
 
-builder.declare({
+export const sentryBuilder = builder => builder.declare({
   method: 'get',
   route: '/sentry/:project/dsn',
   name: 'sentryDSN',

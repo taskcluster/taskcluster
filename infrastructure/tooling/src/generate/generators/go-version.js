@@ -1,12 +1,13 @@
-const util = require('util');
-const exec = util.promisify(require('child_process').execFile);
-const { readRepoFile, modifyRepoFile } = require('../../utils');
+import util from 'util';
+import { execFile } from 'child_process';
+import { readRepoFile, modifyRepoFile } from '../../utils/index.js';
+const exec = util.promisify(execFile);
 
 /**
  * Update the Go version to match everywhere, treating that in `.go-version`
  * as authoritative.
  */
-exports.tasks = [{
+export const tasks = [{
   title: 'Go Version',
   provides: ['target-go-version'],
   run: async (requirements, utils) => {
@@ -51,7 +52,7 @@ exports.tasks = [{
     await modifyRepoFile('go.mod',
       contents => contents.replace(
         /^go [0-9.]+$/m,
-        `go ${goVersionMajor}.${goVersionMinor}`));
+        `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`));
 
     utils.status({ message: 'workers/generic-worker/build.sh' });
     await modifyRepoFile('workers/generic-worker/build.sh',
@@ -65,23 +66,16 @@ exports.tasks = [{
         /MIN_GO_MINOR_VERSION=[0-9]+/,
         `MIN_GO_MINOR_VERSION=${goVersionMinor}`));
 
-    utils.status({ message: 'workers/generic-worker/gw-decision-task/tasks.yml' });
-    await modifyRepoFile('workers/generic-worker/gw-decision-task/tasks.yml',
-      contents => contents.replace(
-        /go [0-9]+\.[0-9]+\.[0-9]+/g,
-        `go ${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
-      ).replace(
-        /gopath[0-9]+\.[0-9]+\.[0-9]+/g,
-        `gopath${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
-      ).replace(
-        /go[0-9]+\.[0-9]+\.[0-9]+/g,
-        `${goVersion}`));
-
-    utils.status({ message: 'workers/Dockerfile' });
-    await modifyRepoFile('workers/Dockerfile',
-      contents => contents.replace(
-        /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
-        `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
-      ));
+    [
+      'generic-worker.Dockerfile',
+      'taskcluster/docker/ci/Dockerfile',
+    ].forEach(async file => {
+      utils.status({ message: file });
+      await modifyRepoFile(file,
+        contents => contents.replace(
+          /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
+          `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        ));
+    });
   },
 }];

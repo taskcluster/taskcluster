@@ -1,10 +1,19 @@
 use crate::util::collect_scopes;
 use anyhow::{anyhow, Context, Error};
+use base64::engine::general_purpose::{GeneralPurpose, GeneralPurposeConfig};
+use base64::Engine;
 use hmac_sha256::HMAC;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::iter::{IntoIterator, Iterator};
 use std::time::{Duration, SystemTime};
+
+/// URL_SAFE_NO_PAD encodes to a url-safe value with no padding, used for
+/// temporary credential access tokens.
+const URL_SAFE_NO_PAD: GeneralPurpose = GeneralPurpose::new(
+    &base64::alphabet::URL_SAFE,
+    GeneralPurposeConfig::new().with_encode_padding(false),
+);
 
 /// Credentials represents the set of credentials required to access protected
 /// Taskcluster HTTP APIs.
@@ -39,7 +48,7 @@ pub(crate) struct Certificate {
 fn gen_temp_access_token(perm_access_token: &str, seed: &str) -> String {
     let mut hash = HMAC::new(perm_access_token.as_bytes());
     hash.update(seed.as_bytes());
-    base64::encode_config(hash.finalize(), base64::URL_SAFE_NO_PAD)
+    URL_SAFE_NO_PAD.encode(hash.finalize())
 }
 
 impl Credentials {
@@ -239,7 +248,7 @@ impl Certificate {
 
         let mut hash = HMAC::new(access_token.as_bytes());
         hash.update(lines.join("\n").as_bytes());
-        self.signature = base64::encode(hash.finalize());
+        self.signature = base64::engine::general_purpose::STANDARD.encode(hash.finalize());
     }
 }
 

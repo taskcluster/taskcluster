@@ -6,7 +6,7 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    image: rabbitmq:3.7.8-management
+    image: rabbitmq:4.2.2-management
     networks:
       - local
     healthcheck:
@@ -23,7 +23,7 @@ services:
       RABBITMQ_DEFAULT_PASS: admin
       RABBITMQ_DEFAULT_VHOST: local
   postgres:
-    image: postgres:11
+    image: postgres:15
     networks:
       - local
     volumes:
@@ -43,7 +43,7 @@ services:
       retries: 100
       start_period: 3s
   pg_init_db:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     x-info: Run this first to bring database up to date
@@ -56,55 +56,70 @@ services:
       USERNAME_PREFIX: taskcluster
       ADMIN_DB_URL: postgresql://postgres@postgres:5432/taskcluster
   s3:
-    image: minio/minio
+    image: localstack/localstack:4.12.0
     networks:
       - local
-    command: server /data --console-address :9001
     ports:
-      - '3090:9000'
-      - '3091:9001'
+      - '3090:4566'
     volumes:
-      - ./docker/buckets:/data
+      - ./docker/buckets:/var/lib/localstack
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
+      SERVICES: s3
+      AWS_ACCESS_KEY_ID: localstackadmin
+      AWS_SECRET_ACCESS_KEY: localstackpassword
     healthcheck:
-      test: curl -I http://localhost:9000/minio/health/cluster
+      test: curl -I http://localhost:4566/_localstack/health
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
   s3_init_buckets:
-    image: minio/mc
+    image: amazon/aws-cli:2.33.8
     networks:
       - local
     depends_on:
       s3:
         condition: service_healthy
-    entrypoint: /bin/sh -c "/usr/bin/mc config host rm local;/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;/usr/bin/mc rb --force local/public-bucket/;/usr/bin/mc mb --quiet local/public-bucket/;/usr/bin/mc policy set public local/public-bucket;/usr/bin/mc rb --force local/private-bucket/;/usr/bin/mc mb --quiet local/private-bucket/;/usr/bin/mc policy set public local/public-bucket;"
+    entrypoint: /bin/sh
+    command:
+      - '-c'
+      - |-
+        aws --endpoint-url=http://s3:4566 s3 mb s3://public-bucket || true
+        aws --endpoint-url=http://s3:4566 s3 mb s3://private-bucket || true
+        aws --endpoint-url=http://s3:4566 s3api put-bucket-acl --bucket public-bucket --acl public-read
     environment:
-      MINIO_ENDPOINT: http://s3:9000
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
+      AWS_ACCESS_KEY_ID: localstackadmin
+      AWS_SECRET_ACCESS_KEY: localstackpassword
+      AWS_DEFAULT_REGION: us-east-1
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - local
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
   ui:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.ui
     command: ui/web
+    volumes:
+      - ./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf
     ports:
-      - '3022:80'
+      - '3022:8080'
   references:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     command: references/web
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
     ports:
-      - '3023:80'
+      - '3023:8080'
   taskcluster:
-    image: nginx:1.21.6
+    image: nginx:1.29.4
     networks:
       - local
     depends_on:
@@ -121,7 +136,7 @@ services:
     ports:
       - '80:80'
   tc_admin_init:
-    image: taskcluster/tc-admin:3.2.0
+    image: taskcluster/tc-admin:5.1.1
     networks:
       - local
     volumes:
@@ -132,7 +147,10 @@ services:
       TASKCLUSTER_ROOT_URL: http://taskcluster
       TASKCLUSTER_CLIENT_ID: static/taskcluster/root
       TASKCLUSTER_ACCESS_TOKEN: j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
-    entrypoint: /bin/sh -c " echo 'Applying config'; tc-admin apply ||true; "
+    entrypoint: |-
+      /bin/sh -c "
+      echo 'Applying config'; tc-admin apply ||true;
+      "
     depends_on:
       auth-web:
         condition: service_healthy
@@ -147,13 +165,10 @@ services:
       taskcluster:
         condition: service_healthy
   generic-worker-standalone:
-    image: taskcluster/generic-worker:local
+    image: ${IMAGE_GENERIC_WORKER}
     networks:
       - local
     restart: unless-stopped
-    build:
-      context: ./workers
-      dockerfile: Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
@@ -173,14 +188,13 @@ services:
         condition: service_started
       tc_admin_init:
         condition: service_completed_successfully
+    ports:
+      - '59999:59999'
   generic-worker-static:
-    image: taskcluster/generic-worker:local
+    image: ${IMAGE_GENERIC_WORKER}
     networks:
       - local
     restart: unless-stopped
-    build:
-      context: ./workers
-      dockerfile: Dockerfile
     volumes:
       - ./docker/generic-worker-config.json:/etc/generic-worker/config.json
       - ./docker/worker-runner-config.json:/etc/generic-worker/worker-runner.json
@@ -202,8 +216,10 @@ services:
         condition: service_started
       tc_admin_init:
         condition: service_completed_successfully
+    ports:
+      - '59999:59999'
   auth-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.auth
@@ -215,15 +231,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/auth/v1/ping
+      test: wget -q --spider http://localhost:8080/api/auth/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3011:80'
+      - '3011:8080'
   auth-cron-purgeExpiredClients:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.auth
@@ -238,8 +254,24 @@ services:
       - cron
       - auth
       - auth-cron
+  auth-cron-purgeAuditHistory:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.auth
+    command:
+      - auth/purgeAuditHistory
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - auth
+      - auth-cron
   built-in-workers-server:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.built-in-workers
@@ -253,7 +285,7 @@ services:
       queue-web:
         condition: service_healthy
   github-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.github
@@ -265,15 +297,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/github/v1/ping
+      test: wget -q --spider http://localhost:8080/api/github/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3012:80'
+      - '3012:8080'
   github-background-worker:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.github
@@ -289,7 +321,7 @@ services:
       - github
       - github-background
   github-cron-sync:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.github
@@ -305,7 +337,7 @@ services:
       - github
       - github-cron
   hooks-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -317,15 +349,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/hooks/v1/ping
+      test: wget -q --spider http://localhost:8080/api/hooks/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3013:80'
+      - '3013:8080'
   hooks-background-scheduler:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -341,7 +373,7 @@ services:
       - hooks
       - hooks-background
   hooks-background-listeners:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -357,7 +389,7 @@ services:
       - hooks
       - hooks-background
   hooks-cron-expires:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.hooks
@@ -373,7 +405,7 @@ services:
       - hooks
       - hooks-cron
   index-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.index
@@ -385,15 +417,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/index/v1/ping
+      test: wget -q --spider http://localhost:8080/api/index/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3014:80'
+      - '3014:8080'
   index-background-handlers:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.index
@@ -409,7 +441,7 @@ services:
       - index
       - index-background
   index-cron-expire:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.index
@@ -425,7 +457,7 @@ services:
       - index
       - index-cron
   notify-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.notify
@@ -437,15 +469,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/notify/v1/ping
+      test: wget -q --spider http://localhost:8080/api/notify/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3015:80'
+      - '3015:8080'
   notify-background-handler:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.notify
@@ -461,7 +493,7 @@ services:
       - notify
       - notify-background
   object-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.object
@@ -475,15 +507,15 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/object/v1/ping
+      test: wget -q --spider http://localhost:8080/api/object/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3016:80'
+      - '3016:8080'
   object-cron-expire:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.object
@@ -501,7 +533,7 @@ services:
       - object
       - object-cron
   purge-cache-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.purge-cache
@@ -513,15 +545,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/purge-cache/v1/ping
+      test: wget -q --spider http://localhost:8080/api/purge-cache/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3017:80'
+      - '3017:8080'
   purge-cache-cron-expireCachePurges:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.purge-cache
@@ -537,7 +569,7 @@ services:
       - purge-cache
       - purge-cache-cron
   queue-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -551,15 +583,15 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/queue/v1/ping
+      test: wget -q --spider http://localhost:8080/api/queue/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3018:80'
+      - '3018:8080'
   queue-background-claimResolver:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -576,8 +608,26 @@ services:
       - background
       - queue
       - queue-background
+  queue-background-workerRemovedResolver:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/workerRemovedResolver
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
   queue-background-deadlineResolver:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -595,7 +645,7 @@ services:
       - queue
       - queue-background
   queue-background-dependencyResolver:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -613,7 +663,7 @@ services:
       - queue
       - queue-background
   queue-cron-expireArtifacts:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -631,7 +681,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTask:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -649,7 +699,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTaskGroups:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -667,7 +717,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireTaskDependency:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -685,7 +735,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireQueueMessages:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -703,7 +753,7 @@ services:
       - queue
       - queue-cron
   queue-cron-expireWorkerInfo:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.queue
@@ -720,8 +770,26 @@ services:
       - cron
       - queue
       - queue-cron
+  queue-background-workerMetrics:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/workerMetrics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
   secrets-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.secrets
@@ -733,15 +801,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/secrets/v1/ping
+      test: wget -q --spider http://localhost:8080/api/secrets/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3019:80'
+      - '3019:8080'
   secrets-cron-expire:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.secrets
@@ -757,7 +825,7 @@ services:
       - secrets
       - secrets-cron
   web-server-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -777,7 +845,7 @@ services:
     ports:
       - '3050:3050'
   web-server-cron-scanner:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -792,8 +860,24 @@ services:
       - cron
       - web-server
       - web-server-cron
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/cleanup-session-storage
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
   web-server-cron-cleanup-expire-auth-codes:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -809,7 +893,7 @@ services:
       - web-server
       - web-server-cron
   web-server-cron-cleanup-expire-access-tokens:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.web-server
@@ -825,7 +909,7 @@ services:
       - web-server
       - web-server-cron
   worker-manager-web:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -837,15 +921,15 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/worker-manager/v1/ping
+      test: wget -q --spider http://localhost:8080/api/worker-manager/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3020:80'
+      - '3020:8080'
   worker-manager-background-provisioner:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -861,7 +945,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-background-workerscanner:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -877,7 +961,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-background-workerscanner-azure:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -893,7 +977,7 @@ services:
       - worker-manager
       - worker-manager-background
   worker-manager-cron-expire-workers:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -909,7 +993,7 @@ services:
       - worker-manager
       - worker-manager-cron
   worker-manager-cron-expire-worker-pools:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager
@@ -924,8 +1008,24 @@ services:
       - cron
       - worker-manager
       - worker-manager-cron
+  worker-manager-cron-expire-launch-configs:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.worker-manager
+    command:
+      - worker-manager/expire-launch-configs
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
   worker-manager-cron-expire-errors:
-    image: taskcluster/taskcluster:v44.18.0
+    image: ${IMAGE}
     networks:
       - local
     env_file: ./docker/env/.worker-manager

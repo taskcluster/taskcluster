@@ -1,4 +1,4 @@
-const { scopeCompare, mergeScopeSets, normalizeScopeSet } = require('taskcluster-lib-scopes');
+import { scopeCompare, mergeScopeSets, normalizeScopeSet } from 'taskcluster-lib-scopes';
 
 /**
  * BaseNode is the base-class for all node in an object-structure that holds a
@@ -187,4 +187,4 @@ class ScopeSetBuilder {
 }
 
 // Export ScopeSetBuilder
-module.exports = ScopeSetBuilder;
+export default ScopeSetBuilder;

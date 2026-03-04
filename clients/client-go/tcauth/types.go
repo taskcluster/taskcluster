@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -382,6 +382,14 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// Response from getEntityHistory endpoint containing audit history entries
+	GetEntityHistoryResponse struct {
+		AuditHistory []Var `json:"auditHistory"`
+
+		// Token to be used to get the next page of results
+		ContinuationToken string `json:"continuationToken,omitempty"`
+	}
+
 	// If no limit is given, the roleIds of all roles are returned. Since this
 	// list may become long, callers can use the `limit` and `continuationToken`
 	// query arguments to page through the responses.
@@ -651,6 +659,24 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	Var struct {
+
+		// The type of action performed
+		ActionType string `json:"actionType"`
+
+		// The ID of the client that performed the action
+		ClientID string `json:"clientId"`
+
+		// Timestamp when the action occurred
+		Created tcclient.Time `json:"created"`
+
+		// The entity Id on which an action was performed
+		EntityID string `json:"entityId"`
+
+		// The entity type on which the action was performed (client, role, secret, hook, worker_pool)
+		EntityType string `json:"entityType"`
+	}
+
 	// Token for connecting a worker to websocktunnel proxy
 	WebsocktunnelTokenResponse struct {
 
@@ -675,16 +701,16 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // HawkSignatureAuthenticationResponse is of type json.RawMessage...
-func (this *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *HawkSignatureAuthenticationResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *HawkSignatureAuthenticationResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("HawkSignatureAuthenticationResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

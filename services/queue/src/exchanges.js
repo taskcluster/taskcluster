@@ -1,5 +1,5 @@
-let { Exchanges } = require('taskcluster-lib-pulse');
-let assert = require('assert');
+import { Exchanges } from '@taskcluster/lib-pulse';
+import assert from 'assert';
 
 /** Declaration of exchanges offered by the queue */
 let exchanges = new Exchanges({
@@ -59,7 +59,7 @@ let exchanges = new Exchanges({
 });
 
 // Export exchanges
-module.exports = exchanges;
+export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
 let buildCommonRoutingKey = function(options) {
@@ -353,7 +353,53 @@ exchanges.declare({
     'be submitted against an already resolved task group.',
   ].join('\n'),
   routingKey: buildTaskGroupRoutingKey(),
-  schema: 'task-group-resolved.json#',
+  schema: 'task-group-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: taskGroupRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task group sealed exchange */
+exchanges.declare({
+  exchange: 'task-group-sealed',
+  name: 'taskGroupSealed',
+  title: 'Task Group Sealed Messages',
+  description: [
+    'A message is published on task-group-sealed whenever task group is sealed.',
+    'This task group will no longer allow creation of new tasks.',
+  ].join('\n'),
+  routingKey: buildTaskGroupRoutingKey(),
+  schema: 'task-group-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: taskGroupRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task priority changed exchange */
+exchanges.declare({
+  exchange: 'task-priority-changed',
+  name: 'taskPriorityChanged',
+  title: 'Task Priority Changed Messages',
+  description: [
+    'A message published when task priority was updated via `changeTaskPriority` API call.',
+  ].join('\n'),
+  routingKey: buildCommonRoutingKey(),
+  schema: 'task-priority-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task group priority changed exchange */
+exchanges.declare({
+  exchange: 'task-group-priority-changed',
+  name: 'taskGroupPriorityChanged',
+  title: 'Task Group Priority Changed Messages',
+  description: [
+    'A message published when task group priority was changed via `changeTaskGroupPriority` API call.',
+  ].join('\n'),
+  routingKey: buildTaskGroupRoutingKey(),
+  schema: 'task-group-priority-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: taskGroupRoutingKeyBuilder,
   CCBuilder: commonCCBuilder,

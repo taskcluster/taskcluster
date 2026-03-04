@@ -229,6 +229,17 @@ export const WorkerManagerWorkerPoolSummary = shape({
   pendingTasks: number,
 });
 
+export const WorkerManagerWorkerPoolErrorStats = shape({
+  workerPoolId: string,
+  totals: shape({
+    total: number,
+    daily: object,
+    hourly: object,
+    title: object,
+    code: object,
+  }),
+});
+
 export const providersArray = arrayOf(
   shape({
     providerId: string,
@@ -299,6 +310,23 @@ export const hook = shape({
   expires: date,
   deadline: date,
   triggerSchema: object,
+});
+
+export const hookWithLastFire = shape({
+  hookGroupId: string,
+  hookId: string,
+  schedule: arrayOf(string),
+  bindings: arrayOf(
+    shape({
+      exchange: string,
+    })
+  ),
+  lastFire: shape({
+    taskId: string,
+    taskState: string,
+    error: oneOfType([string, object]),
+    result: string,
+  }),
 });
 
 export const secret = shape({

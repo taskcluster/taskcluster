@@ -6,12 +6,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v44/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
 )
 
 type Auth interface {
@@ -20,10 +21,15 @@ type Auth interface {
 	WebsocktunnelToken(wstAudience, wstClient string) (*tcauth.WebsocktunnelTokenResponse, error)
 }
 
+type Index interface {
+	FindTask(indexPath string) (*tcindex.IndexedTaskResponse, error)
+}
+
 type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
 	WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error)
 	CreateWorkerPool(workerPoolId string, payload *tcworkermanager.WorkerPoolDefinition) (*tcworkermanager.WorkerPoolFullDefinition, error)
+	ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error)
 }
 
 type PurgeCache interface {
@@ -43,6 +49,7 @@ type Queue interface {
 	ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequest) (*tcqueue.ClaimWorkResponse, error)
 	CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error)
 	CreateTask(taskId string, payload *tcqueue.TaskDefinitionRequest) (*tcqueue.TaskStatusResponse, error)
+	FinishArtifact(taskId, runId, name string, payload *tcqueue.FinishArtifactRequest) error
 	GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error)
 	ListArtifacts(taskId, runId, continuationToken, limit string) (*tcqueue.ListArtifactsResponse, error)
 	Artifact(taskId, runId, name string) (*tcqueue.GetArtifactContentResponse, error)
@@ -61,4 +68,7 @@ type Object interface {
 	CreateUpload(name string, payload *tcobject.CreateUploadRequest) (*tcobject.CreateUploadResponse, error)
 	FinishUpload(name string, payload *tcobject.FinishUploadRequest) error
 	StartDownload(name string, payload *tcobject.DownloadObjectRequest) (*tcobject.DownloadObjectResponse, error)
+
+	// non-API functions
+	UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) error
 }

@@ -1,5 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import { func, string, bool, oneOfType, object, array } from 'prop-types';
+import {
+  func,
+  string,
+  bool,
+  oneOfType,
+  object,
+  array,
+  arrayOf,
+} from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
@@ -194,6 +202,8 @@ export default class HookForm extends Component {
      * onComplete handler after successfully deleting a hook.
      * */
     onDialogActionDeleteComplete: func,
+    /** Autocomplete values for exchanges input */
+    exchangesDictionary: arrayOf(string),
   };
 
   static defaultProps = {
@@ -210,6 +220,7 @@ export default class HookForm extends Component {
     onDialogDeleteHook: null,
     deleteDialogOpen: null,
     onDialogActionDeleteComplete: null,
+    exchangesDictionary: [],
   };
 
   state = {
@@ -536,6 +547,7 @@ export default class HookForm extends Component {
       onDialogActionDeleteComplete,
       onDialogDeleteHook,
       onDialogOpen,
+      exchangesDictionary,
     } = this.props;
     const {
       routingKeyPattern,
@@ -719,6 +731,7 @@ export default class HookForm extends Component {
                   onPulseExchangeChange={this.handlePulseExchangeChange}
                   pulseExchange={pulseExchange}
                   pattern={routingKeyPattern}
+                  exchangesDictionary={exchangesDictionary}
                 />
               }
             />

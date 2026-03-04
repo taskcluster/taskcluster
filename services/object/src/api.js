@@ -1,12 +1,13 @@
-const { APIBuilder } = require('taskcluster-lib-api');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const taskcluster = require('taskcluster-client');
+import { APIBuilder } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import taskcluster from '@taskcluster/client';
 
 /**
  * Known download methods, in order of preference (preferring earlier
  * methods)
  */
-const DOWNLOAD_METHODS = [
+export const DOWNLOAD_METHODS = [
+  'getUrl',
   'simple',
 ];
 
@@ -35,6 +36,8 @@ let builder = new APIBuilder({
   },
   context: ['cfg', 'db', 'backends', 'middleware'],
 });
+
+export default builder;
 
 builder.declare({
   method: 'put',
@@ -148,6 +151,11 @@ builder.declare({
     'transmitted to the backend.  After this call, no further calls to `uploadObject` are',
     'allowed, and downloads of the object may begin.  This method is idempotent, but will',
     'fail if given an incorrect uploadId for an unfinished upload.',
+    '',
+    'It is possible to finish an upload with no hashes specified via either',
+    '`startUpload` or `finishUpload`.  However, many clients will refuse to',
+    'download an object with no hashes.  The utility methods included with the',
+    'client libraries always include hashes as of version 44.0.0.',
     '',
     'Note that, once `finishUpload` is complete, the object is considered immutable.',
   ].join('\n'),
@@ -289,7 +297,7 @@ builder.declare({
   const params = acceptDownloadMethods[method];
 
   // apply middleware
-  if (!await this.middleware.startDownloadRequest(req, res, object, method, params)) {
+  if (!(await this.middleware.startDownloadRequest(req, res, object, method, params))) {
     return;
   }
 
@@ -380,7 +388,7 @@ builder.declare({
   }
 
   // apply middleware
-  if (!await this.middleware.downloadRequest(req, res, object)) {
+  if (!(await this.middleware.downloadRequest(req, res, object))) {
     return;
   }
 
@@ -407,5 +415,3 @@ builder.declare({
   // TODO: add implementation
   res.reply({});
 });
-
-module.exports = builder;

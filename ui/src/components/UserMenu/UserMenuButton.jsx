@@ -9,6 +9,7 @@ import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 import getPictureFromUser from '../../utils/getPictureFromUser';
+import username from '../../utils/username';
 
 @withAuth
 @withApollo
@@ -66,6 +67,8 @@ export default class UserMenuButton extends Component {
       );
     }
 
+    const profileName = username(user);
+
     return (
       <IconButton
         className={classNames(classes.avatarButton, className)}
@@ -76,14 +79,10 @@ export default class UserMenuButton extends Component {
         onClick={onMenuClick}
         {...props}>
         {avatarSrc ? (
-          <Avatar
-            alt={user.profile.displayName}
-            src={avatarSrc}
-            {...avatarProps}
-          />
+          <Avatar alt={profileName} src={avatarSrc} {...avatarProps} />
         ) : (
-          <Avatar alt={user.profile.displayName} {...avatarProps}>
-            {user.profile.displayName[0]}
+          <Avatar alt={profileName} {...avatarProps}>
+            {profileName[0]}
           </Avatar>
         )}
       </IconButton>

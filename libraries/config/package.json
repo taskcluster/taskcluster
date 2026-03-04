@@ -1,15 +1,21 @@
 {
-  "name": "taskcluster-lib-config",
+  "name": "@taskcluster/lib-config",
   "private": true,
-  "version": "44.18.0",
+  "version": "97.0.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Configuration loader that injects env variables into YAML",
   "license": "MPL-2.0",
-  "main": "./src/index.js",
+  "type": "module",
+  "exports": "./src/index.js",
   "scripts": {
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
   }
 }

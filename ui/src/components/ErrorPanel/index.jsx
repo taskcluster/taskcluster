@@ -138,8 +138,27 @@ export default class ErrorPanel extends Component {
         `Network Error (${error.networkError.statusCode ||
           'no status code'}): ${error.networkError}`
       );
-    } else {
+    } else if (error.message) {
       message.push(error.message);
+    } else {
+      // error can be a JSON serialized object
+      try {
+        const obj = JSON.parse(error);
+
+        if (obj?.body?.code) {
+          message.push(`API Error: ${obj.body.code}`);
+        }
+
+        if (obj?.body?.message) {
+          message.push(obj.body.message);
+        }
+      } catch {
+        // ignore
+      }
+
+      if (!message.length) {
+        message.push(error);
+      }
     }
 
     return (

@@ -1,8 +1,7 @@
-const util = require('util');
-const path = require('path');
-const { writeRepoFile, REPO_ROOT } = require('../../utils');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
+import path from 'path';
+import { writeRepoFile, REPO_ROOT } from '../../utils/index.js';
+import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
 
 const writeRsFile = async (filename, content) => {
   await writeRepoFile(path.join(filename), content.trim() + '\n');
@@ -242,7 +241,7 @@ const generateModFile = apis => {
   return `${mods.sort().join('\n')}\n\n${uses.sort().join('\n')}\n`;
 };
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Generate Taskcluster-Client-Rust',
   requires: ['apis'],
   provides: ['target-taskcluster-client-rust'],

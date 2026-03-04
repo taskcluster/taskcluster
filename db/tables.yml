@@ -37,6 +37,7 @@ github_builds:
   installation_id: integer not null
   event_type: text not null
   event_id: text not null
+  pull_request_number: integer
 github_integrations:
   installation_id: integer not null
   owner: text not null
@@ -101,6 +102,12 @@ access_tokens:
   identity_provider_id: text not null
   expires: timestamp with time zone not null
   client_details: jsonb not null
+audit_history:
+  entity_id: text not null
+  entity_type: text not null
+  client_id: text not null
+  action_type: text not null
+  created: timestamp with time zone not null
 authorization_codes:
   code: text not null
   client_id: text not null
@@ -125,6 +132,7 @@ worker_pool_errors:
   kind: text not null
   description: text not null
   extra: jsonb
+  launch_config_id: text
 worker_pools:
   worker_pool_id: text not null
   provider_id: text not null
@@ -136,6 +144,13 @@ worker_pools:
   config: jsonb not null
   provider_data: jsonb not null
   previous_provider_ids: jsonb not null
+worker_pool_launch_configs:
+  launch_config_id: text not null
+  worker_pool_id: text not null
+  is_archived: boolean not null
+  configuration: jsonb not null
+  created: timestamp with time zone not null
+  last_modified: timestamp with time zone not null
 workers:
   worker_pool_id: text not null
   worker_group: text not null
@@ -150,6 +165,7 @@ workers:
   last_checked: timestamp with time zone not null
   secret: jsonb
   etag: uuid not null
+  launch_config_id: text
 tasks:
   task_id: text not null
   created: timestamp with time zone not null
@@ -182,10 +198,12 @@ queue_artifacts:
   details: jsonb not null
   expires: timestamp with time zone not null
   present: boolean not null
+  content_length: bigint
 task_groups:
   expires: timestamp with time zone not null
   scheduler_id: text not null
   task_group_id: text not null
+  sealed: timestamp with time zone
 task_dependencies:
   dependent_task_id: text not null
   required_task_id: text not null
@@ -198,6 +216,7 @@ queue_workers:
   worker_id: text not null
   recent_tasks: jsonb not null
   quarantine_until: timestamp with time zone not null
+  quarantine_details: jsonb
   expires: timestamp with time zone not null
   first_claim: timestamp with time zone not null
   last_date_active: timestamp with time zone
@@ -208,6 +227,47 @@ task_queues:
   description: text not null
   stability: text not null
 
+# new queue structure
+queue_task_deadlines:
+  task_id: text not null
+  task_group_id: text not null
+  scheduler_id: text not null
+  created: timestamp with time zone not null
+  deadline: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+
+queue_resolved_tasks:
+  task_group_id: text not null
+  task_id: text not null
+  scheduler_id: text not null
+  resolution: text not null
+  resolved: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+
+queue_claimed_tasks:
+  task_id: text not null
+  run_id: integer not null
+  task_queue_id: text not null
+  worker_group: text not null
+  worker_id: text not null
+  claimed: timestamp with time zone not null
+  taken_until: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+
+queue_pending_tasks:
+  task_queue_id: text not null
+  priority: integer not null
+  task_id: text not null
+  run_id: integer not null
+  hint_id: text not null
+  inserted: timestamp with time zone not null
+  expires: timestamp with time zone not null
+  visible: timestamp with time zone not null
+  pop_receipt: uuid
+
 # This table is used by tc-lib-azqueue to emulate the Azure Storage API's Queue functionality.
 azure_queue_messages:
   message_id: uuid not null
@@ -217,6 +277,8 @@ azure_queue_messages:
   visible: timestamp with time zone not null
   expires: timestamp with time zone not null
   pop_receipt: uuid
+  task_queue_id: text
+  priority: integer
 object_hashes:
   name: text not null
   algorithm: text not null

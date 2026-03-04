@@ -1,8 +1,7 @@
-const got = require('got');
-const { slugid } = require('./utils');
-const retry = require('./retry');
-const { Transform } = require('stream');
-const { createHash } = require('crypto');
+import got, { HTTPError } from 'got';
+import { slugid } from './utils.js';
+import retry from './retry.js';
+import { HashStream } from './hashstream.js';
 
 const DATA_INLINE_MAX_SIZE = 8192;
 
@@ -12,12 +11,12 @@ const putUrl = async ({ streamFactory, contentLength, uploadMethod, retryCfg }) 
     try {
       await got.put(url, {
         headers,
-        retry: false, // use our own retry logic
+        retry: { limit: 0 }, // use our own retry logic
         body: await streamFactory(),
       });
     } catch (err) {
       // treat non-500 HTTP responses as fatal errors, and retry everything else
-      if (err instanceof got.HTTPError && err.response.statusCode < 500) {
+      if (err instanceof HTTPError && err.response.statusCode < 500) {
         throw err;
       }
       return retriableError(err);
@@ -34,38 +33,7 @@ const readFullStream = stream => {
   });
 };
 
-/**
- * A stream that hashes the bytes passing through it
- */
-class HashStream extends Transform {
-  constructor() {
-    super();
-    this.sha256 = createHash('sha256');
-    this.sha512 = createHash('sha512');
-    this.bytes = 0;
-  }
-
-  _transform(chunk, enc, cb) {
-    this.sha256.update(chunk);
-    this.sha512.update(chunk);
-    this.bytes += chunk.length;
-    cb(null, chunk);
-  }
-
-  // Return the calculated hashes in a format suitable for finishUpload,
-  // checking that the content length matches the bytes hashed.
-  hashes(contentLength) {
-    if (contentLength !== this.bytes) {
-      throw new Error(`Hashed ${this.bytes} bytes but content length is ${contentLength}`);
-    }
-    return {
-      sha256: this.sha256.digest('hex'),
-      sha512: this.sha512.digest('hex'),
-    };
-  }
-}
-
-const upload = async ({
+export const upload = async ({
   projectId,
   name,
   contentType,
@@ -94,7 +62,7 @@ const upload = async ({
   const retryCfg = {
     retries: retries === undefined ? 5 : retries,
     delayFactor: delayFactor === undefined ? 100 : delayFactor,
-    randomizationFactor: randomizationFactor === undefined ? randomizationFactor : 0.25,
+    randomizationFactor: randomizationFactor === undefined ? 0.25 : randomizationFactor,
     maxDelay: maxDelay === undefined ? 30 * 1000 : maxDelay,
   };
 
@@ -130,4 +98,4 @@ const upload = async ({
   await object.finishUpload(name, { projectId, uploadId, hashes });
 };
 
-module.exports = { upload };
+export default upload;

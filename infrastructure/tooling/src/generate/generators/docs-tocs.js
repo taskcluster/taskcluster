@@ -1,7 +1,7 @@
-const { promisify } = require('util');
-const md = require('md-directory');
-const { join } = require('path');
-const { REPO_ROOT, writeRepoJSON } = require('../../utils');
+import { promisify } from 'util';
+import md from 'md-directory';
+import { join } from 'path';
+import { REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
 
 const mdParseDir = promisify(md.parseDir);
 
@@ -150,7 +150,7 @@ function makeToc({ files, rootPath }) {
   return nodes;
 }
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Docs TOCs',
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-toc'],
@@ -160,7 +160,7 @@ exports.tasks = [{
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)
         .map(([filename, value]) => ({ [filename.replace(/\.mdx?/, '')]: value })));
-    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
+    const [gettingStarted, resources, people, changelog] = ['README', 'resources', 'people', 'changelog'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
@@ -178,6 +178,7 @@ exports.tasks = [{
       tutorial: makeToc({ rootPath: 'tutorial/', files }),
       resources,
       people,
+      changelog,
     };
 
     writeRepoJSON('generated/docs-table-of-contents.json', docsToc);

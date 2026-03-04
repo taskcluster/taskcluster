@@ -1,14 +1,22 @@
-const _ = require('lodash');
-const { Pool } = require('pg');
-const pg = require('pg');
-const crypto = require('crypto');
-const { annotateError } = require('./util');
-const Keyring = require('./Keyring');
-const assert = require('assert').strict;
-const { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } = require('./constants');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { parse: parseConnectionString } = require('pg-connection-string');
-const { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } = require('./migration');
+import _ from 'lodash';
+import pg from 'pg';
+const { Pool } = pg;
+import crypto from 'crypto';
+import { annotateError } from './util.js';
+import Keyring from './Keyring.js';
+import { strict as assert } from 'assert';
+import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import pgConnectionString from 'pg-connection-string';
+const { parse: parseConnectionString } = pgConnectionString;
+
+import {
+  runMigration,
+  runOnlineMigration,
+  runDowngrade,
+  runOnlineDowngrade,
+  dropOnlineFns,
+} from './migration.js';
 
 // Postgres extensions to "create".
 const EXTENSIONS = [
@@ -39,7 +47,7 @@ MonitorManager.register({
   level: 'notice',
   version: 1,
   description: `
-    This message is logged every 5 minutes from each process that is using the database,
+    This message is logged every minute from each process that is using the database,
     once for each pool.  Most services have both a "read" pool and a "write" pool.  The
     fields come from the node-postgres package.
   `,
@@ -51,9 +59,18 @@ MonitorManager.register({
   },
 });
 
+/** @typedef {import('../@types/fns.d.ts').DbFunctions} DbFunctions */
+/** @typedef {import('../@types/fns.d.ts').DeprecatedDbFunctions} DeprecatedDbFunctions */
+/** @typedef {import('../@types/index.d.ts').SetupOptions} SetupOptions */
+/** @typedef {import('../@types/index.d.ts').UpgradeOptions} UpgradeOptions */
+/** @typedef {import('../@types/index.d.ts').DowngradeOptions} DowngradeOptions */
+/** @typedef {import('../@types/index.d.ts').DbAccessMode} DbAccessMode */
+/** @typedef {import('../@types/index.d.ts').EncryptedValue} EncryptedValue */
+
 class Database {
   /**
    * Get a new Database instance
+   * @param {SetupOptions} options
    */
   static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
     azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
@@ -82,16 +99,23 @@ class Database {
     return db;
   }
 
+  /**
+   * @private
+   * @param {object} options
+   * @param {import('./Schema.js').Schema} options.schema
+   * @param {string} options.serviceName
+  */
   _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
-    this.fns = {};
-    this.deprecatedFns = {};
+    this.fns = /** @type {DbFunctions} */({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
     schema.allMethods().forEach(method => {
-      let collection = this.fns;
-      if (method.deprecated) {
+      let collection = /** @type {DbFunctions | DeprecatedDbFunctions} */(this.fns);
+      if (method.deprecated && this.deprecatedFns) {
         collection = this.deprecatedFns;
       }
 
+      // @ts-ignore method name is known to be correct for DbFunctions
       collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
@@ -102,6 +126,7 @@ class Database {
 
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
+        /** @param {string} key */
         const validNamedArgument = key => /^[a-z0-9_]+_in$/.test(key);
         const hasNamedArguments = args.length === 1
           && _.isPlainObject(args[0])
@@ -153,6 +178,8 @@ class Database {
    * progress of the upgrade.
    *
    * If given, the upgrade process stops at toVersion; this is used for testing.
+   *
+   * @param {UpgradeOptions} options
    */
   static async upgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl, skipChecks }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -208,7 +235,7 @@ class Database {
         showProgress('...checking permissions');
         await Database._checkPermissions({ db, schema, usernamePrefix });
         showProgress('...checking table columns');
-        await Database._checkTableColumns({ db, schema, usernamePrefix });
+        await Database._checkTableColumns({ db, schema });
       }
     } finally {
       await db.close();
@@ -221,6 +248,8 @@ class Database {
    * functions.
    *
    * The `showProgress` parameter is like that for upgrade().
+   *
+   * @param {DowngradeOptions} options
    */
   static async downgrade({ schema, showProgress = () => {}, usernamePrefix, toVersion, adminDbUrl }) {
     assert(Database._validUsernamePrefix(usernamePrefix));
@@ -281,6 +310,10 @@ class Database {
     }
   }
 
+  /**
+   * @private
+   * @param {{ db: Database, schema: import('./Schema.js').Schema, usernamePrefix: string }} param0
+   */
   static async _checkPermissions({ db, schema, usernamePrefix }) {
     await db._withClient('admin', async (client) => {
       const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
@@ -388,8 +421,13 @@ class Database {
     });
   }
 
+  /**
+   * @private
+   * @param {{ db: Database, schema: import('./Schema.js').Schema }} param0
+   */
   static async _checkTableColumns({ db, schema }) {
     const current = await db._withClient('admin', async client => {
+      /** @type {Record<string, Record<string, string>>} */
       const tables = {};
 
       const tablesres = await client.query(`
@@ -428,21 +466,21 @@ class Database {
     assert.deepEqual(current, schema.tables.get());
   }
 
+  /** @private */
   async _checkVersion() {
     await this._withClient('admin', async client => {
       const version = await client.query(`
         SELECT current_setting('server_version_num');
       `);
       const ver = version.rows[0].current_setting;
-      if (ver < 110000) {
-        throw new Error("Postgres version is less than 11. Please upgrade to 11.x");
-      }
-      if (ver >= 120000) {
-        throw new Error("Postgres version is greater than 11. Please downgrade to 11.x");
+      const majorVersion = Math.floor(ver / 10000);
+      if (majorVersion !== 15) {
+        throw new Error("Postgres version is not 15.x. Please change to 15.x");
       }
     });
   }
 
+  /** @private */
   async _createExtensions() {
     await this._withClient('admin', async client => {
       for (let ext of EXTENSIONS) {
@@ -458,6 +496,7 @@ class Database {
     });
   }
 
+  /** @private */
   async _checkDbSettings() {
     await this._withClient('admin', async client => {
       // check the DB collation by its behavior, rather than by name, as names seem to vary.
@@ -481,9 +520,19 @@ class Database {
 
   /**
    * Private constructor (use Database.setup and Database.upgrade instead)
+   * @param {object} options
+   * @param {Partial<Record<DbAccessMode, string>>} options.urlsByMode
+   * @param {Keyring} [options.keyring]
+   * @param {MonitorManager} [options.monitor]
+   * @param {number} [options.statementTimeout]
+   * @param {number} [options.poolSize]
    */
   constructor({ urlsByMode, monitor, statementTimeout, poolSize, keyring }) {
     assert(!statementTimeout || typeof statementTimeout === 'number' || typeof statementTimeout === 'boolean');
+    /**
+     * @param {string} dbUrl
+     * @returns {pg.Pool}
+     */
     const makePool = dbUrl => {
       const connectOptions = {
         // default to a max of 5 connections. For services running both a read
@@ -548,14 +597,16 @@ class Database {
 
     this.monitor = monitor;
 
-    this.pools = {};
+    this.pools = /** @type {Record<DbAccessMode, pg.Pool>} */({});
     for (let mode of Object.keys(urlsByMode)) {
+      // @ts-ignore mode is of a type DbAccessMode
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
 
     this._startMonitoringPools();
 
-    this.fns = {};
+    this.fns = /** @type {DbFunctions} */({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
     this.keyring = keyring;
   }
 
@@ -567,6 +618,11 @@ class Database {
    *
    * This annotates syntax errors from `query` with the position at which the
    * error occurred.
+   *
+   * @private
+   * @param {DbAccessMode} mode
+   * @param {(context: { query: (query: string, ...args: any[]) => Promise<pg.QueryResult> }) => Promise<any>} cb
+   * @returns {Promise<pg.QueryResult>}
    */
   async _withClient(mode, cb) {
     const pool = this.pools[mode];
@@ -584,9 +640,15 @@ class Database {
     const handleError = err => clientError = err;
     client.on('error', handleError);
     const wrapped = {
-      query: async function(query) {
+      /**
+       * @param {string} query
+       * @param {...any[]} args
+       * @returns {Promise<pg.QueryResult>}
+       */
+      query: async function(query, ...args) {
         try {
-          return await client.query.apply(client, arguments);
+          // it is important to keep await here, as we need to catch the error
+          return await client.query(query, ...args);
         } catch (err) {
           annotateError(query, err);
           throw err;
@@ -625,8 +687,11 @@ class Database {
   /**
    * Periodically monitor pool size, producing a measure every 1m.  These values
    * should represent a long-term trend so more frequent reports are not useful.
+   *
+   * @private
    */
   _startMonitoringPools() {
+    /** @private */
     this._poolMonitorInterval = setInterval(() => {
       for (const [name, pool] of Object.entries(this.pools)) {
         this._logDbPoolCounts({
@@ -639,10 +704,12 @@ class Database {
     }, 60 * 1000);
   }
 
+  /** @private */
   _stopMonitoringPools() {
     if (this._poolMonitorInterval) {
       clearInterval(this._poolMonitorInterval);
     }
+    /** @private */
     this._poolMonitorInterval = null;
   }
 
@@ -654,6 +721,10 @@ class Database {
     await Promise.all(Object.values(this.pools).map(pool => pool.end()));
   }
 
+  /**
+   * @private
+   * @param {string} usernamePrefix
+   */
   static _validUsernamePrefix(usernamePrefix) {
     return usernamePrefix.match(/^[a-z_]+$/);
   }
@@ -662,12 +733,15 @@ class Database {
    * Depending on context, we may not have a monitor (e.g., during upgrade), so
    * these methods wrap calls to `monitor.<foo>` with a check for monitor being
    * undefined, ignoring the call in that case.
+   *
+   * @private
    */
   _logDbFunctionCall(fields) {
     if (this.monitor) {
       this.monitor.log.dbFunctionCall(fields);
     }
   }
+  /** @private */
   _logDbPoolCounts(fields) {
     if (this.monitor) {
       this.monitor.log.dbPoolCounts(fields);
@@ -681,6 +755,9 @@ class Database {
    * This currently only supports lib-entities shaped data but can be extended to support
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
+   *
+   * @param {{ value: Buffer }} options
+   * @returns {EncryptedValue}
    */
   encrypt({ value }) {
     assert(value instanceof Buffer, 'Encrypted values must be Buffers');
@@ -707,6 +784,8 @@ class Database {
    * This currently only supports lib-entities shaped data but can be extended to support
    * other formats if needed. The "property name" is hardcoded to `val` since we only
    * have one property.
+   *
+   * @param {{ value: EncryptedValue }} options
    */
   decrypt({ value }) {
     const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
@@ -727,4 +806,4 @@ class Database {
   }
 }
 
-module.exports = Database;
+export default Database;

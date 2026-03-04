@@ -1,0 +1,21 @@
+{
+  "name": "@taskcluster/client-test",
+  "version": "97.0.1",
+  "description": "Node client test",
+  "license": "MPL-2.0",
+  "repository": "https://github.com/taskcluster/taskcluster/tree/main/clients/client-test",
+  "scripts": {
+    "test": "mocha test/*_test.js"
+  },
+  "devDependencies": {
+    "http-proxy": "^1.18.0",
+    "mocha": "^10.2.0",
+    "nock": "^13.5.5",
+    "taskcluster-lib-scopes": "^11.0.0",
+    "taskcluster-lib-urls": "^13.0.0"
+  },
+  "engines": {
+    "node": "24.13.0"
+  },
+  "type": "module"
+}

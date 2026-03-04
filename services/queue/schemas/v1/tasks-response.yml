@@ -1,0 +1,32 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Task Definition Response"
+description: |
+  Definitions of multiple tasks
+type:               object
+properties:
+  tasks:
+    # Go generation doesn't understand `patternProperties`, which would allow
+    # us to build a mapping `taskID -> taskDef`. So build an array.
+    type:           array
+    items:
+      type:         object
+      properties:
+        taskId:
+          type: string
+        task: {$ref: "task.json#"}
+      additionalProperties: false
+      required:
+        - taskId
+        - task
+    uniqueItems: true
+    default: []
+  continuationToken:
+    title:                "Continuation Token"
+    type:                 string
+    description: |
+      A continuation token is returned if there are more results than listed
+      here. You can optionally provide the token in the request payload to
+      load the additional results.
+additionalProperties: false
+required:
+  - tasks

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/logging"
-	"github.com/taskcluster/taskcluster/v44/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v44/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 )
 
 func TestLoggingProtocol(t *testing.T) {
@@ -27,10 +27,7 @@ func TestLoggingProtocol(t *testing.T) {
 	wkr.WorkerProtocol.WaitUntilInitialized()
 
 	waitForLogMessage := func() {
-		for {
-			if len(logDest.Messages()) > 0 {
-				break
-			}
+		for len(logDest.Messages()) == 0 {
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
@@ -39,8 +36,8 @@ func TestLoggingProtocol(t *testing.T) {
 		defer logDest.Clear()
 		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
-				"body": map[string]interface{}{
+			Properties: map[string]any{
+				"body": map[string]any{
 					"metric": "foos",
 					"value":  10,
 				},
@@ -50,8 +47,8 @@ func TestLoggingProtocol(t *testing.T) {
 		waitForLogMessage()
 
 		require.Equal(t,
-			[]map[string]interface{}{
-				map[string]interface{}{
+			[]map[string]any{
+				map[string]any{
 					"metric": "foos",
 					"value":  10.0,
 				},
@@ -64,7 +61,7 @@ func TestLoggingProtocol(t *testing.T) {
 		defer logDest.Clear()
 		wkr.WorkerProtocol.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
+			Properties: map[string]any{
 				"textPayload": "I forgot about the body property, oops",
 			},
 		})
@@ -72,8 +69,8 @@ func TestLoggingProtocol(t *testing.T) {
 		waitForLogMessage()
 
 		require.Equal(t,
-			[]map[string]interface{}{
-				map[string]interface{}{
+			[]map[string]any{
+				map[string]any{
 					"textPayload": "received log message from worker lacking 'body' property",
 				},
 			},

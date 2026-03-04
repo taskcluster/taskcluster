@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v44/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/client"
 )
 
 var (
 	// Configuration contains the current configuration values.
-	Configuration map[string]map[string]interface{}
+	Configuration map[string]map[string]any
 
 	// OptionsDefinitions is a map of all the OptionDefinitions, by command.
 	OptionsDefinitions = make(map[string]map[string]OptionDefinition)

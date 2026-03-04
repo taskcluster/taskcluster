@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "baseUrl": "src",
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    // Only type check, don't emit files.
+    "noEmit": true,
+    // Allow esnext syntax. Otherwise the default is ES5 only.
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext"
+  },
+  "include": [
+    "./services/**/*.js",
+    "./libraries/**/*.d.ts",
+    "./libraries/**/*.js",
+    "./db/**/*.js",
+    "./clients/client/**/*.js"
+  ],
+  "files": [
+    "@types/globals.d.ts"
+  ],
+  "exclude": []
+}

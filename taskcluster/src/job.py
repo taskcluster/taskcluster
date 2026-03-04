@@ -1,4 +1,4 @@
-from taskgraph.transforms.job import run_job_using
+from taskgraph.transforms.run import run_task_using
 from taskgraph.util.schema import Schema
 
 from voluptuous import Required, Optional, Extra, Any
@@ -16,7 +16,7 @@ bare_defaults = {
 }
 
 
-@run_job_using("docker-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("docker-worker", "bare", schema=bare_schema, defaults=bare_defaults)
 def bare_docker_worker(config, job, taskdesc):
     run = job["run"]
     worker = taskdesc['worker'] = job['worker']
@@ -24,10 +24,17 @@ def bare_docker_worker(config, job, taskdesc):
     params = config.params
     command = []
     if run.get("clone"):
+        clone_cmd = "git config --global --add safe.directory /builds/worker/checkouts/taskcluster; " \
+                   "[ ! -d /builds/worker/checkouts/taskcluster/.git ] && git clone --quiet --depth=20 " \
+                   "--no-single-branch {} /builds/worker/checkouts/taskcluster; ".format(params["head_repository"])
         command.extend([
-          "git clone --quiet --depth=20 --no-single-branch {} taskcluster && ".format(params["head_repository"]),
-          "cd taskcluster && ",
-          "git checkout {} && ".format(params["head_rev"]),
+            clone_cmd,
+            "cd /builds/worker/checkouts/taskcluster && ",
+            "git config advice.detachedHead false && ",
+            "git fetch {} {} && ".format(params["head_repository"], params["head_rev"]),
+            "git checkout -f {} && ".format(params["head_rev"]),
+            "git reset --hard {} && ".format(params["head_rev"]),
+            "git clean -fd && ",
         ])
     if run.get("install"):
         command.append(run.get("install").format(**params) + " && ")
@@ -36,7 +43,7 @@ def bare_docker_worker(config, job, taskdesc):
     worker["command"] = ["/bin/bash", "-ec", "".join(command)]
 
 
-@run_job_using("generic-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("generic-worker", "bare", schema=bare_schema, defaults=bare_defaults)
 def bare_generic_worker(config, job, taskdesc):
     run = job['run']
     worker = taskdesc['worker'] = job['worker']

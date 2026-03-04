@@ -158,27 +158,6 @@ class Monitor {
   }
 
   /**
-   * Patch an AWS service (an instance of a service from aws-sdk)
-   */
-  patchAWS(service) {
-    const monitor = this;
-    const makeRequest = service.makeRequest;
-    service.makeRequest = function(operation, params, callback) {
-      const r = makeRequest.call(this, operation, params, callback);
-      r.on('complete', () => {
-        const requestTime = (new Date()).getTime() - r.startTime.getTime();
-        monitor.log.awsTimer({
-          service: service.serviceIdentifier,
-          operation,
-          duration: requestTime,
-          region: service.config ? service.config.region : undefined,
-        });
-      });
-      return r;
-    };
-  }
-
-  /**
    * Monitor a one-shot process.  This function's promise never resolves!
    * (except in testing, with MockMonitor)
    */

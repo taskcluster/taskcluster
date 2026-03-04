@@ -1,6 +1,6 @@
-const TaskRun = require('./TaskRun');
+import TaskRun from './TaskRun.js';
 
-module.exports = class TaskStatus {
+export default class TaskStatus {
   constructor(taskId, data) {
     this.taskId = taskId;
     Object.assign(this, data);
@@ -9,4 +9,4 @@ module.exports = class TaskStatus {
       this.runs = this.runs.map(run => new TaskRun(taskId, run));
     }
   }
-};
+}

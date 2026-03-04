@@ -1,0 +1,5 @@
+version: 92
+description: deadline message should not be removed when task is resolved
+methods:
+  queue_task_deadline_resolved:
+    deprecated: true

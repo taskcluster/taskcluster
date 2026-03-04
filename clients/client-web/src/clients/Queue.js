@@ -14,13 +14,20 @@ export default class Queue extends Client {
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.tasks.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"tasks","output":true,"query":["continuationToken","limit"],"route":"/tasks","scopes":{"AllOf":[{"each":"queue:get-task:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.statuses.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"statuses","output":true,"query":["continuationToken","limit"],"route":"/tasks/status","scopes":{"AllOf":[{"each":"queue:status:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.cancelTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"post","name":"cancelTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/cancel","scopes":"queue:cancel-task-group:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.getTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"getTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.sealTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"post","name":"sealTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/seal","scopes":"queue:seal-task-group:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listDependentTasks.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"listDependentTasks","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/dependents","scopes":"queue:list-dependent-tasks:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"put","name":"createTask","output":true,"query":[],"route":"/task/<taskId>","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:create-task:project:<projectId>","queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.changeTaskPriority.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"post","name":"changeTaskPriority","output":true,"query":[],"route":"/task/<taskId>/priority","scopes":{"AnyOf":["queue:change-task-priority:<taskId>","queue:change-task-priority-in-queue:<taskQueueId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.changeTaskGroupPriority.entry = {"args":["taskGroupId"],"category":"Task-Groups","input":true,"method":"post","name":"changeTaskGroupPriority","output":true,"query":[],"route":"/task-group/<taskGroupId>/priority","scopes":"queue:change-task-group-priority:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -40,7 +47,10 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"deprecated","type":"function"}; // eslint-disable-line
+    this.taskQueueCounts.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"taskQueueCounts","output":true,"query":[],"route":"/task-queues/<taskQueueId>/counts","scopes":{"AllOf":["queue:pending-count:<taskQueueId>","queue:claimed-count:<taskQueueId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.listPendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listPendingTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/pending","scopes":"queue:pending-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listClaimedTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listClaimedTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/claimed","scopes":"queue:claimed-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -90,6 +100,25 @@ export default class Queue extends Client {
     return this.request(this.task.entry, args);
   }
   /* eslint-disable max-len */
+  // This end-point will return the task definition for each input task id.
+  // Notice that the task definitions may have been modified by queue.
+  /* eslint-enable max-len */
+  tasks(...args) {
+    this.validate(this.tasks.entry, args);
+
+    return this.request(this.tasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This end-point will return the task statuses for each input task id.
+  // If a given taskId does not match a task, it will be ignored,
+  // and callers will need to handle the difference.
+  /* eslint-enable max-len */
+  statuses(...args) {
+    this.validate(this.statuses.entry, args);
+
+    return this.request(this.statuses.entry, args);
+  }
+  /* eslint-disable max-len */
   // Get task status structure from `taskId`
   /* eslint-enable max-len */
   status(...args) {
@@ -111,11 +140,49 @@ export default class Queue extends Client {
   // get a result without a `continuationToken`.
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
+  // If you only want to to fetch task group metadata without the tasks,
+  // you can call the `getTaskGroup` method.
   /* eslint-enable max-len */
   listTaskGroup(...args) {
     this.validate(this.listTaskGroup.entry, args);
 
     return this.request(this.listTaskGroup.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)
+  // with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.
+  // It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.
+  // If the task group is not sealed, this method will return a 409 response.
+  // It is possible to rerun a canceled task which will result in a new run.
+  // Calling `cancelTaskGroup` again in this case will only cancel the new run.
+  // Other tasks that were already canceled would not be canceled again.
+  /* eslint-enable max-len */
+  cancelTaskGroup(...args) {
+    this.validate(this.cancelTaskGroup.entry, args);
+
+    return this.request(this.cancelTaskGroup.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get task group information by `taskGroupId`.
+  // This will return meta-information associated with the task group.
+  // It contains information about task group expiry date or if it is sealed.
+  // If you also want to see which tasks belong to this task group, you can call
+  // `listTaskGroup` method.
+  /* eslint-enable max-len */
+  getTaskGroup(...args) {
+    this.validate(this.getTaskGroup.entry, args);
+
+    return this.request(this.getTaskGroup.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Seal task group to prevent creation of new tasks.
+  // Task group can be sealed once and is irreversible. Calling it multiple times
+  // will return same result and will not update it again.
+  /* eslint-enable max-len */
+  sealTaskGroup(...args) {
+    this.validate(this.sealTaskGroup.entry, args);
+
+    return this.request(this.sealTaskGroup.entry, args);
   }
   /* eslint-disable max-len */
   // List tasks that depend on the given `taskId`.
@@ -159,6 +226,9 @@ export default class Queue extends Client {
   // **Scopes**: Note that the scopes required to complete this API call depend
   // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
   // `provisionerId`, and `workerType` properties of the task definition.
+  // If the task group was sealed, this end-point will return `409` reporting
+  // `RequestConflict` to indicate that it is no longer possible to add new tasks
+  // for this `taskGroupId`.
   /* eslint-enable max-len */
   createTask(...args) {
     this.validate(this.createTask.entry, args);
@@ -189,8 +259,6 @@ export default class Queue extends Client {
   // you just want to run it from scratch again. This will also reset the
   // number of `retries` allowed. It will schedule a task that is _unscheduled_
   // regardless of the state of its dependencies.
-  // This method is deprecated in favour of creating a new task with the same
-  // task definition (but with a new taskId).
   // Remember that `retries` in the task status counts the number of runs that
   // the queue have started because the worker stopped responding, for example
   // because a spot node died.
@@ -219,6 +287,27 @@ export default class Queue extends Client {
     this.validate(this.cancelTask.entry, args);
 
     return this.request(this.cancelTask.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method updates the priority of a single unresolved task.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+  /* eslint-enable max-len */
+  changeTaskPriority(...args) {
+    this.validate(this.changeTaskPriority.entry, args);
+
+    return this.request(this.changeTaskPriority.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method applies a new priority to unresolved tasks within a task group.
+  // * Updates run in bounded batches to avoid long locks.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskGroupPriorityChanged` summary event at the end.
+  /* eslint-enable max-len */
+  changeTaskGroupPriority(...args) {
+    this.validate(this.changeTaskGroupPriority.entry, args);
+
+    return this.request(this.changeTaskGroupPriority.entry, args);
   }
   /* eslint-disable max-len */
   // Claim pending task(s) for the given task queue.
@@ -392,13 +481,44 @@ export default class Queue extends Client {
   // browser, without using Taskcluster credentials, include a scope in the
   // `anonymous` role.  The convention is to include
   // `queue:get-artifact:public/*`.
-  // **API Clients**, this method will redirect you to the artifact, if it is
-  // stored externally. Either way, the response may not be JSON. So API
-  // client users might want to generate a signed URL for this end-point and
-  // use that URL with a normal HTTP client.
+  // **Response**: the HTTP response to this method is a 303 redirect to the
+  // URL from which the artifact can be downloaded.  The body of that response
+  // contains the data described in the output schema, contianing the same URL.
+  // Callers are encouraged to use whichever method of gathering the URL is
+  // most convenient.  Standard HTTP clients will follow the redirect, while
+  // API client libraries will return the JSON body.
+  // In order to download an artifact the following must be done:
+  // 1. Obtain queue url.  Building a signed url with a taskcluster client is
+  // recommended
+  // 1. Make a GET request which does not follow redirects
+  // 1. In all cases, if specified, the
+  // x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+  // validated to be equal to the Content-Length and Sha256 checksum of the
+  // final artifact downloaded. as well as any intermediate redirects
+  // 1. If this response is a 500-series error, retry using an exponential
+  // backoff.  No more than 5 retries should be attempted
+  // 1. If this response is a 400-series error, treat it appropriately for
+  // your context.  This might be an error in responding to this request or
+  // an Error storage type body.  This request should not be retried.
+  // 1. If this response is a 200-series response, the response body is the artifact.
+  // If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+  // x-taskcluster-location-content-encoding are specified, they should match
+  // this response body
+  // 1. If the response type is a 300-series redirect, the artifact will be at the
+  // location specified by the `Location` header.  There are multiple artifact storage
+  // types which use a 300-series redirect.
+  // 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+  // transfer-sha256, transfer-length and content-encoding match every further request.  The final
+  // artifact must also be validated against the values specified in the original queue response
+  // 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+  // must not occur
+  // **Headers**
+  // The following important headers are set on the response to this method:
+  // * location: the url of the artifact if a redirect is to be performed
+  // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
   // **Remark**, this end-point is slightly slower than
   // `queue.getArtifact`, so consider that if you already know the `runId` of
-  // the latest run. Otherwise, just us the most convenient API end-point.
+  // the latest run. Otherwise, just use the most convenient API end-point.
   /* eslint-enable max-len */
   getLatestArtifact(...args) {
     this.validate(this.getLatestArtifact.entry, args);
@@ -523,15 +643,44 @@ export default class Queue extends Client {
   }
   /* eslint-disable max-len */
   // Get an approximate number of pending tasks for the given `taskQueueId`.
-  // The underlying Azure Storage Queues only promises to give us an estimate.
-  // Furthermore, we cache the result in memory for 20 seconds. So consumers
-  // should be no means expect this to be an accurate number.
-  // It is, however, a solid estimate of the number of pending tasks.
+  // As task states may change rapidly, this number may not represent the exact
+  // number of pending tasks, but a very good approximation.
+  // This method is **deprecated**, use queue.taskQueueCounts instead.
   /* eslint-enable max-len */
   pendingTasks(...args) {
     this.validate(this.pendingTasks.entry, args);
 
     return this.request(this.pendingTasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+  // As task states may change rapidly, this number may not represent the exact
+  // number of pending and claimed tasks, but a very good approximation.
+  /* eslint-enable max-len */
+  taskQueueCounts(...args) {
+    this.validate(this.taskQueueCounts.entry, args);
+
+    return this.request(this.taskQueueCounts.entry, args);
+  }
+  /* eslint-disable max-len */
+  // List pending tasks for the given `taskQueueId`.
+  // As task states may change rapidly, this information might not represent the exact
+  // state of such tasks, but a very good approximation.
+  /* eslint-enable max-len */
+  listPendingTasks(...args) {
+    this.validate(this.listPendingTasks.entry, args);
+
+    return this.request(this.listPendingTasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // List claimed tasks for the given `taskQueueId`.
+  // As task states may change rapidly, this information might not represent the exact
+  // state of such tasks, but a very good approximation.
+  /* eslint-enable max-len */
+  listClaimedTasks(...args) {
+    this.validate(this.listClaimedTasks.entry, args);
+
+    return this.request(this.listClaimedTasks.entry, args);
   }
   /* eslint-disable max-len */
   // Get all active worker-types for the given provisioner.

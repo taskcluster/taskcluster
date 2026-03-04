@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v44/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -170,11 +170,17 @@ type (
 		// The next time this hook's task is scheduled to be created. This property
 		// is only present if there is a scheduled next time. Some hooks don't have
 		// any schedules.
-		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
+		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitzero"`
 	}
 
 	// List of lastFires
 	LastFiresList struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
 		LastFires []Var `json:"lastFires"`
 	}
 
@@ -233,7 +239,7 @@ type (
 		// Another copy of the taskId, at the location where it was published in
 		// Taskcluster versions before v42.  Prefer to use the top-level property,
 		// as `status.taskId` may be removed in future versions.
-		Status Status `json:"status,omitempty"`
+		Status Status `json:"status,omitzero"`
 
 		// TaskId of the task created by triggering the hook.
 		//
@@ -289,37 +295,51 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
+
+		// Task state derived from tasks last run status.
+		// This value can change through time as tasks are being scheduled, run and re-run.
+		// If task doesn't exist or was just created, this value will default to `unknown`.
+		//
+		// Possible values:
+		//   * "unknown"
+		//   * "unscheduled"
+		//   * "pending"
+		//   * "running"
+		//   * "completed"
+		//   * "failed"
+		//   * "exception"
+		TaskState string `json:"taskState"`
 	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // TriggerHookRequest is of type json.RawMessage...
-func (this *TriggerHookRequest) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *TriggerHookRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerHookRequest) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *TriggerHookRequest) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("TriggerHookRequest: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // TriggerHookResponse is of type json.RawMessage...
-func (this *TriggerHookResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *TriggerHookResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerHookResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *TriggerHookResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("TriggerHookResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

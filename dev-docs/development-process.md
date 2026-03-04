@@ -10,7 +10,7 @@ You will probably be working on only one of these pieces, so read carefully belo
 ### Node
 
 <!-- the next line is automatically edited; do not change -->
-You will need Node version 16.16.0 installed.
+You will need Node version 24.13.0 installed.
 We recommend using https://github.com/nvm-sh/nvm to support installing multiple Node versions.
 
 We use `yarn` to run most development commands, so [install that as well](https://classic.yarnpkg.com/en/docs/install/#debian-stable).
@@ -18,26 +18,29 @@ We use `yarn` to run most development commands, so [install that as well](https:
 ### Go
 
 <!-- the next line is automatically edited; do not change -->
-Go version go1.18.5 is required for some development tasks, in particular to run `yarn generate`.
+Go version go1.26.0 is required for some development tasks, in particular to run `yarn generate`.
 For new contributors not familiar with Go, it's probably safe to skip installing Go for now -- you will see a helpful error if and when it is needed.
 We recommend using https://github.com/moovweb/gvm to support installing multiple Go versions.
 
 ### Rust
 
 You do not need Rust installed unless you are working on one of the Rust components of Taskcluster.
-The currently-required version of Rust is in `rust-toolchain`.
+The currently-required version of Rust is in `rust-toolchain.toml`.
 
 ### Postgres
 
-All Taskcluster services require a Postgres 11 server to run.
+All Taskcluster services require a Postgres 15 server to run.
 The easiest and best way to do this is to use docker, but if you prefer you can install a Postgres server locally.
 *NOTE* the test suites repeatedly drop the `public` schema and re-create it, effectively deleting all data in the database.
 Do not run these tests against a database instance that contains any useful data!
 
+`pg_dump` is being used to detect schema changes. If it is not present on your system,
+`yarn generate` might attempt to run this inside the `postgres` docker container, which is one of the `docker-compose.yml` services.
+
 To start the server using Docker:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:15
 ```
 
 This will run Docker in the foreground in that terminal (so you'll need to use another terminal for your work, or add the `-d` flag to daemonize the container) and make that available on TCP port 5432, the "normal" Postgres port.
@@ -45,7 +48,7 @@ This will run Docker in the foreground in that terminal (so you'll need to use a
 It can be helpful to log all queries run by the test suite:
 
 ```shell
-docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:11 -c log_statement=all
+docker run -ti -p 127.0.0.1:5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e LC_COLLATE=en_US.UTF8 -e LC_CTYPE=en_US.UTF8 --rm postgres:15 -c log_statement=all
 ```
 
 However you decide to run Postgres, you will need a DB URL, as defined by [node-postgres](https://node-postgres.com/features/connecting).
@@ -85,6 +88,48 @@ We recommend installing [pre-commit](https://pre-commit.com/index.html) for smal
 These checks will help keep the code clean and will potentially save CI resources if issues are caught pre-commit.
 
 ## Hacking on the UI
+
+To be able to run the UI locally, you will need to set up a Taskcluster deployment to point to.
+This can either be a local deployment using [docker compose](#development-mode) or a remote deployment such as [community-tc](https://community-tc.services.mozilla.com/).
+
+If you just want to change the UI without changing the backend or graphql API, then you will only need the [latest node](#node) version and `yarn` installed:
+
+```sh
+cd ui
+# install dependencies if needed
+yarn
+# set the Taskcluster deployment to point to
+export TASKCLUSTER_ROOT_URL=https://community-tc.services.mozilla.com
+# start the UI
+yarn start
+```
+
+You will can now open the UI at <http://localhost:5080>. It will automatically reload when you make changes to the code.
+All API calls would be proxied to the Taskcluster deployment you specified in `TASKCLUSTER_ROOT_URL`.
+
+If your changes require updating API or graphQL resolvers, you can start the services locally using `docker`:
+
+```sh
+# from the root project directory
+# this will pull latest images if they are not available and start containers in development mode
+yarn start
+# start few services in development mode to be able to make changes to the services
+yarn dev:start queue-web web-server-web
+```
+
+Please check the instructions on how to run the [development mode](#development-mode) for more details.
+
+  Please be aware that running all services locally will take a lot of resources and will be slower than running the UI against a remote Taskcluster deployment.
+
+Now you should be able to run the UI with services locally:
+
+```sh
+cd ui
+export TASKCLUSTER_ROOT_URL=http://localhost:5080
+yarn start
+```
+
+## Hacking on the UI (old approach)
 
 Taskcluster requires a Linux-like environment for development.
 If you are developing on a Windows system, you will need to either
@@ -160,6 +205,18 @@ Happily, this is easy.
 In the root directory of the repository, run `yarn generate`.
 It will change a few files, and you should include those changes in your Git commit.
 
+Generation requires database to be running in order to properly generate schema migrations. You can start it using `docker compose`:
+
+```sh
+# start the database and initialize it
+docker compose up -d postgres pg_init_db
+
+# export test database that can be used for generation
+export TEST_DB_URL=postgresql://postgres@localhost:5432/taskcluster-test
+
+yarn generate
+```
+
 ## Running Services Locally
 
 We generally depend on tests to ensure that services are behaving correctly.
@@ -174,7 +231,7 @@ expireArtifacts:
   type: cron
   schedule: '0 0 * * *'
   deadline: 86400
-  command: node services/queue/src/main expire-artifacts
+  command: node services/queue/src/main.js expire-artifacts
 ```
 
 To run this process locally:
@@ -202,7 +259,7 @@ It's easy: `yarn build` in the root directory.
 
 ## Running everything locally using `docker compose`
 
-> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/compose-plugin/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
+> Note: you'll need recent version of `docker` with [`docker-compose-plugin`](https://docs.docker.com/compose/install/linux/) |(or alternatively [docker-compose](https://github.com/docker/compose/releases))
 >
 > For non-linux systems it is advised to run docker with at least 4 CPU cores and at least 6 GB of memory.
 
@@ -210,7 +267,7 @@ It is possible to run all web services locally using `docker compose`.
 
 [`docker-compose.yml`](../docker-compose.yml) is being autogenerated with `yarn generate`
 
-It defines dependencies: `postgres`, `rabbitmq`, `minio` (for S3 artifacts) and all web services.
+It defines dependencies: `postgres`, `rabbitmq`, `localstack` (for S3 artifacts) and all web services.
 
 User names and passwords can be seen in [`docker-compose.yml`](../docker-compose.yml).
 
@@ -230,7 +287,7 @@ docker compose run --rm auth-web worker-manager/expire-workers
 
 **Database** would be initiated with the help of [`docker/postgres/init.sql`](../docker/postgres/init.sql) script and `pg_init_db` service which runs migrations.
 
-**Minio** (S3) will provision two buckets on first start: `public-bucket`, `private-bucket`. Buckets would be removed and recreated on each restart. If you need to persist buckets please override `s3_init_buckets` command.
+**Localstack** (S3) will provision two buckets on first start: `public-bucket`, `private-bucket`. Buckets would be removed and recreated on each restart. If you need to persist buckets please override `s3_init_buckets` command.
 
 All services are served through the `taskcluster` service which uses [`docker/nginx.conf`](../docker/nginx.conf).
 UI can be accessed through [http://taskcluster](http://taskcluster) (or [http://localhost](http://localhost)).
@@ -318,6 +375,16 @@ yarn start notify-background-handler
 > Note: although `docker compose` command allows passing profile names through arguments like `docker compose --profile cron up -d`, those services will not be stopped if you run `docker compose down` afterwards. To stop them you would need to use same arguments `docker compose --profile cron down`.
 >
 > This way using exported environment variable makes compose behaviour more intuitive.
+
+## Cleaning up unused docker images
+
+With each new Taskcluster release, new docker images are created. Over time this may lead to a large number of unused images. To clean up unused images, run the following command:
+
+```sh
+./docker/cleanup-images.sh
+```
+
+This will find all `taskcluster/` images that are referenced in `docker-compose.yml` and for each one will remove all other images with the same name but different tag.
 
 ## Running tasks with local generic-worker
 

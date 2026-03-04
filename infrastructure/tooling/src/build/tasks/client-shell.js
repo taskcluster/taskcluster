@@ -1,38 +1,58 @@
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  REPO_ROOT,
-} = require('../../utils');
+import path from 'path';
+import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
+      let goreleaserCmd = [
+        'go',
+        'tool',
+        'goreleaser',
+        'release',
+        '--clean',
+      ];
+
+      if (cmdOptions.staging || !cmdOptions.push) {
+        // --snapshot will generate an unversioned snapshot release,
+        // skipping all validations and without publishing any artifacts
+        goreleaserCmd.push('--snapshot');
+      }
+
       await execCommand({
-        dir: artifactsDir,
-        command: ['go', 'install', 'github.com/mitchellh/gox@latest'],
+        dir: REPO_ROOT,
+        command: goreleaserCmd,
         utils,
       });
 
-      const osarch = 'linux/amd64 darwin/amd64 darwin/arm64';
       await execCommand({
-        dir: path.join(REPO_ROOT, 'clients', 'client-shell'),
+        dir: path.join(REPO_ROOT, 'dist'),
         command: [
-          'gox',
-          `-osarch=${osarch}`,
-          `-output=${artifactsDir}/taskcluster-{{.OS}}-{{.Arch}}`,
+          'mv',
+          'taskcluster-darwin-amd64.tar.gz',
+          'taskcluster-darwin-arm64.tar.gz',
+          'taskcluster-linux-amd64.tar.gz',
+          'taskcluster-linux-arm64.tar.gz',
+          'taskcluster-freebsd-amd64.tar.gz',
+          'taskcluster-freebsd-arm64.tar.gz',
+          'taskcluster-windows-arm64.zip',
+          'taskcluster-windows-amd64.zip',
+          artifactsDir,
         ],
         utils,
       });
 
+      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
       const artifacts = osarch.split(' ')
         .map(osarch => {
           const [os, arch] = osarch.split('/');
-          return `taskcluster-${os}-${arch}`;
+          if (os === 'windows') {
+            return `taskcluster-${os}-${arch}.zip`;
+          }
+          return `taskcluster-${os}-${arch}.tar.gz`;
         });
 
       return {

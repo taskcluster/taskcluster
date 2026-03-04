@@ -1,10 +1,9 @@
-const util = require('util');
-const path = require('path');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const { ensureTask } = require('../../utils');
+import path from 'path';
+import mkdirp from 'mkdirp';
+import { ensureTask } from '../../utils/index.js';
+import { rimraf } from 'rimraf';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   // Clean the artifacts directory and return it

@@ -4,6 +4,8 @@ subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubsc
     runs {
       # Required to properly update the cache
       runId
+      started
+      resolved
     }
     # Required to properly update the cache
     taskId

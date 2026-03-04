@@ -1,14 +1,9 @@
-const fs = require('fs');
-const glob = require('glob');
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  dockerPush,
-  REPO_ROOT,
-} = require('../../utils');
+import fs from 'fs';
+import glob from 'glob';
+import path from 'path';
+import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build livelog artifacts',
     requires: ['clean-artifacts-dir'],
@@ -72,24 +67,23 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM busybox', // We use busybox rather than scratch to have `/tmp` and such things
+        'FROM alpine:3 AS certs',
+        'RUN apk add --no-cache ca-certificates',
+        'RUN mkdir /empty',
+        'FROM scratch',
         'EXPOSE 60023',
         'EXPOSE 60022',
+        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+        'COPY --from=certs /empty /tmp',
         'COPY version.json /app/version.json',
         'COPY livelog /livelog',
         'ENTRYPOINT ["/livelog"]',
       ].join('\n'));
       let command = [
-        'docker',
-        'buildx',
-        'build',
-        '--platform',
-        'linux/arm/v7,linux/arm64,linux/amd64',
+        'docker', 'build',
         '--no-cache',
-        '--progress',
-        'plain',
-        '--tag',
-        tag,
+        '--progress', 'plain',
+        '--tag', tag,
         contextDir,
       ];
       await execCommand({

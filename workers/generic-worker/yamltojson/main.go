@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
-	yml, err := ioutil.ReadAll(os.Stdin)
+	yml, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatalf("Could not read from standard in: %v", err)
 	}
@@ -30,7 +30,7 @@ func main() {
 // canonical representation of json (i.e. formatted with objects ordered).
 // Ugly and perhaps inefficient, but effective! :p
 func FormatJSON(a []byte) ([]byte, error) {
-	tmpObj := new(interface{})
+	tmpObj := new(any)
 	err := json.Unmarshal(a, &tmpObj)
 	if err != nil {
 		return a, err

@@ -15,6 +15,7 @@ import Grid from '@material-ui/core/Grid';
 import FormGroup from '@material-ui/core/FormGroup';
 import HammerIcon from 'mdi-react/HammerIcon';
 import BellIcon from 'mdi-react/BellIcon';
+import ChartIcon from 'mdi-react/ChartBarIcon';
 import Spinner from '../../../components/Spinner';
 import Button from '../../../components/Button';
 import SpeedDial from '../../../components/SpeedDial';
@@ -26,6 +27,7 @@ import HelpView from '../../../components/HelpView';
 import TaskGroupProgress from '../../../components/TaskGroupProgress';
 import TaskGroupTable from '../../../components/TaskGroupTable';
 import TaskActionForm from '../../../components/TaskActionForm';
+import Snackbar from '../../../components/Snackbar';
 import {
   TASK_GROUP_PAGE_SIZE,
   VALID_TASK,
@@ -44,7 +46,54 @@ import submitTaskAction from '../submitTaskAction';
 import notify from '../../../utils/notify';
 import logoFailed from '../../../images/logoFailed.png';
 import logoCompleted from '../../../images/logoCompleted.png';
+import TaskGroupStats from '../../../components/TaskGroupStats';
+import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
+import DateDistance from '../../../components/DateDistance';
+import sealTaskGroupQuery from './sealTaskGroup.graphql';
+import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
 
+const initialTaskGroupActions = [
+  {
+    name: 'sealTaskGroup',
+    title: 'Seal Task Group',
+  },
+  {
+    name: 'cancelTaskGroup',
+    title: 'Cancel Task Group',
+  },
+];
+const initialActionData = {
+  sealTaskGroup: {
+    action: {
+      name: 'sealTaskGroup',
+      title: 'Seal Task Group',
+      description: `### Seal Task Group
+  This operation will seal Task Group.
+  It would no longer be possible to add new tasks after.
+
+  This operation is irreversible.
+      `,
+      schema: false,
+    },
+  },
+  cancelTaskGroup: {
+    action: {
+      name: 'cancelTaskGroup',
+      title: 'Cancel Task Group',
+      description: `### Cancel Task Group
+  This operation will cancel Task Group.
+  All non-resolved tasks would be cancelled.
+
+  Task Group has to be sealed before.
+      `,
+      schema: false,
+    },
+  },
+};
+const initialActionInputs = {
+  sealTaskGroup: '',
+  cancelTaskGroup: '',
+};
 const updateTaskGroupIdHistory = id => {
   if (!VALID_TASK.test(id)) {
     return;
@@ -67,9 +116,7 @@ const updateTaskGroupIdHistory = id => {
         kind: {
           $in: ACTIONS_JSON_KNOWN_KINDS,
         },
-        context: {
-          $or: [{ $size: 0 }, { $size: 1 }],
-        },
+        $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
       },
     },
   }),
@@ -105,19 +152,64 @@ const updateTaskGroupIdHistory = id => {
     },
   },
   notifyButton: {
-    marginLeft: theme.spacing(3),
+    marginLeft: theme.spacing(1),
+  },
+  statsButton: {
+    marginLeft: theme.spacing(2),
   },
   bellIcon: {
     marginRight: theme.spacing(1),
   },
 }))
 export default class TaskGroup extends Component {
+  static calculateStatusCountStatic(taskGroup) {
+    const statusCount = {
+      completed: 0,
+      failed: 0,
+      exception: 0,
+      running: 0,
+      pending: 0,
+      unscheduled: 0,
+    };
+
+    if (taskGroup && taskGroup.edges) {
+      taskGroup.edges.forEach(({ node }) => {
+        const { state } = node.status;
+
+        switch (state) {
+          case TASK_STATE.COMPLETED:
+            statusCount.completed += 1;
+            break;
+          case TASK_STATE.FAILED:
+            statusCount.failed += 1;
+            break;
+          case TASK_STATE.EXCEPTION:
+            statusCount.exception += 1;
+            break;
+          case TASK_STATE.RUNNING:
+            statusCount.running += 1;
+            break;
+          case TASK_STATE.PENDING:
+            statusCount.pending += 1;
+            break;
+          case TASK_STATE.UNSCHEDULED:
+            statusCount.unscheduled += 1;
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    return statusCount;
+  }
+
   static getDerivedStateFromProps(props, state) {
     const { taskGroupId } = props.match.params;
     const { taskActions, taskGroup } = props.data;
-    const groupActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
+    const groupActions = initialTaskGroupActions;
+    const actionInputs = state.actionInputs || initialActionInputs;
+    const actionData = state.actionData || initialActionData;
     const taskGroupLoaded = taskGroup && !taskGroup.pageInfo.hasNextPage;
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
@@ -125,6 +217,11 @@ export default class TaskGroup extends Component {
       taskGroup && taskGroup.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
+    const statusCount =
+      isFromSameTaskGroupId && taskGroup
+        ? TaskGroup.calculateStatusCountStatic(taskGroup)
+        : state.statusCount;
+    const previousStatusCount = state.statusCount;
 
     if (
       isFromSameTaskGroupId &&
@@ -154,6 +251,8 @@ export default class TaskGroup extends Component {
         actionData,
         previousTaskGroupId: taskGroupId,
         taskGroupLoaded,
+        statusCount,
+        previousStatusCount,
       };
     }
 
@@ -162,6 +261,9 @@ export default class TaskGroup extends Component {
       taskGroupWasRunningOnPageLoad: isFromSameTaskGroupId
         ? state.taskGroupWasRunningOnPageLoad
         : false,
+      statusCount,
+      previousStatusCount,
+      taskGroupForTable: isFromSameTaskGroupId ? taskGroup : null,
     };
   }
 
@@ -171,16 +273,20 @@ export default class TaskGroup extends Component {
     this.previousCursor = INITIAL_CURSOR;
     this.listener = null;
     this.tasks = new Map();
+
+    // Batching for table updates
+    this.pendingTableUpdate = null;
+    this.tableUpdateTimer = null;
   }
 
   state = {
     filter: null,
     // eslint-disable-next-line react/no-unused-state
     previousTaskGroupId: '',
-    groupActions: [],
+    groupActions: initialTaskGroupActions,
     actionLoading: false,
-    actionInputs: {},
-    actionData: {},
+    actionInputs: initialActionInputs,
+    actionData: initialActionData,
     dialogOpen: false,
     selectedAction: null,
     dialogError: null,
@@ -190,7 +296,34 @@ export default class TaskGroup extends Component {
     notifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
     previousNotifyPreferences: INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
     taskGroupWasRunningOnPageLoad: false,
+    statsOpen: false,
+    taskGroupInfo: false,
+    statusCount: {
+      completed: 0,
+      failed: 0,
+      exception: 0,
+      running: 0,
+      pending: 0,
+      unscheduled: 0,
+    },
+    previousStatusCount: {},
+    taskGroupForTable: null,
+
+    snackbar: {
+      message: '',
+      variant: 'success',
+      open: false,
+    },
   };
+
+  get taskGroupInfo() {
+    const {
+      data: { taskGroup },
+    } = this.props;
+    const { taskGroupInfo } = this.state;
+
+    return taskGroupInfo || taskGroup?.taskGroup;
+  }
 
   async componentDidMount() {
     const groupNotifyTaskFailed =
@@ -199,8 +332,10 @@ export default class TaskGroup extends Component {
     const groupNotifySuccess =
       'Notification' in window &&
       (await db.userPreferences.get(GROUP_NOTIFY_SUCCESS_KEY)) === true;
+    const searchTerm = this.props.location.hash.substr(1);
 
     this.setState({
+      searchTerm,
       notifyPreferences: {
         groupNotifyTaskFailed,
         groupNotifySuccess,
@@ -210,6 +345,14 @@ export default class TaskGroup extends Component {
         groupNotifySuccess,
       },
     });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+
+    if (this.tableUpdateTimer) {
+      clearTimeout(this.tableUpdateTimer);
+    }
   }
 
   unsubscribe = () => {
@@ -244,7 +387,7 @@ export default class TaskGroup extends Component {
         ],
       },
       updateQuery: (previousResult, { subscriptionData }) => {
-        const { tasksSubscriptions } = subscriptionData.data;
+        const { tasksSubscriptions = {} } = subscriptionData.data;
         // Make sure data is not from another task group which
         // can happen when a message is in flight and a user searches for
         // a different task group.
@@ -258,8 +401,6 @@ export default class TaskGroup extends Component {
         ) {
           return previousResult;
         }
-
-        let edges;
 
         if (
           this.state.notifyPreferences.groupNotifyTaskFailed &&
@@ -279,6 +420,8 @@ export default class TaskGroup extends Component {
           });
         }
 
+        let edges;
+
         if (this.tasks.has(tasksSubscriptions.taskId)) {
           // already have this task, so just update the state
           edges = previousResult.taskGroup.edges.map(edge => {
@@ -288,7 +431,11 @@ export default class TaskGroup extends Component {
 
             return dotProp.set(edge, 'node', node =>
               dotProp.set(node, 'status', status =>
-                dotProp.set(status, 'state', tasksSubscriptions.state)
+                dotProp.set(
+                  dotProp.set(status, 'state', tasksSubscriptions.state),
+                  'runs',
+                  tasksSubscriptions.runs
+                )
               )
             );
           });
@@ -302,15 +449,35 @@ export default class TaskGroup extends Component {
               ...cloneDeep(tasksSubscriptions.task),
               status: {
                 state: tasksSubscriptions.state,
+                runs: tasksSubscriptions.runs,
                 __typename: 'TaskStatus',
               },
             },
           });
         }
 
-        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
-          dotProp.set(taskGroup, 'edges', edges)
+        // Return updated result so Apollo updates its cache
+        const updatedResult = dotProp.set(
+          previousResult,
+          'taskGroup',
+          taskGroup => dotProp.set(taskGroup, 'edges', edges)
         );
+        // Update status count immediately for TaskGroupProgress
+        const newStatusCount = this.calculateStatusCount(
+          updatedResult.taskGroup
+        );
+
+        if (
+          JSON.stringify(newStatusCount) !==
+          JSON.stringify(this.state.statusCount)
+        ) {
+          this.setState({ statusCount: newStatusCount });
+          this.handleCountUpdate(newStatusCount);
+        }
+
+        this.scheduleTableUpdate(updatedResult.taskGroup);
+
+        return updatedResult;
       },
     });
 
@@ -318,6 +485,39 @@ export default class TaskGroup extends Component {
       taskGroupId,
       unsubscribe,
     };
+  };
+
+  calculateStatusCount = taskGroup =>
+    TaskGroup.calculateStatusCountStatic(taskGroup);
+
+  scheduleTableUpdate = taskGroup => {
+    this.pendingTableUpdate = taskGroup;
+
+    if (this.tableUpdateTimer) {
+      clearTimeout(this.tableUpdateTimer);
+    }
+
+    this.tableUpdateTimer = setTimeout(() => {
+      if (this.pendingTableUpdate) {
+        this.setState({ taskGroupForTable: this.pendingTableUpdate });
+        this.pendingTableUpdate = null;
+      }
+    }, 300);
+  };
+
+  groupActionDisabled = name => {
+    const { taskGroupInfo } = this;
+
+    switch (name) {
+      case 'sealTaskGroup':
+        return !taskGroupInfo || !!taskGroupInfo.sealed;
+
+      case 'cancelTaskGroup':
+        return !taskGroupInfo || !taskGroupInfo.sealed;
+
+      default:
+        return false;
+    }
   };
 
   componentDidUpdate(prevProps) {
@@ -341,6 +541,15 @@ export default class TaskGroup extends Component {
       taskGroup.pageInfo.hasNextPage
     ) {
       this.fetchMoreTasks();
+    }
+
+    // Check if statusCount changed and call handleCountUpdate
+    if (
+      this.state.previousStatusCount &&
+      JSON.stringify(this.state.statusCount) !==
+        JSON.stringify(this.state.previousStatusCount)
+    ) {
+      this.handleCountUpdate(this.state.statusCount);
     }
   }
 
@@ -371,6 +580,48 @@ export default class TaskGroup extends Component {
   handleActionSubmit = ({ name }) => async () => {
     this.preRunningAction();
 
+    const apolloClient = this.props.client;
+    const {
+      data: { taskGroup },
+    } = this.props;
+
+    if (name === 'sealTaskGroup') {
+      const {
+        data: { sealTaskGroup },
+      } = await apolloClient.mutate({
+        mutation: sealTaskGroupQuery,
+        variables: {
+          taskGroupId: taskGroup.taskGroup.taskGroupId,
+        },
+      });
+
+      this.setState({ taskGroupInfo: sealTaskGroup });
+      this.handleSnackbarOpen({
+        message: 'Task Group sealed',
+        open: true,
+      });
+
+      return null;
+    }
+
+    if (name === 'cancelTaskGroup') {
+      const {
+        data: { cancelTaskGroup },
+      } = await apolloClient.mutate({
+        mutation: cancelTaskGroupQuery,
+        variables: {
+          taskGroupId: taskGroup.taskGroup.taskGroupId,
+        },
+      });
+
+      this.handleSnackbarOpen({
+        message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
+        open: true,
+      });
+
+      return null;
+    }
+
     const { taskActions, task } = this.props.data;
     const { actionInputs, actionData } = this.state;
     const form = actionInputs[name];
@@ -380,14 +631,16 @@ export default class TaskGroup extends Component {
       taskActions,
       form,
       action,
-      apolloClient: this.props.client,
+      apolloClient,
     });
 
     return taskId;
   };
 
   handleActionTaskComplete = taskId => {
-    this.props.history.push(`/tasks/${taskId}`);
+    if (taskId) {
+      this.props.history.push(`/tasks/${taskId}`);
+    }
   };
 
   handleFormChange = (value, name) =>
@@ -413,6 +666,30 @@ export default class TaskGroup extends Component {
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
   };
 
+  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
+    this.setState({ snackbar: { message, variant, open } });
+  };
+
+  handleOpenProfiler = () => {
+    const { taskGroupId } = this.props.match.params;
+    const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task-group/${taskGroupId}/profile`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
+      profileUrl
+    )}`;
+
+    window.open(profilerUrl, '_blank');
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({
+      snackbar: { message: '', variant: 'success', open: false },
+    });
+  };
+
   fetchMoreTasks = () => {
     const {
       data,
@@ -434,12 +711,10 @@ export default class TaskGroup extends Component {
           kind: {
             $in: ACTIONS_JSON_KNOWN_KINDS,
           },
-          context: {
-            $or: [{ $size: 0 }, { $size: 1 }],
-          },
+          $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
         },
       },
-      updateQuery: (previousResult, { fetchMoreResult, variables }) => {
+      updateQuery: (previousResult = {}, { fetchMoreResult, variables }) => {
         if (
           variables.taskGroupConnection.previousCursor === this.previousCursor
         ) {
@@ -466,7 +741,7 @@ export default class TaskGroup extends Component {
               dotProp.set(
                 taskGroup,
                 'edges',
-                previousResult.taskGroup.edges.concat(filteredEdges)
+                previousResult?.taskGroup?.edges?.concat(filteredEdges)
               ),
               'pageInfo',
               pageInfo
@@ -482,6 +757,7 @@ export default class TaskGroup extends Component {
   };
 
   handleSearchTaskSubmit = searchTerm => {
+    this.props.history.replace({ hash: searchTerm });
     this.setState({ searchTerm });
   };
 
@@ -506,6 +782,10 @@ export default class TaskGroup extends Component {
 
   handleNotifyDialogOpen = () => {
     this.setState({ notifyDialogOpen: true });
+  };
+
+  handleStatsChart = () => {
+    this.setState({ statsOpen: !this.state.statsOpen });
   };
 
   handleNotifyChange = async ({ target: { checked, value } }) => {
@@ -608,6 +888,8 @@ export default class TaskGroup extends Component {
       searchTerm,
       notifyDialogOpen,
       notifyPreferences,
+      statsOpen,
+      snackbar,
     } = this.state;
     const bellIconSize = 16;
     const {
@@ -615,7 +897,7 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { taskGroup, error, loading, subscribeToMore },
+      data: { taskGroup, task, error, loading, subscribeToMore },
       classes,
     } = this.props;
     // Make sure data is not from another task group which
@@ -634,9 +916,19 @@ export default class TaskGroup extends Component {
       taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
     }
 
+    const title = ['Task Group'];
+
+    if (task?.metadata?.name) {
+      title.push(task?.metadata?.name);
+    }
+
+    // taskGroupInfo would be set after task group actions were executed
+    // and would contain updated info
+    const tgInfo = this.taskGroupInfo;
+
     return (
       <Dashboard
-        title="Task Group"
+        title={title.join(' - ')}
         className={classes.dashboard}
         helpView={<HelpView description={description} />}
         search={
@@ -647,25 +939,55 @@ export default class TaskGroup extends Component {
         }>
         <ErrorPanel fixed error={graphqlError} warning={Boolean(taskGroup)} />
         {taskGroup && (
-          <TaskGroupProgress
-            taskGroupId={taskGroupId}
-            taskGroupLoaded={taskGroupLoaded}
-            taskGroup={taskGroup}
-            filter={filter}
-            onStatusClick={this.handleStatusClick}
-            onUpdate={this.handleCountUpdate}
-          />
+          <React.Fragment>
+            <TaskGroupProgress
+              taskGroupId={taskGroupId}
+              taskGroupLoaded={taskGroupLoaded}
+              statusCount={this.state.statusCount}
+              filter={filter}
+              onStatusClick={this.handleStatusClick}
+            />
+            <Grid container className={classes.firstGrid}>
+              <Grid item xs={6}>
+                <CopyToClipboardListItem
+                  tooltipTitle={tgInfo.expires}
+                  textToCopy={tgInfo.expires}
+                  primary="Task Group Expires"
+                  secondary={<DateDistance from={tgInfo.expires} />}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                {tgInfo.sealed && (
+                  <CopyToClipboardListItem
+                    tooltipTitle={tgInfo.sealed}
+                    textToCopy={tgInfo.sealed}
+                    primary="Task Group Sealed"
+                    secondary={<DateDistance from={tgInfo.sealed} />}
+                  />
+                )}
+              </Grid>
+            </Grid>
+          </React.Fragment>
         )}
         {!loading && taskGroup && (
           <Grid container>
-            <Grid item xs={12} sm={9} className={classes.firstGrid}>
+            <Grid item xs={12} sm={8} className={classes.firstGrid}>
               <Search
                 formProps={{ className: classes.taskNameFormSearch }}
                 placeholder="Name contains"
+                defaultValue={searchTerm}
                 onSubmit={this.handleSearchTaskSubmit}
               />
             </Grid>
-            <Grid item xs={12} sm={3} className={classes.secondGrid}>
+            <Grid item xs={9} sm={4} className={classes.secondGrid}>
+              <Button
+                size="small"
+                onClick={this.handleStatsChart}
+                className={classes.statsButton}
+                variant="outlined">
+                <ChartIcon size={bellIconSize} className={classes.bellIcon} />
+                Stats
+              </Button>
               {'Notification' in window && (
                 <Badge
                   className={classes.notifyButton}
@@ -687,31 +1009,47 @@ export default class TaskGroup extends Component {
           </Grid>
         )}
         <br />
+        {statsOpen && (
+          <TaskGroupStats
+            searchTerm={searchTerm}
+            filter={filter}
+            taskGroup={taskGroup}
+          />
+        )}
         {!error && loading && <Spinner loading />}
         {!loading && taskGroup && (
           <TaskGroupTable
             searchTerm={searchTerm}
             filter={filter}
-            taskGroupConnection={taskGroup}
+            taskGroupConnection={this.state.taskGroupForTable || taskGroup}
+            showTimings={statsOpen}
           />
         )}
-        {!loading && groupActions && groupActions.length ? (
+        {!loading && (
           <SpeedDial>
-            {groupActions.map(action => (
-              <SpeedDialAction
-                requiresAuth
-                tooltipOpen
-                key={action.title}
-                FabProps={{
-                  disabled: actionLoading,
-                }}
-                icon={<HammerIcon />}
-                tooltipTitle={action.title}
-                onClick={this.handleActionClick(action.name)}
-              />
-            ))}
+            <SpeedDialAction
+              tooltipOpen
+              icon={<ChartIcon />}
+              tooltipTitle="Open in Profiler"
+              onClick={this.handleOpenProfiler}
+            />
+            {groupActions &&
+              groupActions.map(action => (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  key={action.title}
+                  FabProps={{
+                    disabled:
+                      actionLoading || this.groupActionDisabled(action.name),
+                  }}
+                  icon={<HammerIcon />}
+                  tooltipTitle={action.title}
+                  onClick={this.handleActionClick(action.name)}
+                />
+              ))}
           </SpeedDial>
-        ) : null}
+        )}
         {dialogOpen && (
           <DialogAction
             fullScreen={Boolean(selectedAction.schema)}
@@ -766,6 +1104,7 @@ export default class TaskGroup extends Component {
             </FormControl>
           }
         />
+        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
   }

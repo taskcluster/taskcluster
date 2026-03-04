@@ -5,13 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/aws"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/azure"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/google"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/standalone"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/provider/static"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/aws"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/azure"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/google"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/standalone"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/static"
 )
 
 type providerInfo struct {
@@ -29,12 +29,12 @@ var providers map[string]providerInfo = map[string]providerInfo{
 
 func New(runnercfg *cfg.RunnerConfig) (provider.Provider, error) {
 	if runnercfg.Provider.ProviderType == "" {
-		return nil, fmt.Errorf("No provider given in configuration")
+		return nil, fmt.Errorf("no provider given in configuration")
 	}
 
 	pi, ok := providers[runnercfg.Provider.ProviderType]
 	if !ok {
-		return nil, fmt.Errorf("Unrecognized provider type %s", runnercfg.Provider.ProviderType)
+		return nil, fmt.Errorf("unrecognized provider type %s", runnercfg.Provider.ProviderType)
 	}
 	return pi.constructor(runnercfg)
 }

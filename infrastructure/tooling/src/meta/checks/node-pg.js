@@ -1,9 +1,9 @@
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
-const _ = require('lodash');
+import util from 'util';
+import { exec } from 'child_process';
+import _ from 'lodash';
+const execPromise = util.promisify(exec);
 
-exports.tasks = [];
-exports.tasks.push({
+export const tasks = [{
   title: 'Services are not using node-pg',
   requires: [],
   provides: [],
@@ -12,7 +12,7 @@ exports.tasks.push({
     // services are not using postgres directly
     for (let pattern of ['require\(.pg\)', '_withClient']) {
       try {
-        const res = await exec(`git grep '${pattern}' -- 'services/'`);
+        const res = await execPromise(`git grep '${pattern}' -- 'services/'`);
         // if the grep succeeded, then something matched
         throw new Error(`Direct uses of DB found in services/: ${res.stdout}`);
       } catch (err) {
@@ -24,4 +24,4 @@ exports.tasks.push({
       }
     }
   },
-});
+}];

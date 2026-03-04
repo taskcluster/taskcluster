@@ -1,19 +1,19 @@
-const debug = require('debug')('test:create');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { splitTaskQueueId } = require('../src/utils');
+import debugFactory from 'debug';
+const debug = debugFactory('test:create');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from '@taskcluster/client';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
+import { splitTaskQueueId } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withS3(mock, skipping);
-  helper.withQueueService(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -282,6 +282,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
+  test('createTask w. deadline > maxTaskDeadlineDays -> 400', async () => {
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, _.defaults({
+      deadline: taskcluster.fromNowJSON('6 days'),
+    }, taskDef)).then(() => {
+      throw new Error('This operation should have failed!');
+    }, (err) => {
+      assume(err.statusCode).equals(400);
+      debug('Expected error: %j', err, err);
+    });
+  });
+
   const makeSourceTask = (source) => {
     return {
       provisionerId: 'no-provisioner-extended-extended',
@@ -318,24 +330,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status).deep.equals(r2.status);
   });
 
-  test('Minimum task definition with ssh source', async () => {
-    const taskDef = makeSourceTask('ssh://git@github.com:taskcluster/taskcluster-queue');
-    const taskId = slugid.v4();
+  [
+    'ssh://git@github.com:taskcluster/taskcluster-queue',
+    'git@github.com:taskcluster/taskcluster-queue',
+  ].forEach((source) => {
+    test(`Minimum task definition with source ${source}`, async () => {
+      const taskDef = makeSourceTask(source);
+      const taskId = slugid.v4();
 
-    helper.scopes(
-      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
-      'queue:create-task:project:none',
-      'queue:scheduler-id:-',
-      'queue:status:' + taskId,
-    );
+      helper.scopes(
+        'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
+        'queue:create-task:project:none',
+        'queue:scheduler-id:-',
+        'queue:status:' + taskId,
+      );
 
-    debug('### Creating task');
-    const r1 = await helper.queue.createTask(taskId, taskDef);
-    helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
-    helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
+      debug('### Creating task');
+      const r1 = await helper.queue.createTask(taskId, taskDef);
+      helper.assertPulseMessage('task-defined', m => _.isEqual(m.payload.status.state, 'unscheduled'));
+      helper.assertPulseMessage('task-pending', m => _.isEqual(m.payload.status, r1.status));
 
-    const r2 = helper.checkDates(await helper.queue.status(taskId));
-    assume(r1.status).deep.equals(r2.status);
+      const r2 = helper.checkDates(await helper.queue.status(taskId));
+      assume(r1.status).deep.equals(r2.status);
+    });
   });
 
   const makePriorityTask = (priority) => {

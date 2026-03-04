@@ -1,5 +1,11 @@
-const { isPlainObject } = require('lodash');
-const assert = require('assert').strict;
+import lodash from 'lodash';
+import { strict as assert } from 'assert';
+
+const { isPlainObject } = lodash;
+
+/**
+ * @typedef {{[tableName: string]: {[columnName: string]: string}}} RelationsDefinition
+ */
 
 /**
  * Representation for a set of relations in the schema -- things with rows and
@@ -8,6 +14,9 @@ const assert = require('assert').strict;
 class Relations {
   /**
    * Load relations from a file
+   *
+   * @param {RelationsDefinition} content
+   * @param {string} filename
    */
   static fromYamlFileContent(content, filename) {
     Relations._check(content, filename);
@@ -17,6 +26,8 @@ class Relations {
 
   /**
    * Load relations from a serialized representation
+   *
+   * @param {RelationsDefinition} serializable
    */
   static fromSerializable(serializable) {
     Relations._check(serializable, 'serializable input');
@@ -31,6 +42,7 @@ class Relations {
     return this.relations;
   }
 
+  /** @param {RelationsDefinition} relations */
   constructor(relations) {
     this.relations = relations;
   }
@@ -42,6 +54,11 @@ class Relations {
     return this.relations;
   }
 
+  /**
+   * @param {RelationsDefinition} content
+   * @param {string} filename
+   * @private
+   */
   static _check(content, filename) {
     assert(isPlainObject(content), `${filename} should define an object`);
     Object.keys(content).forEach(tableName => {
@@ -54,4 +71,4 @@ class Relations {
   }
 }
 
-module.exports = Relations;
+export default Relations;

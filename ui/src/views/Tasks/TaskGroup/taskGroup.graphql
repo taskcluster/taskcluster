@@ -7,6 +7,14 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
       previousCursor
       nextCursor
     }
+
+    taskGroup {
+      taskGroupId
+      schedulerId
+      expires
+      sealed
+    }
+
     edges {
       node {
         taskId
@@ -16,7 +24,13 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
         taskGroupId
         status {
           state
+          runs {
+            runId
+            started
+            resolved
+          }
         }
+
       }
     }
   }

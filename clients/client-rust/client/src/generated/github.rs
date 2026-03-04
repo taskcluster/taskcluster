@@ -133,54 +133,33 @@ impl Github {
         (path, query)
     }
 
-    /// Consume GitHub WebHook
-    ///
-    /// Capture a GitHub event and publish it via pulse, if it's a push,
-    /// release, check run or pull request.
-    pub async fn githubWebHookConsumer(&self) -> Result<(), Error> {
-        let method = "POST";
-        let (path, query) = Self::githubWebHookConsumer_details();
-        let body = None;
-        let resp = self.client.request(method, path, query, body).await?;
-        resp.bytes().await?;
-        Ok(())
-    }
-
-    /// Determine the HTTP request details for githubWebHookConsumer
-    fn githubWebHookConsumer_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
-        let path = "github";
-        let query = None;
-
-        (path, query)
-    }
-
     /// List of Builds
     ///
     /// A paginated list of builds that have been run in
     /// Taskcluster. Can be filtered on various git-specific
     /// fields.
-    pub async fn builds(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>) -> Result<Value, Error> {
+    pub async fn builds(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
         let body = None;
         let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the builds endpoint
-    pub fn builds_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
+    pub fn builds_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
         self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the builds endpoint
-    pub fn builds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha);
+    pub fn builds_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, organization: Option<&str>, repository: Option<&str>, sha: Option<&str>, pullRequest: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::builds_details(continuationToken, limit, organization, repository, sha, pullRequest);
         self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for builds
-    fn builds_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>, organization: Option<&'a str>, repository: Option<&'a str>, sha: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+    fn builds_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>, organization: Option<&'a str>, repository: Option<&'a str>, sha: Option<&'a str>, pullRequest: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
         let path = "builds";
         let mut query = None;
         if let Some(q) = continuationToken {
@@ -197,6 +176,34 @@ impl Github {
         }
         if let Some(q) = sha {
             query.get_or_insert_with(Vec::new).push(("sha", q));
+        }
+        if let Some(q) = pullRequest {
+            query.get_or_insert_with(Vec::new).push(("pullRequest", q));
+        }
+
+        (path, query)
+    }
+
+    /// Cancel repository builds
+    ///
+    /// Cancel all running Task Groups associated with given repository and sha or pullRequest number
+    pub async fn cancelBuilds(&self, owner: &str, repo: &str, sha: Option<&str>, pullRequest: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::cancelBuilds_details(owner, repo, sha, pullRequest);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for cancelBuilds
+    fn cancelBuilds_details<'a>(owner: &'a str, repo: &'a str, sha: Option<&'a str>, pullRequest: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("builds/{}/{}/cancel", urlencode(owner), urlencode(repo));
+        let mut query = None;
+        if let Some(q) = sha {
+            query.get_or_insert_with(Vec::new).push(("sha", q));
+        }
+        if let Some(q) = pullRequest {
+            query.get_or_insert_with(Vec::new).push(("pullRequest", q));
         }
 
         (path, query)
@@ -341,6 +348,28 @@ impl Github {
     /// Determine the HTTP request details for createComment
     fn createComment_details<'a>(owner: &'a str, repo: &'a str, number: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("repository/{}/{}/issues/{}/comments", urlencode(owner), urlencode(repo), urlencode(number));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Render .taskcluster.yml file
+    ///
+    /// This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+    /// This is useful to preview the result of the .taskcluster.yml file before pushing it to
+    /// the repository.
+    /// Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+    pub async fn renderTaskclusterYml(&self, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::renderTaskclusterYml_details();
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for renderTaskclusterYml
+    fn renderTaskclusterYml_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "taskcluster-yml";
         let query = None;
 
         (path, query)

@@ -13,13 +13,14 @@ export default class Github extends Client {
     this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.githubWebHookConsumer.entry = {"args":[],"category":"Github Service","method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"stable","type":"function"}; // eslint-disable-line
-    this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"}; // eslint-disable-line
+    this.builds.entry = {"args":[],"category":"Github Service","method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha","pullRequest"],"route":"/builds","scopes":"github:list-builds","stability":"stable","type":"function"}; // eslint-disable-line
+    this.cancelBuilds.entry = {"args":["owner","repo"],"category":"Github Service","method":"post","name":"cancelBuilds","output":true,"query":["sha","pullRequest"],"route":"/builds/<owner>/<repo>/cancel","scopes":"github:cancel-builds:<owner>:<repo>","stability":"stable","type":"function"}; // eslint-disable-line
     this.badge.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","scopes":"github:get-badge:<owner>:<repo>:<branch>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.repository.entry = {"args":["owner","repo"],"category":"Github Service","method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","scopes":"github:get-repository:<owner>:<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.latest.entry = {"args":["owner","repo","branch"],"category":"Github Service","method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","scopes":"github:latest-status:<owner>:<repo>:<branch>","stability":"stable","type":"function"}; // eslint-disable-line
     this.createStatus.entry = {"args":["owner","repo","sha"],"category":"Github Service","input":true,"method":"post","name":"createStatus","query":[],"route":"/repository/<owner>/<repo>/statuses/<sha>","scopes":"github:create-status:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.createComment.entry = {"args":["owner","repo","number"],"category":"Github Service","input":true,"method":"post","name":"createComment","query":[],"route":"/repository/<owner>/<repo>/issues/<number>/comments","scopes":"github:create-comment:<owner>/<repo>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.renderTaskclusterYml.entry = {"args":[],"category":"Github Service","input":true,"method":"post","name":"renderTaskclusterYml","output":true,"query":[],"route":"/taskcluster-yml","stability":"experimental","type":"function"}; // eslint-disable-line
     this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
@@ -50,15 +51,6 @@ export default class Github extends Client {
     return this.request(this.version.entry, args);
   }
   /* eslint-disable max-len */
-  // Capture a GitHub event and publish it via pulse, if it's a push,
-  // release, check run or pull request.
-  /* eslint-enable max-len */
-  githubWebHookConsumer(...args) {
-    this.validate(this.githubWebHookConsumer.entry, args);
-
-    return this.request(this.githubWebHookConsumer.entry, args);
-  }
-  /* eslint-disable max-len */
   // A paginated list of builds that have been run in
   // Taskcluster. Can be filtered on various git-specific
   // fields.
@@ -67,6 +59,14 @@ export default class Github extends Client {
     this.validate(this.builds.entry, args);
 
     return this.request(this.builds.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Cancel all running Task Groups associated with given repository and sha or pullRequest number
+  /* eslint-enable max-len */
+  cancelBuilds(...args) {
+    this.validate(this.cancelBuilds.entry, args);
+
+    return this.request(this.cancelBuilds.entry, args);
   }
   /* eslint-disable max-len */
   // Checks the status of the latest build of a given branch
@@ -115,6 +115,17 @@ export default class Github extends Client {
     this.validate(this.createComment.entry, args);
 
     return this.request(this.createComment.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+  // This is useful to preview the result of the .taskcluster.yml file before pushing it to
+  // the repository.
+  // Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+  /* eslint-enable max-len */
+  renderTaskclusterYml(...args) {
+    this.validate(this.renderTaskclusterYml.entry, args);
+
+    return this.request(this.renderTaskclusterYml.entry, args);
   }
   /* eslint-disable max-len */
   // Respond with a service heartbeat.

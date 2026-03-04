@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v44/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging/logging"
 )
 
 func makeLogger() (logging.Logger, *bytes.Buffer) {
@@ -29,6 +29,6 @@ func TestLogUnstructured(t *testing.T) {
 func TestLogStructured(t *testing.T) {
 	dst, buf := makeLogger()
 
-	dst.LogStructured(map[string]interface{}{"level": "bad"})
+	dst.LogStructured(map[string]any{"level": "bad"})
 	require.Equal(t, []byte("level: bad\n"), buf.Bytes())
 }

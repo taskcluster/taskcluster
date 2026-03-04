@@ -1,8 +1,8 @@
-const assert = require('assert');
-const _ = require('lodash');
+import assert from 'assert';
+import _ from 'lodash';
 
 // A function that returns a middleware that renders callback.ejs
-module.exports = (publicUrl) => async (request, response) => {
+export default (publicUrl) => async (request, response) => {
   assert(request.user, 'Must have a user');
   assert(request.user.profile);
   assert(request.user.identityProviderId);

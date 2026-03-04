@@ -1,0 +1,12 @@
+query HookLastFires($hookGroupId: ID!, $hookId: ID!, $filter: JSON, $connection: PageConnection) {
+  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId, filter: $filter, connection: $connection) {
+    edges {
+      node {
+        taskId
+        result
+        taskState
+        error
+      }
+    }
+  }
+}

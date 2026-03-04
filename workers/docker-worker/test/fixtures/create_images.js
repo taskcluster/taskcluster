@@ -2,7 +2,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 const path = require('path');
 const mime = require('mime');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const uploadToS3 = require('../../src/upload_to_s3');
 const Docker = require('dockerode');
 const helper = require('../helper');
@@ -10,7 +10,7 @@ const helper = require('../helper');
 function removeFile(filename) {
   try {
     fs.unlinkSync(filename);
-  } catch(e) {} // eslint-disable-line no-empty
+  } catch (e) {} // eslint-disable-line no-empty
 }
 
 function createQueue() {
@@ -53,7 +53,7 @@ function run(name, args) {
 }
 
 async function main() {
-  const IMAGE_NAME = 'ubuntu:18.04';
+  const IMAGE_NAME = 'ubuntu:jammy';
   const lz4ImagePath = '/tmp/image.tar.lz4';
   const zstImagePath = '/tmp/image.tar.zst';
   const tarImagePath = '/tmp/image.tar';
