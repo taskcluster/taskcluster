@@ -1,0 +1,17 @@
+version: 101
+description: remove tasks from pending queue
+methods:
+  queue_pending_task_delete:
+    description: |
+      Delete single pending task run from the queue.
+    mode: write
+    serviceName: queue
+    args: task_id_in text, run_id_in integer
+    returns: void
+    body: |-
+      begin
+        delete from queue_pending_tasks
+        where task_id = task_id_in
+          and run_id = run_id_in
+          and pop_receipt IS NULL;
+      end

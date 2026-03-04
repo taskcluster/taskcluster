@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { ApiError, Provider } from './provider.js';
 import { Worker } from '../data.js';
 
@@ -23,7 +23,7 @@ export class StaticProvider extends Provider {
       expires: new Date(input.expires),
       capacity: input.capacity,
       state: Worker.states.RUNNING,
-      providerData: { staticSecret, workerConfig: workerPool.config.workerConfig },
+      providerData: { staticSecret },
     };
 
     let worker;
@@ -57,11 +57,17 @@ export class StaticProvider extends Provider {
   }
 
   async removeWorker({ worker, reason }) {
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const now = Date.now();
     this.monitor.log.workerRemoved({
       workerPoolId: worker.workerPoolId,
       providerId: worker.providerId,
       workerId: worker.workerId,
       reason,
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     });
 
     await worker.update(this.db, worker => {
@@ -93,7 +99,7 @@ export class StaticProvider extends Provider {
     } else {
       expires = taskcluster.fromNow('96 hours');
     }
-    const workerConfig = worker.providerData.workerConfig || {};
+    const workerConfig = workerPool.config.workerConfig || {};
     return {
       expires,
       workerConfig,

@@ -94,11 +94,11 @@ properties:
             The provider that had started the worker and responsible for managing it.
             Can be different from the provider that's currently in the worker pool config.
             A providerId of "none" is used when the worker is not managed by worker manager.
+        launchConfigId: {$const: launch-config-id}
       additionalProperties: false
       required:
         - workerGroup
         - workerId
-        - firstClaim
   continuationToken:
     type:           string
     title:          "Continuation Token"

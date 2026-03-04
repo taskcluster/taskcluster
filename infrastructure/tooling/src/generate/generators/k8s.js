@@ -50,6 +50,7 @@ const SHARED_CONFIG = {
   error_config: '.Values.errorConfig',
   application_name: '.Values.applicationName',
   new_relic: '.Values.newRelic',
+  prometheus_config: '.Values.prometheus',
 };
 
 // default cpu, memory values per proc.  These are based on observations of
@@ -104,36 +105,106 @@ const DEFAULT_RESOURCES = {
   'references.web': ['10m', '10Mi'],
 };
 
+// those would have replicas: 0 if prometheus.enabled is false
+const METRICS_ONLY_DEPLOYMENTS = ['queue.workerMetrics'];
+
 const labels = (projectName, component) => ({
   'app.kubernetes.io/name': projectName,
   'app.kubernetes.io/instance': '{{ .Release.Name }}',
   'app.kubernetes.io/component': `${projectName}-${component.toLowerCase()}`,
   'app.kubernetes.io/part-of': 'taskcluster',
 });
+const metricsSelectorLabels = (projectName) => ({
+  'app.kubernetes.io/part-of': 'taskcluster',
+  'app.kubernetes.io/instance': '{{ .Release.Name }}',
+  'prometheus.io/scrape': 'true',
+});
+
+// json-e can't create a "naked" string for go templates to use to render an integer.
+// we have to do some post-processing to use "advanced" go template features
+const postJsoneProcessing = (rendered, replacements, context) => {
+  let result = yaml.dump(rendered, { lineWidth: -1 })
+    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+
+  // Add conditional replicas configuration
+  if (context.wrapReplicas) {
+    result = result.replace(
+      /replicas:.*$/m,
+      `{{- if not .Values.${context.configName}.autoscaling.enabled }}
+  replicas: ${replacements.REPLICA_CONFIG_STRING}
+  {{- end }}`,
+    );
+  }
+  return result;
+};
+
+const wrapConditionalResource = (rendered, resourceName) => {
+  return `{{- if not (has "${resourceName}" .Values.skipResourceTypes) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
+const wrapConditionalPodmonitoringResource = (rendered) => {
+  return `{{- if and (default false .Values.prometheus.enabled) (not (has "podmonitoring" .Values.skipResourceTypes)) -}}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+};
+
+const postProcessHorizontalPodAutoscaler = (rendered, context) => {
+  let result = `{{- if .Values.${context.configName}.autoscaling.enabled }}
+${yaml.dump(rendered, { lineWidth: -1 }).trim()}
+{{- end }}
+`;
+  result = result.replace("- MEMORY_UTILIZATION",
+    `{{- if .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}`,
+  );
+
+  // some values need to stay integers after json'e string substitutions
+  // we unwrap minReplicas, maxReplicas, averageUtilization
+  result = result.replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*maxReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+    .replace(/^(\s*averageUtilization:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3');
+
+  return result;
+};
 
 const renderTemplates = async (name, vars, procs, templates) => {
-  for (const resource of ['serviceaccount', 'secret']) {
+  const processVar = (v) => {
+    const val = v.var.toLowerCase();
+    if (NON_CONFIGURABLE.includes(val)) {
+      return null;
+    }
+    return {
+      key: v.var,
+      val: SHARED_CONFIG[val] || `.Values.${name.replace(/-/g, '_')}.${val}`,
+    };
+  };
+
+  for (const resource of ['serviceaccount', 'secret', 'configmap']) {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       labels: labels(`taskcluster-${name}`, 'secrets'),
-      secrets: vars.map(v => {
-        const val = v.toLowerCase();
-        if (NON_CONFIGURABLE.includes(val)) {
-          return null;
-        }
-        return {
-          key: v,
-          val: SHARED_CONFIG[val] || `.Values.${name.replace(/-/g, '_')}.${val}`,
-        };
-      }).filter(x => x !== null),
+      secrets: vars.filter(v => v.secret).map(processVar).filter(x => x !== null),
+      configValues: vars.filter(v => !v.secret).map(processVar).filter(x => x !== null),
     });
+
     const file = `taskcluster-${name}-${resource}.yaml`;
-    await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
+    await writeRepoFile(path.join(TMPL_DIR, file), wrapConditionalResource(rendered, resource));
   }
 
   const ingresses = [];
   for (const [proc, conf] of Object.entries(procs)) {
     let tmpl;
+    const exposesMetrics = !!procs[proc].metrics;
     const context = {
       projectName: `taskcluster-${name}`,
       serviceName: name,
@@ -141,13 +212,21 @@ const renderTemplates = async (name, vars, procs, templates) => {
       configProcName: proc.replace(/-/g, '_'),
       procName: proc,
       needsService: false,
+      exposesMetrics,
+      wrapReplicas: false,
       readinessPath: conf.readinessPath || `/api/${name}/v1/ping`,
       labels: labels(`taskcluster-${name}`, proc),
     };
+    const replacements = {
+      REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
+      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+    };
+
     switch (conf['type']) {
       case 'web': {
         tmpl = 'deployment';
         context['needsService'] = true;
+        context['wrapReplicas'] = true;
         const rendered = jsone(templates['service'], context);
         const file = `taskcluster-${name}-service-${proc}.yaml`;
         ingresses.push({
@@ -155,10 +234,23 @@ const renderTemplates = async (name, vars, procs, templates) => {
           paths: conf['paths'] || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
         });
         await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
+        const hpaContext = {
+          ...context,
+          enabled: `{{ .Values.${context.configName}.autoscaling.enabled }}`,
+          minReplicas: `{{ .Values.${context.configName}.autoscaling.minReplicas }}`,
+          maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
+          targetCPUUtilizationPercentage: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilizationPercentage }}`,
+        };
+        const hpaRendered = jsone(templates['hpa'], hpaContext);
+        const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
+        await writeRepoFile(path.join(TMPL_DIR, hpaFilename), postProcessHorizontalPodAutoscaler(hpaRendered, context));
         break;
       }
       case 'background': {
         tmpl = 'deployment';
+        if (METRICS_ONLY_DEPLOYMENTS.includes(`${context.configName}.${context.configProcName}`)) {
+          replacements.REPLICA_CONFIG_STRING = `{{ if .Values.prometheus.enabled  }}${replacements.REPLICA_CONFIG_STRING}{{ else }}0{{end}}`;
+        }
         break;
       }
       case 'cron': {
@@ -170,19 +262,11 @@ const renderTemplates = async (name, vars, procs, templates) => {
       default: continue; // We don't do anything with build/heroku-only
     }
     const rendered = jsone(templates[tmpl], context);
-
-    // json-e can't create a "naked" string for go templates to use to render an integer.
-    // we have to do some post-processing to use "advanced" go template features
-    const replacements = {
-      REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
-      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
-    };
-    const processed = yaml.dump(rendered, { lineWidth: -1 })
-      .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
-
+    const processed = postJsoneProcessing(rendered, replacements, context);
     const filename = `taskcluster-${name}-${tmpl}-${proc}.yaml`;
     await writeRepoFile(path.join(TMPL_DIR, filename), processed);
   }
+
   return ingresses;
 };
 
@@ -223,8 +307,8 @@ SERVICES.forEach(name => {
     run: async (requirements, utils) => {
       const procs = requirements[`procslist-${name}`];
       const templates = requirements['k8s-templates'];
-      const vars = requirements[`configs-${name}`].map(v => v.var);
-      vars.push('debug');
+      const vars = requirements[`configs-${name}`];
+      vars.push({ var: 'debug', type: '!env' });
       return {
         [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
       };
@@ -275,7 +359,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
     run: async (requirements, utils) => {
       const templates = requirements['k8s-templates'];
       return {
-        [`ingresses-${name}`]: await renderTemplates(name, vars.map(v => v.var), procs, templates),
+        [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
       };
     },
   });
@@ -304,7 +388,28 @@ tasks.push({
       ingresses,
       labels: labels(`taskcluster-ingress`, 'ingress'),
     });
-    await writeRepoYAML(path.join(TMPL_DIR, 'ingress.yaml'), rendered);
+    const processed = wrapConditionalResource(rendered, 'ingress');
+    await writeRepoFile(path.join(TMPL_DIR, 'ingress.yaml'), processed);
+  },
+});
+
+tasks.push({
+  title: `Generate pod monitoring`,
+  requires: ['k8s-templates'],
+  provides: [],
+  run: async (requirements, utils) => {
+    const templates = requirements['k8s-templates'];
+
+    // podmonitoring for prometheus metrics
+    const podmon = jsone(templates['podmonitoring'], {
+      projectName: 'taskcluster-monitoring',
+      labels: labels('taskcluster-monitoring', 'podmonitoring'),
+      selectorLabels: metricsSelectorLabels('taskcluster-monitoring'),
+    });
+    await writeRepoFile(
+      path.join(TMPL_DIR, `podmonitoring.yaml`),
+      wrapConditionalPodmonitoringResource(podmon, 'podmonitoring'),
+    );
   },
 });
 
@@ -359,6 +464,14 @@ tasks.push({
         pulseVhost: {
           type: 'string',
           description: 'The vhost this deployment will use on the rabbitmq cluster',
+        },
+        skipResourceTypes: {
+          type: 'array',
+          description: 'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
+          items: {
+            type: 'string',
+            enum: ['configmap', 'secret', 'ingress', 'serviceaccount', 'podmonitoring'],
+          },
         },
 
         useKubernetesDnsServiceDiscovery: {
@@ -428,6 +541,57 @@ tasks.push({
           type: 'string',
           description: 'Secret name with docker credentials for private registry',
         },
+        prometheus: {
+          type: 'object',
+          description: [
+            'Prometheus configuration',
+            'PodMonitoring resource will be created if prometheus.enabled is true',
+          ].join('\n'),
+          additionalProperties: false,
+          properties: {
+            enabled: {
+              type: 'boolean',
+              description: 'Enable PodMonitoring',
+            },
+            prefix: {
+              type: 'string',
+              description: 'Optional prefix for all metrics',
+            },
+            server: {
+              type: 'object',
+              description: 'Metrics server configuration, one that will serve /metrics endpoint',
+              additionalProperties: false,
+              properties: {
+                port: {
+                  type: 'integer',
+                  description: 'Port to listen on, default is 9100',
+                },
+                ip: {
+                  type: 'string',
+                  description: 'IP address to listen on, default is 127.0.0.1',
+                },
+              },
+            },
+            push: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                gateway: {
+                  type: 'string',
+                  description: 'URL to push metrics to, i.e. http://pushgateway:9091',
+                },
+                jobName: {
+                  type: 'string',
+                  description: 'Job name to use when pushing metrics',
+                },
+                groupings: {
+                  type: 'object',
+                  description: 'Groupings to use when pushing metrics',
+                },
+              },
+            },
+          },
+        },
       },
       required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
       additionalProperties: false,
@@ -438,6 +602,7 @@ tasks.push({
       applicationName: 'My Taskcluster',
       rootUrl: '...',
       dockerImage: '...',
+      skipResourceTypes: [],
       ingressStaticIpName: '...',
       ingressCertName: '...',
       ingressType: '...',
@@ -450,6 +615,10 @@ tasks.push({
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      prometheus: {
+        enabled: true,
+        server: { port: 9100 },
+      },
     };
 
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
@@ -460,6 +629,8 @@ tasks.push({
       forceSSL: false,
       nodeEnv: 'production',
       useKubernetesDnsServiceDiscovery: true,
+      skipResourceTypes: [],
+      prometheus: {},
     };
 
     let configs = SERVICES.map(name => ({
@@ -478,6 +649,12 @@ tasks.push({
       valuesYAML[confName] = {
         procs: {},
         debug: '',
+        autoscaling: {
+          enabled: false,
+          minReplicas: 1,
+          maxReplicas: 100,
+          targetCPUUtilizationPercentage: 80,
+        },
       };
       schema.required.push(confName);
       schema.properties[confName] = {
@@ -494,6 +671,45 @@ tasks.push({
           debug: {
             type: 'string',
             title: 'node debug env var',
+          },
+          autoscaling: {
+            type: 'object',
+            title: 'Autoscaling configuration for this service',
+            properties: {
+              enabled: {
+                type: 'boolean',
+                description: 'Whether to enable autoscaling for this service',
+                default: false,
+              },
+              minReplicas: {
+                type: 'integer',
+                description: 'Minimum number of replicas',
+                minimum: 1,
+                default: 1,
+              },
+              maxReplicas: {
+                type: 'integer',
+                description: 'Maximum number of replicas',
+                minimum: 1,
+                default: 100,
+              },
+              targetCPUUtilizationPercentage: {
+                type: 'integer',
+                description: 'Target CPU utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80,
+              },
+              targetMemoryUtilizationPercentage: {
+                type: 'integer',
+                description: 'Target memory utilization percentage',
+                minimum: 1,
+                maximum: 100,
+                default: 80,
+              },
+            },
+            required: ['enabled', 'minReplicas', 'maxReplicas', 'targetCPUUtilizationPercentage'],
+            additionalProperties: false,
           },
         },
         required: ['procs'],
@@ -535,40 +751,42 @@ tasks.push({
         }
       };
       exampleConfig[confName].procs = {};
-      Object.entries(cfg.procs).forEach(([n, p]) => {
-        n = n.replace(/-/g, '_');
-        if (['web', 'background'].includes(p.type)) {
-          exampleConfig[confName].procs[n] = {
+      Object.entries(cfg.procs).forEach(([name, proc]) => {
+        name = name.replace(/-/g, '_');
+        if (['web', 'background'].includes(proc.type)) {
+          exampleConfig[confName].procs[name] = {
             // much smaller cpu defaults for dev deployments, since
             // they are generally idle
             cpu: '10m',
           };
-          valuesYAML[confName].procs[n] = {
-            replicas: p.defaultReplicas === undefined ? 1 : p.defaultReplicas,
-            ...defaultResource(confName, n),
+          valuesYAML[confName].procs[name] = {
+            replicas: proc.defaultReplicas === undefined ? 1 : proc.defaultReplicas,
+            ...defaultResource(confName, name),
+            ...(proc.metrics ? { metrics: proc.metrics } : undefined),
           };
-          procSettings.required.push(n);
-          procSettings.properties[n] = {
+          procSettings.required.push(name);
+          procSettings.properties[name] = {
             type: 'object',
             properties: {
               replicas: { type: 'integer' },
               memory: { type: 'string' },
               cpu: { type: 'string' },
+              metrics: { type: 'boolean' },
             },
             required: ['replicas', 'memory', 'cpu'],
             additionalProperties: false,
           };
-        } else if (p.type === 'cron') {
-          exampleConfig[confName].procs[n] = {
+        } else if (proc.type === 'cron') {
+          exampleConfig[confName].procs[name] = {
             // much smaller cpu defaults for dev deployments, since
             // they are generally idle
             cpu: '10m',
           };
-          valuesYAML[confName].procs[n] = {
-            ...defaultResource(confName, n),
+          valuesYAML[confName].procs[name] = {
+            ...defaultResource(confName, name),
           };
-          procSettings.required.push(n);
-          procSettings.properties[n] = {
+          procSettings.required.push(name);
+          procSettings.properties[name] = {
             type: 'object',
             properties: {
               memory: { type: 'string' },

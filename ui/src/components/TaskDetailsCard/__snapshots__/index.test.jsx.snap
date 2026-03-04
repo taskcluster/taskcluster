@@ -32,7 +32,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-17 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-16 Mui-disabled Label-info-23 Label-disabled-18 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -48,7 +48,7 @@ exports[`should render TaskDetailsCard 1`] = `
           </li>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="taskId (Copy)"
@@ -84,7 +84,7 @@ exports[`should render TaskDetailsCard 1`] = `
           </div>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-02-15T12:00:00.000Z (Copy)"
@@ -229,13 +229,13 @@ exports[`should render TaskDetailsCard 1`] = `
                               >
                                 <span
                                   aria-disabled="false"
-                                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-25 MuiSwitch-switchBase MuiSwitch-colorSecondary"
+                                  class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root-26 MuiSwitch-switchBase MuiSwitch-colorSecondary"
                                 >
                                   <span
                                     class="MuiIconButton-label"
                                   >
                                     <input
-                                      class="PrivateSwitchBase-input-28 MuiSwitch-input"
+                                      class="PrivateSwitchBase-input-29 MuiSwitch-input"
                                       name="yaml_json_switch"
                                       type="checkbox"
                                       value=""
@@ -265,7 +265,7 @@ exports[`should render TaskDetailsCard 1`] = `
                         >
                           <div
                             aria-disabled="false"
-                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+                            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
                             role="button"
                             tabindex="0"
                             title=" (Copy)"
@@ -510,7 +510,7 @@ exports[`should render TaskDetailsCard 1`] = `
           </li>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2022-05-15T12:00:00.000Z (Copy)"
@@ -546,7 +546,7 @@ exports[`should render TaskDetailsCard 1`] = `
           </div>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-24 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root makeStyles-listItemButtonRoot-25 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
             title="2023-02-15T12:00:00.000Z (Copy)"
@@ -595,7 +595,7 @@ exports[`should render TaskDetailsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-17 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-16 Mui-disabled Label-info-23 Label-disabled-18 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-18 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-17 Mui-disabled Label-info-24 Label-disabled-19 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"

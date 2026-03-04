@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
 import { titleCase } from 'title-case';
-import { upperCase } from 'upper-case';
 import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { memoize } from '../../utils/memoize';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -113,7 +112,7 @@ export default class DenylistTable extends Component {
     titleCase(str)
       .split(' ')
       .map(word => {
-        const pretty = word === 'Irc' ? upperCase(word) : word;
+        const pretty = word === 'Irc' ? word.toUpperCase() : word;
 
         return pretty;
       })

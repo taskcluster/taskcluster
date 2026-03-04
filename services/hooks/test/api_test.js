@@ -3,9 +3,9 @@ import assert from 'assert';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('test:api:createhook');
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 import taskDefinition from './test_definition.js';
 
@@ -102,6 +102,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     error: '',
   };
 
+  const auditRecordExists = async (entityId, action) => {
+    await helper.withAdminDbClient(async (client) => {
+      const res = await client.query(
+        `SELECT * FROM audit_history WHERE entity_id = $1 AND entity_type = $2 AND action_type = $3`,
+        [entityId, 'hook', action],
+      );
+      assert.ok(res.rows.length > 0);
+      assert.equal(res.rows[0].entity_id, entityId);
+      assert.equal(res.rows[0].action_type, action);
+    });
+  };
+
   // work around https://github.com/mochajs/mocha/issues/2819.
   const subSkip = () => {
     suiteSetup(function() {
@@ -119,6 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar' }, payload));
+      await auditRecordExists('foo/bar', 'created');
     });
 
     test('returns 500 when pulse publish fails', async () => {
@@ -146,6 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r1).deep.equals(r2);
       helper.assertPulseMessage('hook-created', ({ payload }) =>
         _.isEqual({ hookGroupId: 'foo', hookId: 'bar/slash' }, payload));
+      await auditRecordExists('foo/bar/slash', 'created');
     });
 
     test('with invalid scopes', async () => {
@@ -278,6 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assume(r2.task).deep.equals(r1.task);
       helper.assertPulseMessage('hook-updated', ({ payload }) =>
         _.isEqual({ hookId: 'bar', hookGroupId: 'foo' }, payload));
+      await auditRecordExists('foo/bar', 'updated');
     });
 
     test('fails if pulse publisher fails', async function() {
@@ -339,6 +354,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.hooks.listLastFires('foo', 'bar').then(
         () => { throw new Error('The resource in LastFires table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
+      await auditRecordExists('foo/bar', 'deleted');
     });
 
     test('fails if pulse publisher fails', async function() {
@@ -648,6 +664,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       throw new Error('should have thrown an exception');
     });
 
+    test('should use provided taskId from payload', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const providedTaskId = taskcluster.slugid();
+      const res = await helper.hooks.triggerHook('foo', 'bar', { location: 'Belo Horizonte, MG', taskId: providedTaskId });
+      assume(res.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHook', payload: { location: 'Belo Horizonte, MG', taskId: providedTaskId }, clientId: 'test-client' },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', { location: 'Test', taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
+    });
+
     test('fails if no hook exists', async () => {
       await helper.hooks.triggerHook('foo', 'bar', { bar: { location: 'Belo Horizonte, MG' },
         foo: 'triggerHook' }).then(
@@ -803,6 +839,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         context: { firedBy: 'triggerHookWithToken', payload },
         options: {},
       }]);
+    });
+
+    test('should use provided taskId from payload with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      const providedTaskId = taskcluster.slugid();
+      const result = await helper.hooks.triggerHookWithToken(
+        'foo', 'bar', res.token,
+        { location: 'New Zealand', taskId: providedTaskId },
+      );
+      assume(result.taskId).equals(providedTaskId);
+      assume(helper.creator.fireCalls).deep.equals([{
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        context: { firedBy: 'triggerHookWithToken', payload: { location: 'New Zealand', taskId: providedTaskId } },
+        options: { taskId: providedTaskId },
+      }]);
+    });
+
+    test('should fail with invalid taskId format with token', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
+      await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, { location: 'Test', taskId: 'invalid-id' })
+        .then(() => { throw new Error('Should have failed with invalid taskId'); })
+        .catch(err => { assume(err.statusCode).equals(400); });
     });
   });
 

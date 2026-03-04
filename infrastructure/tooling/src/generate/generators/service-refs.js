@@ -1,7 +1,7 @@
 import util from 'util';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import References from 'taskcluster-lib-references';
+import References from '@taskcluster/lib-references';
 import { execFile } from 'child_process';
 import { rimraf } from 'rimraf';
 import { REPO_ROOT, writeRepoJSON, listServices } from '../../utils/index.js';

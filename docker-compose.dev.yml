@@ -15,8 +15,13 @@ services:
     volumes:
       - ./generated:/app/generated
       - .all-contributorsrc:/app/.all-contributorsrc
-      - ./ui:/app/ui
+      - ./ui/package.json:/app/ui/package.json
+      - ./ui/webpack.config.js:/app/ui/webpack.config.js
+      - ./ui/src:/app/ui/src
+      - ./ui/docs:/app/ui/docs
       - ./CHANGELOG.md:/app/CHANGELOG.md
+    ports:
+      - '3022:8080'
   generic-worker-standalone:
     image: ${IMAGE_GENERIC_WORKER}
     networks:
@@ -61,6 +66,23 @@ services:
       - auth-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js purge-expired-clients"
+  auth-cron-purgeAuditHistory:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/auth:/app/services/auth
+    profiles:
+      - cron
+      - auth
+      - auth-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/auth services/auth/src/main.js purge-audit-history"
   built-in-workers-server:
     image: ${IMAGE_DEV}
     environment:
@@ -352,6 +374,23 @@ services:
       - queue-background
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js claim-resolver"
+  queue-background-workerRemovedResolver:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/queue:/app/services/queue
+    profiles:
+      - background
+      - queue
+      - queue-background
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js worker-removed-resolver"
   queue-background-deadlineResolver:
     image: ${IMAGE_DEV}
     environment:
@@ -488,6 +527,23 @@ services:
       - queue-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js expire-worker-info"
+  queue-background-workerMetrics:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/queue:/app/services/queue
+    profiles:
+      - background
+      - queue
+      - queue-background
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js queue-metrics"
   secrets-web:
     image: ${IMAGE_DEV}
     environment:
@@ -548,6 +604,23 @@ services:
       - web-server-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js scanner"
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/web-server:/app/services/web-server
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js cleanup-session-storage"
   web-server-cron-cleanup-expire-auth-codes:
     image: ${IMAGE_DEV}
     environment:
@@ -680,6 +753,23 @@ services:
       - worker-manager-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireWorkerPools"
+  worker-manager-cron-expire-launch-configs:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/worker-manager:/app/services/worker-manager
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/worker-manager services/worker-manager/src/main.js expireLaunchConfigs"
   worker-manager-cron-expire-errors:
     image: ${IMAGE_DEV}
     environment:

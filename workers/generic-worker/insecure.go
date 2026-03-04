@@ -12,38 +12,58 @@ import (
 	"strconv"
 	"strings"
 
+	"maps"
+
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 const (
 	engine = "insecure"
 )
 
-func platformFeatures() []Feature {
-	return []Feature{
-		&InteractiveFeature{},
-		&LoopbackAudioFeature{},
-		&LoopbackVideoFeature{},
-	}
-}
-
 func secure(configFile string) {
 	log.Printf("WARNING: can't secure generic-worker config file %q", configFile)
 }
 
-func (task *TaskRun) generateInteractiveCommand(ctx context.Context) (*exec.Cmd, error) {
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	var cmd []string
+	var env []string
+
+	if d2gConversionInfo != nil {
+		pathEnv := os.Getenv("PATH")
+		env = []string{"PATH=" + pathEnv}
+
+		cmd = []string{"docker", "exec", "-it", d2gConversionInfo.ContainerName, "/bin/bash"}
+	} else {
+		env = task.EnvVars()
+		cmd = []string{"bash"}
+	}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo *d2g.ConversionInfo, ctx context.Context) (*exec.Cmd, error) {
+	pathEnv := os.Getenv("PATH")
+	env := []string{"PATH=" + pathEnv}
+	cmd := []string{"/bin/bash", "-cx", "/bin/[ \"`docker container inspect -f '{{.State.Running}}' " + d2gConversionInfo.ContainerName + "`\" = \"true\" ]"}
+
+	return task.newCommandForInteractive(cmd, env, ctx)
+}
+
+func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx context.Context) (*exec.Cmd, error) {
 	var processCmd *process.Command
 	var err error
 
-	var envVars = task.EnvVars()
-	envVars = append(envVars, "TERM=hterm-256color")
+	env = append(env, "TERM=hterm-256color")
 
 	if ctx == nil {
-		processCmd, err = process.NewCommand([]string{"bash"}, taskContext.TaskDir, envVars)
+		processCmd, err = process.NewCommand(cmd, taskContext.TaskDir, env)
 	} else {
-		processCmd, err = process.NewCommandContext(ctx, []string{"bash"}, taskContext.TaskDir, envVars)
+		processCmd, err = process.NewCommandContext(ctx, cmd, taskContext.TaskDir, env)
 	}
 
 	return processCmd.Cmd, err
@@ -62,6 +82,17 @@ func PlatformTaskEnvironmentSetup(taskDirName string) (reboot bool) {
 		panic(err)
 	}
 	return false
+}
+
+// Helper function used to get the current task user's
+// platform data. Useful for initially setting up the
+// TaskRun struct's data.
+func currentPlatformData() *process.PlatformData {
+	pd, err := process.TaskUserPlatformData(taskContext.User, false)
+	if err != nil {
+		panic(err)
+	}
+	return pd
 }
 
 func deleteDir(path string) error {
@@ -116,7 +147,7 @@ func purgeOldTasks() error {
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	return nil
 }
 
@@ -135,7 +166,7 @@ func rebootBetweenTasks() bool {
 	return false
 }
 
-func platformTargets(arguments map[string]interface{}) ExitCode {
+func platformTargets(arguments map[string]any) ExitCode {
 	log.Print("Internal error - no target found to run, yet command line parsing successful")
 	return INTERNAL_ERROR
 }
@@ -166,15 +197,19 @@ func (task *TaskRun) EnvVars() []string {
 			taskEnv[spl[0]] = spl[1]
 		}
 	}
-	for k, v := range task.Payload.Env {
-		taskEnv[k] = v
-	}
+	maps.Copy(taskEnv, task.Payload.Env)
 	taskEnv["TASK_ID"] = task.TaskID
 	taskEnv["RUN_ID"] = strconv.Itoa(int(task.RunID))
+	taskEnv["TASK_WORKDIR"] = taskContext.TaskDir
+	taskEnv["TASK_GROUP_ID"] = task.TaskGroupID
 	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
 
 	if config.WorkerLocation != "" {
 		taskEnv["TASKCLUSTER_WORKER_LOCATION"] = config.WorkerLocation
+	}
+
+	if config.InstanceType != "" {
+		taskEnv["TASKCLUSTER_INSTANCE_TYPE"] = config.InstanceType
 	}
 
 	for i, j := range taskEnv {
@@ -186,4 +221,13 @@ func (task *TaskRun) EnvVars() []string {
 
 func featureInitFailure(err error) ExitCode {
 	panic(err)
+}
+
+func addEngineDebugInfo(m map[string]string, c *gwconfig.Config) {
+}
+
+func addEngineMetadata(m map[string]any, c *gwconfig.Config) {
+}
+
+func engineInit() {
 }

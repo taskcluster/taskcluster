@@ -1,7 +1,7 @@
 {
-  "name": "taskcluster-db",
+  "name": "@taskcluster/db",
   "private": true,
-  "version": "65.0.2",
+  "version": "97.0.1",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
@@ -12,6 +12,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.4.0"
+    "mocha": "^10.8.2"
   }
 }

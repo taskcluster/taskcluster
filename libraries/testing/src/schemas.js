@@ -1,8 +1,8 @@
 import assert from 'assert';
 import debugFactory from 'debug';
-const debug = debugFactory('taskcluster-lib-testing:schemas');
+const debug = debugFactory('@taskcluster/lib-testing:schemas');
 import fs from 'fs';
-import SchemaSet from 'taskcluster-lib-validate';
+import SchemaSet from '@taskcluster/lib-validate';
 import libUrls from 'taskcluster-lib-urls';
 import path from 'path';
 

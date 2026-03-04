@@ -1,4 +1,4 @@
-import References from 'taskcluster-lib-references';
+import References from '@taskcluster/lib-references';
 
 // generate apis.js in the format the client tasks expect..
 export const tasks = [{

@@ -1,20 +1,21 @@
 import '../../prelude.js';
-import Loader from 'taskcluster-lib-loader';
-import SchemaSet from 'taskcluster-lib-validate';
-import libReferences from 'taskcluster-lib-references';
-import tcdb from 'taskcluster-db';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import { App } from 'taskcluster-lib-app';
-import Config from 'taskcluster-lib-config';
-import builder from './api.js';
+import Loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
+import tcdb from '@taskcluster/db';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import Config from '@taskcluster/lib-config';
+import builder, { AUDIT_ENTRY_TYPE } from './api.js';
 import debugFactory from 'debug';
 const debug = debugFactory('server');
 import exchanges from './exchanges.js';
 import ScopeResolver from './scoperesolver.js';
 import createSignatureValidator from './signaturevalidator.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster, { fromNow } from '@taskcluster/client';
 import makeSentryManager from './sentrymanager.js';
-import * as libPulse from 'taskcluster-lib-pulse';
+import * as libPulse from '@taskcluster/lib-pulse';
+import './monitor.js';
 import googleapis from '@googleapis/iamcredentials';
 import assert from 'assert';
 import { fileURLToPath } from 'url';
@@ -78,7 +79,7 @@ const load = Loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth'), MonitorManager.metricsReference('auth')],
     }).then(ref => ref.generateReferences()),
   },
 
@@ -128,7 +129,7 @@ const load = Loader({
         monitor: monitor.childMonitor('signature-validator'),
       });
 
-      return builder.build({
+      const api = builder.build({
         rootUrl: cfg.taskcluster.rootUrl,
         context: {
           db,
@@ -139,11 +140,15 @@ const load = Loader({
           sentryManager,
           websocktunnel: cfg.app.websocktunnel,
           gcp,
+          monitor: monitor.childMonitor('api-context'),
         },
         schemaset,
         signatureValidator,
         monitor: monitor.childMonitor('api'),
       });
+
+      monitor.exposeMetrics('default');
+      return api;
     },
   },
 
@@ -222,8 +227,35 @@ const load = Loader({
     setup: ({ cfg, db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Purging expired clients');
-        const [{ expire_clients: count }] = await db.fns.expire_clients();
-        debug(`Purged ${count} expired clients`);
+        const records = await db.fns.expire_clients_return_client_ids();
+        debug(`Purged ${records.length} expired clients`);
+
+        const clientId = 'static/taskcluster/auth';
+        for (const { client_id: name } of records) {
+          monitor.log.auditEvent({
+            service: 'auth',
+            entity: 'client',
+            entityId: name,
+            clientId,
+            action: AUDIT_ENTRY_TYPE.CLIENT.EXPIRED,
+          });
+
+          await db.fns.insert_auth_audit_history(
+            name,
+            'client',
+            clientId,
+            AUDIT_ENTRY_TYPE.CLIENT.CREATED,
+          );
+        }
+      });
+    },
+  },
+
+  'purge-audit-history': {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({ cfg, db, monitor }, ownName) => {
+      return monitor.oneShot(ownName, async () => {
+        await db.fns.purge_audit_history(fromNow(cfg.app.auditHistoryRetention));
       });
     },
   },

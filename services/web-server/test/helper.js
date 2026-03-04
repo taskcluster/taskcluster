@@ -1,6 +1,7 @@
+import assert from 'assert';
 import load from '../src/main.js';
-import taskcluster from 'taskcluster-client';
-import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from '@taskcluster/lib-testing';
 import sinon from 'sinon';
 import GithubClient from '../src/login/clients/GithubClient.js';
 import libUrls from 'taskcluster-lib-urls';
@@ -25,6 +26,19 @@ suiteSetup(async function() {
 });
 
 withMonitor(helper);
+
+/** @param {string} errorCode */
+helper.expectMonitorError = async (errorCode) => {
+  const monitor = await helper.load('monitor');
+  const errorMessage = monitor.manager.messages.find(msg => {
+    const Fields = msg.Fields;
+    return (Fields?.code || Fields?.name) === errorCode;
+  });
+  assert.ok(errorMessage, `Expected to find monitor error with code: ${errorCode}`);
+  // Clear only the error message we found, keeping others for the teardown check
+  const errorIndex = monitor.manager.messages.indexOf(errorMessage);
+  monitor.manager.messages.splice(errorIndex, 1);
+};
 
 helper.rootUrl = libUrls.testRootUrl();
 
@@ -52,7 +66,7 @@ helper.withMockedEventIterator = () => {
   };
 
   PulseEngineCopy.eventIterator = (eventName, subscriptions) => {
-    if(!PulseEngineCopy.NextAsyncIterator){
+    if (!PulseEngineCopy.NextAsyncIterator) {
       throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
     }
     return PulseEngineCopy.NextAsyncIterator;
@@ -72,6 +86,20 @@ helper.withFakeAuth = (mock, skipping) => {
     }
 
     helper.load.inject('auth', stubbedAuth());
+  });
+};
+
+helper.withFakeAuthFactory = (mock, skipping) => {
+  suiteSetup('withFakeAuthFactory', function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.load.inject('authFactory', stubbedAuthFactory());
+  });
+
+  suiteTeardown(function() {
+    helper.load.remove('authFactory');
   });
 };
 
@@ -303,11 +331,22 @@ helper.getWebsocketClient = (subscriptionClient) => {
 // If a subscription client is created for a test, it also needs to be closed.
 // Otherwise, the tests will just hang and timeout
 helper.createSubscriptionClient = async () => {
+
+  const credentials = {
+    clientId: 'testing',
+    accessToken: 'testing',
+  };
+
   return new Promise(function(resolve, reject) {
     const subscriptionClient = new SubscriptionClient(
       `ws://localhost:${helper.serverPort}/subscription`,
       {
         reconnect: true,
+        connectionParams: () => {
+          return {
+            Authorization: `Bearer ${btoa(JSON.stringify(credentials))}`,
+          };
+        },
       },
       WebSocket,
     );
@@ -341,6 +380,15 @@ const stubbedAuth = () => {
   });
 
   return auth;
+};
+
+const stubbedAuthFactory = () => {
+  return ({ credentials }) => new taskcluster.Auth({
+    rootUrl: helper.rootUrl,
+    fake: {
+      currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
+    },
+  });
 };
 
 const stubbedClients = () => {
@@ -417,6 +465,8 @@ const stubbedClients = () => {
       fake: {
         workerPool: async workerPoolId => workerPools.get(workerPoolId),
         listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
+        listWorkerPoolsStats: async ({ limit = 1000 }) => ({
+          workerPoolsStats: [...workerPools.values()].slice(0, limit) }),
         deleteWorkerPool: async workerPoolId => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);
@@ -430,7 +480,7 @@ const stubbedClients = () => {
       fake: {
         listRoles: async () => {
           let allRoles = [];
-          for(let roleId of roles.keys()){
+          for (let roleId of roles.keys()) {
             allRoles.push(roles.get(roleId));
           }
           return Promise.resolve(allRoles);
@@ -459,7 +509,7 @@ const stubbedClients = () => {
           return Promise.resolve(newRole);
         },
         updateRole: async (roleId, role) => {
-          if(!roles.has(roleId)){
+          if (!roles.has(roleId)) {
             return Promise.reject('role not found');
           }
           const updatedRole = {
@@ -475,7 +525,7 @@ const stubbedClients = () => {
           return Promise.resolve(updatedRole);
         },
         deleteRole: async (roleId) => {
-          if(!roles.has(roleId)){
+          if (!roles.has(roleId)) {
             return Promise.reject('role not found');
           }
           roles.delete(roleId);
@@ -520,7 +570,7 @@ const stubbedClients = () => {
 
           return Promise.resolve(taskStatus);
         },
-        getArtifact: async (taskId, runId, name ) => {
+        getArtifact: async (taskId, runId, name) => {
           const artifact = {
             taskId: taskId,
             runId: runId,

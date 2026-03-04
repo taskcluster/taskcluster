@@ -1,0 +1,85 @@
+$schema: "/schemas/common/metaschema.json#"
+title: Worker Pool Statistics
+description: |
+  Statistics for a worker pool, showing counts and capacities of workers in different states,
+  broken down by launch configuration.
+type: object
+properties:
+  launchConfigStats:
+    title: Launch Configuration Statistics
+    type: array
+    description: Statistics broken down by launch configuration
+    items:
+      type: object
+      properties:
+        workerPoolId:
+          title: Worker Pool ID
+          type: string
+          pattern: {$const: workerpoolid-pattern}
+          description: |
+            The ID of this worker pool
+        launchConfigId:
+          title: Launch Configuration ID
+          type: string
+          description: The ID of the launch configuration
+        currentCapacity:
+          title: Current Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this launch configuration that are currently not "stopped"
+        requestedCapacity:
+          title: Requested Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this launch configuration with state "requested"
+        runningCapacity:
+          title: Running Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this launch configuration with state "running"
+        stoppingCapacity:
+          title: Stopping Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this launch configuration with state "stopping"
+        stoppedCapacity:
+          title: Stopped Worker Capacity
+          type: integer
+          minimum: 0
+          description: Total capacity available across all workers for this launch configuration with state "stopped"
+        requestedCount:
+          title: Requested Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "requested" state for this launch configuration
+        runningCount:
+          title: Running Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "running" state for this launch configuration
+        stoppingCount:
+          title: Stopping Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "stopping" state for this launch configuration
+        stoppedCount:
+          title: Stopped Worker Count
+          type: integer
+          minimum: 0
+          description: Total worker count in "stopped" state for this launch configuration
+      required:
+        - workerPoolId
+        - launchConfigId
+        - currentCapacity
+        - requestedCapacity
+        - runningCapacity
+        - stoppingCapacity
+        - stoppedCapacity
+        - requestedCount
+        - runningCount
+        - stoppingCount
+        - stoppedCount
+      additionalProperties: false
+required:
+  - launchConfigStats
+additionalProperties: false

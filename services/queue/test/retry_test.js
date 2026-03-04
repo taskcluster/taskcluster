@@ -1,10 +1,10 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:retry');
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -56,8 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].state === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'claim-expired'));
     }, 100, 250);
-    // there should be no task-exception message in this case
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.clearPulseMessages();
 
     debug('### Stop claimResolver');

@@ -9,9 +9,9 @@ cd "$(dirname "${0}")"
 #
 # DO NOT CHANGE HERE!
 ####################################################################
-# Support go 1.22 or higher.
+# Support go 1.26 or higher.
 GO_MAJOR_VERSION=1
-MIN_GO_MINOR_VERSION=22
+MIN_GO_MINOR_VERSION=26
 
 unset CGO_ENABLED
 unset GOOS
@@ -73,25 +73,27 @@ function install {
         GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go test -tags "${1}" -c "${package}"
       done
   fi
-  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=$(git rev-parse HEAD)" -tags "${1}" -v .
+  GOOS="${2}" GOARCH="${3}" CGO_ENABLED=0 go build -o "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" -ldflags "-X main.revision=${GIT_REVISION}" -tags "${1}" -v .
   # check that revision number made it into target binary
   if [ "${2}" == "$(go env GOHOSTOS)" ] && [ "${3}" == "$(go env GOHOSTARCH)" ]; then
     if ! "$OUTPUT_DIR/generic-worker-${1}-${2}-${3}" --version | \
-    grep -Eq 'revision: https://github.com/taskcluster/taskcluster/commits/[a-z0-9]{40}'; then
+    grep -qF "revision: https://github.com/taskcluster/taskcluster/commits/${GIT_REVISION}"; then
       echo "The --version option does not output a proper revision link"
       exit 1
     else
       # ANSI escape sequence for green tick
-      echo -e "\x1b\x5b\x33\x32\x6d\xe2\x9c\x93\x1b\x5b\x30\x6d Revision number included in $OUTPUT_DIR/generic-worker-${1}-${2}-${3}"
+      echo -e "\x1b\x5b\x33\x32\x6d\xe2\x9c\x93\x1b\x5b\x30\x6d Revision number included in $OUTPUT_DIR/generic-worker-${1}-${2}-${3} (${GIT_REVISION})"
     fi
   fi
 }
+
+GIT_REVISION="$(git rev-parse HEAD)"
 
 # NOTE: when changing this, also update
 # ui/docs/reference/workers/generic-worker/support-tiers.mdx
 if ${ALL_PLATFORMS}; then
   install multiuser windows amd64
-  install multiuser windows 386
+  install multiuser windows arm64
 
   install multiuser darwin  amd64
   install multiuser darwin  arm64
@@ -128,12 +130,9 @@ fi
 ls -1 "$OUTPUT_DIR"/generic-worker-*
 
 proj_root=$(go list . | sed -e 's!/workers/generic-worker$!!' )
-CGO_ENABLED=0 go install "${proj_root}/tools/livelog@latest"
-CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy@latest"
-CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask@latest"
-CGO_ENABLED=0 go install golang.org/x/lint/golint@latest
-CGO_ENABLED=0 go install github.com/gordonklaus/ineffassign@latest
-CGO_ENABLED=0 go install golang.org/x/tools/cmd/goimports@latest
+CGO_ENABLED=0 go install "${proj_root}/tools/livelog"
+CGO_ENABLED=0 go install "${proj_root}/tools/taskcluster-proxy"
+CGO_ENABLED=0 go install "${proj_root}/workers/generic-worker/resolvetask"
 
 if $TEST; then
 ####################################################################
@@ -141,10 +140,10 @@ if $TEST; then
 #   infrastructure/tooling/src/release/tasks.js
 # when a new major release is made.
 ####################################################################
-  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v65/workers/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
-  golint $(go list ./...) | sed "s*${PWD}/**"
-  ineffassign .
-  goimports -w .
+  CGO_ENABLED=1 GORACE="history_size=7" go test -tags insecure -failfast -ldflags "-X github.com/taskcluster/taskcluster/v97/workers/generic-worker.revision=${GIT_REVISION}" -race -timeout 1h ./...
+  go tool golint $(go list ./...) | sed "s*${PWD}/**"
+  go tool ineffassign .
+  go tool goimports -w .
 
 fi
 

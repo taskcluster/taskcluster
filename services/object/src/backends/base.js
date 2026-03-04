@@ -24,7 +24,7 @@ export class Backend {
    * returning the `uploadMethod` property of the response payload.  This will
    * not be called for an empty `proposedUploadMethods`.
    *
-   * Implementations may use taskcluster-lib-api's `reportError` method.
+   * Implementations may use @taskcluster/lib-api's `reportError` method.
    */
   async createUpload(object, proposedUploadMethods) {
     return {};
@@ -36,7 +36,7 @@ export class Backend {
    * the data the caller uploaded.  It is *not* intended to be a validation
    * step: in general we assume that the caller has done the right thing, and
    * that anything it has done wrong will result in an object that can't be
-   * downloaded.  But, implementations may use taskcluster-lib-api's
+   * downloaded.  But, implementations may use @taskcluster/lib-api's
    * `reportError` method to report errors.
    */
   async finishUpload(object) {

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Backend } from './base.js';
-import { reportError } from 'taskcluster-lib-api';
+import { reportError } from '@taskcluster/lib-api';
 
 /**
  * The test backend type is only available when running tests.
@@ -45,7 +45,7 @@ export class TestBackend extends Backend {
 
   async startDownload(object, method, params) {
     assert(this.data.has(object.name));
-    switch (method){
+    switch (method) {
       case 'simple': {
         assert.equal(params, true);
         return {

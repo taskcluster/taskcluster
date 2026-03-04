@@ -436,8 +436,9 @@ export default class ViewWorker extends Component {
     const {
       data: { loading, error, worker, WorkerManagerWorker },
     } = this.props;
-    // we hide graphql errors if we have worker-manager worker data
-    const graphqlError = !WorkerManagerWorker && this.getError(error);
+    // we hide graphql errors if we have any worker data
+    const graphqlError =
+      !WorkerManagerWorker && !worker && this.getError(error);
 
     return (
       <Dashboard title="Worker">

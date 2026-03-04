@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
-import { upperCase } from 'upper-case';
 import { toString, path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -16,10 +15,16 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Grid from '@material-ui/core/Grid';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Box from '@material-ui/core/Box';
 import DataTable from '../../../components/DataTable';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import SchemaTable from '../../../components/SchemaTable';
+import CodeExample from '../../../components/CodeExample';
+import generateExamples from '../../../utils/api-examples';
 
 const primaryTypographyProps = { variant: 'body1' };
 
@@ -86,13 +91,16 @@ const primaryTypographyProps = { variant: 'body1' };
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange', 'logs', 'schema']).isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs', 'schema', 'metric'])
+      .isRequired,
     /** The reference entry, or {$id, schema} for a schema. */
     entry: object,
     /** Required when `type` is `topic-exchange`. */
     exchangePrefix: string,
     /** The service name to which the entry belongs, or null for a schema. */
     serviceName: string,
+    /** Required when `type` is `function`. API version like 'v1' */
+    apiVersion: string,
   };
 
   static defaultProps = {
@@ -107,6 +115,9 @@ export default class Entry extends Component {
       this.props.entry.type === window.location.hash.slice(1) ||
       encodeURIComponent(path(['schema', '$id'], this.props.entry)) ===
         window.location.hash.slice(1),
+    selectedLanguage: 'curl',
+    // Cache for generated examples to avoid regenerating
+    exampleCache: {},
   };
 
   getSignatureFromEntry(entry) {
@@ -143,7 +154,7 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={2}>
           <div className={classes.functionStatusLabel}>
-            <StatusLabel state={upperCase(entry.stability)} />
+            <StatusLabel state={entry.stability.toUpperCase()} />
           </div>
         </Grid>
       </Grid>
@@ -197,7 +208,38 @@ export default class Entry extends Component {
         </Grid>
         <Grid item xs={1}>
           <div>
-            <StatusLabel state={upperCase(entry.level)} />
+            <StatusLabel state={entry.level.toUpperCase()} />
+          </div>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  renderMetricsAccordionSummary = () => {
+    const { entry, classes } = this.props;
+
+    return (
+      <Grid className={classes.gridContainer} container spacing={1}>
+        <Grid item xs={4}>
+          <div>
+            <Typography variant="body2" id={entry.type} component="h3">
+              {entry.name}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={4}>
+          <div>
+            <Typography variant="body2" component="h3">
+              {entry.title}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={2}>
+          <div>{entry.registers.join(', ')}</div>
+        </Grid>
+        <Grid item xs={2}>
+          <div>
+            <StatusLabel state={entry.type.toUpperCase()} />
           </div>
         </Grid>
       </Grid>
@@ -332,7 +374,7 @@ export default class Entry extends Component {
                   <StatusLabel
                     className={classes.statusLabel}
                     mini
-                    state={upperCase('AllOf' in scopes ? 'and' : 'or')}
+                    state={'AllOf' in scopes ? 'AND' : 'OR'}
                   />
                 )}
               </Fragment>
@@ -343,9 +385,56 @@ export default class Entry extends Component {
     }
   }
 
+  getExampleForLanguage = languageKey => {
+    const { serviceName, apiVersion, entry } = this.props;
+    const { exampleCache } = this.state;
+
+    // Check cache first
+    if (exampleCache[languageKey]) {
+      return exampleCache[languageKey];
+    }
+
+    // Generate example for this language only (lazy loading)
+    const example = generateExamples(
+      serviceName,
+      apiVersion,
+      entry,
+      languageKey
+    );
+
+    // Cache it for future use
+    this.setState(prevState => ({
+      exampleCache: {
+        ...prevState.exampleCache,
+        [languageKey]: example,
+      },
+    }));
+
+    return example;
+  };
+
   renderFunctionExpansionDetails = () => {
     const { serviceName, classes, entry } = this.props;
+    const { selectedLanguage } = this.state;
     const signature = this.getSignatureFromEntry(entry);
+    const exampleLanguages = [
+      { key: 'curl', label: 'curl' },
+      { key: 'go', label: 'Go' },
+      { key: 'python', label: 'Python' },
+      { key: 'pythonAsync', label: 'Python (async)' },
+      { key: 'node', label: 'Node.js' },
+      { key: 'web', label: 'Web' },
+      { key: 'rust', label: 'Rust' },
+      { key: 'shell', label: 'Shell' },
+    ];
+    // Get the currently selected language
+    const currentLanguage = exampleLanguages.find(
+      lang => lang.key === selectedLanguage
+    );
+    // Only generate example for currently visible language (lazy loading)
+    const currentExample = currentLanguage
+      ? this.getExampleForLanguage(currentLanguage.key)
+      : null;
 
     return (
       <List className={classes.list}>
@@ -353,7 +442,7 @@ export default class Entry extends Component {
           <ListItemText
             primaryTypographyProps={primaryTypographyProps}
             primary="Method"
-            secondary={<StatusLabel state={upperCase(entry.method)} />}
+            secondary={<StatusLabel state={entry.method.toUpperCase()} />}
           />
         </ListItem>
         <ListItem>
@@ -387,7 +476,7 @@ export default class Entry extends Component {
           <ListItemText
             primaryTypographyProps={primaryTypographyProps}
             primary="Stability"
-            secondary={<StatusLabel state={upperCase(entry.stability)} />}
+            secondary={<StatusLabel state={entry.stability.toUpperCase()} />}
           />
         </ListItem>
         {entry.description ? (
@@ -404,6 +493,43 @@ export default class Entry extends Component {
               primaryTypographyProps={primaryTypographyProps}
               primary="Description"
               secondary="n/a"
+            />
+          </ListItem>
+        )}
+        {entry.type === 'function' && (
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              disableTypography
+              primary={<Typography variant="body1">Examples</Typography>}
+              secondary={
+                <Box sx={{ width: '100%' }}>
+                  <FormControl size="small" sx={{ minWidth: 150, mb: 1 }}>
+                    <Select
+                      value={selectedLanguage}
+                      onChange={e =>
+                        this.setState({ selectedLanguage: e.target.value })
+                      }
+                      variant="outlined"
+                      sx={{ fontSize: '0.875rem' }}>
+                      {exampleLanguages.map(({ key, label }) => (
+                        <MenuItem key={key} value={key}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Box sx={{ mt: 1 }}>
+                    {currentExample && (
+                      <CodeExample
+                        key={currentLanguage.key}
+                        code={currentExample}
+                        language={currentLanguage.key}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              }
             />
           </ListItem>
         )}
@@ -552,6 +678,56 @@ export default class Entry extends Component {
     );
   };
 
+  renderMetricsExpansionDetails = () => {
+    const { classes, entry } = this.props;
+    const { expanded } = this.state;
+
+    return (
+      expanded && (
+        <List className={classes.list}>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Description"
+              secondary={<Markdown>{entry.description}</Markdown>}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Registers"
+              secondary={
+                <div>
+                  {entry.registers.map(register => (
+                    <code key={register}>{register}</code>
+                  ))}
+                </div>
+              }
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Labels"
+              secondary={
+                <DataTable
+                  size="medium"
+                  items={Object.keys(entry.labels)}
+                  renderRow={field => (
+                    <TableRow key={field}>
+                      <TableCell>{field}</TableCell>
+                      <TableCell>{entry.labels[field]}</TableCell>
+                    </TableRow>
+                  )}
+                />
+              }
+            />
+          </ListItem>
+        </List>
+      )
+    );
+  };
+
   renderSchemaExpansionDetails = () => {
     const { classes, entry } = this.props;
     const { expanded } = this.state;
@@ -598,6 +774,7 @@ export default class Entry extends Component {
     const isSchemaType = type === 'schema';
     const isExchangeType = type === 'topic-exchange';
     const isLogType = type === 'logs';
+    const isMetricType = type === 'metric';
     const isFunctionType = type === 'function';
     const entryHashKey = this.getEntryHashKey(type);
 
@@ -618,12 +795,14 @@ export default class Entry extends Component {
           {isExchangeType && this.renderExchangeAccordionSummary()}
           {isLogType && this.renderLogsAccordionSummary()}
           {isFunctionType && this.renderFunctionAccordionSummary()}
+          {isMetricType && this.renderMetricsAccordionSummary()}
         </AccordionSummary>
         <AccordionDetails>
           {isSchemaType && this.renderSchemaExpansionDetails()}
           {isExchangeType && this.renderExchangeExpansionDetails()}
           {isLogType && this.renderLogsExpansionDetails()}
           {isFunctionType && this.renderFunctionExpansionDetails()}
+          {isMetricType && this.renderMetricsExpansionDetails()}
         </AccordionDetails>
       </Accordion>
     );

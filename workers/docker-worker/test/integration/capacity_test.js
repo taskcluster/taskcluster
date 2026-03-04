@@ -9,7 +9,7 @@ const TestWorker = require('../testworker');
 const ImageManager = require('../../src/docker/image_manager');
 const { createLogger } = require('../../src/log');
 const promiseRetry = require('promise-retry');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 let docker = Docker();

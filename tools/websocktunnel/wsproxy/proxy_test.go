@@ -21,9 +21,9 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v65/tools/websocktunnel/client"
-	"github.com/taskcluster/taskcluster/v65/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v65/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -934,7 +934,7 @@ func TestResponseStream(t *testing.T) {
 	if string(buf) != "world" {
 		t.Fatal("bad message")
 	}
-	logger.Printf(string(buf))
+	logger.Print(string(buf))
 }
 
 func TestWebSocketStreamClient(t *testing.T) {

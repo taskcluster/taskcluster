@@ -14,7 +14,7 @@ cd $tmpdir
 echo '{"type": "module"}' > package.json
 yarn add ./client.tgz
 cat <<'EOF' > index.js
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 const main = async () => {
     if (process.env.TASKCLUSTER_ROOT_URL) {

@@ -50,7 +50,7 @@ JSON-encode the value before passing it to `db.fns.<function>(..)`.  See
 **Utility Functions**.
 
 * `entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
-taskcluster-lib-postgres uses to store binary values.
+@taskcluster/lib-postgres uses to store binary values.
 * `sha512(t)` computes the sha512 hash of a value
 * `uuid_to_slugid(uuid)` and `slugid_to_uuid(slugid)` convert between a uuid
 string and a slugid.  While some entities tables stored slugIds in UUID format,
@@ -65,7 +65,7 @@ Use your own discretion.
 ## Pagination
 
 See the [pagination section](https://github.com/taskcluster/taskcluster/tree/main/libraries/postgres#pagination)
-in taskcluster-lib-postgres.
+in @taskcluster/lib-postgres.
 
 ## Testing
 

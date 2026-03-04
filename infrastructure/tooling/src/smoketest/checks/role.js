@@ -1,4 +1,4 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 import { retryAssertionFailures } from '../util.js';
 
@@ -57,9 +57,9 @@ tasks.push({
     const anHourAgo = Date.now() - (1000 * 60 * 60);
     while (1) {
       const res = await auth.listRoles2();
-      for(let role of res.roles){
-        if(role.roleId.includes('project:taskcluster:smoketest:') &&
-           new Date(role.lastModified) < new Date(anHourAgo)){
+      for (let role of res.roles) {
+        if (role.roleId.includes('project:taskcluster:smoketest:') &&
+           new Date(role.lastModified) < new Date(anHourAgo)) {
           await auth.deleteRole(role.roleId);
         }
       }

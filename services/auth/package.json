@@ -1,6 +1,6 @@
 {
-  "name": "taskcluster-auth",
-  "version": "65.0.2",
+  "name": "@taskcluster/auth",
+  "version": "97.0.1",
   "private": true,
   "exports": "./src/main.js",
   "type": "module",
@@ -13,6 +13,6 @@
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.4.0"
+    "mocha": "^10.8.2"
   }
 }

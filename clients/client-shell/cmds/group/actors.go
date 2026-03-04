@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 var listFormat string
@@ -51,7 +51,7 @@ func init() {
 	listCmd.Flags().BoolP("running", "r", false, "Include running tasks.")
 	listCmd.Flags().BoolP("failed", "f", false, "Include failed tasks.")
 	listCmd.Flags().BoolP("exception", "e", false, "Include exception tasks.")
-	listCmd.Flags().BoolP("complete", "c", false, "Include complete tasks.")
+	listCmd.Flags().BoolP("completed", "c", false, "Include completed tasks.")
 	listCmd.Flags().BoolP("unscheduled", "u", false, "Include unscheduled tasks.")
 	listCmd.Flags().BoolP("pending", "p", false, "Include pending tasks.")
 
@@ -208,11 +208,12 @@ func confirmCancellation(ids []string, names []string, out io.Writer) bool {
 		fmt.Fprint(out, "Are you sure you want to cancel these tasks? [y/n] ")
 
 		var c string
-		fmt.Scanf("%s", &c)
+		_, _ = fmt.Scanf("%s", &c)
 
-		if c == "y" || c == "Y" {
+		switch c {
+		case "y", "Y":
 			return true
-		} else if c == "n" || c == "N" {
+		case "n", "N":
 			return false
 		}
 		// otherwise reloop to ask again

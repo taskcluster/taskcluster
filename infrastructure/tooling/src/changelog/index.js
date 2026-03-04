@@ -14,7 +14,7 @@ import {
   gitCurrentBranch,
 } from '../utils/index.js';
 
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import path from 'path';
 import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';
@@ -267,6 +267,7 @@ const check_pr = async (pr) => {
     /^clients\/client-web\/src\/clients\//,
     /^clients\/client-py\/taskcluster\/generated\//,
     /^clients\/client-py\/README\.md$/,
+    /^clients\/client-py\/uv\.lock$/,
     /^clients\/client\/src\/apis\.js$/,
     /^clients\/client-rust\/src\/generated\//,
     /^clients\/client-shell\/apis\/services\.go$/,

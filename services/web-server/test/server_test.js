@@ -1,7 +1,7 @@
 import assert from 'assert';
 import helper from './helper.js';
 import request from 'superagent';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -45,6 +45,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ['https://tc.example.com', "/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/"],
     'https://deploy-preview-897--taskcluster-web.netlify.com/',
     'https://deploy-preview-897--taskcluster-web.netlify.com/');
+
+  suite('auth endpoints', function () {
+    helper.withServer(mock, skipping);
+
+    test('login/logout', async function () {
+      const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
+      assert(logout.body);
+    });
+  });
 
   suite('service endpoints', function() {
     helper.withServer(mock, skipping);

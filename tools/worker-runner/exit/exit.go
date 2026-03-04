@@ -3,12 +3,12 @@ package exit
 import (
 	"log"
 
-	taskcluster "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 // ExitManager manages worker exit.
@@ -45,7 +45,7 @@ func (em *ExitManager) shutdown() {
 	// https://github.com/taskcluster/taskcluster/issues/2886, this is a
 	// fast-and-dirty way to determine what it means to "shut down" this
 	// worker.
-	dynamicallyProvisioned := !(em.runnercfg.Provider.ProviderType == "static" || em.runnercfg.Provider.ProviderType == "standalone")
+	dynamicallyProvisioned := em.runnercfg.Provider.ProviderType != "static" && em.runnercfg.Provider.ProviderType != "standalone"
 
 	if !dynamicallyProvisioned {
 		log.Println("Host is not dynamically provisioned; exiting")

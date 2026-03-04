@@ -3,11 +3,11 @@ import _ from 'lodash';
 import assert from 'assert';
 import helper from './helper.js';
 import { AwsProvider } from '../src/providers/aws.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import fs from 'fs';
 import path from 'path';
-import taskcluster from 'taskcluster-client';
-import { WorkerPool, Worker } from '../src/data.js';
+import taskcluster from '@taskcluster/client';
+import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import { FakeEC2 } from './fakes/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -24,7 +24,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const workerPoolId = 'foo/bar';
   const defaultLaunchConfig = {
     region: 'us-west-2',
-    capacityPerInstance: 1,
+    workerManager: {
+      capacityPerInstance: 1,
+    },
     launchConfig: {
       ImageId: 'banana-123',
     },
@@ -40,6 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     capacity: 1,
     state: 'requested',
     providerData: {},
+    launchConfigId: 'lc-id-1',
   };
   const actualWorkerIid = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString());
   const workerInDB = {
@@ -49,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       region: actualWorkerIid.region,
       imageId: actualWorkerIid.imageId,
       instanceType: actualWorkerIid.instanceType,
-      instanceCapacity: defaultLaunchConfig.capacityPerInstance,
+      instanceCapacity: defaultLaunchConfig.workerManager.capacityPerInstance,
       architecture: actualWorkerIid.architecture,
       availabilityZone: actualWorkerIid.availabilityZone,
       privateIp: actualWorkerIid.privateIp,
@@ -67,6 +70,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('aws'),
       estimator: await helper.load('estimator'),
+      publisher: await helper.load('publisher'),
+      validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: helper.WorkerPoolError,
       providerConfig: {
@@ -81,6 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.db.fns.delete_worker_pool(workerPoolId);
 
     await provider.setup();
+    provider.scanPrepare();
   });
 
   const makeWorkerPool = async (overrides = {}) => {
@@ -106,7 +113,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     await workerPool.create(helper.db);
 
-    return workerPool;
+    // reload from db with launchConfigIds
+    return await WorkerPool.get(helper.db, workerPoolId);
   };
 
   const assertHasTag = (runInstanceCall, ResourceType, Key, Value) => {
@@ -122,13 +130,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
         const workerPool = await makeWorkerPool({ config });
-        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
-        await provider.provision({ workerPool, workerInfo });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+        await provider.provision({ workerPool, workerPoolStats });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
+        if (expectedWorkers > 0) {
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === workers[0].launchConfigId);
+        }
       });
     };
+
+    provisionTest('no launch configs', {
+      config: {
+        minCapacity: 1,
+        maxCapacity: 1,
+        scalingRatio: 1,
+        lifecycle: {
+          registrationTimeout: 6000,
+        },
+      },
+      expectedWorkers: 0,
+    }, async function(workers) {
+      assert.equal(workers.length, 0);
+    });
 
     provisionTest('simple launchConfig, single worker', {
       config: {
@@ -167,13 +194,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     provisionTest('spawns instances from across launch configs', {
       config: {
-        launchConfigs: [
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-          { ...defaultLaunchConfig, capacityPerInstance: 6 },
-        ],
+        // launch configs needs to be unique
+        launchConfigs: Array.from({ length: 5 }).map((_, i) => ({
+          ...defaultLaunchConfig,
+          launchConfig: {
+            ...defaultLaunchConfig.launchConfig,
+            TagSpecifications: [
+              { ResourceType: 'instance', Tags: [{ Key: 'uniqueKey', Value: `v${i}` }] },
+            ],
+          },
+          workerManager: {
+            capacityPerInstance: 6,
+          },
+        })),
         minCapacity: 34, // not a multiple of number of configs or capPerInstance
         maxCapacity: 34,
         scalingRatio: 1,
@@ -242,6 +275,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         fake.rgn('us-west-2').runInstancesCalls[0].UserData,
         'base64',
       ).toString());
+      const launchConfigId = workers[0].launchConfigId;
       assert.deepStrictEqual(decoded, {
         somethingImportant: 'apple',
         rootUrl: provider.rootUrl,
@@ -249,6 +283,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         providerId: provider.providerId,
         workerGroup: 'us-west-2',
         workerConfig: { foo: 5 },
+        launchConfigId: launchConfigId,
       });
     });
   });
@@ -266,6 +301,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Request must include both a document (string) and a signature'),
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async function() {
@@ -280,6 +316,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the document has been edited)',
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async function() {
@@ -293,6 +330,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature was produced with a wrong key)',
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async function() {
@@ -306,6 +344,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         new ApiError('Instance identity document validation error'),
         'Should fail to verify iid (the signature is wrong)',
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - verifyWorkerInstance - document is legit but differs from what we know about the instance', async function() {
@@ -334,6 +373,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         new ApiError('Instance validation error'),
         'Should fail to verify worker (info from the signature and info from our DB differ)',
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - no signature', async function() {
@@ -346,6 +386,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Request must include both a document (string) and a signature'),
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - worker is already running', async function() {
@@ -365,6 +406,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         new ApiError('This worker is either stopped or running. No need to register'),
         'Should fail because the worker is already running',
       );
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('registerWorker - success', async function() {
@@ -396,6 +438,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
       assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);
     });
 
     test('registerWorker - success (different reregister)', async function() {
@@ -428,6 +472,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
       assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
       assert.equal(resp.workerConfig.someKey, 'someValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);
     });
   });
 
@@ -442,7 +488,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
 
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
@@ -450,6 +495,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });
 
     test('pending/running,/shutting-down/stopping instances - should not reject', async function() {
@@ -461,7 +507,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
 
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
@@ -469,6 +514,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.REQUESTED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 1);
+      helper.assertNoPulseMessage('worker-stopped');
     });
 
     test('some strange status - should reject', async function() {
@@ -480,7 +526,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
 
-      provider.seen = {};
       await assert.rejects(provider.checkWorker({ worker: worker }));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
     });
@@ -494,7 +539,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
 
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
       // should be marked as stopped because it was missing
@@ -502,6 +546,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.notStrictEqual(workers.length, 0);
       workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
     test('instance terminated by hand - should be marked as STOPPED in DB; should not reject', async function() {
@@ -513,7 +559,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       await worker.create(helper.db);
 
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
 
       const workers = await helper.getWorkers();
@@ -521,6 +566,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       workers.forEach(w =>
         assert.strictEqual(w.state, Worker.states.STOPPED));
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });
 
     test('remove unregistered workers', async function() {
@@ -535,9 +581,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
     });
 
     test('don\'t remove unregistered workers that are new', async function() {
@@ -552,9 +599,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertNoPulseMessage('worker-removed');
     });
 
     test('do not remove registered workers with stale terminateAfter', async function () {
@@ -569,13 +617,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
       worker.reload = function () {
         this.providerData.terminateAfter = Date.now() + 1000;
       };
 
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertNoPulseMessage('worker-removed');
     });
 
     test('remove very old workers', async function() {
@@ -590,9 +639,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId &&
+        m.payload.reason === 'terminateAfter time exceeded');
     });
 
     test('don\'t remove current workers', async function() {
@@ -607,9 +657,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+      helper.assertNoPulseMessage('worker-removed');
     });
 
     test('remove zombie workers with no queue activity', async function () {
@@ -625,13 +675,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
 
       worker.firstClaim = null;
       worker.lastDateActive = null;
       worker.created = taskcluster.fromNow('-1 hour');
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
     });
     test('remove zombie workers that were not active recently', async function () {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
@@ -646,15 +696,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
 
-      worker.firstClaim = null;
-      worker.lastDateActive = null;
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-110 minutes');
-      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-100 minutes');
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-removed', m => m.payload.launchConfigId === worker.launchConfigId);
     });
     test('don\'t remove zombie workers that were active recently', async function () {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
@@ -669,29 +718,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
       await worker.create(helper.db);
-      provider.seen = {};
 
-      worker.firstClaim = null;
-      worker.lastDateActive = null;
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-110 minutes');
-      worker.lastDate = taskcluster.fromNow('-100 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-100 minutes');
       await provider.checkWorker({ worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, []);
+      helper.assertNoPulseMessage('worker-removed');
     });
   });
 
   suite('AWS provider - removeWorker', function() {
 
     test('successfully terminated instance', async function() {
-      const worker = {
-        ...defaultWorker,
+      const worker = Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
         providerData: {
-          ...defaultWorker.providerData,
-          region: 'us-west-2',
+          ...workerInDB.providerData,
         },
-      };
+      });
+      await worker.create(helper.db);
       await assert.doesNotReject(provider.removeWorker({ worker }));
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
+      assert.equal(worker.state, Worker.states.STOPPING);
     });
 
   });

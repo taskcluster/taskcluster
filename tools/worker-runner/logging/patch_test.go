@@ -20,13 +20,13 @@ func TestPatchLogger(t *testing.T) {
 	t.Run("single-line println", func(t *testing.T) {
 		defer logDest.Clear()
 		stdLog.Println("hello, world!")
-		require.Equal(t, logDest.Messages(), []map[string]interface{}{map[string]interface{}{"textPayload": "hello, world!"}})
+		require.Equal(t, logDest.Messages(), []map[string]any{{"textPayload": "hello, world!"}})
 	})
 
 	t.Run("multi-line println", func(t *testing.T) {
 		defer logDest.Clear()
 		stdLog.Println("hello\ncruel\nworld!")
-		require.Equal(t, logDest.Messages(), []map[string]interface{}{map[string]interface{}{"textPayload": "hello\ncruel\nworld!"}})
+		require.Equal(t, logDest.Messages(), []map[string]any{{"textPayload": "hello\ncruel\nworld!"}})
 	})
 
 	t.Run("very long multi-line printf", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestPatchLogger(t *testing.T) {
 			msg += msg
 		}
 		msg = msg[:len(msg)-1] // remove trailing newline
-		stdLog.Printf(msg)
-		require.Equal(t, logDest.Messages(), []map[string]interface{}{map[string]interface{}{"textPayload": msg}})
+		stdLog.Print(msg)
+		require.Equal(t, logDest.Messages(), []map[string]any{{"textPayload": msg}})
 	})
 }

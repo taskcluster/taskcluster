@@ -93,7 +93,7 @@ properties:
               this property, and creating the resulting task.
 
               The template is an object that is parameterized using
-              [JSON-e](https://github.com/taskcluster/json-e), with the context
+              [JSON-e](https://github.com/json-e/json-e), with the context
               described in the documentation.
         additionalProperties: false
         required:
@@ -125,7 +125,7 @@ properties:
               JSON-e template that renders to the payload for `hooks.triggerHook`.
 
               The template is an object that is parameterized using
-              [JSON-e](https://github.com/taskcluster/json-e), with the
+              [JSON-e](https://github.com/json-e/json-e), with the
               context described in the documentation. The output of this
               rendering is provided as the payload to `hooks.triggerHook`
               (where it becomes the context for another JSON-e rendering

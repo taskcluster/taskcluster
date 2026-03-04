@@ -15,8 +15,8 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/internal/testrooturl"
 )
 
 var (
@@ -571,7 +571,7 @@ func TestGetResponseBody(t *testing.T) {
 			// Function to test
 			routes.RootHandler(res, req)
 
-			var body map[string]interface{}
+			var body map[string]any
 			err = json.Unmarshal(res.Body.Bytes(), &body)
 			if err != nil {
 				log.Fatal(err)

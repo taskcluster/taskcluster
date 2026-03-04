@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 	if proto.Capable("log") {
 		proto.Send(workerproto.Message{
 			Type: "log",
-			Properties: map[string]interface{}{
-				"body": map[string]interface{}{
+			Properties: map[string]any{
+				"body": map[string]any{
 					"textPayload":       "workin hard or hardly workin, amirite?",
 					"conversationLevel": "low",
 				},

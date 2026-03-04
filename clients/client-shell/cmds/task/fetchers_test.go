@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 const fakeTaskID = "ANnmjMocTymeTID0tlNJAw"
@@ -96,7 +96,8 @@ func artifactsHandler(w http.ResponseWriter, _ *http.Request) {
 func setUpCommand() (*bytes.Buffer, *cobra.Command) {
 	buf := &bytes.Buffer{}
 	cmd := &cobra.Command{}
-	cmd.SetOutput(buf)
+	cmd.SetOut(buf)
+	cmd.SetErr(buf)
 
 	return buf, cmd
 }
@@ -120,10 +121,10 @@ func (suite *FakeServerSuite) TestDefCommand() {
 	args := []string{fakeTaskID}
 	assert.NoError(suite.T(), runDef(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags()))
 
-	var f interface{}
+	var f any
 	assert.NoError(suite.T(), json.Unmarshal(buf.Bytes(), &f))
-	m := f.(map[string]interface{})
-	m = m["metadata"].(map[string]interface{})
+	m := f.(map[string]any)
+	m = m["metadata"].(map[string]any)
 	suite.Equal("my-test", m["name"])
 }
 

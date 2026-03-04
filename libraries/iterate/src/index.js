@@ -62,7 +62,7 @@ class Iterate extends events.EventEmitter {
     this.handler = opts.handler;
 
     if (!opts.monitor || typeof opts.monitor !== 'object') {
-      throw new Error('monitor is required and must be an object from taskcluster-lib-monitor');
+      throw new Error('monitor is required and must be an object from @taskcluster/lib-monitor');
     }
     this.monitor = opts.monitor;
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -14,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -24,13 +24,13 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v65/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v65/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -56,7 +56,7 @@ func setup(t *testing.T) {
 //
 // See https://bugzil.la/1553953
 func testWorkerType() string {
-	return "test-" + strings.ToLower(strings.Replace(slugid.Nice(), "_", "", -1)) + "-a"
+	return "test-" + strings.ToLower(strings.ReplaceAll(slugid.Nice(), "_", "")) + "-a"
 }
 
 func scheduleTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](t *testing.T, td *tcqueue.TaskDefinitionRequest, payload P) (taskID string) {
@@ -73,13 +73,6 @@ func scheduleNamedTask[P GenericWorkerPayload | dockerworker.DockerWorkerPayload
 		if err != nil {
 			t.Fatalf("Could not convert task payload to json")
 		}
-		//////////////////////////////////////////////////////////////////////////////////
-		//
-		// horrible hack here, until we have jsonschema2go generating pointer types...
-		//
-		//////////////////////////////////////////////////////////////////////////////////
-		b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00.000Z",`), []byte{}, -1)
-		b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00.000Z"`), []byte{}, -1)
 
 		payloadJSON := json.RawMessage{}
 		err = json.Unmarshal(b, &payloadJSON)
@@ -207,7 +200,7 @@ func submitAndAssert[P GenericWorkerPayload | dockerworker.DockerWorkerPayload](
 	return taskID
 }
 
-func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
+func toMountArray(t *testing.T, x any) []json.RawMessage {
 	t.Helper()
 	b, err := json.Marshal(x)
 	if err != nil {
@@ -298,8 +291,8 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 					}
 					defaults.SetDefaults(&payload)
 					td := testTask(t)
-					// Set 6 month expiry
-					td.Expires = tcclient.Time(time.Now().AddDate(0, 6, 0))
+					// Set 6 year expiry
+					td.Expires = tcclient.Time(time.Now().AddDate(6, 0, 0))
 					td.Metadata.Name = "Task dependency for generic-worker integration tests"
 					td.Metadata.Description = fmt.Sprintf("Single artifact %v from path %v with hash %v", name, path, hex.EncodeToString(sha256))
 					scheduleNamedTask(t, td, payload, taskID)
@@ -311,14 +304,21 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 		t.Fatalf("%#v", err)
 	}
 
-	// If task expires in the next two minutes, just fail intentionally. It
-	// isn't worth trying to handle this situation, since the task only expires
-	// after 6 months, so the chance of hitting the two minute period before it
-	// expires is extremely small, and the error will explicitly report it
-	// anyway.
+	// If task already expired but not purged from database, or expires in the
+	// next two minutes, just fail intentionally. It isn't worth trying to
+	// handle this situation, since the task only expires after 6 years, so the
+	// chance of hitting is reasonably small, and the error will explicitly
+	// report it anyway.
 	remainingTime := time.Until(time.Time(tdr.Expires))
 	if remainingTime.Seconds() < 120 {
-		t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six months ago but is due to expire in less than two minutes (%v). Wait a few minutes and try again!", taskID, remainingTime)
+		message := "You've been extremely unlucky. This test depends on task " + taskID + " that was created six years ago"
+		if remainingTime.Seconds() > 0 {
+			message += fmt.Sprintf(" but is due to expire in less than two minutes (in %v).", remainingTime)
+		} else {
+			message += fmt.Sprintf(", has expired (%v ago), but has not yet been purged from database.", -remainingTime)
+		}
+		message += " Wait until task purged from database (at time of writing, purge task process runs once per day at ten past midnight (00:10) UCT; see https://github.com/taskcluster/taskcluster/blob/76217b7aae8ff6aab0c586875966e4b9dbf8573d/services/queue/procs.yml#L25-L29) and try again!"
+		t.Fatal(message)
 	}
 	t.Logf("Depend on task %q which expires in %v.", taskID, remainingTime)
 	return
@@ -336,8 +336,10 @@ type (
 		Extracts         []string
 		ContentType      string
 		ContentEncoding  string
+		ContentLength    int64
 		Expires          tcclient.Time
 		SkipContentCheck bool
+		StorageType      string
 	}
 	ExpectedArtifacts map[string]ArtifactTraits
 )
@@ -350,18 +352,25 @@ func GWTest(t *testing.T) *Test {
 			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		},
 		PublicConfig: gwconfig.PublicConfig{
-			AvailabilityZone: "outer-space",
+			PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
+			AllowedHighMemoryDurationSecs: 5,
+			AvailabilityZone:              "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:                      cachesDir,
-			CheckForNewDeploymentEverySecs: 0,
-			CleanUpTaskDirs:                false,
-			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DeploymentID:                   "",
-			DisableReboots:                 true,
+			CachesDir:       cachesDir,
+			CleanUpTaskDirs: false,
+			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			DisableReboots:  true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
+			EnableChainOfTrust:        true,
+			EnableLiveLog:             true,
+			EnableMetadata:            true,
+			EnableMounts:              true,
+			EnableOSGroups:            true,
+			EnableResourceMonitor:     true,
+			EnableTaskclusterProxy:    true,
 			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
 			IdleTimeoutSecs:           60,
 			InstanceID:                "test-instance-id",
@@ -371,13 +380,15 @@ func GWTest(t *testing.T) *Test {
 			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
 			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
 			// generic-worker instance running the test suite.
-			LiveLogPortBase:    30583,
-			MaxTaskRunTime:     300,
-			NumberOfTasksToRun: 1,
-			PrivateIP:          net.ParseIP("87.65.43.21"),
-			ProvisionerID:      "test-provisioner",
-			PublicIP:           net.ParseIP("12.34.56.78"),
-			Region:             "test-worker-group",
+			LiveLogPortBase:         30583,
+			MaxMemoryUsagePercent:   90,
+			MaxTaskRunTime:          300,
+			MinAvailableMemoryBytes: 524288000, // 500 MiB
+			NumberOfTasksToRun:      1,
+			PrivateIP:               net.ParseIP("87.65.43.21"),
+			ProvisionerID:           "test-provisioner",
+			PublicIP:                net.ParseIP("12.34.56.78"),
+			Region:                  "test-worker-group",
 			// should be enough for tests, and travis-ci.org CI environments don't
 			// have a lot of free disk
 			RequiredDiskSpaceMegabytes:     16,
@@ -392,7 +403,7 @@ func GWTest(t *testing.T) *Test {
 			WorkerGroup:                    "test-worker-group",
 			WorkerID:                       "test-worker-id",
 			WorkerType:                     testWorkerType(),
-			WorkerTypeMetadata: map[string]interface{}{
+			WorkerTypeMetadata: map[string]any{
 				"generic-worker": map[string]string{
 					"go-arch":    runtime.GOARCH,
 					"go-os":      runtime.GOOS,
@@ -414,7 +425,6 @@ func GWTest(t *testing.T) *Test {
 		}
 		testConfig.RootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
 	}
-	setConfigRunTasksAsCurrentUser(testConfig)
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
 		cachesDir,
@@ -433,6 +443,7 @@ func GWTest(t *testing.T) *Test {
 	for _, file := range []string{
 		filepath.Join(cwd, "file-caches.json"),
 		filepath.Join(cwd, "directory-caches.json"),
+		filepath.Join(cwd, "d2g-image-cache.json"),
 	} {
 		err := os.RemoveAll(file)
 		if err != nil {
@@ -440,12 +451,7 @@ func GWTest(t *testing.T) *Test {
 		}
 	}
 
-	// Needed for tests that don't call RunWorker()
-	// but test methods/functions directly
-	taskContext = &TaskContext{
-		TaskDir: testdataDir,
-		pd:      newPlatformData(testConfig),
-	}
+	engineTestSetup(t, testConfig)
 
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
@@ -455,7 +461,7 @@ func GWTest(t *testing.T) *Test {
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
-		_, _ = w.Write([]byte(fmt.Sprintf("URL %v with method %v NOT FOUND\n", req.URL, req.Method)))
+		_, _ = w.Write(fmt.Appendf(nil, "URL %v with method %v NOT FOUND\n", req.URL, req.Method))
 	})
 
 	srv := &http.Server{
@@ -545,10 +551,20 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 			continue
 		}
 		actual := unexpectedArtifacts[artifactName]
-		// link artifacts do not have content types
-		if actual.StorageType != "link" {
+		// link and error artifacts do not have content types
+		if !slices.Contains([]string{"link", "error"}, actual.StorageType) {
 			if actual.ContentType != expected.ContentType {
 				t.Errorf("Artifact %s should have mime type '%v' but has '%s'", artifactName, expected.ContentType, actual.ContentType)
+			}
+		}
+		if expected.StorageType != "" {
+			if actual.StorageType != expected.StorageType {
+				t.Errorf("Artifact %s should have storage type '%v' but has '%s'", artifactName, expected.StorageType, actual.StorageType)
+			}
+		}
+		if expected.ContentLength != 0 {
+			if actual.ContentLength != expected.ContentLength {
+				t.Errorf("Artifact %s should have contentLength %d but has %d", artifactName, expected.ContentLength, actual.ContentLength)
 			}
 		}
 		if !time.Time(expected.Expires).IsZero() {

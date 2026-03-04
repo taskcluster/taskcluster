@@ -3,15 +3,16 @@ import debugFactory from 'debug';
 const debug = debugFactory('index:test:api_test');
 import helper from './helper.js';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import request from 'superagent';
 import assume from 'assume';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeQueue(mock, skipping);
+  helper.withFakeAnonymousScopeCache(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
@@ -320,6 +321,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 
+    helper.queue.setArtifact(taskId, 'xyz/abc.zip', {
+      storageType: 's3',
+      url: 'https://cdn.example.com/artifact',
+    });
+
     debug('### Download xyz artifact using index');
     const url = helper.index.buildUrl(
       helper.index.findArtifactFromTask,
@@ -327,14 +333,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       'xyz/abc.zip',
     );
 
+    helper.setAnonymousScopes(['queue:get-artifact:xyz/abc.zip']);
     await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:xyz/abc.zip'], async () => {
       const res = await request.get(url).redirects(0).catch(function(err) {
         return err.response;
       });
       assert.equal(res.statusCode, 303, 'Expected 303 redirect');
-      const location = res.headers.location.replace(/bewit=.*/, 'bewit=xyz');
-      assert.equal(location,
-        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/xyz%2Fabc.zip?bewit=xyz`));
+      const location = res.headers.location;
+      assert(!location.includes('bewit='), 'Public artifact URL should not contain bewit');
+      assert.equal(location, 'https://cdn.example.com/artifact');
     });
   });
 
@@ -384,6 +391,118 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return err.response;
     });
     assert.equal(res.statusCode, 403, 'Expected 403 Forbidden');
+  });
+
+  test('authenticated request to public artifact omits bewit', async function() {
+    const taskId = slugid.nice();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    helper.queue.setArtifact(taskId, 'public/build.zip', {
+      storageType: 's3',
+      url: 'https://cdn.example.com/artifact',
+    });
+
+    helper.setAnonymousScopes(['queue:get-artifact:public/*']);
+    const url = helper.index.buildSignedUrl(
+      helper.index.findArtifactFromTask,
+      'my.name.space',
+      'public/build.zip',
+    );
+    const res = await request.get(url).redirects(0).catch(function(err) {
+      return err.response;
+    });
+    assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+    const location = res.headers.location;
+    assert(!location.includes('bewit='), 'Public artifact URL should not contain bewit');
+    assert.equal(location, 'https://cdn.example.com/artifact');
+  });
+
+  test('falls back to signed URL if anonymous scope check fails', async function() {
+    const taskId = slugid.nice();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    helper.load.inject('isPublicArtifact', () => {
+      throw new Error('scope check failure');
+    });
+
+    const url = helper.index.buildSignedUrl(
+      helper.index.findArtifactFromTask,
+      'my.name.space',
+      'public/build.zip',
+    );
+    const res = await request.get(url).redirects(0).catch(function(err) {
+      return err.response;
+    });
+    assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+    assert(res.headers.location.includes('bewit='), 'Should fall back to signed URL with bewit');
+  });
+
+  test('public artifact falls back to queue redirect when latestArtifact returns no url', async function() {
+    const taskId = slugid.nice();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    helper.queue.setArtifact(taskId, 'public/build.zip', {
+      storageType: 'object',
+      name: 'public/build.zip',
+      credentials: { clientId: 'x', accessToken: 'y' },
+    });
+
+    helper.setAnonymousScopes(['queue:get-artifact:public/*']);
+    await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+      const url = helper.index.buildUrl(
+        helper.index.findArtifactFromTask,
+        'my.name.space',
+        'public/build.zip',
+      );
+      const res = await request.get(url).redirects(0).catch(function(err) {
+        return err.response;
+      });
+      assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+      assert.equal(res.headers.location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`));
+    });
+  });
+
+  test('public artifact falls back to queue redirect when latestArtifact call fails', async function() {
+    const taskId = slugid.nice();
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: { hello: 'world' },
+      expires: taskcluster.fromNowJSON('24 hours'),
+    });
+
+    // Do not set an artifact — the fake's assert will throw
+
+    helper.setAnonymousScopes(['queue:get-artifact:public/*']);
+    await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
+      const url = helper.index.buildUrl(
+        helper.index.findArtifactFromTask,
+        'my.name.space',
+        'public/build.zip',
+      );
+      const res = await request.get(url).redirects(0).catch(function(err) {
+        return err.response;
+      });
+      assert.equal(res.statusCode, 303, 'Expected 303 redirect');
+      assert.equal(res.headers.location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`));
+    });
   });
 
   test('delete task', async function() {

@@ -1,9 +1,10 @@
 import assert from 'assert';
 import gql from 'graphql-tag';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+  helper.withFakeAuthFactory(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
@@ -50,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   suite('Artifact Subscriptions', function() {
     helper.withMockedEventIterator();
 
-    test('subscribe works', async function(){
+    test('subscribe works', async function() {
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
       const artifactsCreated = await helper.loadFixture('artifactsCreated.graphql');

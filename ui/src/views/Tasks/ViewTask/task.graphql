@@ -18,6 +18,7 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnec
     routes
     payload
     extra
+    dependencies
 
     metadata {
       name
@@ -56,16 +57,6 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnec
 
     decisionTask {
       scopes
-    }
-  }
-
-  dependentTasks(taskId: $taskId) {
-    taskId
-    status {
-      state
-    }
-    metadata {
-      name
     }
   }
 

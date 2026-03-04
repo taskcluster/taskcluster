@@ -9,5 +9,14 @@ properties:
   location: {type: string}
   publicIPAllocationMethod:
     enum: [Dynamic, Static]
+  sku:
+    type: object
+    properties:
+      name:
+        type: string
+        enum: ['Basic', 'Standard']
+      tier:
+        type: string
+        enum: ['Regional', 'Global']
 additionalProperties: false
 required: [location, publicIPAllocationMethod]

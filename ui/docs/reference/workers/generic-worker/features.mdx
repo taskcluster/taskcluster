@@ -80,7 +80,7 @@ The proxy's rootUrl is available to tasks in the environment variable
 `TASKCLUSTER_PROXY_URL`.  It can be used with a client like this:
 
 ```js
-var taskcluster = require('taskcluster-client');
+var taskcluster = require('@taskcluster/client');
 var queue = new taskcluster.Queue({
   rootUrl: process.env.TASKCLUSTER_PROXY_URL,
 });
@@ -106,4 +106,4 @@ These invocations would require `secrets:get:my-top-secret-secret` or `secrets:p
 
 References:
 
-* [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy)
+* [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy)

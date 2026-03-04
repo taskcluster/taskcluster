@@ -3,11 +3,12 @@ package workerproto
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 )
 
 type Message struct {
 	Type       string
-	Properties map[string]interface{}
+	Properties map[string]any
 }
 
 func (msg *Message) UnmarshalJSON(b []byte) error {
@@ -31,10 +32,8 @@ func (msg *Message) UnmarshalJSON(b []byte) error {
 }
 
 func (msg *Message) MarshalJSON() ([]byte, error) {
-	obj := make(map[string]interface{})
-	for k, v := range msg.Properties {
-		obj[k] = v
-	}
+	obj := make(map[string]any)
+	maps.Copy(obj, msg.Properties)
 	obj["type"] = msg.Type
 	return json.Marshal(obj)
 }

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
-	wptesting "github.com/taskcluster/taskcluster/v65/tools/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	wptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 func setupWorkerRunnerTest(t *testing.T, runnerCapabilities ...string) *workerproto.Protocol {
@@ -51,7 +51,7 @@ func TestGracefulTermination(t *testing.T) {
 
 	runnerProto.Send(workerproto.Message{
 		Type: "graceful-termination",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"finish-tasks": true,
 		},
 	})
@@ -71,7 +71,7 @@ func TestNewCredentials(t *testing.T) {
 			config.ClientID = "old"
 			clientID := fmt.Sprintf("client-cert-%v", withCert)
 
-			properties := map[string]interface{}{
+			properties := map[string]any{
 				"client-id":    clientID,
 				"access-token": "big-secret",
 			}

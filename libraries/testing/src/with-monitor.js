@@ -1,4 +1,4 @@
-import { MonitorManager, LEVELS } from 'taskcluster-lib-monitor';
+import { MonitorManager, LEVELS } from '@taskcluster/lib-monitor';
 
 let monitor;
 
@@ -12,6 +12,7 @@ export default (helper, options = {}) => {
       debug: true,
       verify: true,
       level: 'debug',
+      ...(options?.withPrometheus ? { prometheusConfig: {} } : {}),
     });
     helper.load.inject('monitor', monitor);
   }

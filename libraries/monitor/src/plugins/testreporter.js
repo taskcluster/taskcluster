@@ -1,6 +1,6 @@
 import slugid from 'slugid';
 
-class TestReporter {
+export class TestReporter {
   constructor({ bucket = [], log = false }) {
     this.internal = [];
     this.bucket = bucket;

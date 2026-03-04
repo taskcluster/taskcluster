@@ -6,16 +6,55 @@
     <title>Logging in...</title>
   </head>
   <body>
+    <h1>Logging in...</h1>
     <script>
+      const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
+      const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
+
       window.addEventListener('load', () => {
+        const userData = {
+          type: 'login',
+          encodedProfile: <%- JSON.stringify(user.encodedProfile) %>,
+          identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
+          providerExpires: <%- JSON.stringify(user.providerExpires) %>,
+        };
+
         if (window.opener) {
-          window.opener.postMessage({
-            type: 'login',
-            encodedProfile: <%- JSON.stringify(user.encodedProfile) %>,
-            identityProviderId: <%- JSON.stringify(user.identityProviderId) %>,
-            providerExpires: <%- JSON.stringify(user.providerExpires) %>,
-          }, <%- JSON.stringify(publicUrl) %>);
+          window.opener.postMessage(userData, <%- JSON.stringify(publicUrl) %>);
           window.close();
+          return;
+        }
+
+        try {
+          const userSession = {
+            ...userData,
+            profile: JSON.parse(atob(userData.encodedProfile)),
+            expires: userData.providerExpires,
+          };
+          localStorage.setItem(AUTH_STORE, JSON.stringify(userSession));
+
+          let shouldRedirect = true;
+          if (localStorage.getItem(AUTH_STARTED) === userData.identityProviderId) {
+            localStorage.removeItem(AUTH_STARTED);
+            shouldRedirect = false;
+          }
+          setTimeout(() => {
+            if (shouldRedirect) {
+              window.location.href = '<%- publicUrl %>';
+            } else {
+              window.close();
+            }
+          }, 1000);
+        } catch (err) {
+          console.error('Login error:', err);
+          document.body.innerHTML = `
+            <div style="text-align: center; margin-top: 2em;">
+              <h2>Login error</h2>
+              <p>There was a problem completing the login process.</p>
+              <p>${error.message}</p>
+              <p><a href="<%- publicUrl %>">Return to application</a></p>
+            </div>
+          `;
         }
       });
     </script>

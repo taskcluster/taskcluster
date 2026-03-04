@@ -11,13 +11,13 @@ See the source for detailed documentation.
 Sticky Loader
 -------------
 
-A sticky loader is a thin wrapper around `taskcluster-lib-loader` to support
+A sticky loader is a thin wrapper around `@taskcluster/lib-loader` to support
 dependency injection. It "remembers" each value it has returned and will return
 it again on the next call; it can also have a dependency injected.  Use it like
 this in `helper.js`:
 
 ```javascript
-import { stickyLoader } from 'taskcluster-lib-testing';
+import { stickyLoader } from '@taskcluster/lib-testing';
 import _load from '../src/server.js';
 
 export const load = stickyLoader(_load);
@@ -72,11 +72,11 @@ Secrets
 -------
 
 This class handles getting secrets for tests, and easily determining what
-secrets are available.  It integrates with `taskcluster-lib-config`.  Set it up by
+secrets are available.  It integrates with `@taskcluster/lib-config`.  Set it up by
 in `test/helper.js`:
 
 ```javascript
-import { Secrets } from 'taskcluster-lib-testing';
+import { Secrets } from '@taskcluster/lib-testing';
 
 export const secrets = new Secrets({
   secretName: [
@@ -104,7 +104,7 @@ export const secrets = new Secrets({
 
 If a secret is defined in the loaded configuration, that value will be used even if the `env` key is also set.
 Secrets should not have any value set in `config.yml` (although `!env` is OK), or this class will not function properly.
-If the system you are testing does not use `taskcluster-lib-config`, simply do not specify the `cfg` properties to the constructor.
+If the system you are testing does not use `@taskcluster/lib-config`, simply do not specify the `cfg` properties to the constructor.
 You can also leave out `load` in this case.
 
 You can then call `await secrets.setup()`  to set up the secrets (reading from `cfg` if necessary).
@@ -152,7 +152,7 @@ secrets.mockSuite('mySuite', [..], function(mock, skipping) {
 
 ```javascript
 // helper.js
-import { Secrets, stickyLoader } from 'taskcluster-lib-testing';
+import { Secrets, stickyLoader } from '@taskcluster/lib-testing';
 import _load from '../src/main.js';
 
 export const load = stickyLoader(_load);
@@ -231,7 +231,7 @@ The test output for the first suite will contain something like
 
 Note that even in cases where no secrets are required, `mockSuite` is still
 useful for providing the `mock, skipping` values required by other components
-of taskcluster-lib-testing.
+of @taskcluster/lib-testing.
 
 schemas
 -------
@@ -241,7 +241,7 @@ Test schemas with a positive and negative test cases.
 The method should be called within a `suite`, as it will call the mocha `test`
 function to define a test for each schema case.
 
- * `schemasetOptions` - {}  // options to pass to the [taskcluster-lib-validate](../validate) constructor
+ * `schemasetOptions` - {}  // options to pass to the [@taskcluster/lib-validate](../validate) constructor
  * `cases` - array of test cases
  * `basePath` -  base path for relative pathnames in test cases (default `path.join(__dirname, 'validate')`)
 
@@ -299,7 +299,7 @@ This function is intended for use with [usual configuration](../../db) for Postg
 It sets up a "real" database using `$TEST_DB_URL`, accessed with a user corresponding to the given serviceName.
 If `$TEST_DB_URL` is not set, it will exit during test setup.
 The database is upgraded to the latest version at the beginning of the suite.
-The resulting database is injected into the taskcluster-lib-loader as `db` and also available as `helper.db`.
+The resulting database is injected into the @taskcluster/lib-loader as `db` and also available as `helper.db`.
 
 It is up to the test suite implementation to reset the contents of the database between tests.
 Ideally this is done via `helper.db.fns` methods.
@@ -339,7 +339,7 @@ There is also a utility function, `resetTables`, which will truncate a list of t
 This is typically used in a `setup` function to start each test with a clean slate.
 
 ```js
-import { resetTables } from 'taskcluster-lib-testing';
+import { resetTables } from '@taskcluster/lib-testing';
 
 export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
@@ -354,7 +354,7 @@ export const resetTables = (mock, skipping) => {
 Finally, to completely reset the DB to an empty state (but with per-service users defined), call `resetDb`:
 
 ```javascript
-import { resetDb } from 'taskcluster-lib-testing';
+import { resetDb } from '@taskcluster/lib-testing';
 
 // this automatically uses TEST_DB_URL.
 await resetDb();
@@ -367,7 +367,7 @@ This function helps test applications that publish pulse messages.
 It is typically set up in `test/helper.js` like this:
 
 ```js
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 const helper = { load };
 export const withPulse = (mock, skipping) => {
   testing.withPulse({helper, skipping, namespace: 'taskcluster-someservice'});
@@ -399,7 +399,7 @@ A consumer for which bindings are changed at runtime, using amqplib functions `b
 withMonitor
 -----------
 
-All services should call `testing.withMonitor(helper)` to set up the [`taskcluster-lib-monitor`](../monitor) loader component for testing.
+All services should call `testing.withMonitor(helper)` to set up the [`@taskcluster/lib-monitor`](../monitor) loader component for testing.
 Call this method at the module level, such as within `helper.js`, not as a part of each test suite.
 
 The function does the following:

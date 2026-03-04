@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v65/internal/jsontest"
-	"github.com/taskcluster/taskcluster/v65/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v97/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 	"sigs.k8s.io/yaml"
 )
@@ -95,7 +95,7 @@ func generateFunctions(ymlFile string) []byte {
 	}
 
 	// the following strings.Replace function call safely escapes backticks (`) in rawJSON
-	escapedJSON := "`" + strings.Replace(string(rawJSON), "`", "` + \"`\" + `", -1) + "`"
+	escapedJSON := "`" + strings.ReplaceAll(string(rawJSON), "`", "` + \"`\" + `") + "`"
 
 	response := `
 // Returns json schema for the payload part of the task definition. Please
@@ -126,7 +126,7 @@ func formatSourceAndSave(sourceCode []byte, sourceFile string) error {
 	var fixedFixedImports []byte
 	if err == nil {
 		importFixer := regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`)
-		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v65/"))
+		fixedFixedImports = importFixer.ReplaceAll(fixedImports, []byte("github.com/taskcluster/taskcluster/v97/"))
 	}
 
 	// only perform general format, if that worked...

@@ -57,11 +57,19 @@ tasks.push({
     await execCommand({
       command: ['go', 'build', '-tags', 'multiuser', '-o', binary, './workers/generic-worker'],
       utils,
+      env: { GOOS: 'linux', GOARCH: 'amd64', ...process.env },
     });
+
+    let gwHelpCommand;
+    if (process.platform === 'linux') {
+      gwHelpCommand = [binary, '--help'];
+    } else {
+      gwHelpCommand = ['docker', 'run', '--rm', '-q', '-v', `${tempDir}:/app`, '-w', '/app', 'alpine', './generic-worker', '--help'];
+    }
 
     let gwHelp = await execCommand({
       dir: REPO_ROOT,
-      command: [binary, '--help'],
+      command: gwHelpCommand,
       utils,
       keepAllOutput: true,
     });
@@ -73,12 +81,17 @@ tasks.push({
     gwHelp = gwHelp.replace(/\[default \(varies by platform\): .*\]/, '[default varies by platform]');
 
     const ticks = '```';
-    await modifyRepoFile(
+    [
       path.join('workers', 'generic-worker', 'README.md'),
-      async content => content
-        .replace(
-          /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
-          `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
+      path.join('ui', 'docs', 'reference', 'workers', 'generic-worker', 'usage.mdx'),
+    ].forEach(async file => {
+      await modifyRepoFile(
+        file,
+        async content => content
+          .replace(
+            /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
+            `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
+    });
   },
 });
 
@@ -86,7 +99,7 @@ const schemaMdx = (title, $id) => `---
 title: ${title.replace(/^.* - /, 'Task Payload - ')}
 order: 1000
 ---
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 <SchemaTable schema="${$id}" />
 `;

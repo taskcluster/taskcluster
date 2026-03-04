@@ -5,8 +5,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v65/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 )
 
 func makeFileReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
@@ -19,12 +19,12 @@ func makeDirReadWritableForTaskUser(taskMount *TaskMount, dir string) error {
 	return nil
 }
 
-func makeDirUnreadableForTaskUser(taskMount *TaskMount, dir string) error {
+func exchangeDirectoryOwnership(taskMount *TaskMount, dir string, cache *Cache) error {
 	// No user separation
 	return nil
 }
 
-func unarchive(source, destination, format string) error {
+func unarchive(source, destination, format string, pd *process.PlatformData) error {
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "unarchive", "--archive-src", source, "--archive-dst", destination, "--archive-fmt", format}, "", []string{})
 	if err != nil {
 		return fmt.Errorf("cannot create process to unarchive %v to %v as task user: %v", source, destination, err)

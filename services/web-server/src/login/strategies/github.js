@@ -1,13 +1,14 @@
 import assert from 'assert';
 import passport from 'passport';
 import { Strategy } from 'passport-github';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import User from '../User.js';
 import login from '../../utils/login.js';
 import WebServerError from '../../utils/WebServerError.js';
 import tryCatch from '../../utils/tryCatch.js';
 import { encode, decode } from '../../utils/codec.js';
 import GithubClient from '../clients/GithubClient.js';
+import { applySecurityHeaders } from '../../utils/headers.js';
 
 export default class Github {
   constructor({ name, cfg, monitor, db }) {
@@ -164,9 +165,10 @@ export default class Github {
         },
       ),
     );
-    app.get('/login/github', passport.authenticate('github'));
+    app.get('/login/github', applySecurityHeaders, passport.authenticate('github'));
     app.get(
       callback,
+      applySecurityHeaders,
       passport.authenticate('github'),
       loginMiddleware,
     );

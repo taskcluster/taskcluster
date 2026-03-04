@@ -14,9 +14,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v65/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v65/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsproxy"
 )
 
 const WST_WORKER_GROUP = "expose-tests"
@@ -109,7 +109,7 @@ func TestBasicWSTExposeHTTP(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())
@@ -149,7 +149,7 @@ func TestWSTExposeHTTPWebsocket(t *testing.T) {
 
 	testURL, _ := url.Parse(ts.URL)
 	_, testPortStr, _ := net.SplitHostPort(testURL.Host)
-	testPort, _ := strconv.Atoi(testPortStr)
+	testPort, _ := strconv.ParseUint(testPortStr, 10, 16)
 	t.Logf("testPort: %d", testPort)
 
 	exposer := makeWSTExposer(t, wstServer.url())

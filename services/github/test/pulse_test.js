@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const loadWebhookJson = async filename => {
@@ -49,7 +49,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     test(params.testName, async function() {
       // Trigger a pull-request message
       let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
-      res.connection.destroy();
+      res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);
 

@@ -1,0 +1,26 @@
+---
+filename: task-execution/definitions.mdx
+title: Definitions
+order: 5
+---
+
+There are a number of terms surrounding queues and workers that are named
+similarly and can be confusing. This page offers a quick overview and reference
+to help disambiguate them.
+
+First, there's a set of closely related things that largely pertain to Worker
+Manager, the Queue, and task definitions. They are:
+
+* taskQueueId: A property present on every Task that represents a queue
+  of tasks that will be claimed by a `workerPoolId` of the same name.
+* workerPoolId & workerPool: A set of workers in Worker Manager. Each worker
+  in this set will claim tasks from the `taskQueueId` of the same name.
+  Each pool also contains configuration used by Worker Manager.
+* provisionerId & workerType: Legacy terms that are subsets of taskQueueId
+  and workerPoolId. When present, they can be combined with a "/" to form
+  one of the above. Eg: a provisionerId of `mozilla` and workerType of
+  `linux` will form a taskQueueId and workerPoolId of `mozilla/linux`.
+  These are still used instead of `workerPoolId` by generic-worker.
+* workerGroup & workerId: Identifiers for an individual worker. These are
+  purely information, and do not relate to any of the above properties
+  except by coincidence.

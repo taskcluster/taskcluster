@@ -171,7 +171,7 @@ class Artifacts {
 
         taskHandler.artifactHashes[entryName] = { sha256: digest };
 
-      } catch(err) {
+      } catch (err) {
         debug(err);
         // Log each error but don't throw yet.  Try to upload as many artifacts as
         // possible before handling the errors.

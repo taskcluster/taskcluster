@@ -7,10 +7,12 @@ const (
 	MISSING_ED25519_PRIVATE_KEY ExitCode = 82
 )
 
-func runTasksAsCurrentUserUsage() string {
+func headlessTasksUsage() string {
 	return `
-          runTasksAsCurrentUser             If true, users will still be created for tasks, but
-                                            tasks will be executed as the current OS user. [default: false]`
+          headlessTasks                     If true, no dedicated graphical session will be available to tasks.
+                                            There will also be no reboots between tasks and multiple workers
+                                            can be run on the same host. Useful for tasks that don't require
+                                            a graphical session, such as software builds. [default: false]`
 }
 
 func exitCode77() string {

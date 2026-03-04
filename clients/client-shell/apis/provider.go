@@ -17,10 +17,10 @@ import (
 	got "github.com/taskcluster/go-got"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/client"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 var (
@@ -62,13 +62,14 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 
 	// one subcommand for every function of the service
 	for _, entry := range service.Entries {
-		usage := entry.Name
+		var usage strings.Builder
+		usage.WriteString(entry.Name)
 		for _, arg := range entry.Args {
-			usage += " <" + arg + ">"
+			usage.WriteString(" <" + arg + ">")
 		}
 
 		subCmd := &cobra.Command{
-			Use:   usage,
+			Use:   usage.String(),
 			Short: entry.Title,
 			Long:  buildHelp(&entry),
 			RunE:  buildExecutor(service, entry),
@@ -171,7 +172,7 @@ func execute(
 	// Parameterize the route
 	route := entry.Route
 	for k, v := range args {
-		val := strings.Replace(url.QueryEscape(v), "+", "%20", -1)
+		val := url.PathEscape(v)
 		route = strings.Replace(route, "<"+k+">", val, 1)
 	}
 
@@ -196,7 +197,7 @@ func execute(
 	g.MaxSize = 0
 
 	// use a custom client that does not follow redirects
-	var httpClient http.Client = *g.Client
+	httpClient := *g.Client
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
@@ -231,7 +232,7 @@ func execute(
 		// Got considers redirects an error, but we would like to read the body as if it
 		// was success, so ignore such errors
 		if brcerr, ok := err.(got.BadResponseCodeError); ok {
-			if brcerr.Response.StatusCode < 400 {
+			if brcerr.StatusCode < 400 {
 				res = brcerr.Response
 				err = nil
 			}
@@ -256,7 +257,7 @@ func execute(
 func formatGotError(err error) error {
 	if res, ok := err.(got.BadResponseCodeError); ok {
 		if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
-			var body map[string]interface{}
+			var body map[string]any
 			if json.Unmarshal(res.Body, &body) == nil {
 				if message, ok := body["message"]; ok {
 					if code, ok := body["code"]; ok {

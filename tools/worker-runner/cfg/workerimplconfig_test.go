@@ -38,7 +38,7 @@ func TestWorkerImplOK(t *testing.T) {
 		t.Fatalf("failed to unmarshal: %s", err)
 	}
 
-	assert.Equal(t, map[string]interface{}{"value": "sure"}, pc.Data, "did not get expected config")
+	assert.Equal(t, map[string]any{"value": "sure"}, pc.Data, "did not get expected config")
 }
 
 func TestWorkerImplUnpack(t *testing.T) {

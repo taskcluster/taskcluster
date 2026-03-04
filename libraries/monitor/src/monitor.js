@@ -4,7 +4,24 @@ import { Logger } from './logger.js';
 import TimeKeeper from './timekeeper.js';
 import { hrtime } from 'process';
 
+/**
+* @typedef {object} MonitorOptions
+* @property {import('./monitormanager.js').MonitorManager} manager
+* @property {string[]} name
+* @property {object} metadata
+* @property {boolean} verify
+* @property {boolean} fake
+* @property {boolean} patchGlobal
+* @property {boolean} bailOnUnhandledRejection
+* @property {number} resourceInterval
+* @property {string | null} processName
+* @property {boolean} monitorProcess
+*/
+
 class Monitor {
+  /**
+   * @param {MonitorOptions} options
+   */
   constructor({
     manager,
     name,
@@ -23,10 +40,11 @@ class Monitor {
     this.verify = verify;
     this.fake = fake;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+    this.processName = processName;
 
     this.log = {};
-    Object.entries(this.manager.types).forEach(([name, meta]) => {
-      this._register({ name, ...meta });
+    Object.entries(this.manager.types).forEach(([_, meta]) => {
+      this._register({ ...meta });
     });
 
     this._log = new Logger({
@@ -36,6 +54,20 @@ class Monitor {
       destination: this.manager.destination,
       metadata,
       taskclusterVersion: this.manager.taskclusterVersion,
+    });
+
+    this._metric = {};
+    Object.entries(this.manager.metrics).forEach(([name, definition]) => {
+      this._registerMetric(name, definition);
+    });
+    // safe metrics with catching unknown metric names
+    this.metric = new Proxy(this._metric, {
+      get(target, prop) {
+        if (!(prop in target)) {
+          throw new Error(`Metric "${prop}" is not registered`);
+        }
+        return target[prop];
+      },
     });
 
     if (patchGlobal) {
@@ -106,6 +138,30 @@ class Monitor {
     });
   }
 
+  /**
+   * Initiate metrics exposure with configured methods
+   * Prometheus plugin will use server and push configurations to expose metrics
+   *
+   * @param {string} [exposedRegistry='default'] - Registry to expose
+   */
+  exposeMetrics(exposedRegistry = 'default') {
+    if (!this.manager._prometheus) {
+      this.info('Not exposing metrics as prometheus plugin has not been configured');
+      return;
+    }
+    this.manager._prometheus.exposeMetrics(exposedRegistry);
+  }
+
+  /**
+   * push metrics if prometheus is enabled and push options are provided
+   */
+  async pushMetrics() {
+    if (!this.manager._prometheus) {
+      return;
+    }
+    await this.manager._prometheus.push();
+  }
+
   taskclusterPerRequestInstance({ requestId, traceId }) {
     return this.childMonitor({ traceId, requestId });
   }
@@ -170,6 +226,9 @@ class Monitor {
   /**
    * Monitor a one-shot process.  This function's promise never resolves!
    * (except in testing, with MockMonitor)
+   *
+   * @param {string} name
+   * @param {() => Promise<void>} fn
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
@@ -229,9 +288,9 @@ class Monitor {
   /**
    * Take a standard error and break it up into loggable bits.
    *
-   * * err: A string or Error object to be serialized and logged
-   * * level: Kept around for legacy reasons, only added to fields
-   * * extra: extra data to add to the serialized error
+   * @param {Error | string} err: A string or Error object to be serialized and logged
+   * @param {string | Record<string, any>} [level]: Kept around for legacy reasons, only added to fields
+   * @param {Record<string, any>} [extra]: extra data to add to the serialized error
    *
    */
   reportError(err, level = 'err', extra = {}) {
@@ -281,6 +340,10 @@ class Monitor {
     if (this.manager._reporter) {
       await this.manager._reporter.flush();
     }
+
+    if (this.manager._prometheus) {
+      await this.manager._prometheus.terminate();
+    }
   }
 
   _register({ name, type, version, level, fields }) {
@@ -295,6 +358,31 @@ class Monitor {
       }
       let lv = level === 'any' ? overrides.level : level;
       this._log[lv](type, { v: version, ...fields });
+    };
+  }
+
+  /**
+   * Creates callable functions for the metric
+   * @param {string} id - Internal metric id
+   * @param {import('./plugins/prometheus.js').MetricDefinition} definition - Metric definition
+   */
+  _registerMetric(id, definition) {
+    // we assume all metrics would only use single method
+    const typeToMethod = {
+      counter: 'inc',
+      gauge: 'set',
+      histogram: 'observe',
+      summary: 'observe',
+    };
+
+    assert(!this._metric[id], `${id} metric already defined.`);
+
+    const methodName = typeToMethod[definition.type];
+    this._metric[id] = (value, labels = {}) => {
+      if (!this.manager._prometheus) {
+        return;
+      }
+      this.manager._prometheus[methodName](definition.name, value, labels);
     };
   }
 

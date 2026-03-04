@@ -23,7 +23,7 @@ func TestBasicProxying(t *testing.T) {
 
 	u, _ := url.Parse(server.URL)
 	_, portStr, _ := net.SplitHostPort(u.Host)
-	port, _ := strconv.Atoi(portStr)
+	port, _ := strconv.ParseUint(portStr, 10, 16)
 
 	listener, listenPort, err := listenOnRandomPort()
 	if err != nil {
@@ -64,7 +64,7 @@ func TestBasicProxyingNon200(t *testing.T) {
 
 	u, _ := url.Parse(server.URL)
 	_, portStr, _ := net.SplitHostPort(u.Host)
-	port, _ := strconv.Atoi(portStr)
+	port, _ := strconv.ParseUint(portStr, 10, 16)
 
 	listener, listenPort, err := listenOnRandomPort()
 	if err != nil {
@@ -117,7 +117,7 @@ func TestStreamingProxy(t *testing.T) {
 
 	u, _ := url.Parse(server.URL)
 	_, portStr, _ := net.SplitHostPort(u.Host)
-	port, _ := strconv.Atoi(portStr)
+	port, _ := strconv.ParseUint(portStr, 10, 16)
 
 	listener, listenPort, err := listenOnRandomPort()
 	if err != nil {
@@ -171,7 +171,7 @@ func TestProxyHTTPWebsocket(t *testing.T) {
 
 	u, _ := url.Parse(server.URL)
 	_, portStr, _ := net.SplitHostPort(u.Host)
-	port, _ := strconv.Atoi(portStr)
+	port, _ := strconv.ParseUint(portStr, 10, 16)
 
 	listener, listenPort, err := listenOnRandomPort()
 	if err != nil {

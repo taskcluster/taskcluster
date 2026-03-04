@@ -1,7 +1,7 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { paginateResults } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { splitTaskQueueId } from './utils.js';
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];
@@ -185,6 +185,7 @@ export class Task {
       schedulerId: this.schedulerId,
       projectId: this.projectId,
       taskGroupId: this.taskGroupId,
+      priority: this.priority,
       deadline: this.deadline.toJSON(),
       expires: this.expires.toJSON(),
       retriesLeft: this.retriesLeft,
@@ -226,6 +227,17 @@ export class Task {
     }
 
     return false;
+  }
+
+  async updatePriority(db, newPriority) {
+    assert(typeof newPriority === 'string', 'newPriority must be provided');
+    const rows = await db.fns.queue_change_task_priority(this.taskId, newPriority);
+    if (!rows.length) {
+      return null;
+    }
+    const updated = Task.fromDb(rows[0]);
+    Object.assign(this, updated);
+    return { task: this, oldPriority: rows[0].old_priority };
   }
 
   // Compare "important" fields to another task (used to check idempotency)

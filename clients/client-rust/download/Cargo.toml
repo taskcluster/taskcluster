@@ -1,6 +1,6 @@
 [package]
 name = "taskcluster-download"
-version = "65.0.2"
+version = "97.0.1"
 authors = ["Dustin J. Mitchell <dustin@mozilla.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -8,18 +8,18 @@ description = "Taskcluster Download Support"
 repository = "https://github.com/taskcluster/taskcluster"
 
 [dependencies]
-taskcluster = { version = "65.0.2", path = "../client" }
+taskcluster = { version = "97.0.1", path = "../client" }
 anyhow = "1.0"
 async-trait = "0.1"
-reqwest = { version = "0.11", features = ["json", "stream", "gzip", "brotli"] }
-serde_json = "1.0.95"
-serde = "1.0.159"
-tokio = { version = "1.26", features = ["macros", "time", "fs"] }
-tokio-util = { version = "0.7.7", features = ["codec", "io"] }
+reqwest = { version = "0.13", features = ["json", "stream", "gzip", "brotli"] }
+serde_json = "1.0.149"
+serde = "1.0.228"
+tokio = { version = "1.49", features = ["macros", "time", "fs"] }
+tokio-util = { version = "0.7.18", features = ["codec", "io"] }
 futures-util = "0.3"
-sha2 = "0.10.2"
+sha2 = "0.10.9"
 
 [dev-dependencies]
-httptest = "0.15.3"
+httptest = "0.16"
 tempfile = "3"
 flate2 = "1"

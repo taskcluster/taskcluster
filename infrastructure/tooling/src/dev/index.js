@@ -1,4 +1,3 @@
-import util from 'util';
 import chalk from 'chalk';
 import path from 'path';
 import _ from 'lodash';
@@ -20,7 +19,7 @@ import awsResources from './aws.js';
 import taskclusterResources from './taskcluster.js';
 import helm from './helm.js';
 import { makePgUrl } from './util.js';
-import { upgrade, downgrade } from 'taskcluster-db';
+import { upgrade, downgrade } from '@taskcluster/db';
 
 const USER_CONF_FILE = 'dev-config.yml';
 export const readUserConfig = async () => {
@@ -79,7 +78,7 @@ export const dbUpgrade = async (options) => {
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
-    util.log(chalk.green(message));
+    console.log(chalk.green(message));
   };
 
   await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
@@ -97,7 +96,7 @@ export const dbDowngrade = async (options) => {
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
-    util.log(chalk.green(message));
+    console.log(chalk.green(message));
   };
 
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });

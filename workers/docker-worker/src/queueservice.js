@@ -1,5 +1,5 @@
 const Debug = require('debug');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const assert = require('assert');
 
 const MAX_MESSAGES_PER_REQUEST = 32;

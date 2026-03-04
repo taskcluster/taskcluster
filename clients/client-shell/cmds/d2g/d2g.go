@@ -8,10 +8,13 @@ import (
 	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v65/tools/d2g"
-	"github.com/taskcluster/taskcluster/v65/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v65/tools/d2g/genericworker"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/genericworker"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/spf13/cobra"
@@ -23,8 +26,7 @@ func init() {
 		Short: `Converts a docker-worker payload (JSON) to a generic-worker payload (JSON).
 To convert a task definition (JSON), you must use the task definition flag (-t, --task-def).`,
 		RunE: convert,
-		Example: `  taskcluster d2g -f /path/to/input/payload.json
-  taskcluster d2g -t -f /path/to/input/task-definition.json
+		Example: `  taskcluster d2g -t -f /path/to/input/task-definition.json
   cat /path/to/input/payload.json | taskcluster d2g
   cat /path/to/input/task-definition.json | taskcluster d2g -t
   echo '{"image": "ubuntu", "command": ["bash", "-c", "echo hello world"], "maxRunTime": 300}' | taskcluster d2g`,
@@ -43,7 +45,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	var dwTaskDef map[string]interface{}
+	var dwTaskDef map[string]any
 	var inputPayload json.RawMessage
 	if isTaskDef {
 		err = json.Unmarshal(input, &dwTaskDef)
@@ -76,20 +78,43 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to convert input to a docker worker payload definition: %v", err)
 	}
 
+	d2gConfig := d2g.Config{
+		EnableD2G:             true,
+		AllowChainOfTrust:     true,
+		AllowDisableSeccomp:   true,
+		AllowGPUs:             false,
+		AllowHostSharedMemory: true,
+		AllowInteractive:      true,
+		AllowKVM:              true,
+		AllowLoopbackAudio:    true,
+		AllowLoopbackVideo:    true,
+		AllowPrivileged:       true,
+		AllowPtrace:           true,
+		AllowTaskclusterProxy: true,
+		GPUs:                  "all",
+		LogTranslation:        true,
+	}
+
 	if isTaskDef {
 		dwTaskDefJSON, err := json.Marshal(dwTaskDef)
 		if err != nil {
 			return fmt.Errorf("failed to marshal docker worker task definition: %v", err)
 		}
 
+		var creds *tcclient.Credentials
+		if config.Credentials != nil {
+			creds = config.Credentials.ToClientCredentials()
+		}
+		auth := tcauth.New(creds, config.RootURL())
+
 		// Convert dwTaskDef to gwTaskDef
-		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON)
+		gwTaskDefJSON, err := d2g.ConvertTaskDefinition(dwTaskDefJSON, d2gConfig, auth, os.ReadDir)
 		if err != nil {
 			return fmt.Errorf("failed to convert docker worker task definition to a generic worker task definition: %v", err)
 		}
 
 		// Validate the JSON output against the schema
-		var gwTaskDef map[string]interface{}
+		var gwTaskDef map[string]any
 		err = json.Unmarshal(gwTaskDefJSON, &gwTaskDef)
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal generic worker task definition: %v", err)
@@ -107,7 +132,7 @@ func convert(cmd *cobra.Command, args []string) (err error) {
 		fmt.Fprintln(cmd.OutOrStdout(), string(gwTaskDefJSON))
 	} else {
 		// Convert dwPayload to gwPayload
-		gwPayload, err := d2g.Convert(dwPayload)
+		gwPayload, _, err := d2g.ConvertPayload(dwPayload, d2gConfig, os.ReadDir)
 		if err != nil {
 			return fmt.Errorf("conversion error: %v", err)
 		}

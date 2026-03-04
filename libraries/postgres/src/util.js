@@ -80,6 +80,11 @@ export const annotateError = (query, err) => {
 /**
  * Call the given fetch method with a given size and offset to fetch data, and
  * return an async iterator that will yield each row in turn.
+ *
+ * @param {object} options
+ * @param {function(number, number | Map<string, any>): Promise<any[]>} options.fetch
+ * @param {string[]} [options.indexColumns]
+ * @param {number} [options.size=1000]
  */
 export const paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
   return {

@@ -1,4 +1,4 @@
-const { Secrets } = require('taskcluster-lib-testing');
+const { Secrets } = require('@taskcluster/lib-testing');
 
 exports.secrets = new Secrets({
   secretName: [],

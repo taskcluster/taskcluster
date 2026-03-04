@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import stringify from 'fast-json-stable-stringify';
 import crypto from 'crypto';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import yaml from 'js-yaml';
 import assert from 'assert';
-import { consume } from 'taskcluster-lib-pulse';
+import { consume } from '@taskcluster/lib-pulse';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';
 import { statusHandler } from './status.js';
@@ -312,7 +312,7 @@ class Handlers {
           await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
           await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
         } catch (queueErr) {
-          if (queueErr.errorCode !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
+          if (queueErr.code !== 'ResourceNotFound' || queueErr.statusCode !== 404) {
             throw queueErr;
           }
           // we can ignore task groups that were not yet created on queue side, and simply mark as cancelled in the db
@@ -324,7 +324,7 @@ class Handlers {
         )));
       }
     } catch (err) {
-      debug(`Error while canceling previous task groups: ${err.message} scopes used: ${scopes.join(', ')}`);
+      debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
       err.message = [
         'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
         '',
@@ -375,37 +375,73 @@ class Handlers {
     if (typeof errorBody === 'object') {
       errorBody = stringify(errorBody, null, 4);
     }
-    let body = [
-      '<details>\n',
-      '<summary>Uh oh! Looks like an error! Details</summary>',
-      '',
-      errorBody, // already in Markdown..
-      '',
-      '</details>',
-    ].join('\n');
 
     // Warn the user know that there was a problem handling their request
     // by posting a comment; this error is then considered handled and not
     // reported to the taskcluster team or retried
+    await this.createComment({ debug, instGithub, organization, repository, sha, pullNumber,
+      body: {
+        summary: 'Uh oh! Looks like an error!',
+        details: errorBody,
+      },
+    });
+  }
+
+  async createComment({ debug, instGithub, organization, repository, sha, pullNumber, body }) {
+    if (this.isDuplicateComment(organization, repository, sha, body, pullNumber)) {
+      debug(`comment on ${organization}/${repository}#${pullNumber} found to be duplicate. skipping`);
+      return;
+    }
+
+    let commentBody = body;
+    if (commentBody.summary && commentBody.details) {
+      commentBody = [
+        '<details>\n',
+        `<summary>${commentBody.summary}</summary>`,
+        '',
+        commentBody.details, // already in Markdown..
+        '',
+        '</details>',
+      ].join('\n');
+    }
+
     if (pullNumber) {
-      debug(`creating exception comment on ${organization}/${repository}#${pullNumber}`);
+      debug(`creating comment on ${organization}/${repository}#${pullNumber}`);
       await instGithub.issues.createComment({
         owner: organization,
         repo: repository,
         issue_number: pullNumber,
-        body,
+        body: commentBody,
       });
-      this.markCommentSent(organization, repository, sha, error, pullNumber);
+      this.markCommentSent(organization, repository, sha, body, pullNumber);
       return;
     }
-    debug(`creating exception comment on ${organization}/${repository}@${sha}`);
+    debug(`creating comment on ${organization}/${repository}@${sha}`);
     await instGithub.repos.createCommitComment({
       owner: organization,
       repo: repository,
       commit_sha: sha,
-      body,
+      body: commentBody,
     });
-    this.markCommentSent(organization, repository, sha, error, pullNumber);
+    this.markCommentSent(organization, repository, sha, body, pullNumber);
+  }
+
+  async addCommentReaction({ instGithub, organization, repository, commentId, reaction }) {
+    assert(['+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes'].includes(reaction),
+      `Invalid reaction: ${reaction}`);
+    try {
+      await instGithub.reactions.createForIssueComment({
+        owner: organization,
+        repo: repository,
+        comment_id: commentId,
+        content: reaction,
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        return;
+      }
+      throw err;
+    }
   }
 
   /**
@@ -428,6 +464,23 @@ class Handlers {
     }
 
     return DEFAULT_POLICY;
+  }
+
+  /**
+   * Checks if the repository allows comments to trigger builds on Pull Requests.
+   * Only v1 of `.taskcluster.yml` supports this feature.
+   * `policy.allowComments` needs to be set to `"collaborators"` to enable this feature.
+   * (Currently the only option allowed)
+   *
+   * @param {object} taskclusterYml
+   * @returns string | null
+   */
+  getRepoAllowCommentsPolicy(taskclusterYml) {
+    if (taskclusterYml.version === 1) {
+      return taskclusterYml?.policy?.allowComments || null;
+    }
+
+    return null;
   }
 
   /**

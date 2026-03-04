@@ -1,4 +1,4 @@
-import { MonitorManager } from 'taskcluster-lib-monitor';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 export const monitor = MonitorManager.setup({
   serviceName: 'client',

@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/meta-data/spot/termination-time"
@@ -22,7 +22,7 @@ type AWSProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 	terminationTicker          *time.Ticker
 }
 
@@ -67,7 +67,7 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"instance-id":       iid_json.InstanceId,
 		"image":             iid_json.ImageId,
 		"instance-type":     iid_json.InstanceType,
@@ -80,15 +80,15 @@ func (p *AWSProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document":  interface{}(iid_string),
-		"signature": interface{}(instanceIdentityDocumentSignature),
+	p.workerIdentityProof = map[string]any{
+		"document":  any(iid_string),
+		"signature": any(instanceIdentityDocumentSignature),
 	}
 
 	return nil
 }
 
-func (p *AWSProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *AWSProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -106,9 +106,10 @@ func (p *AWSProvider) checkTerminationTime() bool {
 	if err == nil {
 		log.Println("EC2 Metadata Service says termination is imminent")
 		if p.proto != nil && p.proto.Capable("graceful-termination") {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					// spot termination generally doesn't leave time to finish tasks
 					"finish-tasks": false,
 				},
@@ -121,7 +122,7 @@ func (p *AWSProvider) checkTerminationTime() bool {
 
 func (p *AWSProvider) WorkerStarted(state *run.State) error {
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(30 * time.Second)
+	p.terminationTicker = time.NewTicker(5 * time.Second)
 	p.proto.AddCapability("graceful-termination")
 
 	go func() {

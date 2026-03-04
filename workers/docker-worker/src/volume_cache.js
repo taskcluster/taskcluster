@@ -1,7 +1,7 @@
 let path = require('path');
 let fs = require('fs');
 const { makeDir, removeDir } = require('./util/fs');
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 let uuid = require('uuid');
 let _ = require('lodash');
 
@@ -128,7 +128,7 @@ class VolumeCache {
     let cachePath = path.join(this.rootCachePath, cacheName);
     this.cache[cacheName] = {};
 
-    if(fs.existsSync(cachePath)) {
+    if (fs.existsSync(cachePath)) {
       await makeDir(cachePath);
       let cacheDetails = { cacheName: cacheName, cachPath: cachePath };
       this.log('cache volume created', cacheDetails);
@@ -224,7 +224,7 @@ class VolumeCache {
   */
   getCacheDetails(cacheKey) {
     let cacheSplit = cacheKey.split(KEY_DELIMITER);
-    return({
+    return ({
       cacheName: cacheSplit[0],
       cacheLocation: path.join(this.rootCachePath, cacheSplit[0], cacheSplit[1] + '/'),
     });

@@ -2,39 +2,48 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - src.transforms:taskcluster_image_versions
-  - src.transforms:podman_run
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
-  worker-type: gw-ubuntu-22-04
+  worker-type: ubuntu-24-04
   run:
     using: bare
   worker:
     max-run-time: 600
+    chain-of-trust: true
 
 tasks:
   nodejs:
     description: nodejs lint
-    docker-image: node:{node_version}
+    worker:
+      docker-image: {in-tree: ci}
     run:
       command: >-
-        corepack enable &&
-        yarn &&
-        yarn lint
+        corepack yarn &> /dev/null &&
+        corepack yarn lint
   golang:
     description: go lint
-    docker-image: taskcluster/ci-image:node{node_version}-pg{pg_version}-go{go_version}
+    priority: very-high
+    worker:
+      docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
-        corepack enable &&
-        yarn &&
-        yarn lint:go
+        corepack yarn &> /dev/null &&
+        corepack yarn lint:go
   python:
     description: python flake8
-    docker-image: python:3.11
+    worker:
+      docker-image: {in-tree: python}
     run:
+      using: run-task
+      cwd: '{checkout}'
+      use-caches: [checkout, uv]
       command: >-
-        pip install flake8 &&
-        sh test/py-lint.sh
+        uv venv &&
+        source .venv/bin/activate &&
+        uv pip install flake8 &&
+        uv run sh test/py-lint.sh

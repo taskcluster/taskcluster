@@ -4,19 +4,23 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	stdlibruntime "runtime"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v65/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -27,12 +31,18 @@ func (task *TaskRun) formatCommand(index int) string {
 
 func platformFeatures() []Feature {
 	return []Feature{
+		&RunTaskAsCurrentUserFeature{},
 		&RDPFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
 		// keep chain of trust as low down as possible, as it checks permissions
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible
 		&ChainOfTrustFeature{},
+		// ArtifactFeature last in the list, to match previous behaviour. It
+		// may be possible to move further up at some point, but then task
+		// log comments might need to be adjusted (since they refer to other
+		// features running later in the Stop() method).
+		&ArtifactFeature{},
 	}
 }
 
@@ -60,7 +70,8 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, taskContext.pd)
+	task.pd.HideCmdWindow = task.Payload.Features.HideCmdWindow
+	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
 	if err != nil {
 		return err
 	}
@@ -107,8 +118,10 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		contents += setEnvVarCommand("TASK_ID", task.TaskID)
 		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
+		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
+		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
-		if config.RunTasksAsCurrentUser {
+		if task.Payload.Features.RunTaskAsCurrentUser {
 			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
 		}
 		if config.WorkerLocation != "" {
@@ -116,6 +129,12 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			// expects literal bytes between the `=` character and the line
 			// ending, i.e. no string escaping required!
 			contents += setEnvVarCommand("TASKCLUSTER_WORKER_LOCATION", config.WorkerLocation)
+		}
+		if config.InstanceType != "" {
+			// Note, in contrast to other shells, the cmd shell set command
+			// expects literal bytes between the `=` character and the line
+			// ending, i.e. no string escaping required!
+			contents += setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType)
 		}
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
@@ -136,7 +155,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 
 		dirBytes, err := os.ReadFile(dir)
-		dirString := strings.SplitN(strings.Replace(string(dirBytes), "\r\n", "\n", -1), "\n", 2)[0]
+		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
 
 		if err != nil {
 			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
@@ -213,16 +232,16 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 func (task *TaskRun) setVariable(variable string, value string) error {
 	for i := range task.Commands {
 		newEnv := []string{fmt.Sprintf("%s=%s", variable, value)}
-		combined, err := win32.MergeEnvLists(&task.Commands[i].Cmd.Env, &newEnv)
+		combined, err := win32.MergeEnvLists(&task.Commands[i].Env, &newEnv)
 		if err != nil {
 			return err
 		}
-		task.Commands[i].Cmd.Env = *combined
+		task.Commands[i].Env = *combined
 	}
 	return nil
 }
 
-func install(arguments map[string]interface{}) (err error) {
+func install(arguments map[string]any) (err error) {
 	exePath, err := ExePath()
 	if err != nil {
 		return err
@@ -248,11 +267,6 @@ func install(arguments map[string]interface{}) (err error) {
 func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
 	// see http://ss64.com/nt/icacls.html
 	return host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F")
-}
-
-func makeDirUnreadableForUser(dir string, user *gwruntime.OSUser) error {
-	// see http://ss64.com/nt/icacls.html
-	return host.Run("icacls", dir, "/remove:g", user.Name)
 }
 
 // The windows implementation of os.Rename(...) doesn't allow renaming files
@@ -358,24 +372,17 @@ func UACEnabled() bool {
 	return enableLUA == 1
 }
 
-func rebootBetweenTasks() bool {
-	return true
-}
-
-func platformTargets(arguments map[string]interface{}) ExitCode {
+func platformTargets(arguments map[string]any) ExitCode {
 	switch {
 	case arguments["grant-winsta-access"]:
 		sid := arguments["--sid"].(string)
 		err := GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid)
-		if err != nil {
-			log.Printf("Error granting %v full control of interactive windows station and desktop:", sid)
-			log.Printf("%v", err)
-			return CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP
-		}
-		return 0
+		exitOnError(CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP, err, "Error granting %v full control of interactive windows station and desktop:", sid)
+	default:
+		log.Print("Internal error - no target found to run, yet command line parsing successful")
+		return INTERNAL_ERROR
 	}
-	log.Print("Internal error - no target found to run, yet command line parsing successful")
-	return INTERNAL_ERROR
+	return 0
 }
 
 func CreateRunGenericWorkerBatScript(batScriptFilePath string, extraOpts string) error {
@@ -523,9 +530,22 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+	// Wait for the User Profile Service to be running before any profile operations.
+	// On first boot after sysprep, ProfSvc may not be initialized yet.
+	// See: https://github.com/taskcluster/taskcluster/issues/8083
+	err := gwruntime.WaitForProfileService(5 * time.Minute)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create user profile before loading it to prevent temporary profile creation
+	err = nextTaskUser.CreateUserProfile()
+	if err != nil {
+		panic(err)
+	}
+
 	// set APPDATA
 	var loginInfo *process.LoginInfo
-	var err error
 	loginInfo, err = process.NewLoginInfo(nextTaskUser.Name, nextTaskUser.Password)
 	if err != nil {
 		panic(err)
@@ -540,9 +560,46 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	}
 }
 
-func convertNilToEmptyString(val interface{}) string {
+func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
+	if dir == "" || newOwnerUsername == "" || cache == nil {
+		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
+	}
+
+	// Do nothing if the current owner is the same as the new owner
+	if cache.OwnerUsername == newOwnerUsername {
+		return nil
+	}
+
+	// Reset to inherited permissions only, recursively
+	out, err := host.Output("icacls", dir, "/reset", "/t", "/c", "/q")
+	if err != nil {
+		return fmt.Errorf("failed to reset permissions on dir %v: %v\n%v", dir, err, out)
+	}
+
+	// Grant full control to new owner, adding to inherited permissions
+	out, err = host.Output("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
+	if err != nil {
+		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v\n%v", newOwnerUsername, dir, err, out)
+	}
+
+	return nil
+}
+
+func convertNilToEmptyString(val any) string {
 	if val == nil {
 		return ""
 	}
 	return val.(string)
+}
+
+func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, ctx context.Context) (*interactive.ConPty, error) {
+	envVars := []string{}
+	for k, v := range task.Payload.Env {
+		envVars = append(envVars, k+"="+win32.CMDExeEscape(v))
+	}
+	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, taskContext.TaskDir, envVars, windows.Token(task.pd.CommandAccessToken))
+}
+
+func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo interface{}, ctx context.Context) (*exec.Cmd, error) {
+	return nil, nil
 }

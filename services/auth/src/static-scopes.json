@@ -12,6 +12,7 @@
       "assume:repo:github.com/*",
       "assume:scheduler-id:taskcluster-github/*",
       "queue:cancel-task-group:taskcluster-github/*",
+      "queue:list-artifacts:*",
       "queue:list-task-group:*",
       "queue:route:checks",
       "queue:route:statuses",
@@ -92,12 +93,14 @@
       "auth:create-client:worker/*",
       "notify:email:*",
       "queue:claim-work:*",
+      "queue:claimed-count:*",
       "queue:pending-count:*",
       "queue:worker-id:*",
       "secrets:get:worker-pool:*",
       "secrets:get:worker-type:*",
       "worker-manager:remove-worker:*",
-      "worker-manager:reregister-worker:*"
+      "worker-manager:reregister-worker:*",
+      "worker-manager:should-worker-terminate:*"
     ]
   },
   {

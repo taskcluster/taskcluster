@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'assert';
 import slugid from 'slugid';
 

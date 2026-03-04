@@ -9,6 +9,7 @@ import { encode, decode } from '../../utils/codec.js';
 import tryCatch from '../../utils/tryCatch.js';
 import login from '../../utils/login.js';
 import verifyJwtAuth0 from '../../utils/verifyJwtAuth0/index.js';
+import { applySecurityHeaders } from '../../utils/headers.js';
 
 export default class MozillaAuth0 {
   constructor({ name, cfg, monitor }) {
@@ -231,10 +232,11 @@ export default class MozillaAuth0 {
     );
 
     // Called by the consumer
-    app.get('/login/mozilla-auth0', passport.authenticate('auth0'));
+    app.get('/login/mozilla-auth0', applySecurityHeaders, passport.authenticate('auth0'));
     // Called by the provider
     app.get(
       callback,
+      applySecurityHeaders,
       passport.authenticate('auth0'),
       loginMiddleware,
     );

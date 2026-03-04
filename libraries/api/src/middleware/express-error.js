@@ -3,6 +3,7 @@ import { ErrorReply } from '../error-reply.js';
 
 export let isProduction = process.env.NODE_ENV === 'production';
 // needed for testing
+/** @param {boolean} value */
 export const setIsProduction = value => isProduction = value;
 
 /**
@@ -13,6 +14,13 @@ export const setIsProduction = value => isProduction = value;
  * Parameters not listed in `req.params` will be ignored. But parameters
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   errorCodes: Record<string, number>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestErrrorHandler<{}>}
  */
 export const expressError = ({ errorCodes, entry }) => {
   const { name: method, cleanPayload } = entry;
@@ -38,6 +46,7 @@ export const expressError = ({ errorCodes, entry }) => {
       req.tcContext.monitor.reportError(err);
 
       // then formulate a generic error to send to the HTTP client
+      /** @type {Record<string, any>} */
       const details = { incidentId };
       if (!isProduction) {
         if (err.stack) {
@@ -69,6 +78,7 @@ export const expressError = ({ errorCodes, entry }) => {
         (message || 'Missing message!');
       code = 'InternalServerError';
       status = 500;
+      /** @type {Error & Record<string, any>} */
       const err = new Error(newMessage);
       err.badMessage = message;
       err.badCode = code;
@@ -98,6 +108,6 @@ export const expressError = ({ errorCodes, entry }) => {
       '* time:       ' + requestInfo.time,
     ].join('\n');
 
-    return res.status(errorCodes[code]).json({ code, message, requestInfo });
+    res.status(errorCodes[code]).json({ code, message, requestInfo });
   };
 };

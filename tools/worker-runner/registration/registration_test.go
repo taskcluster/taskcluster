@@ -11,12 +11,12 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v65/tools/workerproto/testing"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 )
 
 func TestRegisterWorker(t *testing.T) {
@@ -30,7 +30,7 @@ func TestRegisterWorker(t *testing.T) {
 	runnercfg.WorkerImplementation.Implementation = "whatever-worker"
 	reg := new(&runnercfg, &state, tc.FakeWorkerManagerClientFactory)
 
-	proof := map[string]interface{}{
+	proof := map[string]any{
 		"because": "I said so",
 	}
 
@@ -56,6 +56,10 @@ func TestRegisterWorker(t *testing.T) {
 	require.Equal(t, "wg", call.WorkerGroup)
 	require.Equal(t, "wid", call.WorkerID)
 	require.Equal(t, json.RawMessage([]byte(`{"because":"I said so"}`)), call.WorkerIdentityProof)
+
+	bootTime := time.Time(call.SystemBootTime)
+	require.False(t, bootTime.IsZero(), "SystemBootTime should not be zero")
+	require.True(t, bootTime.Before(time.Now()), "SystemBootTime should be in the past")
 }
 
 func TestCredsExpirationGraceful(t *testing.T) {

@@ -36,7 +36,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcworkermanagerevents
 
 import (
@@ -44,11 +44,19 @@ import (
 	"strings"
 )
 
-// Whenever the api receives a request to create aworker pool, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to create a
+// worker pool, a message is posted to this exchange and
+// a provider can act upon it.
 //
 // See #workerPoolCreated
 type WorkerPoolCreated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -60,15 +68,23 @@ func (binding WorkerPoolCreated) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-pool-created"
 }
 
-func (binding WorkerPoolCreated) NewPayloadObject() interface{} {
+func (binding WorkerPoolCreated) NewPayloadObject() any {
 	return new(WorkerTypePulseMessage)
 }
 
-// Whenever the api receives a request to update aworker pool, a message is posted to this exchange anda provider can act upon it.
+// Whenever the api receives a request to update a
+// worker pool, a message is posted to this exchange and
+// a provider can act upon it.
 //
 // See #workerPoolUpdated
 type WorkerPoolUpdated struct {
 	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
 	Reserved       string `mwords:"#"`
 }
 
@@ -80,11 +96,233 @@ func (binding WorkerPoolUpdated) ExchangeName() string {
 	return "exchange/taskcluster-worker-manager/v1/worker-pool-updated"
 }
 
-func (binding WorkerPoolUpdated) NewPayloadObject() interface{} {
+func (binding WorkerPoolUpdated) NewPayloadObject() any {
 	return new(WorkerTypePulseMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+// Whenever a worker reports an error
+// or provisioner encounters an error while
+// provisioning a worker pool, a message is posted to this
+// exchange.
+//
+// See #workerPoolError
+type WorkerPoolError struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerPoolError) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerPoolError) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-pool-error"
+}
+
+func (binding WorkerPoolError) NewPayloadObject() any {
+	return new(WorkerTypePulseMessage1)
+}
+
+// Whenever a worker is requested, a message is posted
+// to this exchange.
+//
+// See #workerRequested
+type WorkerRequested struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRequested) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRequested) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-requested"
+}
+
+func (binding WorkerRequested) NewPayloadObject() any {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker has registered, a message is posted
+// to this exchange. This means that worker started
+// successfully and is ready to claim work.
+//
+// See #workerRunning
+type WorkerRunning struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRunning) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRunning) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-running"
+}
+
+func (binding WorkerRunning) NewPayloadObject() any {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker has stopped, a message is posted
+// to this exchange. This means that instance was
+// either terminated or stopped gracefully.
+//
+// See #workerStopped
+type WorkerStopped struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerStopped) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerStopped) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-stopped"
+}
+
+func (binding WorkerStopped) NewPayloadObject() any {
+	return new(WorkerPulseMessage)
+}
+
+// Whenever a worker is removed, a message is posted to this exchange.
+// This occurs when a worker is requested to be removed via an API call
+// or when a worker is terminated by the worker manager.
+// The reason for the removal is included in the message.
+//
+// See #workerRemoved
+type WorkerRemoved struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding WorkerRemoved) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding WorkerRemoved) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/worker-removed"
+}
+
+func (binding WorkerRemoved) NewPayloadObject() any {
+	return new(WorkerRemovedPulseMessage)
+}
+
+// Whenever a new launch configuration is created for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigCreated
+type LaunchConfigCreated struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigCreated) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigCreated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-created"
+}
+
+func (binding LaunchConfigCreated) NewPayloadObject() any {
+	return new(LaunchConfigPulseMessage)
+}
+
+// Whenever a launch configuration is updated for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigUpdated
+type LaunchConfigUpdated struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigUpdated) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigUpdated) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-updated"
+}
+
+func (binding LaunchConfigUpdated) NewPayloadObject() any {
+	return new(LaunchConfigPulseMessage)
+}
+
+// Whenever a launch configuration is archived for a worker pool,
+// a message is posted to this exchange.
+//
+// See #launchConfigArchived
+type LaunchConfigArchived struct {
+	RoutingKeyKind string `mwords:"*"`
+	ProviderID     string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	LaunchConfigID string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding LaunchConfigArchived) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding LaunchConfigArchived) ExchangeName() string {
+	return "exchange/taskcluster-worker-manager/v1/launch-config-archived"
+}
+
+func (binding LaunchConfigArchived) NewPayloadObject() any {
+	return new(LaunchConfigPulseMessage)
+}
+
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
 	for i := range val.NumField() {

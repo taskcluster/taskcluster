@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
-import testing from 'taskcluster-lib-testing';
-import tc from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import helper from '../helper.js';
 import slugid from 'slugid';
@@ -11,6 +11,7 @@ suite(testing.suiteName(), function () {
   setup('reset table', async function () {
     await helper.withDbClient(async client => {
       await client.query('delete from secrets');
+      await client.query('delete from audit_history');
     });
   });
 
@@ -103,7 +104,9 @@ suite(testing.suiteName(), function () {
         value: Buffer.from(JSON.stringify(s.encrypted_secret), 'utf8'),
       }), s.expires);
     }
-    await db.fns.expire_secrets();
+    const res = await db.fns.expire_secrets_return_names();
+    assert.equal(res.length, 6);
+    assert.deepEqual(res, Array.from({ length: 6 }).map((_, i) => ({ name: `secret-${i}` })));
     for await (const s of Object.values(secrets)) {
       const [secret] = await db.fns.get_secret(s.name);
       if (s.expires < new Date()) {
@@ -117,5 +120,28 @@ suite(testing.suiteName(), function () {
       const { rows: [{ count }] } = await client.query('select count(*) from secrets');
       assert.equal(count, '4');
     });
+  });
+  helper.dbTest('insert into secrets in audit history', async function (db, isFake) {
+
+    await db.fns.insert_secrets_audit_history(
+      'secret/1',
+      'client-1',
+      'created',
+    );
+
+    const rows = await helper.withDbClient(async client => {
+      const result = await client.query(`
+        SELECT client_id, action_type, created
+        FROM audit_history
+        WHERE entity_id = $1 AND entity_type = $2
+      `, ['secret/1', 'secret']);
+      return result.rows;
+    });
+
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].client_id, 'client-1');
+    assert.equal(rows[0].action_type, 'created');
+    assert(rows[0].created instanceof Date);
+
   });
 });

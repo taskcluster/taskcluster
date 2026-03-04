@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import { APIBuilder, paginateResults } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { artifactUtils } from './utils.js';
 import { Task } from './data.js';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 
 // map from storage type to whether it needs a finishArtifact call
 const STORAGE_TYPE_NEEDS_FINISH = {
@@ -49,10 +49,14 @@ const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res
     await req.authorize({ names: names });
 
     // Load artifact meta-data from table storage
-    const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+    const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
     if (!artifact || !artifact.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
+    }
+
+    if (artifact.expires < new Date()) {
+      return res.reportError('ResourceExpired', 'Artifact expired', {});
     }
 
     if (artifact.storageType !== 'link') {
@@ -171,6 +175,7 @@ export const loadArtifactsRoutes = (builder) => {
     let input = req.body;
     let storageType = input.storageType;
     let contentType = input.contentType || 'application/binary';
+    let contentLength = input.contentLength ?? null;
 
     // Find expiration date
     let expires = new Date(input.expires);
@@ -273,7 +278,7 @@ export const loadArtifactsRoutes = (builder) => {
         // `createUpload` call with no proposed methods.
         uploadId = slugid.nice();
         objectName = artifactToObjectName(taskId, runId, name);
-        const objectService = this.objectService.use({ authoriizedScopes: `object:upload:${projectId}:t/${objectName}` });
+        const objectService = this.objectService.use({ authorizedScopes: `object:upload:${projectId}:t/${objectName}` });
 
         await objectService.createUpload(objectName, {
           expires,
@@ -319,7 +324,7 @@ export const loadArtifactsRoutes = (builder) => {
 
     let artifact;
     try {
-      artifact = artifactUtils.fromDbRows(await this.db.fns.create_queue_artifact(
+      artifact = artifactUtils.fromDbRows(await this.db.fns.create_queue_artifact_2(
         taskId,
         runId,
         name,
@@ -328,6 +333,7 @@ export const loadArtifactsRoutes = (builder) => {
         details,
         present,
         expires,
+        contentLength,
       ));
     } catch (err) {
       // Re-throw error if this isn't because the entity already exists
@@ -336,7 +342,7 @@ export const loadArtifactsRoutes = (builder) => {
       }
 
       // Load original Artifact entity
-      const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+      const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
       let ok = createArtifactCallsCompatible(original, { storageType, contentType, expires, details });
 
@@ -467,7 +473,7 @@ export const loadArtifactsRoutes = (builder) => {
     const { uploadId } = req.body;
 
     const [[artifact_row], task] = await Promise.all([
-      this.db.fns.get_queue_artifact(taskId, runId, name),
+      this.db.fns.get_queue_artifact_2(taskId, runId, name),
       Task.get(this.db, taskId),
     ]);
 
@@ -724,14 +730,49 @@ export const loadArtifactsRoutes = (builder) => {
       '`anonymous` role.  The convention is to include',
       '`queue:get-artifact:public/*`.',
       '',
-      '**API Clients**, this method will redirect you to the artifact, if it is',
-      'stored externally. Either way, the response may not be JSON. So API',
-      'client users might want to generate a signed URL for this end-point and',
-      'use that URL with a normal HTTP client.',
+      '**Response**: the HTTP response to this method is a 303 redirect to the',
+      'URL from which the artifact can be downloaded.  The body of that response',
+      'contains the data described in the output schema, contianing the same URL.',
+      'Callers are encouraged to use whichever method of gathering the URL is',
+      'most convenient.  Standard HTTP clients will follow the redirect, while',
+      'API client libraries will return the JSON body.',
+      '',
+      'In order to download an artifact the following must be done:',
+      '',
+      '1. Obtain queue url.  Building a signed url with a taskcluster client is',
+      'recommended',
+      '1. Make a GET request which does not follow redirects',
+      '1. In all cases, if specified, the',
+      'x-taskcluster-location-{content,transfer}-{sha256,length} values must be',
+      'validated to be equal to the Content-Length and Sha256 checksum of the',
+      'final artifact downloaded. as well as any intermediate redirects',
+      '1. If this response is a 500-series error, retry using an exponential',
+      'backoff.  No more than 5 retries should be attempted',
+      '1. If this response is a 400-series error, treat it appropriately for',
+      'your context.  This might be an error in responding to this request or',
+      'an Error storage type body.  This request should not be retried.',
+      '1. If this response is a 200-series response, the response body is the artifact.',
+      'If the x-taskcluster-location-{content,transfer}-{sha256,length} and',
+      'x-taskcluster-location-content-encoding are specified, they should match',
+      'this response body',
+      '1. If the response type is a 300-series redirect, the artifact will be at the',
+      'location specified by the `Location` header.  There are multiple artifact storage',
+      'types which use a 300-series redirect.',
+      '1. For all redirects followed, the user must verify that the content-sha256, content-length,',
+      'transfer-sha256, transfer-length and content-encoding match every further request.  The final',
+      'artifact must also be validated against the values specified in the original queue response',
+      '1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`',
+      'must not occur',
+      '',
+      '**Headers**',
+      'The following important headers are set on the response to this method:',
+      '',
+      '* location: the url of the artifact if a redirect is to be performed',
+      '* x-taskcluster-artifact-storage-type: the storage type.  Example: s3',
       '',
       '**Remark**, this end-point is slightly slower than',
       '`queue.getArtifact`, so consider that if you already know the `runId` of',
-      'the latest run. Otherwise, just us the most convenient API end-point.',
+      'the latest run. Otherwise, just use the most convenient API end-point.',
     ].join('\n'),
   }, async function(req, res) {
     let taskId = req.params.taskId;
@@ -749,7 +790,7 @@ export const loadArtifactsRoutes = (builder) => {
     const artifacts = await paginateResults({
       query: query,
       indexColumns: ['task_id', 'run_id', 'name'],
-      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
+      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated_2({
         task_id_in: taskId,
         run_id_in: runId,
         expires_in: null,
@@ -846,7 +887,7 @@ export const loadArtifactsRoutes = (builder) => {
    */
   const replyWithArtifactInfo = async function({ taskId, runId, name, req, res }) {
     const artifact = artifactUtils.fromDbRows(
-      await this.db.fns.get_queue_artifact(taskId, runId, name));
+      await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
     if (!artifact || !artifact.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});

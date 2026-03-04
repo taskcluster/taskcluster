@@ -13,12 +13,13 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
+	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v65/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 var log = root.Logger
@@ -76,13 +77,13 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		csh, _ := cmd.Flags().GetBool("csh")
 		rootURL := config.RootURL()
 		if csh {
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL '"+rootURL+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID "+shell.Escape(qs.Get("clientId")))
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN "+shell.Escape(qs.Get("accessToken")))
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL "+shell.Escape(rootURL))
 		} else {
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
-			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID="+shell.Escape(qs.Get("clientId")))
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN="+shell.Escape(qs.Get("accessToken")))
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL="+shell.Escape(rootURL))
 		}
 		log.Infoln("Credentials output as environment variables")
 

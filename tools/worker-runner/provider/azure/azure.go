@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v65/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v65/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type AzureProvider struct {
@@ -20,7 +20,7 @@ type AzureProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
+	workerIdentityProof        map[string]any
 	terminationTicker          *time.Ticker
 }
 
@@ -72,7 +72,7 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 		"region": instanceData.Compute.Location,
 	}
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"vm-id":         instanceData.Compute.VMID,
 		"instance-type": instanceData.Compute.VMSize,
 		"region":        instanceData.Compute.Location,
@@ -89,14 +89,14 @@ func (p *AzureProvider) ConfigureRun(state *run.State) error {
 
 	state.ProviderMetadata = providerMetadata
 
-	p.workerIdentityProof = map[string]interface{}{
-		"document": interface{}(document),
+	p.workerIdentityProof = map[string]any{
+		"document": any(document),
 	}
 
 	return nil
 }
 
-func (p *AzureProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *AzureProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -125,9 +125,10 @@ func (p *AzureProvider) checkTerminationTime() bool {
 			}
 			log.Printf("Azure Metadata Service says a %s maintenance event is imminent\n", evt.EventType)
 			if p.proto != nil && p.proto.Capable("graceful-termination") {
+				log.Println("Sending graceful-termination request with finish-tasks=false")
 				p.proto.Send(workerproto.Message{
 					Type: "graceful-termination",
-					Properties: map[string]interface{}{
+					Properties: map[string]any{
 						// termination generally doesn't leave time to finish
 						// tasks. We prefer to have the worker exit cleanly
 						// immediately, resolving tasks as
@@ -154,7 +155,9 @@ func (p *AzureProvider) WorkerStarted(state *run.State) error {
 	p.proto.AddCapability("graceful-termination")
 
 	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(15 * time.Second)
+	// Microsoft recommends once per second
+	// https://learn.microsoft.com/en-us/azure/virtual-machines/windows/scheduled-events#polling-frequency
+	p.terminationTicker = time.NewTicker(1 * time.Second)
 	go func() {
 		for {
 			<-p.terminationTicker.C

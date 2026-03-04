@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"sync"
 
-	tcclient "github.com/taskcluster/taskcluster/v65/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -26,48 +26,56 @@ type (
 
 	PublicConfig struct {
 		PublicEngineConfig
-		AvailabilityZone               string                 `json:"availabilityZone"`
-		CachesDir                      string                 `json:"cachesDir"`
-		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
-		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
-		ClientID                       string                 `json:"clientId"`
-		CreateObjectArtifacts          bool                   `json:"createObjectArtifacts"`
-		DeploymentID                   string                 `json:"deploymentId"`
-		DisableReboots                 bool                   `json:"disableReboots"`
-		DownloadsDir                   string                 `json:"downloadsDir"`
-		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
-		EnableInteractive              bool                   `json:"enableInteractive"`
-		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
-		InstanceID                     string                 `json:"instanceId"`
-		InstanceType                   string                 `json:"instanceType"`
-		InteractivePort                uint16                 `json:"interactivePort"`
-		LiveLogExecutable              string                 `json:"livelogExecutable"`
-		LiveLogPortBase                uint16                 `json:"livelogPortBase"`
-		LiveLogExposePort              uint16                 `json:"livelogExposePort"`
-		LoopbackAudioDeviceNumber      uint8                  `json:"loopbackAudioDeviceNumber"`
-		LoopbackVideoDeviceNumber      uint8                  `json:"loopbackVideoDeviceNumber"`
-		MaxTaskRunTime                 uint32                 `json:"maxTaskRunTime"`
-		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
-		PrivateIP                      net.IP                 `json:"privateIP"`
-		ProvisionerID                  string                 `json:"provisionerId"`
-		PublicIP                       net.IP                 `json:"publicIP"`
-		Region                         string                 `json:"region"`
-		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
-		RootURL                        string                 `json:"rootURL"`
-		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
-		SentryProject                  string                 `json:"sentryProject"`
-		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
-		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
-		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
-		TasksDir                       string                 `json:"tasksDir"`
-		WorkerGroup                    string                 `json:"workerGroup"`
-		WorkerID                       string                 `json:"workerId"`
-		WorkerLocation                 string                 `json:"workerLocation,omitempty"`
-		WorkerType                     string                 `json:"workerType"`
-		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
-		WSTAudience                    string                 `json:"wstAudience"`
-		WSTServerURL                   string                 `json:"wstServerURL"`
+		PublicPlatformConfig
+		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
+		AvailabilityZone               string         `json:"availabilityZone"`
+		CachesDir                      string         `json:"cachesDir"`
+		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
+		ClientID                       string         `json:"clientId"`
+		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
+		DisableOOMProtection           bool           `json:"disableOOMProtection"`
+		DisableReboots                 bool           `json:"disableReboots"`
+		DownloadsDir                   string         `json:"downloadsDir"`
+		Ed25519SigningKeyLocation      string         `json:"ed25519SigningKeyLocation"`
+		EnableChainOfTrust             bool           `json:"enableChainOfTrust"`
+		EnableInteractive              bool           `json:"enableInteractive"`
+		EnableLiveLog                  bool           `json:"enableLiveLog"`
+		EnableMetadata                 bool           `json:"enableMetadata"`
+		EnableMounts                   bool           `json:"enableMounts"`
+		EnableOSGroups                 bool           `json:"enableOSGroups"`
+		EnableResourceMonitor          bool           `json:"enableResourceMonitor"`
+		EnableTaskclusterProxy         bool           `json:"enableTaskclusterProxy"`
+		IdleTimeoutSecs                uint           `json:"idleTimeoutSecs"`
+		InstanceID                     string         `json:"instanceId"`
+		InstanceType                   string         `json:"instanceType"`
+		InteractivePort                uint16         `json:"interactivePort"`
+		LiveLogExecutable              string         `json:"livelogExecutable"`
+		LiveLogPortBase                uint16         `json:"livelogPortBase"`
+		LiveLogExposePort              uint16         `json:"livelogExposePort"`
+		MaxMemoryUsagePercent          uint64         `json:"maxMemoryUsagePercent"`
+		MaxTaskRunTime                 uint32         `json:"maxTaskRunTime"`
+		MinAvailableMemoryBytes        uint64         `json:"minAvailableMemoryBytes"`
+		NumberOfTasksToRun             uint           `json:"numberOfTasksToRun"`
+		PrivateIP                      net.IP         `json:"privateIP"`
+		ProvisionerID                  string         `json:"provisionerId"`
+		PublicIP                       net.IP         `json:"publicIP"`
+		Region                         string         `json:"region"`
+		RequiredDiskSpaceMegabytes     uint           `json:"requiredDiskSpaceMegabytes"`
+		RootURL                        string         `json:"rootURL"`
+		RunAfterUserCreation           string         `json:"runAfterUserCreation"`
+		SentryProject                  string         `json:"sentryProject"`
+		ShutdownMachineOnIdle          bool           `json:"shutdownMachineOnIdle"`
+		ShutdownMachineOnInternalError bool           `json:"shutdownMachineOnInternalError"`
+		TaskclusterProxyExecutable     string         `json:"taskclusterProxyExecutable"`
+		TaskclusterProxyPort           uint16         `json:"taskclusterProxyPort"`
+		TasksDir                       string         `json:"tasksDir"`
+		WorkerGroup                    string         `json:"workerGroup"`
+		WorkerID                       string         `json:"workerId"`
+		WorkerLocation                 string         `json:"workerLocation,omitempty"`
+		WorkerType                     string         `json:"workerType"`
+		WorkerTypeMetadata             map[string]any `json:"workerTypeMetadata"`
+		WSTAudience                    string         `json:"wstAudience"`
+		WSTServerURL                   string         `json:"wstServerURL"`
 	}
 
 	PrivateConfig struct {
@@ -86,14 +94,14 @@ func (c *Config) String() string {
 	// concatenates the results from each of the nested structs together.
 	// Therefore we need to flatten the data structure first before marshaling
 	// into json in order to have all properties sorted alphabetically. We do
-	// this by first marshaling to json, then unmarshaling to an interface{}
+	// this by first marshaling to json, then unmarshaling to an any
 	// (so that the structure is flattened), and then finally marshaling back
 	// to json. Whew.
 	j, err := json.Marshal(&c.PublicConfig)
 	if err != nil {
 		panic(err)
 	}
-	var data interface{}
+	var data any
 	err = json.Unmarshal(j, &data)
 	if err != nil {
 		panic(err)
@@ -110,9 +118,9 @@ func (c *Config) Validate() error {
 	// TODO: we should be using json schema here
 
 	fields := []struct {
-		value      interface{}
+		value      any
 		name       string
-		disallowed interface{}
+		disallowed any
 	}{
 		{value: c.AccessToken, name: "accessToken", disallowed: ""},
 		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
@@ -166,19 +174,6 @@ type File struct {
 	Path string
 }
 
-func (cf *File) NewestDeploymentID() (string, error) {
-	configData, err := os.ReadFile(cf.Path)
-	if err != nil {
-		return "", err
-	}
-	var tempConfig Config
-	err = json.Unmarshal(configData, &tempConfig)
-	if err != nil {
-		return "", err
-	}
-	return tempConfig.DeploymentID, nil
-}
-
 func (cf *File) UpdateConfig(c *Config) error {
 	log.Printf("Loading generic-worker config file '%v'...", cf.Path)
 	configData, err := os.ReadFile(cf.Path)
@@ -194,7 +189,7 @@ func (cf *File) UpdateConfig(c *Config) error {
 		// An error here is serious - it means the file existed but was invalid
 		return fmt.Errorf("Error unmarshaling generic worker config file %v as JSON: %v", cf.Path, err)
 	}
-	err = c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
+	err = c.MergeInJSON(configData, func(a map[string]any) map[string]any {
 		return a
 	})
 	if err != nil {

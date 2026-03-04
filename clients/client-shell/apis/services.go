@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v65/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v97/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -76,7 +76,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "createClient",
 				Title:       "Create Client",
-				Description: "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
+				Description: "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you lose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned. You cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
 				Stability:   "stable",
 				Method:      "put",
 				Route:       "/clients/<clientId>",
@@ -87,9 +87,42 @@ var services = map[string]definitions.Service{
 				Input: "v1/create-client-request.json#",
 			},
 			definitions.Entry{
+				Name:        "getEntityHistory",
+				Title:       "Get Entity History",
+				Description: "Get entity history based on entity type and entity name",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/audit/<entityType>/<entityId>",
+				Args: []string{
+					"entityType",
+					"entityId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "listAuditHistory",
+				Title:       "List Audit History",
+				Description: "Get audit history of a client based on clientId.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/clients/<clientId>/audit",
+				Args: []string{
+					"clientId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "resetAccessToken",
 				Title:       "Reset `accessToken`",
-				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
+				Description: "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you lose it\nyou must reset the accessToken to acquire it again.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/clients/<clientId>/reset",
@@ -479,17 +512,6 @@ var services = map[string]definitions.Service{
 				Input:       "",
 			},
 			definitions.Entry{
-				Name:        "githubWebHookConsumer",
-				Title:       "Consume GitHub WebHook",
-				Description: "Capture a GitHub event and publish it via pulse, if it's a push,\nrelease, check run or pull request.",
-				Stability:   "stable",
-				Method:      "post",
-				Route:       "/github",
-				Args:        []string{},
-				Query:       []string{},
-				Input:       "",
-			},
-			definitions.Entry{
 				Name:        "builds",
 				Title:       "List of Builds",
 				Description: "A paginated list of builds that have been run in\nTaskcluster. Can be filtered on various git-specific\nfields.",
@@ -758,7 +780,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHook",
 				Title:       "Trigger a hook",
-				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -800,7 +822,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHookWithToken",
 				Title:       "Trigger a hook with a token",
-				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
@@ -1553,6 +1575,32 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "changeTaskPriority",
+				Title:       "Change Task Priority",
+				Description: "This method updates the priority of a single unresolved task.\n\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task/<taskId>/priority",
+				Args: []string{
+					"taskId",
+				},
+				Query: []string{},
+				Input: "v1/change-task-priority-request.json#",
+			},
+			definitions.Entry{
+				Name:        "changeTaskGroupPriority",
+				Title:       "Change Task Group Priority",
+				Description: "This method applies a new priority to unresolved tasks within a task group.\n\n* Updates run in bounded batches to avoid long locks.\n* Claimed or running tasks keep their current run priority until they are retried.\n* Emits `taskGroupPriorityChanged` summary event at the end.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-group/<taskGroupId>/priority",
+				Args: []string{
+					"taskGroupId",
+				},
+				Query: []string{},
+				Input: "v1/change-task-priority-request.json#",
+			},
+			definitions.Entry{
 				Name:        "claimWork",
 				Title:       "Claim Work",
 				Description: "Claim pending task(s) for the given task queue.\n\nIf any work is available (even if fewer than the requested number of\ntasks, this will return immediately. Otherwise, it will block for tens of\nseconds waiting for work.  If no work appears, it will return an emtpy\nlist of tasks.  Callers should sleep a short while (to avoid denial of\nservice in an error condition) and call the endpoint again.  This is a\nsimple implementation of \"long polling\".",
@@ -1683,7 +1731,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "getLatestArtifact",
 				Title:       "Get Artifact Data from Latest Run",
-				Description: "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just us the most convenient API end-point.",
+				Description: "Get artifact by `<name>` from the last run of a task.\n\n**Artifact Access**, in order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nTo allow access to fetch artifacts with a client like `curl` or a web\nbrowser, without using Taskcluster credentials, include a scope in the\n`anonymous` role.  The convention is to include\n`queue:get-artifact:public/*`.\n\n**Response**: the HTTP response to this method is a 303 redirect to the\nURL from which the artifact can be downloaded.  The body of that response\ncontains the data described in the output schema, contianing the same URL.\nCallers are encouraged to use whichever method of gathering the URL is\nmost convenient.  Standard HTTP clients will follow the redirect, while\nAPI client libraries will return the JSON body.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: s3\n\n**Remark**, this end-point is slightly slower than\n`queue.getArtifact`, so consider that if you already know the `runId` of\nthe latest run. Otherwise, just use the most convenient API end-point.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/task/<taskId>/artifacts/<name>",
@@ -1828,10 +1876,23 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
-				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.",
-				Stability:   "stable",
+				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
+				Stability:   "deprecated",
 				Method:      "get",
 				Route:       "/pending/<taskQueueId>",
+				Args: []string{
+					"taskQueueId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "taskQueueCounts",
+				Title:       "Get Number of Pending and Claimed Tasks",
+				Description: "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/task-queues/<taskQueueId>/counts",
 				Args: []string{
 					"taskQueueId",
 				},
@@ -2125,6 +2186,84 @@ var services = map[string]definitions.Service{
 			},
 		},
 	},
+	"WebServer": definitions.Service{
+		APIVersion:  "v1",
+		ServiceName: "web-server",
+		Title:       "Web Server Service",
+		Description: "The web-server service provides a GraphQL gateway to Taskcluster APIs,\nas well as profiler endpoints that generate Firefox Profiler–compatible\nprofiles from task group metadata and task logs.",
+		Entries: []definitions.Entry{
+			definitions.Entry{
+				Name:        "ping",
+				Title:       "Ping Server",
+				Description: "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/ping",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+			},
+			definitions.Entry{
+				Name:        "lbheartbeat",
+				Title:       "Load Balancer Heartbeat",
+				Description: "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/__lbheartbeat__",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+			},
+			definitions.Entry{
+				Name:        "version",
+				Title:       "Taskcluster Version",
+				Description: "Respond with the JSON version object.\nhttps://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/__version__",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+			},
+			definitions.Entry{
+				Name:        "taskGroupProfile",
+				Title:       "Task Group Profile",
+				Description: "Generate a Firefox Profiler–compatible profile from a task group.\nThe profile contains scheduling and execution timing for all tasks.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/task-group/<taskGroupId>/profile",
+				Args: []string{
+					"taskGroupId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "taskProfile",
+				Title:       "Task Log Profile",
+				Description: "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/task/<taskId>/profile",
+				Args: []string{
+					"taskId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "heartbeat",
+				Title:       "Heartbeat",
+				Description: "Respond with a service heartbeat.\n\nThis endpoint is used to check on backing services this service\ndepends on.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/__heartbeat__",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "",
+			},
+		},
+	},
 	"WorkerManager": definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "worker-manager",
@@ -2207,10 +2346,40 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "deleteWorkerPool",
 				Title:       "Delete Worker Pool",
-				Description: "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.",
+				Description: "Mark a worker pool for deletion.  This is the same as updating the pool to\nset its providerId to `\"null-provider\"`, but does not require scope\n`worker-manager:provider:null-provider`.\nThis will also mark all launch configurations as archived.",
 				Stability:   "stable",
 				Method:      "delete",
 				Route:       "/worker-pool/<workerPoolId>",
+				Args: []string{
+					"workerPoolId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "listWorkerPoolLaunchConfigs",
+				Title:       "List Worker Pool Launch Configs",
+				Description: "Get the list of launch configurations for a given worker pool.\nInclude archived launch configurations by setting includeArchived=true.\nBy default, only active launch configurations are returned.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pool/<workerPoolId>/launch-configs",
+				Args: []string{
+					"workerPoolId",
+				},
+				Query: []string{
+					"continuationToken",
+					"limit",
+					"includeArchived",
+				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "workerPoolStats",
+				Title:       "Get Worker Pool Statistics",
+				Description: "Fetch statistics for an existing worker pool, broken down by launch configuration.\nThis includes counts and capacities of requested, running, stopping, and stopped workers.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pool/<workerPoolId>/stats",
 				Args: []string{
 					"workerPoolId",
 				},
@@ -2237,6 +2406,20 @@ var services = map[string]definitions.Service{
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/worker-pools",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+				},
+				Input: "",
+			},
+			definitions.Entry{
+				Name:        "listWorkerPoolsStats",
+				Title:       "List All Worker Pools Stats",
+				Description: "Get the stats for all worker pools - number of requested, running, stopping and stopped capacity",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/worker-pools/stats",
 				Args:        []string{},
 				Query: []string{
 					"continuationToken",
@@ -2283,6 +2466,8 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"launchConfigId",
+					"errorId",
 				},
 				Input: "",
 			},
@@ -2364,6 +2549,21 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "shouldWorkerTerminate",
+				Title:       "Should worker terminate",
+				Description: "Informs if worker should terminate or keep working.\nWorker might no longer be needed based on the set of factors:\n - current capacity of the worker pool\n - amount of pending and claimed tasks\n - launch configuration changes\n\nDecision is made during provision or scanning loop based on above mentioned conditions.",
+				Stability:   "experimental",
+				Method:      "get",
+				Route:       "/workers/<workerPoolId>/<workerGroup>/<workerId>/should-terminate",
+				Args: []string{
+					"workerPoolId",
+					"workerGroup",
+					"workerId",
+				},
+				Query: []string{},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listWorkersForWorkerPool",
 				Title:       "Workers in a Worker Pool",
 				Description: "Get the list of all the existing workers in a given worker pool.",
@@ -2376,6 +2576,7 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"launchConfigId",
 					"state",
 				},
 				Input: "",
@@ -2416,6 +2617,7 @@ var services = map[string]definitions.Service{
 				Query: []string{
 					"continuationToken",
 					"limit",
+					"launchConfigId",
 					"quarantined",
 					"workerState",
 				},

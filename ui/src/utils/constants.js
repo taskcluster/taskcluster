@@ -27,6 +27,7 @@ export const TASK_GROUP_PAGE_SIZE = 1000;
 export const VIEW_WORKER_TYPES_PAGE_SIZE = 1000;
 export const VIEW_WORKERS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOLS_PAGE_SIZE = 1000;
+export const VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOL_ERRORS_PAGE_SIZE = 100;
 export const VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE = 100;
 export const VIEW_CLIENTS_PAGE_SIZE = 1000;
@@ -203,6 +204,7 @@ export const DENYLIST_NOTIFICATION_TYPES = {
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];
 export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
+export const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
 // The delay (in milliseconds) for `setTimeout` is a 32 bit signed quantity,
 // which limits it to 2^31-1 ms (2147483647 ms) or 24.855 days.
 export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
@@ -222,7 +224,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
         {
           region: 'us-west1',
           zone: 'us-west1-a',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           disks: [
             {
               autoDelete: true,
@@ -262,7 +266,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
       launchConfigs: [
         {
           location: 'westus',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           subnetId: '...',
           hardwareProfile: {
             vmSize: 'Basic_A1',

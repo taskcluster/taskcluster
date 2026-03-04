@@ -1,6 +1,6 @@
 import assert from 'assert';
 import gql from 'graphql-tag';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

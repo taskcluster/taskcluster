@@ -66,11 +66,16 @@ export const tasks = [{
         /MIN_GO_MINOR_VERSION=[0-9]+/,
         `MIN_GO_MINOR_VERSION=${goVersionMinor}`));
 
-    utils.status({ message: 'generic-worker.Dockerfile' });
-    await modifyRepoFile('generic-worker.Dockerfile',
-      contents => contents.replace(
-        /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
-        `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
-      ));
+    [
+      'generic-worker.Dockerfile',
+      'taskcluster/docker/ci/Dockerfile',
+    ].forEach(async file => {
+      utils.status({ message: file });
+      await modifyRepoFile(file,
+        contents => contents.replace(
+          /FROM golang:[0-9]+\.[0-9]+\.[0-9]+/,
+          `FROM golang:${goVersionMajor}.${goVersionMinor}.${goVersionBugfix}`,
+        ));
+    });
   },
 }];

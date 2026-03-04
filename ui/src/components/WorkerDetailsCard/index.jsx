@@ -6,11 +6,16 @@ import {
   ListItemText,
   Typography,
   Grid,
+  TableRow,
+  TableCell,
+  Tooltip,
 } from '@material-ui/core';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';
 import { worker } from '../../utils/prop-types';
+import DataTable from '../DataTable';
+import TableCellItem from '../TableCellItem';
 
 /**
  * Render information in a card layout about a worker.
@@ -24,6 +29,37 @@ export default class WorkerDetailsCard extends Component {
   static defaultProps = {
     worker: null,
   };
+
+  renderQuarantineRow = ({
+    clientId,
+    updatedAt,
+    quarantineUntil,
+    quarantineInfo,
+  }) => (
+    <TableRow
+      key={`${clientId}-${updatedAt}-${quarantineUntil}-${quarantineInfo}`}>
+      <TableCell>{clientId}</TableCell>
+      <TableCell>
+        <Tooltip title={updatedAt} placement="top">
+          <TableCellItem>
+            <DateDistance from={updatedAt} />
+          </TableCellItem>
+        </Tooltip>
+      </TableCell>
+      <TableCell>
+        <Tooltip title={quarantineUntil} placement="top">
+          <TableCellItem>
+            {format(parseISO(quarantineUntil), 'yyyy/MM/dd')}
+          </TableCellItem>
+        </Tooltip>
+      </TableCell>
+      <TableCell>
+        <Typography variant="body2" component="em">
+          {quarantineInfo}
+        </Typography>
+      </TableCell>
+    </TableRow>
+  );
 
   render() {
     const {
@@ -39,6 +75,11 @@ export default class WorkerDetailsCard extends Component {
         state,
       },
     } = this.props;
+    const sortedQuarantineDetails = quarantineDetails
+      ? [...quarantineDetails].sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        )
+      : [];
 
     return (
       <Fragment>
@@ -75,40 +116,23 @@ export default class WorkerDetailsCard extends Component {
                   }
                 />
               </ListItem>
-              {quarantineDetails?.length > 0 && (
+              {sortedQuarantineDetails?.length > 0 && (
                 <ListItem>
                   <ListItemText
                     primary="Quarantine History"
                     secondary={
-                      <ul>
-                        {quarantineDetails.map(
-                          ({
-                            clientId,
-                            updatedAt,
-                            quarantineUntil,
-                            quarantineInfo,
-                          }) => (
-                            <li key={updatedAt}>
-                              {clientId} on{' '}
-                              <em>
-                                {format(
-                                  parseISO(updatedAt),
-                                  'yyyy/MM/dd HH:ii'
-                                )}
-                              </em>
-                              {' | '}
-                              Until:{' '}
-                              {format(
-                                parseISO(quarantineUntil),
-                                'yyyy/MM/dd'
-                              )}:{' '}
-                              <Typography variant="body2" component="em">
-                                {quarantineInfo}
-                              </Typography>
-                            </li>
-                          )
-                        )}
-                      </ul>
+                      <DataTable
+                        items={sortedQuarantineDetails}
+                        renderRow={this.renderQuarantineRow}
+                        headers={[
+                          { id: 'clientId', label: 'Client ID' },
+                          { id: 'updatedAt', label: 'Date' },
+                          { id: 'quarantineUntil', label: 'Until' },
+                          { id: 'quarantineInfo', label: 'Reason' },
+                        ]}
+                        paginate
+                        noItemsMessage="No quarantine history available."
+                      />
                     }
                   />
                 </ListItem>

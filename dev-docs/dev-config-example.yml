@@ -1,6 +1,7 @@
 applicationName: My Taskcluster
 rootUrl: ...
 dockerImage: ...
+skipResourceTypes: []
 ingressStaticIpName: ...
 ingressCertName: ...
 ingressType: ...
@@ -13,6 +14,10 @@ forceSSL: false
 trustProxy: true
 nodeEnv: production
 meta: {}
+prometheus:
+  enabled: true
+  server:
+    port: 9100
 auth:
   static_clients:
     - clientId: static/taskcluster/built-in-workers
@@ -58,10 +63,13 @@ auth:
   azure_accounts: {}
   aws_credentials_allowed_buckets: {}
   gcp_credentials_allowed_projects: {}
+  audit_retention_days: ...
   procs:
     web:
       cpu: 10m
     purgeExpiredClients:
+      cpu: 10m
+    purgeAuditHistory:
       cpu: 10m
 built_in_workers:
   taskcluster_access_token: ...
@@ -177,6 +185,7 @@ queue:
   public_artifact_bucket_cdn: ...
   task_cache_max_size: ...
   expire_artifacts_batch_size: ...
+  task_max_dependencies: ...
   taskcluster_access_token: ...
   keep_alive_timeout_seconds: ...
   read_db_url: ...
@@ -195,6 +204,8 @@ queue:
       cpu: 10m
     claimResolver:
       cpu: 10m
+    workerRemovedResolver:
+      cpu: 10m
     deadlineResolver:
       cpu: 10m
     dependencyResolver:
@@ -210,6 +221,8 @@ queue:
     expireQueueMessages:
       cpu: 10m
     expireWorkerInfo:
+      cpu: 10m
+    workerMetrics:
       cpu: 10m
 secrets:
   taskcluster_access_token: ...
@@ -242,6 +255,8 @@ web_server:
       cpu: 10m
     scanner:
       cpu: 10m
+    cleanup_session_storage:
+      cpu: 10m
     cleanup_expire_auth_codes:
       cpu: 10m
     cleanup_expire_access_tokens:
@@ -269,6 +284,8 @@ worker_manager:
     expire_workers:
       cpu: 10m
     expire_worker_pools:
+      cpu: 10m
+    expire_launch_configs:
       cpu: 10m
     expire_errors:
       cpu: 10m

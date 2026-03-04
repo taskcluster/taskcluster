@@ -2,12 +2,12 @@ import { strict as assert } from 'assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 const { cloneDeep, range } = _;
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import helper from '../helper.js';
-import testing from 'taskcluster-lib-testing';
-import { INVALID_PARAMETER_VALUE, UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import { INVALID_PARAMETER_VALUE, UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import taskcluster from '@taskcluster/client';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'queue' });
@@ -90,14 +90,14 @@ suite(testing.suiteName(), function() {
       // this one is the same task and run, so only one record would remain
       await db.fns.queue_pending_tasks_add('tq1', 9, 'task1', 0, 'hint1', fromNow('10 seconds'));
       await db.fns.queue_pending_tasks_add('tq1', 3, 'task2', 0, 'hint1', fromNow('10 seconds'));
-      await db.fns.queue_pending_tasks_add('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('0 seconds'));
+      await db.fns.queue_pending_tasks_add('tq1', 1, 'expiredTask', 0, 'hint1', fromNow('-10 seconds'));
       assert.deepEqual(
         await db.fns.queue_pending_tasks_count("tq1"),
         [{ queue_pending_tasks_count: 2 }],
       );
     });
 
-    // TODO: This requires support from the taskcluster-lib-postgres library
+    // TODO: This requires support from the @taskcluster/lib-postgres library
     // helper.dbTest('adding pending task notifies channel', async function (db) {
     //   const notifications = [];
 
@@ -163,6 +163,19 @@ suite(testing.suiteName(), function() {
       });
     });
 
+    helper.dbTest('deleting tasks from pending queue', async function (db) {
+      await db.fns.queue_pending_tasks_add('tq1', 0, 't1', 0, 'hint1', fromNow('50 second'));
+      await db.fns.queue_pending_tasks_add('tq1', 0, 't1', 1, 'hint2', fromNow('50 second'));
+
+      await db.fns.queue_pending_task_delete('t1', 0);
+      await helper.withDbClient(async client => {
+        const res = await client.query('select * from queue_pending_tasks');
+        assert.deepEqual(res.rows.length, 1);
+        assert.equal(res.rows[0].task_id, 't1');
+        assert.equal(res.rows[0].run_id, 1);
+      });
+    });
+
     helper.dbTest('listing pending tasks', async function (db) {
       const res = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', null, null, null);
       assert.deepEqual(res, []);
@@ -184,6 +197,26 @@ suite(testing.suiteName(), function() {
       const res4 = await db.fns.get_pending_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
       assert.equal(res4.length, 2);
     });
+
+    helper.dbTest('listing pending tasks excludes expired', async function (db) {
+      const tq = 'task/queue-maybe-expired';
+      const res = await db.fns.get_pending_tasks_by_task_queue_id(tq, null, null, null);
+      assert.deepEqual(res, []);
+
+      for (let i = 0; i <= 5; i++) {
+        const taskId = `expTaskId${i}`;
+        const expires = i > 2 ? fromNow('-10 second') : fromNow('20 seconds');
+        await db.fns.queue_pending_tasks_add(tq, 0, taskId, 0, 'hint1', expires);
+        await create(db, { taskId });
+      }
+
+      const res2 = await db.fns.get_pending_tasks_by_task_queue_id(tq, null, null, null);
+      assert.equal(res2.length, 3);
+      assert.equal(res2[0].task_id, 'expTaskId0');
+      assert.equal(res2[1].task_id, 'expTaskId1');
+      assert.equal(res2[2].task_id, 'expTaskId2');
+    });
+
   });
 
   suite('tests for claimed tasks', function() {
@@ -270,6 +303,32 @@ suite(testing.suiteName(), function() {
 
       const res4 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
       assert.equal(res4.length, 2);
+    });
+
+    helper.dbTest('listing claimed tasks by worker', async function (db) {
+      // empty result when no tasks claimed
+      const res = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.deepEqual(res, []);
+
+      // add claims for worker w1
+      await db.fns.queue_claimed_task_put('task1', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('task2', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      // add claim for different worker w2
+      await db.fns.queue_claimed_task_put('task3', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w2');
+
+      const res2 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.equal(res2.length, 2);
+      const taskIds = res2.map(r => r.task_id).sort();
+      assert.deepEqual(taskIds, ['task1', 'task2']);
+
+      // different worker should only see its own
+      const res3 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w2');
+      assert.equal(res3.length, 1);
+      assert.equal(res3[0].task_id, 'task3');
+
+      // different task_queue_id returns nothing
+      const res4 = await db.fns.get_claimed_tasks_by_worker('other/queue', 'wg1', 'w1');
+      assert.deepEqual(res4, []);
     });
   });
 
@@ -1483,6 +1542,25 @@ suite(testing.suiteName(), function() {
           }
         }
       });
+
+      helper.dbTest('bulk insert task dependencies', async function (db) {
+        const totalDeps = 9999;
+        const halfDeps = 5000;
+        const taskId = slugid.v4();
+        const deps = range(totalDeps).map(() => slugid.v4());
+
+        await db.fns.add_task_dependencies(taskId, JSON.stringify(deps), 'all-completed', taskcluster.fromNow('1 day'));
+
+        await helper.withDbClient(async (client) => {
+          const r = await client.query(`SELECT COUNT(*) as cnt FROM task_dependencies`);
+          assert.equal(parseInt(r.rows[0].cnt, 10), totalDeps);
+
+          await db.fns.remove_task_dependencies(taskId, JSON.stringify(deps.slice(0, halfDeps)));
+          const r2 = await client.query(`SELECT COUNT(*) as cnt FROM task_dependencies`);
+          assert.equal(parseInt(r2.rows[0].cnt, 10), totalDeps - halfDeps);
+        });
+
+      });
     });
 
     suite('expire_tasks', function() {
@@ -1540,7 +1618,7 @@ suite(testing.suiteName(), function() {
     };
 
     helper.dbTest('no such queue worker', async function(db) {
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
@@ -1549,7 +1627,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: null,
         expires: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res, []);
     });
 
@@ -1559,7 +1637,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: taskcluster.fromNow('2 hours'),
         quarantineDetails: { a: 'b' },
       });
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res.length, 1);
       assert.equal(res[0].state, null);
       assert.equal(res[0].capacity, null);
@@ -1568,13 +1646,13 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_workers_with_wm_join empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_workers_with_wm_join null options', async function(db) {
       await create(db);
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 1);
     });
 
@@ -1583,7 +1661,7 @@ suite(testing.suiteName(), function() {
         quarantineUntil: null,
         expires: taskcluster.fromNow('-2 hours'),
       });
-      const res = await db.fns.get_queue_workers_with_wm_join(new Date(), null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1592,7 +1670,7 @@ suite(testing.suiteName(), function() {
         expires: taskcluster.fromNow('-2 hours'),
         quarantineUntil: taskcluster.fromNow('2 hours'),
       });
-      const res = await db.fns.get_queue_workers_with_wm_join(new Date(), null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(new Date(), null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1600,7 +1678,7 @@ suite(testing.suiteName(), function() {
       for (let i = 0; i < 10; i++) {
         await create(db, { taskQueueId: `prov/w/${i}` });
       }
-      const res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 10);
       assert.equal(res[3].worker_pool_id, 'prov/w/3');
       assert.equal(res[4].worker_pool_id, 'prov/w/4');
@@ -1613,7 +1691,7 @@ suite(testing.suiteName(), function() {
       }
       let results = [];
       while (true) {
-        const res = await db.fns.get_queue_workers_with_wm_join(null, null, 2, results.length);
+        const res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, 2, results.length);
         if (res.length === 0) {
           break;
         }
@@ -1627,12 +1705,12 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_queue_workers_with_wm_join_state empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join_state(null, null, null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join_state(null, null, null, null, null);
       assert.deepEqual(res, []);
     });
 
     helper.dbTest('get_queue_workers_with_wm_join_quarantined_2 empty', async function(db) {
-      const res = await db.fns.get_queue_workers_with_wm_join_quarantined_2(null, null, null);
+      const res = await db.deprecatedFns.get_queue_workers_with_wm_join_quarantined_2(null, null, null);
       assert.deepEqual(res, []);
     });
 
@@ -1660,7 +1738,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1679,7 +1757,7 @@ suite(testing.suiteName(), function() {
         expires_in: expires,
       });
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.equal(res[0].worker_pool_id, 'prov/wt');
       assert.equal(res[0].worker_group, 'wg');
       assert(res[0].quarantine_until < new Date()); // defaults to in the past
@@ -1704,7 +1782,7 @@ suite(testing.suiteName(), function() {
         });
       }
 
-      const res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+      const res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
       assert.deepEqual(res[0].expires, expireses[1]);
     });
 
@@ -1748,7 +1826,7 @@ suite(testing.suiteName(), function() {
 
       for (let task of tasks) {
         await db.fns.queue_worker_task_seen('prov/wt', 'wg', 'wi', task);
-        res = await db.fns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
+        res = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', new Date());
         const recentTasks = res[0].recent_tasks;
         assert.deepEqual(recentTasks[recentTasks.length - 1], task);
       }
@@ -1764,7 +1842,7 @@ suite(testing.suiteName(), function() {
       });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 1);
-      res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 0);
     });
 
@@ -1775,7 +1853,7 @@ suite(testing.suiteName(), function() {
       });
       let res = await db.fns.expire_queue_workers(new Date());
       assert.equal(res[0].expire_queue_workers, 0);
-      res = await db.fns.get_queue_workers_with_wm_join(null, null, null, null);
+      res = await db.deprecatedFns.get_queue_workers_with_wm_join(null, null, null, null);
       assert.equal(res.length, 1);
     });
   });
@@ -2062,7 +2140,7 @@ suite(testing.suiteName(), function() {
         await create(db, { taskQueueId: `p-${i}/wt` });
       }
       let results = [];
-      while (true ) {
+      while (true) {
         const res = await db.deprecatedFns.get_queue_provisioners(null, 2, results.length);
         results = results.concat(res);
         if (res.length === 0) {
@@ -2218,6 +2296,172 @@ suite(testing.suiteName(), function() {
       assert.equal(res[0].expire_queue_worker_types, 1);
       res = await db.deprecatedFns.get_queue_worker_types(null, null, null, null, null);
       assert.equal(res.length, 0);
+    });
+  });
+
+  suite('queue_worker_stats method', function() {
+    setup(async function() {
+      // Clean up tables before each test
+      await helper.withDbClient(async client => {
+        await client.query('DELETE FROM queue_workers');
+        await client.query('DELETE FROM queue_claimed_tasks');
+        await client.query('DELETE FROM queue_pending_tasks');
+      });
+    });
+
+    helper.dbTest('returns empty result when no data exists', async function(db) {
+      const result = await db.fns.queue_worker_stats();
+      assert.deepEqual(result, []);
+    });
+
+    helper.dbTest('returns correct stats when some tables have data', async function(db) {
+      const taskQueueId = 'p2/wt2';
+      const expectStats = async (stats) => {
+        const result = await db.fns.queue_worker_stats();
+        assert.deepEqual(result, [{
+          task_queue_id: taskQueueId,
+          ...stats,
+        }]);
+      };
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker1',
+        expires_in: fromNow('12 hours'),
+      });
+      await expectStats({ worker_count: 1, quarantined_count: 0, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker2',
+        expires_in: fromNow('12 hours'),
+      });
+      await expectStats({ worker_count: 2, quarantined_count: 0, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.quarantine_queue_worker_with_last_date_active_and_details({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker2',
+        quarantine_until_in: fromNow('4 hours'),
+        quarantine_details_in: { details: 'quarantined for testing' },
+      });
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 0, claimed_count: 0 });
+
+      await db.fns.queue_claimed_task_put(
+        'claimed-task-id',
+        0,
+        fromNow('1 hour'),
+        taskQueueId,
+        'wg1',
+        'worker1',
+      );
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 0, claimed_count: 1 });
+
+      await db.fns.queue_pending_tasks_add(
+        taskQueueId,
+        0,
+        'pending-task-id',
+        0,
+        'hint',
+        fromNow('1 hour'),
+      );
+      await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
+    });
+  });
+
+  suite('priority change helpers', function() {
+    setup('reset tables', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate queue_pending_tasks');
+        await client.query('truncate tasks');
+        await client.query('truncate task_groups');
+        await client.query('truncate task_dependencies');
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority updates pending rows', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-a', fromNow('10 minutes'));
+
+      const result = await db.fns.queue_change_task_priority(id, 'very-high');
+      assert.equal(result.length, 1);
+      assert.equal(result[0].priority, 'very-high');
+      assert.equal(result[0].old_priority, 'high');
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 6);
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority skips resolved or expired tasks', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-b', fromNow('10 minutes'));
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = true where task_id = $1', [id]);
+      });
+
+      const resolvedAttempt = await db.fns.queue_change_task_priority(id, 'low');
+      assert.equal(resolvedAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = false, deadline = now() - interval \'5 minutes\' where task_id = $1', [id]);
+      });
+
+      const expiredAttempt = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(expiredAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 5);
+      });
+    });
+
+    helper.dbTest('queue_change_task_group_priority batches updates', async function(db) {
+      const groupId = slugid.v4();
+      const taskIds = [];
+      for (let i = 0; i < 150; i++) {
+        const id = slugid.v4();
+        taskIds.push(id);
+        await create(db, { taskId: id, taskGroupId: groupId });
+        await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, `hint-${i}`, fromNow('30 minutes'));
+      }
+
+      const result = await db.fns.queue_change_task_group_priority(groupId, 'very-low', 150);
+      assert.equal(result.length, 150);
+      result.forEach(row => {
+        assert.equal(row.priority, 'very-low');
+        assert.equal(row.old_priority, 'high');
+      });
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query(
+          'select task_id, priority from queue_pending_tasks where task_id = any($1::text[])',
+          [taskIds],
+        );
+        assert.equal(rows.length, 150);
+        rows.forEach(row => assert.equal(row.priority, 2));
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority records previous value on subsequent updates', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+
+      const first = await db.fns.queue_change_task_priority(id, 'highest');
+      assert.equal(first.length, 1);
+      assert.equal(first[0].old_priority, 'high');
+
+      const second = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(second.length, 1);
+      assert.equal(second[0].old_priority, 'highest');
     });
   });
 });

@@ -37,19 +37,19 @@ steps:
     id: Push
   - name: gcr.io/cloud-builders/docker
     id: Build deploy image using cache from previous build
-    entrypoint: bash
-    args:
-      - '-c'
-      - |
-        docker build -t ${_DEPLOY_IMAGE_NAME}:latest --cache-from ${_DEPLOY_IMAGE_NAME}:latest -<<EOF
-        FROM node:${_NODE_VERSION}
-        RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-        RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-        RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-        RUN apt-get update -y && apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
-        EOF
+    script: |
+      #!/usr/bin/env bash
+      docker build -t ${_DEPLOY_IMAGE_NAME}:latest --cache-from ${_DEPLOY_IMAGE_NAME}:latest -<<EOF
+      FROM node:${_NODE_VERSION}
+      RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+      RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+      RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+      RUN apt-get update -y && apt-get install google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin -y
+      EOF
+    env:
+      - KUBECTL_VERSION=v1.35.0
   - name: bash
     args:
       - '-c'
@@ -77,16 +77,10 @@ steps:
         gcloud container clusters get-credentials ${PROJECT_ID} --region us-east1 --project ${PROJECT_ID} \
         && kubectl get pods -n dev --field-selector=status.phase!=Running -o name | xargs kubectl delete -n dev
     entrypoint: bash
-  - name: gcr.io/cloud-builders/gcloud
-    args:
-      - '-c'
-      - gcloud container images list-tags ${_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_IMAGE_NAME}@{sha}" --force-delete-tags && gcloud container images list-tags ${_DEPLOY_IMAGE_NAME} --filter='-tags:latest' --format='get(digest)' --limit=unlimited | xargs -I {sha} gcloud container images delete "${_DEPLOY_IMAGE_NAME}@{sha}" --force-delete-tags
-    id: Delete old images
-    entrypoint: bash
   - name: node:${_NODE_VERSION}
     args:
       - '-c'
-      - corepack enable && yarn && yarn smoketest
+      - sleep 10 && corepack enable && yarn && yarn smoketest
     id: Smoketest
     entrypoint: bash
     env:
@@ -98,12 +92,14 @@ timeout: 1800s
 images:
   - ${_DEPLOY_IMAGE_NAME}:latest
 options:
+  automapSubstitutions: true
   dynamicSubstitutions: true
-  machineType: E2_HIGHCPU_8
+  pool:
+    name: projects/${PROJECT_ID}/locations/us-east1/workerPools/Taskcluster-Dev-Private-Worker-Pool
   env:
     - USE_GKE_GCLOUD_AUTH_PLUGIN=True
 substitutions:
-  _NODE_VERSION: 20.13.0
+  _NODE_VERSION: 24.13.0
   _VERSION: '{"version":"${BRANCH_NAME}_${SHORT_SHA}","commit":"${SHORT_SHA}","source":"https://github.com/taskcluster/taskcluster","build":"${BUILD_ID}"}'
   _IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}
   _DEPLOY_IMAGE_NAME: gcr.io/${PROJECT_ID}/${PROJECT_ID}/${BRANCH_NAME}-deploy

@@ -3,11 +3,12 @@
 package main
 
 import (
+	"path/filepath"
+	"runtime"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v65/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
@@ -34,10 +35,21 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 	expectedArtifacts.Validate(t, taskID, 0)
 }
 
-func newPlatformData(conf *gwconfig.Config) (pd *process.PlatformData) {
-	pd, err := process.NewPlatformData(conf.RunTasksAsCurrentUser)
+func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
+	t.Helper()
+	runningTests = true
+	// macOS CI tests to not run in headless in order to exercise the launch agent as much as possible
+	testConfig.HeadlessTasks = (runtime.GOOS != "darwin")
+	testConfig.EnableRunTaskAsCurrentUser = true
+	testConfig.EnableD2G(t)
+	// Needed for tests that don't call RunWorker()
+	// but test methods/functions directly
+	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
 	if err != nil {
-		panic(err)
+		t.Fatalf("Could not fetch task user credentials: %v", err)
 	}
-	return
+	taskContext = &TaskContext{
+		User:    taskUserCredentials,
+		TaskDir: testdataDir,
+	}
 }

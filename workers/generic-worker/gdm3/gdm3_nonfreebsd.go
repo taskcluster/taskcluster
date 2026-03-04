@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 // InteractiveUsername attempts to determine which single user is currently
 // logged into a gnome3 desktop session. If it doesn't find precisely one user,
 // it returns an error, otherwise it returns the user it found.
 func InteractiveUsername() (string, error) {
-	gnomeSessionUserList, err := host.CombinedOutput("/usr/bin/env", "bash", "-c", "PROCPS_USERLEN=20 /usr/bin/w | /bin/grep gnome-[s]ession | /usr/bin/cut -f1 -d' '")
+	gnomeSessionUserList, err := host.Output("/usr/bin/env", "bash", "-c", "PROCPS_USERLEN=20 /usr/bin/w | /bin/grep gnome-[s]ession | /usr/bin/cut -f1 -d' '")
 	if err != nil {
 		return "", fmt.Errorf("cannot run command to determine the interactive user: %v", err)
 	}

@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v65/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v65/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 )
 
 // gwVersion returns a command that will run the
@@ -12,6 +12,6 @@ import (
 // This is used during the startup of the worker to
 // ensure that the generic-worker binary is readable/executable
 // by the task user.
-func gwVersion() (*process.Command, error) {
+func gwVersion(pd *process.PlatformData) (*process.Command, error) {
 	return process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "--version"}, "", []string{})
 }

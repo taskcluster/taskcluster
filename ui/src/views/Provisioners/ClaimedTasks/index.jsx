@@ -15,9 +15,11 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(claimedTasks, {
   options: props => ({
+    errorPolicy: 'all',
     variables: {
       taskQueueId: joinWorkerPoolId(
         props.match.params.provisionerId,
@@ -84,9 +86,11 @@ export default class WMViewClaimedTasks extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
-        <TableCell>
-          <DateDistance from={new Date(claimed)} />
-        </TableCell>
+        <CopyToClipboardTableCell
+          tooltipTitle={claimed}
+          textToCopy={claimed}
+          text={<DateDistance from={claimed} />}
+        />
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );
@@ -97,6 +101,9 @@ export default class WMViewClaimedTasks extends Component {
       data: { loading, error, listClaimedTasks, WorkerPool },
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
+    // Claimed tasks could exist for the pools that are not managed by w-m
+    // so one of the request would fail with errors
+    const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
       <Dashboard
@@ -131,9 +138,9 @@ export default class WMViewClaimedTasks extends Component {
         </Box>
         {loading && <Spinner loading />}
 
-        {error && <ErrorPanel fixed error={error} />}
+        {error && !wpMissing && <ErrorPanel fixed error={error} />}
 
-        {!error && !loading && (
+        {!loading && listClaimedTasks && (
           <ConnectionDataTable
             noItemsMessage="No claimed tasks"
             connection={listClaimedTasks}

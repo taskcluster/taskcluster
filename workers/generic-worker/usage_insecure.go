@@ -2,7 +2,7 @@
 
 package main
 
-func runTasksAsCurrentUserUsage() string {
+func headlessTasksUsage() string {
 	return ``
 }
 
@@ -11,5 +11,17 @@ func exitCode77() string {
 }
 
 func exitCode82() string {
+	return ""
+}
+
+func exitCode83() string {
+	return ""
+}
+
+func customTargetsSummary() string {
+	return ""
+}
+
+func customTargets() string {
 	return ""
 }

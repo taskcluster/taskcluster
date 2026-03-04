@@ -1,12 +1,13 @@
+import _ from 'lodash';
 import debugFactory from 'debug';
 const debug = debugFactory('test:deadline');
 import assert from 'assert';
 import slugid from 'slugid';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
-import { LEVELS } from 'taskcluster-lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -32,6 +33,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         owner: 'jonsafj@mozilla.com',
         source: 'https://github.com/taskcluster/taskcluster-queue',
       },
+      tags: {
+        purpose: 'taskcluster-testing',
+      },
     };
     return { taskId: slugid.v4(), task };
   };
@@ -40,6 +44,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
   });
+
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
 
   test('Resolve unscheduled task deadline', async () => {
     const { taskId, task } = makeTask();
@@ -60,6 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await testing.poll(async () => {
       helper.assertPulseMessage('task-exception', m => (
         m.payload.status.state === 'exception' &&
+        _.isEqual(m.payload.task.tags, task.tags) &&
         m.payload.status.runs.length === 1 &&
         m.payload.status.runs[0].reasonCreated === 'exception' &&
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
@@ -105,12 +119,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
     }, 20, 1000);
 
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'deadline-exceeded');
+
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();
 
     debug('### Validate task status');
     const r2 = helper.checkDates(await helper.queue.status(taskId));
     assume(r2.status.state).deep.equals('exception');
+
+    debug('### Expect task is no longer pending');
+    const r3 = await helper.queue.pendingTasks(task.taskQueueId);
+    assume(r3.pendingTasks).equals(0);
   });
 
   test('Resolve running task deadline', async () => {
