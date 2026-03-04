@@ -157,10 +157,11 @@ suite('profiler/log-profile', function() {
       assert.equal(cats[profile.threads[0].markers.category[2]].name, 'fetches');
     });
 
-    test('throws if no timestamps found', function() {
+    test('returns empty if no timestamps found', function() {
       const builder = new StreamingProfileBuilder(mockTask, 'task-123', 'https://tc.example.com');
       builder.addLine('no timestamps here');
-      assert.throws(() => builder.finalize(), /Could not find a time/);
+      const profile = builder.finalize();
+      assert.ok(profile.threads[0].markers.data.length === 1);
     });
 
     test('includes task duration marker with URLs', function() {
