@@ -1030,7 +1030,7 @@ If you do require this feature, please do one of two things:
 				return
 			}
 		}
-	}()
+	}
 
 	t := task.setMaxRunTimer()
 	defer func() {
