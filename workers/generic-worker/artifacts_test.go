@@ -151,7 +151,7 @@ func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 				},
 				ContentType:   "application/octet-stream",
 				ContentLength: 14,
-				Path:        filepath.Join(testTaskDir(), "SampleArtifacts", "_", "X.txt"),
+				Path:          filepath.Join(testTaskDir(), "SampleArtifacts", "_", "X.txt"),
 			},
 		})
 }
