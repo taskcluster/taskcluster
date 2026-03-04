@@ -204,6 +204,8 @@ queue:
       cpu: 10m
     claimResolver:
       cpu: 10m
+    workerRemovedResolver:
+      cpu: 10m
     deadlineResolver:
       cpu: 10m
     dependencyResolver:

@@ -24,13 +24,13 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
-	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v96/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v96/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v96/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -336,6 +336,7 @@ type (
 		Extracts         []string
 		ContentType      string
 		ContentEncoding  string
+		ContentLength    int64
 		Expires          tcclient.Time
 		SkipContentCheck bool
 		StorageType      string
@@ -559,6 +560,11 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 		if expected.StorageType != "" {
 			if actual.StorageType != expected.StorageType {
 				t.Errorf("Artifact %s should have storage type '%v' but has '%s'", artifactName, expected.StorageType, actual.StorageType)
+			}
+		}
+		if expected.ContentLength != 0 {
+			if actual.ContentLength != expected.ContentLength {
+				t.Errorf("Artifact %s should have contentLength %d but has %d", artifactName, expected.ContentLength, actual.ContentLength)
 			}
 		}
 		if !time.Time(expected.Expires).IsZero() {

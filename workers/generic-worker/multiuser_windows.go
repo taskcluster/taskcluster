@@ -12,12 +12,13 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/interactive"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -527,9 +528,16 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+	// Wait for the User Profile Service to be running before any profile operations.
+	// On first boot after sysprep, ProfSvc may not be initialized yet.
+	// See: https://github.com/taskcluster/taskcluster/issues/8083
+	err := gwruntime.WaitForProfileService(5 * time.Minute)
+	if err != nil {
+		panic(err)
+	}
+
 	// Create user profile before loading it to prevent temporary profile creation
-	// Preventing issues like https://github.com/taskcluster/taskcluster/issues/8083
-	err := nextTaskUser.CreateUserProfile()
+	err = nextTaskUser.CreateUserProfile()
 	if err != nil {
 		panic(err)
 	}

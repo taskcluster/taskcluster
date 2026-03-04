@@ -9,6 +9,7 @@ import QueueService from './queueservice.js';
 import EC2RegionResolver from './ec2regionresolver.js';
 import DeadlineResolver from './deadlineresolver.js';
 import ClaimResolver from './claimresolver.js';
+import WorkerRemovedResolver from './workerremovedresolver.js';
 import DependencyTracker from './dependencytracker.js';
 import DependencyResolver from './dependencyresolver.js';
 import MetricsCollector from './metricscollector.js';
@@ -125,6 +126,13 @@ let load = loader({
     setup: ({ cfg }) => new taskcluster.Object({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
+  workerManagerEvents: {
+    requires: ['cfg'],
+    setup: ({ cfg }) => new taskcluster.WorkerManagerEvents({
+      rootUrl: cfg.taskcluster.rootUrl,
     }),
   },
 
@@ -278,6 +286,28 @@ let load = loader({
         monitor: monitor.childMonitor('claim-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
+      return resolver;
+    },
+  },
+
+  // Create the worker-removed-resolver process
+  'worker-removed-resolver': {
+    requires: [
+      'cfg', 'db', 'queueService', 'publisher', 'monitor',
+      'dependencyTracker', 'pulseClient', 'workerManagerEvents',
+    ],
+    setup: async ({
+      db, queueService, publisher, dependencyTracker,
+      monitor, pulseClient, workerManagerEvents,
+    }) => {
+      let resolver = new WorkerRemovedResolver({
+        db, queueService, publisher, dependencyTracker,
+        pulseClient, workerManagerEvents,
+        monitor: monitor.childMonitor('worker-removed-resolver'),
+      });
+      await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },
@@ -300,6 +330,7 @@ let load = loader({
         monitor: monitor.childMonitor('deadline-resolver'),
       });
       await resolver.start();
+      monitor.exposeMetrics('resolvers');
       return resolver;
     },
   },

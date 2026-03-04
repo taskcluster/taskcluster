@@ -1809,11 +1809,35 @@
                 "cpu"
               ],
               "type": "object"
+            },
+            "workerRemovedResolver": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                },
+                "metrics": {
+                  "type": "boolean"
+                },
+                "replicas": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
+              "type": "object"
             }
           },
           "required": [
             "web",
             "claimResolver",
+            "workerRemovedResolver",
             "deadlineResolver",
             "dependencyResolver",
             "expireArtifacts",

@@ -15,7 +15,13 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-queue-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-queue
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-queue-claimresolver
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-queue
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
@@ -46,7 +52,10 @@ spec:
                 name: taskcluster-queue
             - configMapRef:
                 name: taskcluster-queue
-          ports: []
+          ports:
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           livenessProbe:
             exec:
               command:

@@ -49,7 +49,7 @@ const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res
     await req.authorize({ names: names });
 
     // Load artifact meta-data from table storage
-    const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+    const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
     if (!artifact || !artifact.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
@@ -175,6 +175,7 @@ export const loadArtifactsRoutes = (builder) => {
     let input = req.body;
     let storageType = input.storageType;
     let contentType = input.contentType || 'application/binary';
+    let contentLength = input.contentLength ?? null;
 
     // Find expiration date
     let expires = new Date(input.expires);
@@ -323,7 +324,7 @@ export const loadArtifactsRoutes = (builder) => {
 
     let artifact;
     try {
-      artifact = artifactUtils.fromDbRows(await this.db.fns.create_queue_artifact(
+      artifact = artifactUtils.fromDbRows(await this.db.fns.create_queue_artifact_2(
         taskId,
         runId,
         name,
@@ -332,6 +333,7 @@ export const loadArtifactsRoutes = (builder) => {
         details,
         present,
         expires,
+        contentLength,
       ));
     } catch (err) {
       // Re-throw error if this isn't because the entity already exists
@@ -340,7 +342,7 @@ export const loadArtifactsRoutes = (builder) => {
       }
 
       // Load original Artifact entity
-      const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact(taskId, runId, name));
+      const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
       let ok = createArtifactCallsCompatible(original, { storageType, contentType, expires, details });
 
@@ -471,7 +473,7 @@ export const loadArtifactsRoutes = (builder) => {
     const { uploadId } = req.body;
 
     const [[artifact_row], task] = await Promise.all([
-      this.db.fns.get_queue_artifact(taskId, runId, name),
+      this.db.fns.get_queue_artifact_2(taskId, runId, name),
       Task.get(this.db, taskId),
     ]);
 
@@ -788,7 +790,7 @@ export const loadArtifactsRoutes = (builder) => {
     const artifacts = await paginateResults({
       query: query,
       indexColumns: ['task_id', 'run_id', 'name'],
-      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated({
+      fetch: (page_size_in, after) => this.db.fns.get_queue_artifacts_paginated_2({
         task_id_in: taskId,
         run_id_in: runId,
         expires_in: null,
@@ -885,7 +887,7 @@ export const loadArtifactsRoutes = (builder) => {
    */
   const replyWithArtifactInfo = async function({ taskId, runId, name, req, res }) {
     const artifact = artifactUtils.fromDbRows(
-      await this.db.fns.get_queue_artifact(taskId, runId, name));
+      await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
     if (!artifact || !artifact.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});

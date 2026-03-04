@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v96/internal/scopes"
-	"github.com/taskcluster/taskcluster/v96/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v96/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/genericworker"
 
 	"slices"
 
@@ -36,6 +36,11 @@ type (
 		CopyArtifacts []CopyArtifact
 		EnvVars       string
 		Image         Image
+		// Populated by mounts feature when a docker image artifact is
+		// downloaded to the file cache. Used by d2g feature to avoid
+		// copying the image to the task directory.
+		ImageArtifactPath   string
+		ImageArtifactSHA256 string
 	}
 	CopyArtifact struct {
 		Name     string

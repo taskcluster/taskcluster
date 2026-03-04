@@ -16,8 +16,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v96/clients/client-go"
-	"github.com/taskcluster/taskcluster/v96/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -440,10 +440,19 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 			}
 		case *tcqueue.S3ArtifactRequest:
 			a = tcqueue.Artifact{
-				ContentType: A.ContentType,
-				Expires:     A.Expires,
-				Name:        name,
-				StorageType: A.StorageType,
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
+			}
+		case *tcqueue.ObjectArtifactRequest:
+			a = tcqueue.Artifact{
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
 			}
 		default:
 			queue.t.Fatalf("Invalid artifact request type for artifact %#v for task %v runId %v", a, taskId, runId)

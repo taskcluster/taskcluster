@@ -35,6 +35,7 @@ purge-cache/write-docs) exec node services/purge-cache/src/main.js writeDocs;;
 queue/web) exec node services/queue/src/main.js server;;
 queue/write-docs) exec node services/queue/src/main.js writeDocs;;
 queue/claimResolver) exec node services/queue/src/main.js claim-resolver;;
+queue/workerRemovedResolver) exec node services/queue/src/main.js worker-removed-resolver;;
 queue/deadlineResolver) exec node services/queue/src/main.js deadline-resolver;;
 queue/dependencyResolver) exec node services/queue/src/main.js dependency-resolver;;
 queue/expireArtifacts) exec node services/queue/src/main.js expire-artifacts;;

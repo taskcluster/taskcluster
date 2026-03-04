@@ -1,13 +1,14 @@
 package process
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"syscall"
 	"time"
 	"unsafe"
 
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 )
 
 // LoginInfo represents a logged in user session
@@ -72,7 +73,8 @@ func loadProfile(user syscall.Token, username string) (syscall.Handle, error) {
 			return pinfo.Profile, nil
 		}
 
-		if errno, ok := err.(syscall.Errno); ok && errno == 21 { // ERROR_NOT_READY
+		var errno syscall.Errno
+		if errors.As(err, &errno) && errno == 21 { // ERROR_NOT_READY
 			if i < maxRetries-1 {
 				log.Printf("LoadUserProfile failed with 'device not ready' (attempt %d/%d), retrying in %v: %v", i+1, maxRetries, delay, err)
 				time.Sleep(delay)

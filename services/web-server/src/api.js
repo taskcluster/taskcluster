@@ -1,9 +1,11 @@
 import { APIBuilder } from '@taskcluster/lib-api';
 import { getProfile } from './profiler/profile.js';
-import { readLogFile, fixupLogRows, buildProfileFromLogRows } from './profiler/log-profile.js';
+import zlib from 'zlib';
+import { StreamingProfileBuilder, lineIterator } from './profiler/log-profile.js';
 
 const MAX_TASKS = 20000;
 const MAX_PAGES = 200;
+const MAX_LOG_SIZE = 200 * 1024 * 1024; // 200MB
 
 const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 
@@ -120,13 +122,13 @@ builder.declare({
     throw err;
   }
 
-  let logText;
+  let response;
   for (const artifactName of ['public/logs/live.log', 'public/logs/live_backing.log']) {
     try {
       const artifactUrl = queue.buildUrl(queue.getLatestArtifact, taskId, artifactName);
-      const response = await fetch(artifactUrl, { redirect: 'follow' });
-      if (response.ok) {
-        logText = await response.text();
+      const resp = await fetch(artifactUrl, { redirect: 'follow' });
+      if (resp.ok) {
+        response = resp;
         break;
       }
     } catch {
@@ -134,7 +136,7 @@ builder.declare({
     }
   }
 
-  if (!logText) {
+  if (!response) {
     return res.reportError(
       'ResourceNotFound',
       'Could not fetch task log. The task may not have logs or they may have expired.',
@@ -142,20 +144,38 @@ builder.declare({
     );
   }
 
-  const logLines = logText.split('\n');
-  const logRows = readLogFile(logLines);
-  fixupLogRows(logRows);
-  const profile = buildProfileFromLogRows(logRows, task, taskId, this.rootUrl);
+  // Check Content-Length if available
+  const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
+  if (contentLength > MAX_LOG_SIZE) {
+    return res.reportError('InputTooLarge', 'Log exceeds 200MB size limit', {});
+  }
+
+  // Stream and parse log line-by-line
+  const profileBuilder = new StreamingProfileBuilder(task, taskId, this.rootUrl);
+  let bytesRead = 0;
+  for await (const line of lineIterator(response.body, (n) => { bytesRead += n; })) {
+    if (bytesRead > MAX_LOG_SIZE) {
+      return res.reportError('InputTooLarge', 'Log exceeds 200MB size limit', {});
+    }
+    profileBuilder.addLine(line);
+  }
+
+  const profile = profileBuilder.finalize();
 
   const isResolved = !['running', 'pending', 'unscheduled'].includes(status.state);
-
   if (isResolved) {
     res.set('Cache-Control', 'public, max-age=86400');
   } else {
     res.set('Cache-Control', 'no-cache');
   }
 
-  return res.status(200).json(profile);
+  res.set('Content-Type', 'application/json');
+  res.set('Content-Encoding', 'gzip');
+  res.status(200);
+
+  const gzip = zlib.createGzip();
+  gzip.pipe(res);
+  gzip.end(JSON.stringify(profile));
 });
 
 builder.declare({

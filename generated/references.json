@@ -5145,6 +5145,11 @@
           "additionalProperties": false,
           "description": "Request for a signed PUT URL that will allow you to upload an artifact\nto an S3 bucket managed by the queue.\n",
           "properties": {
+            "contentLength": {
+              "description": "Optional size of the artifact content, in bytes.\nThis is informational and used for monitoring purposes.\n",
+              "minimum": 0,
+              "type": "integer"
+            },
             "contentType": {
               "description": "Artifact mime-type, when uploading artifact to the signed\n`PUT` URL returned from this request this must given with the\n `ContentType` header. Please, provide correct mime-type,\n this make tooling a lot easier, specifically,\n always using `application/json` for JSON artifacts.\n",
               "maxLength": 255,
@@ -5175,6 +5180,11 @@
           "additionalProperties": false,
           "description": "Request to create an artifact via the object service.\n",
           "properties": {
+            "contentLength": {
+              "description": "Optional size of the artifact content, in bytes.\nThis is informational and used for monitoring purposes.\n",
+              "minimum": 0,
+              "type": "integer"
+            },
             "contentType": {
               "description": "Artifact content type.  This is advisory in nature and can be used,\nfor example, to select appropriate icons to display artifact links.\n",
               "maxLength": 255,
@@ -6315,6 +6325,12 @@
       "additionalProperties": false,
       "description": "Information about an artifact\n",
       "properties": {
+        "contentLength": {
+          "description": "Size of the artifact content in bytes, if reported by the worker.\nThis value is null if the worker did not report the size.\n",
+          "minimum": 0,
+          "title": "Content-Length",
+          "type": "integer"
+        },
         "contentType": {
           "description": "Expected content-type of the artifact.  This is informational only:\nit is suitable for use to choose an icon for the artifact, for example.\nThe accurate content-type of the artifact can only be determined by\ndownloading it.\n",
           "maxLength": 255,
@@ -13861,11 +13877,35 @@
                     "cpu"
                   ],
                   "type": "object"
+                },
+                "workerRemovedResolver": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    },
+                    "metrics": {
+                      "type": "boolean"
+                    },
+                    "replicas": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "replicas",
+                    "memory",
+                    "cpu"
+                  ],
+                  "type": "object"
                 }
               },
               "required": [
                 "web",
                 "claimResolver",
+                "workerRemovedResolver",
                 "deadlineResolver",
                 "dependencyResolver",
                 "expireArtifacts",
@@ -17376,6 +17416,20 @@
           ],
           "title": "Worker startup duration",
           "type": "histogram"
+        },
+        {
+          "description": "Number of workers marked for termination per worker pool during scanning, labeled by reason.",
+          "labels": {
+            "providerId": "ID of the provider",
+            "reason": "Reason for termination (over_capacity, launch_config_archived)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_workers_to_terminate",
+          "registers": [
+            "scan"
+          ],
+          "title": "Workers marked for termination",
+          "type": "gauge"
         }
       ],
       "serviceName": "worker-manager"
@@ -17437,6 +17491,23 @@
           "name": "awsTimer",
           "title": "AWS Request Report",
           "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Azure VM instanceView returned 404 repeatedly for the same worker.\nWorker Manager treats this as missing to avoid getting stuck in a transient loop.",
+          "fields": {
+            "instanceView404Streak": "Consecutive count of instanceView 404 responses",
+            "providerId": "Provider ID",
+            "provisioningState": "Provisioning state returned by virtualMachines.get",
+            "vmName": "Azure VM name",
+            "workerGroup": "Worker Group",
+            "workerId": "Worker ID",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "warning",
+          "name": "azureInstanceViewRepeated404",
+          "title": "Azure InstanceView Repeated 404",
+          "type": "azure-instance-view-repeated-404",
           "version": 1
         },
         {
@@ -19856,7 +19927,8 @@
           },
           "name": "queue_exception_tasks",
           "registers": [
-            "default"
+            "default",
+            "resolvers"
           ],
           "title": "Counter for task exception",
           "type": "counter"
@@ -20345,6 +20417,22 @@
           "name": "taskReclaimed",
           "title": "Task Reclaimed",
           "type": "task-reclaimed",
+          "version": 1
+        },
+        {
+          "description": "A task was resolved as exception/worker-shutdown because worker-manager\nreported the worker was removed. This prevents the ~20 minute wait for\nclaim expiration.",
+          "fields": {
+            "reason": "The reason the worker was removed.",
+            "runId": "The runId that was resolved.",
+            "taskId": "The task's taskId.",
+            "workerGroup": "The worker group.",
+            "workerId": "The worker id.",
+            "workerPoolId": "The worker pool the worker belonged to."
+          },
+          "level": "notice",
+          "name": "taskResolvedByWorkerRemoved",
+          "title": "Task Resolved By Worker Removed",
+          "type": "task-resolved-by-worker-removed",
           "version": 1
         },
         {
@@ -24581,7 +24669,7 @@
             "hookId"
           ],
           "category": "Hooks",
-          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
@@ -24637,7 +24725,7 @@
             "token"
           ],
           "category": "Hooks",
-          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",

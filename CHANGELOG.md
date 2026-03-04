@@ -3,6 +3,205 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v97.0.1
+
+No changes
+
+## v97.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#8101](https://github.com/taskcluster/taskcluster/issues/8101)
+Generic worker now reports artifact file sizes to the queue via the optional `contentLength` parameter when creating artifacts. This applies to all file-based artifacts (S3 and object) as well as log artifacts. The reported size is the original file size on disk, before any encoding such as gzip compression.
+This feature relies on the API changes introduced in [v96.7.0](https://github.com/taskcluster/taskcluster/blob/main/CHANGELOG.md#v9670) and will fail schema validation if services are not upgraded.
+
+▶ [patch] [#8339](https://github.com/taskcluster/taskcluster/issues/8339)
+Worker Manager: provides `worker-manager:should-worker-terminate:<workerPoolId>/<workerGroup>/<workerId>` scope to worker during (re)registration so the worker can properly call out to the `ShouldWorkerTerminate` API.
+
+## v96.7.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+D2G: avoids unnecessary I/O of copying cached docker image to task user's directory.
+
+▶ [patch] [#8326](https://github.com/taskcluster/taskcluster/issues/8326)
+Generic Worker: when running with worker-runner, the worker now checks with Worker Manager before shutting down due to idle timeout. If Worker Manager says the worker is still needed (e.g., to satisfy `minCapacity`), the idle timer resets instead of shutting down. Workers not running with worker-runner are unaffected.
+
+▶ [patch] [#8328](https://github.com/taskcluster/taskcluster/issues/8328)
+Worker Manager: the worker scanner now uses a dedicated target capacity formula for termination decisions based on pending tasks, claimed tasks, and `minCapacity`/`maxCapacity`. Previously, the provisioning formula was reused, which inflated the target by existing worker counts, so idle workers were never terminated even when `minCapacity` was lowered to 0.
+
+### USERS
+
+▶ [patch] [#8323](https://github.com/taskcluster/taskcluster/issues/8323)
+Fixes queue.listTaskGroup endpoint that in some cases didn't return full list of tasks in the given group.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (4a2992b6dd)
+* build(deps): bump the client-rust-deps group (6daeb5a345)
+* build(deps): bump the go-deps group with 4 updates (a27fd5c923)
+* build(deps): bump minimatch from 3.1.3 to 3.1.5 (6f9f3a29cb)
+* build(deps): bump minimatch from 3.1.3 to 3.1.5 in /clients/client-web (f4b5f3dfef)
+
+</details>
+
+## v96.7.0
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7652](https://github.com/taskcluster/taskcluster/issues/7652)
+Generic Worker & Livelog: fix livelog temporary streaming files not being cleaned up. The livelog process creates a temp directory per stream, but since the generic worker kills it with SIGKILL, the process never has a chance to clean up. Fixed by having the generic worker create a dedicated temp directory for each livelog process (via the new `LIVELOG_TEMP_DIR` env var) and removing it after the process is killed.
+
+▶ [patch] [#8318](https://github.com/taskcluster/taskcluster/issues/8318)
+Generic Worker & Livelog: fix intermittent "address already in use" error on livelog ports. When a livelog process failed to start, an orphaned goroutine would keep polling the port and later send a duplicate PUT request to the next task's livelog process, causing its GET server to fail binding. Fixed by cancelling the goroutine on early process exit, killing orphaned livelog processes on connection failure, and fixing the livelog binary's duplicate PUT request guard which was checked but never set.
+
+### USERS
+
+▶ [minor] [#8101](https://github.com/taskcluster/taskcluster/issues/8101)
+Queue artifact creation (`createArtifact`) now accepts an optional `contentLength` field for S3 and object artifacts. When provided, the artifact size in bytes is stored and returned in `listArtifacts`, `artifactInfo`, and related endpoints.
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump github.com/cloudflare/circl from 1.6.1 to 1.6.3 (f3adbcf9a7)
+
+</details>
+
+## v96.6.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8314](https://github.com/taskcluster/taskcluster/issues/8314)
+Azure double-checks if vm is gone by calling virtualMachines.get after instanceView returns 404.
+This is to prevent situations when worker is being removed based on one failed instanceView call.
+
+▶ [patch]
+Adds Weight Distribution Playground for Launch Configurations in documentation
+to see how initialWeight value change affect distribution
+
+### USERS
+
+▶ [patch] [#8311](https://github.com/taskcluster/taskcluster/issues/8311)
+Fixes UI issue for LaunchConfigs not showing location when ARM deployment template was used
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump minimatch from 3.1.2 to 3.1.3 (087d04bb4d)
+* build(deps): bump minimatch from 3.1.2 to 3.1.3 in /clients/client-web (b884c49adb)
+
+</details>
+
+## v96.6.1
+
+### DEPLOYERS
+
+▶ [patch] [#7472](https://github.com/taskcluster/taskcluster/issues/7472)
+The queue service's `workerRemovedResolver` now also listens for `workerStopped` events from worker-manager, in addition to `workerRemoved` events. This ensures claimed tasks are resolved as `exception/worker-shutdown` as early as possible when a worker disappears. Both events are handled idempotently, so receiving both for the same worker is safe.
+
+## v96.6.0
+
+### DEPLOYERS
+
+▶ [minor] [#7472](https://github.com/taskcluster/taskcluster/issues/7472)
+The queue service now listens for `workerRemoved` events from worker-manager and immediately resolves any tasks claimed by that worker as `exception/worker-shutdown`, triggering an automatic retry.
+Previously, when a worker disappeared (due to VM preemption, crash, or manual termination), its claimed tasks would wait up to 20 minutes for the claim to expire before being retried.
+This new `workerRemovedResolver` background process runs alongside the existing claim-resolver and requires no configuration changes.
+
+### USERS
+
+▶ [patch] [#8300](https://github.com/taskcluster/taskcluster/issues/8300)
+Task log profiler optimizations for parsing large task logs, more memory and cpu efficient.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump flask from 3.1.2 to 3.1.3 in /clients/client-py (dd48e7e794)
+* build(deps): bump werkzeug from 3.1.5 to 3.1.6 in /clients/client-py (d0511a0c8a)
+
+</details>
+
+## v96.5.2
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8083](https://github.com/taskcluster/taskcluster/issues/8083)
+Generic Worker (windows): waits for the User Profile Service (`ProfSvc`) to be running before performing profile operations on first boot, and fixes a bug where `LoadUserProfile` retry logic for "device not ready" errors never actually retried due to an incorrect error type assertion.
+
+## v96.5.1
+
+### DEPLOYERS
+
+▶ [patch] [#8292](https://github.com/taskcluster/taskcluster/issues/8292)
+Claim-resolver and deadline-resolver expose metrics.
+
+## v96.5.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.0
+
+Release notes [here](https://go.dev/doc/go1.26).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7147](https://github.com/taskcluster/taskcluster/issues/7147)
+Worker-manager now decides which workers should be kept during the worker-scanner loop, surfaced via the `shouldWorkerTerminate` API.
+Decision is being made based on several policies:
+- if launch config is archived - worker would be marked as "shouldTerminate=true"
+- if workers exceed the desired capacity (more workers than pending tasks) - the oldest workers would be marked as "shouldTerminate=true" (newest workers are kept)
+
+▶ [patch] [#8289](https://github.com/taskcluster/taskcluster/issues/8289)
+Generic Worker: fixes credential expiration during high-volume artifact uploads by narrowing the scope of the queue client lock so that credential refresh is no longer blocked by in-flight HTTP calls.
+
+▶ [patch] [#8291](https://github.com/taskcluster/taskcluster/issues/8291)
+Generic Worker: handles `SIGTERM` during task execution by triggering graceful termination, ensuring preempted tasks are properly resolved as `exception/worker-shutdown` instead of `exception/claim-expired`.
+
+### USERS
+
+▶ [minor] [#8035](https://github.com/taskcluster/taskcluster/issues/8035)
+The index service no longer adds a bewit (time-limited auth token) to redirect URLs for public artifacts. Artifacts are considered public if the anonymous role has the necessary scopes to get them. The index service caches the scopes associated to the anonymous role and refreshes them from the auth service every 5 minutes. Additionally, for public artifacts, the index service now resolves the final artifact URL server-side by calling the queue's `latestArtifact` endpoint, reducing the redirect chain from two hops (Index → Queue → storage) to one (Index → storage).
+
+▶ [patch] [#8070](https://github.com/taskcluster/taskcluster/issues/8070)
+Show a warning banner in the UI when live updates are disabled due to missing `web:read-pulse` scope, instead of silently showing stale data.
+
+### DEVELOPERS
+
+▶ [patch] [#8292](https://github.com/taskcluster/taskcluster/issues/8292)
+Add missing `queue_exception_tasks` metric to the claim-resolver and deadline-resolver.
+
+▶ [patch] [#8261](https://github.com/taskcluster/taskcluster/issues/8261)
+Fix webpack-dev-server crash (ECONNRESET) when proxying WebSocket `/subscription` endpoint during local UI development.
+
+### OTHER
+
+▶ Additional change not described here: [#8271](https://github.com/taskcluster/taskcluster/issues/8271).
+
+### Automated Package Updates
+
+<details>
+<summary>6 Dependabot updates</summary>
+
+* build(deps): bump tar from 7.5.7 to 7.5.9 (abb1e81537)
+* build(deps): bump ajv from 8.17.1 to 8.18.0 in /ui (4803e02066)
+* build(deps): bump ajv from 8.17.1 to 8.18.0 (0b18b4d861)
+* build(deps): bump qs from 6.14.1 to 6.14.2 (6441302bca)
+* build(deps): bump qs from 6.14.1 to 6.14.2 in /ui (d3657cd61a)
+* build(deps): bump markdown-it from 14.1.0 to 14.1.1 in /ui (94225553be)
+
+</details>
+
 ## v96.4.0
 
 ### USERS

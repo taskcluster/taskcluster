@@ -226,8 +226,8 @@ let load = loader({
   },
 
   workerScanner: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
       const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
@@ -239,6 +239,7 @@ let load = loader({
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
       scanMonitor.exposeMetrics('scan');
@@ -247,8 +248,8 @@ let load = loader({
   },
 
   workerScannerAzure: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
       const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
@@ -260,6 +261,7 @@ let load = loader({
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
       scanMonitor.exposeMetrics('scan');

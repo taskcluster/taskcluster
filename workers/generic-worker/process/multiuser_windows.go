@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v96/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v96/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
