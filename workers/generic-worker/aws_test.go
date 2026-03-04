@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
 )
 
 func TestNoWorkerTypeUserDataGenericWorkerProperty(t *testing.T) {
