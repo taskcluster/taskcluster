@@ -2,18 +2,18 @@ import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:bin:server');
 import taskcreator from './taskcreator.js';
-import SchemaSet from 'taskcluster-lib-validate';
-import tcdb from 'taskcluster-db';
+import SchemaSet from '@taskcluster/lib-validate';
+import tcdb from '@taskcluster/db';
 import builder from './api.js';
 import Scheduler from './scheduler.js';
-import config from 'taskcluster-lib-config';
-import loader from 'taskcluster-lib-loader';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import taskcluster from 'taskcluster-client';
+import config from '@taskcluster/lib-config';
+import loader from '@taskcluster/lib-loader';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import taskcluster from '@taskcluster/client';
 import exchanges from './exchanges.js';
-import libPulse from 'taskcluster-lib-pulse';
+import libPulse from '@taskcluster/lib-pulse';
 import HookListeners from './listeners.js';
 import './monitor.js';
 import { fileURLToPath } from 'url';
@@ -31,7 +31,7 @@ const load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({ process, profile, cfg }) => MonitorManager.setup({
-      serviceName: 'github',
+      serviceName: 'hooks',
       processName: process,
       verify: profile !== 'production',
       ...cfg.monitoring,
@@ -100,13 +100,24 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { db, taskcreator, publisher, denylist: cfg.pulse.denylist },
-      schemaset,
-      monitor: monitor.childMonitor('api'),
-    }),
+    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher'],
+    setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          db,
+          taskcreator,
+          publisher,
+          denylist: cfg.pulse.denylist,
+          monitor: monitor.childMonitor('api-context'),
+        },
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   listeners: {
@@ -127,7 +138,7 @@ const load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks'), MonitorManager.metricsReference('hooks')],
     }).then(ref => ref.generateReferences()),
   },
 

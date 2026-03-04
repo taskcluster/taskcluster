@@ -1,5 +1,5 @@
 import assert from 'assert';
-import Iterate from 'taskcluster-lib-iterate';
+import Iterate from '@taskcluster/lib-iterate';
 import { sleep } from './utils.js';
 
 /**

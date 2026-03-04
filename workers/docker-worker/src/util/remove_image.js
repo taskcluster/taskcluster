@@ -3,7 +3,7 @@ module.exports = {
     let dockerImage = await docker.getImage(image);
     try {
       await dockerImage.remove({ force: true });
-    } catch(e) {
+    } catch (e) {
       if (e.reason === 'no such image') {
         return;
       }

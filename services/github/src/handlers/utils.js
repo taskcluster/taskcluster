@@ -174,6 +174,71 @@ export class GithubCheck {
   }
 }
 
+export const isCollaborator = async (instGithub, organization, repository, login) => {
+  return Boolean(await instGithub.repos.checkCollaborator({
+    owner: organization,
+    repo: repository,
+    username: login,
+    // avoid "default" retry strategy on 404 errors
+    request: {
+      retries: 1,
+      retryAfter: 1,
+      doNotRetry: [400, 401, 403],
+    },
+  }).catch(e => {
+    if (e.status !== 404) {
+      throw e;
+    }
+    return false; // 404 -> false
+  }));
+};
+
+export const getTimeDifference = (timestamp1, timestamp2) => {
+
+  const isValidDate = (date) => {
+    return !isNaN(Date.parse(date));
+  };
+
+  if (timestamp1 === undefined || timestamp2 === undefined) {
+    return null;
+  }
+
+  if (!isValidDate(timestamp1) || !isValidDate(timestamp2)) {
+    return null;
+  }
+
+  const date1 = new Date(timestamp1);
+  const date2 = new Date(timestamp2);
+
+  const differenceMs = Math.abs(date2 - date1);
+
+  const ms = differenceMs % 1000;
+  const seconds = Math.floor(differenceMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let parts = [];
+
+  if (days > 0) {parts.push(`${days} day${days > 1 ? 's' : ''}`);}
+  if (hours % 24 > 0) {parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);}
+  if (minutes % 60 > 0) {parts.push(`${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`);}
+  if (seconds % 60 > 0) {parts.push(`${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`);}
+  if (ms > 0) {parts.push(`${ms} millisecond${ms > 1 ? 's' : ''}`);}
+
+  const formattedDifference = parts.join(', ');
+
+  return formattedDifference;
+};
+
+export const buildUrl = (rootUrl, taskId, runId, artifactName) => {
+  return `${rootUrl}/tasks/${taskId}/runs/${runId}/${artifactName}`;
+};
+
+export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
+  return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${artifactName}`;
+};
+
 export default {
   taskUI,
   taskGroupUI,
@@ -181,4 +246,8 @@ export default {
   makeDebug,
   GithubCheckOutput,
   GithubCheck,
+  isCollaborator,
+  getTimeDifference,
+  buildUrl,
+  buildLogUrl,
 };

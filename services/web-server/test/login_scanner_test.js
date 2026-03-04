@@ -1,7 +1,7 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 import scan from '../src/login/scanner.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import libUrls from 'taskcluster-lib-urls';
 import User from '../src/login/User.js';
 

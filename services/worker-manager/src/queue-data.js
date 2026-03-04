@@ -1,6 +1,6 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { paginateResults } from 'taskcluster-lib-api';
+import { paginateResults } from '@taskcluster/lib-api';
 
 export class TaskQueue {
   // (private constructor)

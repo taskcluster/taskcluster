@@ -1,6 +1,6 @@
-# Simple generic worker
+# Insecure generic worker
 
-FROM golang:1.22.1-alpine AS build
+FROM golang:1.26.0-alpine AS build
 
 ENV CGO_ENABLED=0
 
@@ -25,8 +25,8 @@ RUN go build -o /taskcluster
 
 WORKDIR /app/workers/generic-worker
 RUN ./build.sh && \
-  mv generic-worker-multiuser-* /generic-worker-multiuser && \
-  mv generic-worker-simple-* /generic-worker
+  mv generic-worker-multiuser-* /generic-worker && \
+  mv generic-worker-insecure-* /generic-worker-insecure
 
 FROM ubuntu:jammy
 
@@ -50,10 +50,10 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > /version.json; \
 else \
-    echo \{\"version\": \"60.4.2\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
+    echo \{\"version\": \"97.0.1\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
 fi
 
-VOLUME /etc/generic-worker/config.json
+VOLUME /etc/generic-worker
 VOLUME /var/local/generic-worker
 
 COPY workers/entrypoint.sh /entrypoint.sh

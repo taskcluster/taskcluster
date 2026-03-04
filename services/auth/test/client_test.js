@@ -2,8 +2,8 @@ import { strict as assert } from 'assert';
 import helper from './helper.js';
 import _ from 'lodash';
 import assume from 'assume';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   helper.withDb(mock, skipping);

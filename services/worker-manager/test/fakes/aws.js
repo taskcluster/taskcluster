@@ -124,6 +124,12 @@ export class FakeEC2 extends FakeCloud {
     this.mock
       .on(DescribeInstanceStatusCommand)
       .callsFake(({ InstanceIds }) => {
+        if (InstanceIds[0] === 'i-amgone') {
+          const err = new Error('Instance not found');
+          err.Code = 'InvalidInstanceID.NotFound';
+          throw err;
+        }
+
         return {
           InstanceStatuses: InstanceIds.map(InstanceId => {
             const state = this.mock.instanceStatuses[InstanceId];

@@ -1,23 +1,32 @@
-import _ from 'lodash';
-
 /**
  * Validate query-string against query.
  *
  * Query-string options not specified in options will not be allowed. But it's
  * optional if a request carries any query-string parameters at all.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const queryValidator = ({ entry }) => {
-  const { query } = entry;
+  const { query = {} } = entry;
 
   return (req, res, next) => {
+    /** @type {string[]} */
     const errors = [];
-    _.forEach(req.query || {}, (value, key) => {
+    Object.entries(req.query || {}).forEach(([key, value]) => {
       const pattern = query[key];
       if (!pattern) {
         // Allow the bewit key, it's used in signed strings
         if (key !== 'bewit') {
           errors.push('Query-string parameter: ' + key + ' is not supported!');
         }
+        return;
+      }
+      if (typeof value !== 'string') {
+        errors.push('Query-string parameter: ' + key + ' must be a string!');
         return;
       }
       if (pattern instanceof RegExp) {

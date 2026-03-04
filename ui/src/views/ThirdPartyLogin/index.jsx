@@ -33,7 +33,7 @@ export default class ThirdPartyLogin extends Component {
       location: { search },
     } = props;
     const query = parse(search.slice(1));
-    const scopes = (query.scope || []).split(' ');
+    const scopes = (query.scope || '').split(' ');
     const registeredClientId = query.client_id;
 
     if (
@@ -85,9 +85,14 @@ export default class ThirdPartyLogin extends Component {
   render() {
     const { user, data } = this.props;
     const { formData } = this.state;
-    const { origin } = new URL(
-      decodeURIComponent(this.parsedQuery.redirect_uri)
-    );
+    const hasValidRedirect = !!this.parsedQuery.redirect_uri;
+    const getOrigin = () => {
+      const { origin } = new URL(
+        decodeURIComponent(this.parsedQuery.redirect_uri)
+      );
+
+      return origin;
+    };
 
     return (
       <Dashboard title="Third Party Login">
@@ -103,10 +108,13 @@ export default class ThirdPartyLogin extends Component {
             formData={formData}
           />
         )}
-        {!user && (
+        {!user && hasValidRedirect && (
           <Typography variant="subtitle1">
-            Sign in to provide credentials to <code>{origin}</code>
+            Sign in to provide credentials to <code>{getOrigin()}</code>
           </Typography>
+        )}
+        {!hasValidRedirect && (
+          <Typography variant="subtitle2">Invalid request</Typography>
         )}
       </Dashboard>
     );

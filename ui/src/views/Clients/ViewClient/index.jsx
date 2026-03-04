@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
-import memoize from 'fast-memoize';
 import { omit } from 'ramda';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -12,6 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import { addYears } from 'date-fns';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
+import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';

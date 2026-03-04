@@ -1,5 +1,5 @@
 import assert from 'assert';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import session from 'express-session';
 import { promisify } from 'util';
 import helper from './helper.js';
@@ -26,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const store = new SessionStore();
 
     if (shouldPromisify) {
-      Object.getOwnPropertyNames( SessionStore.prototype )
+      Object.getOwnPropertyNames(SessionStore.prototype)
         .filter(m => m !== 'constructor').forEach(method => {
           store[method] = promisify(store[method]);
         });

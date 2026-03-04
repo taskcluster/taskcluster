@@ -217,8 +217,8 @@ impl Auth {
     /// You should store the `accessToken` from this API call as there is no
     /// other way to retrieve it.
     ///
-    /// If you loose the `accessToken` you can call `resetAccessToken` to reset
-    /// it, and a new `accessToken` will be returned, but you cannot retrieve the
+    /// If you lose the `accessToken` you can call `resetAccessToken` to reset
+    /// it, and a new `accessToken` will be returned. You cannot retrieve the
     /// current `accessToken`.
     ///
     /// If a client with the same `clientId` already exists this operation will
@@ -241,13 +241,87 @@ impl Auth {
         (path, query)
     }
 
+    /// Get Entity History
+    ///
+    /// Get entity history based on entity type and entity name
+    pub async fn getEntityHistory(&self, entityType: &str, entityId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::getEntityHistory_details(entityType, entityId, continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the getEntityHistory endpoint
+    pub fn getEntityHistory_url(&self, entityType: &str, entityId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::getEntityHistory_details(entityType, entityId, continuationToken, limit);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the getEntityHistory endpoint
+    pub fn getEntityHistory_signed_url(&self, entityType: &str, entityId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::getEntityHistory_details(entityType, entityId, continuationToken, limit);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for getEntityHistory
+    fn getEntityHistory_details<'a>(entityType: &'a str, entityId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("audit/{}/{}", urlencode(entityType), urlencode(entityId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
+    /// List Audit History
+    ///
+    /// Get audit history of a client based on clientId.
+    pub async fn listAuditHistory(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the listAuditHistory endpoint
+    pub fn listAuditHistory_url(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the listAuditHistory endpoint
+    pub fn listAuditHistory_signed_url(&self, clientId: &str, continuationToken: Option<&str>, limit: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listAuditHistory_details(clientId, continuationToken, limit);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for listAuditHistory
+    fn listAuditHistory_details<'a>(clientId: &'a str, continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("clients/{}/audit", urlencode(clientId));
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Reset `accessToken`
     ///
     /// Reset a clients `accessToken`, this will revoke the existing
     /// `accessToken`, generate a new `accessToken` and return it from this
     /// call.
     ///
-    /// There is no way to retrieve an existing `accessToken`, so if you loose it
+    /// There is no way to retrieve an existing `accessToken`, so if you lose it
     /// you must reset the accessToken to acquire it again.
     pub async fn resetAccessToken(&self, clientId: &str) -> Result<Value, Error> {
         let method = "POST";

@@ -329,6 +329,29 @@
             "children": [
             ],
             "data": {
+              "filename": "task-execution/definitions.mdx",
+              "order": 5,
+              "title": "Definitions"
+            },
+            "name": "definitions",
+            "next": {
+              "path": "manual/task-execution/queues",
+              "title": "Queues"
+            },
+            "path": "manual/task-execution/definitions",
+            "prev": {
+              "path": "manual/task-execution",
+              "title": "Task Execution"
+            },
+            "up": {
+              "path": "manual/task-execution",
+              "title": "Task Execution"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
               "filename": "task-execution/queues.mdx",
               "order": 10,
               "title": "Queues"
@@ -340,8 +363,8 @@
             },
             "path": "manual/task-execution/queues",
             "prev": {
-              "path": "manual/task-execution",
-              "title": "Task Execution"
+              "path": "manual/task-execution/definitions",
+              "title": "Definitions"
             },
             "up": {
               "path": "manual/task-execution",
@@ -424,8 +447,8 @@
         },
         "name": "task-execution",
         "next": {
-          "path": "manual/task-execution/queues",
-          "title": "Queues"
+          "path": "manual/task-execution/definitions",
+          "title": "Definitions"
         },
         "path": "manual/task-execution",
         "prev": {
@@ -836,13 +859,36 @@
             },
             "name": "logs",
             "next": {
-              "path": "manual/design/env-vars",
-              "title": "Standard Environment Variables"
+              "path": "manual/design/metrics",
+              "title": "Metrics"
             },
             "path": "manual/design/logs",
             "prev": {
               "path": "manual/design/apis/reference-format",
               "title": "Reference Formats"
+            },
+            "up": {
+              "path": "manual/design",
+              "title": "System Design"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "filename": "design/metrics/README.mdx",
+              "order": 11,
+              "title": "Metrics"
+            },
+            "name": "metrics",
+            "next": {
+              "path": "manual/design/env-vars",
+              "title": "Standard Environment Variables"
+            },
+            "path": "manual/design/metrics",
+            "prev": {
+              "path": "manual/design/logs",
+              "title": "Structured Logs"
             },
             "up": {
               "path": "manual/design",
@@ -863,8 +909,8 @@
             },
             "path": "manual/design/env-vars",
             "prev": {
-              "path": "manual/design/logs",
-              "title": "Structured Logs"
+              "path": "manual/design/metrics",
+              "title": "Metrics"
             },
             "up": {
               "path": "manual/design",
@@ -1554,13 +1600,35 @@
             },
             "name": "static-clients",
             "next": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "path": "manual/deploying/static-clients",
             "prev": {
               "path": "manual/deploying",
               "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "Worker Manager Configuration"
+            },
+            "name": "worker-manager-config",
+            "next": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
+            },
+            "path": "manual/deploying/worker-manager-config",
+            "prev": {
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
@@ -1581,8 +1649,8 @@
             },
             "path": "manual/deploying/workers",
             "prev": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -2158,8 +2226,8 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/auth/scopes",
-                  "title": "Scopes and Satisfaction"
+                  "path": "reference/platform/auth/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/auth/logs",
                 "prev": {
@@ -2175,18 +2243,63 @@
                 "children": [
                 ],
                 "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/auth/scopes",
+                  "title": "Scopes and Satisfaction"
+                },
+                "path": "reference/platform/auth/metrics",
+                "prev": {
+                  "path": "reference/platform/auth/logs",
+                  "title": "logs"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
                   "order": 10,
                   "title": "Scopes and Satisfaction"
                 },
                 "name": "scopes",
                 "next": {
-                  "path": "reference/platform/auth/clients",
-                  "title": "Clients"
+                  "path": "reference/platform/auth/audit",
+                  "title": "Audit History"
                 },
                 "path": "reference/platform/auth/scopes",
                 "prev": {
-                  "path": "reference/platform/auth/logs",
-                  "title": "logs"
+                  "path": "reference/platform/auth/metrics",
+                  "title": "metrics"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 15,
+                  "title": "Audit History"
+                },
+                "name": "audit",
+                "next": {
+                  "path": "reference/platform/auth/clients",
+                  "title": "Clients"
+                },
+                "path": "reference/platform/auth/audit",
+                "prev": {
+                  "path": "reference/platform/auth/scopes",
+                  "title": "Scopes and Satisfaction"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2207,8 +2320,8 @@
                 },
                 "path": "reference/platform/auth/clients",
                 "prev": {
-                  "path": "reference/platform/auth/scopes",
-                  "title": "Scopes and Satisfaction"
+                  "path": "reference/platform/auth/audit",
+                  "title": "Audit History"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2313,13 +2426,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/object/download-methods",
-                  "title": "Download Methods"
+                  "path": "reference/platform/object/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/object/logs",
                 "prev": {
                   "path": "reference/platform/object/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/object/download-methods",
+                  "title": "Download Methods"
+                },
+                "path": "reference/platform/object/metrics",
+                "prev": {
+                  "path": "reference/platform/object/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2340,8 +2476,8 @@
                 },
                 "path": "reference/platform/object/download-methods",
                 "prev": {
-                  "path": "reference/platform/object/logs",
-                  "title": "logs"
+                  "path": "reference/platform/object/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2491,13 +2627,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/queue/worker-hierarchy",
-                  "title": "Worker Hierarchy"
+                  "path": "reference/platform/queue/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/queue/logs",
                 "prev": {
                   "path": "reference/platform/queue/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/queue/worker-hierarchy",
+                  "title": "Worker Hierarchy"
+                },
+                "path": "reference/platform/queue/metrics",
+                "prev": {
+                  "path": "reference/platform/queue/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2518,8 +2677,8 @@
                 },
                 "path": "reference/platform/queue/worker-hierarchy",
                 "prev": {
-                  "path": "reference/platform/queue/logs",
-                  "title": "logs"
+                  "path": "reference/platform/queue/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2745,13 +2904,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/hooks/firing-hooks",
-                  "title": "Firing Hooks"
+                  "path": "reference/core/hooks/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/hooks/logs",
                 "prev": {
                   "path": "reference/core/hooks/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/hooks/firing-hooks",
+                  "title": "Firing Hooks"
+                },
+                "path": "reference/core/hooks/metrics",
+                "prev": {
+                  "path": "reference/core/hooks/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2772,8 +2954,8 @@
                 },
                 "path": "reference/core/hooks/firing-hooks",
                 "prev": {
-                  "path": "reference/core/hooks/logs",
-                  "title": "logs"
+                  "path": "reference/core/hooks/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2834,13 +3016,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
+                  "path": "reference/core/index/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/index/logs",
                 "prev": {
                   "path": "reference/core/index/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/index/README",
+                  "title": "index"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "path": "reference/core/index/metrics",
+                "prev": {
+                  "path": "reference/core/index/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/index/README",
@@ -2924,13 +3129,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/notify/usage",
-                  "title": "Enable Notifications"
+                  "path": "reference/core/notify/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/notify/logs",
                 "prev": {
                   "path": "reference/core/notify/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/notify/usage",
+                  "title": "Enable Notifications"
+                },
+                "path": "reference/core/notify/metrics",
+                "prev": {
+                  "path": "reference/core/notify/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -2951,8 +3179,8 @@
                 },
                 "path": "reference/core/notify/usage",
                 "prev": {
-                  "path": "reference/core/notify/logs",
-                  "title": "logs"
+                  "path": "reference/core/notify/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -2970,8 +3198,8 @@
             },
             "path": "reference/core/notify/README",
             "prev": {
-              "path": "reference/core/index/logs",
-              "title": "logs"
+              "path": "reference/core/index/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3013,13 +3241,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
+                  "path": "reference/core/purge-cache/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/purge-cache/logs",
                 "prev": {
                   "path": "reference/core/purge-cache/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "path": "reference/core/purge-cache/metrics",
+                "prev": {
+                  "path": "reference/core/purge-cache/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/purge-cache/README",
@@ -3080,13 +3331,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
+                  "path": "reference/core/secrets/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/secrets/logs",
                 "prev": {
                   "path": "reference/core/secrets/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "path": "reference/core/secrets/metrics",
+                "prev": {
+                  "path": "reference/core/secrets/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/secrets/README",
@@ -3104,8 +3378,8 @@
             },
             "path": "reference/core/secrets/README",
             "prev": {
-              "path": "reference/core/purge-cache/logs",
-              "title": "logs"
+              "path": "reference/core/purge-cache/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3119,18 +3393,64 @@
                 ],
                 "data": {
                   "inline": true,
+                  "order": 1,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
+                },
+                "path": "reference/core/web-server/api",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
                   "order": 2,
                   "title": "logs"
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/web-server/github-login-strategy",
-                  "title": "GitHub Login Strategy"
+                  "path": "reference/core/web-server/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/web-server/logs",
                 "prev": {
+                  "path": "reference/core/web-server/api",
+                  "title": "api"
+                },
+                "up": {
                   "path": "reference/core/web-server/README",
                   "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "path": "reference/core/web-server/metrics",
+                "prev": {
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -3151,8 +3471,8 @@
                 },
                 "path": "reference/core/web-server/github-login-strategy",
                 "prev": {
-                  "path": "reference/core/web-server/logs",
-                  "title": "logs"
+                  "path": "reference/core/web-server/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -3187,13 +3507,13 @@
             },
             "name": "web-server",
             "next": {
-              "path": "reference/core/web-server/logs",
-              "title": "logs"
+              "path": "reference/core/web-server/api",
+              "title": "api"
             },
             "path": "reference/core/web-server/README",
             "prev": {
-              "path": "reference/core/secrets/logs",
-              "title": "logs"
+              "path": "reference/core/secrets/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3258,13 +3578,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/worker-manager/azure",
-                  "title": "Azure Provider Type"
+                  "path": "reference/core/worker-manager/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/worker-manager/logs",
                 "prev": {
                   "path": "reference/core/worker-manager/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/worker-manager/azure",
+                  "title": "Azure Provider Type"
+                },
+                "path": "reference/core/worker-manager/metrics",
+                "prev": {
+                  "path": "reference/core/worker-manager/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3285,8 +3628,8 @@
                 },
                 "path": "reference/core/worker-manager/azure",
                 "prev": {
-                  "path": "reference/core/worker-manager/logs",
-                  "title": "logs"
+                  "path": "reference/core/worker-manager/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3346,13 +3689,35 @@
                 },
                 "name": "static",
                 "next": {
-                  "path": "reference/core/worker-manager/worker-interaction",
-                  "title": "Worker-Manager - Worker Interaction"
+                  "path": "reference/core/worker-manager/launch-configurations",
+                  "title": "Worker-Manager - Launch Configurations"
                 },
                 "path": "reference/core/worker-manager/static",
                 "prev": {
                   "path": "reference/core/worker-manager/aws",
                   "title": "AWS Provider Type"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 100,
+                  "title": "Worker-Manager - Launch Configurations"
+                },
+                "name": "launch-configurations",
+                "next": {
+                  "path": "reference/core/worker-manager/worker-interaction",
+                  "title": "Worker-Manager - Worker Interaction"
+                },
+                "path": "reference/core/worker-manager/launch-configurations",
+                "prev": {
+                  "path": "reference/core/worker-manager/static",
+                  "title": "Static Provider Type"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3373,8 +3738,8 @@
                 },
                 "path": "reference/core/worker-manager/worker-interaction",
                 "prev": {
-                  "path": "reference/core/worker-manager/static",
-                  "title": "Static Provider Type"
+                  "path": "reference/core/worker-manager/launch-configurations",
+                  "title": "Worker-Manager - Launch Configurations"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -3480,13 +3845,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/github/intro",
-                  "title": "Using Taskcluster for Github Projects"
+                  "path": "reference/integrations/github/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/integrations/github/logs",
                 "prev": {
                   "path": "reference/integrations/github/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/integrations/github/intro",
+                  "title": "Using Taskcluster for Github Projects"
+                },
+                "path": "reference/integrations/github/metrics",
+                "prev": {
+                  "path": "reference/integrations/github/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -3507,8 +3895,8 @@
                 },
                 "path": "reference/integrations/github/intro",
                 "prev": {
-                  "path": "reference/integrations/github/logs",
-                  "title": "logs"
+                  "path": "reference/integrations/github/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -3847,6 +4235,28 @@
                 "children": [
                 ],
                 "data": {
+                  "order": 10,
+                  "title": "Usage/Config"
+                },
+                "name": "usage",
+                "next": {
+                  "path": "reference/workers/generic-worker/features",
+                  "title": "Features"
+                },
+                "path": "reference/workers/generic-worker/usage",
+                "prev": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
                   "order": 20,
                   "title": "Features"
                 },
@@ -3857,8 +4267,8 @@
                 },
                 "path": "reference/workers/generic-worker/features",
                 "prev": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
+                  "path": "reference/workers/generic-worker/usage",
+                  "title": "Usage/Config"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3918,13 +4328,35 @@
                 },
                 "name": "installing",
                 "next": {
-                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
-                  "title": "Task Payload - multiuser, posix"
+                  "path": "reference/workers/generic-worker/insecure-posix-payload",
+                  "title": "Task Payload - insecure, posix"
                 },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
                   "path": "reference/workers/generic-worker/support-tiers",
                   "title": "Support Tiers"
+                },
+                "up": {
+                  "path": "reference/workers/generic-worker/README",
+                  "title": "generic-worker"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Task Payload - insecure, posix"
+                },
+                "name": "insecure-posix-payload",
+                "next": {
+                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
+                  "title": "Task Payload - multiuser, posix"
+                },
+                "path": "reference/workers/generic-worker/insecure-posix-payload",
+                "prev": {
+                  "path": "reference/workers/generic-worker/installing",
+                  "title": "Installing"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3945,8 +4377,8 @@
                 },
                 "path": "reference/workers/generic-worker/multiuser-posix-payload",
                 "prev": {
-                  "path": "reference/workers/generic-worker/installing",
-                  "title": "Installing"
+                  "path": "reference/workers/generic-worker/insecure-posix-payload",
+                  "title": "Task Payload - insecure, posix"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -3962,35 +4394,13 @@
                 },
                 "name": "multiuser-windows-payload",
                 "next": {
-                  "path": "reference/workers/generic-worker/simple-posix-payload",
-                  "title": "Task Payload - simple, posix"
+                  "path": "reference/workers/websocktunnel",
+                  "title": "websocktunnel"
                 },
                 "path": "reference/workers/generic-worker/multiuser-windows-payload",
                 "prev": {
                   "path": "reference/workers/generic-worker/multiuser-posix-payload",
                   "title": "Task Payload - multiuser, posix"
-                },
-                "up": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Task Payload - simple, posix"
-                },
-                "name": "simple-posix-payload",
-                "next": {
-                  "path": "reference/workers/websocktunnel",
-                  "title": "websocktunnel"
-                },
-                "path": "reference/workers/generic-worker/simple-posix-payload",
-                "prev": {
-                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
-                  "title": "Task Payload - multiuser, windows"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -4003,8 +4413,8 @@
             },
             "name": "generic-worker",
             "next": {
-              "path": "reference/workers/generic-worker/features",
-              "title": "Features"
+              "path": "reference/workers/generic-worker/usage",
+              "title": "Usage/Config"
             },
             "path": "reference/workers/generic-worker/README",
             "prev": {
@@ -4030,8 +4440,8 @@
             },
             "path": "reference/workers/websocktunnel",
             "prev": {
-              "path": "reference/workers/generic-worker/simple-posix-payload",
-              "title": "Task Payload - simple, posix"
+              "path": "reference/workers/generic-worker/multiuser-windows-payload",
+              "title": "Task Payload - multiuser, windows"
             },
             "up": {
               "path": "reference/workers/README",

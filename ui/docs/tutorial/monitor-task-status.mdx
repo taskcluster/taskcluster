@@ -2,8 +2,8 @@
 title: Monitor task status via API
 ---
 
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
-import TutorialNavigation from 'taskcluster-ui/views/Documentation/components/TutorialNavigation';
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
+import TutorialNavigation from '@taskcluster/ui/views/Documentation/components/TutorialNavigation';
 
 Holding the `taskId` to a task, we can fetch the task status, using the
 `queue.status(taskId)` API end-point. This returns an object where the `status`
@@ -21,7 +21,7 @@ We generally allow users to inspect metadata without any credentials, which
 lets you easily create custom dashboards and other useful tools.
 
 ```js
-let taskcluster = require('taskcluster-client');
+let taskcluster = require('@taskcluster/client');
 
 let task; // same as previous page ...
 

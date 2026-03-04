@@ -50,10 +50,8 @@ If you want more flexibility you can use [ingress nginx](https://kubernetes.gith
 1. Install ingress nginx by running following or checking deployment-specific [documentation](https://kubernetes.github.io/ingress-nginx/deploy/)
 
    ```sh
-   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-   helm repo update
-   helm install ingress-nginx/ingress-nginx \
-      --name nginx-ingress \
+   helm upgrade --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx \
       --set controller.service.loadBalancerIP="$STATIC_IP_ADDRESS"
    ```
@@ -409,14 +407,11 @@ You have a choice to use [cert manager](https://cert-manager.io/docs/) that can 
 You can use [helm](https://cert-manager.io/docs/installation/helm/#example-usage) to install it:
 
 ```sh
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm install \
-  --name cert-manager \
+helm upgrade --install \
+   cert-manager oci://quay.io/jetstack/charts/cert-manager \
   --namespace cert-manager \
-  --version v1.9.1 \  # check latest version for cert-manager.io
-  jetstack/cert-manager \
-  --set installCRDs=true
+  --version v1.19.2 \  # check latest version for cert-manager.io
+  --set crds.enabled=true
 ```
 
 You will also need to create `ClusterIssuer` resources that will tell cert-manager how to obtain those certificates.

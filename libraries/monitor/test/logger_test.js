@@ -3,7 +3,7 @@ import stream from 'stream';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import MonitorManager from '../src/monitormanager.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import fs from 'fs';
 import path from 'path';
 

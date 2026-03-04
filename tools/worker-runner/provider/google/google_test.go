@@ -3,13 +3,13 @@ package google
 import (
 	"testing"
 
-	ptesting "github.com/taskcluster/taskcluster/v60/tools/workerproto/testing"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 func TestGoogleConfigureRun(t *testing.T) {
@@ -55,7 +55,7 @@ func TestGoogleConfigureRun(t *testing.T) {
 	require.Equal(t, "wg", state.WorkerGroup, "workerGroup is correct")
 	require.Equal(t, "i-123", state.WorkerID, "workerID is correct")
 
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"project-id":      "proj-1234",
 		"image":           "img-123",
 		"instance-type":   "most-of-the-cloud",
@@ -81,13 +81,13 @@ func TestGoogleConfigureRun(t *testing.T) {
 
 	proof, err := p.GetWorkerIdentityProof()
 	require.NoError(t, err)
-	require.Equal(t, map[string]interface{}{
+	require.Equal(t, map[string]any{
 		"token": "i-promise",
 	}, proof)
 }
 
 func TestCheckTerminationTime(t *testing.T) {
-	test := func(t *testing.T, proto *workerproto.Protocol, hasCapability bool) {
+	test := func(t *testing.T, proto *workerproto.Protocol) {
 		t.Helper()
 
 		userData := &UserData{
@@ -114,7 +114,7 @@ func TestCheckTerminationTime(t *testing.T) {
 			workerManagerClientFactory: nil,
 			metadataService:            mds,
 			proto:                      proto,
-			terminationTicker:          nil,
+			terminationMsgSent:         false,
 		}
 
 		proto.AddCapability("graceful-termination")
@@ -123,7 +123,7 @@ func TestCheckTerminationTime(t *testing.T) {
 		// not time yet..
 		require.False(t, p.checkTerminationTime())
 
-		metaData["/instance/preempted"] = "TRUE"
+		metaData["/instance/preempted?wait_for_change=true"] = "TRUE"
 		require.True(t, p.checkTerminationTime())
 	}
 
@@ -133,7 +133,7 @@ func TestCheckTerminationTime(t *testing.T) {
 
 		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-		test(t, wkr.RunnerProtocol, false)
+		test(t, wkr.RunnerProtocol)
 
 		require.False(t, gotTerm())
 	})
@@ -144,7 +144,7 @@ func TestCheckTerminationTime(t *testing.T) {
 
 		gotTerm := wkr.MessageReceivedFunc("graceful-termination", nil)
 
-		test(t, wkr.RunnerProtocol, false)
+		test(t, wkr.RunnerProtocol)
 
 		require.True(t, gotTerm())
 	})

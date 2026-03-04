@@ -5,18 +5,19 @@ package dockerworker
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
 	Artifact struct {
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		Path string `json:"path"`
 
 		// Possible values:
 		//   * "file"
 		//   * "directory"
+		//   * "volume"
 		Type string `json:"type"`
 	}
 
@@ -24,7 +25,7 @@ type (
 	Capabilities struct {
 
 		// Allows devices from the host system to be attached to a task container similar to using `--device` in docker.
-		Devices Devices `json:"devices,omitempty"`
+		Devices Devices `json:"devices,omitzero"`
 
 		// Allowed a task to run without seccomp, similar to running docker with `--security-opt seccomp=unconfined`.  This only worked for worker-types configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload still includes feature in order for d2g to work with it.
 		//
@@ -71,6 +72,17 @@ type (
 	DockerWorkerPayload struct {
 
 		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+		// Artifacts can be an individual `file`, a `directory` containing
+		// potentially multiple files with recursively included subdirectories,
+		// or a `volume` (d2g only) which will create a volume mount from the
+		// host to the running container. Unlike `directory` artifacts, the
+		// `volume` directory will already exist as the task starts. Since the
+		// artifacts will be created directly on the host, they do not need to
+		// be copied from the container to the host prior to being published,
+		// so perform more efficiently, and simplify the d2g-generated task payload.
+		// Moreover, in the case of time-critical spot terminations, tasks have
+		// more chance of successfully publishing volume artifacts than directory
+		// artifacts, due to the efficiency gain.
 		Artifacts map[string]Artifact `json:"artifacts,omitempty"`
 
 		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
@@ -79,7 +91,7 @@ type (
 		Cache map[string]string `json:"cache,omitempty"`
 
 		// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
-		Capabilities Capabilities `json:"capabilities,omitempty"`
+		Capabilities Capabilities `json:"capabilities,omitzero"`
 
 		// Example: `['/bin/bash', '-c', 'ls']`.
 		//
@@ -99,7 +111,7 @@ type (
 		Env map[string]string `json:"env,omitempty"`
 
 		// Used to enable additional functionality.
-		Features FeatureFlags `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitzero"`
 
 		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
@@ -118,11 +130,10 @@ type (
 		// Maximum time the task container can run in seconds.
 		//
 		// Mininum:    1
-		// Maximum:    86400
 		MaxRunTime int64 `json:"maxRunTime"`
 
 		// By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitzero"`
 
 		// Maintained for backward compatibility, but no longer used
 		SupersederURL string `json:"supersederUrl,omitempty"`
@@ -162,16 +173,6 @@ type (
 		//
 		// Default:    false
 		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
-
-		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		//
-		// Default:    false
-		Dind bool `json:"dind" default:"false"`
-
-		// Uploads docker images as artifacts
-		//
-		// Default:    false
-		DockerSave bool `json:"dockerSave" default:"false"`
 
 		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
 		//
@@ -243,7 +244,8 @@ func JSONSchema() string {
         "type": {
           "enum": [
             "file",
-            "directory"
+            "directory",
+            "volume"
           ],
           "title": "Artifact upload type.",
           "type": "string"
@@ -262,7 +264,7 @@ func JSONSchema() string {
       "additionalProperties": {
         "$ref": "#/definitions/artifact"
       },
-      "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `",
+      "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
       "title": "Artifacts",
       "type": "object"
     },
@@ -367,18 +369,6 @@ func JSONSchema() string {
           "default": false,
           "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
           "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
-          "type": "boolean"
-        },
-        "dind": {
-          "default": false,
-          "description": "Runs docker-in-docker and binds ` + "`" + `/var/run/docker.sock` + "`" + ` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
-          "title": "Docker in Docker",
-          "type": "boolean"
-        },
-        "dockerSave": {
-          "default": false,
-          "description": "Uploads docker images as artifacts",
-          "title": "Docker save",
           "type": "boolean"
         },
         "interactive": {
@@ -490,7 +480,6 @@ func JSONSchema() string {
     },
     "maxRunTime": {
       "description": "Maximum time the task container can run in seconds.",
-      "maximum": 86400,
       "minimum": 1,
       "multipleOf": 1,
       "title": "Maximum run time in seconds",

@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
 import helper from './helper/index.js';
-import testing from 'taskcluster-lib-testing';
-import taskcluster from 'taskcluster-client';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import request from 'superagent';
 import crypto from 'crypto';
 import { toDataUrl, TestBackend } from '../src/backends/test.js';

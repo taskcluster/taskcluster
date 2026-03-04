@@ -1,10 +1,10 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { strict as assert } from 'assert';
 import helper from './helper.js';
 import { FakeGoogle } from './fakes/index.js';
 import { GoogleProvider } from '../src/providers/google.js';
-import testing from 'taskcluster-lib-testing';
-import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
+import testing from '@taskcluster/lib-testing';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -28,6 +28,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       db: helper.db,
       monitor: (await helper.load('monitor')).childMonitor('google'),
       estimator: await helper.load('estimator'),
+      publisher: await helper.load('publisher'),
+      validator: await helper.load('validator'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
       rootUrl: helper.rootUrl,
       WorkerPoolError: WorkerPoolError,
       providerConfig: {
@@ -42,10 +45,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.db.fns.delete_worker_pool(workerPoolId);
 
     await provider.setup();
+    provider.scanPrepare();
   });
 
   const defaultLaunchConfig = {
-    capacityPerInstance: 1,
+    workerManager: {
+      capacityPerInstance: 1,
+    },
     machineType: 'n1-standard-2',
     region: 'us-east1',
     zone: 'us-east1-a',
@@ -98,8 +104,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         db: helper.db,
         monitor: (await helper.load('monitor')).childMonitor('google'),
         estimator: await helper.load('estimator'),
+        validator: await helper.load('validator'),
+        publisher: await helper.load('publisher'),
         rootUrl: helper.rootUrl,
         WorkerPoolError: helper.WorkerPoolError,
+        launchConfigSelector: await helper.load('launchConfigSelector'),
         providerConfig: {
           project,
           instancePermissions: [],
@@ -118,11 +127,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
       test(name, async function() {
         const workerPool = await makeWorkerPool({ config });
-        const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
-        await provider.provision({ workerPool, workerInfo });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+        await provider.provision({ workerPool, workerPoolStats });
         const workers = await helper.getWorkers();
         assert.equal(workers.length, expectedWorkers);
         await check(workers);
+        if (expectedWorkers > 0) {
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerPoolId === workerPoolId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.workerId === workers[0].workerId);
+          helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === workers[0].launchConfigId);
+        }
       });
     };
 
@@ -132,6 +146,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       scalingRatio: 1,
       launchConfigs: [defaultLaunchConfig],
     };
+
+    provisionTest('no launch configs', {
+      config: { minCapacity: 0, maxCapacity: 1, scalingRatio: 1 },
+      expectedWorkers: 0,
+    }, async workers => {
+      assert.equal(workers.length, 0);
+    });
 
     provisionTest('simple success', {
       config,
@@ -153,6 +174,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
+        'launch-config-id': worker.launchConfigId,
       });
       assert.equal(parameters.requestBody.description, 'none');
       assert.deepEqual(parameters.requestBody.disks, []);
@@ -177,7 +199,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const instanceName = parameters.requestBody.name;
       assert(fake.compute.zoneOperations.fakeOperationExists(
         worker.providerData.operation));
-      assert.equal(worker.workerId, `instance-${instanceName}`);
+      assert.equal(worker.workerId, `i-${instanceName}`);
     });
 
     provisionTest('registrationTimeout', {
@@ -228,15 +250,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
         'color': 'red',
+        'launch-config-id': workers[0].launchConfigId,
       });
     });
 
-    provisionTest('disks', {
+    provisionTest('disks (persistent)', {
       config: {
         ...config,
         launchConfigs: [{
           ...defaultLaunchConfig,
-          disks: [{ testProperty: 'bar', labels: { color: 'purple' } }],
+          disks: [{
+            testProperty: 'bar',
+            type: 'PERSISTENT',
+            labels: { color: 'purple' },
+          }],
         }],
       },
       expectedWorkers: 1,
@@ -245,12 +272,72 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(parameters.requestBody.disks, [
         {
           testProperty: 'bar',
-          labels: {
-            'created-by': 'taskcluster-wm-' + providerId,
-            'managed-by': 'taskcluster',
-            'worker-pool-id': workerPoolId.replace('/', '-'),
-            'owner': 'whatever-example-com',
-            'color': 'purple',
+          type: 'PERSISTENT',
+          initializeParams: {
+            labels: {
+              'created-by': 'taskcluster-wm-' + providerId,
+              'managed-by': 'taskcluster',
+              'worker-pool-id': workerPoolId.replace('/', '-'),
+              'owner': 'whatever-example-com',
+              'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
+            },
+          },
+        },
+      ]);
+    });
+
+    provisionTest('disks (scratch)', {
+      config: {
+        ...config,
+        launchConfigs: [{
+          ...defaultLaunchConfig,
+          disks: [{
+            testProperty: 'bar',
+            type: 'SCRATCH',
+            labels: { color: 'purple' },
+          }],
+        }],
+      },
+      expectedWorkers: 1,
+    }, async workers => {
+      const parameters = fake.compute.instances.insertCalls[0];
+      assert.deepEqual(parameters.requestBody.disks, [
+        {
+          testProperty: 'bar',
+          type: 'SCRATCH',
+        },
+      ]);
+    });
+
+    provisionTest('disk labels preserved', {
+      config: {
+        ...config,
+        launchConfigs: [{
+          ...defaultLaunchConfig,
+          disks: [{
+            testProperty: 'bar',
+            type: 'PERSISTENT',
+            initializeParams: { labels: { color: 'purple' } },
+          }],
+        }],
+      },
+      expectedWorkers: 1,
+    }, async workers => {
+      const parameters = fake.compute.instances.insertCalls[0];
+      assert.deepEqual(parameters.requestBody.disks, [
+        {
+          testProperty: 'bar',
+          type: 'PERSISTENT',
+          initializeParams: {
+            labels: {
+              'created-by': 'taskcluster-wm-' + providerId,
+              'managed-by': 'taskcluster',
+              'worker-pool-id': workerPoolId.replace('/', '-'),
+              'owner': 'whatever-example-com',
+              'color': 'purple',
+              'launch-config-id': workers[0].launchConfigId,
+            },
           },
         },
       ]);
@@ -329,13 +416,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('failure from compute.insert', async function() {
       const workerPool = await makeWorkerPool();
-      const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
+      const workerPoolStats = new WorkerPoolStats('wpid');
 
       // replicate the shape of an error from the google API
       fake.compute.instances.failFakeInsertWith = fake.makeError('uhoh', 400);
 
-      await provider.provision({ workerPool, workerInfo });
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      await provider.provision({ workerPool, workerPoolStats });
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       const workers = await helper.getWorkers();
@@ -344,14 +431,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('rate-limiting from compute.insert', async function() {
       const workerPool = await makeWorkerPool();
-      const workerInfo = { existingCapacity: 0, requestedCapacity: 0 };
+      const workerPoolStats = new WorkerPoolStats('wpid');
 
       // replicate the shape of an error from the google API
       fake.compute.instances.failFakeInsertWith = fake.makeError('back off', 403);
 
-      await provider.provision({ workerPool, workerInfo });
+      await provider.provision({ workerPool, workerPoolStats });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 0);
 
       // called twice, retrying automatically
@@ -388,9 +475,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       capacity: 1,
       state: 'requested',
       providerData: { zone: 'us-east1-a' },
+      launchConfigId: 'lc-id-1',
     });
     await provider.removeWorker({ worker });
     assert(fake.compute.instances.delete_called);
+    helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId);
+    helper.assertPulseMessage('worker-removed', m => m.payload.launchConfigId === worker.launchConfigId);
+    assert.equal(worker.state, Worker.states.STOPPING);
   });
 
   suite('checkWorker', function() {
@@ -407,6 +498,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         capacity: 1,
         expires: taskcluster.fromNow('2 weeks'),
         state: Worker.states.RUNNING,
+        launchConfigId: 'lc1',
         ...overrides,
         providerData: { project, zone: 'us-east1-a', ...(overrides.providerData || {}) },
       });
@@ -426,6 +518,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
 
       // RUNNING is set by register which does not happen here
@@ -438,6 +531,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.RUNNING);
     });
@@ -450,6 +544,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'TERMINATED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
     test('for a stopped instance', async function() {
@@ -460,6 +556,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'STOPPED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('for a nonexistent instance', async function() {
@@ -467,6 +564,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({ state: 'requested' });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('for a nonexistent instance with a running operation', async function() {
@@ -475,6 +573,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation } });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.REQUESTED);
+      helper.assertNoPulseMessage('worker-stopped');
     });
 
     test('for a nonexistent instance with a failed operation', async function() {
@@ -486,13 +585,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           errors: [{ message: 'uhoh' }],
         },
       });
-      let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation } });
+      let worker = await suiteMakeWorker({ state: 'requested', providerData: { operation }, launchConfigId: 'lc1' });
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, null, null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].description, 'uhoh');
       assert.equal(errors[0].title, 'Operation Error');
+      assert.equal(errors[0].launch_config_id, 'lc1');
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === 'lc1');
     });
 
     test('remove unregistered workers after terminateAfter', async function() {
@@ -501,13 +603,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       fake.compute.instances.setFakeInstanceStatus(
         project, 'us-east1-a', workerId,
         'RUNNING');
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
 
-      // the worker isn't marked as stopped until we see it disappear
-      assert.equal(worker.state, Worker.states.RUNNING);
+      // the worker is first marked as stopping
+      // until we see it disappear, then stopped
+      assert.equal(worker.state, Worker.states.STOPPING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason === 'terminateAfter time exceeded');
+
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
     test('don\'t remove unregistered before terminateAfter', async function() {
@@ -522,6 +631,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
     });
     test('do not remove registered workers with stale terminateAfter', async function () {
       const terminateAfter = Date.now() - 1000;
@@ -550,12 +660,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker.firstClaim = null;
       worker.lastDateActive = null;
 
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
-      assert.equal(worker.state, Worker.states.RUNNING);
+      assert.equal(worker.state, Worker.states.STOPPING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason.includes('never claimed work'));
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
     test('remove zombie worker that was active long ago', async function () {
       const queueInactivityTimeout = 120;
@@ -568,12 +683,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker.firstClaim = taskcluster.fromNow('-100 minutes');
       worker.lastDateActive = taskcluster.fromNow('-80 minutes');
 
+      assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
-      assert.equal(worker.state, Worker.states.RUNNING);
+      assert.equal(worker.state, Worker.states.STOPPING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
+        m.payload.reason.includes('worker inactive'));
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
     test('don\'t remove zombie worker that was recently active', async function () {
       const queueInactivityTimeout = 60 * 60 * 4 * 1000; // 4 hours
@@ -589,6 +709,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       worker = await runCheckWorker(worker);
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
+      helper.assertNoPulseMessage('worker-stopped');
+      helper.assertNoPulseMessage('worker-removed');
     });
   });
 
@@ -675,6 +797,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assert.rejects(() =>
         provider.registerWorker({ workerPool, worker, workerIdentityProof }),
       /Token validation error/);
+      helper.assertNoPulseMessage('worker-running');
     });
 
     test('sweet success', async function() {
@@ -693,6 +816,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
     });
 
     test('sweet success (different reregister)', async function() {
@@ -712,6 +836,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
       assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
+      helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
     });
   });
 });

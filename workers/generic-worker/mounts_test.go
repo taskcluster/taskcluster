@@ -13,8 +13,8 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcindex"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -60,7 +60,8 @@ func TestMissingScopes(t *testing.T) {
 	}
 }
 
-// TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
+// TestMissingMountsDependency tests that if artifact content is mounted, it
+// must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
 	setup(t)
 	pretendTaskID := slugid.Nice()
@@ -476,6 +477,12 @@ func TestFileMountWithCompression(t *testing.T) {
 		granting...,
 	)
 
+	payload := GenericWorkerPayload{
+		Command:    printFileContents(t.Name()),
+		MaxRunTime: 10,
+	}
+	defaults.SetDefaults(&payload)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -501,10 +508,7 @@ func TestFileMountWithCompression(t *testing.T) {
 				// Required text from second task when download is already cached
 				pass2,
 			},
-			Payload: &GenericWorkerPayload{
-				Command:    printFileContents(t.Name()),
-				MaxRunTime: 10,
-			},
+			Payload: &payload,
 			PerTaskExtraTesting: func(t *testing.T) {
 				t.Helper()
 				expectedText := "testing file mounts with compression!"
@@ -555,8 +559,8 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	// Whether permission is granted to task user depends if running multiuser
 	// engine or simple engine but is independent of whether running as current
 	// user or not.
-	grantingDir, denying := grantingDenying(t, "directory", false, t.Name())
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
+	updatingOwnership := updateOwnership(t)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -574,26 +578,24 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		grantingDir...,
+		updatingOwnership...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
-	pass1 = append(pass1, denying...)
 
 	// On second pass, cache already exists
 	pass2 := append([]string{
 		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
 		`Creating directory .*`,
 	},
-		grantingDir...,
+		updatingOwnership...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
 		`Preserving cache: Moving ".*`+t.Name()+`" to ".*"`,
 	)
-	pass2 = append(pass2, denying...)
 
 	LogTest(
 		&MountsLoggingTestCase{
@@ -857,8 +859,8 @@ func TestCacheMoved(t *testing.T) {
 	// Whether permission is granted to task user depends if running multiuser
 	// engine or simple engine but is independent of whether running as current
 	// user or not.
-	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
+	updatingOwnership := updateOwnership(t)
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -876,7 +878,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		grantingDir...,
+		updatingOwnership...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -900,7 +902,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
-		grantingDir...,
+		updatingOwnership...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,

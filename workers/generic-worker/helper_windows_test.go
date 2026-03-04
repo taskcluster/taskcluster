@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 )
 
 func helloGoodbye() []string {
@@ -149,8 +149,8 @@ func copyTestdataFile(path string) []string {
 }
 
 func copyTestdataFileTo(src, dest string) []string {
-	destFile := strings.Replace(dest, "/", "\\", -1)
-	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))
+	destFile := strings.ReplaceAll(dest, "/", "\\")
+	sourceFile := filepath.Join(testdataDir, strings.ReplaceAll(src, "/", "\\"))
 	return []string{
 		run([]string{"if", "not", "exist", filepath.Dir(destFile), "mkdir", filepath.Dir(destFile)}, ""),
 		run([]string{"copy", sourceFile, destFile}, ""),

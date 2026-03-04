@@ -5,11 +5,11 @@ transforms:
   - src.transforms:add_task_env
   - src.transforms:parameterize_mounts
   - src.transforms:parameterize_artifacts
-  - taskgraph.transforms.run:transforms
-  - taskgraph.transforms.task:transforms
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
 
 task-defaults:
-  worker-type: gw-ubuntu-22-04
+  worker-type: gw-ubuntu-24-04
   run:
     using: bare
     install:
@@ -22,21 +22,23 @@ task-defaults:
         git --version
         go version
         go env
+        git config --global --add safe.directory "$(pwd)/taskcluster"
         if [ ! -d taskcluster/.git ]; then
-          rm -rf taskcluster
           git clone {head_repository} taskcluster
         fi
         cd taskcluster
-        git fetch {head_repository} "+${{GITHUB_SHA}}:refs/heads/X${{TASK_ID}}"
-        git checkout -f "X${{TASK_ID}}"
+        git config advice.detachedHead false
+        git fetch {head_repository} "${{GITHUB_SHA}}"
+        git checkout -f "${{GITHUB_SHA}}"
         git reset --hard "${{GITHUB_SHA}}"
-        git clean -fdx
-        git checkout -B tmp -t "X${{TASK_ID}}"
+        git clean -fd
   worker:
     max-run-time: 600
     mounts:
+      - cache-name: checkouts
+        directory: taskcluster
       - content:
-          url: 'https://storage.googleapis.com/golang/{go_version}.linux-amd64.tar.gz'
+          url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
         directory: '{go_version}'
         format: tar.gz
       - content:
@@ -59,7 +61,8 @@ tasks:
         - |
           cd tools
           go vet ./...
-          go test -v ./...
+          D2G_UPDATE_TEST_EXPECTATIONS=true go test -v ./...
+          git diff --exit-code || (echo "D2G test expectations are not formatted properly. Run tests with `D2G_UPDATE_TEST_EXPECTATIONS` and commit the difference" && exit 1)
           ../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m
           cd d2g
           go generate ./...
@@ -67,3 +70,10 @@ tasks:
           git status
           test $(git status --porcelain | wc -l) == 0
           go install ./...
+  modernize:
+    description: ensure go code is modern
+    run:
+      command:
+        - |
+          GOFLAGS="-tags=insecure" go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
+          GOFLAGS="-tags=multiuser" go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...

@@ -140,7 +140,7 @@ defaults:
 
   # Pulse credentials
   pulse:
-    username:   !env PULSE_USERNAME
+    username:   !env:secret PULSE_USERNAME
     password:   !env PULSE_PASSWORD
 
   metricsCollection:

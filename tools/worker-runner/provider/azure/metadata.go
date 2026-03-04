@@ -45,12 +45,15 @@ type Tag struct {
 // Data from the /scheduledevents endpoint
 type ScheduledEvents struct {
 	Events []struct {
-		EventId      string
-		EventType    string
-		ResourceType string
-		Resources    []string
-		EventStatus  string
-		NotBefore    string
+		EventId           string
+		EventType         string
+		ResourceType      string
+		Resources         []string
+		EventStatus       string
+		NotBefore         string
+		Description       string
+		EventSource       string
+		DurationInSeconds int
 	}
 }
 
@@ -97,7 +100,7 @@ func (mds *realMetadataService) fetch(path string, apiVersion string) (string, e
 }
 
 func (mds *realMetadataService) queryInstanceData() (*InstanceData, error) {
-	content, err := mds.fetch("/metadata/instance", "2019-08-15")
+	content, err := mds.fetch("/metadata/instance", "2025-04-07")
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +110,7 @@ func (mds *realMetadataService) queryInstanceData() (*InstanceData, error) {
 }
 
 func (mds *realMetadataService) queryAttestedDocument() (string, error) {
-	content, err := mds.fetch("/metadata/attested/document", "2019-08-15")
+	content, err := mds.fetch("/metadata/attested/document", "2025-04-07")
 	if err != nil {
 		return "", err
 	}
@@ -124,7 +127,7 @@ func (mds *realMetadataService) queryAttestedDocument() (string, error) {
 
 func (mds *realMetadataService) queryScheduledEvents() (*ScheduledEvents, error) {
 	// note that this interface is only available in this earlier API version
-	content, err := mds.fetch("/metadata/scheduledevents", "2017-11-01")
+	content, err := mds.fetch("/metadata/scheduledevents", "2020-07-01")
 	if err != nil {
 		return nil, err
 	}

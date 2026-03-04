@@ -1,12 +1,12 @@
 import '../../prelude.js';
-import tcdb from 'taskcluster-db';
+import tcdb from '@taskcluster/db';
 import builder from '../src/api.js';
-import loader from 'taskcluster-lib-loader';
-import SchemaSet from 'taskcluster-lib-validate';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import { App } from 'taskcluster-lib-app';
-import libReferences from 'taskcluster-lib-references';
-import config from 'taskcluster-lib-config';
+import loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import config from '@taskcluster/lib-config';
 import { Backends } from './backends/index.js';
 import { Middleware } from './middleware/index.js';
 import expireObjects from './expire.js';
@@ -54,7 +54,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), MonitorManager.reference('object')],
+      references: [builder.reference(), MonitorManager.reference('object'), MonitorManager.metricsReference('object')],
     }).then(ref => ref.generateReferences()),
   },
 
@@ -70,12 +70,17 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends', 'middleware'],
-    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db, backends, middleware },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { cfg, db, backends, middleware },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/kc"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/kc"
 )
 
 var cachedInteractiveUsername string = ""
@@ -57,11 +57,11 @@ func DeleteUser(username string) (err error) {
 
 func ListUserAccounts() (usernames []string, err error) {
 	var out string
-	out, err = host.CombinedOutput("/usr/bin/dscl", ".", "-list", "/Users")
+	out, err = host.Output("/usr/bin/dscl", ".", "-list", "/Users")
 	if err != nil {
 		return
 	}
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		trimmedLine := strings.Trim(line, "\n ")
 		usernames = append(usernames, trimmedLine)
 	}
@@ -72,22 +72,30 @@ func UserHomeDirectoriesParent() string {
 	return "/Users"
 }
 
-func WaitForLoginCompletion(timeout time.Duration) error {
+func WaitForLoginCompletion(timeout time.Duration, username string) (err error) {
 	deadline := time.Now().Add(timeout)
 	log.Print("Checking if user is logged in...")
+	var interactiveUsername string
 	for time.Now().Before(deadline) {
-		username, err := InteractiveUsername()
+		interactiveUsername, err = InteractiveUsername()
 		if err != nil {
 			log.Printf("WARNING: Error checking for interactive user: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
-		fi, err := os.Stat("/Library/Preferences/com.apple.loginwindow.plist")
+		if interactiveUsername != username {
+			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			cachedInteractiveUsername = ""
+			time.Sleep(time.Second)
+			continue
+		}
+		var fi os.FileInfo
+		fi, err = os.Stat("/Library/Preferences/com.apple.loginwindow.plist")
 		if err != nil {
 			return fmt.Errorf("could not read file /Library/Preferences/com.apple.loginwindow.plist to determine when last login occurred: %v", err)
 		}
 		modTime := fi.ModTime()
-		log.Printf("User %v logged in at %v", username, modTime)
+		log.Printf("User %v logged in at %v", interactiveUsername, modTime)
 		// See https://bugzilla.mozilla.org/show_bug.cgi?id=1560388#c3
 		sleepUntil := modTime.Add(10 * time.Second)
 		now := time.Now()
@@ -95,16 +103,20 @@ func WaitForLoginCompletion(timeout time.Duration) error {
 			log.Printf("Sleeping until %v (10 seconds after login) due to https://bugzilla.mozilla.org/show_bug.cgi?id=1560388#c3", sleepUntil)
 			time.Sleep(sleepUntil.Sub(now))
 		}
-		return nil
+		return
 	}
 	log.Print("Timed out waiting for user login")
-	output, err := host.CombinedOutput("/usr/bin/last")
+	var output string
+	output, err = host.Output("/usr/bin/last")
 	if err != nil {
 		log.Printf("Not able to execute /usr/bin/last due to %v", err)
 	} else {
 		log.Print(output)
 	}
-	return errors.New("no user logged in with console session")
+	if interactiveUsername == "" {
+		return errors.New("no user logged in with console session")
+	}
+	return fmt.Errorf("interactive username %v does not match task user %v", interactiveUsername, username)
 }
 
 func InteractiveUsername() (string, error) {
@@ -115,7 +127,7 @@ func InteractiveUsername() (string, error) {
 	if cachedInteractiveUsername != "" {
 		return cachedInteractiveUsername, nil
 	}
-	output, err := host.CombinedOutput("/usr/bin/last", "-t", "console", "-1")
+	output, err := host.Output("/usr/bin/last", "-t", "console", "-1")
 	if err != nil {
 		return "", err
 	}
@@ -124,15 +136,6 @@ func InteractiveUsername() (string, error) {
 	}
 	cachedInteractiveUsername = output[:strings.Index(output, " ")]
 	return cachedInteractiveUsername, nil
-}
-
-func AutoLogonUser() (username string) {
-	var err error
-	username, err = kc.AutoLoginUsername()
-	if err != nil {
-		log.Print("error fetching auto-logon username: " + err.Error())
-	}
-	return
 }
 
 func SetAutoLogin(user *OSUser) error {

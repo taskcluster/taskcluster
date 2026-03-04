@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 func TestLocalTransport(t *testing.T) {
@@ -14,7 +14,7 @@ func TestLocalTransport(t *testing.T) {
 		t.Helper()
 		a.Send(workerproto.Message{
 			Type: "test",
-			Properties: map[string]interface{}{
+			Properties: map[string]any{
 				"test": true,
 			},
 		})

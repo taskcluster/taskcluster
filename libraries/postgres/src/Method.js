@@ -2,10 +2,26 @@ import { strict as assert } from 'assert';
 import path from 'path';
 import { loadSql } from './util.js';
 
+/**
+ * @typedef {Object} MethodDefinition
+ * @property {string} description
+ * @property {string} mode
+ * @property {string} serviceName
+ * @property {string} args
+ * @property {string} returns
+ * @property {string} body
+ * @property {boolean} deprecated
+ */
+
 class Method {
   /**
    * Load a Method from the content inside the version in a db/versions/nnn.yml
    * file
+   *
+   * @param {string} name
+   * @param {MethodDefinition} content
+   * @param {string} filename
+   * @returns {Method}
    */
   static fromYamlFileContent(name, content, filename) {
     assert(!/.*[A-Z].*/.test(name), `db function method ${name} in ${filename} has capital letters`);
@@ -19,6 +35,10 @@ class Method {
 
   /**
    * Load a Method from a serialized representation
+   *
+   * @param {string} name
+   * @param {MethodDefinition} serializable
+   * @returns {Method}
    */
   static fromSerializable(name, serializable) {
     const method = new Method(name, serializable);
@@ -28,6 +48,8 @@ class Method {
 
   /**
    * Create a serialized representation
+   *
+   * @returns {MethodDefinition}
    */
   asSerializable() {
     return {
@@ -41,6 +63,10 @@ class Method {
     };
   }
 
+  /**
+   * @param {string} name
+   * @param {MethodDefinition} options
+   */
   constructor(name, { description, mode, serviceName, args, returns, body, deprecated }) {
     this.name = name;
     this.description = description;
@@ -50,8 +76,16 @@ class Method {
     this.returns = returns;
     this.body = body;
     this.deprecated = Boolean(deprecated);
+    /** @type {number?} */
+    this.version = null; // set by Schema
   }
 
+  /**
+   * @param {string} name
+   * @param {MethodDefinition} content
+   * @param {string} filename
+   * @private
+   */
   _check(name, content, filename) {
     // these fields are required only if the method is not deprecated
     if (!this.deprecated) {
@@ -69,6 +103,11 @@ class Method {
     }
   }
 
+  /**
+   * @param {string} name
+   * @param {Method} existing
+   * @param {import('./Version.js').default} version
+   */
   checkUpdateFrom(name, existing, version) {
     // these fields may be undefined if the method is deprecated, in which case no change
     // will take place.

@@ -1,7 +1,8 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { paginateResults } from 'taskcluster-lib-api';
-import { UNIQUE_VIOLATION } from 'taskcluster-lib-postgres';
+import { paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 /** Regular expression for valid namespaces */
 export const namespaceFormat = /^([a-zA-Z0-9_!~*'()%-]+\.)*[a-zA-Z0-9_!~*'()%-]+$/;
@@ -169,6 +170,35 @@ export const taskUtils = {
     // Fetch results
     return fetchResults(query ? query.continuationToken : {});
   },
+
+  async findTasksAtIndexes(db, { indexes }, { query } = {}) {
+    assert(_.isArray(indexes), 'indexes must be an Array');
+    for (let index of indexes) {
+      assert(_.isString(index), 'index must be a String');
+    }
+    const fetchResults = async (continuation) => {
+      let q = query;
+
+      if (continuation) {
+        q.continuationToken = continuation;
+      }
+
+      const { continuationToken, rows } = await paginateResults({
+        query: q,
+        fetch: (size, offset) => db.fns.get_tasks_from_indexes_and_namespaces(
+          JSON.stringify(indexes),
+          size,
+          offset,
+        ),
+      });
+
+      const tasks = rows.map(taskUtils.fromDb);
+      return { tasks, continuationToken };
+    };
+
+    // Fetch results
+    return fetchResults(query ? query.continuationToken : {});
+  },
 };
 
 export const namespaceUtils = {
@@ -319,4 +349,35 @@ export const splitNamespace = namespace => {
   return [namespace, name];
 };
 
-export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat };
+const satisfiesArtifactScope = async (anonymousScopeCache, artifactName) => {
+  try {
+    const scopes = await anonymousScopeCache();
+    return satisfiesExpression(scopes, `queue:get-artifact:${artifactName}`);
+  } catch {
+    return false;
+  }
+};
+
+export { satisfiesArtifactScope as _satisfiesArtifactScope };
+
+const ANONYMOUS_SCOPE_CACHE_TTL = 5 * 60 * 1000;
+
+const isPublicArtifact = (auth) => {
+  let cachedScopes = null;
+  let cachedAt = 0;
+
+  const anonymousScopeCache = async () => {
+    const now = Date.now();
+    if (cachedScopes && (now - cachedAt) < ANONYMOUS_SCOPE_CACHE_TTL) {
+      return cachedScopes;
+    }
+    const result = await auth.expandScopes({ scopes: ['assume:anonymous'] });
+    cachedScopes = result.scopes;
+    cachedAt = Date.now();
+    return cachedScopes;
+  };
+
+  return (artifactName) => satisfiesArtifactScope(anonymousScopeCache, artifactName);
+};
+
+export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat, isPublicArtifact };

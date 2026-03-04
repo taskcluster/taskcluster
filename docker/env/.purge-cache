@@ -2,7 +2,8 @@
 # If you need to override some values, please use docker-compose.override.yml file instead
 LEVEL=info
 ERROR_CONFIG=
-PORT=80
+PROMETHEUS_CONFIG={"server": {"ip": "0.0.0.0", "port": 9100 }}
+PORT=8080
 NODE_ENV=development
 FORCE_SSL=false
 TRUST_PROXY=true

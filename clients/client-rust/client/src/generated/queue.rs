@@ -203,6 +203,59 @@ impl Queue {
         (path, query)
     }
 
+    /// Get multiple task definitions
+    ///
+    /// This end-point will return the task definition for each input task id.
+    /// Notice that the task definitions may have been modified by queue.
+    pub async fn tasks(&self, payload: &Value, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::tasks_details(continuationToken, limit);
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for tasks
+    fn tasks_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "tasks";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
+    /// Get multiple task definitions
+    ///
+    /// This end-point will return the task statuses for each input task id.
+    /// If a given taskId does not match a task, it will be ignored,
+    /// and callers will need to handle the difference.
+    pub async fn statuses(&self, payload: &Value, continuationToken: Option<&str>, limit: Option<&str>) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::statuses_details(continuationToken, limit);
+        let body = Some(payload);
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for statuses
+    fn statuses_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "tasks/status";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+
+        (path, query)
+    }
+
     /// Get task status
     ///
     /// Get task status structure from `taskId`
@@ -567,6 +620,51 @@ impl Queue {
         (path, query)
     }
 
+    /// Change Task Priority
+    ///
+    /// This method updates the priority of a single unresolved task.
+    ///
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+    pub async fn changeTaskPriority(&self, taskId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskPriority_details(taskId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskPriority
+    fn changeTaskPriority_details<'a>(taskId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task/{}/priority", urlencode(taskId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Change Task Group Priority
+    ///
+    /// This method applies a new priority to unresolved tasks within a task group.
+    ///
+    /// * Updates run in bounded batches to avoid long locks.
+    /// * Claimed or running tasks keep their current run priority until they are retried.
+    /// * Emits `taskGroupPriorityChanged` summary event at the end.
+    pub async fn changeTaskGroupPriority(&self, taskGroupId: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::changeTaskGroupPriority_details(taskGroupId);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for changeTaskGroupPriority
+    fn changeTaskGroupPriority_details<'a>(taskGroupId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-group/{}/priority", urlencode(taskGroupId));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Claim Work
     ///
     /// Claim pending task(s) for the given task queue.
@@ -869,14 +967,49 @@ impl Queue {
     /// `anonymous` role.  The convention is to include
     /// `queue:get-artifact:public/*`.
     ///
-    /// **API Clients**, this method will redirect you to the artifact, if it is
-    /// stored externally. Either way, the response may not be JSON. So API
-    /// client users might want to generate a signed URL for this end-point and
-    /// use that URL with a normal HTTP client.
+    /// **Response**: the HTTP response to this method is a 303 redirect to the
+    /// URL from which the artifact can be downloaded.  The body of that response
+    /// contains the data described in the output schema, contianing the same URL.
+    /// Callers are encouraged to use whichever method of gathering the URL is
+    /// most convenient.  Standard HTTP clients will follow the redirect, while
+    /// API client libraries will return the JSON body.
+    ///
+    /// In order to download an artifact the following must be done:
+    ///
+    /// 1. Obtain queue url.  Building a signed url with a taskcluster client is
+    /// recommended
+    /// 1. Make a GET request which does not follow redirects
+    /// 1. In all cases, if specified, the
+    /// x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+    /// validated to be equal to the Content-Length and Sha256 checksum of the
+    /// final artifact downloaded. as well as any intermediate redirects
+    /// 1. If this response is a 500-series error, retry using an exponential
+    /// backoff.  No more than 5 retries should be attempted
+    /// 1. If this response is a 400-series error, treat it appropriately for
+    /// your context.  This might be an error in responding to this request or
+    /// an Error storage type body.  This request should not be retried.
+    /// 1. If this response is a 200-series response, the response body is the artifact.
+    /// If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+    /// x-taskcluster-location-content-encoding are specified, they should match
+    /// this response body
+    /// 1. If the response type is a 300-series redirect, the artifact will be at the
+    /// location specified by the `Location` header.  There are multiple artifact storage
+    /// types which use a 300-series redirect.
+    /// 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+    /// transfer-sha256, transfer-length and content-encoding match every further request.  The final
+    /// artifact must also be validated against the values specified in the original queue response
+    /// 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+    /// must not occur
+    ///
+    /// **Headers**
+    /// The following important headers are set on the response to this method:
+    ///
+    /// * location: the url of the artifact if a redirect is to be performed
+    /// * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
     ///
     /// **Remark**, this end-point is slightly slower than
     /// `queue.getArtifact`, so consider that if you already know the `runId` of
-    /// the latest run. Otherwise, just us the most convenient API end-point.
+    /// the latest run. Otherwise, just use the most convenient API end-point.
     pub async fn getLatestArtifact(&self, taskId: &str, name: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::getLatestArtifact_details(taskId, name);
@@ -1255,6 +1388,8 @@ impl Queue {
     ///
     /// As task states may change rapidly, this number may not represent the exact
     /// number of pending tasks, but a very good approximation.
+    ///
+    /// This method is **deprecated**, use queue.taskQueueCounts instead.
     pub async fn pendingTasks(&self, taskQueueId: &str) -> Result<Value, Error> {
         let method = "GET";
         let (path, query) = Self::pendingTasks_details(taskQueueId);
@@ -1278,6 +1413,40 @@ impl Queue {
     /// Determine the HTTP request details for pendingTasks
     fn pendingTasks_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
         let path = format!("pending/{}", urlencode(taskQueueId));
+        let query = None;
+
+        (path, query)
+    }
+
+    /// Get Number of Pending and Claimed Tasks
+    ///
+    /// Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
+    ///
+    /// As task states may change rapidly, this number may not represent the exact
+    /// number of pending and claimed tasks, but a very good approximation.
+    pub async fn taskQueueCounts(&self, taskQueueId: &str) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        let body = None;
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the taskQueueCounts endpoint
+    pub fn taskQueueCounts_url(&self, taskQueueId: &str) -> Result<String, Error> {
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        self.client.make_url(&path, query)
+    }
+
+    /// Generate a signed URL for the taskQueueCounts endpoint
+    pub fn taskQueueCounts_signed_url(&self, taskQueueId: &str, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::taskQueueCounts_details(taskQueueId);
+        self.client.make_signed_url(&path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for taskQueueCounts
+    fn taskQueueCounts_details<'a>(taskQueueId: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("task-queues/{}/counts", urlencode(taskQueueId));
         let query = None;
 
         (path, query)

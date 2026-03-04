@@ -1,0 +1,34 @@
+version: 107
+description: add description here
+migrationScript: |-
+  begin
+    UPDATE audit_history SET entity_type = 'worker-pool' WHERE entity_type = 'worker_pool';
+  end
+downgradeScript: |-
+  begin
+    UPDATE audit_history SET entity_type = 'worker_pool' WHERE entity_type = 'worker-pool';
+  end
+methods:
+  insert_worker_manager_audit_history:
+    description: |
+      Insert an audit history entry for a given entity.
+    mode: write
+    serviceName: worker_manager
+    args: worker_pool_id_in text, client_id_in text, action_type_in text
+    returns: void
+    body: |-
+      begin
+        INSERT INTO audit_history (
+          entity_id,
+          entity_type,
+          client_id,
+          action_type,
+          created
+        ) VALUES (
+          worker_pool_id_in,
+          'worker-pool',
+          client_id_in,
+          action_type_in,
+          now()
+        );
+      end;

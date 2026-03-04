@@ -1,4 +1,4 @@
-import { Exchanges } from 'taskcluster-lib-pulse';
+import { Exchanges } from '@taskcluster/lib-pulse';
 import assert from 'assert';
 
 /** Declaration of exchanges offered by the queue */
@@ -370,6 +370,36 @@ exchanges.declare({
   ].join('\n'),
   routingKey: buildTaskGroupRoutingKey(),
   schema: 'task-group-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: taskGroupRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task priority changed exchange */
+exchanges.declare({
+  exchange: 'task-priority-changed',
+  name: 'taskPriorityChanged',
+  title: 'Task Priority Changed Messages',
+  description: [
+    'A message published when task priority was updated via `changeTaskPriority` API call.',
+  ].join('\n'),
+  routingKey: buildCommonRoutingKey(),
+  schema: 'task-priority-changed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
+});
+
+/** Task group priority changed exchange */
+exchanges.declare({
+  exchange: 'task-group-priority-changed',
+  name: 'taskGroupPriorityChanged',
+  title: 'Task Group Priority Changed Messages',
+  description: [
+    'A message published when task group priority was changed via `changeTaskGroupPriority` API call.',
+  ].join('\n'),
+  routingKey: buildTaskGroupRoutingKey(),
+  schema: 'task-group-priority-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: taskGroupRoutingKeyBuilder,
   CCBuilder: commonCCBuilder,

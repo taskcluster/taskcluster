@@ -1,9 +1,9 @@
 import assert from 'assert';
 import path from 'path';
 import {
-  SESClient,
-  SendRawEmailCommand,
-} from '@aws-sdk/client-ses';
+  SESv2Client,
+  SendEmailCommand,
+} from '@aws-sdk/client-sesv2';
 import {
   SNSClient,
   CreateTopicCommand,
@@ -20,8 +20,8 @@ import {
   SetQueueAttributesCommand,
 } from '@aws-sdk/client-sqs';
 import { mockClient } from 'aws-sdk-client-mock';
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import builder from '../src/api.js';
 import mainLoad from '../src/main.js';
 import RateLimit from '../src/ratelimit.js';
@@ -90,14 +90,14 @@ helper.withSES = (mock, skipping) => {
     const cfg = await load('cfg');
 
     if (mock) {
-      ses = mockClient(SESClient);
+      ses = mockClient(SESv2Client);
       ses.emails = [];
       ses
-        .on(SendRawEmailCommand)
+        .on(SendEmailCommand)
         .callsFake(async (c) => {
           ses.emails.push({
-            delivery: { recipients: c.Destinations },
-            data: c.RawMessage.Data.toString(),
+            delivery: { recipients: c.Destination.ToAddresses },
+            data: c.Content.Raw.Data.toString(),
           });
           return { MessageId: 'a-message' };
         });

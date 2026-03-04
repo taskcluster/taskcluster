@@ -1,7 +1,7 @@
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import gql from 'graphql-tag';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 import loader from '../../src/loaders/roles.js';
 

@@ -1,7 +1,7 @@
 import assume from 'assume';
 import HintPoller from '../src/hintpoller.js';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('calls pollPendingQueue', async () => {

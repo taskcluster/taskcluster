@@ -7,7 +7,7 @@ It supports the queries, mutations, and subscriptions of Taskcluster APIs used b
 
 ## Configuration
 
-Configuration is done via [taskcluster-lib-config](../../libraries/config) like all
+Configuration is done via [@taskcluster/lib-config](../../libraries/config) like all
 other Taskcluster services. The main configuration file is `config.yml`, and
 that refers to environment variables.  In production, those environment
 variables are provided as part of the deployment.  During development,

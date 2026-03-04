@@ -73,7 +73,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, '/websocktunnel-build.log'),
+        logfile: path.join(logsDir, 'websocktunnel-build.log'),
         utils,
         env: { CGO_ENABLED: '0', ...process.env },
       });
@@ -122,7 +122,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'websocktunnel-docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -142,7 +142,6 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
-      'docker-worker-artifacts',
       'worker-runner-artifacts',
       'taskcluster-proxy-artifacts',
       'changelog-text',
@@ -175,7 +174,6 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
-        .concat(requirements['docker-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])

@@ -1,5 +1,5 @@
 import { loadChecks } from './checks/index.js';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import libScopes from 'taskcluster-lib-scopes';
 import { TaskGraph } from 'console-taskgraph';
 import chalk from 'chalk';
@@ -40,7 +40,7 @@ export const main = async (options) => {
   }
 
   const target = options.target ? [`target-${options.target}`] : undefined;
-  const taskgraph = new TaskGraph( checks, { target });
+  const taskgraph = new TaskGraph(checks, { target });
   const results = await taskgraph.run();
   if (results['deployment-version']) {
     console.log(chalk`{bold ${process.env.TASKCLUSTER_ROOT_URL} is running Taskcluster version:} {yellow ${results['deployment-version']}}`);

@@ -1,7 +1,7 @@
 /**
  * Download coverage from previous tasks
  */
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import fs from 'fs/promises';
 import path from 'path';
 

@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v60/clients/client-go"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/provider/provider"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 const TERMINATION_PATH = "/instance/preempted"
@@ -23,8 +22,8 @@ type GoogleProvider struct {
 	workerManagerClientFactory tc.WorkerManagerClientFactory
 	metadataService            MetadataService
 	proto                      *workerproto.Protocol
-	workerIdentityProof        map[string]interface{}
-	terminationTicker          *time.Ticker
+	workerIdentityProof        map[string]any
+	terminationMsgSent         bool
 }
 
 func (p *GoogleProvider) ConfigureRun(state *run.State) error {
@@ -47,7 +46,7 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 	state.WorkerGroup = userData.WorkerGroup
 	state.WorkerID = workerID
 
-	providerMetadata := map[string]interface{}{
+	providerMetadata := map[string]any{
 		"instance-id": workerID,
 	}
 	for _, f := range []struct {
@@ -91,14 +90,14 @@ func (p *GoogleProvider) ConfigureRun(state *run.State) error {
 		return err
 	}
 
-	p.workerIdentityProof = map[string]interface{}{
-		"token": interface{}(proofToken),
+	p.workerIdentityProof = map[string]any{
+		"token": any(proofToken),
 	}
 
 	return nil
 }
 
-func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]interface{}, error) {
+func (p *GoogleProvider) GetWorkerIdentityProof() (map[string]any, error) {
 	return p.workerIdentityProof, nil
 }
 
@@ -111,18 +110,20 @@ func (p *GoogleProvider) SetProtocol(proto *workerproto.Protocol) {
 }
 
 func (p *GoogleProvider) checkTerminationTime() bool {
-	value, err := p.metadataService.queryMetadata(TERMINATION_PATH)
+	value, err := p.metadataService.queryMetadata(TERMINATION_PATH + "?wait_for_change=true")
 	// if the file exists and contains TRUE, it's time to go away
 	if err == nil && value == "TRUE" {
 		log.Println("GCP Metadata Service says termination is imminent")
-		if p.proto != nil && p.proto.Capable("graceful-termination") {
+		if p.proto != nil && p.proto.Capable("graceful-termination") && !p.terminationMsgSent {
+			log.Println("Sending graceful-termination request with finish-tasks=false")
 			p.proto.Send(workerproto.Message{
 				Type: "graceful-termination",
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					// preemption generally doesn't leave time to finish tasks
 					"finish-tasks": false,
 				},
 			})
+			p.terminationMsgSent = true
 		}
 		return true
 	}
@@ -130,13 +131,10 @@ func (p *GoogleProvider) checkTerminationTime() bool {
 }
 
 func (p *GoogleProvider) WorkerStarted(state *run.State) error {
-	// start polling for graceful shutdown
-	p.terminationTicker = time.NewTicker(15 * time.Second)
 	p.proto.AddCapability("graceful-termination")
 
 	go func() {
 		for {
-			<-p.terminationTicker.C
 			log.Println("polling for termination-time")
 			p.checkTerminationTime()
 		}

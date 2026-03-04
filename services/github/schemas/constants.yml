@@ -9,12 +9,22 @@ github-identifier-min-length:  1
 github-identifier-max-length:  100
 github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
 
+# Webhook commiters can include GitHub's "[bot]" suffix, so allow literal brackets
+github-webhook-identifier-pattern: "^([a-zA-Z0-9-_%\\[\\]]*)$"
+
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
 identifier-max-length:  38
 
 github-installation-minimum: 0
 github-installation-maximum: 10000000000
+
+# GitHub SHA pattern (40 character hexadecimal)
+github-sha-pattern: "^[a-f0-9]{40}$"
+
+# GitHub repository name patterns
+github-repo-name-pattern: "^[A-Za-z0-9._-]+$"
+github-full-name-pattern: "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
 
 # Slugid pattern, for when-ever that is useful
 # Currently allow all v4 slugs, although we only generate nice slugs

@@ -1,10 +1,10 @@
 import assert from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('index:handlers');
 import _ from 'lodash';
 import helpers from './helpers.js';
-import { consume } from 'taskcluster-lib-pulse';
+import { consume } from '@taskcluster/lib-pulse';
 
 /**
  * Create handlers

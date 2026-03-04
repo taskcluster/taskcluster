@@ -1,0 +1,80 @@
+version: 102
+description: update pending tasks filter to exclude expired
+methods:
+  get_pending_tasks_by_task_queue_id:
+    description: |-
+      Get all tasks that are currently pending in a given task queue.
+      Records would be returned by insert time, or when tasks were scheduled.
+      To iterate over all pending tasks, `after_inserted_in`, `after_task_id_in`
+      parameters can be used.
+
+      Full task record is being returned plus `inserted` for pagination purposes
+    mode: read
+    serviceName: queue
+    args: task_queue_id_in text, page_size_in integer, after_inserted_in timestamptz, after_task_id_in text
+    returns: |-
+      table (
+        task_id text,
+        task_queue_id text,
+        scheduler_id text,
+        project_id text,
+        task_group_id text,
+        dependencies jsonb,
+        requires task_requires,
+        routes jsonb,
+        priority task_priority,
+        retries integer,
+        retries_left int,
+        created timestamptz,
+        deadline timestamptz,
+        expires timestamptz,
+        scopes jsonb,
+        payload jsonb,
+        metadata jsonb,
+        tags jsonb,
+        extra jsonb,
+        runs jsonb,
+        taken_until timestamptz,
+        run_id integer,
+        inserted timestamptz
+      )
+    body: |-
+      begin
+        return query
+        select
+          tasks.task_id,
+          tasks.task_queue_id,
+          tasks.scheduler_id,
+          coalesce(tasks.project_id, 'none') as project_id,
+          tasks.task_group_id,
+          tasks.dependencies,
+          tasks.requires,
+          tasks.routes,
+          tasks.priority,
+          tasks.retries,
+          tasks.retries_left,
+          tasks.created,
+          tasks.deadline,
+          tasks.expires,
+          tasks.scopes,
+          tasks.payload,
+          tasks.metadata,
+          tasks.tags,
+          tasks.extra,
+          tasks.runs,
+          tasks.taken_until,
+          -- one for the pagination
+          q.run_id,
+          q.inserted
+        from queue_pending_tasks q
+        left join tasks on tasks.task_id=q.task_id
+        where q.task_queue_id = task_queue_id_in
+          and tasks.task_id is not null
+          and (after_inserted_in is null or q.inserted > after_inserted_in)
+          and q.expires > now()
+          -- timestamp alone might not be enough
+          -- since time part is truncated to 1000th of a second
+          and (after_task_id_in is null or q.task_id != after_task_id_in)
+        order by q.inserted asc
+        limit get_page_limit(page_size_in);
+      end

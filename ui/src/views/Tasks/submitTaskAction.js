@@ -13,7 +13,19 @@ import ajv from '../../utils/ajv';
 
 export default async ({ task, form, action, apolloClient, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
-  const taskGroup = task.taskId === task.taskGroupId ? task : task.decisionTask;
+  // We need to source scopes from somewhere. Typically these come from the
+  // task we're given, which is either a regular decision task or an action
+  // task. Decision tasks are easily identified, because their taskId matches
+  // the taskGroupId that they are in. Action tasks do not have such a
+  // mapping. Instead, we're simply going to try our best by falling back to
+  // `task` if `task.decisionTask` is null or undefined. At the time of
+  // writing, it's not clear whether the `task.decisionTask` case is even
+  // valid anymore, but it's being kept for the time being because verifying
+  // that is not a trivial matter.
+  const taskGroup =
+    task.taskId === task.taskGroupId || !task.decisionTask
+      ? task
+      : task.decisionTask;
   const input = load(form);
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);

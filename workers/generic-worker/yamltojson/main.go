@@ -30,7 +30,7 @@ func main() {
 // canonical representation of json (i.e. formatted with objects ordered).
 // Ugly and perhaps inefficient, but effective! :p
 func FormatJSON(a []byte) ([]byte, error) {
-	tmpObj := new(interface{})
+	tmpObj := new(any)
 	err := json.Unmarshal(a, &tmpObj)
 	if err != nil {
 		return a, err

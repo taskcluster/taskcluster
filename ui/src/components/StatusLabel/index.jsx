@@ -46,7 +46,7 @@ export default class StatusLabel extends Component {
     return (
       <Label
         mini={mini}
-        status={variant || labels[state] || 'default'}
+        status={variant || labels[state.toUpperCase()] || 'default'}
         className={classNames(
           {
             [classes.pending]: state === 'PENDING',

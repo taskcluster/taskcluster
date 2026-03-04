@@ -10,7 +10,7 @@ fail too many times and does not fail silently.
 Here is a simple example of this library:
 
 ```javascript
-import Iterate from `taskcluster-lib-iterate`;
+import Iterate from `@taskcluster/lib-iterate`;
 
 const i = new Iterate({
   name: 'something',
@@ -42,10 +42,10 @@ The constructor for the `Iterate` class takes an options object, with the follow
 All times are in milliseconds.
 
 * `name`: A name used for reporting
-* `monitor`: An instance of taskcluster-lib-monitor
+* `monitor`: An instance of @taskcluster/lib-monitor
 * `handler`: the async function to call repeatedly, called as `await handler(watchdog)`.
   See details below.
-* `monitor` (optional): instance of a `taskcluster-lib-monitor` instance with a name appropriate for this iterate instance.
+* `monitor` (optional): instance of a `@taskcluster/lib-monitor` instance with a name appropriate for this iterate instance.
   This is used to report errors.
 * `maxIterationTime`: the maximum allowable duration of an iteration interval.
   An iteration longer than this is considered failed.

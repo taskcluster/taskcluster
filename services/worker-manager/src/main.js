@@ -1,20 +1,21 @@
 import '../../prelude.js';
-import loader from 'taskcluster-lib-loader';
-import taskcluster from 'taskcluster-client';
-import { App } from 'taskcluster-lib-app';
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import config from 'taskcluster-lib-config';
-import SchemaSet from 'taskcluster-lib-validate';
-import libReferences from 'taskcluster-lib-references';
+import loader from '@taskcluster/lib-loader';
+import taskcluster from '@taskcluster/client';
+import { App } from '@taskcluster/lib-app';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import config from '@taskcluster/lib-config';
+import SchemaSet from '@taskcluster/lib-validate';
+import libReferences from '@taskcluster/lib-references';
 import exchanges from './exchanges.js';
 import builder from './api.js';
 import { Estimator } from './estimator.js';
-import { Client, pulseCredentials } from 'taskcluster-lib-pulse';
-import tcdb from 'taskcluster-db';
+import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
+import tcdb from '@taskcluster/db';
 import { Provisioner } from './provisioner.js';
 import { Providers } from './providers/index.js';
 import { WorkerScanner } from './worker-scanner.js';
-import { WorkerPool, WorkerPoolError, Worker } from './data.js';
+import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
+import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
 import { fileURLToPath } from 'url';
 
@@ -61,6 +62,18 @@ let load = loader({
     },
   },
 
+  expireLaunchConfigs: {
+    requires: ['cfg', 'monitor', 'db'],
+    setup: ({ cfg, monitor, db }, ownName) => {
+      return monitor.childMonitor('expireLaunchConfigs').oneShot(ownName, async () => {
+        const expired = await WorkerPoolLaunchConfig.expire({ db, monitor });
+        for (let launchConfigId of expired) {
+          monitor.info(`deleted expired worker pool launch config ${launchConfigId}`);
+        }
+      });
+    },
+  },
+
   expireWorkers: {
     requires: ['cfg', 'monitor', 'db'],
     setup: ({ cfg, monitor, db }, ownName) => {
@@ -100,7 +113,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager')],
+      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager'), MonitorManager.metricsReference('worker-manager')],
     }).then(ref => ref.generateReferences()),
   },
 
@@ -137,19 +150,24 @@ let load = loader({
       providers,
       publisher,
       notify,
-    }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        cfg,
-        db,
-        monitor,
-        providers,
-        publisher,
-        notify,
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          cfg,
+          db,
+          monitor: monitor.childMonitor('api-context'),
+          providers,
+          publisher,
+          notify,
+        },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -178,13 +196,20 @@ let load = loader({
     }),
   },
 
+  validator: {
+    requires: ['cfg', 'schemaset'],
+    setup: async ({ cfg, schemaset }) => await schemaset.validator(cfg.taskcluster.rootUrl),
+  },
+
+  launchConfigSelector: {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }) => new LaunchConfigSelector({ db, monitor }),
+  },
+
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset'],
-    setup: async ({ cfg, monitor, notify, db, estimator, schemaset }) =>
-      new Providers().setup({
-        cfg, monitor, notify, db, estimator,
-        validator: await schemaset.validator(cfg.taskcluster.rootUrl),
-      }),
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator', 'launchConfigSelector'],
+    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator, launchConfigSelector }) =>
+      new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator, launchConfigSelector }),
   },
 
   azureProviderIds: {
@@ -201,56 +226,63 @@ let load = loader({
   },
 
   workerScanner: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
+      const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
         providers,
-        monitor: monitor.childMonitor('worker-scanner'),
+        monitor: scanMonitor,
         iterateConf: cfg.app.workerScannerIterateConfig || {},
         providersFilter: {
           cond: '<>', // only run for providers that are not Azure
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
+      scanMonitor.exposeMetrics('scan');
       return workerScanner;
     },
   },
 
   workerScannerAzure: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
+      const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
         providers,
-        monitor: monitor.childMonitor('worker-scanner'),
+        monitor: scanMonitor,
         iterateConf: cfg.app.workerScannerIterateConfig || {},
         providersFilter: {
           cond: '=', // only run for providers that are Azure
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
+      scanMonitor.exposeMetrics('scan');
       return workerScanner;
     },
   },
 
   provisioner: {
-    requires: ['cfg', 'monitor', 'providers', 'notify', 'reference', 'db'],
-    setup: async ({ cfg, monitor, providers, notify, reference, db }, ownName) => {
-      return new Provisioner({
+    requires: ['cfg', 'monitor', 'providers', 'notify', 'db'],
+    setup: async ({ cfg, monitor, providers, notify, db }, ownName) => {
+      const childMonitor = monitor.childMonitor('provisioner');
+      const provisioner = new Provisioner({
         ownName,
-        monitor: monitor.childMonitor('provisioner'),
+        monitor: childMonitor,
         providers,
         notify,
         db,
-        reference,
-        rootUrl: cfg.taskcluster.rootUrl,
         iterateConf: cfg.app.provisionerIterateConfig || {},
       });
+      childMonitor.exposeMetrics('provision');
+      return provisioner;
     },
   },
 

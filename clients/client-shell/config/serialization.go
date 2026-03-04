@@ -29,8 +29,8 @@ func configFile() string {
 // Load will load configuration file, and initialize a default configuration
 // if no configuration is present. This only returns an error if a configuration
 // file is present, but we are unable to parse it.
-func Load() (map[string]map[string]interface{}, error) {
-	config := make(map[string]map[string]interface{})
+func Load() (map[string]map[string]any, error) {
+	config := make(map[string]map[string]any)
 
 	// Read config file and unmarshal into config overwriting default values
 	// if os.ReadFile returns an error, it means the config file couldn't
@@ -48,7 +48,7 @@ func Load() (map[string]map[string]interface{}, error) {
 	// Populate missing config fields with default values
 	for command, options := range OptionsDefinitions {
 		if _, ok := config[command]; !ok {
-			config[command] = make(map[string]interface{})
+			config[command] = make(map[string]any)
 		}
 
 		for option, definition := range options {
@@ -73,7 +73,7 @@ func Load() (map[string]map[string]interface{}, error) {
 			}
 
 			// parse value, if required
-			var value interface{}
+			var value any
 			if definition.Parse {
 				if err := json.Unmarshal([]byte(val), &value); err != nil {
 					return nil, fmt.Errorf(
@@ -126,8 +126,8 @@ func Load() (map[string]map[string]interface{}, error) {
 }
 
 // Save will save configuration.
-func Save(config map[string]map[string]interface{}) error {
-	result := make(map[string]map[string]interface{})
+func Save(config map[string]map[string]any) error {
+	result := make(map[string]map[string]any)
 
 	// go over new object
 	for name, options := range OptionsDefinitions {
@@ -151,7 +151,7 @@ func Save(config map[string]map[string]interface{}) error {
 
 			// Ensure we have an object to save the key
 			if result[name] == nil {
-				result[name] = make(map[string]interface{})
+				result[name] = make(map[string]any)
 			}
 
 			// Save the config key

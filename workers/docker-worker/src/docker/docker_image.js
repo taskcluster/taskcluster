@@ -40,7 +40,7 @@ class DockerImage {
       let image = await this.runtime.docker.getImage(this.imageName);
       imageDetails = await image.inspect();
       this.imageId = imageDetails.Id;
-    } catch(e) {
+    } catch (e) {
       imageDetails = false;
     }
 

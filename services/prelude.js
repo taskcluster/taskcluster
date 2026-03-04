@@ -1,4 +1,4 @@
-import pkg from 'taskcluster-client';
+import pkg from '@taskcluster/client';
 const { setServiceDiscoveryScheme } = pkg;
 
 /**

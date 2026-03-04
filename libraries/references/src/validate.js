@@ -11,6 +11,16 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'github', schema: 'v1/taskcluster-github-config.json#' },
   { service: 'github', schema: 'v1/taskcluster-github-config.v1.json#' },
 
+  // schemas for webhook endpoint (server-side only, not published to clients)
+  { service: 'github', schema: 'v1/github-webhook-event.json#' },
+  { service: 'github', schema: 'v1/webhook-pull-request-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-push-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-issue-comment-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-release-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-installation-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-check-run-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-ping-payload.json#' },
+
   // schemas for an unpublished, deprecated API methods
   { service: 'index', schema: 'v1/list-namespaces-request.json#' },
   { service: 'queue', schema: 'v1/poll-task-urls-response.json#' },
@@ -24,7 +34,7 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'worker-manager', schema: 'v1/config-azure.json#' },
 
   // schemas for workers
-  { service: 'generic-worker', schema: 'simple_posix.json#' },
+  { service: 'generic-worker', schema: 'insecure_posix.json#' },
   { service: 'generic-worker', schema: 'multiuser_windows.json#' },
   { service: 'generic-worker', schema: 'multiuser_posix.json#' },
   { service: 'generic-worker', schema: 'docker_posix.json#' },
@@ -254,6 +264,8 @@ export const validate = (references) => {
           problems.push(`${filename}: unknown metadata.version ${metadata.version}`);
         }
       } else if (metadata.name === 'logs') {
+        // Nothing to do..
+      } else if (metadata.name === 'metrics') {
         // Nothing to do..
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);

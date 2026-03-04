@@ -1,9 +1,9 @@
 {
-  "name": "taskcluster-lib-api",
+  "name": "@taskcluster/lib-api",
   "private": true,
-  "version": "60.4.2",
+  "version": "97.0.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
-  "description": "taskcluster-lib-api",
+  "description": "@taskcluster/lib-api",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
@@ -12,10 +12,16 @@
     "lint": "eslint src/*.js test/*.js",
     "test": "NODE_OPTIONS=--dns-result-order=ipv4first mocha test/*_test.js"
   },
-  "exports": "./src/index.js",
+  "exports": {
+    ".": {
+      "default": "./src/index.js",
+      "types": "./@types/index.d.ts"
+    }
+  },
+  "types": "./@types/index.d.ts",
   "devDependencies": {
     "c8": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.3.0"
+    "mocha": "^10.8.2"
   }
 }

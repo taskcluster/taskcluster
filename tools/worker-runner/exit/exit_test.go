@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v60/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v60/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v60/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 )
 
 func TestShutdownMessage(t *testing.T) {
@@ -31,7 +31,7 @@ func TestShutdownMessage(t *testing.T) {
 
 	wkr.WorkerProtocol.Send(workerproto.Message{
 		Type:       "shutdown",
-		Properties: map[string]interface{}{},
+		Properties: map[string]any{},
 	})
 	wkr.FlushMessagesToRunner()
 

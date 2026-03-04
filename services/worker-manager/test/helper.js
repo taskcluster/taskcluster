@@ -1,9 +1,9 @@
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import { FakeEC2, FakeAzure, FakeGoogle } from './fakes/index.js';
 import { Worker } from '../src/data.js';
 import { globalAgent } from 'http';
 
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';
@@ -196,7 +196,8 @@ helper.withServer = (mock, skipping) => {
  * an `setPending` method to add fake tasks.
  */
 const stubbedQueue = () => {
-  const taskQueues = {};
+  const pendingCounts = {};
+  const claimedCounts = {};
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
@@ -204,14 +205,11 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      pendingTasks: async (taskQueueId) => {
-        let pendingTasks = 0;
-        if (taskQueues[taskQueueId]) {
-          pendingTasks = taskQueues[taskQueueId];
-        }
+      taskQueueCounts: async (taskQueueId) => {
         const [provisionerId, workerType] = taskQueueId.split('/');
         return {
-          pendingTasks,
+          pendingTasks: pendingCounts[taskQueueId] ?? 0,
+          claimedTasks: claimedCounts[taskQueueId] ?? 0,
           taskQueueId,
           provisionerId,
           workerType,
@@ -221,7 +219,11 @@ const stubbedQueue = () => {
   });
 
   queue.setPending = function(taskQueueId, pending) {
-    taskQueues[taskQueueId] = pending;
+    pendingCounts[taskQueueId] = pending;
+  };
+
+  queue.setClaimed = function(taskQueueId, claimed) {
+    claimedCounts[taskQueueId] = claimed;
   };
 
   return queue;
@@ -254,7 +256,7 @@ const stubbedNotify = () => {
  * Get all workers
  */
 helper.getWorkers = async () =>
-  Promise.all((await helper.db.fns.get_worker_manager_workers(null, null, null, null, null, null)).map(
+  Promise.all((await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(
     async r => {
       const w = Worker.fromDb(r);
       return await Worker.get(helper.db, {
@@ -270,6 +272,7 @@ helper.resetTables = (mock, skipping) => {
       'workers',
       'worker_pools',
       'worker_pool_errors',
+      'worker_pool_launch_configs',
     ] });
   });
 };

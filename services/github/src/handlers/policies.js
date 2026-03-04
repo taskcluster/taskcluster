@@ -5,6 +5,11 @@ export const POLICIES = {
   COLLABORATORS_QUIET: 'collaborators_quiet',
 };
 
+export const ALLOW_COMMENT_POLICIES = {
+  COLLABORATORS: 'collaborators',
+};
+
 export default {
   POLICIES,
+  ALLOW_COMMENT_POLICIES,
 };

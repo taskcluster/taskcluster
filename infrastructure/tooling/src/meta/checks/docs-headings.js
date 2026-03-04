@@ -36,7 +36,7 @@ export const tasks = [{
       let topLevelHd = 7;
       for (let i = 1; i <= 6; i++) {
         if (hd[i] != null && hd[i].length > 0) {
-          if (i < topLevelHd){
+          if (i < topLevelHd) {
             topLevelHd = i;
           }
         }
@@ -53,7 +53,7 @@ export const tasks = [{
     }
 
     //if there are any errors found
-    if(countErrors > 0) {
+    if (countErrors > 0) {
       throw new Error(errors);
     }
   },

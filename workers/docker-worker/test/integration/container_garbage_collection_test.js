@@ -7,7 +7,7 @@ const TestWorker = require('../testworker');
 const waitForEvent = require('../../src/wait_for_event');
 const assert = require('assert');
 const sleep = require('./helper/sleep');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 let docker = new Docker();
@@ -69,7 +69,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     let containers = await docker.listContainers();
     let containerId;
     // Find container for the task just launched
-    for(let container of containers) {
+    for (let container of containers) {
       let dockerContainer = docker.getContainer(container.Id);
       let containerInspect = await dockerContainer.inspect();
       if (containerInspect.Config.Env.indexOf(`ID=${uniqueId}`) !== -1) {
@@ -130,7 +130,7 @@ helper.secrets.mockSuite(suiteName(), ['docker', 'ci-creds'], function(mock, ski
     let containers = await docker.listContainers();
     let containerId;
     // Find container for the task just launched
-    for(let container of containers) {
+    for (let container of containers) {
       let dockerContainer = docker.getContainer(container.Id);
       let containerInspect = await dockerContainer.inspect();
       if (containerInspect.Config.Env.indexOf(`ID=${uniqueId}`) !== -1) {

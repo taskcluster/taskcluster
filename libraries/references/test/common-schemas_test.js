@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { getCommonSchemas } from '../src/common-schemas.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   test('loads common schemas', async function() {

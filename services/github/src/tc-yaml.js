@@ -2,7 +2,7 @@ import jparam from 'json-parameterization';
 import _ from 'lodash';
 import slugid from 'slugid';
 import jsone from 'json-e';
-import tc from 'taskcluster-client';
+import tc from '@taskcluster/client';
 import TopoSort from 'topo-sort';
 import { GITHUB_TASKS_FOR } from './constants.js';
 
@@ -180,7 +180,7 @@ class VersionOne extends TcYaml {
   createScopes(cfg, config, payload) {
     config.scopes = [];
 
-    if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST) {
+    if ([GITHUB_TASKS_FOR.PULL_REQUEST, GITHUB_TASKS_FOR.ISSUE_COMMENT].includes(payload.tasks_for)) {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
       ];

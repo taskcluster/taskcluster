@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v60/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 var (
@@ -62,7 +62,7 @@ func AutoLoginUser() (user string, password []byte, err error) {
 }
 
 func AutoLoginUsername() (user string, err error) {
-	output, err := host.CombinedOutput("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
+	output, err := host.Output("defaults", "read", "/Library/Preferences/com.apple.loginwindow", "autoLoginUser")
 	if err != nil {
 		return "", fmt.Errorf("error reading autoLoginUser: %v", err)
 	}
@@ -79,8 +79,8 @@ func AutoLoginPassword() (password []byte, err error) {
 	return
 }
 
-func LoginWindowPList() (data map[string]interface{}, err error) {
-	loginWindowPListString, err := host.CombinedOutput("/usr/bin/sudo", "/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
+func LoginWindowPList() (data map[string]any, err error) {
+	loginWindowPListString, err := host.Output("/usr/bin/plutil", "-convert", "json", "/Library/Preferences/com.apple.loginwindow.plist", "-o", "-")
 	if err != nil {
 		return data, err
 	}

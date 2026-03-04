@@ -10,7 +10,7 @@ import (
 //
 // This treats `textPayload` specially as the message in the message, and includes all
 // other fields after that
-func ToUnstructured(message map[string]interface{}) string {
+func ToUnstructured(message map[string]any) string {
 	textPayload := ""
 	messageKeys := make([]string, 0, len(message))
 	for k := range message {
@@ -58,6 +58,6 @@ func ToUnstructured(message map[string]interface{}) string {
 // Convert an unstructured message to a structured message in a consistent fashion.
 //
 // This returns a value of the shape {"textPayload": <message>}
-func ToStructured(message string) map[string]interface{} {
-	return map[string]interface{}{"textPayload": message}
+func ToStructured(message string) map[string]any {
+	return map[string]any{"textPayload": message}
 }

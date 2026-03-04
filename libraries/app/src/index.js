@@ -8,12 +8,16 @@ import sslify from 'express-sslify';
 import hsts from 'hsts';
 import csp from 'content-security-policy';
 import { v4 } from 'uuid';
-import { loadVersion } from 'taskcluster-lib-api';
+import { loadVersion } from '@taskcluster/lib-api';
 
 /**
  * Attach trace headers to requests. This is exported
  * to be used in web-server as well sice it doesn't use
  * lib-app.
+ *
+ * @param {import('express').Request & Record<string, any>} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
  */
 export const traceMiddleware = (req, res, next) => {
   let traceId;
@@ -28,6 +32,8 @@ export const traceMiddleware = (req, res, next) => {
   res.setHeader('x-for-request-id', req.requestId);
   next();
 };
+
+let listenersAdded = false;
 
 /**
  * Create server; this becomes a method of the `app` object, so `this`
@@ -65,8 +71,12 @@ const createServer = function() {
         process.exit(0);
       });
   }
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+
+  if (!listenersAdded) {
+    listenersAdded = true;
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+  }
 
   return new Promise((accept, reject) => {
     // Launch HTTP server
@@ -105,7 +115,22 @@ const createServer = function() {
   });
 };
 
-/** Create express application.  See the README for docs.
+/**
+ * Create express application.  See the README for docs.
+ *
+ * @param {object} options
+ * @param {number} options.port
+ * @param {string} options.env
+ * @param {boolean} options.forceSSL
+ * @param {boolean} options.forceHSTS
+ * @param {boolean} options.trustProxy
+ * @param {object[]} options.apis
+ * @param {boolean} [options.contentSecurityPolicy]
+ * @param {boolean} [options.robotsTxt]
+ * @param {number|string} [options.keepAliveTimeoutSeconds]
+ * @param {string} [options.rootDocsLink] - deprecated
+ * @param {object} [options.docs] - deprecated
+ * @returns {Promise<import('express').Express>}
  */
 export const App = async (options) => {
   assert(options, 'options are required');

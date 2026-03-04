@@ -51,11 +51,7 @@ func (r RetryConfig) nextDelay(currentDelay time.Duration) time.Duration {
 	minDelay := r.Multiplier*float64(currentDelay) - delta
 	maxDelay := r.Multiplier*float64(currentDelay) + delta
 	nextDelay := minDelay + (rand.Float64() * (maxDelay - minDelay + 1))
-	Delay := time.Duration(nextDelay)
-	if Delay > r.MaxDelay {
-		Delay = r.MaxDelay
-	}
-	return Delay
+	return min(time.Duration(nextDelay), r.MaxDelay)
 }
 
 // initializeRetryValues returns a copy of this RetryConfig with nonzero

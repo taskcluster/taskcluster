@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v60/tools/jsonschema2go"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go"
 	"golang.org/x/tools/imports"
 )
 
@@ -89,29 +89,29 @@ func (apiDef *APIDefinition) generateAPICode() string {
 }
 
 func (apiDef *APIDefinition) loadJSON(refRaw json.RawMessage) bool {
-	f := new(interface{})
+	f := new(any)
 	err = json.Unmarshal(refRaw, f)
 	exitOnFail(err)
-	schemaURL := (*f).(map[string]interface{})["$schema"].(string)
+	schemaURL := (*f).(map[string]any)["$schema"].(string)
 	apiDef.SchemaURL = schemaURL
 
 	schemaRaw := ReferencesServerGet(schemaURL[:len(schemaURL)-1])
 	if schemaRaw == nil {
 		panic("No schema")
 	}
-	var schema interface{}
+	var schema any
 	err = json.Unmarshal(*schemaRaw, &schema)
 	exitOnFail(err)
-	var x interface{}
+	var x any
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["name"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["name"]
 	schemaName := x.(string)
 
 	x = schema
-	x = x.(map[string]interface{})["metadata"]
-	x = x.(map[string]interface{})["version"]
+	x = x.(map[string]any)["metadata"]
+	x = x.(map[string]any)["version"]
 	schemaVersion := int(x.(float64))
 
 	var m APIModel
@@ -184,7 +184,7 @@ func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	// in GOPATH, so reset the TC version to the appropriate value.  Note that
 	// the last argument here will be updated to the current version by `yarn
 	// release`, so this will always substitute the correct version.
-	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v60/"))
+	formattedContent = regexp.MustCompile(`github\.com/taskcluster/taskcluster/v[0-9]+/`).ReplaceAll(formattedContent, []byte("github.com/taskcluster/taskcluster/v97/"))
 
 	// only perform general format, if that worked...
 	formattedContent, err = format.Source(formattedContent)
@@ -263,17 +263,17 @@ func (apiDefs APIDefinitions) GenerateCode(goOutputDir string) {
 
 	}
 
-	amqpApiLinks := ""
-	httpApiLinks := ""
+	var amqpApiLinks strings.Builder
+	var httpApiLinks strings.Builder
 
 	for i := range apiDefs {
 		if strings.Contains(apiDefs[i].PackageName, "events") {
-			amqpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			amqpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v97/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		} else {
-			httpApiLinks += "\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v60/clients/client-go/" + apiDefs[i].PackageName + "\n"
+			httpApiLinks.WriteString("\n" + "* https://pkg.go.dev/github.com/taskcluster/taskcluster/v97/clients/client-go/" + apiDefs[i].PackageName + "\n")
 
 		}
 	}
-	GenerateGodocLinkInReadme(amqpApiLinks, httpApiLinks)
+	GenerateGodocLinkInReadme(amqpApiLinks.String(), httpApiLinks.String())
 }

@@ -8,13 +8,9 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      await execCommand({
-        dir: artifactsDir,
-        command: ['go', 'install', 'github.com/goreleaser/goreleaser@v1.20.0'],
-        utils,
-      });
-
       let goreleaserCmd = [
+        'go',
+        'tool',
         'goreleaser',
         'release',
         '--clean',
@@ -42,14 +38,14 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           'taskcluster-linux-arm64.tar.gz',
           'taskcluster-freebsd-amd64.tar.gz',
           'taskcluster-freebsd-arm64.tar.gz',
-          'taskcluster-windows-386.zip',
+          'taskcluster-windows-arm64.zip',
           'taskcluster-windows-amd64.zip',
           artifactsDir,
         ],
         utils,
       });
 
-      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/386 freebsd/amd64 freebsd/arm64';
+      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
       const artifacts = osarch.split(' ')
         .map(osarch => {
           const [os, arch] = osarch.split('/');

@@ -326,6 +326,9 @@ impl Hooks {
     /// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
     /// provided as the `payload` property of the JSON-e context used to render the
     /// task template.
+    ///
+    /// Optionally, a `taskId` can be provided in the payload which the hook task
+    /// will use. It must be unique and follow the slugid format.
     pub async fn triggerHook(&self, hookGroupId: &str, hookId: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::triggerHook_details(hookGroupId, hookId);
@@ -401,6 +404,9 @@ impl Hooks {
     /// The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
     /// provided as the `payload` property of the JSON-e context used to render the
     /// task template.
+    ///
+    /// Optionally, a `taskId` can be provided in the payload which the hook task
+    /// will use. It must be unique and follow the slugid format.
     pub async fn triggerHookWithToken(&self, hookGroupId: &str, hookId: &str, token: &str, payload: &Value) -> Result<Value, Error> {
         let method = "POST";
         let (path, query) = Self::triggerHookWithToken_details(hookGroupId, hookId, token);

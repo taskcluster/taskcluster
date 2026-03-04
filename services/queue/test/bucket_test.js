@@ -5,7 +5,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('test:bucket_test');
 import request from 'superagent';
 import helper from './helper.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withS3(mock, skipping);
@@ -100,6 +100,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
     const url = await bucket.createGetUrl('test');
     assert(url === 'https://example.com/test');
+    const urlWithSpaces = await bucket.createGetUrl('test with spaces');
+    assert(urlWithSpaces === 'https://example.com/test%20with%20spaces');
   });
 
   test('default endpoint', async function() {

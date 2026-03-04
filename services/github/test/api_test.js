@@ -2,7 +2,7 @@ import helper from './helper.js';
 import assert from 'assert';
 import _ from 'lodash';
 import got from 'got';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 
 /**
  * Tests of endpoints in the api _other than_
@@ -747,5 +747,18 @@ tasks:
         ]);
       }),
     );
+    test('invalid branch name is properly escaped', async function () {
+      const tcYaml = `version: 1
+reporting: checks-v1
+tasks: []
+`;
+      const { tasks } = await helper.apiClient.renderTaskclusterYml({
+        body: tcYaml,
+        fakeEvent: { type: 'github-push', overrides: { branch: 'lol", "this"' } },
+        repository: 'repo',
+        organization: 'org',
+      });
+      assert.deepEqual(tasks, []);
+    });
   });
 });

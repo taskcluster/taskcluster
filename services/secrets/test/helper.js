@@ -1,8 +1,8 @@
-import taskcluster from 'taskcluster-client';
-import testing from 'taskcluster-lib-testing';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import loadMain from '../src/main.js';
 import builder from '../src/api.js';
-import { withDb } from 'taskcluster-lib-testing';
+import { withDb } from '@taskcluster/lib-testing';
 
 export const load = testing.stickyLoader(loadMain);
 const helper = { load };

@@ -13,7 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v60/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
 )
 
 func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {
@@ -164,7 +164,7 @@ func TestAuthorizer(t *testing.T) {
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}

@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcindex"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcpurgecache"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v60/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
 )
 
 type Auth interface {
@@ -30,6 +30,7 @@ type WorkerManager interface {
 	RegisterWorker(payload *tcworkermanager.RegisterWorkerRequest) (*tcworkermanager.RegisterWorkerResponse, error)
 	WorkerPool(workerPoolId string) (*tcworkermanager.WorkerPoolFullDefinition, error)
 	CreateWorkerPool(workerPoolId string, payload *tcworkermanager.WorkerPoolDefinition) (*tcworkermanager.WorkerPoolFullDefinition, error)
+	ShouldWorkerTerminate(workerPoolId, workerGroup, workerId string) (*tcworkermanager.ShouldWorkerTerminateResponse, error)
 }
 
 type PurgeCache interface {

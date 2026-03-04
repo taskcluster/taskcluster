@@ -16,7 +16,7 @@ export default (wmStats, link = '/worker-manager/errors') => {
     {
       title: 'Total errors 7d',
       hint: 'Usually means last 7 days, as errors are being deleted after that',
-      value: loading ? '...' : format(stats?.total),
+      value: loading ? '...' : format(stats?.total || 0),
       link,
       error: error?.message,
       loading,
@@ -24,7 +24,7 @@ export default (wmStats, link = '/worker-manager/errors') => {
     {
       title: 'Last 7 days',
       type: 'graph',
-      value: loading ? [] : Object.values(stats?.daily),
+      value: loading ? [] : Object.values(stats?.daily || {}),
       link,
       error: error?.message,
       loading,
@@ -39,7 +39,7 @@ export default (wmStats, link = '/worker-manager/errors') => {
     {
       title: 'Last 24 hours',
       type: 'graph',
-      value: loading ? [] : Object.values(stats?.hourly),
+      value: loading ? [] : Object.values(stats?.hourly || {}),
       link,
       error: error?.message,
       loading,

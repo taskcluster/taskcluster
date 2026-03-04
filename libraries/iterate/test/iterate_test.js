@@ -2,8 +2,8 @@ import subject from '../src/index.js';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('iterate-test');
-import { MonitorManager } from 'taskcluster-lib-monitor';
-import testing from 'taskcluster-lib-testing';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import testing from '@taskcluster/lib-testing';
 
 const possibleEvents = [
   'started',
@@ -35,12 +35,12 @@ class IterateEvents {
     };
 
     if (this.orderOfEmission.length !== this.expectedOrder.length) {
-      throw(new Error(`order emitted differs in length from expectation ${dl()}`));
+      throw (new Error(`order emitted differs in length from expectation ${dl()}`));
     }
 
     for (let i = 0 ; i < this.orderOfEmission.length ; i++) {
       if (this.orderOfEmission[i] !== this.expectedOrder[i]) {
-        throw(new Error(`order emitted differs in content ${dl()}`));
+        throw (new Error(`order emitted differs in content ${dl()}`));
       }
     }
 

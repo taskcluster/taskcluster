@@ -1,3 +1,5 @@
+import { decryptToken } from "./decryptToken.js";
+
 export default () => async (request, response, next) => {
   if (
     (!request.credentials && !request.headers.authorization) ||
@@ -6,12 +8,7 @@ export default () => async (request, response, next) => {
     return next();
   }
 
-  const credentials = JSON.parse(
-    Buffer.from(
-      request.headers.authorization.replace('Bearer ', ''),
-      'base64',
-    ).toString(),
-  );
+  const credentials = decryptToken(request.headers.authorization);
 
   Object.assign(request, { credentials });
 

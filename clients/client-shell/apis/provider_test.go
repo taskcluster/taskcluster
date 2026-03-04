@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	assert "github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v60/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v60/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 // TestCommandGeneration checks that we generate a valid command from a definition
@@ -39,7 +39,8 @@ func TestCommandGeneration(t *testing.T) {
 	assert.NoError(err, "could not find subcommand, error: %s", err)
 
 	buf := &bytes.Buffer{}
-	subCmd.SetOutput(buf)
+	subCmd.SetOut(buf)
+	subCmd.SetErr(buf)
 
 	// execute command, server will receive request
 	cmd.SetArgs([]string{"test", "test"})
@@ -175,7 +176,7 @@ func redirHandler(w http.ResponseWriter, r *http.Request) {
 func errorHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header()["Content-Type"] = []string{"application/json"}
 	w.WriteHeader(409)
-	body := map[string]interface{}{
+	body := map[string]any{
 		"code":    "ResourceConflict",
 		"message": "I'm sorry dave..\nI can't let you do that.",
 	}

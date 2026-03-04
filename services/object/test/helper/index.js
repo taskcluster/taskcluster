@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
-import taskcluster from 'taskcluster-client';
+import taskcluster from '@taskcluster/client';
 import loadMain from '../../src/main.js';
 import builder from '../../src/api.js';
-import testing from 'taskcluster-lib-testing';
+import testing from '@taskcluster/lib-testing';
 import { BACKEND_TYPES } from '../../src/backends/index.js';
 import { MIDDLEWARE_TYPES } from '../../src/middleware/index.js';
 import { TestBackend } from '../../src/backends/test.js';
